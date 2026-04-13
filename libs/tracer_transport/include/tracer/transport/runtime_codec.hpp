@@ -65,16 +65,12 @@ namespace tracer::transport {
 [[nodiscard]] auto EncodeQueryResponse(const QueryResponsePayload& response)
     -> std::string;
 
-[[nodiscard]] auto DecodeReportRequest(std::string_view request_json)
-    -> ReportRequestPayload;
-[[nodiscard]] auto EncodeReportRequest(const ReportRequestPayload& request)
-    -> std::string;
 [[nodiscard]] auto EncodeReportResponse(const ReportResponsePayload& response)
     -> std::string;
-[[nodiscard]] auto DecodeReportTargetsRequest(std::string_view request_json)
-    -> ReportTargetsRequestPayload;
-[[nodiscard]] auto EncodeReportTargetsRequest(
-    const ReportTargetsRequestPayload& request) -> std::string;
+[[nodiscard]] auto DecodeTemporalReportRequest(std::string_view request_json)
+    -> TemporalReportRequestPayload;
+[[nodiscard]] auto EncodeTemporalReportRequest(
+    const TemporalReportRequestPayload& request) -> std::string;
 [[nodiscard]] auto EncodeReportTargetsResponse(
     const ReportTargetsResponsePayload& response) -> std::string;
 [[nodiscard]] auto DecodeReportBatchRequest(std::string_view request_json)
@@ -84,10 +80,6 @@ namespace tracer::transport {
 [[nodiscard]] auto EncodeReportBatchResponse(
     const ReportBatchResponsePayload& response) -> std::string;
 
-[[nodiscard]] auto DecodeExportRequest(std::string_view request_json)
-    -> ExportRequestPayload;
-[[nodiscard]] auto EncodeExportRequest(const ExportRequestPayload& request)
-    -> std::string;
 [[nodiscard]] auto EncodeExportResponse(const ExportResponsePayload& response)
     -> std::string;
 

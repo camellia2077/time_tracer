@@ -19,15 +19,18 @@ Local entrypoint for agents touching the shared transport implementation layer.
 
 1. [Detailed library doc](../../docs/time_tracer/architecture/libraries/tracer_transport.md)
 2. [Library dependency map](../../docs/time_tracer/architecture/library_dependency_map.md)
-3. [C ABI contract](../../docs/time_tracer/core/contracts/c_abi.md)
+3. [C ABI contract](../../docs/time_tracer/core/shared/c_abi.md)
 
 ## Capability / Ownership Index
 
 1. `tracer_transport` owns runtime JSON envelope encoding/decoding and
    capability feature-flag projection such as `runtime_txt_json`.
-2. `tracer_transport` does not own the meaning of TXT runtime actions or the
+2. reporting transport owns the temporal reporting payload codec for the
+   canonical `tracer_core_runtime_temporal_report_json` surface, plus the
+   separate `report_batch` helper payload.
+3. `tracer_transport` does not own the meaning of TXT runtime actions or the
    month-TXT day-block rules behind them.
-3. For TXT action semantics, open [libs/tracer_core/README.md](../tracer_core/README.md)
+4. For TXT action semantics, open [libs/tracer_core/README.md](../tracer_core/README.md)
    and the [TXT runtime JSON contract](../../docs/time_tracer/core/contracts/text/runtime_txt_day_block_json_contract_v1.md).
 
 ## Tests / Semantics Covered

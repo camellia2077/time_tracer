@@ -319,6 +319,36 @@ auto FakeReportDataQueryService::QueryAllYearly()
   return {};
 }
 
+auto FakeReportDtoFormatter::FormatDaily(const DailyReportData& report,
+                                         ReportFormat /*format*/)
+    -> std::string {
+  return "daily:" + report.date;
+}
+
+auto FakeReportDtoFormatter::FormatMonthly(const MonthlyReportData& report,
+                                           ReportFormat /*format*/)
+    -> std::string {
+  return "month:" + report.range_label;
+}
+
+auto FakeReportDtoFormatter::FormatPeriod(const PeriodReportData& report,
+                                          ReportFormat /*format*/)
+    -> std::string {
+  return "period:" + report.start_date + "|" + report.end_date;
+}
+
+auto FakeReportDtoFormatter::FormatWeekly(const WeeklyReportData& report,
+                                          ReportFormat /*format*/)
+    -> std::string {
+  return "week:" + report.range_label;
+}
+
+auto FakeReportDtoFormatter::FormatYearly(const YearlyReportData& report,
+                                          ReportFormat /*format*/)
+    -> std::string {
+  return "year:" + report.range_label;
+}
+
 auto FakeDataQueryService::RunDataQuery(
     const tracer_core::core::dto::DataQueryRequest& request)
     -> tracer_core::core::dto::TextOutput {
@@ -391,8 +421,9 @@ auto BuildRuntimeApi(
     -> TracerCoreRuntime {
   auto pipeline_api = std::make_shared<PipelineApi>(pipeline_workflow);
   auto query_api = std::make_shared<QueryApi>(repository, data_query);
-  auto report_api =
-      std::make_shared<ReportApi>(report_handler, report_data_query_service);
+  auto report_formatter = std::make_shared<FakeReportDtoFormatter>();
+  auto report_api = std::make_shared<ReportApi>(
+      report_handler, report_data_query_service, report_formatter);
   auto tracer_exchange_api =
       std::make_shared<TracerExchangeApi>(tracer_exchange_service);
   return {std::move(pipeline_api), std::move(query_api), std::move(report_api),

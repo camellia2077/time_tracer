@@ -169,15 +169,6 @@ void TestDecodeWorkflowRequests(int& failures) {
 }
 
 void TestDecodeReportRequests(int& failures) {
-  const auto single = DecodeReportRequest(
-      R"({"type":"month","argument":"2026-01","format":"markdown"})");
-  Expect(single.type == "month", "DecodeReportRequest type mismatch.",
-         failures);
-  Expect(single.argument == "2026-01", "DecodeReportRequest argument mismatch.",
-         failures);
-  Expect(single.format.has_value() && *single.format == "markdown",
-         "DecodeReportRequest format mismatch.", failures);
-
   const auto batch =
       DecodeReportBatchRequest(R"({"days_list":[7,14,30],"format":"md"})");
   Expect(batch.days_list.size() == 3U,
@@ -187,37 +178,55 @@ void TestDecodeReportRequests(int& failures) {
   Expect(batch.format.has_value() && *batch.format == "md",
          "DecodeReportBatchRequest format mismatch.", failures);
 
-  const auto targets = DecodeReportTargetsRequest(R"({"type":"month"})");
-  Expect(targets.type == "month",
-         "DecodeReportTargetsRequest type mismatch.", failures);
-
   ExpectInvalidArgument(
       [] { (void)DecodeReportBatchRequest(R"({"format":"md"})"); },
       "field `days_list` must be an integer array.",
       "DecodeReportBatchRequest missing days_list", failures);
-  ExpectInvalidArgument(
-      [] { (void)DecodeReportTargetsRequest(R"({"argument":"x"})"); },
-      "field `type` must be a string.",
-      "DecodeReportTargetsRequest missing type", failures);
 }
 
-void TestDecodeExportRequest(int& failures) {
-  const auto request = DecodeExportRequest(
-      R"({"type":"all-month","argument":"2026-01","format":"markdown","recent_days_list":[7,14]})");
-  Expect(request.type == "all-month", "DecodeExportRequest type mismatch.",
+void TestDecodeTemporalReportRequest(int& failures) {
+  const auto query = DecodeTemporalReportRequest(
+      R"({"operation_kind":"query","display_mode":"week","selection_kind":"date_range","start_date":"2026-03-02","end_date":"2026-03-08","format":"markdown"})");
+  Expect(query.operation_kind == "query",
+         "DecodeTemporalReportRequest operation_kind mismatch.", failures);
+  Expect(query.display_mode == "week",
+         "DecodeTemporalReportRequest display_mode mismatch.", failures);
+  Expect(query.selection_kind.has_value() &&
+             *query.selection_kind == "date_range",
+         "DecodeTemporalReportRequest selection_kind mismatch.", failures);
+  Expect(query.start_date.has_value() &&
+             *query.start_date == "2026-03-02",
+         "DecodeTemporalReportRequest start_date mismatch.", failures);
+  Expect(query.end_date.has_value() &&
+             *query.end_date == "2026-03-08",
+         "DecodeTemporalReportRequest end_date mismatch.", failures);
+  Expect(query.format.has_value() && *query.format == "markdown",
+         "DecodeTemporalReportRequest format mismatch.", failures);
+
+  const auto anchored_recent = DecodeTemporalReportRequest(
+      R"({"operation_kind":"query","display_mode":"recent","selection_kind":"recent_days","days":7,"anchor_date":"2026-03-07","format":"markdown"})");
+  Expect(anchored_recent.days.has_value() && *anchored_recent.days == 7,
+         "DecodeTemporalReportRequest anchored days mismatch.", failures);
+  Expect(anchored_recent.anchor_date.has_value() &&
+             *anchored_recent.anchor_date == "2026-03-07",
+         "DecodeTemporalReportRequest anchor_date mismatch.", failures);
+
+  const auto export_request = DecodeTemporalReportRequest(
+      R"({"operation_kind":"export","display_mode":"recent","export_scope":"batch_recent_list","format":"markdown","recent_days_list":[7,14,30]})");
+  Expect(export_request.operation_kind == "export",
+         "DecodeTemporalReportRequest export operation_kind mismatch.",
          failures);
-  Expect(request.argument.has_value() && *request.argument == "2026-01",
-         "DecodeExportRequest argument mismatch.", failures);
-  Expect(request.format.has_value() && *request.format == "markdown",
-         "DecodeExportRequest format mismatch.", failures);
-  Expect(request.recent_days_list.has_value() &&
-             request.recent_days_list->size() == 2U,
-         "DecodeExportRequest recent_days_list mismatch.", failures);
+  Expect(export_request.export_scope.has_value() &&
+             *export_request.export_scope == "batch_recent_list",
+         "DecodeTemporalReportRequest export_scope mismatch.", failures);
+  Expect(export_request.recent_days_list.has_value() &&
+             export_request.recent_days_list->size() == 3U,
+         "DecodeTemporalReportRequest recent_days_list mismatch.", failures);
 
   ExpectInvalidArgument(
-      [] { (void)DecodeExportRequest(R"({"argument":"x"})"); },
-      "field `type` must be a string.", "DecodeExportRequest missing type",
-      failures);
+      [] { (void)DecodeTemporalReportRequest(R"({"display_mode":"day"})"); },
+      "field `operation_kind` must be a string.",
+      "DecodeTemporalReportRequest missing operation_kind", failures);
 }
 
 void TestDecodeTreeRequest(int& failures) {
@@ -251,7 +260,7 @@ auto RunDecodeRequestTests(int& failures) -> void {
   TestDecodeQueryRequest(failures);
   TestDecodeWorkflowRequests(failures);
   TestDecodeReportRequests(failures);
-  TestDecodeExportRequest(failures);
+  TestDecodeTemporalReportRequest(failures);
   TestDecodeTreeRequest(failures);
 }
 

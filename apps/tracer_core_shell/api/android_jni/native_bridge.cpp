@@ -93,11 +93,6 @@ auto DestroyRuntimeLocked() -> void {
       static_cast<int>(value));
 }
 
-[[nodiscard]] auto ParseReportType(jint value) -> std::string {
-  return tracer_core::shell::jni_bridge::ParseReportTypeCode(
-      static_cast<int>(value));
-}
-
 [[nodiscard]] auto ParseReportFormat(jint value) -> std::string {
   return tracer_core::shell::jni_bridge::ParseReportFormatCode(
       static_cast<int>(value));

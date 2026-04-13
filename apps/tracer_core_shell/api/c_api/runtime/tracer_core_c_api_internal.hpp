@@ -26,13 +26,14 @@ namespace tracer_core::core::dto {
 
 enum class DataQueryAction;
 enum class DataQueryOutputMode;
-enum class ReportExportType;
-enum class ReportQueryType;
-enum class ReportTargetType;
+enum class ReportDisplayMode;
+enum class ReportExportScope;
+enum class ReportOperationKind;
+enum class TemporalSelectionKind;
 
 struct OperationAck;
 struct IngestSyncStatusOutput;
-struct ReportTargetsOutput;
+struct TemporalReportTargetsOutput;
 struct TextOutput;
 struct TreeQueryResponse;
 
@@ -105,7 +106,8 @@ void SetLastError(const char* message);
     const tracer_core::core::dto::IngestSyncStatusOutput& output)
     -> const char*;
 [[nodiscard]] auto BuildReportTargetsResponse(
-    const tracer_core::core::dto::ReportTargetsOutput& output) -> const char*;
+    const tracer_core::core::dto::TemporalReportTargetsOutput& output)
+    -> const char*;
 [[nodiscard]] auto BuildTextResponse(
     const tracer_core::core::dto::TextOutput& output) -> const char*;
 [[nodiscard]] auto BuildTreeResponse(
@@ -132,12 +134,14 @@ void SetLastError(const char* message);
     -> tracer_core::core::dto::DataQueryAction;
 [[nodiscard]] auto ParseDataQueryOutputMode(const std::string& value)
     -> tracer_core::core::dto::DataQueryOutputMode;
-[[nodiscard]] auto ParseExportType(const std::string& value)
-    -> tracer_core::core::dto::ReportExportType;
-[[nodiscard]] auto ParseReportType(const std::string& value)
-    -> tracer_core::core::dto::ReportQueryType;
-[[nodiscard]] auto ParseReportTargetType(const std::string& value)
-    -> tracer_core::core::dto::ReportTargetType;
+[[nodiscard]] auto ParseReportDisplayMode(const std::string& value)
+    -> tracer_core::core::dto::ReportDisplayMode;
+[[nodiscard]] auto ParseReportExportScope(const std::string& value)
+    -> tracer_core::core::dto::ReportExportScope;
+[[nodiscard]] auto ParseReportOperationKind(const std::string& value)
+    -> tracer_core::core::dto::ReportOperationKind;
+[[nodiscard]] auto ParseTemporalSelectionKind(const std::string& value)
+    -> tracer_core::core::dto::TemporalSelectionKind;
 [[nodiscard]] auto ParseReportFormat(const std::string& value) -> ReportFormat;
 
 void SetCryptoProgressCallbackRegistration(

@@ -1,29 +1,34 @@
 // infrastructure/tests/android_runtime/android_runtime_smoke_io_report_tests.cpp
 #include <iostream>
 
-#include "infrastructure/tests/android_runtime/android_runtime_test_common.hpp"
 #include "infrastructure/tests/android_runtime/android_runtime_smoke_io_internal.hpp"
+#include "infrastructure/tests/android_runtime/android_runtime_test_common.hpp"
 
 namespace android_runtime_tests::smoke {
+
+using tracer_core::core::dto::ReportDisplayMode;
+using tracer_core::core::dto::TemporalSelectionKind;
 
 auto VerifyReportOutputs(const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
                          int& failures) -> void {
   const auto report_result = RunAndCheckReportQuery(
       runtime_api,
-      {.type = tracer_core::core::dto::ReportQueryType::kRecent,
-       .argument = "1",
+      {.display_mode = ReportDisplayMode::kRecent,
+       .selection = {.kind = TemporalSelectionKind::kRecentDays, .days = 1},
        .format = ReportFormat::kMarkdown},
       "markdown", failures);
   if (report_result && report_result->content.empty()) {
     ++failures;
-    std::cerr << "[FAIL] RunReportQuery(markdown) should return non-empty "
-                 "content.\n";
+    std::cerr
+        << "[FAIL] RunTemporalReportQuery(markdown) should return non-empty "
+           "content.\n";
   }
 
   const auto day_report_result = RunAndCheckReportQuery(
       runtime_api,
-      {.type = tracer_core::core::dto::ReportQueryType::kDay,
-       .argument = "2026-02-01",
+      {.display_mode = ReportDisplayMode::kDay,
+       .selection = {.kind = TemporalSelectionKind::kSingleDay,
+                     .date = "2026-02-01"},
        .format = ReportFormat::kMarkdown},
       "day markdown", failures);
   if (day_report_result) {
@@ -39,18 +44,20 @@ auto VerifyReportOutputs(const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
     }
   }
 
-  const auto structured_result = runtime_api->report().RunStructuredReportQuery(
-      {.type = tracer_core::core::dto::ReportQueryType::kRecent,
-       .argument = "1"});
+  const auto structured_result =
+      runtime_api->report().RunTemporalStructuredReportQuery(
+          {.display_mode = ReportDisplayMode::kRecent,
+           .selection = {.kind = TemporalSelectionKind::kRecentDays,
+                         .days = 1}});
   if (!structured_result.ok) {
     ++failures;
-    std::cerr << "[FAIL] RunStructuredReportQuery should succeed: "
+    std::cerr << "[FAIL] RunTemporalStructuredReportQuery should succeed: "
               << structured_result.error_message << '\n';
   }
-  if (structured_result.kind !=
-      tracer_core::core::dto::StructuredReportKind::kRecent) {
+  if (structured_result.display_mode != ReportDisplayMode::kRecent) {
     ++failures;
-    std::cerr << "[FAIL] RunStructuredReportQuery should return kRecent.\n";
+    std::cerr
+        << "[FAIL] RunTemporalStructuredReportQuery should return recent.\n";
   }
 }
 

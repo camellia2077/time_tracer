@@ -151,27 +151,32 @@ void TestEncodeRequestRoundTrip(int& failures) {
   }
 
   {
-    ReportRequestPayload request{};
-    request.type = "month";
-    request.argument = "2026-02";
+    TemporalReportRequestPayload request{};
+    request.operation_kind = "query";
+    request.display_mode = "recent";
+    request.selection_kind = "recent_days";
+    request.days = 7;
+    request.anchor_date = "2026-03-07";
     request.format = "markdown";
-    const auto encoded = EncodeReportRequest(request);
-    const auto decoded = DecodeReportRequest(encoded);
-    Expect(decoded.type == request.type,
-           "EncodeReportRequest round-trip type mismatch.", failures);
-    Expect(decoded.argument == request.argument,
-           "EncodeReportRequest round-trip argument mismatch.", failures);
+    const auto encoded = EncodeTemporalReportRequest(request);
+    const auto decoded = DecodeTemporalReportRequest(encoded);
+    Expect(decoded.operation_kind == request.operation_kind,
+           "EncodeTemporalReportRequest round-trip operation_kind mismatch.",
+           failures);
+    Expect(decoded.display_mode == request.display_mode,
+           "EncodeTemporalReportRequest round-trip display_mode mismatch.",
+           failures);
+    Expect(decoded.selection_kind == request.selection_kind,
+           "EncodeTemporalReportRequest round-trip selection_kind mismatch.",
+           failures);
+    Expect(decoded.days == request.days,
+           "EncodeTemporalReportRequest round-trip days mismatch.", failures);
+    Expect(decoded.anchor_date == request.anchor_date,
+           "EncodeTemporalReportRequest round-trip anchor_date mismatch.",
+           failures);
     Expect(decoded.format == request.format,
-           "EncodeReportRequest round-trip format mismatch.", failures);
-  }
-
-  {
-    ReportTargetsRequestPayload request{};
-    request.type = "month";
-    const auto encoded = EncodeReportTargetsRequest(request);
-    const auto decoded = DecodeReportTargetsRequest(encoded);
-    Expect(decoded.type == request.type,
-           "EncodeReportTargetsRequest round-trip type mismatch.", failures);
+           "EncodeTemporalReportRequest round-trip format mismatch.",
+           failures);
   }
 
   {
@@ -184,23 +189,6 @@ void TestEncodeRequestRoundTrip(int& failures) {
            "EncodeReportBatchRequest round-trip days_list mismatch.", failures);
     Expect(decoded.format == request.format,
            "EncodeReportBatchRequest round-trip format mismatch.", failures);
-  }
-
-  {
-    ExportRequestPayload request{};
-    request.type = "all-month";
-    request.argument = "2026-02";
-    request.format = "markdown";
-    request.recent_days_list = std::vector<int>{7, 14};
-    const auto encoded = EncodeExportRequest(request);
-    const auto decoded = DecodeExportRequest(encoded);
-    Expect(decoded.type == request.type,
-           "EncodeExportRequest round-trip type mismatch.", failures);
-    Expect(decoded.argument == request.argument,
-           "EncodeExportRequest round-trip argument mismatch.", failures);
-    Expect(decoded.recent_days_list == request.recent_days_list,
-           "EncodeExportRequest round-trip recent_days_list mismatch.",
-           failures);
   }
 
   {
@@ -323,10 +311,8 @@ void TestEncodeResponses(int& failures) {
   capabilities.features.runtime_validate_logic_json = true;
   capabilities.features.runtime_txt_json = true;
   capabilities.features.runtime_query_json = true;
-  capabilities.features.runtime_report_json = true;
+  capabilities.features.runtime_temporal_report_json = true;
   capabilities.features.runtime_report_batch_json = true;
-  capabilities.features.runtime_report_targets_json = true;
-  capabilities.features.runtime_export_json = true;
   capabilities.features.runtime_tree_json = true;
   capabilities.features.processed_json_io = true;
   capabilities.features.report_markdown = true;
@@ -350,10 +336,10 @@ void TestEncodeResponses(int& failures) {
   Expect(capabilities_json["features"].value("runtime_log_callback", false),
          "EncodeCapabilitiesResponse features.runtime_log_callback mismatch.",
          failures);
-  Expect(capabilities_json["features"].value("runtime_report_targets_json",
+  Expect(capabilities_json["features"].value("runtime_temporal_report_json",
                                              false),
          "EncodeCapabilitiesResponse "
-         "features.runtime_report_targets_json mismatch.",
+         "features.runtime_temporal_report_json mismatch.",
          failures);
   Expect(capabilities_json["features"].value("runtime_diagnostics_callback",
                                              false),

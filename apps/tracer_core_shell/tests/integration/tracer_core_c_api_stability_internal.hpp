@@ -52,9 +52,6 @@ using RuntimeTxtFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
 using RuntimeQueryFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
 using RuntimeReportFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
 using RuntimeReportBatchFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
-using RuntimeReportTargetsFn = const char* (*)(TtCoreRuntimeHandle*,
-                                               const char*);
-using RuntimeExportFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
 using RuntimeTreeFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
 using RuntimeCryptoEncryptFn = const char* (*)(TtCoreRuntimeHandle*,
                                                const char*);
@@ -90,8 +87,6 @@ struct CoreApiFns {
   RuntimeQueryFn runtime_query = nullptr;
   RuntimeReportFn runtime_report = nullptr;
   RuntimeReportBatchFn runtime_report_batch = nullptr;
-  RuntimeReportTargetsFn runtime_report_targets = nullptr;
-  RuntimeExportFn runtime_export = nullptr;
   RuntimeTreeFn runtime_tree = nullptr;
   RuntimeCryptoEncryptFn runtime_crypto_encrypt = nullptr;
   RuntimeCryptoDecryptFn runtime_crypto_decrypt = nullptr;

@@ -13,9 +13,10 @@ namespace tracer_core::core::dto {
 
 enum class DataQueryAction;
 enum class DataQueryOutputMode;
-enum class ReportExportType;
-enum class ReportQueryType;
-enum class ReportTargetType;
+enum class ReportDisplayMode;
+enum class ReportExportScope;
+enum class ReportOperationKind;
+enum class TemporalSelectionKind;
 
 }  // namespace tracer_core::core::dto
 
@@ -32,12 +33,14 @@ namespace tracer_core::shell::c_api_bridge {
     -> tracer_core::core::dto::DataQueryAction;
 [[nodiscard]] auto ParseDataQueryOutputMode(const std::string& value)
     -> tracer_core::core::dto::DataQueryOutputMode;
-[[nodiscard]] auto ParseExportType(const std::string& value)
-    -> tracer_core::core::dto::ReportExportType;
-[[nodiscard]] auto ParseReportType(const std::string& value)
-    -> tracer_core::core::dto::ReportQueryType;
-[[nodiscard]] auto ParseReportTargetType(const std::string& value)
-    -> tracer_core::core::dto::ReportTargetType;
+[[nodiscard]] auto ParseReportDisplayMode(const std::string& value)
+    -> tracer_core::core::dto::ReportDisplayMode;
+[[nodiscard]] auto ParseReportExportScope(const std::string& value)
+    -> tracer_core::core::dto::ReportExportScope;
+[[nodiscard]] auto ParseReportOperationKind(const std::string& value)
+    -> tracer_core::core::dto::ReportOperationKind;
+[[nodiscard]] auto ParseTemporalSelectionKind(const std::string& value)
+    -> tracer_core::core::dto::TemporalSelectionKind;
 [[nodiscard]] auto ParseReportFormat(const std::string& value) -> ReportFormat;
 
 }  // namespace tracer_core::shell::c_api_bridge

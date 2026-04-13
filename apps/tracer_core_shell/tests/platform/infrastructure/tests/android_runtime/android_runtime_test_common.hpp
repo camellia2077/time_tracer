@@ -47,7 +47,7 @@ auto ExpectBuildRuntimeThrows(
     std::string& message) -> bool;
 auto RunAndCheckReportQuery(
     const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
-    const tracer_core::core::dto::ReportQueryRequest& request,
+    const tracer_core::core::dto::TemporalReportQueryRequest& request,
     std::string_view test_name, int& failures)
     -> std::optional<tracer_core::core::dto::TextOutput>;
 

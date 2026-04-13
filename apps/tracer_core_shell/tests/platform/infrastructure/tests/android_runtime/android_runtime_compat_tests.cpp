@@ -64,8 +64,11 @@ auto TestAndroidRuntimeFallsBackToLegacyConfigPathsWhenBundleMissing(
 
     static_cast<void>(RunAndCheckReportQuery(
         runtime.runtime_api,
-        {.type = tracer_core::core::dto::ReportQueryType::kDay,
-         .argument = "2026-02-01",
+        {.display_mode = tracer_core::core::dto::ReportDisplayMode::kDay,
+         .selection =
+             {.kind =
+                  tracer_core::core::dto::TemporalSelectionKind::kSingleDay,
+              .date = "2026-02-01"},
          .format = ReportFormat::kMarkdown},
         "legacy day markdown", failures));
   } catch (const std::exception& exception) {

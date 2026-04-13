@@ -35,12 +35,13 @@ class TracerCoreApi : public ITracerCoreApi {
       const tracer_core::core::dto::ValidateLogicRequest& request)
       -> tracer_core::core::dto::OperationAck override;
 
-  auto RunReportQuery(const tracer_core::core::dto::ReportQueryRequest& request)
+  auto RunTemporalReportQuery(
+      const tracer_core::core::dto::TemporalReportQueryRequest& request)
       -> tracer_core::core::dto::TextOutput override;
 
-  auto RunStructuredReportQuery(
-      const tracer_core::core::dto::StructuredReportQueryRequest& request)
-      -> tracer_core::core::dto::StructuredReportOutput override;
+  auto RunTemporalStructuredReportQuery(
+      const tracer_core::core::dto::TemporalStructuredReportQueryRequest& request)
+      -> tracer_core::core::dto::TemporalStructuredReportOutput override;
 
   auto RunPeriodBatchQuery(
       const tracer_core::core::dto::PeriodBatchQueryRequest& request)
@@ -49,6 +50,14 @@ class TracerCoreApi : public ITracerCoreApi {
   auto RunStructuredPeriodBatchQuery(
       const tracer_core::core::dto::StructuredPeriodBatchQueryRequest& request)
       -> tracer_core::core::dto::StructuredPeriodBatchOutput override;
+
+  auto RunTemporalReportTargetsQuery(
+      const tracer_core::core::dto::TemporalReportTargetsRequest& request)
+      -> tracer_core::core::dto::TemporalReportTargetsOutput override;
+
+  auto RunTemporalReportExport(
+      const tracer_core::core::dto::TemporalReportExportRequest& request)
+      -> tracer_core::core::dto::OperationAck override;
 
   auto RunDataQuery(const tracer_core::core::dto::DataQueryRequest& request)
       -> tracer_core::core::dto::TextOutput override;

@@ -27,8 +27,6 @@ extern std::mutex g_runtime_mutex;
 extern RuntimeHolder g_runtime;
 
 constexpr jint kUnsetInt = -1;
-constexpr jint kReportModeSingle = 0;
-constexpr jint kReportModePeriodBatch = 1;
 
 [[nodiscard]] auto ToUtf8(JNIEnv* env, jstring text) -> std::string;
 
@@ -49,8 +47,6 @@ auto DestroyRuntimeLocked() -> void;
 [[nodiscard]] auto ParseRecordTimeOrderMode(jint value) -> std::string;
 
 [[nodiscard]] auto ParseDataQueryAction(jint value) -> std::string;
-
-[[nodiscard]] auto ParseReportType(jint value) -> std::string;
 
 [[nodiscard]] auto ParseReportFormat(jint value) -> std::string;
 
@@ -141,8 +137,7 @@ auto NativeTree(JNIEnv* env, jobject thiz, jboolean list_roots,
                 jstring root_pattern, jint max_depth, jstring period,
                 jstring period_argument, jstring root) -> jstring;
 
-auto NativeReport(JNIEnv* env, jobject thiz, jint mode, jint report_type,
-                  jstring argument, jint format, jintArray days_list)
+auto NativeReportJson(JNIEnv* env, jobject thiz, jstring request_json)
     -> jstring;
 
 extern const std::array<JNINativeMethod, 18> kNativeMethods;

@@ -3,46 +3,37 @@
 
 #include <stdexcept>
 
-#include "application/ports/reporting/i_report_dto_formatter.hpp"
+#include "application/tests/support/fakes.hpp"
 #include "application/tests/support/test_support.hpp"
 #include "application/use_cases/report_api_support.hpp"
 
 namespace tracer_core::application::tests {
 
 namespace report_support = tracer::core::application::use_cases::report_support;
-using tracer_core::core::dto::StructuredReportKind;
-using tracer_core::core::dto::StructuredReportOutput;
+using tracer_core::core::dto::ReportDisplayMode;
+using tracer_core::core::dto::TemporalSelectionKind;
+using tracer_core::core::dto::TemporalSelectionPayload;
 
 namespace {
 
-class FakeReportFormatter final
-    : public tracer_core::application::ports::IReportDtoFormatter {
- public:
-  auto FormatDaily(const DailyReportData& report, ReportFormat /*format*/)
-      -> std::string override {
-    return "daily:" + report.date;
-  }
+auto BuildRangeSelection(std::string start_date, std::string end_date)
+    -> TemporalSelectionPayload {
+  return {.kind = TemporalSelectionKind::kDateRange,
+          .start_date = std::move(start_date),
+          .end_date = std::move(end_date)};
+}
 
-  auto FormatMonthly(const MonthlyReportData& report, ReportFormat /*format*/)
-      -> std::string override {
-    return "month:" + report.range_label;
-  }
+auto BuildRecentSelection(int days,
+                          std::optional<std::string> anchor_date = std::nullopt)
+    -> TemporalSelectionPayload {
+  return {.kind = TemporalSelectionKind::kRecentDays,
+          .days = days,
+          .anchor_date = std::move(anchor_date)};
+}
 
-  auto FormatPeriod(const PeriodReportData& report, ReportFormat /*format*/)
-      -> std::string override {
-    return "period:" + report.start_date + "|" + report.end_date;
-  }
-
-  auto FormatWeekly(const WeeklyReportData& report, ReportFormat /*format*/)
-      -> std::string override {
-    return "week:" + report.range_label;
-  }
-
-  auto FormatYearly(const YearlyReportData& report, ReportFormat /*format*/)
-      -> std::string override {
-    return "year:" + report.range_label;
-  }
-};
+auto BuildDaySelection(std::string date) -> TemporalSelectionPayload {
+  return {.kind = TemporalSelectionKind::kSingleDay, .date = std::move(date)};
+}
 
 auto TestParseRecentDaysArgument(TestState& state) -> void {
   Expect(state, report_support::ParseRecentDaysArgument("7") == 7,
@@ -102,32 +93,23 @@ auto TestParseRangeArgument(TestState& state) -> void {
          "ParseRangeArgument should require explicit range separators.");
 }
 
-auto TestFormatStructuredReportWindowMetadata(TestState& state) -> void {
-  FakeReportFormatter formatter;
+auto TestTemporalTextQueryPreservesWindowMetadata(TestState& state) -> void {
+  FakePipelineWorkflow pipeline_workflow;
+  FakeReportHandler report_handler;
+  auto report_data_query = std::make_shared<FakeReportDataQueryService>();
+  auto runtime_api =
+      BuildRuntimeApiForTest(pipeline_workflow, report_handler, report_data_query);
 
-  PeriodReportData period{};
-  period.has_records = false;
-  period.matched_day_count = 0;
-  period.matched_record_count = 0;
-  period.start_date = "2024-12-01";
-  period.end_date = "2024-12-31";
-  period.requested_days = 31;
-
-  StructuredReportOutput recent_output{};
-  recent_output.ok = true;
-  recent_output.kind = StructuredReportKind::kRecent;
-  recent_output.report = period;
-
-  const auto recent =
-      report_support::FormatStructuredReport(recent_output,
-                                             ReportFormat::kMarkdown,
-                                             formatter);
+  const auto recent = runtime_api.report().RunTemporalReportQuery(
+      {.display_mode = ReportDisplayMode::kRecent,
+       .selection = BuildRecentSelection(7, "2026-03-07"),
+       .format = ReportFormat::kMarkdown});
   Expect(state, recent.ok,
-         "FormatStructuredReport should succeed for recent period reports.");
-  Expect(state, recent.content == "period:2024-12-01|2024-12-31",
-         "FormatStructuredReport should delegate period formatting.");
+         "RunTemporalReportQuery should succeed for recent period reports.");
+  Expect(state, recent.content == "period:2026-03-01|2026-03-07",
+         "RunTemporalReportQuery should delegate period formatting.");
   Expect(state, recent.report_window_metadata.has_value(),
-         "FormatStructuredReport should expose window metadata for recent reports.");
+         "RunTemporalReportQuery should expose window metadata for recent reports.");
   if (recent.report_window_metadata.has_value()) {
     const auto& metadata = *recent.report_window_metadata;
     Expect(state, !metadata.has_records,
@@ -136,45 +118,33 @@ auto TestFormatStructuredReportWindowMetadata(TestState& state) -> void {
            "Recent report metadata should preserve matched_day_count.");
     Expect(state, metadata.matched_record_count == 0,
            "Recent report metadata should preserve matched_record_count.");
-    Expect(state, metadata.start_date == "2024-12-01",
-           "Recent report metadata should preserve start_date.");
-    Expect(state, metadata.end_date == "2024-12-31",
-           "Recent report metadata should preserve end_date.");
-    Expect(state, metadata.requested_days == 31,
+    Expect(state, metadata.start_date == "2026-03-01",
+           "Recent report metadata should preserve anchored start_date.");
+    Expect(state, metadata.end_date == "2026-03-07",
+           "Recent report metadata should preserve anchored end_date.");
+    Expect(state, metadata.requested_days == 7,
            "Recent report metadata should preserve requested_days.");
   }
 
-  StructuredReportOutput range_output = recent_output;
-  range_output.kind = StructuredReportKind::kRange;
-  const auto range = report_support::FormatStructuredReport(
-      range_output, ReportFormat::kMarkdown, formatter);
+  const auto range = runtime_api.report().RunTemporalReportQuery(
+      {.display_mode = ReportDisplayMode::kRange,
+       .selection = BuildRangeSelection("2024-12-01", "2024-12-31"),
+       .format = ReportFormat::kMarkdown});
   Expect(state, range.ok,
-         "FormatStructuredReport should succeed for range period reports.");
+         "RunTemporalReportQuery should succeed for range period reports.");
   Expect(state, range.report_window_metadata.has_value(),
-         "FormatStructuredReport should expose window metadata for range reports.");
-}
+         "RunTemporalReportQuery should expose window metadata for range reports.");
 
-auto TestFormatStructuredReportOmitsWindowMetadataForMonthlyReports(
-    TestState& state) -> void {
-  FakeReportFormatter formatter;
-
-  MonthlyReportData monthly{};
-  monthly.range_label = "2026-04";
-
-  StructuredReportOutput output{};
-  output.ok = true;
-  output.kind = StructuredReportKind::kMonth;
-  output.report = monthly;
-
-  const auto formatted =
-      report_support::FormatStructuredReport(output, ReportFormat::kMarkdown,
-                                             formatter);
-  Expect(state, formatted.ok,
-         "FormatStructuredReport should succeed for monthly reports.");
-  Expect(state, formatted.content == "month:2026-04",
-         "FormatStructuredReport should delegate monthly formatting.");
-  Expect(state, !formatted.report_window_metadata.has_value(),
-         "FormatStructuredReport should keep window metadata reserved for recent/range period reports.");
+  const auto month = runtime_api.report().RunTemporalReportQuery(
+      {.display_mode = ReportDisplayMode::kMonth,
+       .selection = BuildRangeSelection("2026-04-01", "2026-04-30"),
+       .format = ReportFormat::kMarkdown});
+  Expect(state, month.ok,
+         "RunTemporalReportQuery should succeed for monthly reports.");
+  Expect(state, month.content == "month:2026-04",
+         "RunTemporalReportQuery should delegate monthly formatting.");
+  Expect(state, !month.report_window_metadata.has_value(),
+         "RunTemporalReportQuery should keep window metadata reserved for recent/range reports.");
 }
 
 auto TestStructuredReportDistinguishesEmptyWindowFromMissingTarget(
@@ -185,35 +155,35 @@ auto TestStructuredReportDistinguishesEmptyWindowFromMissingTarget(
   auto runtime_api =
       BuildRuntimeApiForTest(pipeline_workflow, report_handler, report_data_query);
 
-  const auto empty_range = runtime_api.report().RunStructuredReportQuery(
-      {.type = tracer_core::core::dto::ReportQueryType::kRange,
-       .argument = "2024-12-01|2024-12-31"});
+  const auto empty_range = runtime_api.report().RunTemporalStructuredReportQuery(
+      {.display_mode = ReportDisplayMode::kRange,
+       .selection = BuildRangeSelection("2024-12-01", "2024-12-31")});
   Expect(state, empty_range.ok,
-         "RunStructuredReportQuery should treat empty range windows as successful reports.");
+         "RunTemporalStructuredReportQuery should treat empty range windows as successful reports.");
   Expect(state, empty_range.error_contract.error_code.empty(),
-         "RunStructuredReportQuery empty range should not expose target-not-found error code.");
+         "RunTemporalStructuredReportQuery empty range should not expose target-not-found error code.");
   const auto* empty_range_report =
       std::get_if<PeriodReportData>(&empty_range.report);
   Expect(state, empty_range_report != nullptr,
-         "RunStructuredReportQuery empty range should still return period report data.");
+         "RunTemporalStructuredReportQuery empty range should still return period report data.");
   if (empty_range_report != nullptr) {
     Expect(state, !empty_range_report->has_records,
-           "RunStructuredReportQuery empty range should preserve has_records=false.");
+           "RunTemporalStructuredReportQuery empty range should preserve has_records=false.");
     Expect(state, empty_range_report->matched_record_count == 0,
-           "RunStructuredReportQuery empty range should preserve matched_record_count=0.");
+           "RunTemporalStructuredReportQuery empty range should preserve matched_record_count=0.");
   }
 
   report_data_query->fail_target_not_found = true;
-  const auto missing_day = runtime_api.report().RunStructuredReportQuery(
-      {.type = tracer_core::core::dto::ReportQueryType::kDay,
-       .argument = "2024-12-31"});
+  const auto missing_day = runtime_api.report().RunTemporalStructuredReportQuery(
+      {.display_mode = ReportDisplayMode::kDay,
+       .selection = BuildDaySelection("2024-12-31")});
   Expect(state, !missing_day.ok,
-         "RunStructuredReportQuery should fail when the named report target is missing.");
+         "RunTemporalStructuredReportQuery should fail when the named report target is missing.");
   Expect(state,
          missing_day.error_contract.error_code == "reporting.target.not_found",
-         "RunStructuredReportQuery missing target should expose reporting.target.not_found.");
+         "RunTemporalStructuredReportQuery missing target should expose reporting.target.not_found.");
   Expect(state, missing_day.error_contract.error_category == "reporting",
-         "RunStructuredReportQuery missing target should expose reporting category.");
+         "RunTemporalStructuredReportQuery missing target should expose reporting category.");
 }
 
 }  // namespace
@@ -221,8 +191,7 @@ auto TestStructuredReportDistinguishesEmptyWindowFromMissingTarget(
 auto RunReportSemanticsTests(TestState& state) -> void {
   TestParseRecentDaysArgument(state);
   TestParseRangeArgument(state);
-  TestFormatStructuredReportWindowMetadata(state);
-  TestFormatStructuredReportOmitsWindowMetadataForMonthlyReports(state);
+  TestTemporalTextQueryPreservesWindowMetadata(state);
   TestStructuredReportDistinguishesEmptyWindowFromMissingTarget(state);
 }
 

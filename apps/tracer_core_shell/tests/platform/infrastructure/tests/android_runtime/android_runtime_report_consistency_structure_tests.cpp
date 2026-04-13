@@ -11,19 +11,23 @@ using tracer::core::application::use_cases::ITracerCoreRuntime;
 namespace android_runtime_tests::report_consistency_internal {
 namespace {
 
+using tracer_core::core::dto::ReportDisplayMode;
+using tracer_core::core::dto::TemporalSelectionKind;
+
 auto TestStructureLayerMdSectionIntegrity(
     const std::shared_ptr<ITracerCoreRuntime>& runtime_api, int& failures)
     -> void {
-  tracer_core::core::dto::ReportQueryRequest day_request;
-  day_request.type = tracer_core::core::dto::ReportQueryType::kDay;
-  day_request.argument = "2025-01-03";
-  day_request.format = ReportFormat::kMarkdown;
-
-  const auto day_result = runtime_api->report().RunReportQuery(day_request);
+  const auto day_result = runtime_api->report().RunTemporalReportQuery(
+      {.display_mode = ReportDisplayMode::kDay,
+       .selection = {.kind = TemporalSelectionKind::kSingleDay,
+                     .date = "2025-01-03"},
+       .format = ReportFormat::kMarkdown});
   if (!day_result.ok) {
     ++failures;
-    std::cerr << "[FAIL] StructureLayer/Day: RunReportQuery should succeed: "
-              << day_result.error_message << '\n';
+    std::cerr
+        << "[FAIL] StructureLayer/Day: RunTemporalReportQuery should "
+           "succeed: "
+        << day_result.error_message << '\n';
     return;
   }
 
@@ -51,16 +55,18 @@ auto TestStructureLayerMdSectionIntegrity(
     }
   }
 
-  tracer_core::core::dto::ReportQueryRequest month_request;
-  month_request.type = tracer_core::core::dto::ReportQueryType::kMonth;
-  month_request.argument = "2025-01";
-  month_request.format = ReportFormat::kMarkdown;
-
-  const auto month_result = runtime_api->report().RunReportQuery(month_request);
+  const auto month_result = runtime_api->report().RunTemporalReportQuery(
+      {.display_mode = ReportDisplayMode::kMonth,
+       .selection = {.kind = TemporalSelectionKind::kDateRange,
+                     .start_date = "2025-01-01",
+                     .end_date = "2025-01-31"},
+       .format = ReportFormat::kMarkdown});
   if (!month_result.ok) {
     ++failures;
-    std::cerr << "[FAIL] StructureLayer/Month: RunReportQuery should succeed: "
-              << month_result.error_message << '\n';
+    std::cerr
+        << "[FAIL] StructureLayer/Month: RunTemporalReportQuery should "
+           "succeed: "
+        << month_result.error_message << '\n';
     return;
   }
 

@@ -50,8 +50,8 @@
 Android 和 Windows CLI **共享同一个 `tracer_core` 原生报告内核**：
 
 ```
-Android: RuntimeReportDelegate.kt → JNI → tracer_core_runtime_report_json()
-Windows: cli_runtime_factory_proxy.cpp → tracer_core_runtime_report_json()
+Android: RuntimeReportDelegate.reportMarkdown(...) → nativeReportJson(...) → tracer_core_runtime_temporal_report_json()
+Windows: report runtime client -> tracer_core_runtime_temporal_report_json()
 ```
 
 因此两端生成报告时走的 querier / formatter 代码完全相同，天然保证了逻辑一致性。

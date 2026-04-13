@@ -38,6 +38,10 @@ Local entrypoint for agents touching the core business-logic library.
    - `runtime.tracer_exchange()`
 3. Pipeline-owned TXT day-block semantics are also exposed to hosts through the
    dedicated `tracer_core_runtime_txt_json` runtime family.
+4. Reporting now exposes one canonical single-request ABI surface:
+   - `tracer_core_runtime_temporal_report_json`
+   - `report_batch` remains a separate helper for multi-days recent text
+     rendering only.
 
 ## Capability / Ownership Index
 
@@ -84,8 +88,11 @@ TXT structure validation, TXT logic validation, or ingest validation order:
 ## Tests / Semantics Covered
 
 1. `libs/tracer_core/tests/**` 主要保护 core 业务语义与 capability DTO 边界。
-2. reporting 语义回归会区分“空窗口成功”与“target 不存在失败”。
-3. 详细测试意图见
+2. reporting 语义回归会区分“empty recent/range window 成功”与
+   “day/week/month/year target 不存在失败”。
+3. temporal reporting contract 还会覆盖 `recent_days + optional anchor_date`
+   的固定窗口解析与 recent 语义保留。
+4. 详细测试意图见
    [docs/time_tracer/architecture/libraries/tracer_core.md](../../docs/time_tracer/architecture/libraries/tracer_core.md).
 
 ## Test Asset Boundary

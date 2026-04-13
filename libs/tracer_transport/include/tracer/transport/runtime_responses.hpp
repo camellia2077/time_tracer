@@ -112,10 +112,8 @@ struct CapabilitiesFeaturesPayload {
   bool runtime_record_activity_atomically_json = false;
   bool runtime_txt_json = false;
   bool runtime_query_json = false;
-  bool runtime_report_json = false;
+  bool runtime_temporal_report_json = false;
   bool runtime_report_batch_json = false;
-  bool runtime_report_targets_json = false;
-  bool runtime_export_json = false;
   bool runtime_tree_json = false;
   bool processed_json_io = false;
   bool report_markdown = false;

@@ -34,15 +34,13 @@
 19. `tracer_core_runtime_validate_structure_json`
 20. `tracer_core_runtime_validate_logic_json`
 21. `tracer_core_runtime_query_json`
-22. `tracer_core_runtime_report_json`
-23. `tracer_core_runtime_report_targets_json`
-24. `tracer_core_runtime_report_batch_json`
-25. `tracer_core_runtime_export_json`
-26. `tracer_core_runtime_tree_json`
-27. `tracer_core_runtime_crypto_encrypt_json`
-28. `tracer_core_runtime_crypto_decrypt_json`
-29. `tracer_core_runtime_crypto_inspect_json`
-30. `tracer_core_runtime_txt_json`
+22. `tracer_core_runtime_temporal_report_json`
+23. `tracer_core_runtime_report_batch_json`
+24. `tracer_core_runtime_tree_json`
+25. `tracer_core_runtime_crypto_encrypt_json`
+26. `tracer_core_runtime_crypto_decrypt_json`
+27. `tracer_core_runtime_crypto_inspect_json`
+28. `tracer_core_runtime_txt_json`
 
 ## JSON Boundary Policy
 1. JSON-returning runtime operations keep UTF-8 JSON object responses as the ABI
@@ -75,10 +73,8 @@
      - `runtime_validate_structure_json`
      - `runtime_validate_logic_json`
      - `runtime_query_json`
-     - `runtime_report_json`
+     - `runtime_temporal_report_json`
      - `runtime_report_batch_json`
-     - `runtime_report_targets_json`
-     - `runtime_export_json`
      - `runtime_tree_json`
      - `runtime_txt_json`
      - `processed_json_io`
@@ -148,21 +144,36 @@
    - request fields: `list_roots`, `root_pattern`, `max_depth`, `period`,
      `period_argument`, `root`
    - response fields: `ok`, `found`, `error_message`, `roots`, `nodes`
-12. `tracer_core_runtime_report_json` and
-    `tracer_core_runtime_report_batch_json` response contract:
-   - standard text envelope fields:
+12. `tracer_core_runtime_temporal_report_json` is the single canonical
+    reporting ABI surface:
+   - request fields:
+     - `operation_kind` (`query|structured_query|targets|export`)
+     - `display_mode` (`day|week|month|year|range|recent`)
+     - optional `selection_kind` (`single_day|date_range|recent_days`)
+     - optional `date`
+     - optional `start_date`
+     - optional `end_date`
+     - optional `days`
+     - optional `anchor_date` (`recent_days` only)
+     - optional `format`
+     - optional `export_scope` (`single|all_matching|batch_recent_list`)
+     - optional `recent_days_list`
+   - `query` response fields:
+     - standard text envelope fields
+     - optional `report_window_metadata`-derived fields for recent/range text
+       responses
+     - optional `report_hash_sha256`
+   - `structured_query` response fields:
      - `ok`
-     - `content`
+     - `display_mode`
+     - `selection_kind`
+     - `report_kind`
+     - `report`
      - `error_message`
      - `error_code`
      - `error_category`
      - `hints`
-   - may additionally include:
-     - `report_hash_sha256`
-13. `tracer_core_runtime_report_targets_json` request/response contract:
-   - request fields:
-     - `type` (`day|month|week|year`)
-   - response fields:
+   - `targets` response fields:
      - `ok`
      - `type`
      - `items`
@@ -170,6 +181,15 @@
      - `error_code`
      - `error_category`
      - `hints`
+   - `export` response follows the standard ack-style envelope
+13. `tracer_core_runtime_report_batch_json` remains a separate helper for
+    multi-days recent text rendering:
+   - request fields:
+     - `days_list`
+     - optional `format`
+   - response fields:
+     - standard text envelope fields
+     - optional `report_hash_sha256`
 14. `tracer_core_runtime_crypto_*_json` contracts:
    - request/response payloads are UTF-8 JSON objects
    - encrypt request fields:
@@ -242,7 +262,7 @@
 1. `docs/time_tracer/core/contracts/crypto/runtime_crypto_json_contract_v1.md`
 2. `docs/time_tracer/core/contracts/crypto/file_format_v2.md`
 3. `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v3.md`
-4. `docs/time_tracer/clients/android_ui/runtime-protocol.md`
+4. `docs/time_tracer/presentation/android/runtime-protocol.md`
 5. `docs/time_tracer/core/contracts/text/runtime_txt_day_block_json_contract_v1.md`
 
 ## Related Implementation Paths

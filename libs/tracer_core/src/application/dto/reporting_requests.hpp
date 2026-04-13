@@ -1,6 +1,7 @@
 #ifndef APPLICATION_DTO_REPORTING_REQUESTS_HPP_
 #define APPLICATION_DTO_REPORTING_REQUESTS_HPP_
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -8,39 +9,32 @@
 
 namespace tracer_core::core::dto {
 
-enum class ReportQueryType {
+enum class TemporalSelectionKind {
+  kSingleDay,
+  kDateRange,
+  kRecentDays,
+};
+
+enum class ReportDisplayMode {
   kDay,
+  kWeek,
   kMonth,
-  kRecent,
+  kYear,
   kRange,
-  kWeek,
-  kYear,
-};
-
-enum class ReportTargetType {
-  kDay,
-  kMonth,
-  kWeek,
-  kYear,
-};
-
-enum class ReportExportType {
-  kDay,
-  kMonth,
   kRecent,
-  kWeek,
-  kYear,
-  kAllDay,
-  kAllMonth,
-  kAllRecent,
-  kAllWeek,
-  kAllYear,
 };
 
-struct ReportQueryRequest {
-  ReportQueryType type = ReportQueryType::kDay;
-  std::string argument;
-  ReportFormat format = ReportFormat::kMarkdown;
+enum class ReportOperationKind {
+  kQuery,
+  kStructuredQuery,
+  kTargets,
+  kExport,
+};
+
+enum class ReportExportScope {
+  kSingle,
+  kAllMatching,
+  kBatchRecentList,
 };
 
 struct PeriodBatchQueryRequest {
@@ -48,24 +42,41 @@ struct PeriodBatchQueryRequest {
   ReportFormat format = ReportFormat::kMarkdown;
 };
 
-struct StructuredReportQueryRequest {
-  ReportQueryType type = ReportQueryType::kDay;
-  std::string argument;
-};
-
 struct StructuredPeriodBatchQueryRequest {
   std::vector<int> kDays;
 };
 
-struct ReportTargetsRequest {
-  ReportTargetType type = ReportTargetType::kDay;
+struct TemporalSelectionPayload {
+  TemporalSelectionKind kind = TemporalSelectionKind::kSingleDay;
+  std::string date;
+  std::string start_date;
+  std::string end_date;
+  int days = 0;
+  std::optional<std::string> anchor_date;
 };
 
-struct ReportExportRequest {
-  ReportExportType type = ReportExportType::kDay;
+struct TemporalReportQueryRequest {
+  ReportDisplayMode display_mode = ReportDisplayMode::kDay;
+  TemporalSelectionPayload selection;
   ReportFormat format = ReportFormat::kMarkdown;
-  std::string argument;
+};
+
+struct TemporalStructuredReportQueryRequest {
+  ReportDisplayMode display_mode = ReportDisplayMode::kDay;
+  TemporalSelectionPayload selection;
+};
+
+struct TemporalReportTargetsRequest {
+  ReportDisplayMode display_mode = ReportDisplayMode::kDay;
+};
+
+struct TemporalReportExportRequest {
+  ReportDisplayMode display_mode = ReportDisplayMode::kDay;
+  ReportExportScope export_scope = ReportExportScope::kSingle;
+  ReportFormat format = ReportFormat::kMarkdown;
+  std::optional<TemporalSelectionPayload> selection;
   std::vector<int> recent_days_list;
+  std::string output_root_path;
 };
 
 }  // namespace tracer_core::core::dto

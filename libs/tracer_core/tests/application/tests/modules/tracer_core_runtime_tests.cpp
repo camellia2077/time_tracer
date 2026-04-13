@@ -18,10 +18,14 @@ auto TestRuntimeAccessorsAndForwarding(TestState& state) -> void {
   auto repository = std::make_shared<FakeProjectRepository>();
   auto data_query = std::make_shared<FakeDataQueryService>();
   auto tracer_exchange = std::make_shared<FakeTracerExchangeService>();
+  auto report_data_query = std::make_shared<FakeReportDataQueryService>();
 
   auto pipeline_api = std::make_shared<PipelineApi>(pipeline_workflow);
   auto query_api = std::make_shared<QueryApi>(repository, data_query);
-  auto report_api = std::make_shared<ReportApi>(report_handler);
+  auto report_formatter = std::make_shared<FakeReportDtoFormatter>();
+  auto report_api = std::make_shared<ReportApi>(report_handler,
+                                                report_data_query,
+                                                report_formatter);
   auto tracer_exchange_api =
       std::make_shared<TracerExchangeApi>(tracer_exchange);
 
@@ -53,11 +57,13 @@ auto TestRuntimeAccessorsAndForwarding(TestState& state) -> void {
   Expect(state, data_result.ok && data_result.content == "data-query-result",
          "Query API should still return the delegated data query result.");
 
-  const auto report_result = runtime.report().RunReportQuery(
-      {.type = tracer_core::core::dto::ReportQueryType::kDay,
-       .argument = "2026-03-21",
+  const auto report_result = runtime.report().RunTemporalReportQuery(
+      {.display_mode = tracer_core::core::dto::ReportDisplayMode::kDay,
+       .selection =
+           {.kind = tracer_core::core::dto::TemporalSelectionKind::kSingleDay,
+            .date = "2026-03-21"},
        .format = ReportFormat::kMarkdown});
-  Expect(state, report_result.ok && report_result.content == "daily",
+  Expect(state, report_result.ok && report_result.content == "daily:2026-03-21",
          "Report API should still return the delegated report result.");
 
   const auto exchange_result =

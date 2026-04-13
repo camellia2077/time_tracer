@@ -12,6 +12,7 @@
 #include "application/pipeline/i_pipeline_workflow.hpp"
 #include "application/dto/pipeline_responses.hpp"
 #include "application/ports/query/i_data_query_service.hpp"
+#include "application/ports/reporting/i_report_dto_formatter.hpp"
 #include "application/ports/reporting/i_report_data_query_service.hpp"
 #include "application/ports/exchange/i_tracer_exchange_service.hpp"
 #include "application/aggregate_runtime/tracer_core_runtime.hpp"
@@ -206,6 +207,21 @@ class FakeReportDataQueryService final
   auto QueryAllMonthly() -> std::map<std::string, MonthlyReportData> override;
   auto QueryAllWeekly() -> std::map<std::string, WeeklyReportData> override;
   auto QueryAllYearly() -> std::map<std::string, YearlyReportData> override;
+};
+
+class FakeReportDtoFormatter final
+    : public tracer_core::application::ports::IReportDtoFormatter {
+ public:
+  auto FormatDaily(const DailyReportData& report, ReportFormat format)
+      -> std::string override;
+  auto FormatMonthly(const MonthlyReportData& report, ReportFormat format)
+      -> std::string override;
+  auto FormatPeriod(const PeriodReportData& report, ReportFormat format)
+      -> std::string override;
+  auto FormatWeekly(const WeeklyReportData& report, ReportFormat format)
+      -> std::string override;
+  auto FormatYearly(const YearlyReportData& report, ReportFormat format)
+      -> std::string override;
 };
 
 class FakeDataQueryService final

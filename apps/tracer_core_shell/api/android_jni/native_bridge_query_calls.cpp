@@ -159,59 +159,25 @@ auto NativeTree(JNIEnv* env, jobject /*thiz*/, jboolean list_roots,
   });
 }
 
-auto NativeReport(JNIEnv* env, jobject /*thiz*/, jint mode, jint report_type,
-                  jstring argument, jint format, jintArray days_list)
+auto NativeReportJson(JNIEnv* env, jobject /*thiz*/, jstring request_json)
     -> jstring {
   return ExecuteJniMethod(env, [&]() -> std::string {
-    const std::string request_format = ParseReportFormat(format);
+    const std::string request = ToUtf8(env, request_json);
 
-    if (mode == kReportModePeriodBatch) {
-      tt_transport::ReportBatchRequestPayload request_payload{};
-      request_payload.days_list = ToIntVector(env, days_list);
-      request_payload.format = request_format;
-      const std::string request_json =
-          tt_transport::EncodeReportBatchRequest(request_payload);
-
-      tt_transport::ResponseEnvelope response_payload{};
-      {
-        std::scoped_lock lock(g_runtime_mutex);
-        if (g_runtime.core_runtime == nullptr) {
-          return BuildResponseJson(false, "nativeInit must be called first.",
-                                   std::string{});
-        }
-        response_payload =
-            ParseCoreResponse(tracer_core_runtime_report_batch_json(
-                                  g_runtime.core_runtime, request_json.c_str()),
-                              "nativeReport(batch)");
-      }
-      return tt_transport::SerializeResponseEnvelope(response_payload);
-    }
-
-    if (mode != kReportModeSingle) {
-      throw std::invalid_argument("Unsupported report mode code: " +
-                                  std::to_string(mode));
-    }
-
-    tt_transport::ReportRequestPayload request_payload{};
-    request_payload.type = ParseReportType(report_type);
-    request_payload.argument = ToUtf8(env, argument);
-    request_payload.format = request_format;
-    const std::string request_json =
-        tt_transport::EncodeReportRequest(request_payload);
-
-    tt_transport::ResponseEnvelope response_payload{};
     {
       std::scoped_lock lock(g_runtime_mutex);
       if (g_runtime.core_runtime == nullptr) {
         return BuildResponseJson(false, "nativeInit must be called first.",
                                  std::string{});
       }
-      response_payload =
-          ParseCoreResponse(tracer_core_runtime_report_json(
-                                g_runtime.core_runtime, request_json.c_str()),
-                            "nativeReport(single)");
+
+      const char* response = tracer_core_runtime_temporal_report_json(
+          g_runtime.core_runtime, request.c_str());
+      if (response == nullptr || response[0] == '\0') {
+        throw std::runtime_error("nativeReportJson received empty core response.");
+      }
+      return response;
     }
-    return tt_transport::SerializeResponseEnvelope(response_payload);
   });
 }
 

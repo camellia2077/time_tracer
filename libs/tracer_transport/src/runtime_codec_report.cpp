@@ -13,6 +13,7 @@ namespace {
 
 using nlohmann::json;
 using tracer::transport::modfields::RequireStringField;
+using tracer::transport::modfields::TryReadIntField;
 using tracer::transport::modfields::TryReadIntListField;
 using tracer::transport::modfields::TryReadStringField;
 
@@ -29,41 +30,6 @@ auto ParseRequestObject(std::string_view request_json) -> json {
 
 }  // namespace
 
-auto DecodeReportRequest(std::string_view request_json)
-    -> ReportRequestPayload {
-  const json kPayload = ParseRequestObject(request_json);
-
-  const auto kType = RequireStringField(kPayload, "type");
-  const auto kArgument = RequireStringField(kPayload, "argument");
-  const auto kFormat = TryReadStringField(kPayload, "format");
-  if (kType.HasError()) {
-    throw std::invalid_argument(kType.error.message);
-  }
-  if (kArgument.HasError()) {
-    throw std::invalid_argument(kArgument.error.message);
-  }
-  if (kFormat.HasError()) {
-    throw std::invalid_argument(kFormat.error.message);
-  }
-
-  ReportRequestPayload out{};
-  out.type = kType.value.value_or("");
-  out.argument = kArgument.value.value_or("");
-  out.format = kFormat.value;
-  return out;
-}
-
-auto EncodeReportRequest(const ReportRequestPayload& request) -> std::string {
-  json payload = {
-      {"type", request.type},
-      {"argument", request.argument},
-  };
-  if (request.format.has_value()) {
-    payload["format"] = *request.format;
-  }
-  return payload.dump();
-}
-
 auto EncodeReportResponse(const ReportResponsePayload& response)
     -> std::string {
   return json{
@@ -77,23 +43,104 @@ auto EncodeReportResponse(const ReportResponsePayload& response)
       .dump();
 }
 
-auto DecodeReportTargetsRequest(std::string_view request_json)
-    -> ReportTargetsRequestPayload {
+auto DecodeTemporalReportRequest(std::string_view request_json)
+    -> TemporalReportRequestPayload {
   const json kPayload = ParseRequestObject(request_json);
 
-  const auto kType = RequireStringField(kPayload, "type");
-  if (kType.HasError()) {
-    throw std::invalid_argument(kType.error.message);
+  const auto kOperationKind = RequireStringField(kPayload, "operation_kind");
+  const auto kDisplayMode = RequireStringField(kPayload, "display_mode");
+  const auto kSelectionKind = TryReadStringField(kPayload, "selection_kind");
+  const auto kDate = TryReadStringField(kPayload, "date");
+  const auto kStartDate = TryReadStringField(kPayload, "start_date");
+  const auto kEndDate = TryReadStringField(kPayload, "end_date");
+  const auto kDays = TryReadIntField(kPayload, "days");
+  const auto kAnchorDate = TryReadStringField(kPayload, "anchor_date");
+  const auto kFormat = TryReadStringField(kPayload, "format");
+  const auto kExportScope = TryReadStringField(kPayload, "export_scope");
+  const auto kRecentDays = TryReadIntListField(kPayload, "recent_days_list");
+  if (kOperationKind.HasError()) {
+    throw std::invalid_argument(kOperationKind.error.message);
+  }
+  if (kDisplayMode.HasError()) {
+    throw std::invalid_argument(kDisplayMode.error.message);
+  }
+  if (kSelectionKind.HasError()) {
+    throw std::invalid_argument(kSelectionKind.error.message);
+  }
+  if (kDate.HasError()) {
+    throw std::invalid_argument(kDate.error.message);
+  }
+  if (kStartDate.HasError()) {
+    throw std::invalid_argument(kStartDate.error.message);
+  }
+  if (kEndDate.HasError()) {
+    throw std::invalid_argument(kEndDate.error.message);
+  }
+  if (kDays.HasError()) {
+    throw std::invalid_argument(kDays.error.message);
+  }
+  if (kAnchorDate.HasError()) {
+    throw std::invalid_argument(kAnchorDate.error.message);
+  }
+  if (kFormat.HasError()) {
+    throw std::invalid_argument(kFormat.error.message);
+  }
+  if (kExportScope.HasError()) {
+    throw std::invalid_argument(kExportScope.error.message);
+  }
+  if (kRecentDays.HasError()) {
+    throw std::invalid_argument(kRecentDays.error.message);
   }
 
-  ReportTargetsRequestPayload out{};
-  out.type = kType.value.value_or("");
+  TemporalReportRequestPayload out{};
+  out.operation_kind = kOperationKind.value.value_or("");
+  out.display_mode = kDisplayMode.value.value_or("");
+  out.selection_kind = kSelectionKind.value;
+  out.date = kDate.value;
+  out.start_date = kStartDate.value;
+  out.end_date = kEndDate.value;
+  out.days = kDays.value;
+  out.anchor_date = kAnchorDate.value;
+  out.format = kFormat.value;
+  out.export_scope = kExportScope.value;
+  out.recent_days_list = kRecentDays.value;
   return out;
 }
 
-auto EncodeReportTargetsRequest(const ReportTargetsRequestPayload& request)
+auto EncodeTemporalReportRequest(const TemporalReportRequestPayload& request)
     -> std::string {
-  return json{{"type", request.type}}.dump();
+  json payload = {
+      {"operation_kind", request.operation_kind},
+      {"display_mode", request.display_mode},
+  };
+  if (request.selection_kind.has_value()) {
+    payload["selection_kind"] = *request.selection_kind;
+  }
+  if (request.date.has_value()) {
+    payload["date"] = *request.date;
+  }
+  if (request.start_date.has_value()) {
+    payload["start_date"] = *request.start_date;
+  }
+  if (request.end_date.has_value()) {
+    payload["end_date"] = *request.end_date;
+  }
+  if (request.days.has_value()) {
+    payload["days"] = *request.days;
+  }
+  if (request.anchor_date.has_value()) {
+    payload["anchor_date"] = *request.anchor_date;
+  }
+  if (request.format.has_value()) {
+    payload["format"] = *request.format;
+  }
+  if (request.export_scope.has_value()) {
+    payload["export_scope"] = *request.export_scope;
+  }
+  if (request.recent_days_list.has_value()) {
+    payload["recent_days_list"] = *request.recent_days_list;
+  }
+  return payload.dump();
 }
 
 auto EncodeReportTargetsResponse(const ReportTargetsResponsePayload& response)

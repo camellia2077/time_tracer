@@ -13,23 +13,13 @@
 
 namespace tracer_core::core::dto {
 
-enum class StructuredReportKind {
-  kDay,
-  kMonth,
-  kRecent,
-  kRange,
-  kWeek,
-  kYear,
-};
+using TemporalReportDto = std::variant<DailyReportData, PeriodReportData>;
 
-using ReportDto =
-    std::variant<DailyReportData, MonthlyReportData, PeriodReportData,
-                 WeeklyReportData, YearlyReportData>;
-
-struct StructuredReportOutput {
+struct TemporalStructuredReportOutput {
   bool ok = true;
-  StructuredReportKind kind = StructuredReportKind::kDay;
-  ReportDto report = DailyReportData{};
+  ReportDisplayMode display_mode = ReportDisplayMode::kDay;
+  TemporalSelectionKind selection_kind = TemporalSelectionKind::kSingleDay;
+  TemporalReportDto report = DailyReportData{};
   std::string error_message;
   ErrorContractFields error_contract;
 };
@@ -48,9 +38,9 @@ struct StructuredPeriodBatchOutput {
   ErrorContractFields error_contract;
 };
 
-struct ReportTargetsOutput {
+struct TemporalReportTargetsOutput {
   bool ok = true;
-  ReportTargetType type = ReportTargetType::kDay;
+  ReportDisplayMode display_mode = ReportDisplayMode::kDay;
   std::vector<std::string> items;
   std::string error_message;
   ErrorContractFields error_contract;

@@ -15,28 +15,31 @@ using tracer::core::application::use_cases::ITracerCoreRuntime;
 namespace android_runtime_tests::report_consistency_internal {
 namespace {
 
+using tracer_core::core::dto::ReportDisplayMode;
+using tracer_core::core::dto::TemporalSelectionKind;
+
 auto TestDataLayerStructuredFieldVerification(
     const std::shared_ptr<ITracerCoreRuntime>& runtime_api, int& failures)
     -> void {
-  tracer_core::core::dto::StructuredReportQueryRequest structured_request;
-  structured_request.type = tracer_core::core::dto::ReportQueryType::kDay;
-  structured_request.argument = "2025-01-03";
-
   const auto structured_result =
-      runtime_api->report().RunStructuredReportQuery(structured_request);
+      runtime_api->report().RunTemporalStructuredReportQuery(
+          {.display_mode = ReportDisplayMode::kDay,
+           .selection = {.kind = TemporalSelectionKind::kSingleDay,
+                         .date = "2025-01-03"}});
 
   if (!structured_result.ok) {
     ++failures;
-    std::cerr << "[FAIL] DataLayer/FieldVerify: RunStructuredReportQuery(day, "
-                 "2026-01-03) should succeed: "
-              << structured_result.error_message << '\n';
+    std::cerr
+        << "[FAIL] DataLayer/FieldVerify: RunTemporalStructuredReportQuery"
+           "(day, 2026-01-03) should succeed: "
+        << structured_result.error_message << '\n';
     return;
   }
 
-  if (structured_result.kind !=
-      tracer_core::core::dto::StructuredReportKind::kDay) {
+  if (structured_result.display_mode != ReportDisplayMode::kDay) {
     ++failures;
-    std::cerr << "[FAIL] DataLayer/FieldVerify: Report kind should be kDay.\n";
+    std::cerr
+        << "[FAIL] DataLayer/FieldVerify: Report display_mode should be day.\n";
     return;
   }
 
@@ -108,30 +111,36 @@ auto TestDataLayerCrossIngestConsistency(
     const std::filesystem::path& input_path, int& failures) -> void {
   const std::string target_date = "2025-01-03";
 
-  tracer_core::core::dto::ReportQueryRequest md_request;
-  md_request.type = tracer_core::core::dto::ReportQueryType::kDay;
-  md_request.argument = target_date;
-  md_request.format = ReportFormat::kMarkdown;
+  const tracer_core::core::dto::TemporalReportQueryRequest md_request{
+      .display_mode = ReportDisplayMode::kDay,
+      .selection =
+          {.kind = TemporalSelectionKind::kSingleDay, .date = target_date},
+      .format = ReportFormat::kMarkdown,
+  };
 
-  const auto md_before = runtime_api->report().RunReportQuery(md_request);
+  const auto md_before = runtime_api->report().RunTemporalReportQuery(md_request);
   if (!md_before.ok) {
     ++failures;
-    std::cerr << "[FAIL] CrossIngest: RunReportQuery(day, before) should "
-                 "succeed: "
+    std::cerr << "[FAIL] CrossIngest: RunTemporalReportQuery(day, before) "
+                 "should succeed: "
               << md_before.error_message << '\n';
     return;
   }
 
-  tracer_core::core::dto::StructuredReportQueryRequest struct_request;
-  struct_request.type = tracer_core::core::dto::ReportQueryType::kDay;
-  struct_request.argument = target_date;
+  const tracer_core::core::dto::TemporalStructuredReportQueryRequest
+      struct_request{
+          .display_mode = ReportDisplayMode::kDay,
+          .selection = {.kind = TemporalSelectionKind::kSingleDay,
+                        .date = target_date},
+      };
   const auto data_before =
-      runtime_api->report().RunStructuredReportQuery(struct_request);
+      runtime_api->report().RunTemporalStructuredReportQuery(struct_request);
   if (!data_before.ok) {
     ++failures;
-    std::cerr << "[FAIL] CrossIngest: RunStructuredReportQuery(before) should "
-                 "succeed: "
-              << data_before.error_message << '\n';
+    std::cerr
+        << "[FAIL] CrossIngest: RunTemporalStructuredReportQuery(before) "
+           "should succeed: "
+        << data_before.error_message << '\n';
     return;
   }
 
@@ -163,22 +172,23 @@ auto TestDataLayerCrossIngestConsistency(
     return;
   }
 
-  const auto md_after = runtime_api->report().RunReportQuery(md_request);
+  const auto md_after = runtime_api->report().RunTemporalReportQuery(md_request);
   if (!md_after.ok) {
     ++failures;
-    std::cerr << "[FAIL] CrossIngest: RunReportQuery(day, after) should "
-                 "succeed: "
+    std::cerr << "[FAIL] CrossIngest: RunTemporalReportQuery(day, after) "
+                 "should succeed: "
               << md_after.error_message << '\n';
     return;
   }
 
   const auto data_after =
-      runtime_api->report().RunStructuredReportQuery(struct_request);
+      runtime_api->report().RunTemporalStructuredReportQuery(struct_request);
   if (!data_after.ok) {
     ++failures;
-    std::cerr << "[FAIL] CrossIngest: RunStructuredReportQuery(after) should "
-                 "succeed: "
-              << data_after.error_message << '\n';
+    std::cerr
+        << "[FAIL] CrossIngest: RunTemporalStructuredReportQuery(after) "
+           "should succeed: "
+        << data_after.error_message << '\n';
     return;
   }
 

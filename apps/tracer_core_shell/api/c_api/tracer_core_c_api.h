@@ -148,13 +148,9 @@ TT_CORE_API const char* tracer_core_runtime_txt_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
 TT_CORE_API const char* tracer_core_runtime_query_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
-TT_CORE_API const char* tracer_core_runtime_report_json(
-    TtCoreRuntimeHandle* handle, const char* request_json);
-TT_CORE_API const char* tracer_core_runtime_report_targets_json(
+TT_CORE_API const char* tracer_core_runtime_temporal_report_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
 TT_CORE_API const char* tracer_core_runtime_report_batch_json(
-    TtCoreRuntimeHandle* handle, const char* request_json);
-TT_CORE_API const char* tracer_core_runtime_export_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
 TT_CORE_API const char* tracer_core_runtime_tree_json(
     TtCoreRuntimeHandle* handle, const char* request_json);

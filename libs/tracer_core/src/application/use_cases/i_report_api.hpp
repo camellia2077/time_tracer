@@ -11,13 +11,13 @@ class IReportApi {
  public:
   virtual ~IReportApi() = default;
 
-  virtual auto RunReportQuery(
-      const tracer_core::core::dto::ReportQueryRequest& request)
+  virtual auto RunTemporalReportQuery(
+      const tracer_core::core::dto::TemporalReportQueryRequest& request)
       -> tracer_core::core::dto::TextOutput = 0;
 
-  virtual auto RunStructuredReportQuery(
-      const tracer_core::core::dto::StructuredReportQueryRequest& request)
-      -> tracer_core::core::dto::StructuredReportOutput = 0;
+  virtual auto RunTemporalStructuredReportQuery(
+      const tracer_core::core::dto::TemporalStructuredReportQueryRequest& request)
+      -> tracer_core::core::dto::TemporalStructuredReportOutput = 0;
 
   virtual auto RunPeriodBatchQuery(
       const tracer_core::core::dto::PeriodBatchQueryRequest& request)
@@ -27,9 +27,13 @@ class IReportApi {
       const tracer_core::core::dto::StructuredPeriodBatchQueryRequest& request)
       -> tracer_core::core::dto::StructuredPeriodBatchOutput = 0;
 
-  virtual auto RunReportTargetsQuery(
-      const tracer_core::core::dto::ReportTargetsRequest& request)
-      -> tracer_core::core::dto::ReportTargetsOutput = 0;
+  virtual auto RunTemporalReportTargetsQuery(
+      const tracer_core::core::dto::TemporalReportTargetsRequest& request)
+      -> tracer_core::core::dto::TemporalReportTargetsOutput = 0;
+
+  virtual auto RunTemporalReportExport(
+      const tracer_core::core::dto::TemporalReportExportRequest& request)
+      -> tracer_core::core::dto::OperationAck = 0;
 };
 
 }  // namespace tracer::core::application::use_cases

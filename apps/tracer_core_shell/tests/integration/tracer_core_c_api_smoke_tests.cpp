@@ -178,7 +178,7 @@ auto main() -> int {
     const auto kRuntimeQuery = reinterpret_cast<RuntimeQueryFn>(
         LookupSymbol(library, "tracer_core_runtime_query_json"));
     const auto kRuntimeReport = reinterpret_cast<RuntimeReportFn>(
-        LookupSymbol(library, "tracer_core_runtime_report_json"));
+        LookupSymbol(library, "tracer_core_runtime_temporal_report_json"));
 
     if (kGetVersion == nullptr || kPing == nullptr ||
         kGetCapabilities == nullptr || kGetBuildInfo == nullptr ||
@@ -341,10 +341,12 @@ auto main() -> int {
 
     const std::string kReportRequest =
         nlohmann::json{
+            {"operation_kind", "query"},
+            {"display_mode", "day"},
             // The test data spans exclusively 2025-01-01, 2026-12-31.
-            // Do not include dates outside this range
-            {"type", "day"},
-            {"argument", "2026-01-01"},
+            // Do not include dates outside this range.
+            {"selection_kind", "single_day"},
+            {"date", "2026-01-01"},
             {"format", "markdown"}}
             .dump();
     if (!IsOkResponse(kRuntimeReport(runtime_handle, kReportRequest.c_str()),

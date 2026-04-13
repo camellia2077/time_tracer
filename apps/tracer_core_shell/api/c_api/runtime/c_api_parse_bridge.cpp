@@ -133,89 +133,85 @@ namespace tracer_core::shell::c_api_bridge {
       "field `output_mode` must be one of: text|semantic_json.");
 }
 
-[[nodiscard]] auto ParseExportType(const std::string& value)
-    -> tracer_core::core::dto::ReportExportType {
-  using tracer_core::core::dto::ReportExportType;
+[[nodiscard]] auto ParseReportDisplayMode(const std::string& value)
+    -> tracer_core::core::dto::ReportDisplayMode {
+  using tracer_core::core::dto::ReportDisplayMode;
   const std::string normalized = ToLowerAscii(value);
   if (normalized == "day") {
-    return ReportExportType::kDay;
-  }
-  if (normalized == "month") {
-    return ReportExportType::kMonth;
-  }
-  if (normalized == "recent") {
-    return ReportExportType::kRecent;
+    return ReportDisplayMode::kDay;
   }
   if (normalized == "week") {
-    return ReportExportType::kWeek;
-  }
-  if (normalized == "year") {
-    return ReportExportType::kYear;
-  }
-  if (normalized == "all_day" || normalized == "all-day") {
-    return ReportExportType::kAllDay;
-  }
-  if (normalized == "all_month" || normalized == "all-month") {
-    return ReportExportType::kAllMonth;
-  }
-  if (normalized == "all_recent" || normalized == "all-recent") {
-    return ReportExportType::kAllRecent;
-  }
-  if (normalized == "all_week" || normalized == "all-week") {
-    return ReportExportType::kAllWeek;
-  }
-  if (normalized == "all_year" || normalized == "all-year") {
-    return ReportExportType::kAllYear;
-  }
-  throw std::invalid_argument(
-      "field `type` must be one of: day|month|recent|week|year|all_day|"
-      "all_month|all_recent|all_week|all_year.");
-}
-
-[[nodiscard]] auto ParseReportType(const std::string& value)
-    -> tracer_core::core::dto::ReportQueryType {
-  using tracer_core::core::dto::ReportQueryType;
-  const std::string normalized = ToLowerAscii(value);
-  if (normalized == "day") {
-    return ReportQueryType::kDay;
+    return ReportDisplayMode::kWeek;
   }
   if (normalized == "month") {
-    return ReportQueryType::kMonth;
+    return ReportDisplayMode::kMonth;
   }
-  if (normalized == "recent") {
-    return ReportQueryType::kRecent;
+  if (normalized == "year") {
+    return ReportDisplayMode::kYear;
   }
   if (normalized == "range") {
-    return ReportQueryType::kRange;
+    return ReportDisplayMode::kRange;
   }
-  if (normalized == "week") {
-    return ReportQueryType::kWeek;
-  }
-  if (normalized == "year") {
-    return ReportQueryType::kYear;
+  if (normalized == "recent") {
+    return ReportDisplayMode::kRecent;
   }
   throw std::invalid_argument(
-      "field `type` must be one of: day|month|recent|range|week|year.");
+      "field `display_mode` must be one of: day|week|month|year|range|recent.");
 }
 
-[[nodiscard]] auto ParseReportTargetType(const std::string& value)
-    -> tracer_core::core::dto::ReportTargetType {
-  using tracer_core::core::dto::ReportTargetType;
+[[nodiscard]] auto ParseReportExportScope(const std::string& value)
+    -> tracer_core::core::dto::ReportExportScope {
+  using tracer_core::core::dto::ReportExportScope;
   const std::string normalized = ToLowerAscii(value);
-  if (normalized == "day") {
-    return ReportTargetType::kDay;
+  if (normalized == "single") {
+    return ReportExportScope::kSingle;
   }
-  if (normalized == "month") {
-    return ReportTargetType::kMonth;
+  if (normalized == "all_matching" || normalized == "all-matching") {
+    return ReportExportScope::kAllMatching;
   }
-  if (normalized == "week") {
-    return ReportTargetType::kWeek;
-  }
-  if (normalized == "year") {
-    return ReportTargetType::kYear;
+  if (normalized == "batch_recent_list" ||
+      normalized == "batch-recent-list") {
+    return ReportExportScope::kBatchRecentList;
   }
   throw std::invalid_argument(
-      "field `type` must be one of: day|month|week|year.");
+      "field `export_scope` must be one of: single|all_matching|batch_recent_list.");
+}
+
+[[nodiscard]] auto ParseReportOperationKind(const std::string& value)
+    -> tracer_core::core::dto::ReportOperationKind {
+  using tracer_core::core::dto::ReportOperationKind;
+  const std::string normalized = ToLowerAscii(value);
+  if (normalized == "query") {
+    return ReportOperationKind::kQuery;
+  }
+  if (normalized == "structured_query" || normalized == "structured-query") {
+    return ReportOperationKind::kStructuredQuery;
+  }
+  if (normalized == "targets") {
+    return ReportOperationKind::kTargets;
+  }
+  if (normalized == "export") {
+    return ReportOperationKind::kExport;
+  }
+  throw std::invalid_argument(
+      "field `operation_kind` must be one of: query|structured_query|targets|export.");
+}
+
+[[nodiscard]] auto ParseTemporalSelectionKind(const std::string& value)
+    -> tracer_core::core::dto::TemporalSelectionKind {
+  using tracer_core::core::dto::TemporalSelectionKind;
+  const std::string normalized = ToLowerAscii(value);
+  if (normalized == "single_day" || normalized == "single-day") {
+    return TemporalSelectionKind::kSingleDay;
+  }
+  if (normalized == "date_range" || normalized == "date-range") {
+    return TemporalSelectionKind::kDateRange;
+  }
+  if (normalized == "recent_days" || normalized == "recent-days") {
+    return TemporalSelectionKind::kRecentDays;
+  }
+  throw std::invalid_argument(
+      "field `selection_kind` must be one of: single_day|date_range|recent_days.");
 }
 
 [[nodiscard]] auto ParseReportFormat(const std::string& value) -> ReportFormat {

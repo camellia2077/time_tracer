@@ -72,26 +72,23 @@ struct QueryRequestPayload {
   std::optional<int> tree_max_depth;
 };
 
-struct ReportRequestPayload {
-  std::string type;
-  std::string argument;
+struct TemporalReportRequestPayload {
+  std::string operation_kind;
+  std::string display_mode;
+  std::optional<std::string> selection_kind;
+  std::optional<std::string> date;
+  std::optional<std::string> start_date;
+  std::optional<std::string> end_date;
+  std::optional<int> days;
+  std::optional<std::string> anchor_date;
   std::optional<std::string> format;
+  std::optional<std::string> export_scope;
+  std::optional<std::vector<int>> recent_days_list;
 };
 
 struct ReportBatchRequestPayload {
   std::vector<int> days_list;
   std::optional<std::string> format;
-};
-
-struct ReportTargetsRequestPayload {
-  std::string type;
-};
-
-struct ExportRequestPayload {
-  std::string type;
-  std::optional<std::string> argument;
-  std::optional<std::string> format;
-  std::optional<std::vector<int>> recent_days_list;
 };
 
 struct TreeRequestPayload {

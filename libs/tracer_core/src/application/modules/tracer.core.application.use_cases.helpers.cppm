@@ -15,10 +15,6 @@ using ::tracer::core::application::use_cases::report_support::
     BuildPeriodBatchErrorLine;
 using ::tracer::core::application::use_cases::report_support::
     BuildStructuredPeriodBatchFailure;
-using ::tracer::core::application::use_cases::report_support::
-    BuildStructuredReportFailure;
-using ::tracer::core::application::use_cases::report_support::
-    FormatStructuredReport;
 
 }  // namespace tracer::core::application::use_cases::helpers
 
@@ -29,10 +25,7 @@ using tracer::core::application::use_cases::helpers::BuildOperationFailure;
 using tracer::core::application::use_cases::helpers::BuildPeriodBatchErrorLine;
 using tracer::core::application::use_cases::helpers::
     BuildStructuredPeriodBatchFailure;
-using tracer::core::application::use_cases::helpers::
-    BuildStructuredReportFailure;
 using tracer::core::application::use_cases::helpers::BuildTextFailure;
 using tracer::core::application::use_cases::helpers::BuildTreeFailure;
-using tracer::core::application::use_cases::helpers::FormatStructuredReport;
 
 }  // namespace tracer::core::application::modusecases::helpers

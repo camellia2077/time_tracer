@@ -40,10 +40,10 @@ auto ExpectDataQueryFailureWithoutDb(
 
 auto ExpectReportQueryFailureWithoutDb(
     const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
-    const tracer_core::core::dto::ReportQueryRequest& request,
+    const tracer_core::core::dto::TemporalReportQueryRequest& request,
     const std::filesystem::path& db_path, std::string_view context,
     int& failures) -> void {
-  const auto result = runtime_api->report().RunReportQuery(request);
+  const auto result = runtime_api->report().RunTemporalReportQuery(request);
   if (result.ok) {
     ++failures;
     std::cerr << "[FAIL] " << context
@@ -363,10 +363,13 @@ auto RunBootstrapSmokeSection(int& failures) -> void {
 
     ExpectReportQueryFailureWithoutDb(
         fixture.runtime.runtime_api,
-        {.type = tracer_core::core::dto::ReportQueryType::kRecent,
-         .argument = "1",
+        {.display_mode = tracer_core::core::dto::ReportDisplayMode::kRecent,
+         .selection =
+             {.kind =
+                  tracer_core::core::dto::TemporalSelectionKind::kRecentDays,
+              .days = 1},
          .format = ReportFormat::kMarkdown},
-        fixture.paths.db_path, "RunReportQuery(recent)", failures);
+        fixture.paths.db_path, "RunTemporalReportQuery(recent)", failures);
   } catch (const std::exception& exception) {
     ++failures;
     std::cerr << "[FAIL] Android runtime bootstrap smoke test threw exception: "

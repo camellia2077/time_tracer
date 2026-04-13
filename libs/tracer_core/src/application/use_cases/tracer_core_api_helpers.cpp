@@ -1,34 +1,12 @@
 // application/use_cases/tracer_core_api_helpers.cpp
 #include "application/use_cases/tracer_core_api_helpers.hpp"
 
-#include <utility>
-
-#include "application/ports/reporting/i_report_dto_formatter.hpp"
-
 namespace tracer::core::application::use_cases::helpers {
 
 using tracer_core::core::dto::OperationAck;
+using tracer_core::core::dto::StructuredPeriodBatchOutput;
 using tracer_core::core::dto::TextOutput;
 using tracer_core::core::dto::TreeQueryResponse;
-using tracer_core::core::dto::StructuredReportOutput;
-using tracer_core::core::dto::StructuredReportKind;
-using tracer_core::core::dto::StructuredPeriodBatchOutput;
-
-namespace {
-
-auto BuildWindowMetadata(const PeriodReportData& report)
-    -> tracer_core::core::dto::ReportWindowMetadata {
-  return {
-      .has_records = report.has_records,
-      .matched_day_count = report.matched_day_count,
-      .matched_record_count = report.matched_record_count,
-      .start_date = report.start_date,
-      .end_date = report.end_date,
-      .requested_days = report.requested_days,
-  };
-}
-
-}  // namespace
 
 auto BuildErrorMessage(std::string_view operation, std::string_view details)
     -> std::string {
@@ -91,27 +69,6 @@ auto BuildTreeFailure(std::string_view operation) -> TreeQueryResponse {
   };
 }
 
-auto BuildStructuredReportFailure(std::string_view operation,
-                                  std::string_view details)
-    -> StructuredReportOutput {
-  return {.ok = false,
-          .kind = StructuredReportKind::kDay,
-          .report = DailyReportData{},
-          .error_message = BuildErrorMessage(operation, details)};
-}
-
-auto BuildStructuredReportFailure(std::string_view operation,
-                                  const std::exception& exception)
-    -> StructuredReportOutput {
-  return BuildStructuredReportFailure(operation, exception.what());
-}
-
-auto BuildStructuredReportFailure(std::string_view operation)
-    -> StructuredReportOutput {
-  return BuildStructuredReportFailure(operation,
-                                      "Unknown non-standard exception.");
-}
-
 auto BuildStructuredPeriodBatchFailure(std::string_view operation,
                                        std::string_view details)
     -> StructuredPeriodBatchOutput {
@@ -130,80 +87,6 @@ auto BuildStructuredPeriodBatchFailure(std::string_view operation)
     -> StructuredPeriodBatchOutput {
   return BuildStructuredPeriodBatchFailure(operation,
                                            "Unknown non-standard exception.");
-}
-
-auto FormatStructuredReport(
-    const StructuredReportOutput& output, ReportFormat format,
-    tracer_core::application::ports::IReportDtoFormatter& formatter)
-    -> TextOutput {
-  switch (output.kind) {
-    case StructuredReportKind::kDay: {
-      const auto* report = std::get_if<DailyReportData>(&output.report);
-      if (report == nullptr) {
-        return BuildTextFailure("RunReportQuery",
-                                "Structured report kind/data mismatch: day.");
-      }
-      return {.ok = true,
-              .content = formatter.FormatDaily(*report, format),
-              .error_message = ""};
-    }
-    case StructuredReportKind::kMonth: {
-      const auto* report = std::get_if<MonthlyReportData>(&output.report);
-      if (report == nullptr) {
-        return BuildTextFailure("RunReportQuery",
-                                "Structured report kind/data mismatch: month.");
-      }
-      return {.ok = true,
-              .content = formatter.FormatMonthly(*report, format),
-              .error_message = ""};
-    }
-    case StructuredReportKind::kRecent: {
-      const auto* report = std::get_if<PeriodReportData>(&output.report);
-      if (report == nullptr) {
-        return BuildTextFailure(
-            "RunReportQuery",
-            "Structured report kind/data mismatch: recent period.");
-      }
-      return {.ok = true,
-              .content = formatter.FormatPeriod(*report, format),
-              .error_message = "",
-              .report_window_metadata = BuildWindowMetadata(*report)};
-    }
-    case StructuredReportKind::kRange: {
-      const auto* report = std::get_if<PeriodReportData>(&output.report);
-      if (report == nullptr) {
-        return BuildTextFailure("RunReportQuery",
-                                "Structured report kind/data mismatch: range.");
-      }
-      return {.ok = true,
-              .content = formatter.FormatPeriod(*report, format),
-              .error_message = "",
-              .report_window_metadata = BuildWindowMetadata(*report)};
-    }
-    case StructuredReportKind::kWeek: {
-      const auto* report = std::get_if<WeeklyReportData>(&output.report);
-      if (report == nullptr) {
-        return BuildTextFailure("RunReportQuery",
-                                "Structured report kind/data mismatch: week.");
-      }
-      return {.ok = true,
-              .content = formatter.FormatWeekly(*report, format),
-              .error_message = ""};
-    }
-    case StructuredReportKind::kYear: {
-      const auto* report = std::get_if<YearlyReportData>(&output.report);
-      if (report == nullptr) {
-        return BuildTextFailure("RunReportQuery",
-                                "Structured report kind/data mismatch: year.");
-      }
-      return {.ok = true,
-              .content = formatter.FormatYearly(*report, format),
-              .error_message = ""};
-    }
-  }
-
-  return BuildTextFailure("RunReportQuery",
-                          "Unhandled structured report query kind.");
 }
 
 auto BuildPeriodBatchErrorLine(int days, std::string_view details)

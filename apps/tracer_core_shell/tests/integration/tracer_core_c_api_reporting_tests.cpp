@@ -7,11 +7,15 @@ void RunReportingChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
   constexpr std::size_t kSha256HexLength = 64U;
 
   const json kReportResponse =
-      ParseResponse(api.runtime_report(runtime, json{{"type", "day"},
-                                                     {"argument", "2025-01-03"},
-                                                     {"format", "markdown"}}
-                                                    .dump()
-                                                    .c_str()),
+      ParseResponse(api.runtime_report(
+                        runtime,
+                        json{{"operation_kind", "query"},
+                             {"display_mode", "day"},
+                             {"selection_kind", "single_day"},
+                             {"date", "2025-01-03"},
+                             {"format", "markdown"}}
+                            .dump()
+                            .c_str()),
                     "baseline runtime report");
   Require(kReportResponse.value("ok", false),
           "baseline runtime report should return ok=true");
@@ -24,11 +28,15 @@ void RunReportingChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
       "baseline runtime report hash should be lower-hex");
 
   const json kReportResponseAgain =
-      ParseResponse(api.runtime_report(runtime, json{{"type", "day"},
-                                                     {"argument", "2025-01-03"},
-                                                     {"format", "markdown"}}
-                                                    .dump()
-                                                    .c_str()),
+      ParseResponse(api.runtime_report(
+                        runtime,
+                        json{{"operation_kind", "query"},
+                             {"display_mode", "day"},
+                             {"selection_kind", "single_day"},
+                             {"date", "2025-01-03"},
+                             {"format", "markdown"}}
+                            .dump()
+                            .c_str()),
                     "baseline runtime report repeat");
   Require(kReportResponseAgain.value("ok", false),
           "baseline runtime report repeat should return ok=true");
@@ -62,7 +70,11 @@ void RunReportingChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
           "different requests");
 
   const json kTargetsResponse = ParseResponse(
-      api.runtime_report_targets(runtime, json{{"type", "month"}}.dump().c_str()),
+      api.runtime_report(
+          runtime,
+          json{{"operation_kind", "targets"}, {"display_mode", "month"}}
+              .dump()
+              .c_str()),
       "baseline runtime report targets");
   Require(kTargetsResponse.value("ok", false),
           "baseline runtime report targets should return ok=true");
@@ -74,12 +86,16 @@ void RunReportingChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
           "baseline runtime report targets should list at least one month");
 
   const json kEmptyRangeResponse = ParseResponse(
-      api.runtime_report(runtime,
-                         json{{"type", "range"},
-                              {"argument", "2024-12-01|2024-12-31"},
-                              {"format", "markdown"}}
-                             .dump()
-                             .c_str()),
+      api.runtime_report(
+          runtime,
+          json{{"operation_kind", "query"},
+               {"display_mode", "range"},
+               {"selection_kind", "date_range"},
+               {"start_date", "2024-12-01"},
+               {"end_date", "2024-12-31"},
+               {"format", "markdown"}}
+              .dump()
+              .c_str()),
       "empty range runtime report");
   Require(kEmptyRangeResponse.value("ok", false),
           "empty range runtime report should return ok=true");
@@ -102,11 +118,15 @@ void RunReportingChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
           "empty range runtime report should expose requested_days=31");
 
   const json kMissingReportResponse =
-      ParseResponse(api.runtime_report(runtime, json{{"type", "day"},
-                                                     {"argument", "2024-12-31"},
-                                                     {"format", "markdown"}}
-                                                    .dump()
-                                                    .c_str()),
+      ParseResponse(api.runtime_report(
+                        runtime,
+                        json{{"operation_kind", "query"},
+                             {"display_mode", "day"},
+                             {"selection_kind", "single_day"},
+                             {"date", "2024-12-31"},
+                             {"format", "markdown"}}
+                            .dump()
+                            .c_str()),
                     "missing runtime report target");
   Require(!kMissingReportResponse.value("ok", true),
           "missing runtime report target should return ok=false");
@@ -118,12 +138,17 @@ void RunReportingChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
           "missing runtime report target should expose reporting category");
 
   const json kMissingExportResponse = ParseResponse(
-      api.runtime_export(runtime,
-                         json{{"type", "month"},
-                              {"argument", "2024-12"},
-                              {"format", "md"}}
-                             .dump()
-                             .c_str()),
+      api.runtime_report(
+          runtime,
+          json{{"operation_kind", "export"},
+               {"display_mode", "month"},
+               {"export_scope", "single"},
+               {"selection_kind", "date_range"},
+               {"start_date", "2024-12-01"},
+               {"end_date", "2024-12-31"},
+               {"format", "md"}}
+              .dump()
+              .c_str()),
       "missing runtime export target");
   Require(!kMissingExportResponse.value("ok", true),
           "missing runtime export target should return ok=false");
@@ -134,10 +159,14 @@ void RunReportingChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
               "reporting",
           "missing runtime export target should expose reporting category");
 
-  RequireOk(api.runtime_export(
+  RequireOk(api.runtime_report(
                 runtime,
-                json{{"type", "month"},
-                     {"argument", "2025-01"},
+                json{{"operation_kind", "export"},
+                     {"display_mode", "month"},
+                     {"export_scope", "single"},
+                     {"selection_kind", "date_range"},
+                     {"start_date", "2025-01-01"},
+                     {"end_date", "2025-01-31"},
                      {"format", "md"}}
                     .dump()
                     .c_str()),
@@ -145,19 +174,28 @@ void RunReportingChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
   Require(fs::exists(output_root / "markdown" / "month" / "2025-01.md"),
           "baseline runtime export single month should write dashed legacy path");
 
-  RequireOk(api.runtime_export(
+  RequireOk(api.runtime_report(
                 runtime,
-                json{{"type", "all-month"}, {"format", "md"}}.dump().c_str()),
+                json{{"operation_kind", "export"},
+                     {"display_mode", "month"},
+                     {"export_scope", "all_matching"},
+                     {"format", "md"}}
+                    .dump()
+                    .c_str()),
             "baseline runtime export all month");
-  Require(fs::exists(output_root / "markdown" / "month" / "202501.md"),
-          "baseline runtime export all month should preserve compact legacy layout");
+  Require(fs::exists(output_root / "markdown" / "month" / "2025-01.md"),
+          "baseline runtime export all month should preserve month output layout");
 
   const json kInvalidRecentReportResponse =
-      ParseResponse(api.runtime_report(runtime, json{{"type", "recent"},
-                                                     {"argument", "0"},
-                                                     {"format", "markdown"}}
-                                                    .dump()
-                                                    .c_str()),
+      ParseResponse(api.runtime_report(
+                        runtime,
+                        json{{"operation_kind", "query"},
+                             {"display_mode", "recent"},
+                             {"selection_kind", "recent_days"},
+                             {"days", 0},
+                             {"format", "markdown"}}
+                            .dump()
+                            .c_str()),
                     "invalid recent runtime report");
   Require(!kInvalidRecentReportResponse.value("ok", true),
           "invalid recent runtime report should return ok=false");
@@ -169,7 +207,11 @@ void RunReportingChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
           "invalid recent runtime report should explain positive-integer requirement");
 
   const json kInvalidTargetsResponse = ParseResponse(
-      api.runtime_report_targets(runtime, json{{"type", "quarter"}}.dump().c_str()),
+      api.runtime_report(
+          runtime,
+          json{{"operation_kind", "targets"}, {"display_mode", "quarter"}}
+              .dump()
+              .c_str()),
       "invalid runtime report targets");
   Require(!kInvalidTargetsResponse.value("ok", true),
           "invalid runtime report targets should return ok=false");
