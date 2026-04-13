@@ -31,18 +31,6 @@ object NativeBridge {
     const val QUERY_ACTION_WAKE_KEYWORDS = 11
     const val QUERY_ACTION_AUTHORABLE_EVENT_TOKENS = 12
 
-    const val REPORT_MODE_SINGLE = 0
-    const val REPORT_MODE_PERIOD_BATCH = 1
-
-    const val REPORT_TYPE_DAY = 0
-    const val REPORT_TYPE_MONTH = 1
-    const val REPORT_TYPE_RECENT = 2
-    const val REPORT_TYPE_WEEK = 3
-    const val REPORT_TYPE_YEAR = 4
-    const val REPORT_TYPE_RANGE = 5
-
-    const val REPORT_FORMAT_MARKDOWN = 0
-
     private val cryptoProgressListenerRef = AtomicReference<((String) -> Unit)?>(null)
 
     init {
@@ -174,11 +162,7 @@ object NativeBridge {
         root: String
     ): String
 
-    external fun nativeReport(
-        mode: Int,
-        reportType: Int,
-        argument: String,
-        format: Int,
-        daysList: IntArray?
+    external fun nativeReportJson(
+        requestJson: String
     ): String
 }

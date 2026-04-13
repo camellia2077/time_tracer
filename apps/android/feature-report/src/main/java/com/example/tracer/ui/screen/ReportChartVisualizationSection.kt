@@ -14,7 +14,7 @@ import com.example.tracer.feature.report.R
 @Composable
 internal fun ReportChartVisualizationSection(
     chartError: String,
-    chartDateInputMode: ChartDateInputMode,
+    reportMode: ReportMode,
     sortedChartPoints: List<ReportChartPoint>,
     chartVisualMode: ReportChartVisualMode,
     onChartVisualModeChange: (ReportChartVisualMode) -> Unit,
@@ -42,7 +42,7 @@ internal fun ReportChartVisualizationSection(
     }
 
     if (sortedChartPoints.isEmpty()) {
-        val showRangeEmpty = chartDateInputMode == ChartDateInputMode.RANGE
+        val showRangeEmpty = reportMode == ReportMode.RANGE
         Text(
             text = if (showRangeEmpty) {
                 stringResource(R.string.report_chart_empty_in_range)

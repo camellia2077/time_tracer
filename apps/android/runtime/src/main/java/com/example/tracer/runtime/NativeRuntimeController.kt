@@ -67,7 +67,7 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     )
     private val reportDelegate = RuntimeReportDelegate(
         executeReportAfterInit = coreAdapter::executeReportAfterInit,
-        nativeReportSingle = runtimeBridge::nativeReportSingle
+        nativeReportJson = runtimeBridge::nativeReportJson
     )
 
     private val initService = RuntimeInitService(
@@ -304,23 +304,8 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         diagnosticsService.buildDiagnosticsPayload(maxEntries)
 
     // report
-    override suspend fun reportDayMarkdown(date: String): ReportCallResult =
-        reportService.reportDayMarkdown(date)
-
-    override suspend fun reportMonthMarkdown(month: String): ReportCallResult =
-        reportService.reportMonthMarkdown(month)
-
-    override suspend fun reportYearMarkdown(year: String): ReportCallResult =
-        reportService.reportYearMarkdown(year)
-
-    override suspend fun reportWeekMarkdown(week: String): ReportCallResult =
-        reportService.reportWeekMarkdown(week)
-
-    override suspend fun reportRecentMarkdown(days: String): ReportCallResult =
-        reportService.reportRecentMarkdown(days)
-
-    override suspend fun reportRange(startDate: String, endDate: String): ReportCallResult =
-        reportService.reportRange(startDate, endDate)
+    override suspend fun reportMarkdown(request: TemporalReportQueryRequest): ReportCallResult =
+        reportService.reportMarkdown(request)
 
     // query
     override suspend fun queryActivitySuggestions(

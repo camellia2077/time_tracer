@@ -16,17 +16,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.record.R
 import com.example.tracer.ui.components.SegmentedMonthDayInput
 import com.example.tracer.ui.components.filterDigits
 import com.example.tracer.ui.components.splitYearMonthDigits
+import java.time.DayOfWeek
+import java.time.LocalDate
 
 @Composable
 internal fun TxtEditorContentCard(
     selectedHistoryFile: String,
     selectedMonth: String,
+    currentDay: LocalDate?,
     outputMode: TxtOutputMode,
     onOutputModeChange: (TxtOutputMode) -> Unit,
     dayBlockEditorState: TxtDayBlockResolveResult,
@@ -49,24 +53,7 @@ internal fun TxtEditorContentCard(
         dayBlockEditorState.dayBody
     }
     val dayContentIsoDate = dayBlockEditorState.dayContentIsoDate
-    val dayModeHint = if (outputMode == TxtOutputMode.DAY) {
-        when {
-            !dayBlockEditorState.ok && dayBlockEditorState.message.isNotBlank() ->
-                dayBlockEditorState.message
-
-            !dayBlockEditorState.isMarkerValid ->
-                stringResource(R.string.txt_hint_invalid_day_marker)
-
-            dayBlockEditorState.found ->
-                stringResource(R.string.txt_hint_day_edit_enabled)
-
-            else ->
-                stringResource(R.string.txt_hint_day_not_found, dayBlockEditorState.normalizedDayMarker)
-        }
-    } else {
-        ""
-    }
-
+    val currentDayText = currentDay?.let { formatEditorCurrentDayText(it) }
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -101,7 +88,7 @@ internal fun TxtEditorContentCard(
                 val numericKeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 SegmentedMonthDayInput(
                     title = if (selectedYear.isNotBlank()) {
-                        stringResource(R.string.txt_label_target_day) + " ($selectedYear)"
+                        stringResource(R.string.txt_label_target_day_with_year, selectedYear)
                     } else {
                         stringResource(R.string.txt_label_target_day)
                     },
@@ -118,14 +105,6 @@ internal fun TxtEditorContentCard(
                             filterDigits(monthForInput, 2) + filterDigits(nextDay, 2)
                         )
                     }
-                )
-            }
-
-            if (dayModeHint.isNotBlank()) {
-                Text(
-                    text = dayModeHint,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.tertiary
                 )
             }
 
@@ -146,6 +125,17 @@ internal fun TxtEditorContentCard(
                     text = inlineStatusText,
                     style = MaterialTheme.typography.bodySmall,
                     color = statusColor,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            if (currentDayText != null) {
+                Text(
+                    text = currentDayText,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -199,4 +189,20 @@ internal fun TxtEditorContentCard(
 private fun splitDayMarkerDigits(value: String): Pair<String, String> {
     val digits = filterDigits(value, 4)
     return Pair(digits.take(2), digits.drop(2).take(2))
+}
+
+@Composable
+private fun formatEditorCurrentDayText(date: LocalDate): String {
+    val weekdayLabel = stringResource(
+        when (date.dayOfWeek) {
+            DayOfWeek.MONDAY -> R.string.txt_weekday_mon
+            DayOfWeek.TUESDAY -> R.string.txt_weekday_tue
+            DayOfWeek.WEDNESDAY -> R.string.txt_weekday_wed
+            DayOfWeek.THURSDAY -> R.string.txt_weekday_thu
+            DayOfWeek.FRIDAY -> R.string.txt_weekday_fri
+            DayOfWeek.SATURDAY -> R.string.txt_weekday_sat
+            DayOfWeek.SUNDAY -> R.string.txt_weekday_sun
+        }
+    )
+    return "$date $weekdayLabel"
 }

@@ -20,7 +20,15 @@ internal suspend fun runDayReportAction(
         statusText = textProvider.nativeReportRunning(textProvider.periodLabel(DataTreePeriod.DAY))
     )
     emit(runningState)
-    val result = reportGateway.reportDayMarkdown(dayIso)
+    val result = reportGateway.reportMarkdown(
+        TemporalReportQueryRequest(
+            displayMode = ReportDisplayMode.DAY,
+            selection = TemporalSelectionPayload(
+                kind = TemporalSelectionKind.SINGLE_DAY,
+                date = dayIso
+            )
+        )
+    )
     return runningState.copyWithReportOutcome(
         period = DataTreePeriod.DAY,
         result = result,
@@ -46,7 +54,16 @@ internal suspend fun runMonthReportAction(
         statusText = textProvider.nativeReportRunning(textProvider.periodLabel(DataTreePeriod.MONTH))
     )
     emit(runningState)
-    val result = reportGateway.reportMonthMarkdown(monthIso)
+    val result = reportGateway.reportMarkdown(
+        TemporalReportQueryRequest(
+            displayMode = ReportDisplayMode.MONTH,
+            selection = TemporalSelectionPayload(
+                kind = TemporalSelectionKind.DATE_RANGE,
+                startDate = "$monthIso-01",
+                endDate = java.time.YearMonth.parse(monthIso).atEndOfMonth().toString()
+            )
+        )
+    )
     return runningState.copyWithReportOutcome(
         period = DataTreePeriod.MONTH,
         result = result,
@@ -71,7 +88,16 @@ internal suspend fun runYearReportAction(
         statusText = textProvider.nativeReportRunning(textProvider.periodLabel(DataTreePeriod.YEAR))
     )
     emit(runningState)
-    val result = reportGateway.reportYearMarkdown(year)
+    val result = reportGateway.reportMarkdown(
+        TemporalReportQueryRequest(
+            displayMode = ReportDisplayMode.YEAR,
+            selection = TemporalSelectionPayload(
+                kind = TemporalSelectionKind.DATE_RANGE,
+                startDate = "$year-01-01",
+                endDate = "$year-12-31"
+            )
+        )
+    )
     return runningState.copyWithReportOutcome(
         period = DataTreePeriod.YEAR,
         result = result,
@@ -92,12 +118,22 @@ internal suspend fun runWeekReportAction(
         return currentState.copy(statusText = validationError, activeResult = null)
     }
 
-    val weekIso = inputValidator.toIsoWeek(weekDigits)
     val runningState = currentState.copy(
         statusText = textProvider.nativeReportRunning(textProvider.periodLabel(DataTreePeriod.WEEK))
     )
     emit(runningState)
-    val result = reportGateway.reportWeekMarkdown(weekIso)
+    val weekRange = resolveIsoWeekSelection(weekDigits)
+        ?: return currentState.copy(statusText = textProvider.invalidWeekFormat(), activeResult = null)
+    val result = reportGateway.reportMarkdown(
+        TemporalReportQueryRequest(
+            displayMode = ReportDisplayMode.WEEK,
+            selection = TemporalSelectionPayload(
+                kind = TemporalSelectionKind.DATE_RANGE,
+                startDate = weekRange.weekStart.toString(),
+                endDate = weekRange.weekEnd.toString()
+            )
+        )
+    )
     return runningState.copyWithReportOutcome(
         period = DataTreePeriod.WEEK,
         result = result,
@@ -122,7 +158,15 @@ internal suspend fun runRecentReportAction(
         statusText = textProvider.nativeReportRunning(textProvider.periodLabel(DataTreePeriod.RECENT))
     )
     emit(runningState)
-    val result = reportGateway.reportRecentMarkdown(recentDays)
+    val result = reportGateway.reportMarkdown(
+        TemporalReportQueryRequest(
+            displayMode = ReportDisplayMode.RECENT,
+            selection = TemporalSelectionPayload(
+                kind = TemporalSelectionKind.RECENT_DAYS,
+                days = recentDays.toInt()
+            )
+        )
+    )
     return runningState.copyWithReportOutcome(
         period = DataTreePeriod.RECENT,
         result = result,
@@ -167,7 +211,16 @@ internal suspend fun runRangeReportAction(
         statusText = textProvider.nativeReportRunning(textProvider.periodLabel(DataTreePeriod.RANGE))
     )
     emit(runningState)
-    val result = reportGateway.reportRange(startDate = startIso, endDate = endIso)
+    val result = reportGateway.reportMarkdown(
+        TemporalReportQueryRequest(
+            displayMode = ReportDisplayMode.RANGE,
+            selection = TemporalSelectionPayload(
+                kind = TemporalSelectionKind.DATE_RANGE,
+                startDate = startIso,
+                endDate = endIso
+            )
+        )
+    )
     return runningState.copyWithReportOutcome(
         period = DataTreePeriod.RANGE,
         result = result,

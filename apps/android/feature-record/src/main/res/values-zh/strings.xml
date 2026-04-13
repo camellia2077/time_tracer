@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="txt_hint_invalid_day_marker">日期标记无效。请使用 MMDD（例如：0214）。</string>
-    <string name="txt_hint_day_edit_enabled">已启用 DAY 编辑。保存后会替换当前月 TXT 中该天窗口内容。</string>
-    <string name="txt_hint_day_not_found">当前月 TXT 中未找到日期 %1$s。DAY 模式仅支持编辑已存在区块。</string>
     <string name="txt_label_editor_file">编辑器：%1$s</string>
     <string name="txt_mode_all">全部</string>
     <string name="txt_mode_day">单日</string>
-    <string name="txt_label_target_day">目标日期 (MMDD)</string>
+    <string name="txt_label_target_day">目标日期</string>
+    <string name="txt_label_target_day_with_year">目标日期 (%1$s)</string>
     <string name="txt_action_hide_content">隐藏内容</string>
     <string name="txt_action_show_content">显示内容</string>
     <string name="txt_label_content">内容</string>
@@ -16,6 +14,8 @@
     <string name="txt_cd_ingest">写入</string>
     <string name="txt_cd_prev_month">上个月</string>
     <string name="txt_cd_next_month">下个月</string>
+    <string name="txt_cd_prev_day">前一天</string>
+    <string name="txt_cd_next_day">后一天</string>
     <string name="txt_label_select_file">选择文件</string>
     <string name="txt_action_refresh_list">刷新列表</string>
     <string name="txt_sheet_select_year_month">选择年月</string>
@@ -29,6 +29,14 @@
     <string name="txt_picker_no_months">无可选月份</string>
     <string name="txt_picker_open_year_month">打开 %1$s-%2$s</string>
     <string name="txt_picker_field_value">%1$s：%2$s</string>
+    <string name="txt_label_current_day_unselected">未选择</string>
+    <string name="txt_weekday_sun">周日</string>
+    <string name="txt_weekday_mon">周一</string>
+    <string name="txt_weekday_tue">周二</string>
+    <string name="txt_weekday_wed">周三</string>
+    <string name="txt_weekday_thu">周四</string>
+    <string name="txt_weekday_fri">周五</string>
+    <string name="txt_weekday_sat">周六</string>
 
     <string name="txt_empty_state_title">暂无 TXT 文件</string>
     <string name="txt_empty_state_description">创建当月文件以开始记录活动。Record 标签页会自动创建每日条目。</string>

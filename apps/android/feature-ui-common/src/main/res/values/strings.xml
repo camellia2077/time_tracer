@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="calendar_cd_select_day">Select Day</string>
+    <string name="calendar_weekday_short_mon">Mon</string>
+    <string name="calendar_weekday_short_tue">Tue</string>
+    <string name="calendar_weekday_short_wed">Wed</string>
+    <string name="calendar_weekday_short_thu">Thu</string>
+    <string name="calendar_weekday_short_fri">Fri</string>
+    <string name="calendar_weekday_short_sat">Sat</string>
+    <string name="calendar_weekday_short_sun">Sun</string>
+</resources>

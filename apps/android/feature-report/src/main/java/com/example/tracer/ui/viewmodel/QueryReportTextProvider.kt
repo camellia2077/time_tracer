@@ -55,16 +55,16 @@ object DefaultQueryReportTextProvider : QueryReportTextProvider {
     override fun treeSubjectLabel(): String = "Tree"
 
     override fun nativeReportRunning(mode: String): String =
-        "nativeReport($mode, md) running..."
+        "nativeReportJson($mode, md) running..."
 
     override fun nativeReportResult(mode: String, ok: Boolean): String =
-        "nativeReport($mode, md) -> OK=$ok"
+        "nativeReportJson($mode, md) -> OK=$ok"
 
     override fun nativeReportTargetMissing(mode: String): String =
-        "nativeReport($mode, md) -> target not found"
+        "nativeReportJson($mode, md) -> target not found"
 
     override fun nativeReportEmptyWindow(mode: String): String =
-        "nativeReport($mode, md) -> empty window"
+        "nativeReportJson($mode, md) -> empty window"
 
     override fun rangeStartDateInvalid(detail: String): String =
         "Range start date invalid. $detail"

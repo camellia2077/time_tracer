@@ -71,28 +71,13 @@ class QueryReportTreePipelineTest {
 }
 
 private class FakeTreeReportGateway : ReportGateway {
-    override suspend fun reportDayMarkdown(date: String): ReportCallResult =
+    override suspend fun reportMarkdown(request: TemporalReportQueryRequest): ReportCallResult =
         ReportCallResult(
             initialized = true,
             operationOk = true,
             outputText = "",
             rawResponse = ""
         )
-
-    override suspend fun reportMonthMarkdown(month: String): ReportCallResult =
-        reportDayMarkdown(month)
-
-    override suspend fun reportYearMarkdown(year: String): ReportCallResult =
-        reportDayMarkdown(year)
-
-    override suspend fun reportWeekMarkdown(week: String): ReportCallResult =
-        reportDayMarkdown(week)
-
-    override suspend fun reportRecentMarkdown(days: String): ReportCallResult =
-        reportDayMarkdown(days)
-
-    override suspend fun reportRange(startDate: String, endDate: String): ReportCallResult =
-        reportDayMarkdown("$startDate|$endDate")
 }
 
 private class FakeTreeQueryGateway : QueryGateway {

@@ -58,13 +58,10 @@ fun ReportResultModeSwitcher(
 }
 
 @Composable
-fun ReportChartResultContent(
+internal fun ReportChartResultContent(
     chartRoots: List<String>,
     chartSelectedRoot: String,
-    chartDateInputMode: ChartDateInputMode,
-    chartLookbackDays: String,
-    chartRangeStartDate: String,
-    chartRangeEndDate: String,
+    reportMode: ReportMode,
     chartLoading: Boolean,
     chartError: String,
     chartRenderModel: ChartRenderModel?,
@@ -77,10 +74,6 @@ fun ReportChartResultContent(
     heatmapApplyMessage: String,
     isAppDarkThemeActive: Boolean,
     onChartRootChange: (String) -> Unit,
-    onChartDateInputModeChange: (ChartDateInputMode) -> Unit,
-    onChartLookbackDaysChange: (String) -> Unit,
-    onChartRangeStartDateChange: (String) -> Unit,
-    onChartRangeEndDateChange: (String) -> Unit,
     onChartShowAverageLineChange: (Boolean) -> Unit,
     onLoadChart: () -> Unit,
     modifier: Modifier = Modifier
@@ -125,23 +118,15 @@ fun ReportChartResultContent(
         ReportChartParameterSection(
             rootOptions = rootOptions,
             chartSelectedRoot = chartSelectedRoot,
-            chartDateInputMode = chartDateInputMode,
-            chartLookbackDays = chartLookbackDays,
-            chartRangeStartDate = chartRangeStartDate,
-            chartRangeEndDate = chartRangeEndDate,
             chartLoading = chartLoading,
             chartLastTrace = chartLastTrace,
             onChartRootChange = onChartRootChange,
-            onChartDateInputModeChange = onChartDateInputModeChange,
-            onChartLookbackDaysChange = onChartLookbackDaysChange,
-            onChartRangeStartDateChange = onChartRangeStartDateChange,
-            onChartRangeEndDateChange = onChartRangeEndDateChange,
             onLoadChart = onLoadChart
         )
 
         ReportChartVisualizationSection(
             chartError = chartError,
-            chartDateInputMode = chartDateInputMode,
+            reportMode = reportMode,
             sortedChartPoints = sortedChartPoints,
             chartVisualMode = chartVisualMode,
             onChartVisualModeChange = { chartVisualMode = it },

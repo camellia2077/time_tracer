@@ -11,8 +11,10 @@
 
     <string name="report_title_mode_parameters">%1$s パラメータ</string>
     <string name="report_title_report_date">レポート日付</string>
+    <string name="report_title_report_day">レポート日</string>
     <string name="report_title_report_month">レポート月</string>
     <string name="report_title_report_week">レポート週</string>
+    <string name="report_label_select_week">週を選択</string>
     <string name="report_label_report_year">レポート年 (YYYY)</string>
     <string name="report_title_start_date">開始日</string>
     <string name="report_title_end_date">終了日</string>
@@ -79,10 +81,10 @@
     <string name="report_subject_stats">統計</string>
     <string name="report_subject_tree">ツリー</string>
 
-    <string name="report_status_native_report_running">nativeReport(%1$s, md) 実行中...</string>
-    <string name="report_status_native_report_result">nativeReport(%1$s, md) -&gt; OK=%2$s</string>
-    <string name="report_status_native_report_target_missing">nativeReport(%1$s, md) -&gt; 対象なし</string>
-    <string name="report_status_native_report_empty_window">nativeReport(%1$s, md) -&gt; 空のウィンドウ</string>
+    <string name="report_status_native_report_running">nativeReportJson(%1$s, md) 実行中...</string>
+    <string name="report_status_native_report_result">nativeReportJson(%1$s, md) -&gt; OK=%2$s</string>
+    <string name="report_status_native_report_target_missing">nativeReportJson(%1$s, md) -&gt; 対象なし</string>
+    <string name="report_status_native_report_empty_window">nativeReportJson(%1$s, md) -&gt; 空のウィンドウ</string>
     <string name="report_status_range_start_date_invalid">期間の開始日が無効です。%1$s</string>
     <string name="report_status_range_end_date_invalid">期間の終了日が無効です。%1$s</string>
     <string name="report_status_query_stats_running">query data days-stats 実行中... period=%1$s</string>

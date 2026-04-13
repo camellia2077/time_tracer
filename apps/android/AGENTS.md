@@ -57,7 +57,8 @@ import, TXT import-export behavior, or SAF/document/fd export behavior:
 - For targeted debugging or narrower module/task validation, direct Gradle is also allowed when it is the more precise tool.
 - Choose the smallest command that safely validates the change.
 - Multi-profile `tools/run.py` merge is allowed for Android only when it still results in one Gradle invocation.
-  - Example: `python tools/run.py verify --app tracer_android --profile android_style --profile android_ci --concise`
+  - If the merged profile path is unavailable in the current toolchain state,
+    run `android_style` and `android_ci` serially instead of in parallel.
 
 ## Code Areas
 

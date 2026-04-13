@@ -41,12 +41,8 @@ enum class ReportResultDisplayMode {
     CHART
 }
 
-enum class ChartDateInputMode {
-    LOOKBACK,
-    RANGE
-}
-
 data class QueryReportUiState(
+    val reportMode: ReportMode = ReportMode.DAY,
     val reportDate: String = currentDateDigits(),
     val reportMonth: String = currentMonthDigits(),
     val reportYear: String = currentIsoYear(),
@@ -63,10 +59,6 @@ data class QueryReportUiState(
     val resultDisplayMode: ReportResultDisplayMode = ReportResultDisplayMode.TEXT,
     val chartRoots: List<String> = emptyList(),
     val chartSelectedRoot: String = "",
-    val chartDateInputMode: ChartDateInputMode = ChartDateInputMode.LOOKBACK,
-    val chartLookbackDays: String = "7",
-    val chartRangeStartDate: String = "",
-    val chartRangeEndDate: String = "",
     val chartRenderModel: ChartRenderModel? = null,
     val chartLastTrace: ChartQueryTrace? = null,
     val chartPoints: List<ReportChartPoint> = emptyList(),

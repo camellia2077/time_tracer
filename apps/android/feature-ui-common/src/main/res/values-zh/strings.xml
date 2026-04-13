@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="calendar_cd_select_day">选择日期</string>
+    <string name="calendar_weekday_short_mon">一</string>
+    <string name="calendar_weekday_short_tue">二</string>
+    <string name="calendar_weekday_short_wed">三</string>
+    <string name="calendar_weekday_short_thu">四</string>
+    <string name="calendar_weekday_short_fri">五</string>
+    <string name="calendar_weekday_short_sat">六</string>
+    <string name="calendar_weekday_short_sun">日</string>
+</resources>

@@ -2,7 +2,7 @@ package com.example.tracer
 
 private data class ChartQueryCacheKey(
     val root: String,
-    val dateInputMode: ChartDateInputMode,
+    val reportMode: ReportMode,
     val lookbackDays: Int,
     val fromDateIso: String,
     val toDateIso: String
@@ -36,7 +36,7 @@ internal class QueryReportChartUseCase(
         val requestedRoot = currentState.chartSelectedRoot.trim().ifEmpty { "" }
         val cacheKey = ChartQueryCacheKey(
             root = requestedRoot,
-            dateInputMode = params.dateInputMode,
+            reportMode = params.reportMode,
             lookbackDays = params.lookbackDays,
             fromDateIso = params.fromDateIso.orEmpty(),
             toDateIso = params.toDateIso.orEmpty()
@@ -150,11 +150,6 @@ internal class QueryReportChartUseCase(
             chartLastTrace = trace,
             chartRoots = renderModel.roots,
             chartSelectedRoot = renderModel.selectedRoot,
-            chartLookbackDays = if (params.dateInputMode == ChartDateInputMode.RANGE) {
-                baseState.chartLookbackDays
-            } else {
-                renderModel.lookbackDays.toString()
-            },
             chartPoints = renderModel.points,
             chartAverageDurationSeconds = renderModel.averageDurationSeconds,
             chartTotalDurationSeconds = renderModel.totalDurationSeconds,
@@ -172,7 +167,7 @@ internal class QueryReportChartUseCase(
     }
 
     private fun computeParameterHash(key: ChartQueryCacheKey): String {
-        val raw = "${key.root}|${key.dateInputMode}|${key.lookbackDays}|" +
+        val raw = "${key.root}|${key.reportMode}|${key.lookbackDays}|" +
             "${key.fromDateIso}|${key.toDateIso}"
         return raw.hashCode().toUInt().toString(16).padStart(8, '0')
     }

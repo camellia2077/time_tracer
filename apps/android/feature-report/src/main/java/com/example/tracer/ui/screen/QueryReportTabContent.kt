@@ -4,10 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
@@ -15,6 +11,7 @@ import androidx.compose.ui.unit.dp
 fun QueryReportTabContent(
     queryUiState: QueryReportUiState,
     queryReportViewModel: QueryReportViewModel,
+    availableTxtMonths: List<String>,
     chartShowAverageLine: Boolean,
     onChartShowAverageLineChange: (Boolean) -> Unit,
     heatmapTomlConfig: ReportHeatmapTomlConfig,
@@ -24,8 +21,10 @@ fun QueryReportTabContent(
     heatmapApplyMessage: String,
     isAppDarkThemeActive: Boolean
 ) {
-    var reportMode by rememberSaveable { mutableStateOf(ReportMode.DAY) }
-    val selectedPeriod = reportMode.toPeriod()
+    // Report year menus intentionally follow existing TXT year directories so
+    // users only pick years that actually back YYYY/YYYY-MM.txt storage.
+    val availableTxtYears = deriveTxtYearOptions(availableTxtMonths)
+    val selectedPeriod = queryUiState.reportMode.toPeriod()
     val displayResult = resolveDisplayResult(
         uiState = queryUiState,
         selectedPeriod = selectedPeriod
@@ -44,12 +43,13 @@ fun QueryReportTabContent(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         QueryReportSection(
-            reportMode = reportMode,
-            onReportModeChange = { reportMode = it },
+            reportMode = queryUiState.reportMode,
+            onReportModeChange = queryReportViewModel::onReportModeChange,
             reportDate = queryUiState.reportDate,
             onReportDateChange = queryReportViewModel::onReportDateChange,
             reportMonth = queryUiState.reportMonth,
             onReportMonthChange = queryReportViewModel::onReportMonthChange,
+            availableTxtYears = availableTxtYears,
             reportYear = queryUiState.reportYear,
             onReportYearChange = queryReportViewModel::onReportYearChange,
             reportWeek = queryUiState.reportWeek,
@@ -81,10 +81,7 @@ fun QueryReportTabContent(
             analysisError = queryUiState.analysisError,
             chartRoots = queryUiState.chartRoots,
             chartSelectedRoot = queryUiState.chartSelectedRoot,
-            chartDateInputMode = queryUiState.chartDateInputMode,
-            chartLookbackDays = queryUiState.chartLookbackDays,
-            chartRangeStartDate = queryUiState.chartRangeStartDate,
-            chartRangeEndDate = queryUiState.chartRangeEndDate,
+            reportMode = queryUiState.reportMode,
             chartLoading = queryUiState.chartLoading,
             chartError = queryUiState.chartError,
             chartRenderModel = queryUiState.chartRenderModel,
@@ -97,10 +94,6 @@ fun QueryReportTabContent(
             heatmapApplyMessage = heatmapApplyMessage,
             isAppDarkThemeActive = isAppDarkThemeActive,
             onChartRootChange = queryReportViewModel::onChartRootChange,
-            onChartDateInputModeChange = queryReportViewModel::onChartDateInputModeChange,
-            onChartLookbackDaysChange = queryReportViewModel::onChartLookbackDaysChange,
-            onChartRangeStartDateChange = queryReportViewModel::onChartRangeStartDateChange,
-            onChartRangeEndDateChange = queryReportViewModel::onChartRangeEndDateChange,
             onChartShowAverageLineChange = onChartShowAverageLineChange,
             onLoadChart = queryReportViewModel::loadChart
         )

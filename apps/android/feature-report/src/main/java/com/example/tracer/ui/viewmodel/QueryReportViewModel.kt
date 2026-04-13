@@ -36,23 +36,39 @@ class QueryReportViewModel(
         value.filter { it.isDigit() }.take(maxLength)
 
     fun onReportDateChange(value: String) {
-        uiState = uiState.copy(reportDate = digitsOnly(value, 8))
+        updateReportParams {
+            copy(reportDate = digitsOnly(value, 8))
+        }
+    }
+
+    fun onReportModeChange(mode: ReportMode) {
+        updateReportParams {
+            copy(reportMode = mode)
+        }
     }
 
     fun onReportMonthChange(value: String) {
-        uiState = uiState.copy(reportMonth = digitsOnly(value, 6))
+        updateReportParams {
+            copy(reportMonth = digitsOnly(value, 6))
+        }
     }
 
     fun onReportYearChange(value: String) {
-        uiState = uiState.copy(reportYear = digitsOnly(value, 4))
+        updateReportParams {
+            copy(reportYear = digitsOnly(value, 4))
+        }
     }
 
     fun onReportWeekChange(value: String) {
-        uiState = uiState.copy(reportWeek = digitsOnly(value, 6))
+        updateReportParams {
+            copy(reportWeek = digitsOnly(value, 6))
+        }
     }
 
     fun onReportRecentDaysChange(value: String) {
-        uiState = uiState.copy(reportRecentDays = value.filter { it.isDigit() })
+        updateReportParams {
+            copy(reportRecentDays = value.filter { it.isDigit() })
+        }
     }
 
     fun onResultDisplayModeChange(mode: ReportResultDisplayMode) {
@@ -75,37 +91,16 @@ class QueryReportViewModel(
         }
     }
 
-    fun onChartDateInputModeChange(mode: ChartDateInputMode) {
-        uiState = uiState.copy(chartDateInputMode = mode)
-    }
-
-    fun onChartLookbackDaysChange(value: String) {
-        uiState = uiState.copy(
-            chartDateInputMode = ChartDateInputMode.LOOKBACK,
-            chartLookbackDays = value.filter { it.isDigit() }.take(3)
-        )
-    }
-
-    fun onChartRangeStartDateChange(value: String) {
-        uiState = uiState.copy(
-            chartDateInputMode = ChartDateInputMode.RANGE,
-            chartRangeStartDate = digitsOnly(value, 8)
-        )
-    }
-
-    fun onChartRangeEndDateChange(value: String) {
-        uiState = uiState.copy(
-            chartDateInputMode = ChartDateInputMode.RANGE,
-            chartRangeEndDate = digitsOnly(value, 8)
-        )
-    }
-
     fun onReportRangeStartDateChange(value: String) {
-        uiState = uiState.copy(reportRangeStartDate = digitsOnly(value, 8))
+        updateReportParams {
+            copy(reportRangeStartDate = digitsOnly(value, 8))
+        }
     }
 
     fun onReportRangeEndDateChange(value: String) {
-        uiState = uiState.copy(reportRangeEndDate = digitsOnly(value, 8))
+        updateReportParams {
+            copy(reportRangeEndDate = digitsOnly(value, 8))
+        }
     }
 
     fun reportDay() {
@@ -146,6 +141,34 @@ class QueryReportViewModel(
     fun loadChart() {
         dispatchIntent(QueryReportIntent.LoadChart)
     }
+
+    private fun updateReportParams(
+        transform: QueryReportUiState.() -> QueryReportUiState
+    ) {
+        val nextState = uiState.transform().invalidateChartState()
+        val shouldReloadChart = nextState.resultDisplayMode == ReportResultDisplayMode.CHART &&
+            !nextState.chartLoading
+        uiState = nextState
+        // Report parameters define the chart query window, so any parameter change must
+        // invalidate the current chart instead of leaving a stale series on screen.
+        if (shouldReloadChart) {
+            loadChart()
+        }
+    }
+
+    private fun QueryReportUiState.invalidateChartState(): QueryReportUiState = copy(
+        chartRoots = emptyList(),
+        chartRenderModel = null,
+        chartLastTrace = null,
+        chartPoints = emptyList(),
+        chartAverageDurationSeconds = null,
+        chartTotalDurationSeconds = null,
+        chartActiveDays = null,
+        chartRangeDays = null,
+        chartUsesLegacyStatsFallback = false,
+        chartLoading = false,
+        chartError = ""
+    )
 
     private fun dispatchIntent(intent: QueryReportIntent) {
         viewModelScope.launch {

@@ -6,15 +6,28 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.example.tracer.feature.uicommon.R
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.YearMonth
 
 private val SegmentYearWidth: Dp = 108.dp
 private val SegmentShortWidth: Dp = 68.dp
@@ -29,8 +42,16 @@ fun SegmentedDateInput(
     keyboardOptions: KeyboardOptions,
     onYearChange: (String) -> Unit,
     onMonthChange: (String) -> Unit,
-    onDayChange: (String) -> Unit
+    onDayChange: (String) -> Unit,
+    dayPickerEnabled: Boolean = false,
+    dayPickerDisplayMonth: YearMonth? = null,
+    dayPickerSelectedDate: LocalDate? = null,
+    dayPickerOpenEnabled: Boolean = true,
+    dayPickerAllowAdjacentMonthSelection: Boolean = true,
+    onDayPicked: ((LocalDate) -> Unit)? = null
 ) {
+    var dayPickerVisible by remember { mutableStateOf(false) }
+
     Text(
         text = "$title (YYYY-MM-DD)",
         style = MaterialTheme.typography.bodyMedium,
@@ -63,6 +84,32 @@ fun SegmentedDateInput(
             keyboardOptions = keyboardOptions,
             width = SegmentShortWidth,
             placeholder = "DD"
+        )
+        if (dayPickerEnabled) {
+            IconButton(
+                onClick = { dayPickerVisible = true },
+                enabled = dayPickerOpenEnabled && dayPickerDisplayMonth != null && onDayPicked != null
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.DateRange,
+                    contentDescription = stringResource(R.string.calendar_cd_select_day)
+                )
+            }
+        }
+    }
+
+    if (
+        dayPickerVisible &&
+        dayPickerDisplayMonth != null &&
+        onDayPicked != null
+    ) {
+        CalendarDatePickerSheet(
+            displayMonth = dayPickerDisplayMonth,
+            selectedDate = dayPickerSelectedDate,
+            onDateSelected = onDayPicked,
+            onDismissRequest = { dayPickerVisible = false },
+            allowAdjacentMonthSelection = dayPickerAllowAdjacentMonthSelection,
+            firstDayOfWeek = DayOfWeek.MONDAY
         )
     }
 }

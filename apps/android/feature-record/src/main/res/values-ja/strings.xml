@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="txt_hint_invalid_day_marker">日付マーカーが無効です。MMDD 形式を使用してください（例: 0214）。</string>
-    <string name="txt_hint_day_edit_enabled">DAY 編集が有効です。保存すると月次 TXT 内の当日ブロックを置き換えます。</string>
-    <string name="txt_hint_day_not_found">現在の月次 TXT に日付 %1$s が見つかりません。DAY モードは既存ブロックのみ編集できます。</string>
     <string name="txt_label_editor_file">エディタ: %1$s</string>
     <string name="txt_mode_all">ALL</string>
     <string name="txt_mode_day">DAY</string>
-    <string name="txt_label_target_day">対象日 (MMDD)</string>
+    <string name="txt_label_target_day">対象日</string>
+    <string name="txt_label_target_day_with_year">対象日 (%1$s)</string>
     <string name="txt_action_hide_content">内容を隠す</string>
     <string name="txt_action_show_content">内容を表示</string>
     <string name="txt_label_content">内容</string>
@@ -16,6 +14,8 @@
     <string name="txt_cd_ingest">取り込み</string>
     <string name="txt_cd_prev_month">前月</string>
     <string name="txt_cd_next_month">翌月</string>
+    <string name="txt_cd_prev_day">前日</string>
+    <string name="txt_cd_next_day">翌日</string>
     <string name="txt_label_select_file">ファイル選択</string>
     <string name="txt_action_refresh_list">一覧を更新</string>
     <string name="txt_sheet_select_year_month">年と月を選択</string>
@@ -29,6 +29,14 @@
     <string name="txt_picker_no_months">月がありません</string>
     <string name="txt_picker_open_year_month">%1$s-%2$s を開く</string>
     <string name="txt_picker_field_value">%1$s: %2$s</string>
+    <string name="txt_label_current_day_unselected">未選択</string>
+    <string name="txt_weekday_sun">日</string>
+    <string name="txt_weekday_mon">月</string>
+    <string name="txt_weekday_tue">火</string>
+    <string name="txt_weekday_wed">水</string>
+    <string name="txt_weekday_thu">木</string>
+    <string name="txt_weekday_fri">金</string>
+    <string name="txt_weekday_sat">土</string>
 
     <string name="txt_empty_state_title">TXT ファイルがありません</string>
     <string name="txt_empty_state_description">当月ファイルを作成して活動の記録を開始しましょう。Record タブが毎日のエントリを自動的に作成します。</string>

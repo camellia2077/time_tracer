@@ -292,23 +292,15 @@ private class FakeTracerScreenServices(
         message = "ok"
     )
 
-    override suspend fun reportDayMarkdown(date: String): ReportCallResult =
-        dayReportResult
-
-    override suspend fun reportMonthMarkdown(month: String): ReportCallResult =
-        monthReportResult
-
-    override suspend fun reportYearMarkdown(year: String): ReportCallResult =
-        yearReportResult
-
-    override suspend fun reportWeekMarkdown(week: String): ReportCallResult =
-        weekReportResult
-
-    override suspend fun reportRecentMarkdown(days: String): ReportCallResult =
-        recentReportResult
-
-    override suspend fun reportRange(startDate: String, endDate: String): ReportCallResult =
-        rangeReportResult
+    override suspend fun reportMarkdown(request: TemporalReportQueryRequest): ReportCallResult =
+        when (request.displayMode) {
+            ReportDisplayMode.DAY -> dayReportResult
+            ReportDisplayMode.MONTH -> monthReportResult
+            ReportDisplayMode.YEAR -> yearReportResult
+            ReportDisplayMode.WEEK -> weekReportResult
+            ReportDisplayMode.RECENT -> recentReportResult
+            ReportDisplayMode.RANGE -> rangeReportResult
+        }
 
     override suspend fun queryActivitySuggestions(
         lookbackDays: Int,

@@ -8,65 +8,25 @@ internal class RuntimeReportDelegate(
         operationName: String,
         action: (RuntimePaths) -> String
     ) -> ReportCallResult,
-    private val nativeReportSingle: (
-        reportType: Int,
-        argument: String
-    ) -> String
+    private val nativeReportJson: (String) -> String,
+    private val requestCodec: TemporalReportRequestJsonCodec = TemporalReportRequestJsonCodec()
 ) {
-    suspend fun reportDayMarkdown(date: String): ReportCallResult =
-        runMarkdownReportFlow(
-            reportType = NativeBridge.REPORT_TYPE_DAY,
-            argument = date
-        )
-
-    suspend fun reportMonthMarkdown(month: String): ReportCallResult =
-        runMarkdownReportFlow(
-            reportType = NativeBridge.REPORT_TYPE_MONTH,
-            argument = month
-        )
-
-    suspend fun reportYearMarkdown(year: String): ReportCallResult =
-        runMarkdownReportFlow(
-            reportType = NativeBridge.REPORT_TYPE_YEAR,
-            argument = year
-        )
-
-    suspend fun reportWeekMarkdown(week: String): ReportCallResult =
-        runMarkdownReportFlow(
-            reportType = NativeBridge.REPORT_TYPE_WEEK,
-            argument = week
-        )
-
-    suspend fun reportRecentMarkdown(days: String): ReportCallResult =
-        runMarkdownReportFlow(
-            reportType = NativeBridge.REPORT_TYPE_RECENT,
-            argument = days
-        )
-
-    suspend fun reportRange(startDate: String, endDate: String): ReportCallResult =
-        runMarkdownReportFlow(
-            reportType = NativeBridge.REPORT_TYPE_RANGE,
-            argument = "$startDate|$endDate"
-        )
-
-    private suspend fun runMarkdownReportFlow(
-        reportType: Int,
-        argument: String
-    ): ReportCallResult = withContext(Dispatchers.IO) {
-        executeReportAfterInit(buildReportOperationName(reportType)) {
-            nativeReportSingle(reportType, argument)
+    suspend fun reportMarkdown(request: TemporalReportQueryRequest): ReportCallResult =
+        withContext(Dispatchers.IO) {
+            val requestJson = requestCodec.encodeQuery(request)
+            executeReportAfterInit(buildReportOperationName(request.displayMode)) {
+                nativeReportJson(requestJson)
+            }
         }
-    }
 
-    private fun buildReportOperationName(reportType: Int): String {
-        val suffix = when (reportType) {
-            NativeBridge.REPORT_TYPE_DAY -> "day"
-            NativeBridge.REPORT_TYPE_MONTH -> "month"
-            NativeBridge.REPORT_TYPE_YEAR -> "year"
-            NativeBridge.REPORT_TYPE_WEEK -> "week"
-            NativeBridge.REPORT_TYPE_RECENT -> "recent"
-            NativeBridge.REPORT_TYPE_RANGE -> "range"
-            else -> "unknown"
+    private fun buildReportOperationName(displayMode: ReportDisplayMode): String {
+        val suffix = when (displayMode) {
+            ReportDisplayMode.DAY -> "day"
+            ReportDisplayMode.MONTH -> "month"
+            ReportDisplayMode.YEAR -> "year"
+            ReportDisplayMode.WEEK -> "week"
+            ReportDisplayMode.RECENT -> "recent"
+            ReportDisplayMode.RANGE -> "range"
         }
         return "native_report_$suffix"
     }

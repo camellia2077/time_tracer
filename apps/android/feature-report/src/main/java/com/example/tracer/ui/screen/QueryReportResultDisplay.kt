@@ -23,10 +23,7 @@ internal fun QueryReportResultDisplay(
     analysisError: String,
     chartRoots: List<String>,
     chartSelectedRoot: String,
-    chartDateInputMode: ChartDateInputMode,
-    chartLookbackDays: String,
-    chartRangeStartDate: String,
-    chartRangeEndDate: String,
+    reportMode: ReportMode,
     chartLoading: Boolean,
     chartError: String,
     chartRenderModel: ChartRenderModel?,
@@ -39,10 +36,6 @@ internal fun QueryReportResultDisplay(
     heatmapApplyMessage: String,
     isAppDarkThemeActive: Boolean,
     onChartRootChange: (String) -> Unit,
-    onChartDateInputModeChange: (ChartDateInputMode) -> Unit,
-    onChartLookbackDaysChange: (String) -> Unit,
-    onChartRangeStartDateChange: (String) -> Unit,
-    onChartRangeEndDateChange: (String) -> Unit,
     onChartShowAverageLineChange: (Boolean) -> Unit,
     onLoadChart: () -> Unit
 ) {
@@ -60,10 +53,7 @@ internal fun QueryReportResultDisplay(
                 ReportChartResultContent(
                     chartRoots = chartRoots,
                     chartSelectedRoot = chartSelectedRoot,
-                    chartDateInputMode = chartDateInputMode,
-                    chartLookbackDays = chartLookbackDays,
-                    chartRangeStartDate = chartRangeStartDate,
-                    chartRangeEndDate = chartRangeEndDate,
+                    reportMode = reportMode,
                     chartLoading = chartLoading,
                     chartError = chartError,
                     chartRenderModel = chartRenderModel,
@@ -76,10 +66,6 @@ internal fun QueryReportResultDisplay(
                     heatmapApplyMessage = heatmapApplyMessage,
                     isAppDarkThemeActive = isAppDarkThemeActive,
                     onChartRootChange = onChartRootChange,
-                    onChartDateInputModeChange = onChartDateInputModeChange,
-                    onChartLookbackDaysChange = onChartLookbackDaysChange,
-                    onChartRangeStartDateChange = onChartRangeStartDateChange,
-                    onChartRangeEndDateChange = onChartRangeEndDateChange,
                     onChartShowAverageLineChange = onChartShowAverageLineChange,
                     onLoadChart = onLoadChart
                 )

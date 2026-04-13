@@ -20,10 +20,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.report.R
 
-internal enum class ReportMode {
+enum class ReportMode {
     DAY,
-    MONTH,
     WEEK,
+    MONTH,
     YEAR,
     RANGE,
     RECENT
@@ -37,6 +37,7 @@ internal fun QueryReportSection(
     onReportDateChange: (String) -> Unit,
     reportMonth: String,
     onReportMonthChange: (String) -> Unit,
+    availableTxtYears: List<String>,
     reportYear: String,
     onReportYearChange: (String) -> Unit,
     reportWeek: String,
@@ -86,57 +87,57 @@ internal fun QueryReportSection(
         )
         Spacer(modifier = Modifier.height(4.dp))
 
-        if (resultDisplayMode == ReportResultDisplayMode.TEXT) {
-            QueryReportParameterCards(
-                reportMode = reportMode,
-                analysisPeriod = analysisPeriod,
-                reportExpanded = reportExpanded,
-                statsExpanded = statsExpanded,
-                treeExpanded = treeExpanded,
-                treeLevel = treeLevel,
-                keyboardOptions = numericKeyboardOptions,
-                reportDate = reportDate,
-                onReportDateChange = onReportDateChange,
-                reportMonth = reportMonth,
-                onReportMonthChange = onReportMonthChange,
-                reportYear = reportYear,
-                onReportYearChange = onReportYearChange,
-                reportWeek = reportWeek,
-                onReportWeekChange = onReportWeekChange,
-                reportRangeStartDate = reportRangeStartDate,
-                onReportRangeStartDateChange = onReportRangeStartDateChange,
-                reportRangeEndDate = reportRangeEndDate,
-                onReportRangeEndDateChange = onReportRangeEndDateChange,
-                reportRecentDays = reportRecentDays,
-                onReportRecentDaysChange = onReportRecentDaysChange,
-                analysisLoading = analysisLoading,
-                onReportExpandedChange = { reportExpanded = it },
-                onStatsExpandedChange = { statsExpanded = it },
-                onTreeExpandedChange = { treeExpanded = it },
-                onTreeLevelChange = { treeLevel = normalizeSignedIntInput(it, 3) },
-                onRunReport = {
-                    runReportForMode(
-                        reportMode = reportMode,
-                        onReportDay = onReportDay,
-                        onReportMonth = onReportMonth,
-                        onReportWeek = onReportWeek,
-                        onReportYear = onReportYear,
-                        onReportRange = onReportRange,
-                        onReportRecent = onReportRecent
-                    )
-                    reportExpanded = false
-                },
-                onLoadStats = {
-                    onLoadDayStats(analysisPeriod)
-                    statsExpanded = false
-                },
-                onLoadTree = {
-                    val parsedLevel = treeLevel.trim().toIntOrNull() ?: -1
-                    onLoadTree(analysisPeriod, parsedLevel)
-                    treeExpanded = false
-                }
-            )
-        }
+        QueryReportParameterCards(
+            reportMode = reportMode,
+            resultDisplayMode = resultDisplayMode,
+            analysisPeriod = analysisPeriod,
+            reportExpanded = reportExpanded,
+            statsExpanded = statsExpanded,
+            treeExpanded = treeExpanded,
+            treeLevel = treeLevel,
+            keyboardOptions = numericKeyboardOptions,
+            reportDate = reportDate,
+            onReportDateChange = onReportDateChange,
+            reportMonth = reportMonth,
+            onReportMonthChange = onReportMonthChange,
+            availableTxtYears = availableTxtYears,
+            reportYear = reportYear,
+            onReportYearChange = onReportYearChange,
+            reportWeek = reportWeek,
+            onReportWeekChange = onReportWeekChange,
+            reportRangeStartDate = reportRangeStartDate,
+            onReportRangeStartDateChange = onReportRangeStartDateChange,
+            reportRangeEndDate = reportRangeEndDate,
+            onReportRangeEndDateChange = onReportRangeEndDateChange,
+            reportRecentDays = reportRecentDays,
+            onReportRecentDaysChange = onReportRecentDaysChange,
+            analysisLoading = analysisLoading,
+            onReportExpandedChange = { reportExpanded = it },
+            onStatsExpandedChange = { statsExpanded = it },
+            onTreeExpandedChange = { treeExpanded = it },
+            onTreeLevelChange = { treeLevel = normalizeSignedIntInput(it, 3) },
+            onRunReport = {
+                runReportForMode(
+                    reportMode = reportMode,
+                    onReportDay = onReportDay,
+                    onReportMonth = onReportMonth,
+                    onReportWeek = onReportWeek,
+                    onReportYear = onReportYear,
+                    onReportRange = onReportRange,
+                    onReportRecent = onReportRecent
+                )
+                reportExpanded = false
+            },
+            onLoadStats = {
+                onLoadDayStats(analysisPeriod)
+                statsExpanded = false
+            },
+            onLoadTree = {
+                val parsedLevel = treeLevel.trim().toIntOrNull() ?: -1
+                onLoadTree(analysisPeriod, parsedLevel)
+                treeExpanded = false
+            }
+        )
     }
 }
 
@@ -187,11 +188,11 @@ private fun runReportForMode(
     }
 }
 
-private fun ReportMode.toDataTreePeriod(): DataTreePeriod =
+internal fun ReportMode.toDataTreePeriod(): DataTreePeriod =
     when (this) {
         ReportMode.DAY -> DataTreePeriod.DAY
-        ReportMode.MONTH -> DataTreePeriod.MONTH
         ReportMode.WEEK -> DataTreePeriod.WEEK
+        ReportMode.MONTH -> DataTreePeriod.MONTH
         ReportMode.YEAR -> DataTreePeriod.YEAR
         ReportMode.RANGE -> DataTreePeriod.RANGE
         ReportMode.RECENT -> DataTreePeriod.RECENT

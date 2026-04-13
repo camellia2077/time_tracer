@@ -2,7 +2,6 @@ package com.example.tracer
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
@@ -23,30 +22,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import com.example.tracer.feature.report.R
-import com.example.tracer.ui.components.SegmentedDateInput
 import com.example.tracer.ui.components.TracerOutlinedTextFieldDefaults
-import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
-import com.example.tracer.ui.components.mergeDateDigits
-import com.example.tracer.ui.components.splitDateDigits
 
 @Composable
 internal fun ReportChartParameterSection(
     rootOptions: List<String>,
     chartSelectedRoot: String,
-    chartDateInputMode: ChartDateInputMode,
-    chartLookbackDays: String,
-    chartRangeStartDate: String,
-    chartRangeEndDate: String,
     chartLoading: Boolean,
     chartLastTrace: ChartQueryTrace?,
     onChartRootChange: (String) -> Unit,
-    onChartDateInputModeChange: (ChartDateInputMode) -> Unit,
-    onChartLookbackDaysChange: (String) -> Unit,
-    onChartRangeStartDateChange: (String) -> Unit,
-    onChartRangeEndDateChange: (String) -> Unit,
     onLoadChart: () -> Unit
 ) {
     var rootMenuExpanded by remember { mutableStateOf(false) }
@@ -93,92 +78,6 @@ internal fun ReportChartParameterSection(
         }
     }
 
-    val dateModes = ChartDateInputMode.entries
-    Text(
-        text = stringResource(R.string.report_label_chart_date_filter_mode),
-        style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant
-    )
-    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-        dateModes.forEachIndexed { index, mode ->
-            val selected = chartDateInputMode == mode
-            SegmentedButton(
-                shape = SegmentedButtonDefaults.itemShape(
-                    index = index,
-                    count = dateModes.size
-                ),
-                onClick = { onChartDateInputModeChange(mode) },
-                selected = selected,
-                colors = TracerSegmentedButtonDefaults.colors(),
-                label = {
-                    Text(
-                        text = stringResource(mode.labelRes()),
-                        fontWeight = if (selected) {
-                            TracerSegmentedButtonDefaults.activeLabelFontWeight
-                        } else {
-                            TracerSegmentedButtonDefaults.inactiveLabelFontWeight
-                        }
-                    )
-                }
-            )
-        }
-    }
-
-    if (chartDateInputMode == ChartDateInputMode.LOOKBACK) {
-        OutlinedTextField(
-            value = chartLookbackDays,
-            onValueChange = onChartLookbackDaysChange,
-            label = { Text(stringResource(R.string.report_label_chart_lookback_days)) },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            shape = TracerOutlinedTextFieldDefaults.shape,
-            modifier = Modifier.fillMaxWidth()
-        )
-    } else {
-        val numericKeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        val (startYear, startMonth, startDay) = splitDateDigits(chartRangeStartDate)
-        SegmentedDateInput(
-            title = stringResource(R.string.report_label_chart_range_start),
-            year = startYear,
-            month = startMonth,
-            day = startDay,
-            keyboardOptions = numericKeyboardOptions,
-            onYearChange = { nextYear ->
-                onChartRangeStartDateChange(
-                    mergeDateDigits(nextYear, startMonth, startDay)
-                )
-            },
-            onMonthChange = { nextMonth ->
-                onChartRangeStartDateChange(
-                    mergeDateDigits(startYear, nextMonth, startDay)
-                )
-            },
-            onDayChange = { nextDay ->
-                onChartRangeStartDateChange(
-                    mergeDateDigits(startYear, startMonth, nextDay)
-                )
-            }
-        )
-
-        val (endYear, endMonth, endDay) = splitDateDigits(chartRangeEndDate)
-        SegmentedDateInput(
-            title = stringResource(R.string.report_label_chart_range_end),
-            year = endYear,
-            month = endMonth,
-            day = endDay,
-            keyboardOptions = numericKeyboardOptions,
-            onYearChange = { nextYear ->
-                onChartRangeEndDateChange(mergeDateDigits(nextYear, endMonth, endDay))
-            },
-            onMonthChange = { nextMonth ->
-                onChartRangeEndDateChange(mergeDateDigits(endYear, nextMonth, endDay))
-            },
-            onDayChange = { nextDay ->
-                onChartRangeEndDateChange(mergeDateDigits(endYear, endMonth, nextDay))
-            }
-        )
-    }
-
     Button(
         onClick = onLoadChart,
         enabled = !chartLoading,
@@ -204,9 +103,3 @@ internal fun ReportChartParameterSection(
         )
     }
 }
-
-private fun ChartDateInputMode.labelRes(): Int =
-    when (this) {
-        ChartDateInputMode.LOOKBACK -> R.string.report_chart_date_mode_lookback
-        ChartDateInputMode.RANGE -> R.string.report_chart_date_mode_range
-    }

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="calendar_cd_select_day">日付を選択</string>
+    <string name="calendar_weekday_short_mon">月</string>
+    <string name="calendar_weekday_short_tue">火</string>
+    <string name="calendar_weekday_short_wed">水</string>
+    <string name="calendar_weekday_short_thu">木</string>
+    <string name="calendar_weekday_short_fri">金</string>
+    <string name="calendar_weekday_short_sat">土</string>
+    <string name="calendar_weekday_short_sun">日</string>
+</resources>

@@ -158,6 +158,7 @@ internal object TracerTabRegistry {
                 QueryReportTabContent(
                     queryUiState = args.queryUiState,
                     queryReportViewModel = args.queryReportViewModel,
+                    availableTxtMonths = args.recordUiState.availableMonths,
                     chartShowAverageLine = args.reportChartShowAverageLine,
                     onChartShowAverageLineChange = args.onReportChartShowAverageLineChange,
                     heatmapTomlConfig = args.reportHeatmapTomlConfig,

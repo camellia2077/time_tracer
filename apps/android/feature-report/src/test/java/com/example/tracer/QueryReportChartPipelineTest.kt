@@ -18,8 +18,8 @@ class QueryReportChartPipelineTest {
 
         val result = useCase.execute(
             currentState = QueryReportUiState(
-                chartDateInputMode = ChartDateInputMode.LOOKBACK,
-                chartLookbackDays = "0"
+                reportMode = ReportMode.RECENT,
+                reportRecentDays = "0"
             ),
             emit = {}
         )
@@ -45,8 +45,8 @@ class QueryReportChartPipelineTest {
         )
         val inputState = QueryReportUiState(
             chartSelectedRoot = "study",
-            chartLookbackDays = "7",
-            chartDateInputMode = ChartDateInputMode.LOOKBACK
+            reportMode = ReportMode.RECENT,
+            reportRecentDays = "7"
         )
 
         val first = useCase.execute(
@@ -65,6 +65,30 @@ class QueryReportChartPipelineTest {
         assertEquals(true, second.chartLastTrace?.cacheHit)
         assertTrue(second.statusText.contains("cache=true"))
         assertEquals(2, second.chartRenderModel?.points?.size)
+    }
+
+    @Test
+    fun execute_withMonthMode_mapsToInclusiveDateRange() = runTest {
+        val gateway = FakePipelineQueryGateway()
+        val useCase = QueryReportChartUseCase(
+            queryGateway = gateway,
+            inputValidator = QueryInputValidator(),
+            textProvider = DefaultQueryReportTextProvider
+        )
+
+        val result = useCase.execute(
+            currentState = QueryReportUiState(
+                reportMode = ReportMode.MONTH,
+                reportMonth = "202602"
+            ),
+            emit = {}
+        )
+
+        assertEquals(1, gateway.chartQueryCount)
+        assertEquals("2026-02-01", gateway.lastChartParams?.fromDateIso)
+        assertEquals("2026-02-28", gateway.lastChartParams?.toDateIso)
+        assertEquals(28, gateway.lastChartParams?.lookbackDays)
+        assertTrue(result.chartError.isEmpty())
     }
 
     @Test
@@ -97,6 +121,7 @@ class QueryReportChartPipelineTest {
 
 private class FakePipelineQueryGateway : QueryGateway {
     var chartQueryCount: Int = 0
+    var lastChartParams: ReportChartQueryParams? = null
 
     override suspend fun queryActivitySuggestions(
         lookbackDays: Int,
@@ -121,6 +146,7 @@ private class FakePipelineQueryGateway : QueryGateway {
 
     override suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult {
         chartQueryCount += 1
+        lastChartParams = params
         return ReportChartQueryResult(
             ok = true,
             data = ReportChartData(

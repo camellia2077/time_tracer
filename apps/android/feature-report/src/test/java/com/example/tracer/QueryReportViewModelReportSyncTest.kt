@@ -4,6 +4,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -142,6 +143,26 @@ class QueryReportViewModelReportSyncTest {
                 ReportSummary.WindowMetadata
         )
     }
+
+    @Test
+    fun reportMonth_usesTemporalQueryRequestWithDateRangeSelection() = runTest {
+        val fakeReportGateway = FakeStructuredReportGateway()
+        val viewModel = QueryReportViewModel(
+            reportGateway = fakeReportGateway,
+            queryGateway = FakeReportSyncQueryGateway()
+        )
+
+        viewModel.onReportMonthChange("202602")
+        viewModel.reportMonth()
+        advanceUntilIdle()
+
+        val request = fakeReportGateway.lastTemporalRequest
+        assertNotNull(request)
+        assertEquals(ReportDisplayMode.MONTH, request?.displayMode)
+        assertEquals(TemporalSelectionKind.DATE_RANGE, request?.selection?.kind)
+        assertEquals("2026-02-01", request?.selection?.startDate)
+        assertEquals("2026-02-28", request?.selection?.endDate)
+    }
 }
 
 private class FakeStructuredReportGateway : ReportGateway {
@@ -151,13 +172,19 @@ private class FakeStructuredReportGateway : ReportGateway {
     var weekResult: ReportCallResult = successResult()
     var recentResult: ReportCallResult = successResult()
     var rangeResult: ReportCallResult = successResult()
+    var lastTemporalRequest: TemporalReportQueryRequest? = null
 
-    override suspend fun reportDayMarkdown(date: String): ReportCallResult = dayResult
-    override suspend fun reportMonthMarkdown(month: String): ReportCallResult = monthResult
-    override suspend fun reportYearMarkdown(year: String): ReportCallResult = yearResult
-    override suspend fun reportWeekMarkdown(week: String): ReportCallResult = weekResult
-    override suspend fun reportRecentMarkdown(days: String): ReportCallResult = recentResult
-    override suspend fun reportRange(startDate: String, endDate: String): ReportCallResult = rangeResult
+    override suspend fun reportMarkdown(request: TemporalReportQueryRequest): ReportCallResult {
+        lastTemporalRequest = request
+        return when (request.displayMode) {
+            ReportDisplayMode.DAY -> dayResult
+            ReportDisplayMode.MONTH -> monthResult
+            ReportDisplayMode.YEAR -> yearResult
+            ReportDisplayMode.WEEK -> weekResult
+            ReportDisplayMode.RECENT -> recentResult
+            ReportDisplayMode.RANGE -> rangeResult
+        }
+    }
 
     private fun successResult(): ReportCallResult = ReportCallResult(
         initialized = true,

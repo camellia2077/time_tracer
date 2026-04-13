@@ -24,13 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.report.R
-import com.example.tracer.ui.components.SegmentedDateInput
-import com.example.tracer.ui.components.SegmentedYearWeekInput
 import com.example.tracer.ui.components.TracerOutlinedTextFieldDefaults
-import com.example.tracer.ui.components.mergeDateDigits
-import com.example.tracer.ui.components.mergeYearWeekDigits
-import com.example.tracer.ui.components.splitDateDigits
-import com.example.tracer.ui.components.splitYearWeekDigits
 
 @Composable
 internal fun SegmentedAnalysisPeriodInputs(
@@ -41,6 +35,7 @@ internal fun SegmentedAnalysisPeriodInputs(
     onReportDateChange: (String) -> Unit,
     reportMonth: String,
     onReportMonthChange: (String) -> Unit,
+    availableTxtYears: List<String>,
     reportYear: String,
     onReportYearChange: (String) -> Unit,
     reportWeek: String,
@@ -52,119 +47,34 @@ internal fun SegmentedAnalysisPeriodInputs(
     reportRecentDays: String,
     onReportRecentDaysChange: (String) -> Unit
 ) {
-    when (period) {
-        DataTreePeriod.DAY -> {
-            val (year, month, day) = splitDateDigits(reportDate)
-            SegmentedDateInput(
-                title = stringResource(R.string.report_title_section_day, section),
-                year = year,
-                month = month,
-                day = day,
-                keyboardOptions = keyboardOptions,
-                onYearChange = { nextYear ->
-                    onReportDateChange(mergeDateDigits(nextYear, month, day))
-                },
-                onMonthChange = { nextMonth ->
-                    onReportDateChange(mergeDateDigits(year, nextMonth, day))
-                },
-                onDayChange = { nextDay ->
-                    onReportDateChange(mergeDateDigits(year, month, nextDay))
-                }
-            )
-        }
-
-        DataTreePeriod.MONTH -> {
-            QueryYearMonthDropdownInput(
-                title = stringResource(R.string.report_title_section_month, section),
-                reportMonth = reportMonth,
-                onReportMonthChange = onReportMonthChange
-            )
-        }
-
-        DataTreePeriod.WEEK -> {
-            val (year, week) = splitYearWeekDigits(reportWeek)
-            SegmentedYearWeekInput(
-                title = stringResource(R.string.report_title_section_week, section),
-                year = year,
-                week = week,
-                keyboardOptions = keyboardOptions,
-                onYearChange = { nextYear ->
-                    onReportWeekChange(mergeYearWeekDigits(nextYear, week))
-                },
-                onWeekChange = { nextWeek ->
-                    onReportWeekChange(mergeYearWeekDigits(year, nextWeek))
-                }
-            )
-        }
-
-        DataTreePeriod.YEAR -> {
-            OutlinedTextField(
-                value = reportYear,
-                onValueChange = onReportYearChange,
-                label = { Text(stringResource(R.string.report_label_section_year, section)) },
-                singleLine = true,
-                keyboardOptions = keyboardOptions,
-                shape = TracerOutlinedTextFieldDefaults.shape,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-
-        DataTreePeriod.RANGE -> {
-            val (startYear, startMonth, startDay) = splitDateDigits(reportRangeStartDate)
-            SegmentedDateInput(
-                title = stringResource(R.string.report_title_section_start_date, section),
-                year = startYear,
-                month = startMonth,
-                day = startDay,
-                keyboardOptions = keyboardOptions,
-                onYearChange = { nextYear ->
-                    onReportRangeStartDateChange(
-                        mergeDateDigits(nextYear, startMonth, startDay)
-                    )
-                },
-                onMonthChange = { nextMonth ->
-                    onReportRangeStartDateChange(
-                        mergeDateDigits(startYear, nextMonth, startDay)
-                    )
-                },
-                onDayChange = { nextDay ->
-                    onReportRangeStartDateChange(
-                        mergeDateDigits(startYear, startMonth, nextDay)
-                    )
-                }
-            )
-
-            val (endYear, endMonth, endDay) = splitDateDigits(reportRangeEndDate)
-            SegmentedDateInput(
-                title = stringResource(R.string.report_title_section_end_date, section),
-                year = endYear,
-                month = endMonth,
-                day = endDay,
-                keyboardOptions = keyboardOptions,
-                onYearChange = { nextYear ->
-                    onReportRangeEndDateChange(mergeDateDigits(nextYear, endMonth, endDay))
-                },
-                onMonthChange = { nextMonth ->
-                    onReportRangeEndDateChange(mergeDateDigits(endYear, nextMonth, endDay))
-                },
-                onDayChange = { nextDay ->
-                    onReportRangeEndDateChange(mergeDateDigits(endYear, endMonth, nextDay))
-                }
-            )
-        }
-
-        DataTreePeriod.RECENT -> {
-            OutlinedTextField(
-                value = reportRecentDays,
-                onValueChange = onReportRecentDaysChange,
-                label = { Text(stringResource(R.string.report_label_section_recent_days, section)) },
-                singleLine = true,
-                keyboardOptions = keyboardOptions,
-                shape = TracerOutlinedTextFieldDefaults.shape,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-    }
+    ReportTemporalInputFields(
+        period = period,
+        labels = TemporalInputLabels(
+            dayTitle = stringResource(R.string.report_title_section_day, section),
+            monthTitle = stringResource(R.string.report_title_section_month, section),
+            weekTitle = stringResource(R.string.report_title_section_week, section),
+            yearLabel = stringResource(R.string.report_label_section_year, section),
+            rangeStartTitle = stringResource(R.string.report_title_section_start_date, section),
+            rangeEndTitle = stringResource(R.string.report_title_section_end_date, section),
+            recentDaysLabel = stringResource(R.string.report_label_section_recent_days, section)
+        ),
+        keyboardOptions = keyboardOptions,
+        reportDate = reportDate,
+        onReportDateChange = onReportDateChange,
+        reportMonth = reportMonth,
+        onReportMonthChange = onReportMonthChange,
+        availableTxtYears = availableTxtYears,
+        reportYear = reportYear,
+        onReportYearChange = onReportYearChange,
+        reportWeek = reportWeek,
+        onReportWeekChange = onReportWeekChange,
+        reportRangeStartDate = reportRangeStartDate,
+        onReportRangeStartDateChange = onReportRangeStartDateChange,
+        reportRangeEndDate = reportRangeEndDate,
+        onReportRangeEndDateChange = onReportRangeEndDateChange,
+        reportRecentDays = reportRecentDays,
+        onReportRecentDaysChange = onReportRecentDaysChange
+    )
 }
 
 @Composable

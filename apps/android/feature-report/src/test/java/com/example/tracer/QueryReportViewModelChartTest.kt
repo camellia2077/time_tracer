@@ -15,7 +15,7 @@ class QueryReportViewModelChartTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     @Test
-    fun switchToChart_autoLoads_withCurrentRootAndLookback() = runTest {
+    fun switchToChart_autoLoads_withCurrentRootAndRecentMode() = runTest {
         val fakeQueryGateway = FakeChartQueryGateway()
         val viewModel = QueryReportViewModel(
             reportGateway = FakeChartReportGateway(),
@@ -23,7 +23,8 @@ class QueryReportViewModelChartTest {
         )
 
         viewModel.onChartRootChange("study")
-        viewModel.onChartLookbackDaysChange("14")
+        viewModel.onReportModeChange(ReportMode.RECENT)
+        viewModel.onReportRecentDaysChange("14")
         viewModel.onResultDisplayModeChange(ReportResultDisplayMode.CHART)
         advanceUntilIdle()
 
@@ -39,7 +40,6 @@ class QueryReportViewModelChartTest {
         assertTrue(state.chartError.isEmpty())
         assertEquals(listOf("sleep", "study"), state.chartRoots)
         assertEquals("study", state.chartSelectedRoot)
-        assertEquals("14", state.chartLookbackDays)
         assertEquals(2, state.chartPoints.size)
         assertEquals("2026-02-13", state.chartPoints[0].date)
         assertEquals(4500L, state.chartAverageDurationSeconds)
@@ -50,14 +50,15 @@ class QueryReportViewModelChartTest {
     }
 
     @Test
-    fun switchToChart_invalidLookback_doesNotQueryGateway() = runTest {
+    fun switchToChart_invalidRecentDays_doesNotQueryGateway() = runTest {
         val fakeQueryGateway = FakeChartQueryGateway()
         val viewModel = QueryReportViewModel(
             reportGateway = FakeChartReportGateway(),
             queryGateway = fakeQueryGateway
         )
 
-        viewModel.onChartLookbackDaysChange("0")
+        viewModel.onReportModeChange(ReportMode.RECENT)
+        viewModel.onReportRecentDaysChange("0")
         viewModel.onResultDisplayModeChange(ReportResultDisplayMode.CHART)
         advanceUntilIdle()
 
@@ -66,25 +67,105 @@ class QueryReportViewModelChartTest {
     }
 
     @Test
-    fun switchToChart_withRange_usesBackendRangeParams() = runTest {
+    fun switchToChart_withRange_usesSharedRangeParams() = runTest {
         val fakeQueryGateway = FakeChartQueryGateway()
         val viewModel = QueryReportViewModel(
             reportGateway = FakeChartReportGateway(),
             queryGateway = fakeQueryGateway
         )
 
-        viewModel.onChartLookbackDaysChange("0")
-        viewModel.onChartRangeStartDateChange("20260210")
-        viewModel.onChartRangeEndDateChange("20260214")
+        viewModel.onReportModeChange(ReportMode.RANGE)
+        viewModel.onReportRangeStartDateChange("20260210")
+        viewModel.onReportRangeEndDateChange("20260214")
         viewModel.onResultDisplayModeChange(ReportResultDisplayMode.CHART)
         advanceUntilIdle()
 
         assertEquals(1, fakeQueryGateway.chartQueryCount)
         assertEquals("2026-02-10", fakeQueryGateway.lastChartParams?.fromDateIso)
         assertEquals("2026-02-14", fakeQueryGateway.lastChartParams?.toDateIso)
-        assertEquals("20260210", viewModel.uiState.chartRangeStartDate)
-        assertEquals("20260214", viewModel.uiState.chartRangeEndDate)
+        assertEquals("20260210", viewModel.uiState.reportRangeStartDate)
+        assertEquals("20260214", viewModel.uiState.reportRangeEndDate)
         assertTrue(viewModel.uiState.chartError.isEmpty())
+    }
+
+    @Test
+    fun switchToChart_withWeek_usesIsoWeekDateWindow() = runTest {
+        val fakeQueryGateway = FakeChartQueryGateway()
+        val viewModel = QueryReportViewModel(
+            reportGateway = FakeChartReportGateway(),
+            queryGateway = fakeQueryGateway
+        )
+
+        viewModel.onReportModeChange(ReportMode.WEEK)
+        viewModel.onReportWeekChange("202615")
+        viewModel.onResultDisplayModeChange(ReportResultDisplayMode.CHART)
+        advanceUntilIdle()
+
+        assertEquals(1, fakeQueryGateway.chartQueryCount)
+        assertEquals("2026-04-06", fakeQueryGateway.lastChartParams?.fromDateIso)
+        assertEquals("2026-04-12", fakeQueryGateway.lastChartParams?.toDateIso)
+        assertEquals(7, fakeQueryGateway.lastChartParams?.lookbackDays)
+    }
+
+    @Test
+    fun changingReportModeInChartMode_invalidatesAndReloadsChart() = runTest {
+        val fakeQueryGateway = FakeChartQueryGateway()
+        val viewModel = QueryReportViewModel(
+            reportGateway = FakeChartReportGateway(),
+            queryGateway = fakeQueryGateway
+        )
+
+        viewModel.onReportMonthChange("202602")
+        viewModel.onReportModeChange(ReportMode.WEEK)
+        viewModel.onReportWeekChange("202615")
+        viewModel.onResultDisplayModeChange(ReportResultDisplayMode.CHART)
+        advanceUntilIdle()
+
+        assertEquals(1, fakeQueryGateway.chartQueryCount)
+        assertEquals("2026-04-06", fakeQueryGateway.lastChartParams?.fromDateIso)
+        assertEquals("2026-04-12", fakeQueryGateway.lastChartParams?.toDateIso)
+
+        viewModel.onReportModeChange(ReportMode.MONTH)
+        advanceUntilIdle()
+
+        assertEquals(2, fakeQueryGateway.chartQueryCount)
+        assertEquals("2026-02-01", fakeQueryGateway.lastChartParams?.fromDateIso)
+        assertEquals("2026-02-28", fakeQueryGateway.lastChartParams?.toDateIso)
+        assertEquals(28, fakeQueryGateway.lastChartParams?.lookbackDays)
+        assertTrue(viewModel.uiState.chartError.isEmpty())
+    }
+
+    @Test
+    fun changingReportParamsOutsideChart_invalidatesPreviousChartBeforeNextLoad() = runTest {
+        val fakeQueryGateway = FakeChartQueryGateway()
+        val viewModel = QueryReportViewModel(
+            reportGateway = FakeChartReportGateway(),
+            queryGateway = fakeQueryGateway
+        )
+
+        viewModel.onReportModeChange(ReportMode.WEEK)
+        viewModel.onReportWeekChange("202615")
+        viewModel.onResultDisplayModeChange(ReportResultDisplayMode.CHART)
+        advanceUntilIdle()
+        assertEquals(1, fakeQueryGateway.chartQueryCount)
+        assertTrue(viewModel.uiState.chartPoints.isNotEmpty())
+
+        viewModel.onResultDisplayModeChange(ReportResultDisplayMode.TEXT)
+        viewModel.onReportModeChange(ReportMode.DAY)
+        viewModel.onReportDateChange("20260413")
+        advanceUntilIdle()
+
+        assertEquals(1, fakeQueryGateway.chartQueryCount)
+        assertEquals(null, viewModel.uiState.chartRenderModel)
+        assertTrue(viewModel.uiState.chartPoints.isEmpty())
+
+        viewModel.onResultDisplayModeChange(ReportResultDisplayMode.CHART)
+        advanceUntilIdle()
+
+        assertEquals(2, fakeQueryGateway.chartQueryCount)
+        assertEquals("2026-04-13", fakeQueryGateway.lastChartParams?.fromDateIso)
+        assertEquals("2026-04-13", fakeQueryGateway.lastChartParams?.toDateIso)
+        assertEquals(1, fakeQueryGateway.lastChartParams?.lookbackDays)
     }
 
     @Test
@@ -131,28 +212,13 @@ class QueryReportViewModelChartTest {
 }
 
 private class FakeChartReportGateway : ReportGateway {
-    override suspend fun reportDayMarkdown(date: String): ReportCallResult =
+    override suspend fun reportMarkdown(request: TemporalReportQueryRequest): ReportCallResult =
         ReportCallResult(
             initialized = true,
             operationOk = true,
             outputText = "",
             rawResponse = ""
         )
-
-    override suspend fun reportMonthMarkdown(month: String): ReportCallResult =
-        reportDayMarkdown(month)
-
-    override suspend fun reportYearMarkdown(year: String): ReportCallResult =
-        reportDayMarkdown(year)
-
-    override suspend fun reportWeekMarkdown(week: String): ReportCallResult =
-        reportDayMarkdown(week)
-
-    override suspend fun reportRecentMarkdown(days: String): ReportCallResult =
-        reportDayMarkdown(days)
-
-    override suspend fun reportRange(startDate: String, endDate: String): ReportCallResult =
-        reportDayMarkdown("$startDate|$endDate")
 }
 
 private class FakeChartQueryGateway(

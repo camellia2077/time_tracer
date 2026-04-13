@@ -29,6 +29,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.record.R
+import java.time.LocalDate
+import java.time.format.DateTimeParseException
+import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.launch
 
 internal enum class TxtOutputMode {
@@ -59,6 +62,9 @@ fun TxtEditorSection(
         mutableStateOf("0101")
     }
     var autoDayMarkerLoadedKey by remember { mutableStateOf("") }
+    // When day navigation crosses a month boundary, preserve the user's
+    // explicitly chosen target day until the new month TXT finishes opening.
+    var pendingOpenedDay by remember { mutableStateOf<LocalDate?>(null) }
     var isEditorContentVisible by remember(selectedHistoryFile) { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val parsedAvailableMonths = remember(inspectionEntries) {
@@ -100,6 +106,14 @@ fun TxtEditorSection(
     LaunchedEffect(selectedHistoryFile, selectedMonth, logicalDayTarget) {
         if (selectedHistoryFile.isBlank()) {
             autoDayMarkerLoadedKey = ""
+            pendingOpenedDay = null
+            return@LaunchedEffect
+        }
+        val pendingDay = pendingOpenedDay
+        if (pendingDay != null && formatMonthKey(pendingDay) == selectedMonth) {
+            dayMarkerInput = formatDayMarker(pendingDay)
+            autoDayMarkerLoadedKey = "$selectedHistoryFile@$selectedMonth@manual-day"
+            pendingOpenedDay = null
             return@LaunchedEffect
         }
         val loadKey = "$selectedHistoryFile@$selectedMonth@$logicalDayTarget"
@@ -151,6 +165,20 @@ fun TxtEditorSection(
     val canSaveCurrentContent = outputMode == TxtOutputMode.ALL ||
         (dayBlockEditorState.ok && dayBlockEditorState.canSave)
     val showSaveFab = selectedHistoryFile.isNotEmpty() && isEditorContentVisible
+    val currentDay = remember(selectedMonth, normalizedDayMarkerInput, dayBlockEditorState.dayContentIsoDate) {
+        resolveDisplayedCurrentDay(
+            selectedMonth = selectedMonth,
+            normalizedDayMarker = normalizedDayMarkerInput,
+            resolvedIsoDate = dayBlockEditorState.dayContentIsoDate
+        )
+    }
+    val filteredInlineStatusText = remember(inlineStatusText) {
+        if (inlineStatusText.startsWith("open month ->")) {
+            ""
+        } else {
+            inlineStatusText
+        }
+    }
 
     // Empty-state: no TXT files exist yet (typical for fresh release installs).
     // Show a guidance card so users can bootstrap their first month TXT file.
@@ -160,8 +188,38 @@ fun TxtEditorSection(
         Column(modifier = Modifier.fillMaxSize()) {
             TxtMonthNavigationCard(
                 selectedMonth = selectedMonth,
+                currentDay = currentDay,
                 onOpenPreviousMonth = onOpenPreviousMonth,
                 onOpenNextMonth = onOpenNextMonth,
+                onOpenPreviousDay = {
+                    navigateToAdjacentDay(
+                        currentDay = currentDay,
+                        dayOffset = -1,
+                        selectedMonth = selectedMonth,
+                        onPendingDayChange = { pendingOpenedDay = it },
+                        onDayMarkerInputChange = { dayMarkerInput = it },
+                        onOpenMonth = onOpenMonth
+                    )
+                },
+                onOpenNextDay = {
+                    navigateToAdjacentDay(
+                        currentDay = currentDay,
+                        dayOffset = 1,
+                        selectedMonth = selectedMonth,
+                        onPendingDayChange = { pendingOpenedDay = it },
+                        onDayMarkerInputChange = { dayMarkerInput = it },
+                        onOpenMonth = onOpenMonth
+                    )
+                },
+                onOpenDay = { day ->
+                    navigateToDay(
+                        targetDay = day,
+                        selectedMonth = selectedMonth,
+                        onPendingDayChange = { pendingOpenedDay = it },
+                        onDayMarkerInputChange = { dayMarkerInput = it },
+                        onOpenMonth = onOpenMonth
+                    )
+                },
                 onOpenMonth = onOpenMonth,
                 availableYears = availableYears,
                 selectedYear = selectedYear,
@@ -185,6 +243,7 @@ fun TxtEditorSection(
                     TxtEditorContentCard(
                         selectedHistoryFile = selectedHistoryFile,
                         selectedMonth = selectedMonth,
+                        currentDay = currentDay,
                         outputMode = outputMode,
                         onOutputModeChange = { nextMode ->
                             if (nextMode == TxtOutputMode.DAY && outputMode != TxtOutputMode.DAY) {
@@ -216,7 +275,7 @@ fun TxtEditorSection(
                                 }
                             }
                         },
-                        inlineStatusText = inlineStatusText,
+                        inlineStatusText = filteredInlineStatusText,
                         isEditorContentVisible = isEditorContentVisible,
                         onToggleEditorContentVisibility = {
                             isEditorContentVisible = !isEditorContentVisible
@@ -346,3 +405,74 @@ private fun parseYearMonthKey(value: String): YearMonthKey? {
     }
     return YearMonthKey(year = year, month = month)
 }
+
+private fun resolveDisplayedCurrentDay(
+    selectedMonth: String,
+    normalizedDayMarker: String,
+    resolvedIsoDate: String?
+): LocalDate? {
+    parseIsoDateOrNull(resolvedIsoDate)?.let { return it }
+    val yearMonth = parseYearMonthKey(selectedMonth) ?: return null
+    if (normalizedDayMarker.length != 4) {
+        return null
+    }
+    val month = normalizedDayMarker.take(2).toIntOrNull() ?: return null
+    val day = normalizedDayMarker.drop(2).toIntOrNull() ?: return null
+    return try {
+        LocalDate.of(yearMonth.year.toInt(), month, day)
+    } catch (_: RuntimeException) {
+        null
+    }
+}
+
+private fun parseIsoDateOrNull(value: String?): LocalDate? {
+    if (value.isNullOrBlank()) {
+        return null
+    }
+    return try {
+        LocalDate.parse(value)
+    } catch (_: DateTimeParseException) {
+        null
+    }
+}
+
+private fun navigateToAdjacentDay(
+    currentDay: LocalDate?,
+    dayOffset: Long,
+    selectedMonth: String,
+    onPendingDayChange: (LocalDate?) -> Unit,
+    onDayMarkerInputChange: (String) -> Unit,
+    onOpenMonth: (String) -> Unit
+) {
+    val baseDay = currentDay ?: return
+    navigateToDay(
+        targetDay = baseDay.plusDays(dayOffset),
+        selectedMonth = selectedMonth,
+        onPendingDayChange = onPendingDayChange,
+        onDayMarkerInputChange = onDayMarkerInputChange,
+        onOpenMonth = onOpenMonth
+    )
+}
+
+internal fun navigateToDay(
+    targetDay: LocalDate,
+    selectedMonth: String,
+    onPendingDayChange: (LocalDate?) -> Unit,
+    onDayMarkerInputChange: (String) -> Unit,
+    onOpenMonth: (String) -> Unit
+) {
+    onDayMarkerInputChange(formatDayMarker(targetDay))
+    val targetMonth = formatMonthKey(targetDay)
+    if (targetMonth == selectedMonth) {
+        onPendingDayChange(null)
+        return
+    }
+    onPendingDayChange(targetDay)
+    onOpenMonth(targetMonth)
+}
+
+private fun formatMonthKey(date: LocalDate): String =
+    date.format(DateTimeFormatter.ofPattern("yyyy-MM"))
+
+private fun formatDayMarker(date: LocalDate): String =
+    date.format(DateTimeFormatter.ofPattern("MMdd"))

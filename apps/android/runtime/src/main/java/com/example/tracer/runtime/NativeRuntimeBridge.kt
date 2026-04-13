@@ -171,17 +171,8 @@ internal class NativeRuntimeBridge {
         root = ""
     )
 
-    fun nativeReportSingle(
-        reportType: Int,
-        argument: String,
-        format: Int = NativeBridge.REPORT_FORMAT_MARKDOWN
-    ): String = NativeBridge.nativeReport(
-        mode = NativeBridge.REPORT_MODE_SINGLE,
-        reportType = reportType,
-        argument = argument,
-        format = format,
-        daysList = null
-    )
+    fun nativeReportJson(requestJson: String): String =
+        NativeBridge.nativeReportJson(requestJson)
 
     fun setCryptoProgressListener(listener: ((String) -> Unit)?) {
         NativeBridge.setCryptoProgressListener(listener)
