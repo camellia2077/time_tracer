@@ -62,30 +62,16 @@ pub fn build_render_request(
 
     if matches!(period, ReportRenderPeriod::Recent) {
         let days = parse_positive_int_list("`report render recent`", argument)?;
-        if let Some(as_of) = as_of {
-            if days.len() != 1 {
-                return Err(AppError::InvalidArguments(
-                    "`report render recent --as-of` currently requires a single days value (for example `7`)."
-                        .to_string(),
-                ));
-            }
-            // Design intent:
-            // keep runtime/C ABI contracts untouched by converting CLI recent+as-of
-            // into a deterministic range request.
-            let range_argument =
-                build_recent_range_argument("`report render recent`", days[0], as_of)?;
-            return Ok(json!({
-                "type": "range",
-                "argument": range_argument,
-                "format": format_token(format),
-            }));
-        }
         if days.len() == 1 {
-            return Ok(json!({
-                "type": "recent",
-                "argument": days[0].to_string(),
-                "format": format_token(format),
-            }));
+            // `--as-of` maps to canonical `anchor_date`; the CLI no longer rewrites
+            // recent requests into range payloads.
+            return Ok(build_recent_query_request(days[0], as_of, format)?);
+        }
+        if as_of.is_some() {
+            return Err(AppError::InvalidArguments(
+                "`report render recent --as-of` currently requires a single days value (for example `7`)."
+                    .to_string(),
+            ));
         }
         return Ok(json!({
             "days_list": days,
@@ -93,13 +79,7 @@ pub fn build_render_request(
         }));
     }
 
-    let normalized_argument = normalize_render_argument(period, argument)?;
-
-    Ok(json!({
-        "type": render_period_token(period),
-        "argument": normalized_argument,
-        "format": format_token(format),
-    }))
+    build_temporal_query_request(period, argument, format)
 }
 
 pub fn build_export_render_request(
@@ -110,36 +90,7 @@ pub fn build_export_render_request(
 ) -> Result<Value, AppError> {
     ensure_as_of_is_recent_export(period, as_of)?;
 
-    if matches!(period, ReportExportPeriod::Recent) {
-        let normalized_days = normalize_recent_argument("`report export recent`", argument)?;
-        if let Some(as_of) = as_of {
-            let days = normalized_days.parse::<i32>().map_err(|error| {
-                AppError::InvalidArguments(format!(
-                    "`report export recent` expects a positive integer, got `{normalized_days}`: {error}"
-                ))
-            })?;
-            // Same conversion rule for export: recent+as-of -> range request.
-            let range_argument =
-                build_recent_range_argument("`report export recent`", days, as_of)?;
-            return Ok(json!({
-                "type": "range",
-                "argument": range_argument,
-                "format": format_token(format),
-            }));
-        }
-        return Ok(json!({
-            "type": "recent",
-            "argument": normalized_days,
-            "format": format_token(format),
-        }));
-    }
-
-    let normalized_argument = normalize_export_argument(period, argument)?;
-    Ok(json!({
-        "type": export_period_token(period),
-        "argument": normalized_argument,
-        "format": format_token(format),
-    }))
+    build_single_export_request(period, argument, as_of, format)
 }
 
 pub fn require_export_argument(
@@ -200,23 +151,214 @@ fn ensure_as_of_is_recent_export(
     Ok(())
 }
 
-fn build_recent_range_argument(
-    command_label: &str,
-    days: i32,
-    as_of: &str,
-) -> Result<String, AppError> {
-    if days <= 0 {
-        return Err(AppError::InvalidArguments(format!(
-            "{command_label} expects a positive integer days value."
-        )));
+fn build_temporal_query_request(
+    period: ReportRenderPeriod,
+    argument: &str,
+    format: &ReportFormat,
+) -> Result<Value, AppError> {
+    match period {
+        ReportRenderPeriod::Day => Ok(json!({
+            "operation_kind": "query",
+            "display_mode": "day",
+            "selection_kind": "single_day",
+            "date": normalize_day_argument("`report render day`", argument)?,
+            "format": format_token(format),
+        })),
+        ReportRenderPeriod::Month => {
+            let (start_date, end_date) =
+                month_to_range("`report render month`", argument)?;
+            Ok(json!({
+                "operation_kind": "query",
+                "display_mode": "month",
+                "selection_kind": "date_range",
+                "start_date": start_date,
+                "end_date": end_date,
+                "format": format_token(format),
+            }))
+        }
+        ReportRenderPeriod::Week => {
+            let (start_date, end_date) = week_to_range("`report render week`", argument)?;
+            Ok(json!({
+                "operation_kind": "query",
+                "display_mode": "week",
+                "selection_kind": "date_range",
+                "start_date": start_date,
+                "end_date": end_date,
+                "format": format_token(format),
+            }))
+        }
+        ReportRenderPeriod::Year => {
+            let year = normalize_year_argument("`report render year`", argument)?;
+            Ok(json!({
+                "operation_kind": "query",
+                "display_mode": "year",
+                "selection_kind": "date_range",
+                "start_date": format!("{year}-01-01"),
+                "end_date": format!("{year}-12-31"),
+                "format": format_token(format),
+            }))
+        }
+        ReportRenderPeriod::Range => {
+            let (start_date, end_date) =
+                split_normalized_range("`report render range`", argument)?;
+            Ok(json!({
+                "operation_kind": "query",
+                "display_mode": "range",
+                "selection_kind": "date_range",
+                "start_date": start_date,
+                "end_date": end_date,
+                "format": format_token(format),
+            }))
+        }
+        ReportRenderPeriod::Recent => unreachable!("recent is handled separately"),
     }
+}
 
-    let end_date = normalize_day_argument("`--as-of`", as_of)?;
-    // Use serial-day arithmetic for timezone-independent date math.
-    let end_days = parse_iso_date_to_serial_days(&end_date)?;
-    let start_days = end_days - i64::from(days - 1);
-    let start_date = format_serial_days_to_iso_date(start_days)?;
-    Ok(format!("{start_date}|{end_date}"))
+fn build_recent_query_request(
+    days: i32,
+    as_of: Option<&str>,
+    format: &ReportFormat,
+) -> Result<Value, AppError> {
+    if days <= 0 {
+        return Err(AppError::InvalidArguments(
+            "`report render recent` expects a positive integer.".to_string(),
+        ));
+    }
+    let mut request = json!({
+        "operation_kind": "query",
+        "display_mode": "recent",
+        "selection_kind": "recent_days",
+        "days": days,
+        "format": format_token(format),
+    });
+    if let Some(as_of_value) = as_of {
+        request["anchor_date"] = json!(normalize_day_argument("`--as-of`", as_of_value)?);
+    }
+    Ok(request)
+}
+
+pub fn build_single_export_request(
+    period: ReportExportPeriod,
+    argument: &str,
+    as_of: Option<&str>,
+    format: &ReportFormat,
+) -> Result<Value, AppError> {
+    match period {
+        ReportExportPeriod::Day => Ok(json!({
+            "operation_kind": "export",
+            "display_mode": "day",
+            "export_scope": "single",
+            "selection_kind": "single_day",
+            "date": normalize_day_argument("`report export day`", argument)?,
+            "format": format_token(format),
+        })),
+        ReportExportPeriod::Month => {
+            let (start_date, end_date) =
+                month_to_range("`report export month`", argument)?;
+            Ok(json!({
+                "operation_kind": "export",
+                "display_mode": "month",
+                "export_scope": "single",
+                "selection_kind": "date_range",
+                "start_date": start_date,
+                "end_date": end_date,
+                "format": format_token(format),
+            }))
+        }
+        ReportExportPeriod::Week => {
+            let (start_date, end_date) = week_to_range("`report export week`", argument)?;
+            Ok(json!({
+                "operation_kind": "export",
+                "display_mode": "week",
+                "export_scope": "single",
+                "selection_kind": "date_range",
+                "start_date": start_date,
+                "end_date": end_date,
+                "format": format_token(format),
+            }))
+        }
+        ReportExportPeriod::Year => {
+            let year = normalize_year_argument("`report export year`", argument)?;
+            Ok(json!({
+                "operation_kind": "export",
+                "display_mode": "year",
+                "export_scope": "single",
+                "selection_kind": "date_range",
+                "start_date": format!("{year}-01-01"),
+                "end_date": format!("{year}-12-31"),
+                "format": format_token(format),
+            }))
+        }
+        ReportExportPeriod::Recent => {
+            let days = normalize_recent_argument("`report export recent`", argument)?
+                .parse::<i32>()
+                .map_err(|error| {
+                    AppError::InvalidArguments(format!(
+                        "`report export recent` expects a positive integer, got `{argument}`: {error}"
+                    ))
+                })?;
+            let mut request = json!({
+                "operation_kind": "export",
+                "display_mode": "recent",
+                "export_scope": "single",
+                "selection_kind": "recent_days",
+                "days": days,
+                "format": format_token(format),
+            });
+            if let Some(as_of_value) = as_of {
+                // `--as-of` maps directly to canonical `anchor_date`; export does
+                // not rewrite anchored recent into a range request anymore.
+                request["anchor_date"] =
+                    json!(normalize_day_argument("`--as-of`", as_of_value)?);
+            }
+            Ok(request)
+        }
+        ReportExportPeriod::Range => {
+            let (start_date, end_date) =
+                split_normalized_range("`report export range`", argument)?;
+            Ok(json!({
+                "operation_kind": "export",
+                "display_mode": "range",
+                "export_scope": "single",
+                "selection_kind": "date_range",
+                "start_date": start_date,
+                "end_date": end_date,
+                "format": format_token(format),
+            }))
+        }
+    }
+}
+
+pub fn build_all_matching_export_request(
+    period: ReportExportPeriod,
+    format: &ReportFormat,
+) -> Result<Value, AppError> {
+    let display_mode = list_targets_type(period)?;
+    Ok(json!({
+        "operation_kind": "export",
+        "display_mode": display_mode,
+        "export_scope": "all_matching",
+        "format": format_token(format),
+    }))
+}
+
+pub fn build_recent_batch_export_request(
+    days: Vec<i32>,
+    format: &ReportFormat,
+) -> Result<Value, AppError> {
+    if days.is_empty() {
+        return Err(AppError::InvalidArguments(
+            "`report export recent --all` expects at least one positive integer."
+                .to_string(),
+        ));
+    }
+    Ok(json!({
+        "operation_kind": "export",
+        "display_mode": "recent",
+        "export_scope": "batch_recent_list",
+        "recent_days_list": days,
+        "format": format_token(format),
+    }))
 }
 
 pub fn parse_int_list(value: &str) -> Result<Vec<i32>, AppError> {
@@ -534,6 +676,29 @@ fn normalize_month_argument(command_label: &str, value: &str) -> Result<String, 
     )))
 }
 
+fn month_to_range(command_label: &str, value: &str) -> Result<(String, String), AppError> {
+    let month = normalize_month_argument(command_label, value)?;
+    let year: u32 = month[..4].parse().unwrap_or(0);
+    let month_number: u32 = month[5..7].parse().unwrap_or(0);
+    let last_day = match month_number {
+        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
+        4 | 6 | 9 | 11 => 30,
+        2 => {
+            if (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0) {
+                29
+            } else {
+                28
+            }
+        }
+        _ => {
+            return Err(AppError::InvalidArguments(format!(
+                "{command_label} expects YYYYMM or YYYY-MM, got `{value}`."
+            )))
+        }
+    };
+    Ok((format!("{month}-01"), format!("{month}-{last_day:02}")))
+}
+
 fn normalize_week_argument(command_label: &str, value: &str) -> Result<String, AppError> {
     if value.len() == 8
         && value.as_bytes()[4] == b'-'
@@ -546,6 +711,35 @@ fn normalize_week_argument(command_label: &str, value: &str) -> Result<String, A
     Err(AppError::InvalidArguments(format!(
         "{command_label} expects YYYY-Www, got `{value}`."
     )))
+}
+
+fn week_to_range(command_label: &str, value: &str) -> Result<(String, String), AppError> {
+    let week = normalize_week_argument(command_label, value)?;
+    let iso_year = week[..4].parse::<i32>().map_err(|error| {
+        AppError::InvalidArguments(format!(
+            "{command_label} expects YYYY-Www, got `{value}`: {error}"
+        ))
+    })?;
+    let iso_week = week[6..8].parse::<u32>().map_err(|error| {
+        AppError::InvalidArguments(format!(
+            "{command_label} expects YYYY-Www, got `{value}`: {error}"
+        ))
+    })?;
+    if !(1..=53).contains(&iso_week) {
+        return Err(AppError::InvalidArguments(format!(
+            "{command_label} expects YYYY-Www, got `{value}`."
+        )));
+    }
+
+    let january_fourth = parse_iso_date_to_serial_days(&format!("{iso_year:04}-01-04"))?;
+    let monday_based_weekday = ((january_fourth + 3).rem_euclid(7)) + 1;
+    let week_one_monday = january_fourth - (monday_based_weekday - 1);
+    let start_days = week_one_monday + i64::from((iso_week - 1) * 7);
+    let end_days = start_days + 6;
+    Ok((
+        format_serial_days_to_iso_date(start_days)?,
+        format_serial_days_to_iso_date(end_days)?,
+    ))
 }
 
 fn normalize_year_argument(command_label: &str, value: &str) -> Result<String, AppError> {
@@ -592,6 +786,17 @@ fn normalize_range_argument(command_label: &str, value: &str) -> Result<String, 
     }
 
     Ok(format!("{normalized_start}|{normalized_end}"))
+}
+
+fn split_normalized_range(
+    command_label: &str,
+    value: &str,
+) -> Result<(String, String), AppError> {
+    let normalized = normalize_range_argument(command_label, value)?;
+    let (start_date, end_date) = normalized.split_once('|').ok_or_else(|| {
+        AppError::InvalidArguments(format!("{command_label} expects `start|end`."))
+    })?;
+    Ok((start_date.to_string(), end_date.to_string()))
 }
 
 #[cfg(test)]

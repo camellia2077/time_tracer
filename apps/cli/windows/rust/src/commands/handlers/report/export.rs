@@ -1,16 +1,11 @@
-use std::fs;
-use std::path::{Path, PathBuf};
-
-use serde_json::Value;
-
 use crate::cli::{ReportExportArgs, ReportExportPeriod, ReportFormat};
 use crate::commands::handler::{CommandContext, CommandHandler};
 use crate::error::AppError;
 
 use super::support::{
-    build_export_output_path, build_export_render_request, list_targets_type,
-    normalize_export_name, parse_int_list, reject_argument_when_all, require_export_argument,
-    resolve_export_formats,
+    build_all_matching_export_request, build_recent_batch_export_request,
+    build_single_export_request, parse_int_list, reject_argument_when_all,
+    require_export_argument, resolve_export_formats,
 };
 use super::{ReportSession, ReportSessionPort, RuntimeReportSessionPort};
 
@@ -31,124 +26,80 @@ pub(crate) fn run_export_with_port(
     let formats = resolve_export_formats(&args, session.cli_config());
 
     for format in &formats {
-        for export in build_export_plan(&args, session.as_ref(), format)? {
-            let rendered = session.render(&export.render_request)?;
-            write_report_file(&export.output_path, &rendered.content)?;
+        for request in build_export_requests(&args, session.as_ref(), format)? {
+            session.export(&request)?;
         }
     }
     Ok(())
 }
 
-struct PlannedExport {
-    render_request: Value,
-    output_path: PathBuf,
-}
-
-fn build_export_plan(
+fn build_export_requests(
     args: &ReportExportArgs,
-    session: &dyn ReportSession,
+    _session: &dyn ReportSession,
     format: &ReportFormat,
-) -> Result<Vec<PlannedExport>, AppError> {
+) -> Result<Vec<serde_json::Value>, AppError> {
     if args.all {
-        return build_all_export_plan(args, session, format);
+        return build_all_export_requests(args, format);
     }
 
     let raw_argument = require_export_argument(args.period, args.argument.as_deref())?;
-    let normalized_id = normalize_export_name(args.period, raw_argument)?;
-    Ok(vec![PlannedExport {
-        render_request: build_export_render_request(
-            args.period,
-            raw_argument,
-            args.as_of.as_deref(),
-            format,
-        )?,
-        output_path: build_export_output_path(
-            session.runtime_output_root(),
-            format,
-            args.period,
-            &normalized_id,
-        )?,
-    }])
+    Ok(vec![build_single_export_request(
+        args.period,
+        raw_argument,
+        args.as_of.as_deref(),
+        format,
+    )?])
 }
 
-fn build_all_export_plan(
+fn build_all_export_requests(
     args: &ReportExportArgs,
-    session: &dyn ReportSession,
     format: &ReportFormat,
-) -> Result<Vec<PlannedExport>, AppError> {
+) -> Result<Vec<serde_json::Value>, AppError> {
     match args.period {
         ReportExportPeriod::Day
         | ReportExportPeriod::Month
         | ReportExportPeriod::Week
-        | ReportExportPeriod::Year
-        | ReportExportPeriod::Range => {
+        | ReportExportPeriod::Year => {
             reject_argument_when_all(args.period, args.argument.as_deref())?;
-            let target_type = list_targets_type(args.period)?;
-            session
-                .list_targets(target_type)?
-                .into_iter()
-                .map(|canonical_id| {
-                    Ok(PlannedExport {
-                        render_request: build_export_render_request(
-                            args.period,
-                            &canonical_id,
-                            args.as_of.as_deref(),
-                            format,
-                        )?,
-                        output_path: build_export_output_path(
-                            session.runtime_output_root(),
-                            format,
-                            args.period,
-                            &canonical_id,
-                        )?,
-                    })
-                })
-                .collect()
+            Ok(vec![build_all_matching_export_request(args.period, format)?])
         }
+        ReportExportPeriod::Range => Err(AppError::InvalidArguments(
+            "`report export range --all` is not supported; specify an explicit range."
+                .to_string(),
+        )),
         ReportExportPeriod::Recent => {
             let argument = require_export_argument(args.period, args.argument.as_deref())?;
-            parse_int_list(argument)?
-                .into_iter()
-                .map(|days| {
-                    if days <= 0 {
-                        return Err(AppError::InvalidArguments(format!(
-                            "`report export recent --all` expects positive integers, got `{days}`."
-                        )));
-                    }
-                    let normalized_id = days.to_string();
-                    Ok(PlannedExport {
-                        render_request: build_export_render_request(
-                            args.period,
-                            &normalized_id,
-                            args.as_of.as_deref(),
+            let mut days = parse_int_list(argument)?;
+            if days.is_empty() {
+                return Err(AppError::InvalidArguments(
+                    "`report export recent --all` expects at least one positive integer."
+                        .to_string(),
+                ));
+            }
+            if let Some(invalid) = days.iter().find(|days| **days <= 0) {
+                return Err(AppError::InvalidArguments(format!(
+                    "`report export recent --all` expects positive integers, got `{invalid}`."
+                )));
+            }
+            if let Some(as_of) = args.as_of.as_deref() {
+                days.sort_unstable();
+                days.dedup();
+                // Anchored recent export expands into single temporal exports
+                // because batch_recent_list is reserved for rolling recent
+                // requests without a fixed anchor window.
+                return days
+                    .into_iter()
+                    .map(|days| {
+                        build_single_export_request(
+                            ReportExportPeriod::Recent,
+                            &days.to_string(),
+                            Some(as_of),
                             format,
-                        )?,
-                        output_path: build_export_output_path(
-                            session.runtime_output_root(),
-                            format,
-                            args.period,
-                            &normalized_id,
-                        )?,
+                        )
                     })
-                })
-                .collect()
+                    .collect();
+            }
+            Ok(vec![build_recent_batch_export_request(days, format)?])
         }
     }
-}
-
-fn write_report_file(output_path: &Path, content: &str) -> Result<(), AppError> {
-    if let Some(parent) = output_path.parent() {
-        fs::create_dir_all(parent).map_err(|error| {
-            AppError::Io(format!(
-                "Create export directory `{}` failed: {error}",
-                parent.display()
-            ))
-        })?;
-    }
-    fs::write(output_path, content.as_bytes()).map_err(|error| {
-        AppError::Io(format!(
-            "Write export report `{}` failed: {error}",
-            output_path.display()
-        ))
-    })
 }

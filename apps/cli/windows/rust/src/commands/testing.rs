@@ -239,6 +239,18 @@ impl RecordedReportSession {
             .unwrap_or_default())
     }
 
+    pub(crate) fn record_export(
+        &self,
+        command_name: &str,
+        request: &Value,
+    ) -> Result<(), AppError> {
+        self.command_names
+            .borrow_mut()
+            .push(command_name.to_string());
+        self.requests.borrow_mut().push(request.clone());
+        Ok(())
+    }
+
     pub(crate) fn command_names(&self) -> Vec<String> {
         self.command_names.borrow().clone()
     }

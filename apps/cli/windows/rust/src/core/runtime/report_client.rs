@@ -21,7 +21,11 @@ impl<'runtime> ReportClient<'runtime> {
         invoke::run_report_text(self.runtime, request)
     }
 
-    pub fn list_targets(&self, target_type: &str) -> Result<Vec<String>, AppError> {
-        invoke::run_report_targets(self.runtime, target_type)
+    pub fn list_targets(&self, display_mode: &str) -> Result<Vec<String>, AppError> {
+        invoke::run_report_targets(self.runtime, display_mode)
+    }
+
+    pub fn export(&self, request: &Value) -> Result<(), AppError> {
+        invoke::run_report_export(self.runtime, request)
     }
 }

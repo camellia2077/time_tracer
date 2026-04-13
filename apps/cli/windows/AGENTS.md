@@ -91,7 +91,8 @@ description: Windows Rust CLI capability-family layout, build, and verification 
 ## Recent 固定窗口
 
 - `report render recent` / `report export recent` 新增 `--as-of YYYY-MM-DD`（仅 recent 支持）。
-- CLI 会把该请求在本地转换为固定 `range` 查询窗口，不改 C ABI / core 契约。
+- CLI 会把该请求直接映射到 canonical temporal contract 的 `anchor_date`，
+  不再本地改写成 `range`。
 - 示例：
   - `time_tracer_cli report render recent 7 --as-of 2026-03-07 --format md --db <db_path>`
   - `time_tracer_cli report export recent 7 --as-of 2026-03-07 --format md --db <db_path> --output <out_dir>`
@@ -119,7 +120,7 @@ description: Windows Rust CLI capability-family layout, build, and verification 
 2. 结构与分层：
    - `docs/time_tracer/clients/windows_cli/specs/STRUCTURE.md`
 3. Core ABI 契约：
-   - `docs/time_tracer/core/contracts/c_abi.md`
+   - `docs/time_tracer/core/shared/c_abi.md`
 
 ## 修改约束
 

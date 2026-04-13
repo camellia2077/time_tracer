@@ -36,7 +36,8 @@ pub(crate) trait ReportSession {
     fn cli_config(&self) -> &CliConfig;
     fn runtime_output_root(&self) -> &Path;
     fn render(&self, request: &Value) -> Result<RenderedReport, AppError>;
-    fn list_targets(&self, target_type: &str) -> Result<Vec<String>, AppError>;
+    fn list_targets(&self, display_mode: &str) -> Result<Vec<String>, AppError>;
+    fn export(&self, request: &Value) -> Result<(), AppError>;
 }
 
 pub(crate) trait ReportSessionPort {
@@ -79,8 +80,12 @@ impl ReportSession for RuntimeBoundReportSession {
         })
     }
 
-    fn list_targets(&self, target_type: &str) -> Result<Vec<String>, AppError> {
-        self.session.report().list_targets(target_type)
+    fn list_targets(&self, display_mode: &str) -> Result<Vec<String>, AppError> {
+        self.session.report().list_targets(display_mode)
+    }
+
+    fn export(&self, request: &Value) -> Result<(), AppError> {
+        self.session.report().export(request)
     }
 }
 
@@ -152,6 +157,10 @@ mod tests {
         fn list_targets(&self, target_type: &str) -> Result<Vec<String>, crate::error::AppError> {
             self.recorded
                 .record_list_targets(&self.command_name, target_type)
+        }
+
+        fn export(&self, request: &Value) -> Result<(), crate::error::AppError> {
+            self.recorded.record_export(&self.command_name, request)
         }
     }
 

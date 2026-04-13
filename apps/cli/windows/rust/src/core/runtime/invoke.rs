@@ -124,13 +124,14 @@ pub(crate) fn run_report_batch_text(
 
 pub(crate) fn run_report_targets(
     runtime: &CoreRuntime,
-    target_type: &str,
+    display_mode: &str,
 ) -> Result<Vec<String>, AppError> {
     let run_start = Instant::now();
-    let request_json = to_request_json(&json!({ "type": target_type }))?;
-    let raw = unsafe {
-        (runtime.api.symbols.runtime_report_targets)(runtime.handle, request_json.as_ptr())
-    };
+    let request_json = to_request_json(&json!({
+        "operation_kind": "targets",
+        "display_mode": display_mode,
+    }))?;
+    let raw = unsafe { (runtime.api.symbols.runtime_report)(runtime.handle, request_json.as_ptr()) };
     let payload = read_c_json::<ReportTargetsResponse>(raw, "report_targets")?;
     log_timing("runtime.report_targets", run_start.elapsed());
     if payload.ok {
@@ -140,6 +141,15 @@ pub(crate) fn run_report_targets(
         payload.error_message,
         &payload.error_contract,
     ))
+}
+
+pub(crate) fn run_report_export(runtime: &CoreRuntime, request: &Value) -> Result<(), AppError> {
+    run_ack(
+        runtime,
+        runtime.api.symbols.runtime_report,
+        request,
+        "report_export",
+    )
 }
 
 pub(crate) fn run_pipeline_convert(runtime: &CoreRuntime, request: &Value) -> Result<(), AppError> {
