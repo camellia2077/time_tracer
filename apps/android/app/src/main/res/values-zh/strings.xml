@@ -88,6 +88,17 @@
     <string name="config_language_chinese">中文</string>
     <string name="config_language_english">English</string>
     <string name="config_language_japanese">日本語</string>
+    <string name="config_title_report_chart_style">报告图表样式</string>
+    <string name="config_label_report_breakdown_palette">分布图配色</string>
+    <string name="config_report_breakdown_palette_current">分布图配色（当前：%1$s）</string>
+    <string name="config_report_breakdown_palette_tap_expand">分布图配色（点击展开）</string>
+    <string name="config_report_breakdown_palette_preview_hint">用于分布饼图和横向条形图。可先看下面两种预览，再决定是否应用这套配色。</string>
+    <string name="config_report_breakdown_palette_pie_preview">分布饼图预览</string>
+    <string name="config_report_breakdown_palette_bar_preview">分布横向条形图预览</string>
+    <string name="config_report_breakdown_palette_soft">柔和</string>
+    <string name="config_report_breakdown_palette_editorial">杂志风</string>
+    <string name="config_report_breakdown_palette_vivid">鲜明</string>
+    <string name="config_report_breakdown_palette_mono_accent">单色强调</string>
 
     <string name="config_title_dark_theme_style">深色主题风格</string>
     <string name="config_dark_theme_style_tinted">色调</string>

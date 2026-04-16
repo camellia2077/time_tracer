@@ -82,6 +82,9 @@ fun TracerScreen(
     val reportChartShowAverageLine by userPreferencesRepository.reportChartShowAverageLine.collectAsState(
         initial = com.example.tracer.data.UserPreferencesRepository.DEFAULT_REPORT_CHART_SHOW_AVERAGE_LINE
     )
+    val reportPiePalettePreset by userPreferencesRepository.reportPiePalettePreset.collectAsState(
+        initial = com.example.tracer.data.UserPreferencesRepository.DEFAULT_REPORT_PIE_PALETTE_PRESET
+    )
     val reportHeatmapState = rememberTracerScreenReportHeatmapState(
         selectedTab = selectedTab,
         configGateway = configGateway
@@ -194,6 +197,12 @@ fun TracerScreen(
         onSetThemeMode = onSetThemeMode,
         onSetUseDynamicColor = onSetUseDynamicColor,
         onSetDarkThemeStyle = onSetDarkThemeStyle,
+        reportPiePalettePreset = reportPiePalettePreset,
+        onReportPiePalettePresetChange = { value ->
+            coroutineScope.launch {
+                userPreferencesRepository.setReportPiePalettePreset(value)
+            }
+        },
         reportChartShowAverageLine = reportChartShowAverageLine,
         onReportChartShowAverageLineChange = { value ->
             coroutineScope.launch {

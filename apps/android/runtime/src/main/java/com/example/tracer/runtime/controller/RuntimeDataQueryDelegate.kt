@@ -183,6 +183,66 @@ internal class RuntimeDataQueryDelegate(
             }
         }
 
+    suspend fun queryReportComposition(
+        params: ReportCompositionQueryParams
+    ): ReportCompositionQueryResult = withContext(Dispatchers.IO) {
+        val fromDateIso = params.fromDateIso?.trim()?.takeIf { it.isNotEmpty() }
+        val toDateIso = params.toDateIso?.trim()?.takeIf { it.isNotEmpty() }
+        val validationFailure = validateReportCompositionQueryParams(
+            lookbackDays = params.lookbackDays,
+            fromDateIso = fromDateIso,
+            toDateIso = toDateIso
+        )
+        if (validationFailure != null) {
+            return@withContext validationFailure
+        }
+
+        try {
+            val queryResult = runDataQuery(
+                request = DataQueryRequest(
+                    action = NativeBridge.QUERY_ACTION_REPORT_COMPOSITION,
+                    outputMode = DataQueryOutputMode.SEMANTIC_JSON,
+                    lookbackDays = params.lookbackDays,
+                    fromDateIso = fromDateIso,
+                    toDateIso = toDateIso
+                )
+            )
+
+            if (!queryResult.ok) {
+                return@withContext ReportCompositionQueryResult(
+                    ok = false,
+                    data = null,
+                    message = queryResult.message,
+                    operationId = queryResult.operationId
+                )
+            }
+
+            val parsed = parseReportCompositionContent(queryResult.outputText)
+                ?: return@withContext ReportCompositionQueryResult(
+                    ok = false,
+                    data = null,
+                    message = appendFailureContext(
+                        message = "report composition query returned invalid payload.",
+                        operationId = queryResult.operationId
+                    ),
+                    operationId = queryResult.operationId
+                )
+
+            ReportCompositionQueryResult(
+                ok = true,
+                data = parsed,
+                message = buildReportCompositionResultMessage(parsed.slices.size),
+                operationId = queryResult.operationId
+            )
+        } catch (error: Exception) {
+            ReportCompositionQueryResult(
+                ok = false,
+                data = null,
+                message = formatNativeFailure("query report composition failed", error)
+            )
+        }
+    }
+
     fun runDataQuery(request: DataQueryRequest): DataQueryTextResult {
         val queryResult = executeNativeDataQuery(request, null)
         return queryTranslator.toDataQueryTextResult(queryResult)
@@ -199,4 +259,3 @@ internal class RuntimeDataQueryDelegate(
         )
     }
 }
-

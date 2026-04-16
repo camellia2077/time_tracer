@@ -8,45 +8,53 @@ internal fun validateReportChartQueryParams(
     fromDateIso: String?,
     toDateIso: String?
 ): ReportChartQueryResult? {
+    val error = validateReportWindowQueryParams(lookbackDays, fromDateIso, toDateIso)
+        ?: return null
+    return ReportChartQueryResult(
+        ok = false,
+        data = null,
+        message = error
+    )
+}
+
+internal fun validateReportCompositionQueryParams(
+    lookbackDays: Int,
+    fromDateIso: String?,
+    toDateIso: String?
+): ReportCompositionQueryResult? {
+    val error = validateReportWindowQueryParams(lookbackDays, fromDateIso, toDateIso)
+        ?: return null
+    return ReportCompositionQueryResult(
+        ok = false,
+        data = null,
+        message = error
+    )
+}
+
+private fun validateReportWindowQueryParams(
+    lookbackDays: Int,
+    fromDateIso: String?,
+    toDateIso: String?
+): String? {
     val hasFrom = !fromDateIso.isNullOrBlank()
     val hasTo = !toDateIso.isNullOrBlank()
     if (hasFrom != hasTo) {
-        return ReportChartQueryResult(
-            ok = false,
-            data = null,
-            message = "fromDateIso and toDateIso must be provided together."
-        )
+        return "fromDateIso and toDateIso must be provided together."
     }
 
     if (hasFrom && hasTo) {
         val start = parseIsoDateOrNull(fromDateIso)
-            ?: return ReportChartQueryResult(
-                ok = false,
-                data = null,
-                message = "fromDateIso must be YYYY-MM-DD."
-            )
+            ?: return "fromDateIso must be YYYY-MM-DD."
         val end = parseIsoDateOrNull(toDateIso)
-            ?: return ReportChartQueryResult(
-                ok = false,
-                data = null,
-                message = "toDateIso must be YYYY-MM-DD."
-            )
+            ?: return "toDateIso must be YYYY-MM-DD."
         if (start.isAfter(end)) {
-            return ReportChartQueryResult(
-                ok = false,
-                data = null,
-                message = "fromDateIso must be less than or equal to toDateIso."
-            )
+            return "fromDateIso must be less than or equal to toDateIso."
         }
         return null
     }
 
     if (lookbackDays <= 0) {
-        return ReportChartQueryResult(
-            ok = false,
-            data = null,
-            message = "lookbackDays must be greater than 0."
-        )
+        return "lookbackDays must be greater than 0."
     }
     return null
 }

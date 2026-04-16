@@ -11,6 +11,11 @@ internal class QueryReportUseCases(
         queryGateway = queryGateway,
         inputValidator = inputValidator,
         textProvider = textProvider
+    ),
+    private val compositionUseCase: QueryReportCompositionUseCase = QueryReportCompositionUseCase(
+        queryGateway = queryGateway,
+        inputValidator = inputValidator,
+        textProvider = textProvider
     )
 ) {
     suspend fun reportDay(
@@ -110,8 +115,19 @@ internal class QueryReportUseCases(
     suspend fun loadChart(
         currentState: QueryReportUiState,
         emit: (QueryReportUiState) -> Unit
-    ): QueryReportUiState = chartUseCase.execute(
-        currentState = currentState,
-        emit = emit
-    )
+    ): QueryReportUiState {
+        val semanticMode = currentState.chartSemanticMode
+            .normalizeForReportMode(currentState.reportMode)
+        return if (semanticMode == ReportChartSemanticMode.COMPOSITION) {
+            compositionUseCase.execute(
+                currentState = currentState,
+                emit = emit
+            )
+        } else {
+            chartUseCase.execute(
+                currentState = currentState,
+                emit = emit
+            )
+        }
+    }
 }

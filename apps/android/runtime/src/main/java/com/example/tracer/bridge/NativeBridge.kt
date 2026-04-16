@@ -30,6 +30,7 @@ object NativeBridge {
     const val QUERY_ACTION_MAPPING_ALIAS_KEYS = 10
     const val QUERY_ACTION_WAKE_KEYWORDS = 11
     const val QUERY_ACTION_AUTHORABLE_EVENT_TOKENS = 12
+    const val QUERY_ACTION_REPORT_COMPOSITION = 13
 
     private val cryptoProgressListenerRef = AtomicReference<((String) -> Unit)?>(null)
 

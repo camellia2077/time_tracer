@@ -98,6 +98,11 @@ internal class RuntimeQueryDelegate(
     suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult =
         dataDelegate.queryReportChart(params)
 
+    suspend fun queryReportComposition(
+        params: ReportCompositionQueryParams
+    ): ReportCompositionQueryResult =
+        dataDelegate.queryReportComposition(params)
+
     suspend fun listActivityMappingNames(): ActivityMappingNamesResult =
         mappingDelegate.listActivityMappingNames()
 

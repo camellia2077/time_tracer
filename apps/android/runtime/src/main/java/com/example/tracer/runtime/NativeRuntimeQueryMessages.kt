@@ -10,6 +10,16 @@ internal fun buildReportChartResultMessage(
     }
 }
 
+internal fun buildReportCompositionResultMessage(
+    sliceCount: Int
+): String {
+    return if (sliceCount <= 0) {
+        "No composition slices."
+    } else {
+        "Loaded $sliceCount composition slice(s)."
+    }
+}
+
 internal fun buildTreeResultMessage(
     found: Boolean,
     roots: List<String>,

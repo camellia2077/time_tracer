@@ -59,29 +59,40 @@ fun ReportResultModeSwitcher(
 
 @Composable
 internal fun ReportChartResultContent(
-    chartRoots: List<String>,
-    chartSelectedRoot: String,
+    chartSemanticMode: ReportChartSemanticMode,
+    compositionVisualMode: ReportCompositionVisualMode,
+    trendChartRoots: List<String>,
+    trendChartSelectedRoot: String,
     reportMode: ReportMode,
-    chartLoading: Boolean,
-    chartError: String,
-    chartRenderModel: ChartRenderModel?,
-    chartLastTrace: ChartQueryTrace?,
+    trendChartLoading: Boolean,
+    trendChartError: String,
+    trendChartRenderModel: ChartRenderModel?,
+    trendChartLastTrace: ChartQueryTrace?,
+    compositionChartLoading: Boolean,
+    compositionChartError: String,
+    compositionChartRenderModel: CompositionChartRenderModel?,
+    compositionChartLastTrace: ChartQueryTrace?,
     chartShowAverageLine: Boolean,
+    piePalettePreset: ReportPiePalettePreset,
     heatmapTomlConfig: ReportHeatmapTomlConfig,
     heatmapStylePreference: ReportHeatmapStylePreference,
     onHeatmapThemePolicyChange: (ReportHeatmapThemePolicy) -> Unit,
     onHeatmapPaletteNameChange: (String) -> Unit,
     heatmapApplyMessage: String,
     isAppDarkThemeActive: Boolean,
+    onChartSemanticModeChange: (ReportChartSemanticMode) -> Unit,
+    onCompositionVisualModeChange: (ReportCompositionVisualMode) -> Unit,
     onChartRootChange: (String) -> Unit,
     onChartShowAverageLineChange: (Boolean) -> Unit,
     onLoadChart: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val normalizedRoots = remember(chartRoots) { chartRoots.distinct() }
+    val normalizedSemanticMode = chartSemanticMode.normalizeForReportMode(reportMode)
+    val allowTrendChart = reportMode != ReportMode.DAY
+    val normalizedRoots = remember(trendChartRoots) { trendChartRoots.distinct() }
     val rootOptions = remember(normalizedRoots) { listOf("") + normalizedRoots }
-    val sortedChartPoints = remember(chartRenderModel) {
-        chartRenderModel?.points
+    val sortedChartPoints = remember(trendChartRenderModel) {
+        trendChartRenderModel?.points
             ?.sortedWith(
                 compareBy<ReportChartPoint>(
                     { it.epochDay ?: parseEpochDayOrNull(it.date) ?: Long.MAX_VALUE },
@@ -90,8 +101,9 @@ internal fun ReportChartResultContent(
             )
             ?: emptyList()
     }
-    val chartAverageDurationSeconds = chartRenderModel?.averageDurationSeconds
-    val chartUsesLegacyStatsFallback = chartRenderModel?.usesLegacyStatsFallback == true
+    val chartAverageDurationSeconds = trendChartRenderModel?.averageDurationSeconds
+    val chartUsesLegacyStatsFallback = trendChartRenderModel?.usesLegacyStatsFallback == true
+    val compositionSlices = compositionChartRenderModel?.slices ?: emptyList()
     var selectedPointIndex by remember(sortedChartPoints) {
         mutableIntStateOf(
             if (sortedChartPoints.isEmpty()) {
@@ -101,7 +113,17 @@ internal fun ReportChartResultContent(
             }
         )
     }
+    var selectedItemIndex by remember(compositionSlices) {
+        mutableIntStateOf(
+            if (compositionSlices.isEmpty()) {
+                -1
+            } else {
+                0
+            }
+        )
+    }
     var chartVisualMode by rememberSaveable { mutableStateOf(ReportChartVisualMode.LINE) }
+    val effectiveCompositionVisualMode = compositionVisualMode
 
     Column(
         modifier = modifier
@@ -115,34 +137,100 @@ internal fun ReportChartResultContent(
             color = MaterialTheme.colorScheme.primary
         )
 
+        if (allowTrendChart) {
+            ReportChartSemanticModeSelector(
+                chartSemanticMode = normalizedSemanticMode,
+                onChartSemanticModeChange = onChartSemanticModeChange
+            )
+        }
+
         ReportChartParameterSection(
+            chartSemanticMode = normalizedSemanticMode,
             rootOptions = rootOptions,
-            chartSelectedRoot = chartSelectedRoot,
-            chartLoading = chartLoading,
-            chartLastTrace = chartLastTrace,
+            trendChartSelectedRoot = trendChartSelectedRoot,
+            chartLoading = if (normalizedSemanticMode == ReportChartSemanticMode.TREND) {
+                trendChartLoading
+            } else {
+                compositionChartLoading
+            },
+            chartLastTrace = if (normalizedSemanticMode == ReportChartSemanticMode.TREND) {
+                trendChartLastTrace
+            } else {
+                compositionChartLastTrace
+            },
             onChartRootChange = onChartRootChange,
             onLoadChart = onLoadChart
         )
 
-        ReportChartVisualizationSection(
-            chartError = chartError,
-            reportMode = reportMode,
-            sortedChartPoints = sortedChartPoints,
-            chartVisualMode = chartVisualMode,
-            onChartVisualModeChange = { chartVisualMode = it },
-            selectedPointIndex = selectedPointIndex,
-            onPointSelected = { selectedPointIndex = it },
-            chartAverageDurationSeconds = chartAverageDurationSeconds,
-            chartUsesLegacyStatsFallback = chartUsesLegacyStatsFallback,
-            chartShowAverageLine = chartShowAverageLine,
-            onChartShowAverageLineChange = onChartShowAverageLineChange,
-            heatmapTomlConfig = heatmapTomlConfig,
-            heatmapStylePreference = heatmapStylePreference,
-            onHeatmapThemePolicyChange = onHeatmapThemePolicyChange,
-            onHeatmapPaletteNameChange = onHeatmapPaletteNameChange,
-            heatmapApplyMessage = heatmapApplyMessage,
-            isAppDarkThemeActive = isAppDarkThemeActive
-        )
+        if (normalizedSemanticMode == ReportChartSemanticMode.TREND) {
+            ReportChartVisualizationSection(
+                chartError = trendChartError,
+                reportMode = reportMode,
+                sortedChartPoints = sortedChartPoints,
+                chartVisualMode = chartVisualMode,
+                onChartVisualModeChange = { chartVisualMode = it },
+                selectedPointIndex = selectedPointIndex,
+                onPointSelected = { selectedPointIndex = it },
+                chartAverageDurationSeconds = chartAverageDurationSeconds,
+                chartUsesLegacyStatsFallback = chartUsesLegacyStatsFallback,
+                chartShowAverageLine = chartShowAverageLine,
+                onChartShowAverageLineChange = onChartShowAverageLineChange,
+                heatmapTomlConfig = heatmapTomlConfig,
+                heatmapStylePreference = heatmapStylePreference,
+                onHeatmapThemePolicyChange = onHeatmapThemePolicyChange,
+                onHeatmapPaletteNameChange = onHeatmapPaletteNameChange,
+                heatmapApplyMessage = heatmapApplyMessage,
+                isAppDarkThemeActive = isAppDarkThemeActive
+            )
+        } else {
+            ReportCompositionVisualizationSection(
+                chartError = compositionChartError,
+                reportMode = reportMode,
+                renderModel = compositionChartRenderModel,
+                compositionVisualMode = effectiveCompositionVisualMode,
+                piePalettePreset = piePalettePreset,
+                selectedItemIndex = selectedItemIndex,
+                onItemSelected = { selectedItemIndex = it },
+                onCompositionVisualModeChange = onCompositionVisualModeChange
+            )
+        }
+    }
+}
+
+@Composable
+private fun ReportChartSemanticModeSelector(
+    chartSemanticMode: ReportChartSemanticMode,
+    onChartSemanticModeChange: (ReportChartSemanticMode) -> Unit
+) {
+    Text(
+        text = stringResource(R.string.report_label_chart_semantic),
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+    val modes = ReportChartSemanticMode.entries
+    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+        modes.forEachIndexed { index, item ->
+            val selected = chartSemanticMode == item
+            SegmentedButton(
+                shape = SegmentedButtonDefaults.itemShape(
+                    index = index,
+                    count = modes.size
+                ),
+                onClick = { onChartSemanticModeChange(item) },
+                selected = selected,
+                colors = TracerSegmentedButtonDefaults.colors(),
+                label = {
+                    Text(
+                        text = stringResource(item.labelRes()),
+                        fontWeight = if (selected) {
+                            TracerSegmentedButtonDefaults.activeLabelFontWeight
+                        } else {
+                            TracerSegmentedButtonDefaults.inactiveLabelFontWeight
+                        }
+                    )
+                }
+            )
+        }
     }
 }
 

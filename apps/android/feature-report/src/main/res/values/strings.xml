@@ -32,8 +32,12 @@
     <string name="report_action_load_project_tree">Load %1$s Project Tree</string>
 
     <string name="report_title_chart_parameters">Chart Parameters</string>
+    <string name="report_label_chart_semantic">Chart Focus</string>
+    <string name="report_chart_semantic_trend">Trend</string>
+    <string name="report_chart_semantic_composition">Breakdown</string>
     <string name="report_label_chart_root">Root Node</string>
     <string name="report_chart_root_all">All Roots</string>
+    <string name="report_chart_composition_scope_hint">Breakdown uses all root nodes in the selected period.</string>
     <string name="report_label_chart_lookback_days">Lookback Days (N)</string>
     <string name="report_label_chart_date_filter_mode">Date Filter Mode</string>
     <string name="report_chart_date_mode_lookback">Lookback</string>
@@ -42,6 +46,7 @@
     <string name="report_action_chart_loading">Loading Chart...</string>
     <string name="report_chart_empty">No chart data in this range.</string>
     <string name="report_chart_empty_in_range">No chart data in the selected date range.</string>
+    <string name="report_chart_empty_composition">No breakdown data in this range.</string>
     <string name="report_label_chart_visual">Chart Type</string>
     <string name="report_label_chart_range_start">Start Date</string>
     <string name="report_label_chart_range_end">End Date</string>
@@ -50,11 +55,15 @@
     <string name="report_chart_range_error_invalid_end">Invalid end date.</string>
     <string name="report_chart_range_error_order">Invalid range. Start date must be less than or equal to end date.</string>
     <string name="report_chart_visual_line">Line</string>
-    <string name="report_chart_visual_bar">Bar</string>
-    <string name="report_chart_visual_pie">Pie</string>
+    <string name="report_chart_visual_bar">Vertical Bar</string>
+    <string name="report_chart_visual_composition_pie">Pie</string>
+    <string name="report_chart_visual_composition_bar">Horizontal Bar</string>
+    <string name="report_chart_visual_composition_treemap">Treemap</string>
     <string name="report_chart_visual_heatmap_month">Heatmap (Month)</string>
     <string name="report_chart_visual_heatmap_year">Heatmap (Year)</string>
-    <string name="report_chart_pie_hint">Tap a slice to view date and duration.</string>
+    <string name="report_chart_pie_hint">Tap a slice to view root, duration, and share.</string>
+    <string name="report_chart_composition_bar_hint">Tap a row to view root, duration, and share.</string>
+    <string name="report_chart_composition_treemap_hint">Tap a tile to view root, duration, and share.</string>
     <string name="report_chart_heatmap_hint">Tap a day cell to view date and duration.</string>
     <string name="report_chart_heatmap_theme_policy_label">Heatmap Theme</string>
     <string name="report_chart_heatmap_theme_policy_system">System (Default)</string>
@@ -64,8 +73,13 @@
     <string name="report_chart_axis_y_hours">Y Axis: Duration (hours)</string>
     <string name="report_chart_toggle_average_line">Show Average Line</string>
     <string name="report_chart_average_duration">Average: %1$s</string>
+    <string name="report_chart_total_duration">Total: %1$s</string>
+    <string name="report_chart_active_roots">Active Roots: %1$d</string>
+    <string name="report_chart_range_days">Days in Range: %1$d</string>
     <string name="report_chart_legacy_fallback_notice">Using legacy local average fallback (planned removal in v0.3.0).</string>
     <string name="report_chart_selected_detail">Selected: %1$s · %2$s</string>
+    <string name="report_chart_composition_summary">Top roots in the selected breakdown.</string>
+    <string name="report_chart_composition_selected_detail">Selected: %1$s · %2$s (%3$.1f%%)</string>
 
     <string name="report_title_section_day">%1$s Day</string>
     <string name="report_title_section_month">%1$s Month</string>
@@ -93,6 +107,8 @@
     <string name="report_status_query_tree_result">query data tree -&gt; OK=%1$s</string>
     <string name="report_status_query_chart_running">query data report-chart running...</string>
     <string name="report_status_query_chart_result">query data report-chart -&gt; OK=%1$s</string>
+    <string name="report_status_query_composition_running">query data report-composition running...</string>
+    <string name="report_status_query_composition_result">query data report-composition -&gt; OK=%1$s</string>
 
     <string name="report_result_title_report">Report Result</string>
     <string name="report_result_title_report_error">Report Error</string>
@@ -115,6 +131,7 @@
 
     <string name="report_error_tree_level_min">Tree level must be &gt;= -1.</string>
     <string name="report_error_chart_payload_invalid">Report chart payload is invalid.</string>
+    <string name="report_error_composition_payload_invalid">Report breakdown payload is invalid.</string>
     <string name="report_error_period_argument_required">%1$s argument is required for period %2$s.</string>
     <string name="report_error_invalid_range_argument">Invalid range argument. Use start|end (example: 2026-02-01|2026-02-15).</string>
     <string name="report_error_invalid_range_date_value">Invalid range date value. Use YYYY-MM-DD (or YYYYMMDD).</string>

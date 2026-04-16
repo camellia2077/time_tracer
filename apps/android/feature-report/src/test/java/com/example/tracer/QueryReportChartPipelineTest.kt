@@ -25,7 +25,7 @@ class QueryReportChartPipelineTest {
         )
 
         assertEquals(0, gateway.chartQueryCount)
-        assertTrue(result.chartError.isNotBlank())
+        assertTrue(result.trendChartError.isNotBlank())
         assertEquals(ReportResultDisplayMode.CHART, result.resultDisplayMode)
     }
 
@@ -44,7 +44,7 @@ class QueryReportChartPipelineTest {
             }
         )
         val inputState = QueryReportUiState(
-            chartSelectedRoot = "study",
+            trendChartSelectedRoot = "study",
             reportMode = ReportMode.RECENT,
             reportRecentDays = "7"
         )
@@ -59,12 +59,12 @@ class QueryReportChartPipelineTest {
         )
 
         assertEquals(1, gateway.chartQueryCount)
-        assertNotNull(first.chartRenderModel)
-        assertNotNull(second.chartRenderModel)
-        assertEquals(false, first.chartLastTrace?.cacheHit)
-        assertEquals(true, second.chartLastTrace?.cacheHit)
+        assertNotNull(first.trendChartRenderModel)
+        assertNotNull(second.trendChartRenderModel)
+        assertEquals(false, first.trendChartLastTrace?.cacheHit)
+        assertEquals(true, second.trendChartLastTrace?.cacheHit)
         assertTrue(second.statusText.contains("cache=true"))
-        assertEquals(2, second.chartRenderModel?.points?.size)
+        assertEquals(2, second.trendChartRenderModel?.points?.size)
     }
 
     @Test
@@ -88,7 +88,7 @@ class QueryReportChartPipelineTest {
         assertEquals("2026-02-01", gateway.lastChartParams?.fromDateIso)
         assertEquals("2026-02-28", gateway.lastChartParams?.toDateIso)
         assertEquals(28, gateway.lastChartParams?.lookbackDays)
-        assertTrue(result.chartError.isEmpty())
+        assertTrue(result.trendChartError.isEmpty())
     }
 
     @Test
@@ -168,6 +168,22 @@ private class FakePipelineQueryGateway : QueryGateway {
             message = "ok"
         )
     }
+
+    override suspend fun queryReportComposition(
+        params: ReportCompositionQueryParams
+    ): ReportCompositionQueryResult = ReportCompositionQueryResult(
+        ok = true,
+        data = ReportCompositionData(
+            slices = listOf(
+                ReportCompositionSlice("study", 5400L, 60f),
+                ReportCompositionSlice("sleep", 3600L, 40f)
+            ),
+            totalDurationSeconds = 9000L,
+            activeRootCount = 2,
+            rangeDays = params.lookbackDays
+        ),
+        message = "ok"
+    )
 
     override suspend fun listActivityMappingNames(): ActivityMappingNamesResult =
         ActivityMappingNamesResult(ok = true, names = emptyList(), message = "ok")

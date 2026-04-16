@@ -196,4 +196,31 @@ class NativeRuntimeQueryOpsTest {
         assertEquals(2, data.rangeDays)
         assertEquals(1800L, data.averageDurationSeconds)
     }
+
+    @Test
+    fun parseReportCompositionContent_parsesRootSlices() {
+        val content = """
+            {
+              "total_duration_seconds": 9000,
+              "active_root_count": 3,
+              "range_days": 7,
+              "slices": [
+                {"root": "study", "duration_seconds": 5400, "percent": 60.0},
+                {"root": "sleep", "duration_seconds": 3600, "percent": 40.0}
+              ]
+            }
+        """.trimIndent()
+
+        val parsed = parseReportCompositionContent(content)
+        assertNotNull(parsed)
+        val data = checkNotNull(parsed)
+
+        assertEquals(9000L, data.totalDurationSeconds)
+        assertEquals(3, data.activeRootCount)
+        assertEquals(7, data.rangeDays)
+        assertEquals(2, data.slices.size)
+        assertEquals("study", data.slices[0].root)
+        assertEquals(5400L, data.slices[0].durationSeconds)
+        assertEquals(60f, data.slices[0].percent)
+    }
 }

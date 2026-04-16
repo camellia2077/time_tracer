@@ -2,7 +2,7 @@ package com.example.tracer
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -20,28 +20,29 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 @Composable
-internal fun ReportPieChart(
-    points: List<ReportChartPoint>,
+fun ReportPieChart(
+    slices: List<ReportCompositionSlice>,
+    palettePreset: ReportPiePalettePreset,
     selectedIndex: Int,
-    onPointSelected: (Int) -> Unit,
+    onSliceSelected: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val durationHours = remember(points) {
-        points.map { point -> point.durationSeconds.coerceAtLeast(0L) / 3600f }
+    val durationHours = remember(slices) {
+        slices.map { slice -> slice.durationSeconds.coerceAtLeast(0L) / 3600f }
     }
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
-
-    val selectedOutlineColor = MaterialTheme.colorScheme.surface
-    val slicePalette = listOf(
-        MaterialTheme.colorScheme.primary,
-        MaterialTheme.colorScheme.secondary,
-        MaterialTheme.colorScheme.tertiary,
-        MaterialTheme.colorScheme.primaryContainer,
-        MaterialTheme.colorScheme.secondaryContainer,
-        MaterialTheme.colorScheme.tertiaryContainer,
-        MaterialTheme.colorScheme.errorContainer,
-        MaterialTheme.colorScheme.inversePrimary
-    )
+    val isDarkTheme = isSystemInDarkTheme()
+    val sliceColors = rememberPieSliceColors(slices, palettePreset)
+    val sliceOutlineColor = if (isDarkTheme) {
+        androidx.compose.ui.graphics.Color.White.copy(alpha = 0.32f)
+    } else {
+        androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.18f)
+    }
+    val selectedOutlineColor = if (isDarkTheme) {
+        androidx.compose.ui.graphics.Color.White.copy(alpha = 0.88f)
+    } else {
+        androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.72f)
+    }
 
     Canvas(
         modifier = modifier
@@ -63,7 +64,7 @@ internal fun ReportPieChart(
                     )
                     val selectedSlice = findPieSliceIndex(plot = plot, tapOffset = tapOffset)
                     if (selectedSlice >= 0) {
-                        onPointSelected(selectedSlice)
+                        onSliceSelected(selectedSlice)
                     }
                 }
             }
@@ -90,7 +91,9 @@ internal fun ReportPieChart(
                 y = plot.center.y - plot.radius + explodeOffset.y
             )
             val drawSize = Size(diameter, diameter)
-            val sliceColor = slicePalette[index % slicePalette.size]
+            val sliceColor = sliceColors.getOrElse(index) {
+                resolvePieSliceColor(slices[index], palettePreset)
+            }
 
             drawArc(
                 color = sliceColor,
@@ -99,6 +102,15 @@ internal fun ReportPieChart(
                 useCenter = true,
                 topLeft = topLeft,
                 size = drawSize
+            )
+            drawArc(
+                color = sliceOutlineColor,
+                startAngle = slice.startAngle,
+                sweepAngle = slice.sweepAngle,
+                useCenter = true,
+                topLeft = topLeft,
+                size = drawSize,
+                style = Stroke(width = 1.25f)
             )
             if (isSelected) {
                 drawArc(

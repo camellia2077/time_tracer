@@ -96,3 +96,28 @@ private fun parseEpochDayOrNull(dateIso: String): Long? =
     } catch (_: Exception) {
         null
     }
+
+internal fun mapCorePayloadToCompositionRenderModel(
+    payload: ReportCompositionData
+): CompositionChartRenderModel {
+    val normalizedSlices = payload.slices
+        .map { slice ->
+            ReportCompositionSlice(
+                root = slice.root.trim(),
+                durationSeconds = slice.durationSeconds.coerceAtLeast(0L),
+                percent = slice.percent.coerceAtLeast(0f)
+            )
+        }
+        .filter { it.root.isNotEmpty() && it.durationSeconds > 0L }
+        .sortedWith(
+            compareByDescending<ReportCompositionSlice> { it.durationSeconds }
+                .thenBy { it.root }
+        )
+
+    return CompositionChartRenderModel(
+        slices = normalizedSlices,
+        totalDurationSeconds = payload.totalDurationSeconds.coerceAtLeast(0L),
+        activeRootCount = payload.activeRootCount.coerceAtLeast(0),
+        rangeDays = payload.rangeDays.coerceAtLeast(0)
+    )
+}

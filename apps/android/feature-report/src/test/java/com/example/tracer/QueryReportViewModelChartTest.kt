@@ -29,6 +29,7 @@ class QueryReportViewModelChartTest {
         advanceUntilIdle()
 
         assertEquals(1, fakeQueryGateway.chartQueryCount)
+        assertEquals(0, fakeQueryGateway.compositionQueryCount)
         assertEquals("study", fakeQueryGateway.lastChartParams?.root)
         assertEquals(14, fakeQueryGateway.lastChartParams?.lookbackDays)
         assertEquals(null, fakeQueryGateway.lastChartParams?.fromDateIso)
@@ -36,17 +37,18 @@ class QueryReportViewModelChartTest {
 
         val state = viewModel.uiState
         assertEquals(ReportResultDisplayMode.CHART, state.resultDisplayMode)
-        assertTrue(!state.chartLoading)
-        assertTrue(state.chartError.isEmpty())
-        assertEquals(listOf("sleep", "study"), state.chartRoots)
-        assertEquals("study", state.chartSelectedRoot)
-        assertEquals(2, state.chartPoints.size)
-        assertEquals("2026-02-13", state.chartPoints[0].date)
-        assertEquals(4500L, state.chartAverageDurationSeconds)
-        assertEquals(9000L, state.chartTotalDurationSeconds)
-        assertEquals(2, state.chartActiveDays)
-        assertEquals(2, state.chartRangeDays)
-        assertEquals(false, state.chartUsesLegacyStatsFallback)
+        assertEquals(ReportChartSemanticMode.TREND, state.chartSemanticMode)
+        assertTrue(!state.trendChartLoading)
+        assertTrue(state.trendChartError.isEmpty())
+        assertEquals(listOf("sleep", "study"), state.trendChartRoots)
+        assertEquals("study", state.trendChartSelectedRoot)
+        assertEquals(2, state.trendChartPoints.size)
+        assertEquals("2026-02-13", state.trendChartPoints[0].date)
+        assertEquals(4500L, state.trendChartAverageDurationSeconds)
+        assertEquals(9000L, state.trendChartTotalDurationSeconds)
+        assertEquals(2, state.trendChartActiveDays)
+        assertEquals(2, state.trendChartRangeDays)
+        assertEquals(false, state.trendChartUsesLegacyStatsFallback)
     }
 
     @Test
@@ -63,7 +65,7 @@ class QueryReportViewModelChartTest {
         advanceUntilIdle()
 
         assertEquals(0, fakeQueryGateway.chartQueryCount)
-        assertTrue(viewModel.uiState.chartError.isNotBlank())
+        assertTrue(viewModel.uiState.trendChartError.isNotBlank())
     }
 
     @Test
@@ -85,7 +87,7 @@ class QueryReportViewModelChartTest {
         assertEquals("2026-02-14", fakeQueryGateway.lastChartParams?.toDateIso)
         assertEquals("20260210", viewModel.uiState.reportRangeStartDate)
         assertEquals("20260214", viewModel.uiState.reportRangeEndDate)
-        assertTrue(viewModel.uiState.chartError.isEmpty())
+        assertTrue(viewModel.uiState.trendChartError.isEmpty())
     }
 
     @Test
@@ -132,7 +134,7 @@ class QueryReportViewModelChartTest {
         assertEquals("2026-02-01", fakeQueryGateway.lastChartParams?.fromDateIso)
         assertEquals("2026-02-28", fakeQueryGateway.lastChartParams?.toDateIso)
         assertEquals(28, fakeQueryGateway.lastChartParams?.lookbackDays)
-        assertTrue(viewModel.uiState.chartError.isEmpty())
+        assertTrue(viewModel.uiState.trendChartError.isEmpty())
     }
 
     @Test
@@ -148,7 +150,7 @@ class QueryReportViewModelChartTest {
         viewModel.onResultDisplayModeChange(ReportResultDisplayMode.CHART)
         advanceUntilIdle()
         assertEquals(1, fakeQueryGateway.chartQueryCount)
-        assertTrue(viewModel.uiState.chartPoints.isNotEmpty())
+        assertTrue(viewModel.uiState.trendChartPoints.isNotEmpty())
 
         viewModel.onResultDisplayModeChange(ReportResultDisplayMode.TEXT)
         viewModel.onReportModeChange(ReportMode.DAY)
@@ -156,16 +158,19 @@ class QueryReportViewModelChartTest {
         advanceUntilIdle()
 
         assertEquals(1, fakeQueryGateway.chartQueryCount)
-        assertEquals(null, viewModel.uiState.chartRenderModel)
-        assertTrue(viewModel.uiState.chartPoints.isEmpty())
+        assertEquals(null, viewModel.uiState.trendChartRenderModel)
+        assertTrue(viewModel.uiState.trendChartPoints.isEmpty())
+        assertEquals(null, viewModel.uiState.compositionChartRenderModel)
 
         viewModel.onResultDisplayModeChange(ReportResultDisplayMode.CHART)
         advanceUntilIdle()
 
-        assertEquals(2, fakeQueryGateway.chartQueryCount)
-        assertEquals("2026-04-13", fakeQueryGateway.lastChartParams?.fromDateIso)
-        assertEquals("2026-04-13", fakeQueryGateway.lastChartParams?.toDateIso)
-        assertEquals(1, fakeQueryGateway.lastChartParams?.lookbackDays)
+        assertEquals(1, fakeQueryGateway.chartQueryCount)
+        assertEquals(1, fakeQueryGateway.compositionQueryCount)
+        assertEquals("2026-04-13", fakeQueryGateway.lastCompositionParams?.fromDateIso)
+        assertEquals("2026-04-13", fakeQueryGateway.lastCompositionParams?.toDateIso)
+        assertEquals(1, fakeQueryGateway.lastCompositionParams?.lookbackDays)
+        assertEquals(ReportChartSemanticMode.COMPOSITION, viewModel.uiState.chartSemanticMode)
     }
 
     @Test
@@ -176,6 +181,7 @@ class QueryReportViewModelChartTest {
             queryGateway = fakeQueryGateway
         )
 
+        viewModel.onReportModeChange(ReportMode.RECENT)
         viewModel.onResultDisplayModeChange(ReportResultDisplayMode.CHART)
         advanceUntilIdle()
         assertEquals(1, fakeQueryGateway.chartQueryCount)
@@ -196,18 +202,180 @@ class QueryReportViewModelChartTest {
             queryGateway = fakeQueryGateway
         )
 
+        viewModel.onReportModeChange(ReportMode.RECENT)
         viewModel.onResultDisplayModeChange(ReportResultDisplayMode.CHART)
         advanceUntilIdle()
 
         val state = viewModel.uiState
-        assertEquals(2, state.chartPoints.size)
-        assertEquals(4500L, state.chartAverageDurationSeconds)
-        assertEquals(9000L, state.chartTotalDurationSeconds)
-        assertEquals(2, state.chartActiveDays)
-        assertEquals(2, state.chartRangeDays)
-        assertEquals(true, state.chartUsesLegacyStatsFallback)
-        assertNotNull(state.chartLastTrace)
-        assertEquals(false, state.chartLastTrace?.cacheHit)
+        assertEquals(2, state.trendChartPoints.size)
+        assertEquals(4500L, state.trendChartAverageDurationSeconds)
+        assertEquals(9000L, state.trendChartTotalDurationSeconds)
+        assertEquals(2, state.trendChartActiveDays)
+        assertEquals(2, state.trendChartRangeDays)
+        assertEquals(true, state.trendChartUsesLegacyStatsFallback)
+        assertNotNull(state.trendChartLastTrace)
+        assertEquals(false, state.trendChartLastTrace?.cacheHit)
+    }
+
+    @Test
+    fun switchToChart_withDay_usesCompositionQuery() = runTest {
+        val fakeQueryGateway = FakeChartQueryGateway()
+        val viewModel = QueryReportViewModel(
+            reportGateway = FakeChartReportGateway(),
+            queryGateway = fakeQueryGateway
+        )
+
+        viewModel.onReportModeChange(ReportMode.DAY)
+        viewModel.onReportDateChange("20260413")
+        viewModel.onResultDisplayModeChange(ReportResultDisplayMode.CHART)
+        advanceUntilIdle()
+
+        assertEquals(0, fakeQueryGateway.chartQueryCount)
+        assertEquals(1, fakeQueryGateway.compositionQueryCount)
+        assertEquals("2026-04-13", fakeQueryGateway.lastCompositionParams?.fromDateIso)
+        assertEquals("2026-04-13", fakeQueryGateway.lastCompositionParams?.toDateIso)
+        assertEquals(ReportChartSemanticMode.COMPOSITION, viewModel.uiState.chartSemanticMode)
+        assertEquals(
+            ReportCompositionVisualMode.HORIZONTAL_BAR,
+            viewModel.uiState.compositionVisualMode
+        )
+        assertNotNull(viewModel.uiState.compositionChartRenderModel)
+    }
+
+    @Test
+    fun switchingSemanticToComposition_queriesCompositionForNonDayModes() = runTest {
+        val fakeQueryGateway = FakeChartQueryGateway()
+        val viewModel = QueryReportViewModel(
+            reportGateway = FakeChartReportGateway(),
+            queryGateway = fakeQueryGateway
+        )
+
+        viewModel.onReportModeChange(ReportMode.WEEK)
+        viewModel.onReportWeekChange("202615")
+        viewModel.onResultDisplayModeChange(ReportResultDisplayMode.CHART)
+        advanceUntilIdle()
+        assertEquals(1, fakeQueryGateway.chartQueryCount)
+
+        viewModel.onChartSemanticModeChange(ReportChartSemanticMode.COMPOSITION)
+        advanceUntilIdle()
+
+        assertEquals(1, fakeQueryGateway.chartQueryCount)
+        assertEquals(1, fakeQueryGateway.compositionQueryCount)
+        assertEquals("2026-04-06", fakeQueryGateway.lastCompositionParams?.fromDateIso)
+        assertEquals("2026-04-12", fakeQueryGateway.lastCompositionParams?.toDateIso)
+        assertEquals(ReportChartSemanticMode.COMPOSITION, viewModel.uiState.chartSemanticMode)
+    }
+
+    @Test
+    fun switchingCompositionVisualMode_doesNotReloadCompositionQuery() = runTest {
+        val fakeQueryGateway = FakeChartQueryGateway()
+        val viewModel = QueryReportViewModel(
+            reportGateway = FakeChartReportGateway(),
+            queryGateway = fakeQueryGateway
+        )
+
+        viewModel.onReportModeChange(ReportMode.DAY)
+        viewModel.onReportDateChange("20260413")
+        viewModel.onResultDisplayModeChange(ReportResultDisplayMode.CHART)
+        advanceUntilIdle()
+        assertEquals(1, fakeQueryGateway.compositionQueryCount)
+
+        viewModel.onCompositionVisualModeChange(ReportCompositionVisualMode.PIE)
+        advanceUntilIdle()
+
+        assertEquals(1, fakeQueryGateway.compositionQueryCount)
+        assertEquals(ReportCompositionVisualMode.PIE, viewModel.uiState.compositionVisualMode)
+    }
+
+    @Test
+    fun dayComposition_canSwitchToTreemapWithoutReloadingCompositionQuery() = runTest {
+        val fakeQueryGateway = FakeChartQueryGateway()
+        val viewModel = QueryReportViewModel(
+            reportGateway = FakeChartReportGateway(),
+            queryGateway = fakeQueryGateway
+        )
+
+        viewModel.onReportModeChange(ReportMode.DAY)
+        viewModel.onReportDateChange("20260413")
+        viewModel.onResultDisplayModeChange(ReportResultDisplayMode.CHART)
+        advanceUntilIdle()
+        assertEquals(1, fakeQueryGateway.compositionQueryCount)
+
+        viewModel.onCompositionVisualModeChange(ReportCompositionVisualMode.TREEMAP)
+        advanceUntilIdle()
+
+        assertEquals(1, fakeQueryGateway.compositionQueryCount)
+        assertEquals(ReportCompositionVisualMode.TREEMAP, viewModel.uiState.compositionVisualMode)
+    }
+
+    @Test
+    fun changingReportParamsInChartMode_preservesCompositionVisualModeWhileReloading() = runTest {
+        val fakeQueryGateway = FakeChartQueryGateway()
+        val viewModel = QueryReportViewModel(
+            reportGateway = FakeChartReportGateway(),
+            queryGateway = fakeQueryGateway
+        )
+
+        viewModel.onReportModeChange(ReportMode.DAY)
+        viewModel.onReportDateChange("20260413")
+        viewModel.onResultDisplayModeChange(ReportResultDisplayMode.CHART)
+        advanceUntilIdle()
+        viewModel.onCompositionVisualModeChange(ReportCompositionVisualMode.PIE)
+
+        viewModel.onReportDateChange("20260414")
+        advanceUntilIdle()
+
+        assertEquals(2, fakeQueryGateway.compositionQueryCount)
+        assertEquals("2026-04-14", fakeQueryGateway.lastCompositionParams?.fromDateIso)
+        assertEquals("2026-04-14", fakeQueryGateway.lastCompositionParams?.toDateIso)
+        assertEquals(ReportCompositionVisualMode.PIE, viewModel.uiState.compositionVisualMode)
+    }
+
+    @Test
+    fun nonDayComposition_canUseHorizontalBarWithoutReloadingQuery() = runTest {
+        val fakeQueryGateway = FakeChartQueryGateway()
+        val viewModel = QueryReportViewModel(
+            reportGateway = FakeChartReportGateway(),
+            queryGateway = fakeQueryGateway
+        )
+
+        viewModel.onReportModeChange(ReportMode.WEEK)
+        viewModel.onReportWeekChange("202615")
+        viewModel.onResultDisplayModeChange(ReportResultDisplayMode.CHART)
+        advanceUntilIdle()
+        assertEquals(1, fakeQueryGateway.chartQueryCount)
+
+        viewModel.onChartSemanticModeChange(ReportChartSemanticMode.COMPOSITION)
+        advanceUntilIdle()
+        assertEquals(1, fakeQueryGateway.compositionQueryCount)
+
+        viewModel.onCompositionVisualModeChange(ReportCompositionVisualMode.HORIZONTAL_BAR)
+        advanceUntilIdle()
+
+        assertEquals(1, fakeQueryGateway.compositionQueryCount)
+        assertEquals(
+            ReportCompositionVisualMode.HORIZONTAL_BAR,
+            viewModel.uiState.compositionVisualMode
+        )
+    }
+
+    @Test
+    fun leavingDayMode_normalizesTreemapBackToPieForNonDayComposition() = runTest {
+        val fakeQueryGateway = FakeChartQueryGateway()
+        val viewModel = QueryReportViewModel(
+            reportGateway = FakeChartReportGateway(),
+            queryGateway = fakeQueryGateway
+        )
+
+        viewModel.onReportModeChange(ReportMode.DAY)
+        viewModel.onResultDisplayModeChange(ReportResultDisplayMode.CHART)
+        advanceUntilIdle()
+        viewModel.onCompositionVisualModeChange(ReportCompositionVisualMode.TREEMAP)
+
+        viewModel.onReportModeChange(ReportMode.WEEK)
+        advanceUntilIdle()
+
+        assertEquals(ReportCompositionVisualMode.PIE, viewModel.uiState.compositionVisualMode)
     }
 }
 
@@ -226,6 +394,8 @@ private class FakeChartQueryGateway(
 ) : QueryGateway {
     var chartQueryCount: Int = 0
     var lastChartParams: ReportChartQueryParams? = null
+    var compositionQueryCount: Int = 0
+    var lastCompositionParams: ReportCompositionQueryParams? = null
 
     override suspend fun queryActivitySuggestions(
         lookbackDays: Int,
@@ -275,6 +445,26 @@ private class FakeChartQueryGateway(
         return ReportChartQueryResult(
             ok = true,
             data = resolvedChartData,
+            message = "ok"
+        )
+    }
+
+    override suspend fun queryReportComposition(
+        params: ReportCompositionQueryParams
+    ): ReportCompositionQueryResult {
+        compositionQueryCount += 1
+        lastCompositionParams = params
+        return ReportCompositionQueryResult(
+            ok = true,
+            data = ReportCompositionData(
+                slices = listOf(
+                    ReportCompositionSlice(root = "study", durationSeconds = 5400L, percent = 60f),
+                    ReportCompositionSlice(root = "sleep", durationSeconds = 3600L, percent = 40f)
+                ),
+                totalDurationSeconds = 9000L,
+                activeRootCount = 2,
+                rangeDays = params.lookbackDays
+            ),
             message = "ok"
         )
     }

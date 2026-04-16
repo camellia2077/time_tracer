@@ -27,8 +27,9 @@ import com.example.tracer.ui.components.TracerOutlinedTextFieldDefaults
 
 @Composable
 internal fun ReportChartParameterSection(
+    chartSemanticMode: ReportChartSemanticMode,
     rootOptions: List<String>,
-    chartSelectedRoot: String,
+    trendChartSelectedRoot: String,
     chartLoading: Boolean,
     chartLastTrace: ChartQueryTrace?,
     onChartRootChange: (String) -> Unit,
@@ -36,46 +37,55 @@ internal fun ReportChartParameterSection(
 ) {
     var rootMenuExpanded by remember { mutableStateOf(false) }
 
-    Box(modifier = Modifier.fillMaxWidth()) {
-        OutlinedTextField(
-            value = if (chartSelectedRoot.isBlank()) {
-                stringResource(R.string.report_chart_root_all)
-            } else {
-                chartSelectedRoot
-            },
-            onValueChange = {},
-            readOnly = true,
-            label = { Text(stringResource(R.string.report_label_chart_root)) },
-            trailingIcon = {
-                IconButton(onClick = { rootMenuExpanded = !rootMenuExpanded }) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = null
-                    )
-                }
-            },
-            shape = TracerOutlinedTextFieldDefaults.shape,
-            modifier = Modifier.fillMaxWidth()
-        )
-        DropdownMenu(
-            expanded = rootMenuExpanded,
-            onDismissRequest = { rootMenuExpanded = false }
-        ) {
-            rootOptions.forEach { option ->
-                val label = if (option.isBlank()) {
+    if (chartSemanticMode == ReportChartSemanticMode.TREND) {
+        Box(modifier = Modifier.fillMaxWidth()) {
+            OutlinedTextField(
+                value = if (trendChartSelectedRoot.isBlank()) {
                     stringResource(R.string.report_chart_root_all)
                 } else {
-                    option
-                }
-                DropdownMenuItem(
-                    text = { Text(label) },
-                    onClick = {
-                        onChartRootChange(option)
-                        rootMenuExpanded = false
+                    trendChartSelectedRoot
+                },
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(stringResource(R.string.report_label_chart_root)) },
+                trailingIcon = {
+                    IconButton(onClick = { rootMenuExpanded = !rootMenuExpanded }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = null
+                        )
                     }
-                )
+                },
+                shape = TracerOutlinedTextFieldDefaults.shape,
+                modifier = Modifier.fillMaxWidth()
+            )
+            DropdownMenu(
+                expanded = rootMenuExpanded,
+                onDismissRequest = { rootMenuExpanded = false }
+            ) {
+                rootOptions.forEach { option ->
+                    val label = if (option.isBlank()) {
+                        stringResource(R.string.report_chart_root_all)
+                    } else {
+                        option
+                    }
+                    DropdownMenuItem(
+                        text = { Text(label) },
+                        onClick = {
+                            onChartRootChange(option)
+                            rootMenuExpanded = false
+                        }
+                    )
+                }
             }
         }
+    } else {
+        Text(
+            text = stringResource(R.string.report_chart_composition_scope_hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 
     Button(
@@ -96,7 +106,7 @@ internal fun ReportChartParameterSection(
         Text(
             text = "op=${chartLastTrace.operationId} · " +
                 "cache=${chartLastTrace.cacheHit} · " +
-                "ms=${chartLastTrace.durationMs} · points=${chartLastTrace.pointCount}",
+                "ms=${chartLastTrace.durationMs} · items=${chartLastTrace.pointCount}",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.fillMaxWidth()

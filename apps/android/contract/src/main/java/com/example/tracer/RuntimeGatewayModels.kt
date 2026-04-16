@@ -280,6 +280,32 @@ data class ReportChartQueryResult(
     val operationId: String = ""
 )
 
+data class ReportCompositionQueryParams(
+    val lookbackDays: Int = 7,
+    val fromDateIso: String? = null,
+    val toDateIso: String? = null
+)
+
+data class ReportCompositionSlice(
+    val root: String,
+    val durationSeconds: Long,
+    val percent: Float
+)
+
+data class ReportCompositionData(
+    val slices: List<ReportCompositionSlice>,
+    val totalDurationSeconds: Long,
+    val activeRootCount: Int,
+    val rangeDays: Int
+)
+
+data class ReportCompositionQueryResult(
+    val ok: Boolean,
+    val data: ReportCompositionData?,
+    val message: String,
+    val operationId: String = ""
+)
+
 data class RuntimeDiagnosticEntry(
     val timestampIso: String,
     val operationId: String,

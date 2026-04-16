@@ -91,6 +91,46 @@ internal fun parseReportChartContent(content: String): ReportChartData? {
     }
 }
 
+internal fun parseReportCompositionContent(content: String): ReportCompositionData? {
+    if (content.isBlank()) {
+        return null
+    }
+
+    return try {
+        val payload = JSONObject(content)
+        val totalDurationSeconds = payload.optLong("total_duration_seconds", 0L).coerceAtLeast(0L)
+        val activeRootCount = payload.optInt("active_root_count", 0).coerceAtLeast(0)
+        val rangeDays = payload.optInt("range_days", 0).coerceAtLeast(0)
+        val slicesArray = payload.optJSONArray("slices")
+        val slices = mutableListOf<ReportCompositionSlice>()
+        if (slicesArray != null) {
+            for (index in 0 until slicesArray.length()) {
+                val row = slicesArray.optJSONObject(index) ?: continue
+                val root = row.optString("root", "").trim()
+                if (root.isEmpty()) {
+                    continue
+                }
+                val durationSeconds = row.optLong("duration_seconds", 0L).coerceAtLeast(0L)
+                val percent = row.optDouble("percent", 0.0).toFloat().coerceAtLeast(0f)
+                slices += ReportCompositionSlice(
+                    root = root,
+                    durationSeconds = durationSeconds,
+                    percent = percent
+                )
+            }
+        }
+
+        ReportCompositionData(
+            slices = slices,
+            totalDurationSeconds = totalDurationSeconds,
+            activeRootCount = activeRootCount,
+            rangeDays = rangeDays
+        )
+    } catch (_: Exception) {
+        null
+    }
+}
+
 internal fun parseTreeQueryContent(content: String): ParsedTreeQueryPayload? {
     if (content.isBlank()) {
         return null

@@ -34,6 +34,13 @@ data class ChartRenderModel(
     val usesSchemaVersionFallback: Boolean
 )
 
+data class CompositionChartRenderModel(
+    val slices: List<ReportCompositionSlice>,
+    val totalDurationSeconds: Long,
+    val activeRootCount: Int,
+    val rangeDays: Int
+)
+
 data class ChartQueryTrace(
     val operationId: String,
     val parameterHash: String,

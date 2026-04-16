@@ -91,6 +91,17 @@
     <string name="config_language_chinese">中文</string>
     <string name="config_language_english">English</string>
     <string name="config_language_japanese">日本語</string>
+    <string name="config_title_report_chart_style">Report Chart Style</string>
+    <string name="config_label_report_breakdown_palette">Breakdown Chart Palette</string>
+    <string name="config_report_breakdown_palette_current">Breakdown Chart Palette (Current: %1$s)</string>
+    <string name="config_report_breakdown_palette_tap_expand">Breakdown Chart Palette (Tap to Expand)</string>
+    <string name="config_report_breakdown_palette_preview_hint">Used by breakdown pie and horizontal bar charts. Preview both visuals below before applying the palette.</string>
+    <string name="config_report_breakdown_palette_pie_preview">Breakdown Pie Preview</string>
+    <string name="config_report_breakdown_palette_bar_preview">Breakdown Horizontal Bar Preview</string>
+    <string name="config_report_breakdown_palette_soft">Soft</string>
+    <string name="config_report_breakdown_palette_editorial">Editorial</string>
+    <string name="config_report_breakdown_palette_vivid">Vivid</string>
+    <string name="config_report_breakdown_palette_mono_accent">Mono Accent</string>
 
     <string name="config_title_dark_theme_style">Dark Theme Style</string>
     <string name="config_dark_theme_style_tinted">Tinted</string>

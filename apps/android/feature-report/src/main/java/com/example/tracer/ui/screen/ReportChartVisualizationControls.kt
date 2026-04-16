@@ -71,14 +71,6 @@ internal fun ReportChartVisualizationHintSection(
     heatmapApplyMessage: String
 ) {
     when (chartVisualMode) {
-        ReportChartVisualMode.PIE -> {
-            Text(
-                text = stringResource(R.string.report_chart_pie_hint),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
         ReportChartVisualMode.HEATMAP_MONTH,
         ReportChartVisualMode.HEATMAP_YEAR -> {
             ReportChartHeatmapSettings(

@@ -53,6 +53,8 @@ internal data class TracerTabRouteArgs(
     val onSetThemeMode: (ThemeMode) -> Unit,
     val onSetUseDynamicColor: (Boolean) -> Unit,
     val onSetDarkThemeStyle: (DarkThemeStyle) -> Unit,
+    val reportPiePalettePreset: ReportPiePalettePreset,
+    val onReportPiePalettePresetChange: (ReportPiePalettePreset) -> Unit,
     val reportChartShowAverageLine: Boolean,
     val onReportChartShowAverageLineChange: (Boolean) -> Unit,
     val reportHeatmapTomlConfig: ReportHeatmapTomlConfig,
@@ -160,6 +162,7 @@ internal object TracerTabRegistry {
                     queryReportViewModel = args.queryReportViewModel,
                     availableTxtMonths = args.recordUiState.availableMonths,
                     chartShowAverageLine = args.reportChartShowAverageLine,
+                    piePalettePreset = args.reportPiePalettePreset,
                     onChartShowAverageLineChange = args.onReportChartShowAverageLineChange,
                     heatmapTomlConfig = args.reportHeatmapTomlConfig,
                     heatmapStylePreference = args.reportHeatmapStylePreference,
@@ -299,6 +302,8 @@ internal object TracerTabRegistry {
                     onSetThemeMode = args.onSetThemeMode,
                     onSetUseDynamicColor = args.onSetUseDynamicColor,
                     onSetDarkThemeStyle = args.onSetDarkThemeStyle,
+                    reportPiePalettePreset = args.reportPiePalettePreset,
+                    onReportPiePalettePresetChange = args.onReportPiePalettePresetChange,
                     appLanguage = args.appLanguage,
                     onSetAppLanguage = args.onSetAppLanguage
                 )

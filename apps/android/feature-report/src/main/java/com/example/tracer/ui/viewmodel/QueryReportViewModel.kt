@@ -43,7 +43,17 @@ class QueryReportViewModel(
 
     fun onReportModeChange(mode: ReportMode) {
         updateReportParams {
-            copy(reportMode = mode)
+            copy(
+                reportMode = mode,
+                chartSemanticMode = defaultChartSemanticMode(mode),
+                compositionVisualMode = if (mode == ReportMode.DAY) {
+                    // Day composition defaults to horizontal bar because single-day root
+                    // breakdown is primarily about ranking and comparison, not area share.
+                    ReportCompositionVisualMode.HORIZONTAL_BAR
+                } else {
+                    compositionVisualMode.normalizeForReportMode(mode)
+                }
+            )
         }
     }
 
@@ -72,23 +82,58 @@ class QueryReportViewModel(
     }
 
     fun onResultDisplayModeChange(mode: ReportResultDisplayMode) {
-        uiState = uiState.copy(resultDisplayMode = mode)
+        val normalizedState = if (mode == ReportResultDisplayMode.CHART) {
+            uiState.copy(
+                resultDisplayMode = mode,
+                chartSemanticMode = defaultChartSemanticMode(uiState.reportMode),
+                compositionVisualMode = if (uiState.reportMode == ReportMode.DAY) {
+                    // Re-entering day chart should start from the comparison-first view.
+                    ReportCompositionVisualMode.HORIZONTAL_BAR
+                } else {
+                    uiState.compositionVisualMode.normalizeForReportMode(uiState.reportMode)
+                }
+            )
+        } else {
+            uiState.copy(resultDisplayMode = mode)
+        }
+        uiState = normalizedState
         if (mode == ReportResultDisplayMode.CHART &&
-            !uiState.chartLoading &&
-            uiState.chartRenderModel == null &&
-            uiState.chartPoints.isEmpty()
+            !normalizedState.isChartLoading() &&
+            !normalizedState.hasChartData()
         ) {
             loadChart()
         }
     }
 
     fun onChartRootChange(root: String) {
-        uiState = uiState.copy(chartSelectedRoot = root)
+        uiState = uiState.copy(trendChartSelectedRoot = root)
         if (uiState.resultDisplayMode == ReportResultDisplayMode.CHART &&
-            !uiState.chartLoading
+            uiState.chartSemanticMode == ReportChartSemanticMode.TREND &&
+            !uiState.trendChartLoading
         ) {
             loadChart()
         }
+    }
+
+    fun onChartSemanticModeChange(mode: ReportChartSemanticMode) {
+        val normalizedMode = mode.normalizeForReportMode(uiState.reportMode)
+        if (uiState.chartSemanticMode == normalizedMode) {
+            return
+        }
+        uiState = uiState.copy(chartSemanticMode = normalizedMode)
+        if (uiState.resultDisplayMode == ReportResultDisplayMode.CHART &&
+            !uiState.isChartLoading() &&
+            !uiState.hasChartData()
+        ) {
+            loadChart()
+        }
+    }
+
+    fun onCompositionVisualModeChange(mode: ReportCompositionVisualMode) {
+        if (uiState.compositionVisualMode == mode) {
+            return
+        }
+        uiState = uiState.copy(compositionVisualMode = mode)
     }
 
     fun onReportRangeStartDateChange(value: String) {
@@ -147,7 +192,7 @@ class QueryReportViewModel(
     ) {
         val nextState = uiState.transform().invalidateChartState()
         val shouldReloadChart = nextState.resultDisplayMode == ReportResultDisplayMode.CHART &&
-            !nextState.chartLoading
+            !nextState.isChartLoading()
         uiState = nextState
         // Report parameters define the chart query window, so any parameter change must
         // invalidate the current chart instead of leaving a stale series on screen.
@@ -157,18 +202,35 @@ class QueryReportViewModel(
     }
 
     private fun QueryReportUiState.invalidateChartState(): QueryReportUiState = copy(
-        chartRoots = emptyList(),
-        chartRenderModel = null,
-        chartLastTrace = null,
-        chartPoints = emptyList(),
-        chartAverageDurationSeconds = null,
-        chartTotalDurationSeconds = null,
-        chartActiveDays = null,
-        chartRangeDays = null,
-        chartUsesLegacyStatsFallback = false,
-        chartLoading = false,
-        chartError = ""
+        trendChartRoots = emptyList(),
+        trendChartRenderModel = null,
+        trendChartLastTrace = null,
+        trendChartPoints = emptyList(),
+        trendChartAverageDurationSeconds = null,
+        trendChartTotalDurationSeconds = null,
+        trendChartActiveDays = null,
+        trendChartRangeDays = null,
+        trendChartUsesLegacyStatsFallback = false,
+        trendChartLoading = false,
+        trendChartError = "",
+        compositionChartRenderModel = null,
+        compositionChartLastTrace = null,
+        compositionChartLoading = false,
+        compositionChartError = ""
     )
+
+    private fun QueryReportUiState.isChartLoading(): Boolean =
+        when (chartSemanticMode.normalizeForReportMode(reportMode)) {
+            ReportChartSemanticMode.TREND -> trendChartLoading
+            ReportChartSemanticMode.COMPOSITION -> compositionChartLoading
+        }
+
+    private fun QueryReportUiState.hasChartData(): Boolean =
+        when (chartSemanticMode.normalizeForReportMode(reportMode)) {
+            ReportChartSemanticMode.TREND -> trendChartRenderModel != null
+            ReportChartSemanticMode.COMPOSITION ->
+                compositionChartRenderModel != null
+        }
 
     private fun dispatchIntent(intent: QueryReportIntent) {
         viewModelScope.launch {

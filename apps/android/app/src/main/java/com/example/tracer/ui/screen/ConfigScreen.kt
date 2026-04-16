@@ -85,6 +85,8 @@ internal fun ConfigSection(
     onSetThemeMode: (com.example.tracer.data.ThemeMode) -> Unit,
     onSetUseDynamicColor: (Boolean) -> Unit,
     onSetDarkThemeStyle: (com.example.tracer.data.DarkThemeStyle) -> Unit,
+    reportPiePalettePreset: ReportPiePalettePreset,
+    onReportPiePalettePresetChange: (ReportPiePalettePreset) -> Unit,
     appLanguage: com.example.tracer.data.AppLanguage,
     onSetAppLanguage: (com.example.tracer.data.AppLanguage) -> Unit
 ) {
@@ -128,6 +130,8 @@ internal fun ConfigSection(
             onSetThemeMode = onSetThemeMode,
             onSetUseDynamicColor = onSetUseDynamicColor,
             onSetDarkThemeStyle = onSetDarkThemeStyle,
+            reportPiePalettePreset = reportPiePalettePreset,
+            onReportPiePalettePresetChange = onReportPiePalettePresetChange,
             appLanguage = appLanguage,
             onSetAppLanguage = onSetAppLanguage
         )

@@ -88,6 +88,17 @@
     <string name="config_language_chinese">中文</string>
     <string name="config_language_english">English</string>
     <string name="config_language_japanese">日本語</string>
+    <string name="config_title_report_chart_style">レポートチャートのスタイル</string>
+    <string name="config_label_report_breakdown_palette">内訳チャート配色</string>
+    <string name="config_report_breakdown_palette_current">内訳チャート配色（現在: %1$s）</string>
+    <string name="config_report_breakdown_palette_tap_expand">内訳チャート配色（タップして展開）</string>
+    <string name="config_report_breakdown_palette_preview_hint">内訳の円グラフと横棒グラフに適用されます。下の 2 種類のプレビューで見え方を比較できます。</string>
+    <string name="config_report_breakdown_palette_pie_preview">内訳円グラフプレビュー</string>
+    <string name="config_report_breakdown_palette_bar_preview">内訳横棒グラフプレビュー</string>
+    <string name="config_report_breakdown_palette_soft">Soft</string>
+    <string name="config_report_breakdown_palette_editorial">Editorial</string>
+    <string name="config_report_breakdown_palette_vivid">Vivid</string>
+    <string name="config_report_breakdown_palette_mono_accent">Mono Accent</string>
 
     <string name="config_title_dark_theme_style">ダークテーマスタイル</string>
     <string name="config_dark_theme_style_tinted">Tinted</string>

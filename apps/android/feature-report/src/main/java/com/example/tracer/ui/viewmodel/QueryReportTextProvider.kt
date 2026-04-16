@@ -19,7 +19,10 @@ interface QueryReportTextProvider {
     fun queryTreeResult(ok: Boolean): String
     fun queryChartRunning(): String
     fun queryChartResult(ok: Boolean): String
+    fun queryCompositionRunning(): String
+    fun queryCompositionResult(ok: Boolean): String
     fun chartPayloadInvalid(): String
+    fun compositionPayloadInvalid(): String
     fun chartRangeBothRequired(): String
     fun chartRangeStartDateInvalid(): String
     fun chartRangeEndDateInvalid(): String
@@ -82,7 +85,16 @@ object DefaultQueryReportTextProvider : QueryReportTextProvider {
     override fun queryTreeResult(ok: Boolean): String = "query data tree -> OK=$ok"
     override fun queryChartRunning(): String = "query data report-chart running..."
     override fun queryChartResult(ok: Boolean): String = "query data report-chart -> OK=$ok"
+    override fun queryCompositionRunning(): String =
+        "query data report-composition running..."
+
+    override fun queryCompositionResult(ok: Boolean): String =
+        "query data report-composition -> OK=$ok"
+
     override fun chartPayloadInvalid(): String = "report chart payload is invalid."
+    override fun compositionPayloadInvalid(): String =
+        "report composition payload is invalid."
+
     override fun chartRangeBothRequired(): String =
         "Start and end date are required for range filter."
 
@@ -203,8 +215,17 @@ class AndroidQueryReportTextProvider(
     override fun queryChartResult(ok: Boolean): String =
         context.getString(R.string.report_status_query_chart_result, ok.toString())
 
+    override fun queryCompositionRunning(): String =
+        context.getString(R.string.report_status_query_composition_running)
+
+    override fun queryCompositionResult(ok: Boolean): String =
+        context.getString(R.string.report_status_query_composition_result, ok.toString())
+
     override fun chartPayloadInvalid(): String =
         context.getString(R.string.report_error_chart_payload_invalid)
+
+    override fun compositionPayloadInvalid(): String =
+        context.getString(R.string.report_error_composition_payload_invalid)
 
     override fun chartRangeBothRequired(): String =
         context.getString(R.string.report_chart_range_error_both_required)

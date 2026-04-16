@@ -8,6 +8,8 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.example.tracer.ReportPiePalettePreset
+import com.example.tracer.defaultReportPiePalettePreset
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -76,6 +78,8 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         const val DEFAULT_RECORD_SUGGEST_TOP_N: Int = 5
         val DEFAULT_RECORD_QUICK_ACTIVITIES: List<String> = listOf("meal", "洗漱", "上厕所")
         const val DEFAULT_REPORT_CHART_SHOW_AVERAGE_LINE: Boolean = false
+        val DEFAULT_REPORT_PIE_PALETTE_PRESET: ReportPiePalettePreset =
+            defaultReportPiePalettePreset()
         private const val MIN_RECORD_SUGGEST_LOOKBACK_DAYS: Int = 1
         private const val MAX_RECORD_SUGGEST_LOOKBACK_DAYS: Int = 60
         private const val MIN_RECORD_SUGGEST_TOP_N: Int = 1
@@ -98,6 +102,7 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         val RECORD_ASSIST_EXPANDED = booleanPreferencesKey("record_assist_expanded")
         val RECORD_ASSIST_SETTINGS_EXPANDED = booleanPreferencesKey("record_assist_settings_expanded")
         val REPORT_CHART_SHOW_AVERAGE_LINE = booleanPreferencesKey("report_chart_show_average_line")
+        val REPORT_PIE_PALETTE_PRESET = stringPreferencesKey("report_pie_palette_preset")
     }
 
     val themeConfig: Flow<ThemeConfig> = dataStore.data.map { preferences ->
@@ -173,6 +178,13 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             ?: DEFAULT_REPORT_CHART_SHOW_AVERAGE_LINE
     }
 
+    val reportPiePalettePreset: Flow<ReportPiePalettePreset> = dataStore.data.map { preferences ->
+        val rawValue = preferences[PreferencesKeys.REPORT_PIE_PALETTE_PRESET]
+            ?: DEFAULT_REPORT_PIE_PALETTE_PRESET.name
+        runCatching { ReportPiePalettePreset.valueOf(rawValue) }
+            .getOrDefault(DEFAULT_REPORT_PIE_PALETTE_PRESET)
+    }
+
     suspend fun setAppLanguage(language: AppLanguage) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.APP_LANGUAGE] = language.name
@@ -214,6 +226,12 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
     suspend fun setReportChartShowAverageLine(value: Boolean) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.REPORT_CHART_SHOW_AVERAGE_LINE] = value
+        }
+    }
+
+    suspend fun setReportPiePalettePreset(value: ReportPiePalettePreset) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.REPORT_PIE_PALETTE_PRESET] = value.name
         }
     }
 

@@ -329,6 +329,11 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     override suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult =
         queryService.queryReportChart(params)
 
+    override suspend fun queryReportComposition(
+        params: ReportCompositionQueryParams
+    ): ReportCompositionQueryResult =
+        queryService.queryReportComposition(params)
+
     override suspend fun listActivityMappingNames(): ActivityMappingNamesResult =
         queryService.listActivityMappingNames()
 

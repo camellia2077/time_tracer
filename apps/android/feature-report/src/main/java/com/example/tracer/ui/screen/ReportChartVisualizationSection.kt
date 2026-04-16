@@ -102,18 +102,6 @@ internal fun ReportChartVisualizationSection(
             )
         }
 
-        ReportChartVisualMode.PIE -> {
-            ReportPieChart(
-                points = sortedChartPoints,
-                selectedIndex = selectedPointIndex,
-                onPointSelected = onPointSelected,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(220.dp)
-                    .clip(MaterialTheme.shapes.medium)
-            )
-        }
-
         ReportChartVisualMode.HEATMAP_MONTH -> {
             ReportHeatmapChart(
                 points = sortedChartPoints,
