@@ -10,12 +10,13 @@ enum class DataQueryAction {
   kSearch,
   kActivitySuggest,
   kReportChart,
+  kReportComposition,
   kTree
 };
 
 inline constexpr std::string_view kSupportedDataQueryActions =
     "years, months, days, days-duration, days-stats, search, "
-    "activity-suggest, report-chart, tree";
+    "activity-suggest, report-chart, report-composition, tree";
 
 struct DayDurationRow {
   std::string date;

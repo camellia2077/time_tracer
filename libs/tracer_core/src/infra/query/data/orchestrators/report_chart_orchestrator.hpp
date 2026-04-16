@@ -16,5 +16,7 @@ namespace tracer_core::infrastructure::query::data::orchestrators {
 
 using tracer::core::infrastructure::query::data::orchestrators::
     HandleReportChartQuery;
+using tracer::core::infrastructure::query::data::orchestrators::
+    HandleReportCompositionQuery;
 
 }  // namespace tracer_core::infrastructure::query::data::orchestrators

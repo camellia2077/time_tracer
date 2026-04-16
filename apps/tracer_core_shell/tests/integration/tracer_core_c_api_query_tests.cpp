@@ -95,6 +95,24 @@ void RunQueryChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime) {
           kReportChartRangeContent["series"].is_array(),
       "baseline query report_chart range content should include series array");
 
+  const json kReportCompositionResponse = ParseResponse(
+      api.runtime_query(runtime,
+                        json{{"action", "report_composition"},
+                             {"lookback_days", 7}}
+                            .dump()
+                            .c_str()),
+      "baseline query report_composition");
+  Require(kReportCompositionResponse.value("ok", false),
+          "baseline query report_composition should return ok=true");
+  const json kReportCompositionContent =
+      json::parse(kReportCompositionResponse.value("content", "{}"));
+  Require(kReportCompositionContent.contains("slices") &&
+              kReportCompositionContent["slices"].is_array(),
+          "baseline query report_composition content should include slices array");
+  Require(kReportCompositionContent.contains("active_root_count") &&
+              kReportCompositionContent["active_root_count"].is_number_integer(),
+          "baseline query report_composition should include active_root_count");
+
   const json kTreeRootsResponse = ParseResponse(
       api.runtime_tree(runtime, json{{"list_roots", true}}.dump().c_str()),
       "baseline runtime tree roots");
@@ -164,6 +182,20 @@ void RunQueryChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime) {
   Require(kInvalidChartRangeResponse.value("error_message", std::string{}).find(
               "report-chart invalid range") != std::string::npos,
           "baseline query invalid report_chart range should explain descending ranges");
+
+  const json kInvalidCompositionRangeResponse =
+      ParseResponse(api.runtime_query(runtime,
+                                      json{{"action", "report_composition"},
+                                           {"from_date", "2026-01-07"},
+                                           {"to_date", "2026-01-01"}}
+                                          .dump()
+                                          .c_str()),
+                    "baseline query invalid report_composition range");
+  Require(!kInvalidCompositionRangeResponse.value("ok", true),
+          "baseline query invalid report_composition range should return ok=false");
+  Require(kInvalidCompositionRangeResponse.value("error_message", std::string{})
+              .find("report-composition invalid range") != std::string::npos,
+          "baseline query invalid report_composition range should explain descending ranges");
 }
 
 }  // namespace tracer_core_c_api_stability_internal

@@ -11,6 +11,7 @@ import tracer.core.infrastructure.query.data.stats;
 #include <vector>
 
 #include "application/dto/query_requests.hpp"
+#include "infra/query/data/orchestrators/report_chart_orchestrator.hpp"
 #include "infrastructure/tests/android_runtime/android_runtime_test_common.hpp"
 #include "infrastructure/tests/data_query/data_query_refactor_test_internal.hpp"
 
@@ -343,6 +344,66 @@ auto CheckReportChartOrchestratorSemanticSnapshot(sqlite3* database,
   return true;
 }
 
+auto CheckReportCompositionOrchestratorSemanticSnapshot(sqlite3* database,
+                                                        int& failures)
+    -> bool {
+  using tracer_core::core::dto::DataQueryAction;
+  using tracer_core::core::dto::DataQueryRequest;
+
+  DataQueryRequest report_composition_request;
+  report_composition_request.action = DataQueryAction::kReportComposition;
+  report_composition_request.from_date = "2026-02-01";
+  report_composition_request.to_date = "2026-02-03";
+  const auto kCompositionOutput =
+      data_query_orchestrators::HandleReportCompositionQuery(
+          database, report_composition_request, DataQueryOutputMode::kSemanticJson);
+  Expect(kCompositionOutput.ok,
+         "report-composition orchestrator should succeed.", failures);
+  if (!kCompositionOutput.ok) {
+    return false;
+  }
+
+  const auto kCompositionPayload = json::parse(kCompositionOutput.content);
+  Expect(kCompositionPayload.value("action", std::string{}) ==
+             "report_composition",
+         "report-composition orchestrator semantic snapshot should keep action.",
+         failures);
+  Expect(kCompositionPayload.value("active_root_count", -1) == 2,
+         "report-composition orchestrator should count active roots.",
+         failures);
+  Expect(kCompositionPayload.value("total_duration_seconds", -1LL) == 9000LL,
+         "report-composition orchestrator should keep total duration.",
+         failures);
+  Expect(kCompositionPayload.value("range_days", -1) == 3,
+         "report-composition orchestrator should keep range_days.", failures);
+  const auto kSlicesIt = kCompositionPayload.find("slices");
+  const bool kHasSlices =
+      kSlicesIt != kCompositionPayload.end() && kSlicesIt->is_array();
+  Expect(kHasSlices,
+         "report-composition orchestrator semantic snapshot should include slices array.",
+         failures);
+  if (kHasSlices) {
+    Expect(kSlicesIt->size() == 2U,
+           "report-composition orchestrator should emit one slice per active root.",
+           failures);
+    if (kSlicesIt->size() >= 2U) {
+      Expect((*kSlicesIt)[0].value("root", std::string{}) == "study",
+             "report-composition should sort slices by descending duration.",
+             failures);
+      Expect((*kSlicesIt)[0].value("duration_seconds", -1LL) == 5400LL,
+             "report-composition first slice should keep study duration.",
+             failures);
+      Expect((*kSlicesIt)[1].value("root", std::string{}) == "sleep",
+             "report-composition second slice should keep sleep root.",
+             failures);
+      Expect((*kSlicesIt)[1].value("duration_seconds", -1LL) == 3600LL,
+             "report-composition second slice should keep sleep duration.",
+             failures);
+    }
+  }
+  return true;
+}
+
 auto TestDerivedStatusExerciseFilters(int& failures) -> void {
   const auto kDatabase = OpenInMemoryDatabase();
   Expect(kDatabase != nullptr,
@@ -423,6 +484,80 @@ auto TestDerivedStatusExerciseFilters(int& failures) -> void {
          "exercise=false filter should exclude exercise days.", failures);
 }
 
+auto TestSingleDayCompositionKeepsAllRoots(int& failures) -> void {
+  using tracer_core::core::dto::DataQueryAction;
+  using tracer_core::core::dto::DataQueryRequest;
+
+  const auto kDatabase = OpenInMemoryDatabase();
+  Expect(kDatabase != nullptr,
+         "single-day composition test should open sqlite database.", failures);
+  if (kDatabase == nullptr) {
+    return;
+  }
+
+  const bool kCreatedDays = ExecuteSql(
+      kDatabase.get(),
+      "CREATE TABLE days (date TEXT PRIMARY KEY, year INTEGER NOT NULL, "
+      "month INTEGER NOT NULL);");
+  const bool kCreatedRecords = ExecuteSql(
+      kDatabase.get(),
+      "CREATE TABLE time_records (date TEXT NOT NULL, duration INTEGER NOT NULL, "
+      "project_path_snapshot TEXT, activity_remark TEXT);");
+  const bool kSeededDays = ExecuteSql(
+      kDatabase.get(),
+      "INSERT INTO days(date, year, month) VALUES ('2026-02-01', 2026, 2);");
+  const bool kSeededRecords = ExecuteSql(
+      kDatabase.get(),
+      "INSERT INTO time_records(date, duration, project_path_snapshot, "
+      "activity_remark) VALUES "
+      "('2026-02-01', 3600, 'study_cpp', ''),"
+      "('2026-02-01', 3000, 'sleep_night', ''),"
+      "('2026-02-01', 2400, 'exercise_cardio', ''),"
+      "('2026-02-01', 1800, 'meal_breakfast', ''),"
+      "('2026-02-01', 1200, 'chores_cleaning', ''),"
+      "('2026-02-01', 900, 'reading_book', ''),"
+      "('2026-02-01', 600, 'music_practice', ''),"
+      "('2026-02-01', 300, 'walk_evening', ''),"
+      "('2026-02-01', 60, 'misc_admin', '');");
+  Expect(kCreatedDays && kCreatedRecords && kSeededDays && kSeededRecords,
+         "single-day composition test should seed sqlite fixture.", failures);
+  if (!(kCreatedDays && kCreatedRecords && kSeededDays && kSeededRecords)) {
+    return;
+  }
+
+  DataQueryRequest request;
+  request.action = DataQueryAction::kReportComposition;
+  request.from_date = "2026-02-01";
+  request.to_date = "2026-02-01";
+
+  const auto kCompositionOutput =
+      data_query_orchestrators::HandleReportCompositionQuery(
+          kDatabase.get(), request, DataQueryOutputMode::kSemanticJson);
+  Expect(kCompositionOutput.ok,
+         "single-day composition query should succeed.", failures);
+  if (!kCompositionOutput.ok) {
+    return;
+  }
+
+  const auto kPayload = json::parse(kCompositionOutput.content);
+  const auto kSlicesIt = kPayload.find("slices");
+  const bool kHasSlices =
+      kSlicesIt != kPayload.end() && kSlicesIt->is_array();
+  Expect(kHasSlices,
+         "single-day composition payload should include slices array.",
+         failures);
+  if (!kHasSlices) {
+    return;
+  }
+  Expect(kSlicesIt->size() == 9U,
+         "single-day composition should keep every root instead of collapsing into Others.",
+         failures);
+  for (const auto& slice : *kSlicesIt) {
+    Expect(slice.value("root", std::string{}) != "Others",
+           "single-day composition should not emit Others slice.", failures);
+  }
+}
+
 auto TestOrchestratorRendererSemanticSnapshot(int& failures) -> void {
   const auto kDatabase = OpenSeededDatabaseOrRecordFailure(failures);
   if (kDatabase == nullptr) {
@@ -439,6 +574,10 @@ auto TestOrchestratorRendererSemanticSnapshot(int& failures) -> void {
                                                     failures)) {
     return;
   }
+  if (!CheckReportCompositionOrchestratorSemanticSnapshot(kDatabase.get(),
+                                                          failures)) {
+    return;
+  }
 }
 
 }  // namespace
@@ -448,6 +587,7 @@ auto RunDataQueryRefactorStatsScenarioTests(int& failures) -> void {
   TestReportChartSeriesCalculator(failures);
   TestSemanticDayStatsSnapshot(failures);
   TestDerivedStatusExerciseFilters(failures);
+  TestSingleDayCompositionKeepsAllRoots(failures);
   TestOrchestratorRendererSemanticSnapshot(failures);
 }
 

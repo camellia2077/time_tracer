@@ -26,6 +26,7 @@ constexpr int kQueryActionReportChart = 9;
 constexpr int kQueryActionMappingAliasKeys = 10;
 constexpr int kQueryActionWakeKeywords = 11;
 constexpr int kQueryActionAuthorableEventTokens = 12;
+constexpr int kQueryActionReportComposition = 13;
 
 constexpr int kReportTypeDay = 0;
 constexpr int kReportTypeMonth = 1;
@@ -105,6 +106,9 @@ constexpr int kReportFormatTypst = 2;
   }
   if (value == kQueryActionAuthorableEventTokens) {
     return "authorable_event_tokens";
+  }
+  if (value == kQueryActionReportComposition) {
+    return "report_composition";
   }
   throw std::invalid_argument("Unsupported query action code: " +
                               std::to_string(value));

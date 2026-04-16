@@ -257,6 +257,8 @@ auto ToCliDataQueryAction(tracer_core::core::dto::DataQueryAction action)
           "Authorable event tokens action must be handled before SQL query conversion.");
     case CoreAction::kReportChart:
       return infra_data_query::DataQueryAction::kReportChart;
+    case CoreAction::kReportComposition:
+      return infra_data_query::DataQueryAction::kReportComposition;
     case CoreAction::kTree:
       return infra_data_query::DataQueryAction::kTree;
   }

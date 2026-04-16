@@ -63,6 +63,10 @@ auto QueryRuntimeService::RunDataQuery(
   if (request.action == tracer_core::core::dto::DataQueryAction::kReportChart) {
     runtime_service_internal::ValidateReportChartRequest(request);
   }
+  if (request.action ==
+      tracer_core::core::dto::DataQueryAction::kReportComposition) {
+    runtime_service_internal::ValidateReportCompositionRequest(request);
+  }
 
   DBManager db_manager(db_path_.string());
   sqlite3* db_conn =

@@ -22,7 +22,11 @@ using tracer::core::infrastructure::query::data::internal::
 using tracer::core::infrastructure::query::data::internal::
     BuildReportChartContent;
 using tracer::core::infrastructure::query::data::internal::
+    BuildReportCompositionContent;
+using tracer::core::infrastructure::query::data::internal::
     ValidateReportChartRequest;
+using tracer::core::infrastructure::query::data::internal::
+    ValidateReportCompositionRequest;
 
 }  // namespace tracer::core::infrastructure::query::data::repository::internal
 

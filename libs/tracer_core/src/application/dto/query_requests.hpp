@@ -19,6 +19,7 @@ enum class DataQueryAction {
   kWakeKeywords,
   kAuthorableEventTokens,
   kReportChart,
+  kReportComposition,
   kTree,
 };
 

@@ -20,3 +20,10 @@ auto ValidateReportChartRequest(
 auto BuildReportChartContent(
     sqlite3* db_conn, const tracer_core::core::dto::DataQueryRequest& request)
     -> std::string;
+
+auto ValidateReportCompositionRequest(
+    const tracer_core::core::dto::DataQueryRequest& request) -> void;
+
+auto BuildReportCompositionContent(
+    sqlite3* db_conn, const tracer_core::core::dto::DataQueryRequest& request)
+    -> std::string;

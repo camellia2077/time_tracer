@@ -3,6 +3,8 @@
 
 #include <utility>
 
+#include "infra/query/data/internal/report_mapping.hpp"
+
 import tracer.core.infrastructure.query.data.internal.report_mapping;
 import tracer.core.infrastructure.query.data.renderers;
 
@@ -28,6 +30,16 @@ auto HandleReportChartQuery(
       query_internal::BuildReportChartContent(db_conn, request);
   return BuildSuccessOutput(data_query_renderers::RenderJsonObjectOutput(
       "report_chart", std::move(content), output_mode));
+}
+
+auto HandleReportCompositionQuery(
+    sqlite3* db_conn, const tracer_core::core::dto::DataQueryRequest& request,
+    tracer_core::core::dto::DataQueryOutputMode output_mode)
+    -> tracer_core::core::dto::TextOutput {
+  std::string content =
+      query_internal::BuildReportCompositionContent(db_conn, request);
+  return BuildSuccessOutput(data_query_renderers::RenderJsonObjectOutput(
+      "report_composition", std::move(content), output_mode));
 }
 
 }  // namespace tracer::core::infrastructure::query::data::orchestrators

@@ -2,6 +2,7 @@
 #include <stdexcept>
 
 #include "infra/query/data/repository/query_runtime_service_internal.hpp"
+#include "infra/query/data/orchestrators/report_chart_orchestrator.hpp"
 
 import tracer.core.infrastructure.query.data.orchestrators;
 
@@ -40,6 +41,9 @@ auto DispatchDataQueryAction(
           db_conn, request, request.output_mode);
     case infra_data_query::DataQueryAction::kReportChart:
       return infra_data_query_orchestrators::HandleReportChartQuery(
+          db_conn, request, request.output_mode);
+    case infra_data_query::DataQueryAction::kReportComposition:
+      return infra_data_query_orchestrators::HandleReportCompositionQuery(
           db_conn, request, request.output_mode);
     case infra_data_query::DataQueryAction::kTree:
       return infra_data_query_orchestrators::HandleTreeQuery(

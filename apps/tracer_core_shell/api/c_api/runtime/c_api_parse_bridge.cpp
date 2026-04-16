@@ -109,13 +109,18 @@ namespace tracer_core::shell::c_api_bridge {
       normalized == "chart") {
     return DataQueryAction::kReportChart;
   }
+  if (normalized == "report_composition" ||
+      normalized == "report-composition" || normalized == "composition") {
+    return DataQueryAction::kReportComposition;
+  }
   if (normalized == "tree") {
     return DataQueryAction::kTree;
   }
   throw std::invalid_argument(
       "field `action` must be one of: years|months|days|days_duration|"
       "days_stats|search|activity_suggest|mapping_names|mapping_alias_keys|"
-      "wake_keywords|authorable_event_tokens|report_chart|tree.");
+      "wake_keywords|authorable_event_tokens|report_chart|"
+      "report_composition|tree.");
 }
 
 [[nodiscard]] auto ParseDataQueryOutputMode(const std::string& value)
