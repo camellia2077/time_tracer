@@ -64,6 +64,12 @@ time_tracer_cli report render recent 7 --as-of 2026-03-07 --format md --db <db_p
 time_tracer_cli report export recent 7 --as-of 2026-03-07 --format md --db <db_path> --output <out_dir>
 ```
 
+## Chart Semantics
+
+- `chart --type line|bar|heatmap-*` 使用 trend / daily series 数据。
+- `chart --type pie` 使用 period root breakdown 数据，底层映射到 `report-composition`。
+- `chart --type pie` 不支持 `--root`，因为 breakdown pie 固定展示整个窗口的 root 构成。
+
 ## Removed Compat Surface
 
 - `blink`

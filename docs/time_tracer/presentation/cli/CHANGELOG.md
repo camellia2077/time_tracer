@@ -25,4 +25,4 @@
 
 - Rust 版 Windows CLI 进入主线（`clap` 参数模型 + C ABI 调用）。
 - `crypto` 命令支持进度反馈。
-- `chart` 命令支持 HTML 图表导出（line/bar/pie/heatmap-year/heatmap-month）。
+- `chart` 命令支持 HTML 图表导出（line/bar/pie/heatmap-year/heatmap-month）；其中 `pie` 现表示 period root breakdown。

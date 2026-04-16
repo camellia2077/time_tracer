@@ -11,7 +11,7 @@ use std::path::{Path, PathBuf};
 
 use serde_json::Value;
 
-use crate::cli::ChartArgs;
+use crate::cli::{ChartArgs, ChartType};
 use crate::commands::handler::{CommandContext, CommandHandler};
 use crate::core::runtime::CoreApi;
 use crate::error::AppError;
@@ -80,6 +80,7 @@ fn run_chart_with_query_port(
 
     let output_path = validate_chart_output_path(ctx)?;
     validate_lookback_days(args.lookback_days)?;
+    validate_chart_filters(&args)?;
 
     let request = build_chart_query_request(&args);
     let semantic_payload = query_port.query_data("chart", ctx, &request)?;
@@ -127,6 +128,15 @@ fn validate_lookback_days(lookback_days: Option<i32>) -> Result<(), AppError> {
                 "--lookback-days must be greater than 0".to_string(),
             ));
         }
+    }
+    Ok(())
+}
+
+fn validate_chart_filters(args: &ChartArgs) -> Result<(), AppError> {
+    if matches!(args.chart_type, ChartType::Pie) && args.root.is_some() {
+        return Err(AppError::InvalidArguments(
+            "--type pie renders period root breakdown, so --root is not allowed".to_string(),
+        ));
     }
     Ok(())
 }
@@ -228,6 +238,47 @@ mod tests {
             error
                 .render_for_stderr()
                 .contains("--lookback-days must be greater than 0")
+        );
+        assert!(recorder.requests().is_empty());
+    }
+
+    #[test]
+    fn chart_handler_routes_pie_to_report_composition_without_root() {
+        let output_path = temp_output_path("chart_handler_pie", "html");
+        let (mut args, ctx) = sample_chart_args(&output_path.to_string_lossy());
+        args.chart_type = ChartType::Pie;
+        args.root = None;
+        let recorder = RecordedQuerySession::new_success(
+            r#"{"from_date":"20260101","to_date":"20260107","slices":[{"root":"study","duration_seconds":7200,"percent":60.0}],"total_duration_seconds":7200,"active_root_count":1,"range_days":7}"#,
+        );
+        let port = StubChartQueryPort {
+            recorder: &recorder,
+        };
+
+        run_chart_with_query_port(args, &ctx, &port).expect("pie chart handler should succeed");
+
+        let recorded_requests = recorder.requests();
+        assert_eq!(recorded_requests.len(), 1);
+        assert_eq!(recorded_requests[0]["action"], "report-composition");
+        assert!(recorded_requests[0].get("root").is_none());
+    }
+
+    #[test]
+    fn chart_handler_rejects_root_for_pie_before_query_session() {
+        let output_path = temp_output_path("chart_handler_pie_root_invalid", "html");
+        let (mut args, ctx) = sample_chart_args(&output_path.to_string_lossy());
+        args.chart_type = ChartType::Pie;
+        let recorder = RecordedQuerySession::new_success("{}");
+        let port = StubChartQueryPort {
+            recorder: &recorder,
+        };
+
+        let error = run_chart_with_query_port(args, &ctx, &port)
+            .expect_err("pie root validation should fail");
+        assert!(
+            error
+                .render_for_stderr()
+                .contains("--type pie renders period root breakdown")
         );
         assert!(recorder.requests().is_empty());
     }

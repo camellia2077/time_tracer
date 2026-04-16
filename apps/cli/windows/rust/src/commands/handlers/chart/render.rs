@@ -12,11 +12,15 @@ pub(crate) fn build_chart_html(
     heatmap_palette_json: &str,
     heatmap_thresholds_json: &str,
 ) -> String {
-    let root_label = payload_json
-        .get("selected_root")
-        .and_then(|value| value.as_str())
-        .filter(|value| !value.is_empty())
-        .unwrap_or("all roots");
+    let root_label = if matches!(args.chart_type, ChartType::Pie) {
+        "all roots"
+    } else {
+        payload_json
+            .get("selected_root")
+            .and_then(|value| value.as_str())
+            .filter(|value| !value.is_empty())
+            .unwrap_or("all roots")
+    };
 
     let range_label = if let (Some(from), Some(to)) = (
         payload_json

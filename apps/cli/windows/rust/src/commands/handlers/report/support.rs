@@ -843,12 +843,19 @@ mod tests {
         let day_request =
             build_render_request(ReportRenderPeriod::Day, "20260103", None, &ReportFormat::Md)
                 .expect("day request");
-        assert_eq!(day_request["argument"], "2026-01-03");
+        assert_eq!(day_request["operation_kind"], "query");
+        assert_eq!(day_request["display_mode"], "day");
+        assert_eq!(day_request["selection_kind"], "single_day");
+        assert_eq!(day_request["date"], "2026-01-03");
 
         let month_request =
             build_render_request(ReportRenderPeriod::Month, "202603", None, &ReportFormat::Md)
                 .expect("month request");
-        assert_eq!(month_request["argument"], "2026-03");
+        assert_eq!(month_request["operation_kind"], "query");
+        assert_eq!(month_request["display_mode"], "month");
+        assert_eq!(month_request["selection_kind"], "date_range");
+        assert_eq!(month_request["start_date"], "2026-03-01");
+        assert_eq!(month_request["end_date"], "2026-03-31");
     }
 
     #[test]
@@ -860,17 +867,23 @@ mod tests {
             &ReportFormat::Md,
         )
         .expect("range request");
-        assert_eq!(range_request["argument"], "2026-01-01|2026-01-31");
+        assert_eq!(range_request["operation_kind"], "query");
+        assert_eq!(range_request["display_mode"], "range");
+        assert_eq!(range_request["selection_kind"], "date_range");
+        assert_eq!(range_request["start_date"], "2026-01-01");
+        assert_eq!(range_request["end_date"], "2026-01-31");
 
         let recent_request =
             build_render_request(ReportRenderPeriod::Recent, "7", None, &ReportFormat::Md)
                 .expect("recent request");
-        assert_eq!(recent_request["type"], "recent");
-        assert_eq!(recent_request["argument"], "7");
+        assert_eq!(recent_request["operation_kind"], "query");
+        assert_eq!(recent_request["display_mode"], "recent");
+        assert_eq!(recent_request["selection_kind"], "recent_days");
+        assert_eq!(recent_request["days"], 7);
     }
 
     #[test]
-    fn build_render_request_recent_with_as_of_uses_range_window() {
+    fn build_render_request_recent_with_as_of_uses_anchor_date() {
         let recent_request = build_render_request(
             ReportRenderPeriod::Recent,
             "7",
@@ -878,8 +891,13 @@ mod tests {
             &ReportFormat::Md,
         )
         .expect("recent as-of request");
-        assert_eq!(recent_request["type"], "range");
-        assert_eq!(recent_request["argument"], "2026-03-01|2026-03-07");
+        // Anchored recent stays on the canonical recent contract and adds anchor_date
+        // instead of rewriting the request into a synthetic range payload.
+        assert_eq!(recent_request["operation_kind"], "query");
+        assert_eq!(recent_request["display_mode"], "recent");
+        assert_eq!(recent_request["selection_kind"], "recent_days");
+        assert_eq!(recent_request["days"], 7);
+        assert_eq!(recent_request["anchor_date"], "2026-03-07");
     }
 
     #[test]
@@ -906,7 +924,10 @@ mod tests {
                 &ReportFormat::Md,
             )
                 .expect("day request");
-        assert_eq!(day_request["argument"], "2026-01-03");
+        assert_eq!(day_request["operation_kind"], "export");
+        assert_eq!(day_request["display_mode"], "day");
+        assert_eq!(day_request["selection_kind"], "single_day");
+        assert_eq!(day_request["date"], "2026-01-03");
 
         let month_request =
             build_export_render_request(
@@ -916,11 +937,15 @@ mod tests {
                 &ReportFormat::Md,
             )
                 .expect("month request");
-        assert_eq!(month_request["argument"], "2026-03");
+        assert_eq!(month_request["operation_kind"], "export");
+        assert_eq!(month_request["display_mode"], "month");
+        assert_eq!(month_request["selection_kind"], "date_range");
+        assert_eq!(month_request["start_date"], "2026-03-01");
+        assert_eq!(month_request["end_date"], "2026-03-31");
     }
 
     #[test]
-    fn build_export_render_request_recent_with_as_of_uses_range_window() {
+    fn build_export_render_request_recent_with_as_of_uses_anchor_date() {
         let recent_request = build_export_render_request(
             ReportExportPeriod::Recent,
             "7",
@@ -928,7 +953,10 @@ mod tests {
             &ReportFormat::Md,
         )
         .expect("recent as-of export request");
-        assert_eq!(recent_request["type"], "range");
-        assert_eq!(recent_request["argument"], "2026-03-01|2026-03-07");
+        assert_eq!(recent_request["operation_kind"], "export");
+        assert_eq!(recent_request["display_mode"], "recent");
+        assert_eq!(recent_request["selection_kind"], "recent_days");
+        assert_eq!(recent_request["days"], 7);
+        assert_eq!(recent_request["anchor_date"], "2026-03-07");
     }
 }

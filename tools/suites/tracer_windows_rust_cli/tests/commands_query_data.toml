@@ -155,15 +155,24 @@ expect_file_contains = [
 [[commands]]
 name = "Chart Export Pie Html"
 stage = "query-data"
-args = ["chart", "--from", "20260101", "--to", "20260107", "--root", "study", "--type", "pie", "-o", "{output_dir}/report_chart_study_pie.html", "--db", "{db_path}"]
+args = ["chart", "--from", "20260101", "--to", "20260107", "--type", "pie", "-o", "{output_dir}/report_chart_breakdown_pie.html", "--db", "{db_path}"]
 expect_exit = 0
 expect_stdout_contains = ["Saved chart pie HTML:"]
-expect_files = ["{output_dir}/report_chart_study_pie.html"]
+expect_files = ["{output_dir}/report_chart_breakdown_pie.html"]
 expect_file_contains = [
-  '{output_dir}/report_chart_study_pie.html::Report Chart (Pie)',
-  "{output_dir}/report_chart_study_pie.html::const chartKind = 'pie'",
-  "{output_dir}/report_chart_study_pie.html::type: 'pie'",
+  '{output_dir}/report_chart_breakdown_pie.html::Report Chart (Pie)',
+  "{output_dir}/report_chart_breakdown_pie.html::const chartKind = 'pie'",
+  "{output_dir}/report_chart_breakdown_pie.html::type: 'pie'",
+  '{output_dir}/report_chart_breakdown_pie.html::"slices"',
 ]
+
+[[commands]]
+name = "Chart Export Pie Rejects Root"
+stage = "query-data"
+args = ["chart", "--from", "20260101", "--to", "20260107", "--root", "study", "--type", "pie", "-o", "{output_dir}/report_chart_invalid_pie.html", "--db", "{db_path}"]
+# Pie is validated as a full-window breakdown request before the runtime query starts.
+expect_exit = 3
+expect_stderr_contains = ["--type pie renders period root breakdown, so --root is not allowed"]
 
 [[commands]]
 name = "Chart Export Heatmap Year Html"

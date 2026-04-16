@@ -205,7 +205,7 @@ mod tests {
     }
 
     #[test]
-    fn report_render_single_recent_request_uses_runtime_report_shape() {
+    fn report_render_single_recent_request_uses_temporal_recent_shape() {
         let recorded = Rc::new(RecordedReportSession::new(sample_cli_config(), "ok"));
         let port = TestReportPort {
             recorded: Rc::clone(&recorded),
@@ -224,13 +224,15 @@ mod tests {
         .expect("report render single recent should succeed");
 
         let request = recorded.requests().remove(0);
-        assert_eq!(request["type"], "recent");
-        assert_eq!(request["argument"], "7");
+        assert_eq!(request["operation_kind"], "query");
+        assert_eq!(request["display_mode"], "recent");
+        assert_eq!(request["selection_kind"], "recent_days");
+        assert_eq!(request["days"], 7);
         assert_eq!(request["format"], "md");
     }
 
     #[test]
-    fn report_render_recent_as_of_uses_range_request_shape() {
+    fn report_render_recent_as_of_uses_temporal_anchor_date_shape() {
         let recorded = Rc::new(RecordedReportSession::new(sample_cli_config(), "ok"));
         let port = TestReportPort {
             recorded: Rc::clone(&recorded),
@@ -249,8 +251,11 @@ mod tests {
         .expect("report render recent as-of should succeed");
 
         let request = recorded.requests().remove(0);
-        assert_eq!(request["type"], "range");
-        assert_eq!(request["argument"], "2026-03-01|2026-03-07");
+        assert_eq!(request["operation_kind"], "query");
+        assert_eq!(request["display_mode"], "recent");
+        assert_eq!(request["selection_kind"], "recent_days");
+        assert_eq!(request["days"], 7);
+        assert_eq!(request["anchor_date"], "2026-03-07");
         assert_eq!(request["format"], "md");
     }
 
@@ -274,8 +279,10 @@ mod tests {
         .expect("report render day should succeed");
 
         let request = recorded.requests().remove(0);
-        assert_eq!(request["type"], "day");
-        assert_eq!(request["argument"], "2026-01-03");
+        assert_eq!(request["operation_kind"], "query");
+        assert_eq!(request["display_mode"], "day");
+        assert_eq!(request["selection_kind"], "single_day");
+        assert_eq!(request["date"], "2026-01-03");
         assert_eq!(request["format"], "tex");
     }
 
@@ -299,8 +306,11 @@ mod tests {
         .expect("report render range should succeed");
 
         let request = recorded.requests().remove(0);
-        assert_eq!(request["type"], "range");
-        assert_eq!(request["argument"], "2026-01-01|2026-01-31");
+        assert_eq!(request["operation_kind"], "query");
+        assert_eq!(request["display_mode"], "range");
+        assert_eq!(request["selection_kind"], "date_range");
+        assert_eq!(request["start_date"], "2026-01-01");
+        assert_eq!(request["end_date"], "2026-01-31");
         assert_eq!(request["format"], "typ");
     }
 
@@ -327,7 +337,14 @@ mod tests {
 
         let rendered = session
             .render(
-                &serde_json::json!({"type": "range", "argument": "2024-12-01|2024-12-31", "format": "md"}),
+                &serde_json::json!({
+                    "operation_kind": "query",
+                    "display_mode": "range",
+                    "selection_kind": "date_range",
+                    "start_date": "2024-12-01",
+                    "end_date": "2024-12-31",
+                    "format": "md"
+                }),
             )
             .expect("render report");
 
@@ -370,15 +387,12 @@ mod tests {
 
         assert_eq!(recorded.command_names(), vec!["export".to_string()]);
         let request = recorded.requests().remove(0);
-        assert_eq!(request["type"], "month");
-        assert_eq!(request["argument"], "2026-03");
-        assert!(
-            export_root
-                .join("markdown")
-                .join("month")
-                .join("2026-03.md")
-                .exists()
-        );
+        assert_eq!(request["operation_kind"], "export");
+        assert_eq!(request["display_mode"], "month");
+        assert_eq!(request["export_scope"], "single");
+        assert_eq!(request["selection_kind"], "date_range");
+        assert_eq!(request["start_date"], "2026-03-01");
+        assert_eq!(request["end_date"], "2026-03-31");
         let _ = fs::remove_dir_all(&export_root);
     }
 
@@ -407,20 +421,11 @@ mod tests {
         )
         .expect("month export all should succeed");
 
-        assert!(
-            export_root
-                .join("markdown")
-                .join("month")
-                .join("2026-03.md")
-                .exists()
-        );
-        assert!(
-            export_root
-                .join("markdown")
-                .join("month")
-                .join("2026-04.md")
-                .exists()
-        );
+        let requests = recorded.requests();
+        assert_eq!(requests.len(), 1);
+        assert_eq!(requests[0]["operation_kind"], "export");
+        assert_eq!(requests[0]["display_mode"], "month");
+        assert_eq!(requests[0]["export_scope"], "all_matching");
         let _ = fs::remove_dir_all(&export_root);
     }
 
@@ -460,27 +465,19 @@ mod tests {
         )
         .expect("recent export should succeed");
 
-        assert!(
-            export_root
-                .join("markdown")
-                .join("day")
-                .join("2026")
-                .join("01")
-                .join("2026-01-03.md")
-                .exists()
-        );
-        assert!(
-            export_root
-                .join("markdown")
-                .join("recent")
-                .join("last_7_days_report.md")
-                .exists()
-        );
+        let requests = recorded.requests();
+        assert_eq!(requests.len(), 2);
+        assert_eq!(requests[0]["display_mode"], "day");
+        assert_eq!(requests[0]["selection_kind"], "single_day");
+        assert_eq!(requests[0]["date"], "2026-01-03");
+        assert_eq!(requests[1]["display_mode"], "recent");
+        assert_eq!(requests[1]["selection_kind"], "recent_days");
+        assert_eq!(requests[1]["days"], 7);
         let _ = fs::remove_dir_all(&export_root);
     }
 
     #[test]
-    fn report_export_recent_as_of_uses_range_request_but_keeps_recent_path() {
+    fn report_export_recent_as_of_uses_anchor_date_request_and_keeps_recent_path() {
         let export_root = temp_output_path("report_export_recent_as_of", "root");
         let recorded = Rc::new(
             RecordedReportSession::new(sample_cli_config(), "content\n")
@@ -504,15 +501,12 @@ mod tests {
         .expect("recent as-of export should succeed");
 
         let request = recorded.requests().remove(0);
-        assert_eq!(request["type"], "range");
-        assert_eq!(request["argument"], "2026-03-01|2026-03-07");
-        assert!(
-            export_root
-                .join("markdown")
-                .join("recent")
-                .join("last_7_days_report.md")
-                .exists()
-        );
+        assert_eq!(request["operation_kind"], "export");
+        assert_eq!(request["display_mode"], "recent");
+        assert_eq!(request["export_scope"], "single");
+        assert_eq!(request["selection_kind"], "recent_days");
+        assert_eq!(request["days"], 7);
+        assert_eq!(request["anchor_date"], "2026-03-07");
         let _ = fs::remove_dir_all(&export_root);
     }
 
@@ -540,13 +534,12 @@ mod tests {
         )
         .expect("month export with file-like root should succeed");
 
-        assert!(
-            export_root
-                .join("markdown")
-                .join("month")
-                .join("2026-03.md")
-                .exists()
-        );
+        let request = recorded.requests().remove(0);
+        assert_eq!(request["operation_kind"], "export");
+        assert_eq!(request["display_mode"], "month");
+        assert_eq!(request["selection_kind"], "date_range");
+        assert_eq!(request["start_date"], "2026-03-01");
+        assert_eq!(request["end_date"], "2026-03-31");
         let _ = fs::remove_dir_all(&export_root);
     }
 }

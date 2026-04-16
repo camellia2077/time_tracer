@@ -1,7 +1,7 @@
-      const pieData = rows
-        .map((row) => ({
-          name: String(row?.date ?? ''),
-          value: Math.max(0, Number(row?.duration_seconds ?? 0))
+      const pieData = slices
+        .map((slice) => ({
+          name: String(slice?.root ?? ''),
+          value: Math.max(0, Number(slice?.duration_seconds ?? 0))
         }))
         .filter((item) => item.value > 0);
 

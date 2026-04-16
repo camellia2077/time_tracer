@@ -50,6 +50,7 @@
       }
 
       const rows = Array.isArray(payload.series) ? payload.series.slice() : [];
+      const slices = Array.isArray(payload.slices) ? payload.slices.slice() : [];
       rows.sort((lhs, rhs) => {
         const lEpoch = Number(lhs?.epoch_day);
         const rEpoch = Number(rhs?.epoch_day);
@@ -68,14 +69,22 @@
       const averageSeconds = Number(payload.average_duration_seconds ?? 0);
       const activeDays = Number(payload.active_days ?? seconds.filter((value) => value > 0).length);
       const rangeDays = Number(payload.range_days ?? rows.length);
+      const activeRoots = Number(payload.active_root_count ?? slices.filter((item) => Number(item?.duration_seconds ?? 0) > 0).length);
 
-      const stats = [
-        ['Points', rows.length],
-        ['Total (h)', (totalSeconds / 3600.0).toFixed(2)],
-        ['Average/day (h)', (averageSeconds / 3600.0).toFixed(2)],
-        ['Active days', activeDays],
-        ['Range days', rangeDays]
-      ];
+      const stats = chartKind === 'pie'
+        ? [
+            ['Slices', slices.length],
+            ['Total (h)', (totalSeconds / 3600.0).toFixed(2)],
+            ['Active roots', activeRoots],
+            ['Range days', rangeDays]
+          ]
+        : [
+            ['Points', rows.length],
+            ['Total (h)', (totalSeconds / 3600.0).toFixed(2)],
+            ['Average/day (h)', (averageSeconds / 3600.0).toFixed(2)],
+            ['Active days', activeDays],
+            ['Range days', rangeDays]
+          ];
 
       const statsRoot = document.getElementById('stats');
       stats.forEach(([label, value]) => {

@@ -97,6 +97,12 @@ description: Windows Rust CLI capability-family layout, build, and verification 
   - `time_tracer_cli report render recent 7 --as-of 2026-03-07 --format md --db <db_path>`
   - `time_tracer_cli report export recent 7 --as-of 2026-03-07 --format md --db <db_path> --output <out_dir>`
 
+## Chart 语义
+
+- `chart --type line|bar|heatmap-*` 继续走 `report-chart`，语义是 trend / daily series。
+- `chart --type pie` 现已改为走 `report-composition`，语义是 selected period 的 root breakdown。
+- 因为 breakdown pie 固定展示整个时间窗口的 root 构成，`chart --type pie` 不允许再带 `--root`。
+
 ## Exchange Import 语义
 
 - `exchange import` 会覆盖 runtime active converter config（`main` / `alias_mapping` / `duration_rules`）。
