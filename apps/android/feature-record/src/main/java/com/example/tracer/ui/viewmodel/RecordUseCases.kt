@@ -14,6 +14,19 @@ class RecordUseCases(
         currentMonthKeyProvider = datePolicy::currentMonthKey
     )
 
+    // This clock is the Android session's single source of truth for logical-day semantics.
+    // Record, TXT preview, TXT day-marker defaults, and editor reset all must share this same
+    // clock/zone so "today vs yesterday" stays consistent across tabs and tests do not inherit
+    // an implicit host-machine time zone from scattered systemDefault() calls.
+    internal val logicalDayClock: Clock
+        get() = clock
+
+    // Seed UI state from the injected logical-day clock instead of from RecordUiState defaults.
+    // Keeping initialization here makes the time/zone dependency explicit and testable.
+    internal fun initialUiState(): RecordUiState = RecordUiState(
+        logicalDayTarget = datePolicy.defaultLogicalDayTarget()
+    )
+
     suspend fun recordNow(state: RecordUiState): RecordUiState {
         val targetDateIso = datePolicy.resolveTargetDateIso(state.logicalDayTarget)
         val timeOrderMode = datePolicy.resolveRecordTimeOrderMode(state.logicalDayTarget)

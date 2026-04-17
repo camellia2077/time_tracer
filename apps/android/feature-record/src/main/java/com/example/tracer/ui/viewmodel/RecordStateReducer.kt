@@ -1,5 +1,6 @@
 package com.example.tracer
 
+import java.time.ZoneId
 import kotlin.math.roundToInt
 
 internal object RecordStateReducer {
@@ -17,14 +18,20 @@ internal object RecordStateReducer {
 
     fun refreshLogicalDayDefault(
         state: RecordUiState,
-        currentTimeMillis: Long
+        currentTimeMillis: Long,
+        logicalDayZoneId: ZoneId
     ): RecordUiState {
         // Record uses an activity-day concept instead of the natural day: before 06:00 we still
         // default to "yesterday" so late-night work keeps appending to the previous day's block.
+        // The zone is injected from the Android session clock instead of reading the host system
+        // default implicitly, so runtime behavior stays device-local while tests remain stable.
         if (state.logicalDayIsUserOverride) {
             return state
         }
-        val defaultTarget = defaultLogicalDayTarget(currentTimeMillis)
+        val defaultTarget = defaultLogicalDayTarget(
+            currentTimeMillis = currentTimeMillis,
+            zoneId = logicalDayZoneId
+        )
         if (state.logicalDayTarget == defaultTarget) {
             return state
         }

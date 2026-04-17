@@ -48,11 +48,10 @@ internal class RecordUseCaseDatePolicy(
     }
 
     fun defaultLogicalDayTarget(): RecordLogicalDayTarget {
-        return com.example.tracer.defaultLogicalDayTarget(clock.millis(), clock.zone)
+        return com.example.tracer.defaultLogicalDayTarget(clock)
     }
 
     private companion object {
         private val MONTH_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM")
     }
 }
-

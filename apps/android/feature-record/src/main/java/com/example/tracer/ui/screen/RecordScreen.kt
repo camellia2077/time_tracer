@@ -17,6 +17,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
+import java.time.Clock
 import java.util.Date
 import java.util.Locale
 
@@ -52,6 +53,7 @@ fun RecordSection(
     selectedHistoryFile: String,
     editableHistoryContent: String,
     logicalDayTarget: RecordLogicalDayTarget,
+    logicalDayClock: Clock,
     onSelectLogicalDayYesterday: () -> Unit,
     onSelectLogicalDayToday: () -> Unit,
     onRefreshLogicalDayDefault: (Long) -> Unit,
@@ -142,6 +144,7 @@ fun RecordSection(
             selectedHistoryFile = selectedHistoryFile,
             editableHistoryContent = editableHistoryContent,
             logicalDayTarget = logicalDayTarget,
+            logicalDayClock = logicalDayClock,
             isLoading = isTxtPreviewLoading,
             previewStatusText = txtPreviewStatusText,
             onDismissRequest = onDismissTxtPreview

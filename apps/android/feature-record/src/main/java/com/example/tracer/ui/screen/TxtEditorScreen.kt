@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.record.R
+import java.time.Clock
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
@@ -40,6 +41,7 @@ fun TxtEditorSection(
     availableMonths: List<String>,
     selectedMonth: String,
     logicalDayTarget: RecordLogicalDayTarget,
+    logicalDayClock: Clock,
     onOpenPreviousMonth: () -> Unit,
     onOpenNextMonth: () -> Unit,
     onOpenMonth: (String) -> Unit,
@@ -54,7 +56,12 @@ fun TxtEditorSection(
     onCreateCurrentMonthTxt: () -> Unit
 ) {
     val sessionController = remember(selectedHistoryFile) { TxtEditorSessionController() }
-    val runtimeCoordinator = remember(txtStorageGateway) { TxtEditorRuntimeCoordinator(txtStorageGateway) }
+    val runtimeCoordinator = remember(txtStorageGateway, logicalDayClock) {
+        TxtEditorRuntimeCoordinator(
+            txtStorageGateway = txtStorageGateway,
+            logicalDayClock = logicalDayClock
+        )
+    }
     val sessionState = sessionController.state
     val coroutineScope = rememberCoroutineScope()
     val parsedAvailableMonths = remember(inspectionEntries) {

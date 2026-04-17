@@ -20,6 +20,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.record.R
+import java.time.Clock
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,11 +31,15 @@ internal fun RecordTxtPreviewSheet(
     selectedHistoryFile: String,
     editableHistoryContent: String,
     logicalDayTarget: RecordLogicalDayTarget,
+    logicalDayClock: Clock,
     isLoading: Boolean,
     previewStatusText: String,
     onDismissRequest: () -> Unit
 ) {
-    val targetDate = resolveLogicalDayTargetDate(logicalDayTarget)
+    val targetDate = resolveLogicalDayTargetDate(
+        logicalDayTarget = logicalDayTarget,
+        clock = logicalDayClock
+    )
     val targetDateIso = targetDate.toString()
     val targetMonth = targetDate.format(DateTimeFormatter.ofPattern("yyyy-MM"))
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)

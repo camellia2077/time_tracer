@@ -1,8 +1,15 @@
 package com.example.tracer
 
+import java.time.Clock
+
 internal class TxtEditorRuntimeCoordinator(
-    private val txtStorageGateway: TxtStorageGateway
+    private val txtStorageGateway: TxtStorageGateway,
+    private val logicalDayClock: Clock
 ) {
+    // TXT editor runtime must reuse the same logical-day clock as Record. Otherwise Record and
+    // TXT can disagree about which calendar date "yesterday/today" points at around the 06:00
+    // cutoff, especially in tests or CI where the host default zone may differ from the target
+    // device zone. The injected clock keeps preview/day-marker behavior aligned with Record.
     suspend fun syncAutoDayMarkerIfNeeded(
         sessionController: TxtEditorSessionController,
         selectedHistoryFile: String,
@@ -26,7 +33,10 @@ internal class TxtEditorRuntimeCoordinator(
 
         val markerResult = txtStorageGateway.defaultTxtDayMarker(
             selectedMonth = selectedMonth,
-            targetDateIso = resolveLogicalDayTargetDate(logicalDayTarget).toString()
+            targetDateIso = resolveLogicalDayTargetDate(
+                logicalDayTarget = logicalDayTarget,
+                clock = logicalDayClock
+            ).toString()
         )
         sessionController.applyAutoDayMarker(
             selectedHistoryFile = selectedHistoryFile,
@@ -41,7 +51,10 @@ internal class TxtEditorRuntimeCoordinator(
         logicalDayTarget: RecordLogicalDayTarget
     ): String = txtStorageGateway.defaultTxtDayMarker(
         selectedMonth = selectedMonth,
-        targetDateIso = resolveLogicalDayTargetDate(logicalDayTarget).toString()
+        targetDateIso = resolveLogicalDayTargetDate(
+            logicalDayTarget = logicalDayTarget,
+            clock = logicalDayClock
+        ).toString()
     ).normalizedDayMarker
 
     suspend fun resolveDayBlock(

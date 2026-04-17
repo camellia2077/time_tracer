@@ -4,6 +4,9 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneId
 
 class RecordStateReducerTest {
     @Test
@@ -60,12 +63,18 @@ private fun buildRecordViewModel(): RecordViewModel =
         recordUseCases = RecordUseCases(
             recordGateway = ReducerTestRecordGateway(),
             txtStorageGateway = ReducerTestTxtStorageGateway(),
-            queryGateway = ReducerTestQueryGateway()
+            queryGateway = ReducerTestQueryGateway(),
+            // Pin the reducer/view-model logical-day tests to an explicit device-local zone so
+            // host CI runners cannot change the before/after-cutoff expectations.
+            clock = fixedClock("2026-03-30T00:00:00Z", "Asia/Shanghai")
         )
     )
 
 private fun timeMillis(instantIso: String): Long =
     java.time.Instant.parse(instantIso).toEpochMilli()
+
+private fun fixedClock(instantIso: String, zoneId: String): Clock =
+    Clock.fixed(Instant.parse(instantIso), ZoneId.of(zoneId))
 
 private class ReducerTestRecordGateway : RecordGateway {
     override suspend fun createCurrentMonthTxt(): RecordActionResult = RecordActionResult(true, "ok")

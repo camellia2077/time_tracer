@@ -1,7 +1,10 @@
 package com.example.tracer
 
+import java.time.ZoneId
+
 internal class RecordIntentHandler(
-    private val useCaseCaller: RecordUseCaseCaller
+    private val useCaseCaller: RecordUseCaseCaller,
+    private val logicalDayZoneId: ZoneId
 ) {
     fun onRecordContentChange(state: RecordUiState, value: String): RecordUiState =
         RecordStateReducer.onRecordContentChange(state, value)
@@ -20,7 +23,8 @@ internal class RecordIntentHandler(
         currentTimeMillis: Long
     ): RecordUiState = RecordStateReducer.refreshLogicalDayDefault(
         state = state,
-        currentTimeMillis = currentTimeMillis
+        currentTimeMillis = currentTimeMillis,
+        logicalDayZoneId = logicalDayZoneId
     )
 
     fun updateEditableHistoryContent(state: RecordUiState, value: String): RecordUiState =

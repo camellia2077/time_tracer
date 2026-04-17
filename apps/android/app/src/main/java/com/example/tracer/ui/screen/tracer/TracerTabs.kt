@@ -231,6 +231,7 @@ internal object TracerTabRegistry {
                     availableMonths = args.recordUiState.availableMonths,
                     selectedMonth = args.recordUiState.selectedMonth,
                     logicalDayTarget = args.recordUiState.logicalDayTarget,
+                    logicalDayClock = args.recordViewModel.logicalDayClock,
                     onOpenPreviousMonth = args.recordViewModel::openPreviousMonth,
                     onOpenNextMonth = args.recordViewModel::openNextMonth,
                     onOpenMonth = args.recordViewModel::openMonth,

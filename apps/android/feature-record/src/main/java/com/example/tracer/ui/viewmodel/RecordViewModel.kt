@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
+import java.time.Clock
 
 enum class RecordLogicalDayTarget {
     YESTERDAY,
@@ -30,8 +31,9 @@ data class CryptoProgressUiState(
 data class RecordUiState(
     val recordContent: String = "",
     val recordRemark: String = "",
-    val logicalDayTarget: RecordLogicalDayTarget =
-        defaultLogicalDayTarget(System.currentTimeMillis()),
+    // Keep the state object deterministic. The owning ViewModel seeds this from an injected
+    // logical-day clock so tests do not inherit the host machine's default time-zone implicitly.
+    val logicalDayTarget: RecordLogicalDayTarget = RecordLogicalDayTarget.TODAY,
     val logicalDayIsUserOverride: Boolean = false,
     val historyFiles: List<String> = emptyList(),
     val txtInspectionEntries: List<TxtInspectionEntry> = emptyList(),
@@ -61,12 +63,16 @@ data class RecordUiState(
 )
 
 class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() {
+    val logicalDayClock: Clock
+        get() = recordUseCases.logicalDayClock
+
     private val intentHandler = RecordIntentHandler(
-        useCaseCaller = RecordUseCaseCaller(recordUseCases)
+        useCaseCaller = RecordUseCaseCaller(recordUseCases),
+        logicalDayZoneId = recordUseCases.logicalDayClock.zone
     )
     private var txtPreviewRequestVersion: Long = 0L
 
-    var uiState by mutableStateOf(RecordUiState())
+    var uiState by mutableStateOf(recordUseCases.initialUiState())
         private set
 
     fun onRecordContentChange(value: String) {
@@ -267,7 +273,8 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
 class RecordViewModelFactory(
     private val recordGateway: RecordGateway,
     private val txtStorageGateway: TxtStorageGateway,
-    private val queryGateway: QueryGateway
+    private val queryGateway: QueryGateway,
+    private val clock: Clock = Clock.systemDefaultZone()
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(RecordViewModel::class.java)) {
@@ -276,7 +283,8 @@ class RecordViewModelFactory(
                 RecordUseCases(
                     recordGateway = recordGateway,
                     txtStorageGateway = txtStorageGateway,
-                    queryGateway = queryGateway
+                    queryGateway = queryGateway,
+                    clock = clock
                 )
             ) as T
         }

@@ -14,7 +14,7 @@ internal val RECORD_LOGICAL_DAY_CUTOFF: LocalTime = LocalTime.of(6, 0)
 
 internal fun defaultLogicalDayTarget(
     currentTimeMillis: Long,
-    zoneId: ZoneId = ZoneId.systemDefault()
+    zoneId: ZoneId
 ): RecordLogicalDayTarget {
     val localTime = Instant.ofEpochMilli(currentTimeMillis).atZone(zoneId).toLocalTime()
     return if (localTime.isBefore(RECORD_LOGICAL_DAY_CUTOFF)) {
@@ -24,9 +24,15 @@ internal fun defaultLogicalDayTarget(
     }
 }
 
+internal fun defaultLogicalDayTarget(clock: Clock): RecordLogicalDayTarget =
+    defaultLogicalDayTarget(
+        currentTimeMillis = clock.millis(),
+        zoneId = clock.zone
+    )
+
 internal fun resolveLogicalDayTargetDate(
     logicalDayTarget: RecordLogicalDayTarget,
-    clock: Clock = Clock.systemDefaultZone()
+    clock: Clock
 ): LocalDate {
     val today = LocalDate.now(clock)
     return when (logicalDayTarget) {

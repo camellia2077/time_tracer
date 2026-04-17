@@ -153,6 +153,7 @@ fun RecordTabContent(
         selectedHistoryFile = recordUiState.selectedHistoryFile,
         editableHistoryContent = recordUiState.editableHistoryContent,
         logicalDayTarget = recordUiState.logicalDayTarget,
+        logicalDayClock = recordViewModel.logicalDayClock,
         onSelectLogicalDayYesterday = recordViewModel::selectLogicalDayYesterday,
         onSelectLogicalDayToday = recordViewModel::selectLogicalDayToday,
         onRefreshLogicalDayDefault = recordViewModel::refreshLogicalDayDefault,

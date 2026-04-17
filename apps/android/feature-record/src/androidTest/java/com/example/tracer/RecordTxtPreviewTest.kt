@@ -12,6 +12,9 @@ import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneId
 
 @RunWith(AndroidJUnit4::class)
 class RecordTxtPreviewTest {
@@ -53,6 +56,7 @@ class RecordTxtPreviewTest {
                     selectedHistoryFile = "2026/2026-04.txt",
                     editableHistoryContent = "y2026\nm04\n0416\n  coding\n",
                     logicalDayTarget = RecordLogicalDayTarget.TODAY,
+                    logicalDayClock = fixedClock("2026-04-16T12:00:00Z", "Asia/Shanghai"),
                     isLoading = false,
                     previewStatusText = "",
                     onDismissRequest = {}
@@ -103,3 +107,6 @@ private class PreviewTestTxtStorageGateway : TxtStorageGateway {
         message = "ok"
     )
 }
+
+private fun fixedClock(instantIso: String, zoneId: String): Clock =
+    Clock.fixed(Instant.parse(instantIso), ZoneId.of(zoneId))
