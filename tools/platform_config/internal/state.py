@@ -90,6 +90,6 @@ def is_cache_hit(
         target_path = output_root / rel
         if not target_path.is_file():
             return False
-        if hash_file_fn(target_path) != digest:
+        if hash_file_fn(target_path, rel) != digest:
             return False
     return True

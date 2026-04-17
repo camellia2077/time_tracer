@@ -10,6 +10,7 @@ from .internal.files import (
     apply_plan_atomic,
     build_file_hashes,
     collect_plan_files,
+    hash_file_content,
     hash_bytes,
     read_existing_files,
 )
@@ -19,7 +20,7 @@ from .internal.sync_report import print_bundle_diff, print_sync_header, print_sy
 
 
 def _hash_file(path: Path) -> str:
-    return hash_bytes(path.read_bytes())
+    return hash_file_content(path, rel_path=path.name)
 
 
 def sync_target(
@@ -55,7 +56,7 @@ def sync_target(
             expected_source_root=resolved_source,
             expected_input_hash=input_hash,
             expected_file_hashes=file_hashes,
-            hash_file_fn=_hash_file,
+            hash_file_fn=lambda path, rel: hash_file_content(path, rel_path=rel),
         )
 
     if cache_hit:

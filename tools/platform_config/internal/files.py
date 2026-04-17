@@ -10,6 +10,21 @@ from .model import BundleModel
 from .path_utils import dedupe_keep_order
 
 
+def _is_normalized_text_path(rel_path: str) -> bool:
+    return rel_path.lower().endswith(".toml")
+
+
+def normalize_file_bytes(*, rel_path: str, data: bytes) -> bytes:
+    if not _is_normalized_text_path(rel_path):
+        return data
+
+    text = data.decode("utf-8")
+    normalized = text.replace("\r\n", "\n").replace("\r", "\n")
+    if normalized and not normalized.endswith("\n"):
+        normalized += "\n"
+    return normalized.encode("utf-8")
+
+
 def collect_plan_files(source_root: Path, model: BundleModel) -> dict[str, bytes]:
     files_to_copy = dedupe_keep_order([*model.required_files, *model.optional_files])
     plan: dict[str, bytes] = {}
@@ -17,12 +32,18 @@ def collect_plan_files(source_root: Path, model: BundleModel) -> dict[str, bytes
         source_path = source_root / rel
         if not source_path.exists() or not source_path.is_file():
             raise FileNotFoundError(f"Required source file missing: {source_path}")
-        plan[rel] = source_path.read_bytes()
+        plan[rel] = normalize_file_bytes(rel_path=rel, data=source_path.read_bytes())
 
     bundle_bytes = render_bundle_toml(model).encode("utf-8")
     if model.profile == "android":
-        plan["config.toml"] = build_android_config_toml(source_root).encode("utf-8")
-    plan["meta/bundle.toml"] = bundle_bytes
+        plan["config.toml"] = normalize_file_bytes(
+            rel_path="config.toml",
+            data=build_android_config_toml(source_root).encode("utf-8"),
+        )
+    plan["meta/bundle.toml"] = normalize_file_bytes(
+        rel_path="meta/bundle.toml",
+        data=bundle_bytes,
+    )
     return plan
 
 
@@ -34,7 +55,7 @@ def read_existing_files(root: Path) -> dict[str, bytes]:
         if not file_path.is_file():
             continue
         rel = file_path.relative_to(root).as_posix()
-        existing[rel] = file_path.read_bytes()
+        existing[rel] = normalize_file_bytes(rel_path=rel, data=file_path.read_bytes())
     return existing
 
 
@@ -44,6 +65,10 @@ def hash_bytes(data: bytes) -> str:
 
 def build_file_hashes(planned_files: dict[str, bytes]) -> dict[str, str]:
     return {rel: hash_bytes(data) for rel, data in sorted(planned_files.items())}
+
+
+def hash_file_content(path: Path, *, rel_path: str) -> str:
+    return hash_bytes(normalize_file_bytes(rel_path=rel_path, data=path.read_bytes()))
 
 
 def _write_plan_tree(root: Path, planned_files: dict[str, bytes]) -> None:

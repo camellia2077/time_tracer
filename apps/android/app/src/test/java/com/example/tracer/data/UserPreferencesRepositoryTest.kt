@@ -2,12 +2,13 @@ package com.example.tracer.data
 
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.example.tracer.ReportPiePalettePreset
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.io.File
+import kotlin.io.path.createTempDirectory
 
 class UserPreferencesRepositoryTest {
     @Test
@@ -80,9 +81,13 @@ class UserPreferencesRepositoryTest {
     }
 
     private fun buildRepository(testName: String, scope: CoroutineScope): UserPreferencesRepository {
-        val prefsFile = File.createTempFile("user_prefs_$testName", ".preferences_pb").apply {
+        val tempDir = createTempDirectory(prefix = "user_prefs_$testName").toFile().apply {
             deleteOnExit()
         }
+        // Use a not-yet-created file inside a unique temp directory. This avoids
+        // Windows-specific file locking issues from handing DataStore a pre-created
+        // temp file that may still be held by the test process/runtime.
+        val prefsFile = File(tempDir, "settings.preferences_pb")
         val dataStore = PreferenceDataStoreFactory.create(
             scope = scope,
             produceFile = { prefsFile }

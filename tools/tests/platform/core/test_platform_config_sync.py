@@ -133,6 +133,49 @@ class TestPlatformConfigSync(TestCase):
             self.assertIn("drift detected", capture.getvalue().lower())
             self.assertTrue(config_file.read_text(encoding="utf-8").endswith("# drift\n"))
 
+    def test_check_mode_ignores_toml_line_ending_only_drift(self):
+        source_root = REPO_ROOT / "assets" / "tracer_core" / "config"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            windows_out = temp_root / "windows_config"
+            android_out = temp_root / "android_config"
+
+            apply_ret = run_generation(
+                target="android",
+                source_root=source_root,
+                windows_output_root=windows_out,
+                android_output_root=android_out,
+                apply=True,
+                check=False,
+                show_diff=False,
+                allow_overwrite_source=False,
+            )
+            self.assertEqual(apply_ret, 0)
+
+            bundle_file = android_out / "meta" / "bundle.toml"
+            bundle_text = bundle_file.read_text(encoding="utf-8")
+            bundle_file.write_text(
+                bundle_text.replace("\n", "\r\n"),
+                encoding="utf-8",
+                newline="",
+            )
+
+            capture = io.StringIO()
+            with redirect_stdout(capture):
+                check_ret = run_generation(
+                    target="android",
+                    source_root=source_root,
+                    windows_output_root=windows_out,
+                    android_output_root=android_out,
+                    apply=False,
+                    check=True,
+                    show_diff=False,
+                    allow_overwrite_source=False,
+                )
+
+            self.assertEqual(check_ret, 0)
+            self.assertIn("up to date", capture.getvalue().lower())
+
     def test_toolchain_windows_output_root_matches_shared_path_constant(self):
         ctx = Context(REPO_ROOT)
         resolved = resolve_platform_config_output_root(ctx, "windows")
