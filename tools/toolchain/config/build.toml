@@ -196,10 +196,15 @@ gradle_tasks = [
 ]
 
 [build.profiles.android_ci]
-description = "Android CI checks (snapshot verify + debug/local QA + release QA)."
+description = "Android CI checks (snapshot verify + debug/local QA, signing-free)."
 gradle_tasks = [
     ":runtime:verifyTracerCoreConfigSnapshot",
     ":app:check",
+]
+
+[build.profiles.android_release_verify]
+description = "Android release verification (release QA + signing-required checks)."
+gradle_tasks = [
     ":app:qaRelease",
 ]
 

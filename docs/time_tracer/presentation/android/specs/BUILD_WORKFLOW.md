@@ -25,6 +25,8 @@ Run from repo root unless a section explicitly says otherwise.
   - `python tools/run.py verify --app tracer_android --profile android_style --concise`
 - CI-like verify:
   - `python tools/run.py verify --app tracer_android --profile android_ci --concise`
+- Release verify:
+  - `python tools/run.py verify --app tracer_android --profile android_release_verify --concise`
 - Combined closeout in one Gradle invocation:
   - `python tools/run.py verify --app tracer_android --profile android_style --profile android_ci --concise`
 - Device verify:
@@ -64,6 +66,9 @@ Common targeted commands:
   - run both `android_style` and `android_ci`.
   - Prefer one merged invocation when practical:
     `python tools/run.py verify --app tracer_android --profile android_style --profile android_ci --concise`
+- If you need release-specific QA or signing validation:
+  - run `python tools/run.py verify --app tracer_android --profile android_release_verify --concise`
+  - this path requires the existing release signing inputs and is intentionally separate from default CI.
 - If a change touches core-side code that affects the Android host/runtime path:
   - include `python tools/run.py build --app tracer_android --profile android_edit`.
 

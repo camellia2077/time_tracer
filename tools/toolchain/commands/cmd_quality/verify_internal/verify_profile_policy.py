@@ -39,6 +39,8 @@ def resolve_suite_config_override(
             return "config_android_style.toml"
         if normalized_profile == "android_ci":
             return "config_android_ci.toml"
+        if normalized_profile == "android_release_verify":
+            return "config_android_release_verify.toml"
         if normalized_profile == "android_device":
             return "config_android_device.toml"
     if suite_name == "tracer_windows_rust_cli":

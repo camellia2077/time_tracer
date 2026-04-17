@@ -1,0 +1,184 @@
+name: Android CI
+
+on:
+  pull_request:
+    paths:
+      - 'apps/android/**'
+      - 'apps/tracer_core_shell/**'
+      - 'libs/tracer_core/**'
+      - 'libs/tracer_core_bridge_common/**'
+      - 'libs/tracer_transport/**'
+      - 'assets/tracer_core/config/**'
+      - 'tools/**'
+      - '.github/actions/**'
+      - '.github/workflows/android-ci.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/android/**'
+      - 'apps/tracer_core_shell/**'
+      - 'libs/tracer_core/**'
+      - 'libs/tracer_core_bridge_common/**'
+      - 'libs/tracer_transport/**'
+      - 'assets/tracer_core/config/**'
+      - 'tools/**'
+      - '.github/actions/**'
+      - '.github/workflows/android-ci.yml'
+  workflow_dispatch:
+    inputs:
+      run_release_verify:
+        description: Run signing-required Android release verification
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: android-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android-default-ci:
+    name: android-default-ci
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Android verify environment
+        uses: ./.github/actions/setup-android-verify-env
+
+      - name: Show Android CI environment
+        shell: pwsh
+        run: |
+          Write-Host "Runner: $env:RUNNER_OS"
+          Write-Host "Python: $(python --version)"
+          Write-Host "Java: $((java -version) 2>&1 | Select-Object -First 1)"
+          Write-Host "ANDROID_SDK_ROOT: $env:ANDROID_SDK_ROOT"
+          Write-Host "ANDROID_HOME: $env:ANDROID_HOME"
+
+      - name: Show android_style scope
+        shell: pwsh
+        run: |
+          Write-Host "android_style will run:"
+          Write-Host "  - Gradle tasks: :app:ktlintCheck, :app:lintDebug"
+          Write-Host "  - verify-stack Python checks"
+          Write-Host "  - tracer_android host suite: config_android_style.toml"
+
+      - name: Verify Android style
+        shell: pwsh
+        run: |
+          python tools/run.py verify --app tracer_android --profile android_style --concise
+
+      - name: Show android_ci scope
+        shell: pwsh
+        run: |
+          Write-Host "android_ci will run:"
+          Write-Host "  - Gradle tasks: :runtime:verifyTracerCoreConfigSnapshot, :app:check"
+          Write-Host "  - verify-stack Python checks"
+          Write-Host "  - tracer_android host suite: config_android_ci.toml"
+
+      - name: Verify Android CI
+        shell: pwsh
+        run: |
+          python tools/run.py verify --app tracer_android --profile android_ci --concise
+
+      - name: Summarize Android failure
+        if: failure()
+        shell: pwsh
+        run: |
+          python tools/scripts/devtools/android/summarize_android_failure.py `
+            --profile android_ci `
+            --build-log apps/android/build/build.log `
+            --aggregated-log out/test/artifact_android/logs/output.log `
+            --full-log out/test/artifact_android/logs/output_full.log `
+            --result-json out/test/artifact_android/result.json `
+            --output out/test/artifact_android/logs/failure-summary.txt
+
+      - name: Upload Android runner logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-default-ci-logs
+          path: |
+            apps/android/build/build.log
+            out/test/artifact_android/result.json
+            out/test/artifact_android/logs/failure-summary.txt
+            out/test/artifact_android/logs/output.log
+            out/test/artifact_android/logs/output_full.log
+          if-no-files-found: warn
+
+  android-release-verify:
+    name: android-release-verify
+    runs-on: windows-latest
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_release_verify }}
+    env:
+      TT_ANDROID_KEYSTORE_BASE64: ${{ secrets.TT_ANDROID_KEYSTORE_BASE64 }}
+      TT_ANDROID_STORE_PASSWORD: ${{ secrets.TT_ANDROID_STORE_PASSWORD }}
+      TT_ANDROID_KEY_ALIAS: ${{ secrets.TT_ANDROID_KEY_ALIAS }}
+      TT_ANDROID_KEY_PASSWORD: ${{ secrets.TT_ANDROID_KEY_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Android verify environment
+        uses: ./.github/actions/setup-android-verify-env
+
+      - name: Validate release signing secrets
+        shell: pwsh
+        run: |
+          $requiredVars = @(
+            'TT_ANDROID_KEYSTORE_BASE64',
+            'TT_ANDROID_STORE_PASSWORD',
+            'TT_ANDROID_KEY_ALIAS',
+            'TT_ANDROID_KEY_PASSWORD'
+          )
+          $missing = @()
+          foreach ($name in $requiredVars) {
+            if ([string]::IsNullOrWhiteSpace((Get-Item -Path "env:$name" -ErrorAction SilentlyContinue).Value)) {
+              $missing += $name
+            }
+          }
+          if ($missing.Count -gt 0) {
+            throw "run_release_verify=true requires GitHub secrets: $($missing -join ', ')"
+          }
+
+      - name: Materialize release keystore
+        shell: pwsh
+        run: |
+          $keystorePath = Join-Path $env:RUNNER_TEMP 'android-release-key.jks'
+          [System.IO.File]::WriteAllBytes(
+            $keystorePath,
+            [System.Convert]::FromBase64String($env:TT_ANDROID_KEYSTORE_BASE64)
+          )
+          "TT_ANDROID_STORE_FILE=$keystorePath" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Verify Android release
+        shell: pwsh
+        run: |
+          python tools/run.py verify --app tracer_android --profile android_release_verify --concise
+
+      - name: Summarize Android release failure
+        if: failure()
+        shell: pwsh
+        run: |
+          python tools/scripts/devtools/android/summarize_android_failure.py `
+            --profile android_release_verify `
+            --build-log apps/android/build/build.log `
+            --aggregated-log out/test/artifact_android/logs/output.log `
+            --full-log out/test/artifact_android/logs/output_full.log `
+            --result-json out/test/artifact_android/result.json `
+            --output out/test/artifact_android/logs/failure-summary.txt
+
+      - name: Upload Android release runner logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-release-verify-logs
+          path: |
+            apps/android/build/build.log
+            out/test/artifact_android/result.json
+            out/test/artifact_android/logs/failure-summary.txt
+            out/test/artifact_android/logs/output.log
+            out/test/artifact_android/logs/output_full.log
+          if-no-files-found: warn

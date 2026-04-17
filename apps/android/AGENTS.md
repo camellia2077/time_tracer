@@ -83,6 +83,7 @@ Run from repo root for standard validation flows:
 python tools/run.py verify --app tracer_android --profile android_style --concise
 python tools/run.py verify --app tracer_android --profile android_ci --concise
 python tools/run.py verify --app tracer_android --profile android_style --profile android_ci --concise
+python tools/run.py verify --app tracer_android --profile android_release_verify --concise
 ```
 
 ## 测试资产边界

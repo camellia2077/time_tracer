@@ -60,6 +60,28 @@ class TestVerifyRunTests(VerifyCommandTestBase):
         self.assertIn("--config", called_cmd)
         self.assertIn("config_android_style.toml", called_cmd)
 
+    def test_run_tests_tracer_android_release_verify_uses_profile_config(self):
+        with (
+            patch(
+                "tools.toolchain.commands.cmd_quality.verify.run_command", return_value=0
+            ) as mocked_run,
+            patch(
+                "tools.toolchain.commands.cmd_quality.verify.resolve_suite_bin_dir",
+                return_value=r"C:\Windows\System32",
+            ),
+        ):
+            result = self.run_tests_silently(
+                app_name="tracer_android",
+                build_dir_name="build_fast",
+                profile_name="android_release_verify",
+                concise=True,
+            )
+
+        self.assertEqual(result, 0)
+        called_cmd = mocked_run.call_args.args[0]
+        self.assertIn("--config", called_cmd)
+        self.assertIn("config_android_release_verify.toml", called_cmd)
+
     def test_run_tests_tracer_core_uses_artifact_windows_cli_suite(self):
         with patch(
             "tools.toolchain.commands.cmd_quality.verify.run_command", return_value=0

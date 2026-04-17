@@ -1,10 +1,4 @@
-# Extra checks for android_ci profile
-
-[[commands]]
-name = "CI Report LintRelease Exists"
-stage = "android-ci"
-args = [
-  "/c",
-  "if exist ..\\..\\..\\..\\apps\\android\\app\\build\\reports\\lint-results-release.html (exit /b 0) else (echo Missing lint-results-release.html && exit /b 1)"
-]
-expect_exit = 0
+# Extra checks for android_ci profile.
+#
+# Intentionally left empty: this profile is now the signing-free default CI path,
+# so release-only report assertions live in `tests_release_verify.toml`.

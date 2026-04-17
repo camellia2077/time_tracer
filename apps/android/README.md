@@ -30,6 +30,7 @@ python tools/run.py build --app tracer_android --profile android_edit
 python tools/run.py verify --app tracer_android --profile android_style --concise
 python tools/run.py verify --app tracer_android --profile android_ci --concise
 python tools/run.py verify --app tracer_android --profile android_style --profile android_ci --concise
+python tools/run.py verify --app tracer_android --profile android_release_verify --concise
 ```
 
 Gradle rule:
@@ -40,6 +41,7 @@ Gradle rule:
 - Direct Gradle is also acceptable for targeted debugging or narrower module/task validation when it is the more precise tool.
 - Choose the smallest command that safely validates the change.
 - Repeating `--profile` for `tracer_android` is supported only when `tools/run.py` merges them into one Gradle invocation; it does not make this workspace safe for multiple concurrent Gradle processes.
+- `android_ci` is the signing-free default CI path; release QA lives under `android_release_verify`.
 
 ## Local Facts
 

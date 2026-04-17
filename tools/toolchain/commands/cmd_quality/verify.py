@@ -197,6 +197,18 @@ class VerifyCommand:
                 return ret
         return 0
 
+    @staticmethod
+    def _print_android_verify_stage(
+        *,
+        profile_name: str | None,
+        stage: str,
+        detail: str,
+    ) -> None:
+        profile_label = profile_name or "default"
+        print(
+            f"--- verify: Android profile `{profile_label}` {stage}: {detail}"
+        )
+
     def _execute_single(
         self,
         *,
@@ -223,7 +235,19 @@ class VerifyCommand:
             kill_build_procs=kill_build_procs,
             cmake_args=cmake_args,
         )
+        if app_name == "tracer_android":
+            self._print_android_verify_stage(
+                profile_name=profile_name,
+                stage="start",
+                detail="resolving Gradle build and verify stages",
+            )
         suite_name = resolve_suite_name(app_name)
+        if app_name == "tracer_android":
+            self._print_android_verify_stage(
+                profile_name=profile_name,
+                stage="build",
+                detail="starting Gradle-backed verification",
+            )
         build_ret, resolved_build_dir_name, build_app_name, build_log_path = execute_build_stage(
             ctx=self.ctx,
             build_command_cls=BuildCommand,
@@ -265,6 +289,12 @@ class VerifyCommand:
             return int(early_exit)
 
         if not skip_unit_checks:
+            if app_name == "tracer_android":
+                self._print_android_verify_stage(
+                    profile_name=profile_name,
+                    stage="verify-unit",
+                    detail="running shared Python verify-stack checks",
+                )
             unit_ret = self.run_unit_scope_checks(
                 run_command_fn=effective_run_command,
             )
@@ -303,6 +333,12 @@ class VerifyCommand:
                 exit_code=0,
             )
 
+        if app_name == "tracer_android":
+            self._print_android_verify_stage(
+                profile_name=profile_name,
+                stage="artifact",
+                detail="running native foundation, host suite, and quality gates",
+            )
         artifact_ret = self.run_artifact_scope_checks(
             app_name=app_name,
             build_dir_name=resolved_build_dir_name,
@@ -411,6 +447,22 @@ class VerifyCommand:
             resolve_suite_config_override_fn=self._resolve_suite_config_override,
         )
         effective_run_command = run_command if run_command_fn is None else run_command_fn
+        if app_name == "tracer_android":
+            if test_cmd is None:
+                print(
+                    f"--- verify: Android profile `{profile_name or 'default'}` suite: "
+                    "no mapped tracer_android host suite"
+                )
+            else:
+                suite_config = self._resolve_suite_config_override(
+                    resolve_suite_name(app_name) or "",
+                    profile_name,
+                )
+                config_hint = suite_config or "default suite config"
+                print(
+                    f"--- verify: Android profile `{profile_name or 'default'}` suite config: "
+                    f"{config_hint}"
+                )
         return run_artifact_pipeline(
             test_cmd=test_cmd,
             app_name=app_name,

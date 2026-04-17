@@ -108,6 +108,12 @@ def build_gradle(
             ctx=ctx,
             app_name=app_name,
         )
+    if app_name == "tracer_android":
+        profile_label = profile_name or "default"
+        print(
+            "--- build: Android Gradle profile "
+            f"`{profile_label}` tasks: {', '.join(gradle_tasks)}"
+        )
     gradle_cmd = [
         build_common.resolve_gradle_wrapper(ctx, app_name),
         *gradle_tasks,
