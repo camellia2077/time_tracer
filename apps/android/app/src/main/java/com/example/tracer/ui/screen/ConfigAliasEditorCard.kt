@@ -15,7 +15,6 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -28,8 +27,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import com.example.tracer.ui.components.NativeMultilineTextEditor
 import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
 
 @Composable
@@ -166,15 +165,17 @@ internal fun ConfigAliasEditorCard(
                 }
 
                 AliasEditorMode.ADVANCED -> {
-                    OutlinedTextField(
+                    Text(
+                        text = stringResource(R.string.config_label_toml_content),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    NativeMultilineTextEditor(
                         value = advancedTomlDraft,
                         onValueChange = onAdvancedTomlChange,
-                        label = { Text(stringResource(R.string.config_label_toml_content)) },
                         modifier = Modifier.fillMaxWidth(),
                         minLines = 12,
-                        textStyle = MaterialTheme.typography.bodyMedium.copy(
-                            fontFamily = FontFamily.Monospace
-                        )
+                        monospace = true
                     )
                 }
             }

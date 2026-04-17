@@ -40,6 +40,11 @@ data class RecordUiState(
     val selectedHistoryFile: String = "",
     val selectedHistoryContent: String = "",
     val editableHistoryContent: String = "",
+    // Keep unsaved TXT edits in memory for the current app session so switching tabs/months/files
+    // feels like a normal editor: users do not lose draft text until they explicitly save or
+    // discard it. This cache is intentionally UI-session-only and is never treated as persisted
+    // storage.
+    val historyDraftsByFile: Map<String, String> = emptyMap(),
     val quickActivities: List<String> = listOf("meal", "洗漱", "上厕所"),
     val assistExpanded: Boolean = false,
     val assistSettingsExpanded: Boolean = false,
@@ -48,6 +53,9 @@ data class RecordUiState(
     val suggestedActivities: List<String> = emptyList(),
     val suggestionsVisible: Boolean = false,
     val isSuggestionsLoading: Boolean = false,
+    val isTxtPreviewVisible: Boolean = false,
+    val isTxtPreviewLoading: Boolean = false,
+    val txtPreviewStatusText: String = "",
     val statusText: String = "",
     val cryptoProgress: CryptoProgressUiState = CryptoProgressUiState()
 )
@@ -56,6 +64,7 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
     private val intentHandler = RecordIntentHandler(
         useCaseCaller = RecordUseCaseCaller(recordUseCases)
     )
+    private var txtPreviewRequestVersion: Long = 0L
 
     var uiState by mutableStateOf(RecordUiState())
         private set
@@ -172,6 +181,30 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
 
     fun clearCryptoProgress() {
         uiState = intentHandler.clearCryptoProgress(uiState)
+    }
+
+    fun openTxtPreview() {
+        uiState = intentHandler.showTxtPreviewLoading(uiState)
+        txtPreviewRequestVersion += 1L
+        val requestVersion = txtPreviewRequestVersion
+        viewModelScope.launch {
+            val previousStatusText = uiState.statusText
+            val resultState = intentHandler.openTxtPreview(uiState)
+            if (txtPreviewRequestVersion != requestVersion) {
+                return@launch
+            }
+            uiState = resultState.copy(
+                isTxtPreviewVisible = true,
+                isTxtPreviewLoading = false,
+                txtPreviewStatusText = resultState.statusText,
+                statusText = previousStatusText
+            )
+        }
+    }
+
+    fun dismissTxtPreview() {
+        txtPreviewRequestVersion += 1L
+        uiState = intentHandler.dismissTxtPreview(uiState)
     }
 
     fun recordNow() {

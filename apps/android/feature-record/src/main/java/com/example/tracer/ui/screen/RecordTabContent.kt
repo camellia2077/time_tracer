@@ -12,6 +12,7 @@ import java.util.Locale
 fun RecordTabContent(
     recordUiState: RecordUiState,
     recordViewModel: RecordViewModel,
+    txtStorageGateway: TxtStorageGateway,
     validAuthorableEventTokens: Set<String>,
     onPersistQuickActivities: (List<String>) -> Unit,
     onPersistAssistExpanded: (Boolean) -> Unit,
@@ -42,6 +43,7 @@ fun RecordTabContent(
         stringResource(R.string.record_status_invalid_suggested_activity)
 
     RecordSection(
+        txtStorageGateway = txtStorageGateway,
         recordContent = recordUiState.recordContent,
         onRecordContentChange = recordViewModel::onRecordContentChange,
         recordRemark = recordUiState.recordRemark,
@@ -144,6 +146,12 @@ fun RecordTabContent(
         suggestedActivities = recordUiState.suggestedActivities,
         suggestionsVisible = recordUiState.suggestionsVisible,
         isSuggestionsLoading = recordUiState.isSuggestionsLoading,
+        isTxtPreviewVisible = recordUiState.isTxtPreviewVisible,
+        isTxtPreviewLoading = recordUiState.isTxtPreviewLoading,
+        txtPreviewStatusText = recordUiState.txtPreviewStatusText,
+        selectedMonth = recordUiState.selectedMonth,
+        selectedHistoryFile = recordUiState.selectedHistoryFile,
+        editableHistoryContent = recordUiState.editableHistoryContent,
         logicalDayTarget = recordUiState.logicalDayTarget,
         onSelectLogicalDayYesterday = recordViewModel::selectLogicalDayYesterday,
         onSelectLogicalDayToday = recordViewModel::selectLogicalDayToday,
@@ -164,6 +172,8 @@ fun RecordTabContent(
             }
             recordViewModel.applySuggestedActivity(activity)
         },
+        onOpenTxtPreview = recordViewModel::openTxtPreview,
+        onDismissTxtPreview = recordViewModel::dismissTxtPreview,
         onRecordNow = recordViewModel::recordNow
     )
 }

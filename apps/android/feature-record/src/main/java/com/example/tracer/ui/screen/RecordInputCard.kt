@@ -11,11 +11,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -23,6 +25,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.record.R
@@ -35,6 +38,7 @@ internal fun RecordInputCard(
     onRecordRemarkChange: (String) -> Unit,
     suggestionsVisible: Boolean,
     onToggleSuggestions: () -> Unit,
+    onOpenTxtPreview: () -> Unit,
     onRecordNow: () -> Unit
 ) {
     ElevatedCard(
@@ -55,17 +59,30 @@ internal fun RecordInputCard(
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
-                TextButton(onClick = onToggleSuggestions) {
-                    Text(stringResource(R.string.record_action_suggestions))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Icon(
-                        imageVector = if (suggestionsVisible) {
-                            Icons.Default.KeyboardArrowUp
-                        } else {
-                            Icons.Default.KeyboardArrowDown
-                        },
-                        contentDescription = null
-                    )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = onOpenTxtPreview,
+                        modifier = Modifier.testTag(recordTxtPreviewButtonTestTag())
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Description,
+                            contentDescription = stringResource(R.string.record_cd_open_txt_preview)
+                        )
+                    }
+                    TextButton(onClick = onToggleSuggestions) {
+                        Text(stringResource(R.string.record_action_suggestions))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(
+                            imageVector = if (suggestionsVisible) {
+                                Icons.Default.KeyboardArrowUp
+                            } else {
+                                Icons.Default.KeyboardArrowDown
+                            },
+                            contentDescription = null
+                        )
+                    }
                 }
             }
 
@@ -102,3 +119,5 @@ internal fun RecordInputCard(
         }
     }
 }
+
+internal fun recordTxtPreviewButtonTestTag(): String = "record_txt_preview_button"

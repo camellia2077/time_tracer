@@ -12,6 +12,11 @@
     <string name="txt_label_day_content">单日内容</string>
 
     <string name="txt_cd_ingest">写入</string>
+    <string name="txt_action_close">关闭</string>
+    <string name="txt_cd_undo">撤销</string>
+    <string name="txt_cd_redo">重做</string>
+    <string name="txt_status_unsaved">已修改</string>
+    <string name="txt_status_saved">已保存</string>
     <string name="txt_cd_prev_month">上个月</string>
     <string name="txt_cd_next_month">下个月</string>
     <string name="txt_cd_prev_day">前一天</string>
@@ -49,6 +54,7 @@
     <string name="record_action_record_to_yesterday">昨天</string>
     <string name="record_action_record_to_today">今天</string>
     <string name="record_title_record_input">记录输入</string>
+    <string name="record_cd_open_txt_preview">打开 TXT 预览</string>
     <string name="record_label_activity_name">活动名称</string>
     <string name="record_label_remark_optional">备注（可选）</string>
     <string name="record_action_record_activity">记录活动</string>
@@ -68,6 +74,16 @@
     <string name="record_action_suggestions">建议</string>
     <string name="record_hint_loading">加载中...</string>
     <string name="record_hint_no_suggestions">暂无建议。</string>
+    <string name="record_txt_preview_title">当前 TXT 预览</string>
+    <string name="record_txt_preview_target_date">目标日期：%1$s</string>
+    <string name="record_txt_preview_target_month">目标月份：%1$s</string>
+    <string name="record_txt_preview_loading">正在加载 TXT 预览...</string>
+    <string name="record_txt_preview_missing_txt">当前 logical day 暂无可用 TXT 文件。</string>
+    <string name="record_txt_preview_marker_failed">解析目标 day marker 失败。</string>
+    <string name="record_txt_preview_day_block_failed">解析 TXT 日块失败。</string>
+    <string name="record_txt_preview_day_block_missing">当前 logical day 还没有对应的日块。</string>
+    <string name="record_txt_preview_day_block_empty">当前日块内容为空。</string>
+    <string name="record_txt_preview_day_marker">Day Marker：%1$s</string>
 
     <string name="record_status_quick_activities_save_failed_empty_validation">无法保存快捷活动：配置的可输入活动 token 集合为空。</string>
     <string name="record_status_quick_activities_cannot_be_empty">快捷活动不能为空。</string>

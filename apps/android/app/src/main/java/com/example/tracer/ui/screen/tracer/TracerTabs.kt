@@ -195,6 +195,7 @@ internal object TracerTabRegistry {
                 RecordTabContent(
                     recordUiState = args.recordUiState,
                     recordViewModel = args.recordViewModel,
+                    txtStorageGateway = args.txtStorageGateway,
                     validAuthorableEventTokens = args.validAuthorableEventTokens,
                     onPersistQuickActivities = args.onPersistRecordQuickActivities,
                     onPersistAssistExpanded = args.onPersistRecordAssistExpanded,
@@ -217,6 +218,9 @@ internal object TracerTabRegistry {
                 // Keep TXT aligned with Record's auto default when users have not overridden.
                 args.recordViewModel.refreshLogicalDayDefault()
             },
+            // TXT remains a file-backed editor surface: if users leave the tab without ingesting,
+            // return to the last saved month content instead of preserving a hidden in-memory
+            // draft that looks like persisted data on the next open.
             onLeave = { args -> args.recordViewModel.discardUnsavedHistoryDraft() },
             statusText = { args -> args.recordStatusText },
             statusEvent = { null },
@@ -231,9 +235,11 @@ internal object TracerTabRegistry {
                     onOpenNextMonth = args.recordViewModel::openNextMonth,
                     onOpenMonth = args.recordViewModel::openMonth,
                     selectedHistoryFile = args.recordUiState.selectedHistoryFile,
+                    selectedHistoryContent = args.recordUiState.selectedHistoryContent,
                     onRefreshHistory = args.recordViewModel::refreshHistory,
                     editableHistoryContent = args.recordUiState.editableHistoryContent,
                     onEditableHistoryContentChange = args.recordViewModel::updateEditableHistoryContent,
+                    onDiscardUnsavedHistoryDraft = args.recordViewModel::discardUnsavedHistoryDraft,
                     onSaveHistoryFile = args.recordViewModel::saveHistoryFileAndSync,
                     inlineStatusText = args.recordUiState.statusText,
                     onCreateCurrentMonthTxt = args.recordViewModel::createCurrentMonthTxt
@@ -249,7 +255,6 @@ internal object TracerTabRegistry {
             ),
             scrollBehavior = TracerTabScrollBehavior.VERTICAL,
             onEnter = { args -> args.configViewModel.refreshConfigFiles() },
-            onLeave = { args -> args.configViewModel.discardUnsavedDraft() },
             statusText = { args -> args.configStatusText },
             statusEvent = { args -> defaultStatusUiEvent(args) },
             content = { _, args ->

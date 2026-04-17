@@ -48,6 +48,12 @@ Start here:
 - `apps/android/feature-record/src/main/java/com/example/tracer/ui/viewmodel/RecordViewModel.kt`
 - `apps/android/feature-record/src/main/java/com/example/tracer/ui/screen/RecordTabContent.kt`
 - `apps/android/feature-record/src/main/java/com/example/tracer/ui/screen/TxtEditorScreen.kt`
+- `apps/android/feature-record/src/main/java/com/example/tracer/ui/screen/TxtEditorSession.kt`
+- `apps/android/feature-record/src/main/java/com/example/tracer/ui/screen/TxtEditorRuntimeCoordinator.kt`
+
+If the task is specifically about multiline TXT input behavior, then also open:
+
+- `apps/android/feature-ui-common/src/main/java/com/example/tracer/ui/components/NativeMultilineTextEditor.kt`
 
 ### Report or chart presentation
 
@@ -64,6 +70,12 @@ Start here:
 - `apps/android/app/src/main/java/com/example/tracer/ui/viewmodel/ConfigViewModel.kt`
 - `apps/android/app/src/main/java/com/example/tracer/data/ReportHeatmapTomlLoader.kt`
 - `apps/android/app/src/main/java/com/example/tracer/ui/screen/ConfigScreen.kt`
+
+If the task is specifically about raw TOML editing behavior, then also open:
+
+- `apps/android/app/src/main/java/com/example/tracer/ui/screen/ConfigEditorCard.kt`
+- `apps/android/app/src/main/java/com/example/tracer/ui/screen/ConfigAliasEditorCard.kt`
+- `apps/android/feature-ui-common/src/main/java/com/example/tracer/ui/components/NativeMultilineTextEditor.kt`
 
 ### Runtime init, query, diagnostics, or JNI-backed execution
 

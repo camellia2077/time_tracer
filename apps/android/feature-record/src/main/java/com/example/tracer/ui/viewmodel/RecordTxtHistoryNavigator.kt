@@ -154,8 +154,11 @@ internal class RecordTxtHistoryNavigator(
             content = state.editableHistoryContent
         )
         return if (saveResult.ok) {
+            val nextDrafts = state.historyDraftsByFile.toMutableMap()
+            nextDrafts.remove(selectedFile)
             state.copy(
                 selectedHistoryContent = state.editableHistoryContent,
+                historyDraftsByFile = nextDrafts,
                 statusText = saveResult.message
             )
         } else {
@@ -191,6 +194,10 @@ internal class RecordTxtHistoryNavigator(
             !statusPrefix.isNullOrBlank() -> "$statusPrefix Repair needed: ${inspectionEntry.message}"
             else -> "repair txt -> ${readResult.filePath}. ${inspectionEntry.message}"
         }
+        // Restore the in-session draft when the user revisits a TXT file. This keeps tab/file
+        // switching aligned with a system editor: unsaved text is visible again, but still not
+        // persisted until the explicit ingest/save action runs.
+        val restoredDraft = state.historyDraftsByFile[readResult.filePath] ?: readResult.content
 
         return state.copy(
             historyFiles = entries.map { it.relativePath },
@@ -199,7 +206,7 @@ internal class RecordTxtHistoryNavigator(
             selectedMonth = inspectionEntry.headerMonth.orEmpty(),
             selectedHistoryFile = readResult.filePath,
             selectedHistoryContent = readResult.content,
-            editableHistoryContent = readResult.content,
+            editableHistoryContent = restoredDraft,
             statusText = resolvedStatus
         )
     }
@@ -236,4 +243,3 @@ internal class RecordTxtHistoryNavigator(
         return index
     }
 }
-

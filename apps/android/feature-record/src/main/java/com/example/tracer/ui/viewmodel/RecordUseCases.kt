@@ -36,6 +36,21 @@ class RecordUseCases(
         return historyNavigator.refreshAndOpen(stateAfterRecord, preferredMonth, result.message)
     }
 
+    suspend fun openTxtPreview(state: RecordUiState): RecordUiState {
+        val targetDateIso = datePolicy.resolveTargetDateIso(state.logicalDayTarget)
+        val preferredMonth = datePolicy.resolvePreferredMonthForRecord(targetDateIso)
+        return historyNavigator.refreshAndOpen(
+            state = state.copy(
+                selectedMonth = "",
+                selectedHistoryFile = "",
+                selectedHistoryContent = "",
+                editableHistoryContent = ""
+            ),
+            preferredMonth = preferredMonth,
+            statusPrefix = "TXT preview refreshed."
+        )
+    }
+
     suspend fun refreshHistory(state: RecordUiState): RecordUiState {
         val preferredMonth = state.selectedMonth.ifEmpty { null }
         return historyNavigator.refreshAndOpen(state, preferredMonth, "TXT history refreshed.")
@@ -109,6 +124,7 @@ class RecordUseCases(
             selectedHistoryFile = "",
             selectedHistoryContent = "",
             editableHistoryContent = "",
+            historyDraftsByFile = emptyMap(),
             suggestedActivities = emptyList(),
             suggestionsVisible = false,
             isSuggestionsLoading = false,
@@ -116,4 +132,3 @@ class RecordUseCases(
         )
     }
 }
-

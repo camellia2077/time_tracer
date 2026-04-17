@@ -12,12 +12,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.tracer.ui.components.NativeMultilineTextEditor
 
 @Composable
 internal fun ConfigEditorCard(
@@ -37,15 +37,18 @@ internal fun ConfigEditorCard(
                 color = MaterialTheme.colorScheme.primary
             )
 
-            OutlinedTextField(
+            Text(
+                text = stringResource(R.string.config_label_toml_content),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            NativeMultilineTextEditor(
                 value = editableContent,
                 onValueChange = onEditableContentChange,
-                label = { Text(stringResource(R.string.config_label_toml_content)) },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 12,
-                textStyle = MaterialTheme.typography.bodyMedium.copy(
-                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
-                )
+                monospace = true
             )
 
             Button(

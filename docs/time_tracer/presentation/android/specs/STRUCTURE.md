@@ -22,9 +22,9 @@ Describe stable Android module boundaries and dependency direction.
 - `feature-data`
   - Data tab presentation
 - `feature-record`
-  - Record/TXT presentation and shared record-side UI state
+  - Record/TXT presentation, shared record-side UI state, and TXT editor session orchestration
 - `feature-ui-common`
-  - shared reusable Compose presentation primitives for multiple feature modules
+  - shared reusable presentation primitives, including the native multiline text editor used by TXT and Config raw editing
 - `feature-report`
   - report/query/chart presentation
 - `runtime`
@@ -53,6 +53,7 @@ App-side tests should follow the same rule and avoid implementing `RuntimeGatewa
   - route-local state
   - transfer-flow skeletons
 - Feature modules own tab-specific presentation and view-model behavior.
+- `feature-record` keeps TXT editor session state and runtime coordination on the UI side, while runtime still owns shared TXT day-block semantics.
 
 ## Runtime Boundaries
 

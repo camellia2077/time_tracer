@@ -72,8 +72,9 @@ internal fun applyLoadedConfigFile(
         statusText = statusText
     )
     if (!isAliasConfigFilePath(filePath)) {
+        val restoredDraft = state.plainTomlDraftsByFile[filePath] ?: content
         return base.copy(
-            editableContent = content,
+            editableContent = restoredDraft,
             aliasEditorMode = AliasEditorMode.STRUCTURED,
             aliasDocumentDraft = null,
             aliasParentOptions = emptyList(),
@@ -84,27 +85,57 @@ internal fun applyLoadedConfigFile(
 
     val parseResult = AliasTomlEditorCodec.parse(content)
     val document = parseResult.document
-    return if (document != null) {
-        base.copy(
-            editableContent = "",
-            aliasEditorMode = AliasEditorMode.STRUCTURED,
-            aliasDocumentDraft = document,
-            aliasParentOptions = aliasParentOptions,
-            aliasAdvancedTomlDraft = content,
-            aliasEditorErrorMessage = ""
-        )
-    } else {
-        // Fail open to raw TOML mode so users can recover malformed alias
-        // files instead of getting blocked by structured editor parsing.
-        base.copy(
-            editableContent = "",
-            aliasEditorMode = AliasEditorMode.ADVANCED,
-            aliasDocumentDraft = null,
-            aliasParentOptions = aliasParentOptions,
-            aliasAdvancedTomlDraft = content,
-            aliasEditorErrorMessage = parseResult.errorMessage,
-            statusText = parseResult.errorMessage
-        )
+    val restoredAdvancedDraft = state.aliasAdvancedDraftsByFile[filePath] ?: content
+    val restoredStructuredDraft = state.aliasStructuredDraftsByFile[filePath]
+    val restoredMode = state.aliasEditorModeByFile[filePath]
+    // Re-opening a config file should restore the user's in-session draft instead of snapping
+    // back to the last saved content. The saved file remains the persistence source of truth; the
+    // caches here only keep the editor surface stable while users browse elsewhere.
+    return when {
+        restoredMode == AliasEditorMode.ADVANCED -> {
+            val advancedParseResult = AliasTomlEditorCodec.parse(restoredAdvancedDraft)
+            base.copy(
+                editableContent = "",
+                aliasEditorMode = AliasEditorMode.ADVANCED,
+                aliasDocumentDraft = restoredStructuredDraft ?: advancedParseResult.document,
+                aliasParentOptions = aliasParentOptions,
+                aliasAdvancedTomlDraft = restoredAdvancedDraft,
+                aliasEditorErrorMessage = advancedParseResult.errorMessage
+            )
+        }
+        restoredStructuredDraft != null -> {
+            base.copy(
+                editableContent = "",
+                aliasEditorMode = AliasEditorMode.STRUCTURED,
+                aliasDocumentDraft = restoredStructuredDraft,
+                aliasParentOptions = aliasParentOptions,
+                aliasAdvancedTomlDraft = restoredAdvancedDraft,
+                aliasEditorErrorMessage = ""
+            )
+        }
+        document != null -> {
+            base.copy(
+                editableContent = "",
+                aliasEditorMode = AliasEditorMode.STRUCTURED,
+                aliasDocumentDraft = document,
+                aliasParentOptions = aliasParentOptions,
+                aliasAdvancedTomlDraft = restoredAdvancedDraft,
+                aliasEditorErrorMessage = ""
+            )
+        }
+        else -> {
+            // Fail open to raw TOML mode so users can recover malformed alias
+            // files instead of getting blocked by structured editor parsing.
+            base.copy(
+                editableContent = "",
+                aliasEditorMode = AliasEditorMode.ADVANCED,
+                aliasDocumentDraft = null,
+                aliasParentOptions = aliasParentOptions,
+                aliasAdvancedTomlDraft = restoredAdvancedDraft,
+                aliasEditorErrorMessage = parseResult.errorMessage,
+                statusText = parseResult.errorMessage
+            )
+        }
     }
 }
 

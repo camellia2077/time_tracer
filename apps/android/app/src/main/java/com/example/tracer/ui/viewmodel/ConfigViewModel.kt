@@ -41,10 +41,16 @@ internal data class ConfigUiState(
     val selectedFileDisplayName: String = "",
     val selectedFileContent: String = "",
     val editableContent: String = "",
+    // Keep unsaved drafts in memory per file so switching tabs/files behaves like a normal text
+    // editor: the user sees their in-session edits again without silently writing them to disk.
+    val plainTomlDraftsByFile: Map<String, String> = emptyMap(),
     val aliasEditorMode: AliasEditorMode = AliasEditorMode.STRUCTURED,
     val aliasDocumentDraft: AliasTomlDocument? = null,
     val aliasParentOptions: List<String> = emptyList(),
     val aliasAdvancedTomlDraft: String = "",
+    val aliasStructuredDraftsByFile: Map<String, AliasTomlDocument> = emptyMap(),
+    val aliasAdvancedDraftsByFile: Map<String, String> = emptyMap(),
+    val aliasEditorModeByFile: Map<String, AliasEditorMode> = emptyMap(),
     val aliasEditorErrorMessage: String = "",
     val statusText: String = "Preparing config..."
 )
@@ -157,11 +163,38 @@ internal class ConfigViewModel(private val configGateway: ConfigGateway) : ViewM
     }
 
     fun onEditableContentChange(value: String) {
-        uiState = uiState.copy(editableContent = value)
+        val selectedFile = uiState.selectedFilePath
+        val nextDrafts = uiState.plainTomlDraftsByFile.toMutableMap()
+        if (selectedFile.isNotBlank()) {
+            if (value == uiState.selectedFileContent) {
+                nextDrafts.remove(selectedFile)
+            } else {
+                nextDrafts[selectedFile] = value
+            }
+        }
+        uiState = uiState.copy(
+            editableContent = value,
+            plainTomlDraftsByFile = nextDrafts
+        )
     }
 
     fun onAliasAdvancedTomlChange(value: String) {
-        uiState = uiState.copy(aliasAdvancedTomlDraft = value)
+        val selectedFile = uiState.selectedFilePath
+        val nextAdvancedDrafts = uiState.aliasAdvancedDraftsByFile.toMutableMap()
+        val nextModeByFile = uiState.aliasEditorModeByFile.toMutableMap()
+        if (selectedFile.isNotBlank()) {
+            if (value == uiState.selectedFileContent) {
+                nextAdvancedDrafts.remove(selectedFile)
+            } else {
+                nextAdvancedDrafts[selectedFile] = value
+            }
+            nextModeByFile[selectedFile] = AliasEditorMode.ADVANCED
+        }
+        uiState = uiState.copy(
+            aliasAdvancedTomlDraft = value,
+            aliasAdvancedDraftsByFile = nextAdvancedDrafts,
+            aliasEditorModeByFile = nextModeByFile
+        )
     }
 
     fun selectAliasEditorMode(mode: AliasEditorMode) {
@@ -169,8 +202,8 @@ internal class ConfigViewModel(private val configGateway: ConfigGateway) : ViewM
             return
         }
         uiState = when (mode) {
-            AliasEditorMode.ADVANCED -> switchAliasEditorToAdvanced(uiState)
-            AliasEditorMode.STRUCTURED -> switchAliasEditorToStructured(uiState)
+            AliasEditorMode.ADVANCED -> cacheAliasAdvancedMode(switchAliasEditorToAdvanced(uiState))
+            AliasEditorMode.STRUCTURED -> cacheAliasStructuredMode(switchAliasEditorToStructured(uiState))
         }
     }
 
@@ -198,8 +231,17 @@ internal class ConfigViewModel(private val configGateway: ConfigGateway) : ViewM
             }
 
             val document = uiState.aliasDocumentDraft ?: return@launch
+            val updatedDocument = document.updateParent(normalizedValue)
             uiState = uiState.copy(
-                aliasDocumentDraft = document.updateParent(normalizedValue),
+                aliasDocumentDraft = updatedDocument,
+                aliasStructuredDraftsByFile = cacheStructuredDraft(
+                    filePath = currentFilePath,
+                    document = updatedDocument
+                ),
+                aliasEditorModeByFile = cacheAliasMode(
+                    filePath = currentFilePath,
+                    mode = AliasEditorMode.STRUCTURED
+                ),
                 aliasEditorErrorMessage = ""
             )
         }
@@ -212,8 +254,17 @@ internal class ConfigViewModel(private val configGateway: ConfigGateway) : ViewM
             uiState = uiState.copy(aliasEditorErrorMessage = "Alias group name must not be empty.")
             return
         }
+        val updatedDocument = document.addGroup(parentGroupId, normalizedName)
         uiState = uiState.copy(
-            aliasDocumentDraft = document.addGroup(parentGroupId, normalizedName),
+            aliasDocumentDraft = updatedDocument,
+            aliasStructuredDraftsByFile = cacheStructuredDraft(
+                filePath = uiState.selectedFilePath,
+                document = updatedDocument
+            ),
+            aliasEditorModeByFile = cacheAliasMode(
+                filePath = uiState.selectedFilePath,
+                mode = AliasEditorMode.STRUCTURED
+            ),
             aliasEditorErrorMessage = ""
         )
     }
@@ -225,16 +276,34 @@ internal class ConfigViewModel(private val configGateway: ConfigGateway) : ViewM
             uiState = uiState.copy(aliasEditorErrorMessage = "Alias group name must not be empty.")
             return
         }
+        val updatedDocument = document.renameGroup(groupId, normalizedName)
         uiState = uiState.copy(
-            aliasDocumentDraft = document.renameGroup(groupId, normalizedName),
+            aliasDocumentDraft = updatedDocument,
+            aliasStructuredDraftsByFile = cacheStructuredDraft(
+                filePath = uiState.selectedFilePath,
+                document = updatedDocument
+            ),
+            aliasEditorModeByFile = cacheAliasMode(
+                filePath = uiState.selectedFilePath,
+                mode = AliasEditorMode.STRUCTURED
+            ),
             aliasEditorErrorMessage = ""
         )
     }
 
     fun deleteAliasGroup(groupId: String) {
         val document = uiState.aliasDocumentDraft ?: return
+        val updatedDocument = document.deleteGroup(groupId)
         uiState = uiState.copy(
-            aliasDocumentDraft = document.deleteGroup(groupId),
+            aliasDocumentDraft = updatedDocument,
+            aliasStructuredDraftsByFile = cacheStructuredDraft(
+                filePath = uiState.selectedFilePath,
+                document = updatedDocument
+            ),
+            aliasEditorModeByFile = cacheAliasMode(
+                filePath = uiState.selectedFilePath,
+                mode = AliasEditorMode.STRUCTURED
+            ),
             aliasEditorErrorMessage = ""
         )
     }
@@ -249,11 +318,20 @@ internal class ConfigViewModel(private val configGateway: ConfigGateway) : ViewM
             )
             return
         }
+        val updatedDocument = document.addEntry(
+            parentGroupId = parentGroupId,
+            aliasKey = normalizedAliasKey,
+            canonicalLeaf = normalizedCanonicalLeaf
+        )
         uiState = uiState.copy(
-            aliasDocumentDraft = document.addEntry(
-                parentGroupId = parentGroupId,
-                aliasKey = normalizedAliasKey,
-                canonicalLeaf = normalizedCanonicalLeaf
+            aliasDocumentDraft = updatedDocument,
+            aliasStructuredDraftsByFile = cacheStructuredDraft(
+                filePath = uiState.selectedFilePath,
+                document = updatedDocument
+            ),
+            aliasEditorModeByFile = cacheAliasMode(
+                filePath = uiState.selectedFilePath,
+                mode = AliasEditorMode.STRUCTURED
             ),
             aliasEditorErrorMessage = ""
         )
@@ -269,11 +347,20 @@ internal class ConfigViewModel(private val configGateway: ConfigGateway) : ViewM
             )
             return
         }
+        val updatedDocument = document.updateEntry(
+            entryId = entryId,
+            aliasKey = normalizedAliasKey,
+            canonicalLeaf = normalizedCanonicalLeaf
+        )
         uiState = uiState.copy(
-            aliasDocumentDraft = document.updateEntry(
-                entryId = entryId,
-                aliasKey = normalizedAliasKey,
-                canonicalLeaf = normalizedCanonicalLeaf
+            aliasDocumentDraft = updatedDocument,
+            aliasStructuredDraftsByFile = cacheStructuredDraft(
+                filePath = uiState.selectedFilePath,
+                document = updatedDocument
+            ),
+            aliasEditorModeByFile = cacheAliasMode(
+                filePath = uiState.selectedFilePath,
+                mode = AliasEditorMode.STRUCTURED
             ),
             aliasEditorErrorMessage = ""
         )
@@ -281,8 +368,17 @@ internal class ConfigViewModel(private val configGateway: ConfigGateway) : ViewM
 
     fun deleteAliasEntry(entryId: String) {
         val document = uiState.aliasDocumentDraft ?: return
+        val updatedDocument = document.deleteEntry(entryId)
         uiState = uiState.copy(
-            aliasDocumentDraft = document.deleteEntry(entryId),
+            aliasDocumentDraft = updatedDocument,
+            aliasStructuredDraftsByFile = cacheStructuredDraft(
+                filePath = uiState.selectedFilePath,
+                document = updatedDocument
+            ),
+            aliasEditorModeByFile = cacheAliasMode(
+                filePath = uiState.selectedFilePath,
+                mode = AliasEditorMode.STRUCTURED
+            ),
             aliasEditorErrorMessage = ""
         )
     }
@@ -308,19 +404,28 @@ internal class ConfigViewModel(private val configGateway: ConfigGateway) : ViewM
 
     fun discardUnsavedDraft() {
         if (isAliasConfigFilePath(uiState.selectedFilePath)) {
+            val selectedFile = uiState.selectedFilePath
             uiState = applyLoadedConfigFile(
-                state = uiState,
-                filePath = uiState.selectedFilePath,
+                state = uiState.copy(
+                    aliasStructuredDraftsByFile = uiState.aliasStructuredDraftsByFile - selectedFile,
+                    aliasAdvancedDraftsByFile = uiState.aliasAdvancedDraftsByFile - selectedFile,
+                    aliasEditorModeByFile = uiState.aliasEditorModeByFile - selectedFile
+                ),
+                filePath = selectedFile,
                 content = uiState.selectedFileContent,
                 aliasParentOptions = uiState.aliasParentOptions,
                 statusText = uiState.statusText
             )
             return
         }
-        if (uiState.editableContent == uiState.selectedFileContent) {
+        val selectedFile = uiState.selectedFilePath
+        if (selectedFile.isBlank() || uiState.editableContent == uiState.selectedFileContent) {
             return
         }
-        uiState = uiState.copy(editableContent = uiState.selectedFileContent)
+        uiState = uiState.copy(
+            editableContent = uiState.selectedFileContent,
+            plainTomlDraftsByFile = uiState.plainTomlDraftsByFile - selectedFile
+        )
     }
 
     private suspend fun readConfigFileIntoState(
@@ -360,6 +465,7 @@ internal class ConfigViewModel(private val configGateway: ConfigGateway) : ViewM
         uiState = if (saveResult.ok) {
             uiState.copy(
                 selectedFileContent = uiState.editableContent,
+                plainTomlDraftsByFile = uiState.plainTomlDraftsByFile - selectedFile,
                 statusText = "save toml -> ${saveResult.filePath}"
             )
         } else {
@@ -411,7 +517,12 @@ internal class ConfigViewModel(private val configGateway: ConfigGateway) : ViewM
             selectedFileContent = saveResult.content
         )
         return applyLoadedConfigFile(
-            state = uiState.copy(aliasEditorMode = AliasEditorMode.STRUCTURED),
+            state = uiState.copy(
+                aliasEditorMode = AliasEditorMode.STRUCTURED,
+                aliasStructuredDraftsByFile = uiState.aliasStructuredDraftsByFile - selectedFile,
+                aliasAdvancedDraftsByFile = uiState.aliasAdvancedDraftsByFile - selectedFile,
+                aliasEditorModeByFile = uiState.aliasEditorModeByFile + (selectedFile to AliasEditorMode.STRUCTURED)
+            ),
             filePath = saveResult.filePath,
             content = saveResult.content,
             aliasParentOptions = aliasParentOptions,
@@ -463,8 +574,66 @@ internal class ConfigViewModel(private val configGateway: ConfigGateway) : ViewM
             aliasDocumentDraft = document,
             aliasParentOptions = aliasParentOptions,
             aliasAdvancedTomlDraft = saveResult.content,
+            aliasStructuredDraftsByFile = uiState.aliasStructuredDraftsByFile - selectedFile,
+            aliasAdvancedDraftsByFile = uiState.aliasAdvancedDraftsByFile - selectedFile,
+            aliasEditorModeByFile = uiState.aliasEditorModeByFile + (selectedFile to AliasEditorMode.ADVANCED),
             aliasEditorErrorMessage = "",
             statusText = "save toml -> ${saveResult.filePath}"
+        )
+    }
+
+    private fun cacheStructuredDraft(filePath: String, document: AliasTomlDocument): Map<String, AliasTomlDocument> {
+        if (filePath.isBlank()) {
+            return uiState.aliasStructuredDraftsByFile
+        }
+        val nextDrafts = uiState.aliasStructuredDraftsByFile.toMutableMap()
+        if (AliasTomlEditorCodec.serialize(document) == uiState.selectedFileContent) {
+            nextDrafts.remove(filePath)
+        } else {
+            nextDrafts[filePath] = document
+        }
+        return nextDrafts
+    }
+
+    private fun cacheAliasMode(filePath: String, mode: AliasEditorMode): Map<String, AliasEditorMode> {
+        if (filePath.isBlank()) {
+            return uiState.aliasEditorModeByFile
+        }
+        return uiState.aliasEditorModeByFile + (filePath to mode)
+    }
+
+    private fun cacheAliasAdvancedMode(state: ConfigUiState): ConfigUiState {
+        val selectedFile = state.selectedFilePath
+        if (selectedFile.isBlank()) {
+            return state
+        }
+        val nextAdvancedDrafts = state.aliasAdvancedDraftsByFile.toMutableMap()
+        if (state.aliasAdvancedTomlDraft == state.selectedFileContent) {
+            nextAdvancedDrafts.remove(selectedFile)
+        } else {
+            nextAdvancedDrafts[selectedFile] = state.aliasAdvancedTomlDraft
+        }
+        return state.copy(
+            aliasAdvancedDraftsByFile = nextAdvancedDrafts,
+            aliasEditorModeByFile = state.aliasEditorModeByFile + (selectedFile to AliasEditorMode.ADVANCED)
+        )
+    }
+
+    private fun cacheAliasStructuredMode(state: ConfigUiState): ConfigUiState {
+        val selectedFile = state.selectedFilePath
+        val document = state.aliasDocumentDraft
+        if (selectedFile.isBlank() || document == null) {
+            return state
+        }
+        val nextStructuredDrafts = state.aliasStructuredDraftsByFile.toMutableMap()
+        if (AliasTomlEditorCodec.serialize(document) == state.selectedFileContent) {
+            nextStructuredDrafts.remove(selectedFile)
+        } else {
+            nextStructuredDrafts[selectedFile] = document
+        }
+        return state.copy(
+            aliasStructuredDraftsByFile = nextStructuredDrafts,
+            aliasEditorModeByFile = state.aliasEditorModeByFile + (selectedFile to AliasEditorMode.STRUCTURED)
         )
     }
 }

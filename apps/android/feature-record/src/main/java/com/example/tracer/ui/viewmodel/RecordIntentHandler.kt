@@ -102,6 +102,15 @@ internal class RecordIntentHandler(
     fun clearCryptoProgress(state: RecordUiState): RecordUiState =
         RecordStateReducer.clearCryptoProgress(state)
 
+    fun showTxtPreviewLoading(state: RecordUiState): RecordUiState =
+        RecordStateReducer.showTxtPreviewLoading(state)
+
+    fun dismissTxtPreview(state: RecordUiState): RecordUiState =
+        RecordStateReducer.dismissTxtPreview(state)
+
+    suspend fun openTxtPreview(state: RecordUiState): RecordUiState =
+        useCaseCaller.openTxtPreview(state)
+
     suspend fun recordNow(state: RecordUiState): RecordUiState =
         useCaseCaller.recordNow(state)
 

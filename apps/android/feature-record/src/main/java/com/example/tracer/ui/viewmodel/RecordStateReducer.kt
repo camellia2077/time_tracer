@@ -31,8 +31,23 @@ internal object RecordStateReducer {
         return state.copy(logicalDayTarget = defaultTarget)
     }
 
-    fun updateEditableHistoryContent(state: RecordUiState, value: String): RecordUiState =
-        state.copy(editableHistoryContent = value)
+    fun updateEditableHistoryContent(state: RecordUiState, value: String): RecordUiState {
+        val selectedFile = state.selectedHistoryFile
+        if (selectedFile.isBlank()) {
+            return state.copy(editableHistoryContent = value)
+        }
+
+        val nextDrafts = state.historyDraftsByFile.toMutableMap()
+        if (value == state.selectedHistoryContent) {
+            nextDrafts.remove(selectedFile)
+        } else {
+            nextDrafts[selectedFile] = value
+        }
+        return state.copy(
+            editableHistoryContent = value,
+            historyDraftsByFile = nextDrafts
+        )
+    }
 
     fun updateSuggestionPreferences(
         state: RecordUiState,
@@ -197,11 +212,32 @@ internal object RecordStateReducer {
     fun clearCryptoProgress(state: RecordUiState): RecordUiState =
         state.copy(cryptoProgress = CryptoProgressUiState())
 
+    fun showTxtPreviewLoading(state: RecordUiState): RecordUiState =
+        state.copy(
+            isTxtPreviewVisible = true,
+            isTxtPreviewLoading = true,
+            txtPreviewStatusText = ""
+        )
+
+    fun dismissTxtPreview(state: RecordUiState): RecordUiState =
+        state.copy(
+            isTxtPreviewVisible = false,
+            isTxtPreviewLoading = false,
+            txtPreviewStatusText = ""
+        )
+
     fun discardUnsavedHistoryDraft(state: RecordUiState): RecordUiState {
-        if (state.editableHistoryContent == state.selectedHistoryContent) {
+        val selectedFile = state.selectedHistoryFile
+        if (selectedFile.isBlank() || state.editableHistoryContent == state.selectedHistoryContent) {
             return state
         }
-        return state.copy(editableHistoryContent = state.selectedHistoryContent)
+
+        val nextDrafts = state.historyDraftsByFile.toMutableMap()
+        nextDrafts.remove(selectedFile)
+        return state.copy(
+            editableHistoryContent = state.selectedHistoryContent,
+            historyDraftsByFile = nextDrafts
+        )
     }
 
     private fun selectLogicalDayTarget(

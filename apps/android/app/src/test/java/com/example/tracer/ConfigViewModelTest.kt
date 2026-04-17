@@ -132,6 +132,42 @@ class ConfigViewModelTest {
         assertEquals("", viewModel.uiState.aliasAdvancedTomlDraft)
         assertTrue(viewModel.uiState.editableContent.contains("includes"))
     }
+
+    @Test
+    fun switching_plain_toml_files_restores_unsaved_draft_when_returning() = runTest(dispatcher) {
+        val viewModel = ConfigViewModel(FakeConfigGateway())
+        advanceUntilIdle()
+
+        viewModel.selectConverterSubcategory(ConverterSubcategory.RULES)
+        advanceUntilIdle()
+        viewModel.onEditableContentChange("unsaved rules draft")
+
+        viewModel.openFile("converter/aliases/meal.toml")
+        advanceUntilIdle()
+        viewModel.openFile("converter/alias_mapping.toml")
+        advanceUntilIdle()
+
+        assertEquals("converter/alias_mapping.toml", viewModel.uiState.selectedFilePath)
+        assertEquals("unsaved rules draft", viewModel.uiState.editableContent)
+    }
+
+    @Test
+    fun switching_alias_files_restores_unsaved_advanced_draft_and_mode_when_returning() = runTest(dispatcher) {
+        val viewModel = ConfigViewModel(FakeConfigGateway())
+        advanceUntilIdle()
+
+        viewModel.selectAliasEditorMode(AliasEditorMode.ADVANCED)
+        viewModel.onAliasAdvancedTomlChange("parent = \"meal\"\n\n[aliases.breakfast]\n\"早餐\" = \"draft\"")
+
+        viewModel.openFile("converter/aliases/recreation.toml")
+        advanceUntilIdle()
+        viewModel.openFile("converter/aliases/meal.toml")
+        advanceUntilIdle()
+
+        assertEquals("converter/aliases/meal.toml", viewModel.uiState.selectedFilePath)
+        assertEquals(AliasEditorMode.ADVANCED, viewModel.uiState.aliasEditorMode)
+        assertTrue(viewModel.uiState.aliasAdvancedTomlDraft.contains("\"draft\""))
+    }
 }
 
 private class FakeConfigGateway : ConfigGateway {

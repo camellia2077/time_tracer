@@ -26,6 +26,7 @@ private val RECORD_PRIMARY_SECTION_TOP_SPACER = 96.dp
 
 @Composable
 fun RecordSection(
+    txtStorageGateway: TxtStorageGateway,
     recordContent: String,
     onRecordContentChange: (String) -> Unit,
     recordRemark: String,
@@ -44,12 +45,20 @@ fun RecordSection(
     suggestedActivities: List<String>,
     suggestionsVisible: Boolean,
     isSuggestionsLoading: Boolean,
+    isTxtPreviewVisible: Boolean,
+    isTxtPreviewLoading: Boolean,
+    txtPreviewStatusText: String,
+    selectedMonth: String,
+    selectedHistoryFile: String,
+    editableHistoryContent: String,
     logicalDayTarget: RecordLogicalDayTarget,
     onSelectLogicalDayYesterday: () -> Unit,
     onSelectLogicalDayToday: () -> Unit,
     onRefreshLogicalDayDefault: (Long) -> Unit,
     onToggleSuggestions: () -> Unit,
     onSuggestedActivityClick: (String) -> Unit,
+    onOpenTxtPreview: () -> Unit,
+    onDismissTxtPreview: () -> Unit,
     onRecordNow: () -> Unit
 ) {
     var currentTimeText by remember { mutableStateOf(formatCurrentTime(System.currentTimeMillis())) }
@@ -118,11 +127,25 @@ fun RecordSection(
             recordRemark = recordRemark,
             onRecordRemarkChange = onRecordRemarkChange,
             suggestionsVisible = suggestionsVisible,
-            onToggleSuggestions = onToggleSuggestions
+            onToggleSuggestions = onToggleSuggestions,
+            onOpenTxtPreview = onOpenTxtPreview
         ) {
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             onRecordNow()
         }
+    }
+
+    if (isTxtPreviewVisible) {
+        RecordTxtPreviewSheet(
+            txtStorageGateway = txtStorageGateway,
+            selectedMonth = selectedMonth,
+            selectedHistoryFile = selectedHistoryFile,
+            editableHistoryContent = editableHistoryContent,
+            logicalDayTarget = logicalDayTarget,
+            isLoading = isTxtPreviewLoading,
+            previewStatusText = txtPreviewStatusText,
+            onDismissRequest = onDismissTxtPreview
+        )
     }
 }
 

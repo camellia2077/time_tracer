@@ -83,7 +83,19 @@ class TracerTabRegistryTest {
 
     @Test
     fun onLeave_txt_discards_unsaved_editor_draft() = runTest(dispatcher) {
-        val runtime = FakeRuntimeServices()
+        val runtime = FakeRuntimeServices(
+            inspectionEntries = listOf(
+                TxtInspectionEntry(
+                    relativePath = "draft.txt",
+                    headerMonth = "2026-04",
+                    expectedCanonicalRelativePath = "draft.txt",
+                    syncState = TxtSyncState.SYNCED,
+                    canOpen = true,
+                    message = "ok"
+                )
+            ),
+            readTxtContents = mapOf("draft.txt" to "saved-content")
+        )
         val recordViewModel = RecordViewModel(
             RecordUseCases(
                 recordGateway = runtime,
@@ -94,6 +106,8 @@ class TracerTabRegistryTest {
         val configViewModel = ConfigViewModel(runtime)
         advanceUntilIdle()
 
+        recordViewModel.openHistoryFile("draft.txt")
+        advanceUntilIdle()
         recordViewModel.updateEditableHistoryContent("draft-content")
         assertEquals("draft-content", recordViewModel.uiState.editableHistoryContent)
 
@@ -112,7 +126,7 @@ class TracerTabRegistryTest {
     }
 
     @Test
-    fun onLeave_config_discards_unsaved_toml_draft() = runTest(dispatcher) {
+    fun onLeave_config_keeps_unsaved_toml_draft() = runTest(dispatcher) {
         val runtime = FakeRuntimeServices()
         val recordViewModel = RecordViewModel(
             RecordUseCases(
@@ -138,7 +152,7 @@ class TracerTabRegistryTest {
             )
         )
 
-        assertEquals(configViewModel.uiState.selectedFileContent, configViewModel.uiState.editableContent)
+        assertEquals("unsaved", configViewModel.uiState.editableContent)
     }
 
     @Test
@@ -162,7 +176,9 @@ private class FakeRuntimeServices(
         ok = true,
         names = emptyList(),
         message = "ok"
-    )
+    ),
+    private val inspectionEntries: List<TxtInspectionEntry> = emptyList(),
+    private val readTxtContents: Map<String, String> = emptyMap()
 ) : RuntimeInitializer,
     RecordGateway,
     TxtStorageGateway,
@@ -262,14 +278,14 @@ private class FakeRuntimeServices(
 
     override suspend fun inspectTxtFiles(): TxtInspectionResult = TxtInspectionResult(
         ok = true,
-        entries = emptyList(),
+        entries = inspectionEntries,
         message = "ok"
     )
 
     override suspend fun readTxtFile(relativePath: String): TxtFileContentResult = TxtFileContentResult(
         ok = true,
         filePath = relativePath,
-        content = "",
+        content = readTxtContents[relativePath].orEmpty(),
         message = "ok"
     )
 

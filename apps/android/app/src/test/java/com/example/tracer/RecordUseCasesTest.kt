@@ -291,11 +291,99 @@ class RecordUseCasesTest {
         assertEquals("new content", txtStorageGateway.lastSavedContent)
         assertEquals("new content", result.selectedHistoryContent)
     }
+
+    @Test
+    fun openHistoryFile_restoresInSessionDraftForPreviouslyEditedTxt() = runTest {
+        val useCases = RecordUseCases(
+            recordGateway = FakeRecordGateway(),
+            txtStorageGateway = FakeTxtStorageGateway(
+                inspectionResult = TxtInspectionResult(
+                    ok = true,
+                    entries = listOf(
+                        inspectionEntry("2026/2026-03.txt", "2026-03"),
+                        inspectionEntry("2026/2026-04.txt", "2026-04")
+                    ),
+                    message = "ok"
+                ),
+                readResults = mapOf(
+                    "2026/2026-03.txt" to txtReadResult("2026/2026-03.txt"),
+                    "2026/2026-04.txt" to TxtFileContentResult(
+                        ok = true,
+                        filePath = "2026/2026-04.txt",
+                        content = "y2026\nm04\n0101\n",
+                        message = "Read TXT success."
+                    )
+                )
+            ),
+            queryGateway = FakeQueryGateway()
+        )
+
+        val result = useCases.openHistoryFile(
+            state = RecordUiState(
+                historyDraftsByFile = mapOf("2026/2026-03.txt" to "draft-content")
+            ),
+            path = "2026/2026-03.txt"
+        )
+
+        assertEquals("2026/2026-03.txt", result.selectedHistoryFile)
+        assertEquals("y2026\nm03\n0101\n", result.selectedHistoryContent)
+        assertEquals("draft-content", result.editableHistoryContent)
+    }
+
+    @Test
+    fun openTxtPreview_refreshesLogicalDayMonthBeforeCutoff() = runTest {
+        val useCases = RecordUseCases(
+            recordGateway = FakeRecordGateway(),
+            txtStorageGateway = FakeTxtStorageGateway(
+                inspectionResult = TxtInspectionResult(
+                    ok = true,
+                    entries = listOf(
+                        inspectionEntry("2026/2026-03.txt", "2026-03"),
+                        inspectionEntry("2026/2026-04.txt", "2026-04")
+                    ),
+                    message = "ok"
+                ),
+                readResults = mapOf(
+                    "2026/2026-03.txt" to txtReadResult("2026/2026-03.txt")
+                )
+            ),
+            queryGateway = FakeQueryGateway(),
+            clock = fixedClock("2026-03-31T16:30:00Z", "Asia/Shanghai")
+        )
+
+        val result = useCases.openTxtPreview(
+            RecordUiState(
+                logicalDayTarget = RecordLogicalDayTarget.YESTERDAY,
+                selectedMonth = "2026-04",
+                selectedHistoryFile = "2026/2026-04.txt",
+                editableHistoryContent = "stale"
+            )
+        )
+
+        assertEquals("2026-03", result.selectedMonth)
+        assertEquals("2026/2026-03.txt", result.selectedHistoryFile)
+        assertTrue(result.statusText.startsWith("TXT preview refreshed."))
+    }
 }
 
 private class FakeTxtStorageGateway(
     private val inspectionResult: TxtInspectionResult,
     private val readResults: Map<String, TxtFileContentResult>,
+    private val defaultDayMarkerResult: TxtDayMarkerResult = TxtDayMarkerResult(
+        ok = true,
+        normalizedDayMarker = "0101",
+        message = "ok"
+    ),
+    private val dayBlockResolveResult: TxtDayBlockResolveResult = TxtDayBlockResolveResult(
+        ok = true,
+        normalizedDayMarker = "0101",
+        found = true,
+        isMarkerValid = true,
+        canSave = true,
+        dayBody = "",
+        dayContentIsoDate = "2026-01-01",
+        message = "ok"
+    ),
     private val saveResult: RecordActionResult = RecordActionResult(
         ok = true,
         message = "ok"
@@ -329,6 +417,17 @@ private class FakeTxtStorageGateway(
         lastSavedContent = content
         return saveResult
     }
+
+    override suspend fun defaultTxtDayMarker(
+        selectedMonth: String,
+        targetDateIso: String
+    ): TxtDayMarkerResult = defaultDayMarkerResult
+
+    override suspend fun resolveTxtDayBlock(
+        content: String,
+        dayMarker: String,
+        selectedMonth: String
+    ): TxtDayBlockResolveResult = dayBlockResolveResult
 }
 
 private class FakeRecordGateway(

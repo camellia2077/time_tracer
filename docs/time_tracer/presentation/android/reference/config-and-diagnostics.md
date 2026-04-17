@@ -18,6 +18,8 @@ Describe the user-visible config editing and diagnostics support behavior.
 
 - Config UI edits the local runtime config snapshot in app-private storage.
 - Config UI is for local browsing/editing and diagnostics support, not for package-style config exchange.
+- Raw TOML editing uses the shared Android native `EditText` multiline editor rather than Compose `OutlinedTextField`.
+- Unsaved config drafts stay in memory per file for the current app session and are written only after explicit `Save changes`.
 - Diagnostics payload copy is a support action, not a runtime behavior authoring surface.
 - Appearance and language settings are persisted as UI preferences in the app layer.
 
@@ -30,4 +32,7 @@ Describe the user-visible config editing and diagnostics support behavior.
 
 - `apps/android/app/src/main/java/com/example/tracer/ui/viewmodel/ConfigViewModel.kt`
 - `apps/android/app/src/main/java/com/example/tracer/ui/screen/ConfigScreen.kt`
+- `apps/android/app/src/main/java/com/example/tracer/ui/screen/ConfigEditorCard.kt`
+- `apps/android/app/src/main/java/com/example/tracer/ui/screen/ConfigAliasEditorCard.kt`
+- `apps/android/feature-ui-common/src/main/java/com/example/tracer/ui/components/NativeMultilineTextEditor.kt`
 - `apps/android/runtime/src/main/java/com/example/tracer/runtime/services/RuntimeDiagnosticsService.kt`

@@ -12,6 +12,11 @@
     <string name="txt_label_day_content">DAY Content</string>
 
     <string name="txt_cd_ingest">Ingest</string>
+    <string name="txt_action_close">Close</string>
+    <string name="txt_cd_undo">Undo</string>
+    <string name="txt_cd_redo">Redo</string>
+    <string name="txt_status_unsaved">Unsaved</string>
+    <string name="txt_status_saved">Saved</string>
     <string name="txt_cd_prev_month">Previous Month</string>
     <string name="txt_cd_next_month">Next Month</string>
     <string name="txt_cd_prev_day">Previous Day</string>
@@ -49,6 +54,7 @@
     <string name="record_action_record_to_yesterday">Yesterday</string>
     <string name="record_action_record_to_today">Today</string>
     <string name="record_title_record_input">Record Input</string>
+    <string name="record_cd_open_txt_preview">Open TXT Preview</string>
     <string name="record_label_activity_name">Activity Name</string>
     <string name="record_label_remark_optional">Remark (Optional)</string>
     <string name="record_action_record_activity">Record Activity</string>
@@ -68,6 +74,16 @@
     <string name="record_action_suggestions">Suggestions</string>
     <string name="record_hint_loading">Loading...</string>
     <string name="record_hint_no_suggestions">No suggestions.</string>
+    <string name="record_txt_preview_title">Current TXT Preview</string>
+    <string name="record_txt_preview_target_date">Target Date: %1$s</string>
+    <string name="record_txt_preview_target_month">Target Month: %1$s</string>
+    <string name="record_txt_preview_loading">Loading TXT preview...</string>
+    <string name="record_txt_preview_missing_txt">No TXT file is available for the current logical day.</string>
+    <string name="record_txt_preview_marker_failed">Failed to resolve the target day marker.</string>
+    <string name="record_txt_preview_day_block_failed">Failed to resolve the TXT day block.</string>
+    <string name="record_txt_preview_day_block_missing">No day block exists for the current logical day yet.</string>
+    <string name="record_txt_preview_day_block_empty">This day block is currently empty.</string>
+    <string name="record_txt_preview_day_marker">Day Marker: %1$s</string>
 
     <string name="record_status_quick_activities_save_failed_empty_validation">Cannot save quick activities: configured authorable event token set is empty.</string>
     <string name="record_status_quick_activities_cannot_be_empty">Quick activities cannot be empty.</string>

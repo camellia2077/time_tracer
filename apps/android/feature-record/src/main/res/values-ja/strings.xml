@@ -12,6 +12,11 @@
     <string name="txt_label_day_content">DAY 内容</string>
 
     <string name="txt_cd_ingest">取り込み</string>
+    <string name="txt_action_close">閉じる</string>
+    <string name="txt_cd_undo">元に戻す</string>
+    <string name="txt_cd_redo">やり直す</string>
+    <string name="txt_status_unsaved">未保存</string>
+    <string name="txt_status_saved">保存済み</string>
     <string name="txt_cd_prev_month">前月</string>
     <string name="txt_cd_next_month">翌月</string>
     <string name="txt_cd_prev_day">前日</string>
@@ -49,6 +54,7 @@
     <string name="record_action_record_to_yesterday">昨日</string>
     <string name="record_action_record_to_today">今日</string>
     <string name="record_title_record_input">記録入力</string>
+    <string name="record_cd_open_txt_preview">TXT プレビューを開く</string>
     <string name="record_label_activity_name">アクティビティ名</string>
     <string name="record_label_remark_optional">備考（任意）</string>
     <string name="record_action_record_activity">アクティビティを記録</string>
@@ -68,6 +74,16 @@
     <string name="record_action_suggestions">提案</string>
     <string name="record_hint_loading">読み込み中...</string>
     <string name="record_hint_no_suggestions">提案がありません。</string>
+    <string name="record_txt_preview_title">現在の TXT プレビュー</string>
+    <string name="record_txt_preview_target_date">対象日: %1$s</string>
+    <string name="record_txt_preview_target_month">対象月: %1$s</string>
+    <string name="record_txt_preview_loading">TXT プレビューを読み込み中...</string>
+    <string name="record_txt_preview_missing_txt">現在の logical day に対応する TXT ファイルがありません。</string>
+    <string name="record_txt_preview_marker_failed">対象 day marker の解決に失敗しました。</string>
+    <string name="record_txt_preview_day_block_failed">TXT の day block 解決に失敗しました。</string>
+    <string name="record_txt_preview_day_block_missing">現在の logical day に対応する day block はまだありません。</string>
+    <string name="record_txt_preview_day_block_empty">この day block は現在空です。</string>
+    <string name="record_txt_preview_day_marker">Day Marker: %1$s</string>
 
     <string name="record_status_quick_activities_save_failed_empty_validation">クイック活動を保存できません: 設定済みの入力可能イベントトークン集合が空です。</string>
     <string name="record_status_quick_activities_cannot_be_empty">クイック活動は空にできません。</string>
