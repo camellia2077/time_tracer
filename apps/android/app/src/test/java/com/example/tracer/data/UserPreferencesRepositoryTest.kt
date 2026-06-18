@@ -1,6 +1,9 @@
 package com.example.tracer.data
 
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import com.example.tracer.PersistedRecordInputDraft
+import com.example.tracer.RecordAuthoringMode
+import com.example.tracer.RecordLogicalDayTarget
 import com.example.tracer.ReportPiePalettePreset
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
@@ -78,6 +81,68 @@ class UserPreferencesRepositoryTest {
             ReportPiePalettePreset.EDITORIAL,
             repository.reportPiePalettePreset.first()
         )
+    }
+
+    @Test
+    fun setRecordLastAuthoringMode_persistsSelection() = runTest {
+        val repository = buildRepository(
+            testName = "persist_record_authoring_mode",
+            scope = backgroundScope
+        )
+
+        repository.setRecordLastAuthoringMode(RecordAuthoringMode.INTERVAL)
+
+        assertEquals(
+            RecordAuthoringMode.INTERVAL,
+            repository.recordPersistedInput.first().lastAuthoringMode
+        )
+    }
+
+    @Test
+    fun saveRecordDraft_persistsDraftFieldsAndLogicalDay() = runTest {
+        val repository = buildRepository(
+            testName = "persist_record_draft",
+            scope = backgroundScope
+        )
+
+        repository.saveRecordDraft(
+            PersistedRecordInputDraft(
+                recordContent = "study",
+                recordRemark = "focused block",
+                intervalStart = "0900",
+                intervalEnd = "1030",
+                logicalDayTarget = RecordLogicalDayTarget.YESTERDAY
+            )
+        )
+
+        val persisted = repository.recordPersistedInput.first()
+        assertEquals("study", persisted.draft?.recordContent)
+        assertEquals("focused block", persisted.draft?.recordRemark)
+        assertEquals("0900", persisted.draft?.intervalStart)
+        assertEquals("1030", persisted.draft?.intervalEnd)
+        assertEquals(RecordLogicalDayTarget.YESTERDAY, persisted.draft?.logicalDayTarget)
+    }
+
+    @Test
+    fun clearRecordDraft_removesPersistedDraftButKeepsMode() = runTest {
+        val repository = buildRepository(
+            testName = "clear_record_draft",
+            scope = backgroundScope
+        )
+
+        repository.setRecordLastAuthoringMode(RecordAuthoringMode.INTERVAL)
+        repository.saveRecordDraft(
+            PersistedRecordInputDraft(
+                recordContent = "study",
+                logicalDayTarget = RecordLogicalDayTarget.YESTERDAY
+            )
+        )
+
+        repository.clearRecordDraft()
+
+        val persisted = repository.recordPersistedInput.first()
+        assertEquals(RecordAuthoringMode.INTERVAL, persisted.lastAuthoringMode)
+        assertEquals(null, persisted.draft)
     }
 
     private fun buildRepository(testName: String, scope: CoroutineScope): UserPreferencesRepository {

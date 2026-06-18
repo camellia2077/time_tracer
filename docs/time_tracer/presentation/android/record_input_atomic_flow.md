@@ -12,6 +12,9 @@ This page focuses on:
 3. how one record becomes a candidate TXT update
 4. why the flow is atomic instead of "write TXT first, fix later"
 
+For the target interval-event semantics, see:
+1. [interval_event_and_mixed_timeline_semantics.md](/C:/code/time_tracer/docs/time_tracer/core/ingest/interval_event_and_mixed_timeline_semantics.md)
+
 ## Scope
 
 This page covers the `Record` tab single-line input flow.
@@ -21,6 +24,7 @@ It does not cover:
 1. full TXT editor save semantics
 2. report rendering behavior
 3. config asset packaging details
+4. the future explicit interval-event authoring flow
 
 ## Core Idea
 
@@ -36,6 +40,14 @@ That means:
 1. Android may do lightweight authoring checks first
 2. the final authority still lives in core atomic record
 3. TXT and DB should stay aligned after a successful record action
+
+Important scope note:
+
+1. this page describes the current point-event atomic flow
+2. it does not yet describe the future explicit interval-event authoring path
+3. when interval authoring is introduced, it should reuse the same
+   `candidate TXT -> full validation -> official replace -> ingest or rollback`
+   authority model
 
 ## Flow Summary
 
@@ -168,7 +180,7 @@ It builds a candidate month TXT in memory:
 1. resolve target month and target day marker
 2. create the month template if the file does not exist
 3. generate current local `HHMM`
-4. build one raw event line:
+4. build one raw point-event line:
    `HHMM + activity + optional remark`
 5. insert that line into the target day block
 6. if the day does not exist yet, create the day block
@@ -177,6 +189,8 @@ Business meaning:
 
 1. one single-line authoring action is always judged in whole-document context
 2. record validation is still month-TXT validation, not isolated line regex validation
+3. future interval-event authoring should follow the same whole-document rule,
+   even if the user provides explicit start/end time
 
 ### 4.3 Record-Time Checks
 
@@ -218,6 +232,13 @@ Examples of blocking failures:
 4. wake appearing in a non-first semantic position after candidate insertion
 5. any other structure/logic rule violated by the candidate month document
 
+For the target interval-event model, the same validation boundary should also
+apply to:
+
+1. explicit interval overlap
+2. interval start/end ordering errors
+3. mixed point-event and interval-event timeline conflicts
+
 ## 6. Official TXT Replace And DB Sync
 
 If candidate validation succeeds:
@@ -254,7 +275,7 @@ The runtime supplies:
 
 So the single-line action means:
 
-1. append one new event point into the logical day
+1. append one new point event into the logical day
 2. re-evaluate the whole month TXT under ingest rules
 3. if valid, persist the updated month and sync DB
 
@@ -266,6 +287,9 @@ Its final duration semantics still depend on:
 2. cross-day previous context
 3. wake semantics
 4. generated activities such as `sleep_night`
+
+This is intentionally different from the future interval-event flow, where the
+user would explicitly author both start and end time for a recorded segment.
 
 ## 8. Android Vs Core Responsibility Boundary
 
@@ -289,6 +313,10 @@ Core is responsible for:
 4. official TXT update
 5. month re-import into DB
 6. rollback on failure
+
+When interval-event authoring is added, these responsibilities should remain in
+core as well; Android should not independently invent a local interval-only
+validation or persistence path.
 
 This boundary is intentional:
 
@@ -314,3 +342,4 @@ For adjacent topics, open:
 2. [txt_to_db_business_logic.md](/C:/code/time_tracer/docs/time_tracer/core/ingest/txt_to_db_business_logic.md)
 3. [record_input_and_day_completeness_semantics.md](/C:/code/time_tracer/docs/time_tracer/core/ingest/record_input_and_day_completeness_semantics.md)
 4. [day_bucket_and_wake_anchor_semantics.md](/C:/code/time_tracer/docs/time_tracer/core/ingest/day_bucket_and_wake_anchor_semantics.md)
+5. [interval_event_and_mixed_timeline_semantics.md](/C:/code/time_tracer/docs/time_tracer/core/ingest/interval_event_and_mixed_timeline_semantics.md)

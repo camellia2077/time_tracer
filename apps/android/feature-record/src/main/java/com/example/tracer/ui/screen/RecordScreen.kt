@@ -3,8 +3,6 @@ package com.example.tracer
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -23,15 +21,20 @@ import java.util.Locale
 
 private val DISPLAY_TIME_FORMATTER = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
 private const val MAX_QUICK_ACTIVITY_COUNT = 12
-private val RECORD_PRIMARY_SECTION_TOP_SPACER = 96.dp
 
 @Composable
 fun RecordSection(
     txtStorageGateway: TxtStorageGateway,
+    authoringMode: RecordAuthoringMode,
+    onAuthoringModeChange: (RecordAuthoringMode) -> Unit,
     recordContent: String,
     onRecordContentChange: (String) -> Unit,
     recordRemark: String,
     onRecordRemarkChange: (String) -> Unit,
+    intervalStart: String,
+    onIntervalStartChange: (String) -> Unit,
+    intervalEnd: String,
+    onIntervalEndChange: (String) -> Unit,
     quickActivities: List<String>,
     availableActivityNames: List<String>,
     onQuickActivitiesUpdate: (List<String>) -> Boolean,
@@ -61,7 +64,8 @@ fun RecordSection(
     onSuggestedActivityClick: (String) -> Unit,
     onOpenTxtPreview: () -> Unit,
     onDismissTxtPreview: () -> Unit,
-    onRecordNow: () -> Unit
+    onRecordNow: () -> Unit,
+    onRecordInterval: () -> Unit
 ) {
     var currentTimeText by remember { mutableStateOf(formatCurrentTime(System.currentTimeMillis())) }
     var quickActivitySearch by remember { mutableStateOf("") }
@@ -82,23 +86,6 @@ fun RecordSection(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        if (suggestionsVisible) {
-            RecordSuggestionsSection(
-                suggestionsVisible = true,
-                isSuggestionsLoading = isSuggestionsLoading,
-                suggestedActivities = suggestedActivities,
-                onToggleSuggestions = onToggleSuggestions,
-                onSuggestedActivityClick = onSuggestedActivityClick,
-                showToggleButton = false
-            )
-        } else {
-            Spacer(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(RECORD_PRIMARY_SECTION_TOP_SPACER)
-            )
-        }
-
         RecordTimeSettingsCard(
             currentTimeText = currentTimeText,
             logicalDayTarget = logicalDayTarget,
@@ -124,17 +111,39 @@ fun RecordSection(
         )
 
         RecordInputCard(
+            authoringMode = authoringMode,
+            onAuthoringModeChange = onAuthoringModeChange,
             recordContent = recordContent,
             onRecordContentChange = onRecordContentChange,
             recordRemark = recordRemark,
             onRecordRemarkChange = onRecordRemarkChange,
+            intervalStart = intervalStart,
+            onIntervalStartChange = onIntervalStartChange,
+            intervalEnd = intervalEnd,
+            onIntervalEndChange = onIntervalEndChange,
             suggestionsVisible = suggestionsVisible,
             onToggleSuggestions = onToggleSuggestions,
             onOpenTxtPreview = onOpenTxtPreview
         ) {
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            onRecordNow()
+            if (authoringMode == RecordAuthoringMode.INTERVAL) {
+                onRecordInterval()
+            } else {
+                onRecordNow()
+            }
         }
+    }
+
+    if (suggestionsVisible) {
+        RecordSuggestionsSheet(
+            logicalDayTarget = logicalDayTarget,
+            logicalDayClock = logicalDayClock,
+            suggestionLookbackDays = suggestionLookbackDays,
+            isSuggestionsLoading = isSuggestionsLoading,
+            suggestedActivities = suggestedActivities,
+            onDismissRequest = onToggleSuggestions,
+            onSuggestedActivityClick = onSuggestedActivityClick
+        )
     }
 
     if (isTxtPreviewVisible) {

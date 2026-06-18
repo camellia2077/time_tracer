@@ -19,6 +19,9 @@ Describe the user-visible behavior of record creation and TXT editing flows.
 - `Record Activity`
   - is append-oriented
   - should not be used as a historical insertion tool
+  - supports two authored shapes in the `Record` tab:
+    - point event: `HHMMtoken`
+    - interval event: `HHMM-HHMMtoken`
 - TXT editing
   - supports month-wide editing (`ALL`) and day-focused editing (`DAY`)
   - uses Android native `EditText`-backed multiline editing instead of the older Compose `OutlinedTextField` path
@@ -38,6 +41,10 @@ Describe the user-visible behavior of record creation and TXT editing flows.
 - Feature-record owns TXT editor presentation plus the editor-session reducer/controller/coordinator split.
 - Runtime day-block semantics stay in shared TXT runtime calls; Android does not re-implement month/day parsing locally.
 - Runtime record delegates own validation and persistence flow.
+- Interval authoring uses the same candidate-TXT save/sync path as TXT editing:
+  - Android builds a candidate day-block update
+  - shared runtime validation decides whether mixed point/interval timeline semantics are valid
+  - Android does not locally enforce overlap/gap business rules
 
 ## First Code Entry Points
 

@@ -14,6 +14,11 @@ enum class RecordLogicalDayTarget {
     TODAY
 }
 
+enum class RecordAuthoringMode {
+    POINT,
+    INTERVAL
+}
+
 data class CryptoProgressUiState(
     val isVisible: Boolean = false,
     val operationText: String = "",
@@ -29,8 +34,11 @@ data class CryptoProgressUiState(
 )
 
 data class RecordUiState(
+    val authoringMode: RecordAuthoringMode = RecordAuthoringMode.POINT,
     val recordContent: String = "",
     val recordRemark: String = "",
+    val intervalStart: String = "",
+    val intervalEnd: String = "",
     // Keep the state object deterministic. The owning ViewModel seeds this from an injected
     // logical-day clock so tests do not inherit the host machine's default time-zone implicitly.
     val logicalDayTarget: RecordLogicalDayTarget = RecordLogicalDayTarget.TODAY,
@@ -71,24 +79,56 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
         logicalDayZoneId = recordUseCases.logicalDayClock.zone
     )
     private var txtPreviewRequestVersion: Long = 0L
+    private var hasAppliedInitialPersistedRecordInput: Boolean = false
 
     var uiState by mutableStateOf(recordUseCases.initialUiState())
         private set
 
     fun onRecordContentChange(value: String) {
         uiState = intentHandler.onRecordContentChange(uiState, value)
+        persistRecordInputState()
+    }
+
+    fun onAuthoringModeChange(value: RecordAuthoringMode) {
+        uiState = intentHandler.onAuthoringModeChange(uiState, value)
+        persistRecordInputState()
     }
 
     fun onRecordRemarkChange(value: String) {
         uiState = intentHandler.onRecordRemarkChange(uiState, value)
+        persistRecordInputState()
+    }
+
+    fun onIntervalStartChange(value: String) {
+        uiState = intentHandler.onIntervalStartChange(uiState, value)
+        persistRecordInputState()
+    }
+
+    fun onIntervalEndChange(value: String) {
+        uiState = intentHandler.onIntervalEndChange(uiState, value)
+        persistRecordInputState()
+    }
+
+    fun hydratePersistedRecordInput(persistedInput: PersistedRecordInputSnapshot) {
+        if (hasAppliedInitialPersistedRecordInput) {
+            return
+        }
+        if (hasLocalRecordInputEdits(uiState)) {
+            hasAppliedInitialPersistedRecordInput = true
+            return
+        }
+        uiState = intentHandler.hydratePersistedRecordInput(uiState, persistedInput)
+        hasAppliedInitialPersistedRecordInput = true
     }
 
     fun selectLogicalDayYesterday() {
         uiState = intentHandler.selectLogicalDayYesterday(uiState)
+        persistRecordInputState()
     }
 
     fun selectLogicalDayToday() {
         uiState = intentHandler.selectLogicalDayToday(uiState)
+        persistRecordInputState()
     }
 
     fun refreshLogicalDayDefault(currentTimeMillis: Long = System.currentTimeMillis()) {
@@ -141,6 +181,7 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
 
     fun applySuggestedActivity(activityName: String) {
         uiState = intentHandler.applySuggestedActivity(uiState, activityName)
+        persistRecordInputState()
     }
 
     fun setStatusText(message: String) {
@@ -216,6 +257,14 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
     fun recordNow() {
         viewModelScope.launch {
             uiState = intentHandler.recordNow(uiState)
+            persistRecordInputState()
+        }
+    }
+
+    fun recordInterval() {
+        viewModelScope.launch {
+            uiState = intentHandler.recordInterval(uiState)
+            persistRecordInputState()
         }
     }
 
@@ -267,6 +316,39 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
 
     fun clearTxtEditorState() {
         uiState = intentHandler.clearTxtEditorState(uiState)
+        persistRecordInputState()
+    }
+
+    private fun hasLocalRecordInputEdits(state: RecordUiState): Boolean {
+        return state.authoringMode != RecordAuthoringMode.POINT ||
+            RecordStateReducer.hasPersistableRecordDraft(state) ||
+            state.logicalDayIsUserOverride
+    }
+
+    private fun persistRecordInputState() {
+        if (recordUseCases.recordInputPersistence === NoOpRecordInputPersistence) {
+            return
+        }
+        val snapshot = uiState
+        viewModelScope.launch {
+            recordUseCases.recordInputPersistence.persistLastAuthoringMode(snapshot.authoringMode)
+            val draft = if (RecordStateReducer.hasPersistableRecordDraft(snapshot)) {
+                PersistedRecordInputDraft(
+                    recordContent = snapshot.recordContent,
+                    recordRemark = snapshot.recordRemark,
+                    intervalStart = snapshot.intervalStart,
+                    intervalEnd = snapshot.intervalEnd,
+                    logicalDayTarget = snapshot.logicalDayTarget
+                )
+            } else {
+                null
+            }
+            if (draft != null) {
+                recordUseCases.recordInputPersistence.persistDraft(draft)
+            } else {
+                recordUseCases.recordInputPersistence.clearDraft()
+            }
+        }
     }
 }
 
@@ -274,6 +356,8 @@ class RecordViewModelFactory(
     private val recordGateway: RecordGateway,
     private val txtStorageGateway: TxtStorageGateway,
     private val queryGateway: QueryGateway,
+    private val initialPersistedRecordInput: PersistedRecordInputSnapshot = PersistedRecordInputSnapshot(),
+    private val recordInputPersistence: RecordInputPersistence = NoOpRecordInputPersistence,
     private val clock: Clock = Clock.systemDefaultZone()
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -284,9 +368,14 @@ class RecordViewModelFactory(
                     recordGateway = recordGateway,
                     txtStorageGateway = txtStorageGateway,
                     queryGateway = queryGateway,
+                    recordInputPersistence = recordInputPersistence,
                     clock = clock
                 )
-            ) as T
+            ).also {
+                if (initialPersistedRecordInput != PersistedRecordInputSnapshot()) {
+                    it.hydratePersistedRecordInput(initialPersistedRecordInput)
+                }
+            } as T
         }
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
     }

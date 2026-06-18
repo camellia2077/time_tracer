@@ -56,6 +56,31 @@ class RecordStateReducerTest {
         assertTrue(viewModel.uiState.logicalDayIsUserOverride)
     }
 
+    @Test
+    fun authoringModeAndIntervalFields_updateState() {
+        val viewModel = buildRecordViewModel()
+
+        viewModel.onAuthoringModeChange(RecordAuthoringMode.INTERVAL)
+        viewModel.onIntervalStartChange("0900")
+        viewModel.onIntervalEndChange("1030")
+
+        assertEquals(RecordAuthoringMode.INTERVAL, viewModel.uiState.authoringMode)
+        assertEquals("0900", viewModel.uiState.intervalStart)
+        assertEquals("1030", viewModel.uiState.intervalEnd)
+    }
+
+    @Test
+    fun refreshLogicalDayDefault_keepsDraftTargetAcrossCutoff() {
+        val viewModel = buildRecordViewModel()
+        viewModel.onRecordContentChange("study")
+        viewModel.selectLogicalDayYesterday()
+
+        viewModel.refreshLogicalDayDefault(timeMillis("2026-03-29T22:00:00Z"))
+
+        assertEquals(RecordLogicalDayTarget.YESTERDAY, viewModel.uiState.logicalDayTarget)
+        assertEquals("study", viewModel.uiState.recordContent)
+    }
+
 }
 
 private fun buildRecordViewModel(): RecordViewModel =
@@ -89,6 +114,15 @@ private class ReducerTestRecordGateway : RecordGateway {
         timeOrderMode: RecordTimeOrderMode
     ): RecordActionResult = RecordActionResult(true, "ok")
 
+    override suspend fun recordInterval(
+        activityName: String,
+        startTime: String,
+        endTime: String,
+        remark: String,
+        targetDateIso: String?,
+        preferredTxtPath: String?
+    ): RecordActionResult = RecordActionResult(true, "ok")
+
     override suspend fun syncLiveToDatabase(): NativeCallResult =
         NativeCallResult(initialized = true, operationOk = true, rawResponse = """{"ok":true}""")
 
@@ -112,7 +146,8 @@ private class ReducerTestTxtStorageGateway : TxtStorageGateway {
 private class ReducerTestQueryGateway : QueryGateway {
     override suspend fun queryActivitySuggestions(
         lookbackDays: Int,
-        topN: Int
+        topN: Int,
+        anchorDateIso: String?
     ): ActivitySuggestionResult = ActivitySuggestionResult(ok = true, suggestions = emptyList(), message = "ok")
 
     override suspend fun queryDayDurations(params: DataDurationQueryParams): DataQueryTextResult =

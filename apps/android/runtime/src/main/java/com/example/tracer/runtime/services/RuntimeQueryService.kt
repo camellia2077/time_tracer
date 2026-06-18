@@ -5,9 +5,10 @@ internal class RuntimeQueryService(
 ) {
     suspend fun queryActivitySuggestions(
         lookbackDays: Int,
-        topN: Int
+        topN: Int,
+        anchorDateIso: String? = null
     ): ActivitySuggestionResult =
-        queryDelegate.queryActivitySuggestions(lookbackDays, topN)
+        queryDelegate.queryActivitySuggestions(lookbackDays, topN, anchorDateIso)
 
     suspend fun queryDayDurations(params: DataDurationQueryParams): DataQueryTextResult =
         queryDelegate.queryDayDurations(params)

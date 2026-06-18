@@ -5,6 +5,9 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneId
 
 class TxtEditorRuntimeCoordinatorTest {
     @Test
@@ -16,7 +19,7 @@ class TxtEditorRuntimeCoordinatorTest {
                 message = "ok"
             )
         )
-        val coordinator = TxtEditorRuntimeCoordinator(gateway)
+        val coordinator = TxtEditorRuntimeCoordinator(gateway, testClock())
         val controller = TxtEditorSessionController()
 
         coordinator.syncAutoDayMarkerIfNeeded(
@@ -43,7 +46,7 @@ class TxtEditorRuntimeCoordinatorTest {
                 message = "ok"
             )
         )
-        val coordinator = TxtEditorRuntimeCoordinator(gateway)
+        val coordinator = TxtEditorRuntimeCoordinator(gateway, testClock())
         val controller = TxtEditorSessionController()
         var mergedMonthContent = ""
         var saveCalled = false
@@ -79,7 +82,7 @@ class TxtEditorRuntimeCoordinatorTest {
     @Test
     fun ingestCurrentEditor_allMode_savesWithoutDayMerge() = runBlocking {
         val gateway = FakeTxtEditorRuntimeGateway()
-        val coordinator = TxtEditorRuntimeCoordinator(gateway)
+        val coordinator = TxtEditorRuntimeCoordinator(gateway, testClock())
         val controller = TxtEditorSessionController()
         var saveCalled = false
 
@@ -106,7 +109,38 @@ class TxtEditorRuntimeCoordinatorTest {
         assertEquals("draft", controller.state.allDraftState.draftText)
         assertFalse(controller.state.isEditorContentVisible)
     }
+
+    @Test
+    fun prepareEditableDayBlock_whenDayIsMissing_seedsEmptyDayBlock() = runBlocking {
+        val gateway = FakeTxtEditorRuntimeGateway(
+            resolveResult = TxtDayBlockResolveResult(
+                ok = true,
+                normalizedDayMarker = "0501",
+                found = false,
+                isMarkerValid = true,
+                canSave = false,
+                dayBody = "",
+                dayContentIsoDate = null,
+                message = "ok"
+            )
+        )
+        val coordinator = TxtEditorRuntimeCoordinator(gateway, testClock())
+
+        val result = coordinator.prepareEditableDayBlock(
+            monthContent = "y2026\nm05\n",
+            dayMarker = "0501",
+            selectedMonth = "2026-05"
+        )
+
+        assertTrue(result.canEdit)
+        assertTrue(result.resolveResult.found)
+        assertTrue(result.resolveResult.canSave)
+        assertEquals("y2026\nm05\n\n0501\n", result.monthContent)
+    }
 }
+
+private fun testClock(): Clock =
+    Clock.fixed(Instant.parse("2026-04-17T12:00:00Z"), ZoneId.of("Asia/Shanghai"))
 
 private class FakeTxtEditorRuntimeGateway(
     private val defaultMarkerResult: TxtDayMarkerResult = TxtDayMarkerResult(

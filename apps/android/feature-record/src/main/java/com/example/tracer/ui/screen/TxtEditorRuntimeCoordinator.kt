@@ -67,6 +67,40 @@ internal class TxtEditorRuntimeCoordinator(
         selectedMonth = selectedMonth
     )
 
+    suspend fun prepareEditableDayBlock(
+        monthContent: String,
+        dayMarker: String,
+        selectedMonth: String
+    ): TxtEditableDayBlockResult {
+        val resolved = resolveDayBlock(
+            monthContent = monthContent,
+            dayMarker = dayMarker,
+            selectedMonth = selectedMonth
+        )
+        if (!resolved.ok || resolved.found || !resolved.isMarkerValid) {
+            return TxtEditableDayBlockResult(
+                resolveResult = resolved,
+                monthContent = monthContent,
+                canEdit = resolved.ok && resolved.canSave
+            )
+        }
+
+        val monthWithEmptyDay = appendEmptyDayBlock(
+            monthContent = monthContent,
+            dayMarker = resolved.normalizedDayMarker.ifBlank { dayMarker }
+        )
+        val seededResolve = resolved.copy(
+            found = true,
+            canSave = true,
+            dayBody = ""
+        )
+        return TxtEditableDayBlockResult(
+            resolveResult = seededResolve,
+            monthContent = monthWithEmptyDay,
+            canEdit = true
+        )
+    }
+
     suspend fun ingestCurrentEditor(
         sessionController: TxtEditorSessionController,
         canEditDay: Boolean,
@@ -114,5 +148,23 @@ internal class TxtEditorRuntimeCoordinator(
                 }
             }
         }
+    }
+}
+
+internal data class TxtEditableDayBlockResult(
+    val resolveResult: TxtDayBlockResolveResult,
+    val monthContent: String,
+    val canEdit: Boolean
+)
+
+internal fun appendEmptyDayBlock(
+    monthContent: String,
+    dayMarker: String
+): String {
+    val normalizedContent = monthContent.trimEnd()
+    return if (normalizedContent.isEmpty()) {
+        "$dayMarker\n"
+    } else {
+        "$normalizedContent\n\n$dayMarker\n"
     }
 }

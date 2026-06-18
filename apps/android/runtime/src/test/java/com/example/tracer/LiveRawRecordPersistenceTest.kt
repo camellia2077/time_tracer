@@ -41,6 +41,43 @@ class LiveRawRecordPersistenceTest {
         }
     }
 
+    @Test
+    fun buildRawIntervalEventLine_formatsWithoutRemark() {
+        val persistence = createPersistence()
+
+        val line = persistence.buildRawIntervalEventLine(
+            startHhmm = "0900",
+            endHhmm = "1030",
+            activity = "study",
+            remark = ""
+        )
+
+        assertEquals("0900-1030study", line)
+    }
+
+    @Test
+    fun buildRawIntervalEventLine_formatsWithRemark() {
+        val persistence = createPersistence()
+
+        val line = persistence.buildRawIntervalEventLine(
+            startHhmm = "0900",
+            endHhmm = "1030",
+            activity = "study",
+            remark = "focus"
+        )
+
+        assertEquals("0900-1030study // focus", line)
+    }
+
+    @Test
+    fun parsing_extractsActivityAndEndBoundaryFromIntervalLine() {
+        val normalization = LiveRawRecordNormalization()
+        val parsing = LiveRawRecordParsing(normalization)
+
+        assertEquals("1030", parsing.extractEventTimeToken("0900-1030study // focus"))
+        assertEquals("study", parsing.extractActivityName("0900-1030study // focus"))
+    }
+
     private fun createPersistence(): LiveRawRecordPersistence {
         val normalization = LiveRawRecordNormalization()
         val parsing = LiveRawRecordParsing(normalization)

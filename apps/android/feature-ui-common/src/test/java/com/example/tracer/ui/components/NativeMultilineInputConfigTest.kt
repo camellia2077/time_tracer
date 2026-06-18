@@ -14,9 +14,9 @@ class NativeMultilineInputConfigTest {
         assertTrue(config.inputType and InputType.TYPE_CLASS_TEXT != 0)
         assertTrue(config.inputType and InputType.TYPE_TEXT_FLAG_MULTI_LINE != 0)
         assertTrue(config.inputType and InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS != 0)
-        assertTrue(
-            config.inputType and InputType.TYPE_MASK_VARIATION ==
-                InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+        assertEquals(
+            InputType.TYPE_TEXT_VARIATION_NORMAL,
+            config.inputType and InputType.TYPE_MASK_VARIATION
         )
         assertTrue(config.imeOptions and EditorInfo.IME_FLAG_NO_EXTRACT_UI != 0)
         assertTrue(config.imeOptions and EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING != 0)
@@ -29,8 +29,7 @@ class NativeMultilineInputConfigTest {
         assertEquals(
             InputType.TYPE_CLASS_TEXT or
                 InputType.TYPE_TEXT_FLAG_MULTI_LINE or
-                InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS or
-                InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD,
+                InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS,
             config.inputType
         )
         assertEquals(

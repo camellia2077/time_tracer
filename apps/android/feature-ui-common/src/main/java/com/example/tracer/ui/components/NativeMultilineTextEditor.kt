@@ -53,8 +53,7 @@ internal fun buildNativeMultilineInputConfig(): NativeMultilineInputConfig = Nat
     inputType =
         InputType.TYPE_CLASS_TEXT or
             InputType.TYPE_TEXT_FLAG_MULTI_LINE or
-            InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS or
-            InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD,
+            InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS,
     imeOptions = EditorInfo.IME_FLAG_NO_EXTRACT_UI or EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING
 )
 
@@ -362,11 +361,12 @@ fun NativeMultilineTextEditor(
                 editText.scrollBarStyle = View.SCROLLBARS_INSIDE_INSET
                 editText.overScrollMode = View.OVER_SCROLL_IF_CONTENT_SCROLLS
                 // Design intent:
-                // TXT behaves like a plain-text note editor, not a chat box. We therefore bias
-                // the native EditText toward literal text entry: no fullscreen extract UI, no
-                // personalized learning, and no suggestion/autocorrect-friendly text variation.
-                // This reduces cases where IMEs inject automatic spaces or "helpful" rewrites
-                // that are fine for messaging apps but harmful for authored TXT data.
+                // TXT behaves like a plain-text note editor, not a password field or chat box.
+                // Do not use password-style text variations here: on Xiaomi HyperOS devices they
+                // can trigger the system secure keyboard, which replaces the user's normal IME
+                // and blocks expected input methods such as Chinese composition.
+                // Keep this as normal multi-line text while still avoiding fullscreen extract UI
+                // and IME learning for authored TXT data.
                 editText.imeOptions = inputConfig.imeOptions
                 editText.inputType = inputConfig.inputType
                 editText.minLines = minLines

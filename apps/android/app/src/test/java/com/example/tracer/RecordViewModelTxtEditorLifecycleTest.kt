@@ -126,6 +126,15 @@ private class TxtEditorLifecycleFakeRuntime(
         timeOrderMode: RecordTimeOrderMode
     ): RecordActionResult = RecordActionResult(ok = true, message = "ok")
 
+    override suspend fun recordInterval(
+        activityName: String,
+        startTime: String,
+        endTime: String,
+        remark: String,
+        targetDateIso: String?,
+        preferredTxtPath: String?
+    ): RecordActionResult = RecordActionResult(ok = true, message = "ok")
+
     override suspend fun syncLiveToDatabase(): NativeCallResult = NativeCallResult(
         initialized = true,
         operationOk = true,
@@ -134,7 +143,8 @@ private class TxtEditorLifecycleFakeRuntime(
 
     override suspend fun queryActivitySuggestions(
         lookbackDays: Int,
-        topN: Int
+        topN: Int,
+        anchorDateIso: String?
     ): ActivitySuggestionResult = ActivitySuggestionResult(
         ok = true,
         suggestions = emptyList(),

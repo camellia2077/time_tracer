@@ -13,6 +13,18 @@ internal class LiveRawRecordPersistence(
         return "$hhmm$activity // $remark"
     }
 
+    fun buildRawIntervalEventLine(
+        startHhmm: String,
+        endHhmm: String,
+        activity: String,
+        remark: String
+    ): String {
+        if (remark.isEmpty()) {
+            return "$startHhmm-$endHhmm$activity"
+        }
+        return "$startHhmm-$endHhmm$activity // $remark"
+    }
+
     fun ensureRawMonthFile(monthFile: File, year: Int, month: Int) {
         if (monthFile.exists()) {
             return

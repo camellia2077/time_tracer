@@ -43,14 +43,17 @@ private const val REPORT_PALETTE_PRESET_SWATCH_TAG = "config_report_palette_pres
 @Composable
 internal fun ReportChartStyleSection(
     reportPiePalettePreset: ReportPiePalettePreset,
-    onReportPiePalettePresetChange: (ReportPiePalettePreset) -> Unit
+    onReportPiePalettePresetChange: (ReportPiePalettePreset) -> Unit,
+    initialExpanded: Boolean = false
 ) {
     Text(
         text = stringResource(R.string.config_title_report_chart_style),
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant
     )
-    var isPiePaletteExpanded by rememberSaveable { mutableStateOf(false) }
+    // Tests can render the expanded section directly through this initial state hook
+    // instead of depending on click/animation timing in Robolectric.
+    var isPiePaletteExpanded by rememberSaveable { mutableStateOf(initialExpanded) }
     val piePalettePresets = ReportPiePalettePreset.entries
     var previewSliceIndex by rememberSaveable { mutableStateOf(0) }
 

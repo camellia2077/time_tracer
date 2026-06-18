@@ -8,6 +8,16 @@ import org.junit.Test
 
 class TxtDayDraftIngestTest {
     @Test
+    fun appendEmptyDayBlock_addsEditableMarkerToMonthContent() {
+        val result = appendEmptyDayBlock(
+            monthContent = "y2026\nm05\n",
+            dayMarker = "0501"
+        )
+
+        assertEquals("y2026\nm05\n\n0501\n", result)
+    }
+
+    @Test
     fun ingestDayDraft_mergesDayBody_andThenSavesMonth() = runBlocking {
         val gateway = FakeTxtDayDraftGateway(
             replaceResult = TxtDayBlockReplaceResult(

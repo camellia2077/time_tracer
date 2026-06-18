@@ -3,7 +3,8 @@ package com.example.tracer
 interface QueryGateway {
     suspend fun queryActivitySuggestions(
         lookbackDays: Int = 7,
-        topN: Int = 5
+        topN: Int = 5,
+        anchorDateIso: String? = null
     ): ActivitySuggestionResult
     suspend fun queryDayDurations(params: DataDurationQueryParams): DataQueryTextResult
     suspend fun queryDayDurationStats(params: DataDurationQueryParams): DataQueryTextResult

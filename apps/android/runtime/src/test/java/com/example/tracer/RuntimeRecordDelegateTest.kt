@@ -51,6 +51,31 @@ class RuntimeRecordDelegateTest {
                 loadWakeKeywords = {
                     ActivityMappingNamesResult(ok = true, names = listOf("w", "wake"), message = "ok")
                 },
+                defaultTxtDayMarker = { _, _ ->
+                    TxtDayMarkerResult(ok = true, normalizedDayMarker = "0329", message = "ok")
+                },
+                resolveTxtDayBlock = { _, _, _ ->
+                    TxtDayBlockResolveResult(
+                        ok = true,
+                        normalizedDayMarker = "0329",
+                        found = true,
+                        isMarkerValid = true,
+                        canSave = true,
+                        dayBody = "",
+                        dayContentIsoDate = "2026-03-29",
+                        message = "ok"
+                    )
+                },
+                replaceTxtDayBlock = { content, _, _ ->
+                    TxtDayBlockReplaceResult(
+                        ok = true,
+                        normalizedDayMarker = "0329",
+                        found = true,
+                        isMarkerValid = true,
+                        updatedContent = content,
+                        message = "ok"
+                    )
+                },
                 responseCodec = NativeResponseCodec(),
                 atomicRecordCodec = NativeAtomicRecordCodec(),
                 recordTranslator = NativeRecordTranslator(NativeResponseCodec()),
@@ -152,6 +177,31 @@ class RuntimeRecordDelegateTest {
                 loadWakeKeywords = {
                     ActivityMappingNamesResult(ok = true, names = listOf("w", "wake"), message = "ok")
                 },
+                defaultTxtDayMarker = { _, _ ->
+                    TxtDayMarkerResult(ok = true, normalizedDayMarker = "0101", message = "ok")
+                },
+                resolveTxtDayBlock = { _, _, _ ->
+                    TxtDayBlockResolveResult(
+                        ok = true,
+                        normalizedDayMarker = "0101",
+                        found = true,
+                        isMarkerValid = true,
+                        canSave = true,
+                        dayBody = "",
+                        dayContentIsoDate = "2026-01-01",
+                        message = "ok"
+                    )
+                },
+                replaceTxtDayBlock = { content, _, _ ->
+                    TxtDayBlockReplaceResult(
+                        ok = true,
+                        normalizedDayMarker = "0101",
+                        found = true,
+                        isMarkerValid = true,
+                        updatedContent = content,
+                        message = "ok"
+                    )
+                },
                 responseCodec = NativeResponseCodec(),
                 atomicRecordCodec = NativeAtomicRecordCodec(),
                 recordTranslator = NativeRecordTranslator(NativeResponseCodec()),
@@ -234,8 +284,8 @@ class RuntimeRecordDelegateTest {
     }
 
     @Test
-    fun saveTxtFileAndSync_successAppendsOvernightCompletenessWarning() = runBlocking {
-        val root = Files.createTempDirectory("runtime-record-delegate-save-overnight").toFile()
+    fun saveTxtFileAndSync_successAppendsPossibleOvernightContinuationWarning() = runBlocking {
+        val root = Files.createTempDirectory("runtime-record-delegate-save-possible-continuation").toFile()
         try {
             val paths = createPaths(root)
             val delegate = createSaveSuccessDelegate(paths)
@@ -252,6 +302,8 @@ class RuntimeRecordDelegateTest {
                     "Warning: possible overnight continuation; the first event of this day is not wake-related, so no sleep activity will be auto-generated."
                 )
             )
+            assertFalse(result.message.contains("Warning: overnight"))
+            assertFalse(result.message.contains("missing wake anchor"))
             assertFalse(
                 result.message.contains(
                     "Warning: this day currently has fewer than 2 authored events, so some intervals may not be computable yet."
@@ -331,6 +383,112 @@ class RuntimeRecordDelegateTest {
         }
     }
 
+    @Test
+    fun recordInterval_usesDayBlockReplaceAndSaveSyncPath() = runBlocking {
+        val root = Files.createTempDirectory("runtime-record-delegate-interval").toFile()
+        try {
+            val paths = createPaths(root)
+            val targetFile = File(paths.inputRootPath, "2026/2026-03.txt").apply {
+                parentFile?.mkdirs()
+                writeText("y2026\nm03\n0329\n0700w\n")
+            }
+            val writes = mutableListOf<Pair<String, String>>()
+            val storage = object : TextStorage {
+                override fun listTxtFiles(): TxtHistoryListResult = TxtHistoryListResult(
+                    ok = true,
+                    files = listOf("2026/2026-03.txt"),
+                    message = "ok"
+                )
+
+                override fun readTxtFile(relativePath: String): TxtFileContentResult = TxtFileContentResult(
+                    ok = true,
+                    filePath = relativePath,
+                    content = targetFile.readText(),
+                    message = "ok"
+                )
+
+                override fun writeTxtFile(relativePath: String, content: String): TxtFileContentResult {
+                    writes += relativePath to content
+                    targetFile.writeText(content)
+                    return TxtFileContentResult(
+                        ok = true,
+                        filePath = relativePath,
+                        content = content,
+                        message = "saved"
+                    )
+                }
+            }
+
+            val delegate = RuntimeRecordDelegate(
+                ensureRuntimePaths = { paths },
+                ensureTextStorage = { storage },
+                rawRecordStore = InputRecordStore(),
+                loadWakeKeywords = {
+                    ActivityMappingNamesResult(ok = true, names = listOf("w", "wake"), message = "ok")
+                },
+                defaultTxtDayMarker = { _, _ ->
+                    TxtDayMarkerResult(ok = true, normalizedDayMarker = "0329", message = "ok")
+                },
+                resolveTxtDayBlock = { content, _, _ ->
+                    TxtDayBlockResolveResult(
+                        ok = true,
+                        normalizedDayMarker = "0329",
+                        found = true,
+                        isMarkerValid = true,
+                        canSave = true,
+                        dayBody = content.substringAfter("0329\n"),
+                        dayContentIsoDate = "2026-03-29",
+                        message = "ok"
+                    )
+                },
+                replaceTxtDayBlock = { content, _, editedDayBody ->
+                    TxtDayBlockReplaceResult(
+                        ok = true,
+                        normalizedDayMarker = "0329",
+                        found = true,
+                        isMarkerValid = true,
+                        updatedContent = "y2026\nm03\n0329\n$editedDayBody",
+                        message = "ok"
+                    )
+                },
+                responseCodec = NativeResponseCodec(),
+                atomicRecordCodec = NativeAtomicRecordCodec(),
+                recordTranslator = NativeRecordTranslator(NativeResponseCodec()),
+                inspectTxtFilesInternal = {
+                    TxtInspectionResult(ok = true, entries = emptyList(), message = "ok")
+                },
+                executeAfterInit = { _, action ->
+                    NativeCallResult(
+                        initialized = true,
+                        operationOk = true,
+                        rawResponse = action(paths),
+                        operationId = "op-interval-1"
+                    )
+                },
+                nativeValidateStructure = { """{"ok":true}""" },
+                nativeValidateLogic = { _, _ -> """{"ok":true}""" },
+                nativeRecordActivityAtomically = { _, _, _, _, _, _ -> """{"ok":true}""" },
+                nativeIngestSingleTxtReplaceMonth = { _, _, _ -> """{"ok":true}""" },
+                nativeClearTxtIngestSyncStatus = { """{"ok":true}""" }
+            )
+
+            val result = delegate.recordInterval(
+                activityName = "study",
+                startTime = "0900",
+                endTime = "1030",
+                remark = "focus",
+                targetDateIso = "2026-03-29",
+                preferredTxtPath = "2026/2026-03.txt"
+            )
+
+            assertTrue(result.ok)
+            assertEquals(1, writes.size)
+            assertTrue(writes.single().second.contains("0900-1030study // focus"))
+        } finally {
+            root.deleteRecursively()
+        }
+    }
+
     private fun createSaveSuccessDelegate(
         paths: RuntimePaths,
         wakeKeywordsResult: ActivityMappingNamesResult = ActivityMappingNamesResult(
@@ -370,6 +528,31 @@ class RuntimeRecordDelegateTest {
             ensureTextStorage = { storage },
             rawRecordStore = InputRecordStore(),
             loadWakeKeywords = resolvedWakeKeywordsLoader,
+            defaultTxtDayMarker = { _, _ ->
+                TxtDayMarkerResult(ok = true, normalizedDayMarker = "0301", message = "ok")
+            },
+            resolveTxtDayBlock = { _, _, _ ->
+                TxtDayBlockResolveResult(
+                    ok = true,
+                    normalizedDayMarker = "0301",
+                    found = true,
+                    isMarkerValid = true,
+                    canSave = true,
+                    dayBody = "",
+                    dayContentIsoDate = "2026-03-01",
+                    message = "ok"
+                )
+            },
+            replaceTxtDayBlock = { content, _, _ ->
+                TxtDayBlockReplaceResult(
+                    ok = true,
+                    normalizedDayMarker = "0301",
+                    found = true,
+                    isMarkerValid = true,
+                    updatedContent = content,
+                    message = "ok"
+                )
+            },
             responseCodec = NativeResponseCodec(),
             atomicRecordCodec = NativeAtomicRecordCodec(),
             recordTranslator = NativeRecordTranslator(NativeResponseCodec()),

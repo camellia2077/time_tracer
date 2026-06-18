@@ -24,6 +24,23 @@ internal class RuntimeRecordService(
     ): RecordActionResult =
         recordDelegate.recordNow(activityName, remark, targetDateIso, preferredTxtPath, timeOrderMode)
 
+    suspend fun recordInterval(
+        activityName: String,
+        startTime: String,
+        endTime: String,
+        remark: String,
+        targetDateIso: String?,
+        preferredTxtPath: String?
+    ): RecordActionResult =
+        recordDelegate.recordInterval(
+            activityName = activityName,
+            startTime = startTime,
+            endTime = endTime,
+            remark = remark,
+            targetDateIso = targetDateIso,
+            preferredTxtPath = preferredTxtPath
+        )
+
     suspend fun syncLiveToDatabase(): NativeCallResult =
         recordDelegate.syncLiveToDatabase()
 

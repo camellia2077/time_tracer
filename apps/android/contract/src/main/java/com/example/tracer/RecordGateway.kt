@@ -15,6 +15,14 @@ interface RecordGateway {
         preferredTxtPath: String?,
         timeOrderMode: RecordTimeOrderMode
     ): RecordActionResult
+    suspend fun recordInterval(
+        activityName: String,
+        startTime: String,
+        endTime: String,
+        remark: String,
+        targetDateIso: String?,
+        preferredTxtPath: String?
+    ): RecordActionResult
     suspend fun syncLiveToDatabase(): NativeCallResult
     suspend fun clearTxt(): ClearTxtResult
 }

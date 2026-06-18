@@ -44,10 +44,16 @@ fun RecordTabContent(
 
     RecordSection(
         txtStorageGateway = txtStorageGateway,
+        authoringMode = recordUiState.authoringMode,
+        onAuthoringModeChange = recordViewModel::onAuthoringModeChange,
         recordContent = recordUiState.recordContent,
         onRecordContentChange = recordViewModel::onRecordContentChange,
         recordRemark = recordUiState.recordRemark,
         onRecordRemarkChange = recordViewModel::onRecordRemarkChange,
+        intervalStart = recordUiState.intervalStart,
+        onIntervalStartChange = recordViewModel::onIntervalStartChange,
+        intervalEnd = recordUiState.intervalEnd,
+        onIntervalEndChange = recordViewModel::onIntervalEndChange,
         quickActivities = recordUiState.quickActivities,
         availableActivityNames = remember(validAuthorableEventTokens) {
             validAuthorableEventTokens.toList().sorted()
@@ -175,7 +181,8 @@ fun RecordTabContent(
         },
         onOpenTxtPreview = recordViewModel::openTxtPreview,
         onDismissTxtPreview = recordViewModel::dismissTxtPreview,
-        onRecordNow = recordViewModel::recordNow
+        onRecordNow = recordViewModel::recordNow,
+        onRecordInterval = recordViewModel::recordInterval
     )
 }
 

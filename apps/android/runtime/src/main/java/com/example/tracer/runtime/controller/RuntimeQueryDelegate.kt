@@ -22,7 +22,8 @@ internal class RuntimeQueryDelegate(
 
     suspend fun queryActivitySuggestions(
         lookbackDays: Int,
-        topN: Int
+        topN: Int,
+        anchorDateIso: String? = null
     ): ActivitySuggestionResult = withContext(Dispatchers.IO) {
         val validationFailure = validateSuggestionQueryParams(
             lookbackDays = lookbackDays,
@@ -37,7 +38,8 @@ internal class RuntimeQueryDelegate(
                 DataQueryRequest(
                     action = NativeBridge.QUERY_ACTION_ACTIVITY_SUGGEST,
                     topN = topN,
-                    lookbackDays = lookbackDays
+                    lookbackDays = lookbackDays,
+                    anchorDateIso = anchorDateIso
                 ),
                 null
             )

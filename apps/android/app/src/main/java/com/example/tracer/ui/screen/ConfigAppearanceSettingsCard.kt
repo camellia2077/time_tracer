@@ -59,7 +59,8 @@ internal fun AppearanceSettingsCard(
     reportPiePalettePreset: ReportPiePalettePreset,
     onReportPiePalettePresetChange: (ReportPiePalettePreset) -> Unit,
     appLanguage: AppLanguage,
-    onSetAppLanguage: (AppLanguage) -> Unit
+    onSetAppLanguage: (AppLanguage) -> Unit,
+    initialReportPaletteExpanded: Boolean = false
 ) {
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         androidx.compose.foundation.layout.Column(
@@ -102,7 +103,8 @@ internal fun AppearanceSettingsCard(
 
             ReportChartStyleSection(
                 reportPiePalettePreset = reportPiePalettePreset,
-                onReportPiePalettePresetChange = onReportPiePalettePresetChange
+                onReportPiePalettePresetChange = onReportPiePalettePresetChange,
+                initialExpanded = initialReportPaletteExpanded
             )
 
             val isSystemDark = isSystemInDarkTheme()

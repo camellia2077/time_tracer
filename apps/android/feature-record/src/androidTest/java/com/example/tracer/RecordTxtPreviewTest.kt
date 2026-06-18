@@ -28,10 +28,16 @@ class RecordTxtPreviewTest {
         composeRule.setContent {
             MaterialTheme {
                 RecordInputCard(
+                    authoringMode = RecordAuthoringMode.POINT,
+                    onAuthoringModeChange = {},
                     recordContent = "",
                     onRecordContentChange = {},
                     recordRemark = "",
                     onRecordRemarkChange = {},
+                    intervalStart = "",
+                    onIntervalStartChange = {},
+                    intervalEnd = "",
+                    onIntervalEndChange = {},
                     suggestionsVisible = false,
                     onToggleSuggestions = {},
                     onOpenTxtPreview = { clickCount += 1 },

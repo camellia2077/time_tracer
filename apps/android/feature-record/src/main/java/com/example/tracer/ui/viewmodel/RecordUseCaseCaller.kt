@@ -16,6 +16,9 @@ internal class RecordUseCaseCaller(
     suspend fun recordNow(state: RecordUiState): RecordUiState =
         recordUseCases.recordNow(state)
 
+    suspend fun recordInterval(state: RecordUiState): RecordUiState =
+        recordUseCases.recordInterval(state)
+
     suspend fun openTxtPreview(state: RecordUiState): RecordUiState =
         recordUseCases.openTxtPreview(state)
 

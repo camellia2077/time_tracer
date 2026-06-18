@@ -132,45 +132,58 @@ fun TxtEditorSection(
     // ALL -> DAY mode switches inside one coherent editing session instead of snapping back to
     // the last ViewModel-backed month string on every mode change.
     val dayBlockEditorState by produceState(
-        initialValue = TxtDayBlockResolveResult(
-            ok = false,
-            normalizedDayMarker = normalizedDayMarkerInput,
-            found = false,
-            isMarkerValid = false,
-            canSave = false,
-            dayBody = "",
-            dayContentIsoDate = null,
-            message = ""
+        initialValue = TxtEditableDayBlockResult(
+            resolveResult = TxtDayBlockResolveResult(
+                ok = false,
+                normalizedDayMarker = normalizedDayMarkerInput,
+                found = false,
+                isMarkerValid = false,
+                canSave = false,
+                dayBody = "",
+                dayContentIsoDate = null,
+                message = ""
+            ),
+            monthContent = sessionController.currentMonthContent(editableHistoryContent),
+            canEdit = false
         ),
         sessionState.allDraftState,
         normalizedDayMarkerInput,
         selectedMonth
     ) {
-        value = runtimeCoordinator.resolveDayBlock(
+        value = runtimeCoordinator.prepareEditableDayBlock(
             monthContent = sessionController.currentMonthContent(editableHistoryContent),
             dayMarker = normalizedDayMarkerInput,
             selectedMonth = selectedMonth
         )
     }
+    val resolvedDayBlockState = dayBlockEditorState.resolveResult
     LaunchedEffect(
         sessionState.outputMode,
-        dayBlockEditorState.dayBody,
-        dayBlockEditorState.normalizedDayMarker,
-        dayBlockEditorState.dayContentIsoDate
+        resolvedDayBlockState.dayBody,
+        resolvedDayBlockState.normalizedDayMarker,
+        resolvedDayBlockState.dayContentIsoDate,
+        dayBlockEditorState.monthContent
     ) {
+        if (dayBlockEditorState.monthContent != sessionController.currentMonthContent(editableHistoryContent)) {
+            onEditableHistoryContentChange(dayBlockEditorState.monthContent)
+            sessionController.syncExternalMonthDraft(
+                selectedHistoryContent = selectedHistoryContent,
+                editableHistoryContent = dayBlockEditorState.monthContent
+            )
+        }
         if (sessionState.outputMode == TxtOutputMode.DAY) {
-            sessionController.syncResolvedDayBody(dayBlockEditorState.dayBody)
+            sessionController.syncResolvedDayBody(resolvedDayBlockState.dayBody)
         }
     }
     val currentDay = remember(
         selectedMonth,
         normalizedDayMarkerInput,
-        dayBlockEditorState.dayContentIsoDate
+        resolvedDayBlockState.dayContentIsoDate
     ) {
         resolveDisplayedCurrentDay(
             selectedMonth = selectedMonth,
             normalizedDayMarker = normalizedDayMarkerInput,
-            resolvedIsoDate = dayBlockEditorState.dayContentIsoDate
+            resolvedIsoDate = resolvedDayBlockState.dayContentIsoDate
         )
     }
     val filteredInlineStatusText = remember(inlineStatusText) {
@@ -181,7 +194,7 @@ fun TxtEditorSection(
         }
     }
 
-    val canEditDay = dayBlockEditorState.ok && dayBlockEditorState.canSave
+    val canEditDay = dayBlockEditorState.canEdit
     val editorUiState = remember(
         sessionState.outputMode,
         sessionState.allDraftState,
@@ -272,22 +285,31 @@ fun TxtEditorSection(
                             }
                             sessionController.updateOutputMode(nextMode)
                         },
-                        dayBlockEditorState = dayBlockEditorState,
+                        dayBlockEditorState = resolvedDayBlockState,
                         dayMarkerInput = sessionState.dayMarkerInput,
                         onDayMarkerInputChange = sessionController::updateDayMarkerInput,
+                        onOpenDay = { day ->
+                            navigateToDay(
+                                targetDay = day,
+                                selectedMonth = selectedMonth,
+                                onPendingDayChange = sessionController::updatePendingOpenedDay,
+                                onDayMarkerInputChange = sessionController::updateDayMarkerInput,
+                                onOpenMonth = onOpenMonth
+                            )
+                        },
                         inlineStatusText = filteredInlineStatusText,
                         isEditorContentVisible = sessionState.isEditorContentVisible,
                         onToggleEditorContentVisibility = {
                             if (sessionState.isEditorContentVisible) {
                                 sessionController.closeEditorSession(
-                                    resolvedDayBody = dayBlockEditorState.dayBody,
+                                    resolvedDayBody = resolvedDayBlockState.dayBody,
                                     onDiscardAllDraft = onDiscardUnsavedHistoryDraft
                                 )
                             } else {
                                 // Opening the editor should hydrate DAY from the current
                                 // resolved body so a previously abandoned draft does not leak
                                 // into the next editing session.
-                                sessionController.openEditor(dayBlockEditorState.dayBody)
+                                sessionController.openEditor(resolvedDayBlockState.dayBody)
                             }
                         },
                         editorText = editorUiState.editorText,

@@ -199,6 +199,18 @@ internal class InputRecordStore {
         return persistence.buildRawEventLine(hhmm, activity, remark)
     }
 
+    fun buildRawIntervalEventLine(
+        startHhmm: String,
+        endHhmm: String,
+        activity: String,
+        remark: String
+    ): String = persistence.buildRawIntervalEventLine(
+        startHhmm = startHhmm,
+        endHhmm = endHhmm,
+        activity = activity,
+        remark = remark
+    )
+
     private fun ensureRawMonthFile(monthFile: File, year: Int, month: Int) {
         persistence.ensureRawMonthFile(monthFile, year, month)
     }

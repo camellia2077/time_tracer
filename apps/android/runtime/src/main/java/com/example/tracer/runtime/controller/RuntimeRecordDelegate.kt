@@ -8,6 +8,17 @@ internal class RuntimeRecordDelegate(
     private val ensureTextStorage: () -> TextStorage,
     private val rawRecordStore: InputRecordStore,
     private val loadWakeKeywords: suspend () -> ActivityMappingNamesResult,
+    private val defaultTxtDayMarker: suspend (selectedMonth: String, targetDateIso: String) -> TxtDayMarkerResult,
+    private val resolveTxtDayBlock: suspend (
+        content: String,
+        dayMarker: String,
+        selectedMonth: String
+    ) -> TxtDayBlockResolveResult,
+    private val replaceTxtDayBlock: suspend (
+        content: String,
+        dayMarker: String,
+        editedDayBody: String
+    ) -> TxtDayBlockReplaceResult,
     private val responseCodec: NativeResponseCodec,
     private val atomicRecordCodec: NativeAtomicRecordCodec,
     private val recordTranslator: NativeRecordTranslator,
@@ -121,6 +132,120 @@ internal class RuntimeRecordDelegate(
         }
     }
 
+    suspend fun recordInterval(
+        activityName: String,
+        startTime: String,
+        endTime: String,
+        remark: String,
+        targetDateIso: String?,
+        preferredTxtPath: String?
+    ): RecordActionResult = withContext(Dispatchers.IO) {
+        try {
+            val logicalDateResult = parseLogicalDate(targetDateIso)
+            if (!logicalDateResult.ok) {
+                return@withContext RecordActionResult(
+                    ok = false,
+                    message = logicalDateResult.message
+                )
+            }
+
+            val normalizedActivity = rawRecordStore.normalizeActivityName(activityName)
+            if (normalizedActivity.isEmpty()) {
+                return@withContext RecordActionResult(
+                    ok = false,
+                    message = "Record blocked: activity token is required."
+                )
+            }
+
+            val normalizedRemark = rawRecordStore.normalizeRemark(remark)
+            val normalizedStart = startTime.trim()
+            val normalizedEnd = endTime.trim()
+            if (!isValidHhmm(normalizedStart) || !isValidHhmm(normalizedEnd)) {
+                return@withContext RecordActionResult(
+                    ok = false,
+                    message = "Record blocked: start/end must use HHMM."
+                )
+            }
+
+            val paths = ensureRuntimePaths()
+            val logicalDate = logicalDateResult.date!!
+            val target = resolveRecordTarget(paths, logicalDate, preferredTxtPath)
+            val targetRelativePath = target.preferredInnerPath
+                ?: buildMonthRelativePath(logicalDate.substring(0, 7))
+            val logicalYear = logicalDate.substring(0, 4).toInt()
+            val logicalMonth = logicalDate.substring(5, 7).toInt()
+            rawRecordStore.ensureMonthFile(
+                inputRootPath = paths.inputRootPath,
+                year = logicalYear,
+                month = logicalMonth
+            )
+
+            val storage = ensureTextStorage()
+            val readResult = storage.readTxtFile(targetRelativePath)
+            if (!readResult.ok) {
+                return@withContext RecordActionResult(
+                    ok = false,
+                    message = "Record blocked: failed to read TXT -> $targetRelativePath (${readResult.message})"
+                )
+            }
+
+            val selectedMonth = logicalDate.substring(0, 7)
+            val markerResult = defaultTxtDayMarker(selectedMonth, logicalDate)
+            if (!markerResult.ok) {
+                return@withContext RecordActionResult(
+                    ok = false,
+                    message = "Record blocked: ${markerResult.message}"
+                )
+            }
+
+            val dayBlockResult = resolveTxtDayBlock(
+                readResult.content,
+                markerResult.normalizedDayMarker,
+                selectedMonth
+            )
+            if (!dayBlockResult.ok) {
+                return@withContext RecordActionResult(
+                    ok = false,
+                    message = "Record blocked: ${dayBlockResult.message}"
+                )
+            }
+
+            val eventLine = rawRecordStore.buildRawIntervalEventLine(
+                startHhmm = normalizedStart,
+                endHhmm = normalizedEnd,
+                activity = normalizedActivity,
+                remark = normalizedRemark
+            )
+            val updatedContent = if (dayBlockResult.found) {
+                val replaced = replaceTxtDayBlock(
+                    readResult.content,
+                    markerResult.normalizedDayMarker,
+                    appendEventLine(dayBlockResult.dayBody, eventLine)
+                )
+                if (!replaced.ok) {
+                    return@withContext RecordActionResult(
+                        ok = false,
+                        message = "Record blocked: ${replaced.message}"
+                    )
+                }
+                replaced.updatedContent
+            } else {
+                appendMissingDayBlock(
+                    content = readResult.content,
+                    dayMarker = markerResult.normalizedDayMarker,
+                    eventLine = eventLine
+                )
+            }
+
+            txtSaveAndSyncFlow.saveTxtFileAndSync(
+                relativePath = targetRelativePath,
+                content = updatedContent
+            )
+        } catch (error: Exception) {
+            buildRecordActionFailure(prefix = "Record interval failed", error = error)
+        }
+    }
+
     suspend fun syncLiveToDatabase(): NativeCallResult = withContext(Dispatchers.IO) {
         try {
             syncFlow.syncLiveToDatabase()
@@ -134,5 +259,31 @@ internal class RuntimeRecordDelegate(
             relativePath = relativePath,
             content = content
         )
-}
 
+    private fun appendEventLine(dayBody: String, eventLine: String): String {
+        val trimmed = dayBody.trimEnd('\n', '\r')
+        return if (trimmed.isEmpty()) {
+            "$eventLine\n"
+        } else {
+            "$trimmed\n$eventLine\n"
+        }
+    }
+
+    private fun appendMissingDayBlock(content: String, dayMarker: String, eventLine: String): String {
+        val canonicalContent = CanonicalTextCodec.canonicalizeText(content).trimEnd('\n', '\r')
+        return if (canonicalContent.isEmpty()) {
+            "$dayMarker\n$eventLine\n"
+        } else {
+            "$canonicalContent\n\n$dayMarker\n$eventLine\n"
+        }
+    }
+
+    private fun isValidHhmm(hhmm: String): Boolean {
+        if (hhmm.length != 4 || !hhmm.all { it.isDigit() }) {
+            return false
+        }
+        val hours = hhmm.substring(0, 2).toIntOrNull() ?: return false
+        val minutes = hhmm.substring(2, 4).toIntOrNull() ?: return false
+        return hours in 0..23 && minutes in 0..59
+    }
+}

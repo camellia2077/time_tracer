@@ -4,11 +4,39 @@ import java.time.ZoneId
 import kotlin.math.roundToInt
 
 internal object RecordStateReducer {
+    fun hydratePersistedRecordInput(
+        state: RecordUiState,
+        persistedInput: PersistedRecordInputSnapshot
+    ): RecordUiState {
+        val draft = persistedInput.draft
+        return if (draft != null) {
+            state.copy(
+                authoringMode = persistedInput.lastAuthoringMode,
+                recordContent = draft.recordContent,
+                recordRemark = draft.recordRemark,
+                intervalStart = draft.intervalStart,
+                intervalEnd = draft.intervalEnd,
+                logicalDayTarget = draft.logicalDayTarget
+            )
+        } else {
+            state.copy(authoringMode = persistedInput.lastAuthoringMode)
+        }
+    }
+
+    fun onAuthoringModeChange(state: RecordUiState, value: RecordAuthoringMode): RecordUiState =
+        state.copy(authoringMode = value)
+
     fun onRecordContentChange(state: RecordUiState, value: String): RecordUiState =
         state.copy(recordContent = value)
 
     fun onRecordRemarkChange(state: RecordUiState, value: String): RecordUiState =
         state.copy(recordRemark = value)
+
+    fun onIntervalStartChange(state: RecordUiState, value: String): RecordUiState =
+        state.copy(intervalStart = value)
+
+    fun onIntervalEndChange(state: RecordUiState, value: String): RecordUiState =
+        state.copy(intervalEnd = value)
 
     fun selectLogicalDayYesterday(state: RecordUiState): RecordUiState =
         selectLogicalDayTarget(state, RecordLogicalDayTarget.YESTERDAY)
@@ -25,7 +53,7 @@ internal object RecordStateReducer {
         // default to "yesterday" so late-night work keeps appending to the previous day's block.
         // The zone is injected from the Android session clock instead of reading the host system
         // default implicitly, so runtime behavior stays device-local while tests remain stable.
-        if (state.logicalDayIsUserOverride) {
+        if (state.logicalDayIsUserOverride || hasPersistableRecordDraft(state)) {
             return state
         }
         val defaultTarget = defaultLogicalDayTarget(
@@ -260,6 +288,13 @@ internal object RecordStateReducer {
             logicalDayTarget = target,
             logicalDayIsUserOverride = true
         )
+    }
+
+    internal fun hasPersistableRecordDraft(state: RecordUiState): Boolean {
+        return state.recordContent.isNotBlank() ||
+            state.recordRemark.isNotBlank() ||
+            state.intervalStart.isNotBlank() ||
+            state.intervalEnd.isNotBlank()
     }
 
     private fun formatBytes(bytes: Long): String {

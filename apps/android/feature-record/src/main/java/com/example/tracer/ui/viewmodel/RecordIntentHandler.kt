@@ -6,11 +6,25 @@ internal class RecordIntentHandler(
     private val useCaseCaller: RecordUseCaseCaller,
     private val logicalDayZoneId: ZoneId
 ) {
+    fun hydratePersistedRecordInput(
+        state: RecordUiState,
+        persistedInput: PersistedRecordInputSnapshot
+    ): RecordUiState = RecordStateReducer.hydratePersistedRecordInput(state, persistedInput)
+
+    fun onAuthoringModeChange(state: RecordUiState, value: RecordAuthoringMode): RecordUiState =
+        RecordStateReducer.onAuthoringModeChange(state, value)
+
     fun onRecordContentChange(state: RecordUiState, value: String): RecordUiState =
         RecordStateReducer.onRecordContentChange(state, value)
 
     fun onRecordRemarkChange(state: RecordUiState, value: String): RecordUiState =
         RecordStateReducer.onRecordRemarkChange(state, value)
+
+    fun onIntervalStartChange(state: RecordUiState, value: String): RecordUiState =
+        RecordStateReducer.onIntervalStartChange(state, value)
+
+    fun onIntervalEndChange(state: RecordUiState, value: String): RecordUiState =
+        RecordStateReducer.onIntervalEndChange(state, value)
 
     fun selectLogicalDayYesterday(state: RecordUiState): RecordUiState =
         RecordStateReducer.selectLogicalDayYesterday(state)
@@ -117,6 +131,9 @@ internal class RecordIntentHandler(
 
     suspend fun recordNow(state: RecordUiState): RecordUiState =
         useCaseCaller.recordNow(state)
+
+    suspend fun recordInterval(state: RecordUiState): RecordUiState =
+        useCaseCaller.recordInterval(state)
 
     suspend fun refreshHistory(state: RecordUiState): RecordUiState =
         useCaseCaller.refreshHistory(state)

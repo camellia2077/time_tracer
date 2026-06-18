@@ -2,11 +2,13 @@ package com.example.tracer
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import com.example.tracer.PersistedRecordInputSnapshot
 import com.example.tracer.data.RecordSuggestionPreferences
 
 @Composable
 internal fun SyncTracerScreenRecordPreferences(
     recordSuggestionPreferences: RecordSuggestionPreferences,
+    persistedRecordInput: PersistedRecordInputSnapshot?,
     recordViewModel: RecordViewModel
 ) {
     LaunchedEffect(
@@ -25,5 +27,9 @@ internal fun SyncTracerScreenRecordPreferences(
             assistExpanded = recordSuggestionPreferences.assistExpanded,
             assistSettingsExpanded = recordSuggestionPreferences.assistSettingsExpanded
         )
+    }
+
+    LaunchedEffect(persistedRecordInput) {
+        persistedRecordInput?.let { recordViewModel.hydratePersistedRecordInput(it) }
     }
 }

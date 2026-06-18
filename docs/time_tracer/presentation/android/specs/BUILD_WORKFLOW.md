@@ -27,6 +27,8 @@ Run from repo root unless a section explicitly says otherwise.
   - `python tools/run.py verify --app tracer_android --profile android_ci --concise`
 - Release verify:
   - `python tools/run.py verify --app tracer_android --profile android_release_verify --concise`
+- Release device smoke:
+  - `python tools/run.py verify --app tracer_android --profile android_release_device --concise`
 - Combined closeout in one Gradle invocation:
   - `python tools/run.py verify --app tracer_android --profile android_style --profile android_ci --concise`
 - Device verify:
@@ -69,6 +71,9 @@ Common targeted commands:
 - If you need release-specific QA or signing validation:
   - run `python tools/run.py verify --app tracer_android --profile android_release_verify --concise`
   - this path requires the existing release signing inputs and is intentionally separate from default CI.
+- If you need a real signed-APK startup smoke on a connected device:
+  - run `python tools/run.py verify --app tracer_android --profile android_release_device --concise`
+  - this path requires release signing and an attached device or emulator with `adb`.
 - If a change touches core-side code that affects the Android host/runtime path:
   - include `python tools/run.py build --app tracer_android --profile android_edit`.
 

@@ -226,6 +226,18 @@ private class FakeRuntimeServices(
         message = "ok"
     )
 
+    override suspend fun recordInterval(
+        activityName: String,
+        startTime: String,
+        endTime: String,
+        remark: String,
+        targetDateIso: String?,
+        preferredTxtPath: String?
+    ): RecordActionResult = RecordActionResult(
+        ok = true,
+        message = "ok"
+    )
+
     override suspend fun syncLiveToDatabase(): NativeCallResult = initializeRuntime()
 
     override suspend fun clearTxt(): ClearTxtResult = ClearTxtResult(
@@ -235,7 +247,8 @@ private class FakeRuntimeServices(
 
     override suspend fun queryActivitySuggestions(
         lookbackDays: Int,
-        topN: Int
+        topN: Int,
+        anchorDateIso: String?
     ): ActivitySuggestionResult = ActivitySuggestionResult(
         ok = true,
         suggestions = listOf("meal"),

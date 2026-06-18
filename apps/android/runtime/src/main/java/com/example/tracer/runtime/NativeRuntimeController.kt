@@ -44,11 +44,19 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         executeNativeTreeQuery = coreAdapter::executeNativeTreeQuery,
         executeNativeDataQuery = coreAdapter::executeNativeDataQuery
     )
+    private val txtDayBlockService = RuntimeTxtDayBlockService(
+        initializeRuntimeInternal = coreAdapter::initializeRuntimeInternal,
+        nativeTxt = runtimeBridge::nativeTxt,
+        codec = txtRuntimeCodec
+    )
     private val recordDelegate = RuntimeRecordDelegate(
         ensureRuntimePaths = runtimeSession::ensureRuntimePaths,
         ensureTextStorage = runtimeSession::ensureTextStorage,
         rawRecordStore = inputRecordStore,
         loadWakeKeywords = queryDelegate::listWakeKeywords,
+        defaultTxtDayMarker = txtDayBlockService::defaultTxtDayMarker,
+        resolveTxtDayBlock = txtDayBlockService::resolveTxtDayBlock,
+        replaceTxtDayBlock = txtDayBlockService::replaceTxtDayBlock,
         responseCodec = responseCodec,
         atomicRecordCodec = atomicRecordCodec,
         recordTranslator = recordTranslator,
@@ -120,11 +128,6 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         nativeInspectTracerExchange = runtimeBridge::nativeInspectTracerExchange,
         setProgressListener = runtimeBridge::setCryptoProgressListener
     )
-    private val txtDayBlockService = RuntimeTxtDayBlockService(
-        initializeRuntimeInternal = coreAdapter::initializeRuntimeInternal,
-        nativeTxt = runtimeBridge::nativeTxt,
-        codec = txtRuntimeCodec
-    )
 
     // init
     override suspend fun initializeRuntime(): NativeCallResult =
@@ -155,6 +158,22 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         timeOrderMode: RecordTimeOrderMode
     ): RecordActionResult =
         recordService.recordNow(activityName, remark, targetDateIso, preferredTxtPath, timeOrderMode)
+
+    override suspend fun recordInterval(
+        activityName: String,
+        startTime: String,
+        endTime: String,
+        remark: String,
+        targetDateIso: String?,
+        preferredTxtPath: String?
+    ): RecordActionResult = recordService.recordInterval(
+        activityName = activityName,
+        startTime = startTime,
+        endTime = endTime,
+        remark = remark,
+        targetDateIso = targetDateIso,
+        preferredTxtPath = preferredTxtPath
+    )
 
     override suspend fun syncLiveToDatabase(): NativeCallResult =
         recordService.syncLiveToDatabase()
@@ -310,9 +329,10 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     // query
     override suspend fun queryActivitySuggestions(
         lookbackDays: Int,
-        topN: Int
+        topN: Int,
+        anchorDateIso: String?
     ): ActivitySuggestionResult =
-        queryService.queryActivitySuggestions(lookbackDays, topN)
+        queryService.queryActivitySuggestions(lookbackDays, topN, anchorDateIso)
 
     override suspend fun queryDayDurations(params: DataDurationQueryParams): DataQueryTextResult =
         queryService.queryDayDurations(params)

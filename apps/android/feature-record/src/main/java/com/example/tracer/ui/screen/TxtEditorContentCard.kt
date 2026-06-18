@@ -41,6 +41,7 @@ import com.example.tracer.ui.components.filterDigits
 import com.example.tracer.ui.components.splitYearMonthDigits
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.YearMonth
 
 @Composable
 internal fun TxtEditorContentCard(
@@ -52,6 +53,7 @@ internal fun TxtEditorContentCard(
     dayBlockEditorState: TxtDayBlockResolveResult,
     dayMarkerInput: String,
     onDayMarkerInputChange: (String) -> Unit,
+    onOpenDay: (LocalDate) -> Unit,
     inlineStatusText: String,
     isEditorContentVisible: Boolean,
     onToggleEditorContentVisibility: () -> Unit,
@@ -120,7 +122,12 @@ internal fun TxtEditorContentCard(
                         onDayMarkerInputChange(
                             filterDigits(monthForInput, 2) + filterDigits(nextDay, 2)
                         )
-                    }
+                    },
+                    dayFieldTestTag = targetDayDayFieldTestTag(),
+                    dayPickerEnabled = true,
+                    dayPickerDisplayMonth = currentDay?.let { YearMonth.from(it) },
+                    dayPickerSelectedDate = currentDay,
+                    onDayPicked = onOpenDay
                 )
             }
 
@@ -187,6 +194,8 @@ internal fun TxtEditorContentCard(
         )
     }
 }
+
+internal fun targetDayDayFieldTestTag(): String = "txt_target_day_dd"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

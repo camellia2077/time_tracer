@@ -69,11 +69,18 @@ internal class LiveRawRecordParsing(
         if (trimmed.length < 4) {
             return null
         }
-        val hhmm = trimmed.substring(0, 4)
-        if (!hhmm.all { it.isDigit() }) {
+        val firstTime = trimmed.substring(0, 4)
+        if (!firstTime.all { it.isDigit() }) {
             return null
         }
-        return hhmm
+        if (
+            trimmed.length >= 9 &&
+            trimmed[4] == '-' &&
+            trimmed.substring(5, 9).all { it.isDigit() }
+        ) {
+            return trimmed.substring(5, 9)
+        }
+        return firstTime
     }
 
     fun extractActivityName(line: String): String {
@@ -82,12 +89,22 @@ internal class LiveRawRecordParsing(
             return ""
         }
 
-        val hhmm = trimmed.substring(0, 4)
-        if (!hhmm.all { it.isDigit() }) {
+        val firstTime = trimmed.substring(0, 4)
+        if (!firstTime.all { it.isDigit() }) {
             return ""
         }
 
-        val rawBody = trimmed.substring(4).trim()
+        val bodyOffset = if (
+            trimmed.length >= 9 &&
+            trimmed[4] == '-' &&
+            trimmed.substring(5, 9).all { it.isDigit() }
+        ) {
+            9
+        } else {
+            4
+        }
+
+        val rawBody = trimmed.substring(bodyOffset).trim()
         if (rawBody.isEmpty()) {
             return ""
         }
@@ -102,6 +119,7 @@ internal class LiveRawRecordParsing(
         }
         return rawBody.substring(0, cutAt).trim()
     }
+
     fun findDayBlockEnd(lines: List<String>, blockStart: Int): Int {
         for (index in (blockStart + 1) until lines.size) {
             if (isDayMarker(lines[index])) {

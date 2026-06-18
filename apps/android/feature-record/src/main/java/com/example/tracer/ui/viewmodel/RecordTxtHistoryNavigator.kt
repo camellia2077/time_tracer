@@ -4,6 +4,54 @@ internal class RecordTxtHistoryNavigator(
     private val txtStorageGateway: TxtStorageGateway,
     private val currentMonthKeyProvider: () -> String
 ) {
+    suspend fun refreshAndOpenExistingMonth(
+        state: RecordUiState,
+        month: String,
+        statusPrefix: String
+    ): TxtMonthOpenResult {
+        if (month.isBlank()) {
+            return TxtMonthOpenResult(state = state, found = true)
+        }
+
+        val inspection = txtStorageGateway.inspectTxtFiles()
+        if (!inspection.ok) {
+            return TxtMonthOpenResult(
+                state = state.copy(statusText = "$statusPrefix ${inspection.message}"),
+                found = true
+            )
+        }
+
+        val sortedEntries = inspection.entries.sortedBy { it.relativePath }
+        val targetFile = buildEditorMonthToFileIndex(sortedEntries)[month]
+        if (targetFile == null) {
+            return TxtMonthOpenResult(
+                state = state.copy(
+                    historyFiles = sortedEntries.map { it.relativePath },
+                    txtInspectionEntries = sortedEntries,
+                    availableMonths = buildMonthToFileIndex(sortedEntries).keys.sorted(),
+                    statusText = "Month $month not found in TXT list."
+                ),
+                found = false
+            )
+        }
+        val targetEntry = sortedEntries.firstOrNull { it.relativePath == targetFile }
+            ?: return TxtMonthOpenResult(
+                state = state.copy(statusText = "$statusPrefix TXT file metadata missing for $targetFile."),
+                found = true
+            )
+
+        return TxtMonthOpenResult(
+            state = openInspectionEntry(
+                state = state,
+                entries = sortedEntries,
+                inspectionEntry = targetEntry,
+                availableMonths = buildMonthToFileIndex(sortedEntries).keys.sorted(),
+                statusPrefix = statusPrefix
+            ),
+            found = true
+        )
+    }
+
     suspend fun refreshAndOpen(
         state: RecordUiState,
         preferredMonth: String?,
@@ -243,3 +291,8 @@ internal class RecordTxtHistoryNavigator(
         return index
     }
 }
+
+internal data class TxtMonthOpenResult(
+    val state: RecordUiState,
+    val found: Boolean
+)

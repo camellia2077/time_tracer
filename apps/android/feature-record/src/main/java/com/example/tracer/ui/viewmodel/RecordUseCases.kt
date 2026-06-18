@@ -6,6 +6,7 @@ class RecordUseCases(
     private val recordGateway: RecordGateway,
     private val txtStorageGateway: TxtStorageGateway,
     private val queryGateway: QueryGateway,
+    internal val recordInputPersistence: RecordInputPersistence = NoOpRecordInputPersistence,
     private val clock: Clock = Clock.systemDefaultZone()
 ) {
     private val datePolicy = RecordUseCaseDatePolicy(clock)
@@ -35,16 +36,59 @@ class RecordUseCases(
             activityName = state.recordContent,
             remark = state.recordRemark,
             targetDateIso = targetDateIso,
-            preferredTxtPath = state.selectedHistoryFile,
+            preferredTxtPath = resolvePreferredTxtPathForRecord(
+                targetDateIso = targetDateIso,
+                selectedHistoryFile = state.selectedHistoryFile
+            ),
             timeOrderMode = timeOrderMode
         )
+        if (!result.ok) {
+            return state.copy(statusText = result.message)
+        }
         val preferredMonth = datePolicy.resolvePreferredMonthForRecord(targetDateIso)
-        // Clear the previous activity/remark after every record attempt. Otherwise users have to
-        // manually delete the last input before typing the next activity, especially when a
-        // failed insert leaves stale content in the fields.
+        // Clear the previous activity/remark only after a successful write. Failed writes keep
+        // the draft intact so users can retry without re-entering their in-progress input.
         val stateAfterRecord = state.copy(
             recordContent = "",
             recordRemark = ""
+        )
+        return historyNavigator.refreshAndOpen(stateAfterRecord, preferredMonth, result.message)
+    }
+
+    suspend fun recordInterval(state: RecordUiState): RecordUiState {
+        val normalizedStart = state.intervalStart.trim()
+        val normalizedEnd = state.intervalEnd.trim()
+        if (state.recordContent.isBlank()) {
+            return state.copy(statusText = "Record blocked: activity token is required.")
+        }
+        if (normalizedStart.isEmpty() || normalizedEnd.isEmpty()) {
+            return state.copy(statusText = "Record blocked: start/end are required for interval mode.")
+        }
+        if (!isValidHhmm(normalizedStart) || !isValidHhmm(normalizedEnd)) {
+            return state.copy(statusText = "Record blocked: start/end must use HHMM.")
+        }
+
+        val targetDateIso = datePolicy.resolveTargetDateIso(state.logicalDayTarget)
+        val result = recordGateway.recordInterval(
+            activityName = state.recordContent,
+            startTime = normalizedStart,
+            endTime = normalizedEnd,
+            remark = state.recordRemark,
+            targetDateIso = targetDateIso,
+            preferredTxtPath = resolvePreferredTxtPathForRecord(
+                targetDateIso = targetDateIso,
+                selectedHistoryFile = state.selectedHistoryFile
+            )
+        )
+        if (!result.ok) {
+            return state.copy(statusText = result.message)
+        }
+        val preferredMonth = datePolicy.resolvePreferredMonthForRecord(targetDateIso)
+        val stateAfterRecord = state.copy(
+            recordContent = "",
+            recordRemark = "",
+            intervalStart = "",
+            intervalEnd = ""
         )
         return historyNavigator.refreshAndOpen(stateAfterRecord, preferredMonth, result.message)
     }
@@ -65,8 +109,16 @@ class RecordUseCases(
     }
 
     suspend fun refreshHistory(state: RecordUiState): RecordUiState {
-        val preferredMonth = state.selectedMonth.ifEmpty { null }
-        return historyNavigator.refreshAndOpen(state, preferredMonth, "TXT history refreshed.")
+        val targetMonth = resolveRefreshTargetMonth(state)
+        return if (targetMonth == datePolicy.currentMonthKey()) {
+            openOrCreateMonth(
+                state = state,
+                month = targetMonth,
+                statusPrefix = "TXT history refreshed."
+            )
+        } else {
+            historyNavigator.refreshAndOpen(state, targetMonth, "TXT history refreshed.")
+        }
     }
 
     suspend fun openHistoryFile(
@@ -80,7 +132,11 @@ class RecordUseCases(
     )
 
     suspend fun openMonth(state: RecordUiState, month: String): RecordUiState =
-        historyNavigator.openMonth(state, month)
+        openOrCreateMonth(
+            state = state,
+            month = month,
+            statusPrefix = "open month -> $month"
+        )
 
     suspend fun openPreviousMonth(state: RecordUiState): RecordUiState =
         historyNavigator.openPreviousMonth(state)
@@ -107,7 +163,8 @@ class RecordUseCases(
     ): RecordUiState {
         val result = queryGateway.queryActivitySuggestions(
             lookbackDays = lookbackDays,
-            topN = topN
+            topN = topN,
+            anchorDateIso = datePolicy.resolveTargetDateIso(state.logicalDayTarget)
         )
         if (!result.ok) {
             return state.copy(
@@ -126,8 +183,11 @@ class RecordUseCases(
 
     fun clearEditorState(state: RecordUiState): RecordUiState {
         return state.copy(
+            authoringMode = RecordAuthoringMode.POINT,
             recordContent = "",
             recordRemark = "",
+            intervalStart = "",
+            intervalEnd = "",
             logicalDayTarget = datePolicy.defaultLogicalDayTarget(),
             logicalDayIsUserOverride = false,
             historyFiles = emptyList(),
@@ -143,5 +203,79 @@ class RecordUseCases(
             isSuggestionsLoading = false,
             statusText = "TXT editor state reset."
         )
+    }
+
+    private fun isValidHhmm(hhmm: String): Boolean {
+        if (hhmm.length != 4 || !hhmm.all { it.isDigit() }) {
+            return false
+        }
+        val hours = hhmm.substring(0, 2).toIntOrNull() ?: return false
+        val minutes = hhmm.substring(2, 4).toIntOrNull() ?: return false
+        return hours in 0..23 && minutes in 0..59
+    }
+
+    private suspend fun openOrCreateMonth(
+        state: RecordUiState,
+        month: String,
+        statusPrefix: String
+    ): RecordUiState {
+        if (month.isBlank()) {
+            return state
+        }
+
+        val existingOpen = historyNavigator.refreshAndOpenExistingMonth(
+            state = state,
+            month = month,
+            statusPrefix = statusPrefix
+        )
+        if (existingOpen.found) {
+            return existingOpen.state
+        }
+
+        val createResult = recordGateway.createMonthTxt(month)
+        if (!createResult.ok) {
+            return existingOpen.state.copy(statusText = createResult.message)
+        }
+        return historyNavigator.refreshAndOpen(
+            state = existingOpen.state,
+            preferredMonth = month,
+            statusPrefix = createResult.message
+        )
+    }
+
+    private fun resolveRefreshTargetMonth(state: RecordUiState): String {
+        val currentMonth = datePolicy.currentMonthKey()
+        val selectedMonth = state.selectedMonth
+        if (selectedMonth.isBlank()) {
+            return currentMonth
+        }
+        val latestKnownMonth = state.availableMonths.maxOrNull()
+        return if (selectedMonth == latestKnownMonth && currentMonth > selectedMonth) {
+            currentMonth
+        } else {
+            selectedMonth
+        }
+    }
+
+    private fun resolvePreferredTxtPathForRecord(
+        targetDateIso: String?,
+        selectedHistoryFile: String
+    ): String? {
+        val preferredMonth = datePolicy.resolvePreferredMonthForRecord(targetDateIso)
+        val canonicalPath = canonicalTxtPathForMonth(preferredMonth) ?: return null
+        val normalizedSelectedPath = selectedHistoryFile.trim().replace('\\', '/')
+        return normalizedSelectedPath.takeIf { it == canonicalPath }
+    }
+
+    private fun canonicalTxtPathForMonth(monthKey: String): String? {
+        if (!MONTH_KEY_REGEX.matches(monthKey)) {
+            return null
+        }
+        val year = monthKey.substring(0, 4)
+        return "$year/$monthKey.txt"
+    }
+
+    private companion object {
+        private val MONTH_KEY_REGEX = Regex("""\d{4}-\d{2}""")
     }
 }

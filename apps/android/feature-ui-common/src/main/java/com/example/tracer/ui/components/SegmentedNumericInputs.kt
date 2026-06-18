@@ -14,13 +14,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -195,8 +199,18 @@ fun SegmentedMonthDayInput(
     day: String,
     keyboardOptions: KeyboardOptions,
     onMonthChange: (String) -> Unit,
-    onDayChange: (String) -> Unit
+    onDayChange: (String) -> Unit,
+    monthFieldTestTag: String? = null,
+    dayFieldTestTag: String? = null,
+    dayPickerEnabled: Boolean = false,
+    dayPickerDisplayMonth: YearMonth? = null,
+    dayPickerSelectedDate: LocalDate? = null,
+    dayPickerOpenEnabled: Boolean = true,
+    dayPickerAllowAdjacentMonthSelection: Boolean = true,
+    onDayPicked: ((LocalDate) -> Unit)? = null
 ) {
+    var dayPickerVisible by remember { mutableStateOf(false) }
+
     Text(
         text = "$title (MM-DD)",
         style = MaterialTheme.typography.bodyMedium,
@@ -212,7 +226,8 @@ fun SegmentedMonthDayInput(
             onValueChange = { onMonthChange(filterDigits(it, 2)) },
             keyboardOptions = keyboardOptions,
             width = SegmentShortWidth,
-            placeholder = "MM"
+            placeholder = "MM",
+            testTag = monthFieldTestTag
         )
         IsoSeparator("-")
         SegmentNumberField(
@@ -220,7 +235,34 @@ fun SegmentedMonthDayInput(
             onValueChange = { onDayChange(filterDigits(it, 2)) },
             keyboardOptions = keyboardOptions,
             width = SegmentShortWidth,
-            placeholder = "DD"
+            placeholder = "DD",
+            testTag = dayFieldTestTag
+        )
+        if (dayPickerEnabled) {
+            IconButton(
+                onClick = { dayPickerVisible = true },
+                enabled = dayPickerOpenEnabled && dayPickerDisplayMonth != null && onDayPicked != null
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.DateRange,
+                    contentDescription = stringResource(R.string.calendar_cd_select_day)
+                )
+            }
+        }
+    }
+
+    if (
+        dayPickerVisible &&
+        dayPickerDisplayMonth != null &&
+        onDayPicked != null
+    ) {
+        CalendarDatePickerSheet(
+            displayMonth = dayPickerDisplayMonth,
+            selectedDate = dayPickerSelectedDate,
+            onDateSelected = onDayPicked,
+            onDismissRequest = { dayPickerVisible = false },
+            allowAdjacentMonthSelection = dayPickerAllowAdjacentMonthSelection,
+            firstDayOfWeek = DayOfWeek.MONDAY
         )
     }
 }
@@ -231,11 +273,29 @@ private fun SegmentNumberField(
     onValueChange: (String) -> Unit,
     keyboardOptions: KeyboardOptions,
     width: Dp,
-    placeholder: String
+    placeholder: String,
+    testTag: String? = null
 ) {
+    var fieldValue by remember {
+        mutableStateOf(TextFieldValue(text = value, selection = TextRange(value.length)))
+    }
+
+    LaunchedEffect(value) {
+        if (value != fieldValue.text) {
+            fieldValue = TextFieldValue(text = value, selection = TextRange(value.length))
+        }
+    }
+
     OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
+        value = fieldValue,
+        onValueChange = { nextValue ->
+            val filteredText = filterDigits(nextValue.text, placeholder.length)
+            fieldValue = nextValue.copy(
+                text = filteredText,
+                selection = TextRange(filteredText.length)
+            )
+            onValueChange(filteredText)
+        },
         placeholder = {
             Text(
                 text = placeholder,
@@ -251,6 +311,13 @@ private fun SegmentNumberField(
         modifier = Modifier
             .width(width)
             .height(SegmentFieldHeight)
+            .then(
+                if (testTag != null) {
+                    Modifier.testTag(testTag)
+                } else {
+                    Modifier
+                }
+            )
     )
 }
 

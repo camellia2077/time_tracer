@@ -59,7 +59,7 @@ class RecordUseCasesTest {
     }
 
     @Test
-    fun recordNow_clearsActivityAndRemarkAfterFailedInsert() = runTest {
+    fun recordNow_keepsActivityAndRemarkAfterFailedInsert() = runTest {
         val inspectionEntries = listOf(
             TxtInspectionEntry(
                 relativePath = "2026/2026-03.txt",
@@ -103,8 +103,132 @@ class RecordUseCasesTest {
             )
         )
 
+        assertEquals("coding", result.recordContent)
+        assertEquals("ship atomic record", result.recordRemark)
+        assertEquals("record: failed", result.statusText)
+    }
+
+    @Test
+    fun recordInterval_clearsActivityRemarkAndTimesAfterInsert() = runTest {
+        val inspectionEntries = listOf(
+            inspectionEntry("2026/2026-03.txt", "2026-03")
+        )
+        val gateway = FakeRecordGateway(
+            recordIntervalResult = RecordActionResult(
+                ok = true,
+                message = "record interval: ok"
+            )
+        )
+        val useCases = RecordUseCases(
+            recordGateway = gateway,
+            txtStorageGateway = FakeTxtStorageGateway(
+                inspectionResult = TxtInspectionResult(
+                    ok = true,
+                    entries = inspectionEntries,
+                    message = "ok"
+                ),
+                readResults = mapOf(
+                    "2026/2026-03.txt" to txtReadResult("2026/2026-03.txt")
+                )
+            ),
+            queryGateway = FakeQueryGateway()
+        )
+
+        val result = useCases.recordInterval(
+            RecordUiState(
+                authoringMode = RecordAuthoringMode.INTERVAL,
+                recordContent = "study",
+                recordRemark = "focused block",
+                intervalStart = "0900",
+                intervalEnd = "1030",
+                selectedMonth = "2026-03"
+            )
+        )
+
+        assertEquals("0900", gateway.lastIntervalStart)
+        assertEquals("1030", gateway.lastIntervalEnd)
         assertEquals("", result.recordContent)
         assertEquals("", result.recordRemark)
+        assertEquals("", result.intervalStart)
+        assertEquals("", result.intervalEnd)
+    }
+
+    @Test
+    fun recordInterval_invalidHhmmReturnsStableStatus() = runTest {
+        val useCases = RecordUseCases(
+            recordGateway = FakeRecordGateway(),
+            txtStorageGateway = FakeTxtStorageGateway(
+                inspectionResult = TxtInspectionResult(ok = true, entries = emptyList(), message = "ok"),
+                readResults = emptyMap()
+            ),
+            queryGateway = FakeQueryGateway()
+        )
+
+        val result = useCases.recordInterval(
+            RecordUiState(
+                authoringMode = RecordAuthoringMode.INTERVAL,
+                recordContent = "study",
+                intervalStart = "0900",
+                intervalEnd = "2460"
+            )
+        )
+
+        assertEquals("Record blocked: start/end must use HHMM.", result.statusText)
+    }
+
+    @Test
+    fun recordInterval_keepsDraftAfterFailedInsert() = runTest {
+        val useCases = RecordUseCases(
+            recordGateway = FakeRecordGateway(
+                recordIntervalResult = RecordActionResult(
+                    ok = false,
+                    message = "record interval: failed"
+                )
+            ),
+            txtStorageGateway = FakeTxtStorageGateway(
+                inspectionResult = TxtInspectionResult(ok = true, entries = emptyList(), message = "ok"),
+                readResults = emptyMap()
+            ),
+            queryGateway = FakeQueryGateway()
+        )
+
+        val result = useCases.recordInterval(
+            RecordUiState(
+                authoringMode = RecordAuthoringMode.INTERVAL,
+                recordContent = "study",
+                recordRemark = "focused block",
+                intervalStart = "0900",
+                intervalEnd = "1030"
+            )
+        )
+
+        assertEquals("study", result.recordContent)
+        assertEquals("focused block", result.recordRemark)
+        assertEquals("0900", result.intervalStart)
+        assertEquals("1030", result.intervalEnd)
+        assertEquals("record interval: failed", result.statusText)
+    }
+
+    @Test
+    fun loadActivitySuggestions_anchorsToLogicalTargetDate() = runTest {
+        val queryGateway = FakeQueryGateway()
+        val useCases = RecordUseCases(
+            recordGateway = FakeRecordGateway(),
+            txtStorageGateway = FakeTxtStorageGateway(
+                inspectionResult = TxtInspectionResult(ok = true, entries = emptyList(), message = "ok"),
+                readResults = emptyMap()
+            ),
+            queryGateway = queryGateway,
+            clock = fixedClock("2026-03-31T16:30:00Z", "Asia/Shanghai")
+        )
+
+        useCases.loadActivitySuggestions(
+            state = RecordUiState(logicalDayTarget = RecordLogicalDayTarget.YESTERDAY),
+            lookbackDays = 7,
+            topN = 5
+        )
+
+        assertEquals("2026-03-31", queryGateway.lastAnchorDateIso)
     }
 
     @Test
@@ -258,6 +382,189 @@ class RecordUseCasesTest {
     }
 
     @Test
+    fun recordNow_whenMonthRollsOver_doesNotSendStalePreferredTxtPath() = runTest {
+        val gateway = FakeRecordGateway()
+        val useCases = RecordUseCases(
+            recordGateway = gateway,
+            txtStorageGateway = FakeTxtStorageGateway(
+                inspectionResult = TxtInspectionResult(
+                    ok = true,
+                    entries = listOf(
+                        inspectionEntry("2026/2026-05.txt", "2026-05"),
+                        inspectionEntry("2026/2026-06.txt", "2026-06")
+                    ),
+                    message = "ok"
+                ),
+                readResults = mapOf(
+                    "2026/2026-06.txt" to txtReadResult("2026/2026-06.txt")
+                )
+            ),
+            queryGateway = FakeQueryGateway(),
+            clock = fixedClock("2026-05-31T17:30:00Z", "Asia/Shanghai")
+        )
+
+        val result = useCases.recordNow(
+            RecordUiState(
+                recordContent = "coding",
+                logicalDayTarget = RecordLogicalDayTarget.TODAY,
+                selectedMonth = "2026-05",
+                selectedHistoryFile = "2026/2026-05.txt"
+            )
+        )
+
+        assertEquals("2026-06-01", gateway.lastTargetDateIso)
+        assertEquals(null, gateway.lastPreferredTxtPath)
+        assertEquals("2026-06", result.selectedMonth)
+        assertEquals("2026/2026-06.txt", result.selectedHistoryFile)
+    }
+
+    @Test
+    fun recordNow_whenLogicalYesterdayTargetsPreviousMonth_keepsMatchingPreferredTxtPath() = runTest {
+        val gateway = FakeRecordGateway()
+        val useCases = RecordUseCases(
+            recordGateway = gateway,
+            txtStorageGateway = FakeTxtStorageGateway(
+                inspectionResult = TxtInspectionResult(
+                    ok = true,
+                    entries = listOf(
+                        inspectionEntry("2026/2026-05.txt", "2026-05"),
+                        inspectionEntry("2026/2026-06.txt", "2026-06")
+                    ),
+                    message = "ok"
+                ),
+                readResults = mapOf(
+                    "2026/2026-05.txt" to txtReadResult("2026/2026-05.txt")
+                )
+            ),
+            queryGateway = FakeQueryGateway(),
+            clock = fixedClock("2026-05-31T17:30:00Z", "Asia/Shanghai")
+        )
+
+        val result = useCases.recordNow(
+            RecordUiState(
+                recordContent = "coding",
+                logicalDayTarget = RecordLogicalDayTarget.YESTERDAY,
+                selectedMonth = "2026-05",
+                selectedHistoryFile = "2026/2026-05.txt"
+            )
+        )
+
+        assertEquals("2026-05-31", gateway.lastTargetDateIso)
+        assertEquals("2026/2026-05.txt", gateway.lastPreferredTxtPath)
+        assertEquals("2026-05", result.selectedMonth)
+        assertEquals("2026/2026-05.txt", result.selectedHistoryFile)
+    }
+
+    @Test
+    fun recordNow_ignoresNonCanonicalPreferredTxtPathEvenWhenMonthMatches() = runTest {
+        val gateway = FakeRecordGateway()
+        val useCases = RecordUseCases(
+            recordGateway = gateway,
+            txtStorageGateway = FakeTxtStorageGateway(
+                inspectionResult = TxtInspectionResult(
+                    ok = true,
+                    entries = listOf(inspectionEntry("2026/2026-05.txt", "2026-05")),
+                    message = "ok"
+                ),
+                readResults = mapOf(
+                    "2026/2026-05.txt" to txtReadResult("2026/2026-05.txt")
+                )
+            ),
+            queryGateway = FakeQueryGateway(),
+            clock = fixedClock("2026-05-10T01:00:00Z", "Asia/Shanghai")
+        )
+
+        useCases.recordNow(
+            RecordUiState(
+                recordContent = "coding",
+                logicalDayTarget = RecordLogicalDayTarget.TODAY,
+                selectedMonth = "2026-05",
+                selectedHistoryFile = "custom/2026-05.txt"
+            )
+        )
+
+        assertEquals("2026-05-10", gateway.lastTargetDateIso)
+        assertEquals(null, gateway.lastPreferredTxtPath)
+    }
+
+    @Test
+    fun recordInterval_whenMonthRollsOver_doesNotSendStalePreferredTxtPath() = runTest {
+        val gateway = FakeRecordGateway()
+        val useCases = RecordUseCases(
+            recordGateway = gateway,
+            txtStorageGateway = FakeTxtStorageGateway(
+                inspectionResult = TxtInspectionResult(
+                    ok = true,
+                    entries = listOf(
+                        inspectionEntry("2026/2026-05.txt", "2026-05"),
+                        inspectionEntry("2026/2026-06.txt", "2026-06")
+                    ),
+                    message = "ok"
+                ),
+                readResults = mapOf(
+                    "2026/2026-06.txt" to txtReadResult("2026/2026-06.txt")
+                )
+            ),
+            queryGateway = FakeQueryGateway(),
+            clock = fixedClock("2026-05-31T17:30:00Z", "Asia/Shanghai")
+        )
+
+        val result = useCases.recordInterval(
+            RecordUiState(
+                authoringMode = RecordAuthoringMode.INTERVAL,
+                recordContent = "study",
+                intervalStart = "0900",
+                intervalEnd = "1030",
+                logicalDayTarget = RecordLogicalDayTarget.TODAY,
+                selectedMonth = "2026-05",
+                selectedHistoryFile = "2026/2026-05.txt"
+            )
+        )
+
+        assertEquals("2026-06-01", gateway.lastTargetDateIso)
+        assertEquals(null, gateway.lastPreferredTxtPath)
+        assertEquals("2026-06", result.selectedMonth)
+        assertEquals("2026/2026-06.txt", result.selectedHistoryFile)
+    }
+
+    @Test
+    fun recordNow_whenYearRollsOver_doesNotSendStalePreferredTxtPath() = runTest {
+        val gateway = FakeRecordGateway()
+        val useCases = RecordUseCases(
+            recordGateway = gateway,
+            txtStorageGateway = FakeTxtStorageGateway(
+                inspectionResult = TxtInspectionResult(
+                    ok = true,
+                    entries = listOf(
+                        inspectionEntry("2026/2026-12.txt", "2026-12"),
+                        inspectionEntry("2027/2027-01.txt", "2027-01")
+                    ),
+                    message = "ok"
+                ),
+                readResults = mapOf(
+                    "2027/2027-01.txt" to txtReadResult("2027/2027-01.txt")
+                )
+            ),
+            queryGateway = FakeQueryGateway(),
+            clock = fixedClock("2026-12-31T17:30:00Z", "Asia/Shanghai")
+        )
+
+        val result = useCases.recordNow(
+            RecordUiState(
+                recordContent = "coding",
+                logicalDayTarget = RecordLogicalDayTarget.TODAY,
+                selectedMonth = "2026-12",
+                selectedHistoryFile = "2026/2026-12.txt"
+            )
+        )
+
+        assertEquals("2027-01-01", gateway.lastTargetDateIso)
+        assertEquals(null, gateway.lastPreferredTxtPath)
+        assertEquals("2027-01", result.selectedMonth)
+        assertEquals("2027/2027-01.txt", result.selectedHistoryFile)
+    }
+
+    @Test
     fun saveHistoryFileAndSync_usesEditableHistoryContentAsTheOnlySaveSource() = runTest {
         val txtStorageGateway = FakeTxtStorageGateway(
             inspectionResult = TxtInspectionResult(
@@ -364,11 +671,149 @@ class RecordUseCasesTest {
         assertEquals("2026/2026-03.txt", result.selectedHistoryFile)
         assertTrue(result.statusText.startsWith("TXT preview refreshed."))
     }
+
+    @Test
+    fun refreshHistory_whenCurrentMonthIsMissing_createsAndOpensCurrentMonthTxt() = runTest {
+        val gateway = FakeRecordGateway()
+        val initialInspection = TxtInspectionResult(
+            ok = true,
+            entries = listOf(inspectionEntry("2026/2026-04.txt", "2026-04")),
+            message = "ok"
+        )
+        val createdInspection = TxtInspectionResult(
+            ok = true,
+            entries = listOf(
+                inspectionEntry("2026/2026-04.txt", "2026-04"),
+                inspectionEntry("2026/2026-05.txt", "2026-05")
+            ),
+            message = "ok"
+        )
+        val txtStorageGateway = FakeTxtStorageGateway(
+            inspectionResult = initialInspection,
+            readResults = mapOf(
+                "2026/2026-05.txt" to TxtFileContentResult(
+                    ok = true,
+                    filePath = "2026/2026-05.txt",
+                    content = "y2026\nm05\n0501\n",
+                    message = "Read TXT success."
+                )
+            ),
+            inspectionResults = listOf(initialInspection, createdInspection)
+        )
+        val useCases = RecordUseCases(
+            recordGateway = gateway,
+            txtStorageGateway = txtStorageGateway,
+            queryGateway = FakeQueryGateway(),
+            clock = fixedClock("2026-05-01T01:00:00Z", "Asia/Shanghai")
+        )
+
+        val result = useCases.refreshHistory(
+            RecordUiState(
+                availableMonths = listOf("2026-04"),
+                selectedMonth = "2026-04",
+                selectedHistoryFile = "2026/2026-04.txt"
+            )
+        )
+
+        assertEquals("2026-05", gateway.lastCreatedMonth)
+        assertEquals("2026-05", result.selectedMonth)
+        assertEquals("2026/2026-05.txt", result.selectedHistoryFile)
+    }
+
+    @Test
+    fun refreshHistory_whenYearRollsOver_createsAndOpensJanuaryTxt() = runTest {
+        val gateway = FakeRecordGateway()
+        val initialInspection = TxtInspectionResult(
+            ok = true,
+            entries = listOf(inspectionEntry("2026/2026-12.txt", "2026-12")),
+            message = "ok"
+        )
+        val createdInspection = TxtInspectionResult(
+            ok = true,
+            entries = listOf(
+                inspectionEntry("2026/2026-12.txt", "2026-12"),
+                inspectionEntry("2027/2027-01.txt", "2027-01")
+            ),
+            message = "ok"
+        )
+        val txtStorageGateway = FakeTxtStorageGateway(
+            inspectionResult = initialInspection,
+            readResults = mapOf(
+                "2027/2027-01.txt" to TxtFileContentResult(
+                    ok = true,
+                    filePath = "2027/2027-01.txt",
+                    content = "y2027\nm01\n0101\n",
+                    message = "Read TXT success."
+                )
+            ),
+            inspectionResults = listOf(initialInspection, createdInspection)
+        )
+        val useCases = RecordUseCases(
+            recordGateway = gateway,
+            txtStorageGateway = txtStorageGateway,
+            queryGateway = FakeQueryGateway(),
+            clock = fixedClock("2027-01-01T01:00:00Z", "Asia/Shanghai")
+        )
+
+        val result = useCases.refreshHistory(
+            RecordUiState(
+                availableMonths = listOf("2026-12"),
+                selectedMonth = "2026-12",
+                selectedHistoryFile = "2026/2026-12.txt"
+            )
+        )
+
+        assertEquals("2027-01", gateway.lastCreatedMonth)
+        assertEquals("2027-01", result.selectedMonth)
+        assertEquals("2027/2027-01.txt", result.selectedHistoryFile)
+    }
+
+    @Test
+    fun openMonth_whenMonthIsMissing_createsAndOpensTargetMonthTxt() = runTest {
+        val gateway = FakeRecordGateway()
+        val initialInspection = TxtInspectionResult(
+            ok = true,
+            entries = listOf(inspectionEntry("2026/2026-04.txt", "2026-04")),
+            message = "ok"
+        )
+        val createdInspection = TxtInspectionResult(
+            ok = true,
+            entries = listOf(
+                inspectionEntry("2026/2026-04.txt", "2026-04"),
+                inspectionEntry("2026/2026-05.txt", "2026-05")
+            ),
+            message = "ok"
+        )
+        val txtStorageGateway = FakeTxtStorageGateway(
+            inspectionResult = initialInspection,
+            readResults = mapOf(
+                "2026/2026-05.txt" to TxtFileContentResult(
+                    ok = true,
+                    filePath = "2026/2026-05.txt",
+                    content = "y2026\nm05\n0501\n",
+                    message = "Read TXT success."
+                )
+            ),
+            inspectionResults = listOf(initialInspection, createdInspection)
+        )
+        val useCases = RecordUseCases(
+            recordGateway = gateway,
+            txtStorageGateway = txtStorageGateway,
+            queryGateway = FakeQueryGateway()
+        )
+
+        val result = useCases.openMonth(RecordUiState(), "2026-05")
+
+        assertEquals("2026-05", gateway.lastCreatedMonth)
+        assertEquals("2026-05", result.selectedMonth)
+        assertEquals("2026/2026-05.txt", result.selectedHistoryFile)
+    }
 }
 
 private class FakeTxtStorageGateway(
     private val inspectionResult: TxtInspectionResult,
     private val readResults: Map<String, TxtFileContentResult>,
+    private val inspectionResults: List<TxtInspectionResult> = listOf(inspectionResult),
     private val defaultDayMarkerResult: TxtDayMarkerResult = TxtDayMarkerResult(
         ok = true,
         normalizedDayMarker = "0101",
@@ -391,8 +836,13 @@ private class FakeTxtStorageGateway(
 ) : TxtStorageGateway {
     var lastSavedRelativePath: String? = null
     var lastSavedContent: String? = null
+    private var inspectionCallCount = 0
 
-    override suspend fun inspectTxtFiles(): TxtInspectionResult = inspectionResult
+    override suspend fun inspectTxtFiles(): TxtInspectionResult {
+        val index = inspectionCallCount.coerceAtMost(inspectionResults.lastIndex)
+        inspectionCallCount += 1
+        return inspectionResults[index]
+    }
 
     override suspend fun listTxtFiles(): TxtHistoryListResult = TxtHistoryListResult(
         ok = true,
@@ -434,10 +884,18 @@ private class FakeRecordGateway(
     private val recordNowResult: RecordActionResult = RecordActionResult(
         ok = true,
         message = "ok"
+    ),
+    private val recordIntervalResult: RecordActionResult = RecordActionResult(
+        ok = true,
+        message = "ok"
     )
 ) : RecordGateway {
     var lastTargetDateIso: String? = null
     var lastTimeOrderMode: RecordTimeOrderMode? = null
+    var lastIntervalStart: String? = null
+    var lastIntervalEnd: String? = null
+    var lastPreferredTxtPath: String? = null
+    var lastCreatedMonth: String? = null
 
     override suspend fun clearTxt(): ClearTxtResult = ClearTxtResult(
         ok = true,
@@ -452,7 +910,9 @@ private class FakeRecordGateway(
     override suspend fun createMonthTxt(month: String): RecordActionResult = RecordActionResult(
         ok = true,
         message = "ok"
-    )
+    ).also {
+        lastCreatedMonth = month
+    }
 
     override suspend fun recordNow(
         activityName: String,
@@ -462,8 +922,24 @@ private class FakeRecordGateway(
         timeOrderMode: RecordTimeOrderMode
     ): RecordActionResult {
         lastTargetDateIso = targetDateIso
+        lastPreferredTxtPath = preferredTxtPath
         lastTimeOrderMode = timeOrderMode
         return recordNowResult
+    }
+
+    override suspend fun recordInterval(
+        activityName: String,
+        startTime: String,
+        endTime: String,
+        remark: String,
+        targetDateIso: String?,
+        preferredTxtPath: String?
+    ): RecordActionResult {
+        lastTargetDateIso = targetDateIso
+        lastPreferredTxtPath = preferredTxtPath
+        lastIntervalStart = startTime
+        lastIntervalEnd = endTime
+        return recordIntervalResult
     }
 
     override suspend fun syncLiveToDatabase(): NativeCallResult = NativeCallResult(
@@ -474,14 +950,19 @@ private class FakeRecordGateway(
 }
 
 private class FakeQueryGateway : QueryGateway {
+    var lastAnchorDateIso: String? = null
+
     override suspend fun queryActivitySuggestions(
         lookbackDays: Int,
-        topN: Int
+        topN: Int,
+        anchorDateIso: String?
     ): ActivitySuggestionResult = ActivitySuggestionResult(
         ok = true,
         suggestions = emptyList(),
         message = "ok"
-    )
+    ).also {
+        lastAnchorDateIso = anchorDateIso
+    }
 
     override suspend fun queryDayDurations(params: DataDurationQueryParams): DataQueryTextResult =
         DataQueryTextResult(ok = true, outputText = "", message = "ok")

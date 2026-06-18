@@ -8,6 +8,10 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.example.tracer.PersistedRecordInputDraft
+import com.example.tracer.PersistedRecordInputSnapshot
+import com.example.tracer.RecordAuthoringMode
+import com.example.tracer.RecordLogicalDayTarget
 import com.example.tracer.ReportPiePalettePreset
 import com.example.tracer.defaultReportPiePalettePreset
 import kotlinx.coroutines.flow.Flow
@@ -101,6 +105,13 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         val RECORD_QUICK_ACTIVITIES = stringPreferencesKey("record_quick_activities")
         val RECORD_ASSIST_EXPANDED = booleanPreferencesKey("record_assist_expanded")
         val RECORD_ASSIST_SETTINGS_EXPANDED = booleanPreferencesKey("record_assist_settings_expanded")
+        val RECORD_LAST_AUTHORING_MODE = stringPreferencesKey("record_last_authoring_mode")
+        val RECORD_DRAFT_PRESENT = booleanPreferencesKey("record_draft_present")
+        val RECORD_DRAFT_CONTENT = stringPreferencesKey("record_draft_content")
+        val RECORD_DRAFT_REMARK = stringPreferencesKey("record_draft_remark")
+        val RECORD_DRAFT_INTERVAL_START = stringPreferencesKey("record_draft_interval_start")
+        val RECORD_DRAFT_INTERVAL_END = stringPreferencesKey("record_draft_interval_end")
+        val RECORD_DRAFT_LOGICAL_DAY_TARGET = stringPreferencesKey("record_draft_logical_day_target")
         val REPORT_CHART_SHOW_AVERAGE_LINE = booleanPreferencesKey("report_chart_show_average_line")
         val REPORT_PIE_PALETTE_PRESET = stringPreferencesKey("report_pie_palette_preset")
     }
@@ -146,6 +157,33 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             quickActivities = quickActivities,
             assistExpanded = assistExpanded,
             assistSettingsExpanded = assistSettingsExpanded
+        )
+    }
+
+    val recordPersistedInput: Flow<PersistedRecordInputSnapshot> = dataStore.data.map { preferences ->
+        val modeName = preferences[PreferencesKeys.RECORD_LAST_AUTHORING_MODE]
+            ?: RecordAuthoringMode.POINT.name
+        val lastAuthoringMode = runCatching { RecordAuthoringMode.valueOf(modeName) }
+            .getOrDefault(RecordAuthoringMode.POINT)
+        val hasDraft = preferences[PreferencesKeys.RECORD_DRAFT_PRESENT] ?: false
+        val draftLogicalDayName = preferences[PreferencesKeys.RECORD_DRAFT_LOGICAL_DAY_TARGET]
+            ?: RecordLogicalDayTarget.TODAY.name
+        val draftLogicalDayTarget = runCatching { RecordLogicalDayTarget.valueOf(draftLogicalDayName) }
+            .getOrDefault(RecordLogicalDayTarget.TODAY)
+
+        PersistedRecordInputSnapshot(
+            lastAuthoringMode = lastAuthoringMode,
+            draft = if (hasDraft) {
+                PersistedRecordInputDraft(
+                    recordContent = preferences[PreferencesKeys.RECORD_DRAFT_CONTENT].orEmpty(),
+                    recordRemark = preferences[PreferencesKeys.RECORD_DRAFT_REMARK].orEmpty(),
+                    intervalStart = preferences[PreferencesKeys.RECORD_DRAFT_INTERVAL_START].orEmpty(),
+                    intervalEnd = preferences[PreferencesKeys.RECORD_DRAFT_INTERVAL_END].orEmpty(),
+                    logicalDayTarget = draftLogicalDayTarget
+                )
+            } else {
+                null
+            }
         )
     }
 
@@ -220,6 +258,35 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
     suspend fun setRecordAssistSettingsExpanded(value: Boolean) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.RECORD_ASSIST_SETTINGS_EXPANDED] = value
+        }
+    }
+
+    suspend fun setRecordLastAuthoringMode(value: RecordAuthoringMode) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.RECORD_LAST_AUTHORING_MODE] = value.name
+        }
+    }
+
+    suspend fun saveRecordDraft(draft: PersistedRecordInputDraft) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.RECORD_DRAFT_PRESENT] = true
+            preferences[PreferencesKeys.RECORD_DRAFT_CONTENT] = draft.recordContent
+            preferences[PreferencesKeys.RECORD_DRAFT_REMARK] = draft.recordRemark
+            preferences[PreferencesKeys.RECORD_DRAFT_INTERVAL_START] = draft.intervalStart
+            preferences[PreferencesKeys.RECORD_DRAFT_INTERVAL_END] = draft.intervalEnd
+            preferences[PreferencesKeys.RECORD_DRAFT_LOGICAL_DAY_TARGET] =
+                draft.logicalDayTarget.name
+        }
+    }
+
+    suspend fun clearRecordDraft() {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.RECORD_DRAFT_PRESENT] = false
+            preferences.remove(PreferencesKeys.RECORD_DRAFT_CONTENT)
+            preferences.remove(PreferencesKeys.RECORD_DRAFT_REMARK)
+            preferences.remove(PreferencesKeys.RECORD_DRAFT_INTERVAL_START)
+            preferences.remove(PreferencesKeys.RECORD_DRAFT_INTERVAL_END)
+            preferences.remove(PreferencesKeys.RECORD_DRAFT_LOGICAL_DAY_TARGET)
         }
     }
 

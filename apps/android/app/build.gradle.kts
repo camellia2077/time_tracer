@@ -71,7 +71,55 @@ fun readTracerCoreVersion(versionHeader: java.io.File): String {
     return match.groupValues[1]
 }
 
+fun resolveAdbExecutable(localProperties: Properties): String {
+    val adbName =
+        if (System.getProperty("os.name").lowercase().contains("windows")) {
+            "adb.exe"
+        } else {
+            "adb"
+        }
+    val sdkRoots =
+        listOf(
+            providers.environmentVariable("ANDROID_SDK_ROOT").orNull,
+            providers.environmentVariable("ANDROID_HOME").orNull,
+            localProperties.getProperty("sdk.dir"),
+        ).filterNotNull()
+            .map { it.trim() }
+            .filter { it.isNotBlank() }
+    for (sdkRoot in sdkRoots) {
+        val adbCandidate = project.file("$sdkRoot/platform-tools/$adbName")
+        if (adbCandidate.exists()) {
+            return adbCandidate.absolutePath
+        }
+    }
+    return adbName
+}
+
+fun runAdbCommand(
+    adbExecutable: String,
+    logFile: java.io.File,
+    ignoreExitValue: Boolean = false,
+    args: List<String>,
+): String {
+    val process =
+        ProcessBuilder(listOf(adbExecutable) + args)
+            .redirectErrorStream(true)
+            .start()
+    val text = process.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
+    val exitCode = process.waitFor()
+    logFile.parentFile.mkdirs()
+    logFile.writeText(text)
+    if (!ignoreExitValue && exitCode != 0) {
+        throw GradleException(
+            "adb ${args.joinToString(" ")} failed with exit code $exitCode. " +
+                "See ${logFile.absolutePath}.",
+        )
+    }
+    return text
+}
+
 val keystoreProperties = loadOptionalProperties(rootProject.file("keystore.properties"))
+val localProperties = loadOptionalProperties(rootProject.file("local.properties"))
 val androidVersionProperties =
     loadOptionalProperties(rootProject.file("meta/version.properties"))
 val tracerCoreVersionHeader = rootProject.file("../../libs/tracer_core/src/shared/types/version.hpp")
@@ -132,6 +180,8 @@ if (isReleaseTaskRequested && !hasReleaseSigningConfig) {
         """.trimIndent(),
     )
 }
+
+val resolvedAdbExecutable = resolveAdbExecutable(localProperties)
 
 fun variantTaskSuffix(variant: String): String =
     variant.replaceFirstChar { first ->
@@ -219,6 +269,10 @@ android {
         textReport = true
         htmlReport = true
         xmlReport = false
+    }
+
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
     }
 }
 
@@ -357,6 +411,126 @@ val qaRelease by tasks.registering {
     )
 }
 
+val qaReleaseDeviceSmoke by tasks.registering {
+    group = "verification"
+    description =
+        "Install the signed release APK on a connected device and verify that MainActivity launches without an immediate crash."
+    dependsOn(
+        qaRelease,
+        renameReleaseApk,
+    )
+    val releaseApk = renamedReleaseApkDir.map { it.file("Tracer.apk") }
+    val reportDir = layout.buildDirectory.dir("reports/release-startup-smoke")
+    inputs.file(releaseApk)
+    outputs.dir(reportDir)
+    doLast {
+        val apk = releaseApk.get().asFile
+        require(apk.exists()) {
+            "Release APK not found for startup smoke: ${apk.absolutePath}"
+        }
+
+        val outputRoot = reportDir.get().asFile
+        outputRoot.mkdirs()
+        val applicationId = "com.example.tracer"
+        val launchActivity = ".MainActivity"
+        val devicesOutput =
+            runAdbCommand(
+                adbExecutable = resolvedAdbExecutable,
+                logFile = outputRoot.resolve("adb_devices.txt"),
+                args = listOf("devices"),
+            )
+        val attachedDevices =
+            devicesOutput
+                .lineSequence()
+                .map { it.trim() }
+                .filter { it.contains("\tdevice") }
+                .toList()
+        if (attachedDevices.isEmpty()) {
+            throw GradleException(
+                "Release startup smoke requires a connected device or emulator. " +
+                    "See ${outputRoot.resolve("adb_devices.txt").absolutePath}.",
+            )
+        }
+
+        runAdbCommand(
+            adbExecutable = resolvedAdbExecutable,
+            logFile = outputRoot.resolve("adb_start_server.txt"),
+            args = listOf("start-server"),
+        )
+        runAdbCommand(
+            adbExecutable = resolvedAdbExecutable,
+            logFile = outputRoot.resolve("logcat_clear.txt"),
+            args = listOf("logcat", "-c"),
+        )
+        runAdbCommand(
+            adbExecutable = resolvedAdbExecutable,
+            logFile = outputRoot.resolve("install_output.txt"),
+            args = listOf("install", "-r", apk.absolutePath),
+        )
+        runAdbCommand(
+            adbExecutable = resolvedAdbExecutable,
+            logFile = outputRoot.resolve("force_stop.txt"),
+            args = listOf("shell", "am", "force-stop", applicationId),
+        )
+
+        val componentName = "$applicationId/$launchActivity"
+        val startOutput =
+            runAdbCommand(
+                adbExecutable = resolvedAdbExecutable,
+                logFile = outputRoot.resolve("start_output.txt"),
+                args = listOf("shell", "am", "start", "-W", "-n", componentName),
+            )
+        if (!startOutput.contains("Status: ok")) {
+            throw GradleException(
+                "Release startup smoke failed to launch $componentName. " +
+                    "See ${outputRoot.resolve("start_output.txt").absolutePath}.",
+            )
+        }
+
+        Thread.sleep(3000)
+
+        val pidOutput =
+            runAdbCommand(
+                adbExecutable = resolvedAdbExecutable,
+                logFile = outputRoot.resolve("pid_output.txt"),
+                ignoreExitValue = true,
+                args = listOf("shell", "pidof", applicationId),
+            )
+        val logcatOutput =
+            runAdbCommand(
+                adbExecutable = resolvedAdbExecutable,
+                logFile = outputRoot.resolve("logcat_output.txt"),
+                ignoreExitValue = true,
+                args = listOf("logcat", "-d", "-v", "brief"),
+            )
+
+        if (pidOutput.isBlank()) {
+            throw GradleException(
+                "Release startup smoke could not find a live $applicationId process " +
+                    "after launch. See ${outputRoot.resolve("pid_output.txt").absolutePath} " +
+                    "and ${outputRoot.resolve("logcat_output.txt").absolutePath}.",
+            )
+        }
+
+        val packageName = Regex.escape(applicationId)
+        val fatalForApp =
+            Regex("FATAL EXCEPTION(?s:.*)Process:\\s+$packageName", RegexOption.MULTILINE)
+        val androidRuntimeForApp =
+            Regex("AndroidRuntime(?s:.*)Process:\\s+$packageName", RegexOption.MULTILINE)
+        if (
+            fatalForApp.containsMatchIn(logcatOutput) ||
+            androidRuntimeForApp.containsMatchIn(logcatOutput) ||
+            logcatOutput.contains("UnsatisfiedLinkError") ||
+            logcatOutput.contains("JNI_ERR returned from JNI_OnLoad")
+        ) {
+            throw GradleException(
+                "Release startup smoke detected a startup crash for $applicationId. " +
+                    "See ${outputRoot.resolve("logcat_output.txt").absolutePath}.",
+            )
+        }
+    }
+}
+
 tasks.matching { it.name == "assembleRelease" }.configureEach {
     finalizedBy(renameReleaseApk)
 }
@@ -390,6 +564,10 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(platform(libs.androidx.compose.bom))
+    testImplementation(libs.androidx.compose.ui.test.junit4)
+    testImplementation(libs.robolectric)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

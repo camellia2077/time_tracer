@@ -17,6 +17,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.tracer.PersistedRecordInputSnapshot
+import com.example.tracer.data.UserPreferencesRecordInputPersistence
 import kotlinx.coroutines.launch
 
 @Composable
@@ -55,9 +57,17 @@ fun TracerScreen(
             )
         }
     )
+    val recordInputPersistence = remember(userPreferencesRepository) {
+        UserPreferencesRecordInputPersistence(userPreferencesRepository)
+    }
     val recordViewModel: RecordViewModel = viewModel(
-        factory = remember(recordGateway, txtStorageGateway, queryGateway) {
-            RecordViewModelFactory(recordGateway, txtStorageGateway, queryGateway)
+        factory = remember(recordGateway, txtStorageGateway, queryGateway, recordInputPersistence) {
+            RecordViewModelFactory(
+                recordGateway = recordGateway,
+                txtStorageGateway = txtStorageGateway,
+                queryGateway = queryGateway,
+                recordInputPersistence = recordInputPersistence
+            )
         }
     )
     val configViewModel: ConfigViewModel = viewModel(
@@ -82,6 +92,9 @@ fun TracerScreen(
     val reportChartShowAverageLine by userPreferencesRepository.reportChartShowAverageLine.collectAsState(
         initial = com.example.tracer.data.UserPreferencesRepository.DEFAULT_REPORT_CHART_SHOW_AVERAGE_LINE
     )
+    val persistedRecordInput by userPreferencesRepository.recordPersistedInput.collectAsState(
+        initial = null as PersistedRecordInputSnapshot?
+    )
     val reportPiePalettePreset by userPreferencesRepository.reportPiePalettePreset.collectAsState(
         initial = com.example.tracer.data.UserPreferencesRepository.DEFAULT_REPORT_PIE_PALETTE_PRESET
     )
@@ -99,6 +112,7 @@ fun TracerScreen(
 
     SyncTracerScreenRecordPreferences(
         recordSuggestionPreferences = recordSuggestionPreferences,
+        persistedRecordInput = persistedRecordInput,
         recordViewModel = recordViewModel
     )
 
