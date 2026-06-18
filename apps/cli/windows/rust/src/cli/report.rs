@@ -1,5 +1,7 @@
 use clap::{ArgAction, Args, Subcommand, ValueEnum};
 
+use super::ChartArgs;
+
 #[derive(Debug, Clone, Copy, ValueEnum)]
 pub enum ReportFormat {
     Md,
@@ -84,6 +86,8 @@ pub enum ReportCommand {
         long_about = "Export reports to md/tex/typ formats.\n\nDate target rules:\n- day: YYYYMMDD or YYYY-MM-DD, normalized to ISO YYYY-MM-DD before querying and output naming\n- month: YYYYMM or YYYY-MM, normalized to ISO YYYY-MM before querying and output naming\n- range: <from>|<to>, where each side accepts YYYYMMDD or YYYY-MM-DD and is normalized to ISO before querying and output naming\n- recent accepts positive integer days and optional --as-of YYYY-MM-DD to resolve a fixed range window while keeping recent export naming\n- week/year keep their canonical argument forms"
     )]
     Export(ReportExportArgs),
+    #[command(about = "Generate report-chart HTML from database data")]
+    Chart(ChartArgs),
 }
 
 #[derive(Debug, Args)]

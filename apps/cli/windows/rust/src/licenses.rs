@@ -107,7 +107,7 @@ pub const THIRD_PARTY_LICENSES: [ThirdPartyLicenseEntry; 10] = [
 
 pub fn render_project_license() -> String {
     format!(
-        "TimeTracer project license: {PROJECT_LICENSE_NAME}\nLicense URL: {PROJECT_LICENSE_URL}\nRun `licenses` to view third-party dependency license information."
+        "TimeTracer project license: {PROJECT_LICENSE_NAME}\nLicense URL: {PROJECT_LICENSE_URL}\nRun `about licenses` to view third-party dependency license information."
     )
 }
 
@@ -119,7 +119,7 @@ pub fn render_third_party_summary() -> String {
             item.name, item.component, item.license, item.version
         ));
     }
-    lines.push("Run `licenses --full` for detailed third-party license fields.".to_string());
+    lines.push("Run `about licenses --full` for detailed third-party license fields.".to_string());
     lines.join("\n")
 }
 

@@ -40,16 +40,38 @@ python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle
 - `query tree`
 - `report render`
 - `report export`
+- `report chart`
 - `exchange export/import/inspect`
 - `pipeline convert/import/ingest/validate`
 - `txt view-day`
+- `txt append-event`
+- `system doctor`
+- `about licenses`
+- `about tracer`
+- `about motto`
+
+## Report Family
+
+- `report` 是统一的报表能力族。
+- `report render` / `report export` 负责文本报表。
+- `report chart` 负责 HTML 图表呈现。
+- 实现层也已收口到 `apps/cli/windows/rust/src/commands/handlers/report/*`，
+  不再把 chart 作为独立命令族维护。
 
 ## TXT Runtime Family
 
 - `txt view-day` reads a month TXT file locally, then calls the shared
   `tracer_core_runtime_txt_json` runtime family.
+- `txt append-event` also stays on the shared TXT runtime family:
+  - CLI reads the month TXT file locally
+  - resolves the target day block
+  - appends one authored event line in host memory
+  - writes the updated month TXT back through shared `replace_day_block`
 - CLI owns file/path handling and terminal presentation only.
 - Shared month-TXT day-block semantics stay in core.
+- Current authored event lines accepted by core include:
+  - `HHMMtoken`
+  - `HHMM-HHMMtoken`
 - Canonical docs:
   - `docs/time_tracer/presentation/cli/README.md`
   - `docs/time_tracer/core/contracts/text/runtime_txt_day_block_json_contract_v1.md`
@@ -64,11 +86,11 @@ time_tracer_cli report render recent 7 --as-of 2026-03-07 --format md --db <db_p
 time_tracer_cli report export recent 7 --as-of 2026-03-07 --format md --db <db_path> --output <out_dir>
 ```
 
-## Chart Semantics
+## Report Chart Semantics
 
-- `chart --type line|bar|heatmap-*` 使用 trend / daily series 数据。
-- `chart --type pie` 使用 period root breakdown 数据，底层映射到 `report-composition`。
-- `chart --type pie` 不支持 `--root`，因为 breakdown pie 固定展示整个窗口的 root 构成。
+- `report chart --type line|bar|heatmap-*` 使用 trend / daily series 数据。
+- `report chart --type pie` 使用 period root breakdown 数据，底层映射到 `report-composition`。
+- `report chart --type pie` 不支持 `--root`，因为 breakdown pie 固定展示整个窗口的 root 构成。
 
 ## Removed Compat Surface
 
@@ -92,9 +114,10 @@ time_tracer_cli report export recent 7 --as-of 2026-03-07 --format md --db <db_p
    - `apps/cli/windows/rust/src/commands/handlers/pipeline/*`
    - `apps/cli/windows/rust/src/commands/handlers/query/*`
    - `apps/cli/windows/rust/src/commands/handlers/report/*`
+     - `render/export/chart` 全部属于同一个 report family
    - `apps/cli/windows/rust/src/commands/handlers/exchange/*`
    - `apps/cli/windows/rust/src/commands/handlers/txt.rs`
-   - `apps/cli/windows/rust/src/commands/handlers/chart/*`
+   - `apps/cli/windows/rust/src/commands/handlers/report/chart*.rs`
 5. Core ABI 调用
    - `apps/cli/windows/rust/src/core/runtime.rs`
    - `apps/cli/windows/rust/src/core/runtime/*.rs`

@@ -36,13 +36,15 @@ Provide the minimal navigation map for the Windows Rust CLI implementation under
 - `query`
   - semantic data queries and tree presentation
 - `report`
-  - textual render and export flows
+  - textual render/export flows and chart presentation
 - `exchange`
   - tracer exchange package export/import/inspect
-- `chart`
-  - report-chart HTML presenter
-- utility
-  - `doctor`, `licenses`, `tracer`, `motto`
+- `system`
+  - runtime/system inspection commands
+- `about`
+  - `about licenses`, `about tracer`, `about motto`
+- `txt`
+  - shared month-TXT day-block inspection and minimal authored-event append
 
 ## Canonical CLI Surface
 
@@ -50,6 +52,7 @@ Provide the minimal navigation map for the Windows Rust CLI implementation under
 - `query tree`
 - `report render`
 - `report export`
+- `report chart`
 - `exchange export`
 - `exchange import`
 - `exchange inspect`
@@ -57,6 +60,22 @@ Provide the minimal navigation map for the Windows Rust CLI implementation under
 - `pipeline import`
 - `pipeline ingest`
 - `pipeline validate`
+- `txt view-day`
+- `txt append-event`
+- `system doctor`
+- `about licenses`
+- `about tracer`
+- `about motto`
+
+## Current TXT Authored Event Support
+
+- CLI does not own point/interval timeline semantics locally.
+- Source TXT authored events accepted by core include:
+  - `HHMMtoken`
+  - `HHMM-HHMMtoken`
+- `txt view-day` prints the resolved day-block body as-is, including interval lines.
+- `txt append-event` appends one authored event line to an existing day block and
+  persists it through shared TXT `replace_day_block` semantics.
 
 ## Removed Compat Surface
 

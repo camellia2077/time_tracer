@@ -27,11 +27,11 @@ Describe the stable responsibility split for the Windows Rust CLI.
 - `src/commands/handlers/query/*`
   - semantic data query + tree presentation
 - `src/commands/handlers/report/*`
-  - report render/export orchestration and shared report request helpers
+  - report render/export/chart orchestration and shared report request helpers
 - `src/commands/handlers/exchange/*`
   - passphrase/input/output handling for tracer exchange flows
-- `src/commands/handlers/chart/*`
-  - chart presenter logic
+- `src/commands/handlers/report/chart*.rs`
+  - `report chart` presenter logic
 - `src/core/runtime.rs`
   - public Rust-side runtime session boundary
 - `src/core/runtime/invoke.rs`

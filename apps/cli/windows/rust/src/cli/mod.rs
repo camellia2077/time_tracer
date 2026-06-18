@@ -1,5 +1,6 @@
 use clap::{ArgAction, Parser, Subcommand};
 
+mod about;
 mod chart;
 mod doctor;
 mod exchange;
@@ -7,8 +8,10 @@ mod licenses;
 mod pipeline;
 mod query;
 mod report;
+mod system;
 mod txt;
 
+pub use about::{AboutArgs, AboutCommand};
 pub use chart::{ChartArgs, ChartTheme, ChartType};
 pub use doctor::DoctorArgs;
 pub use exchange::{
@@ -29,7 +32,8 @@ pub use report::{
     ReportArgs, ReportCommand, ReportExportArgs, ReportExportPeriod, ReportFormat,
     ReportRenderArgs, ReportRenderPeriod,
 };
-pub use txt::{TxtArgs, TxtCommand, TxtViewDayArgs};
+pub use system::{SystemArgs, SystemCommand};
+pub use txt::{TxtAppendEventArgs, TxtArgs, TxtCommand, TxtViewDayArgs};
 
 #[derive(Debug, Parser)]
 #[command(
@@ -73,24 +77,18 @@ pub struct Cli {
 pub enum Command {
     #[command(about = "Run semantic data and tree queries")]
     Query(QueryArgs),
-    #[command(about = "Generate report-chart HTML from database data")]
-    Chart(ChartArgs),
     #[command(about = "Run pipeline operations against source and processed data")]
     Pipeline(PipelineArgs),
-    #[command(about = "Render and export textual reports")]
+    #[command(about = "Render, export, and chart reports")]
     Report(ReportArgs),
     #[command(about = "Export/import/inspect tracer exchange packages")]
     Exchange(ExchangeArgs),
     #[command(about = "Inspect monthly TXT files through shared day-block semantics")]
     Txt(TxtArgs),
-    #[command(about = "Run runtime dependency/config diagnostics")]
-    Doctor(DoctorArgs),
-    #[command(about = "Print third-party dependency licenses")]
-    Licenses(LicensesArgs),
-    #[command(about = "Print the tracer easter egg line")]
-    Tracer,
-    #[command(about = "Print the project motto easter egg")]
-    Motto,
+    #[command(about = "Run runtime/system inspection commands")]
+    System(SystemArgs),
+    #[command(about = "Print project/about information and easter eggs")]
+    About(AboutArgs),
 }
 
 #[cfg(test)]
@@ -98,9 +96,9 @@ mod tests {
     use clap::{Parser, error::ErrorKind};
 
     use super::{
-        Cli, Command, DataOutputMode, DateCheckMode, ExchangeCommand, PipelineCommand,
-        PipelineValidateCommand, ReportCommand, ReportExportPeriod, ReportRenderPeriod,
-        TxtCommand,
+        AboutCommand, Cli, Command, DataOutputMode, DateCheckMode, ExchangeCommand,
+        PipelineCommand, PipelineValidateCommand, ReportCommand, ReportExportPeriod,
+        ReportRenderPeriod, SystemCommand, TxtCommand,
     };
 
     #[test]
@@ -137,6 +135,7 @@ mod tests {
     fn chart_palette_listing_still_conflicts_with_filters() {
         let error = Cli::try_parse_from([
             "time_tracer_cli",
+            "report",
             "chart",
             "--list-heatmap-palettes",
             "--root",
@@ -243,6 +242,66 @@ mod tests {
     }
 
     #[test]
+    fn txt_append_event_parses_interval_shape() {
+        let cli = Cli::try_parse_from([
+            "time_tracer_cli",
+            "txt",
+            "append-event",
+            "--in",
+            "test/data/2025/2025-01.txt",
+            "--day",
+            "0102",
+            "--start",
+            "0900",
+            "--end",
+            "1030",
+            "--activity",
+            "study",
+            "--remark",
+            "focus",
+        ])
+        .unwrap();
+
+        match cli.command {
+            Command::Txt(args) => match args.command {
+                TxtCommand::AppendEvent(args) => {
+                    assert_eq!(args.input, "test/data/2025/2025-01.txt");
+                    assert_eq!(args.day, "0102");
+                    assert_eq!(args.start.as_deref(), Some("0900"));
+                    assert_eq!(args.end.as_deref(), Some("1030"));
+                    assert_eq!(args.activity, "study");
+                    assert_eq!(args.remark.as_deref(), Some("focus"));
+                }
+                _ => panic!("expected txt append-event command"),
+            },
+            _ => panic!("expected txt command"),
+        }
+    }
+
+    #[test]
+    fn txt_append_event_rejects_point_interval_conflict() {
+        let error = Cli::try_parse_from([
+            "time_tracer_cli",
+            "txt",
+            "append-event",
+            "--in",
+            "test/data/2025/2025-01.txt",
+            "--day",
+            "0102",
+            "--time",
+            "0904",
+            "--start",
+            "0900",
+            "--end",
+            "1030",
+            "--activity",
+            "study",
+        ])
+        .unwrap_err();
+        assert_eq!(error.kind(), ErrorKind::ArgumentConflict);
+    }
+
+    #[test]
     fn pipeline_ingest_still_rejects_conflicting_date_check_flags() {
         let error = Cli::try_parse_from([
             "time_tracer_cli",
@@ -306,6 +365,15 @@ mod tests {
             },
             _ => panic!("expected pipeline command"),
         }
+    }
+
+    #[test]
+    fn pipeline_help_mentions_interval_authored_lines() {
+        let error = Cli::try_parse_from(["time_tracer_cli", "pipeline", "--help"]).unwrap_err();
+        assert_eq!(error.kind(), ErrorKind::DisplayHelp);
+        let help = error.to_string();
+        assert!(help.contains("HHMMtoken"));
+        assert!(help.contains("HHMM-HHMMtoken"));
     }
 
     #[test]
@@ -467,6 +535,80 @@ mod tests {
     fn motto_zen_alias_is_removed() {
         let error = Cli::try_parse_from(["time_tracer_cli", "zen"]).unwrap_err();
         assert_eq!(error.kind(), ErrorKind::InvalidSubcommand);
+    }
+
+    #[test]
+    fn system_doctor_parses_json_flag() {
+        let cli = Cli::try_parse_from(["time_tracer_cli", "system", "doctor", "--json"]).unwrap();
+
+        match cli.command {
+            Command::System(args) => match args.command {
+                SystemCommand::Doctor(args) => assert!(args.json),
+            },
+            _ => panic!("expected system command"),
+        }
+    }
+
+    #[test]
+    fn about_licenses_full_parses_under_about_family() {
+        let cli =
+            Cli::try_parse_from(["time_tracer_cli", "about", "licenses", "--full"]).unwrap();
+
+        match cli.command {
+            Command::About(args) => match args.command {
+                AboutCommand::Licenses(args) => assert!(args.full),
+                _ => panic!("expected about licenses command"),
+            },
+            _ => panic!("expected about command"),
+        }
+    }
+
+    #[test]
+    fn report_chart_parses_under_report_family() {
+        let cli = Cli::try_parse_from([
+            "time_tracer_cli",
+            "report",
+            "chart",
+            "--type",
+            "line",
+            "--from",
+            "20260101",
+            "--to",
+            "20260107",
+        ])
+        .unwrap();
+
+        match cli.command {
+            Command::Report(args) => match args.command {
+                ReportCommand::Chart(args) => {
+                    assert_eq!(args.from.as_deref(), Some("20260101"));
+                    assert_eq!(args.to.as_deref(), Some("20260107"));
+                }
+                _ => panic!("expected report chart command"),
+            },
+            _ => panic!("expected report command"),
+        }
+    }
+
+    #[test]
+    fn legacy_chart_top_level_is_removed() {
+        let error = Cli::try_parse_from(["time_tracer_cli", "chart", "--help"]).unwrap_err();
+        assert_eq!(error.kind(), ErrorKind::InvalidSubcommand);
+    }
+
+    #[test]
+    fn legacy_utility_top_levels_are_removed() {
+        let doctor_error =
+            Cli::try_parse_from(["time_tracer_cli", "doctor", "--help"]).unwrap_err();
+        let licenses_error =
+            Cli::try_parse_from(["time_tracer_cli", "licenses", "--help"]).unwrap_err();
+        let tracer_error = Cli::try_parse_from(["time_tracer_cli", "tracer"]).unwrap_err();
+        let motto_error = Cli::try_parse_from(["time_tracer_cli", "motto"]).unwrap_err();
+
+        assert_eq!(doctor_error.kind(), ErrorKind::InvalidSubcommand);
+        assert_eq!(licenses_error.kind(), ErrorKind::InvalidSubcommand);
+        assert_eq!(tracer_error.kind(), ErrorKind::InvalidSubcommand);
+        assert_eq!(motto_error.kind(), ErrorKind::InvalidSubcommand);
     }
 
     #[test]

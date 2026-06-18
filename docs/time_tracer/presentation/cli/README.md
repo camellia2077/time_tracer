@@ -24,6 +24,15 @@
 2. `apps/cli/windows/rust/runtime/`
 3. `apps/cli/windows/scripts/`
 
+## Report Family
+
+1. `report` is the canonical reporting family in the Windows CLI.
+2. `report render` and `report export` are text-report commands.
+3. `report chart` is the chart-presentation command.
+4. The implementation side follows the same ownership:
+   - `apps/cli/windows/rust/src/commands/handlers/report/*`
+   - `report chart` presenter helpers also live under the same report family.
+
 ## TXT Runtime Family
 
 1. Windows CLI `txt view-day` is a host presentation command over the shared
@@ -68,6 +77,16 @@
    - CLI 会在调用 runtime 前把两端分别归一化为 ISO，再拼成 `YYYY-MM-DD|YYYY-MM-DD`
 4. `report render/export week`、`year`、`recent`
    - 继续使用各自 canonical 参数形式，不做 day/month 风格的紧凑日期归一化
+
+## Report Chart 语义约定
+
+1. `report chart --type line|bar|heatmap-*`
+   - 使用 trend / daily series 数据
+2. `report chart --type pie`
+   - 使用当前时间窗口的 period root breakdown 数据
+   - 底层映射到 `report-composition`
+3. `report chart --type pie` 不允许再带 `--root`
+   - 因为 breakdown pie 固定展示整个窗口的 root 构成
 
 ## Reporting Fixture Range
 

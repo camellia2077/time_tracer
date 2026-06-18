@@ -70,15 +70,12 @@ fn is_unknown_top_level_command(raw_args: &[String]) -> bool {
     !matches!(
         command,
         "query"
-            | "chart"
             | "pipeline"
             | "report"
             | "exchange"
             | "txt"
-            | "doctor"
-            | "licenses"
-            | "tracer"
-            | "motto"
+            | "system"
+            | "about"
     )
 }
 

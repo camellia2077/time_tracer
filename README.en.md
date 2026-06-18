@@ -1,8 +1,15 @@
 [English Version](README.en.md) | [中文版本](README.md)
 
-# time tracer ![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg) [![Windows Build Matrix](https://github.com/camellia2077/time_tracer/actions/workflows/windows-build-matrix.yml/badge.svg)](https://github.com/camellia2077/time_tracer/actions/workflows/windows-build-matrix.yml) [![Android CI](https://github.com/camellia2077/time_tracer/actions/workflows/android-ci.yml/badge.svg)](https://github.com/camellia2077/time_tracer/actions/workflows/android-ci.yml)
+# Time Tracer ![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg) [![Windows Build Matrix](https://github.com/camellia2077/time_tracer/actions/workflows/windows-build-matrix.yml/badge.svg)](https://github.com/camellia2077/time_tracer/actions/workflows/windows-build-matrix.yml) [![Android CI](https://github.com/camellia2077/time_tracer/actions/workflows/android-ci.yml/badge.svg)](https://github.com/camellia2077/time_tracer/actions/workflows/android-ci.yml)
 
-**time tracer** - A personal time tracking and analysis system built with C++23, using plain-text logs as the source of truth and configurable alias mapping to normalize recorded activity tokens into analyzable canonical activity paths.
+<p align="center">
+  <img src="ui/branding/master/time_tracer_brand_master_symbol.svg" alt="Time Tracer Logo" width="120" height="120">
+  <br>
+  <em>Icon designed for camellia2077/time_tracer</em>
+</p>
+
+**Time Tracer** - A personal time tracking and analysis system built with C++23, using plain-text logs as the source of truth and configurable alias mapping to normalize recorded activity tokens into analyzable canonical activity paths.
+
 
 A powerful personal time management toolset designed using **Clean Architecture** principles to provide maximum efficiency, robust data storage, and multi-dimensional analysis.
 It also functions as a personal time ledger system with plain-text logs as the source of truth. Users may write activity tokens in any language, shorthand, or alias form, and the system converts them through configurable mapping into canonical activity semantics for statistics, queries, and reports.

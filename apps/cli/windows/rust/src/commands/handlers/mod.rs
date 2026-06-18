@@ -1,4 +1,3 @@
-pub mod chart;
 pub mod doctor;
 pub mod exchange;
 pub mod licenses;

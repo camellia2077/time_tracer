@@ -12,12 +12,13 @@
    - 负责命令到 handler 的路由，不承载业务逻辑。
 4. 命令实现层：`src/commands/handlers/*.rs`
    - 每个命令独立处理参数组装、调用 runtime、渲染输出。
+   - `report render`、`report export`、`report chart` 共同组成 report family。
 5. Core 适配层：`src/core/runtime.rs`
    - 负责动态加载 `tracer_core.dll` 并调用 C ABI。
 6. 错误模型层：`src/error/mod.rs`
    - 统一 `AppError` 与 `AppExitCode`。
 7. 许可证元数据：`src/licenses.rs`
-   - 负责 `licenses` 与 `licenses --full` 文本来源。
+   - 负责 `about licenses` 与 `about licenses --full` 文本来源。
 8. 运行时资源：`runtime/config/`、`runtime/assets/`
    - 交付时随 CLI 一起复制。
 
@@ -49,6 +50,7 @@
    - `src/cli/mod.rs` 增加子命令定义。
    - `src/commands/mod.rs` 增加路由。
    - `src/commands/handlers/` 增加实现文件。
+   - 若是报表相关能力，优先挂到 `report` family，而不是新增独立顶层命令族。
 2. 改参数校验或帮助文案：
    - `src/cli/mod.rs`
 3. 改 Core 调用或字段映射：
@@ -56,7 +58,7 @@
 4. 改错误码或错误文本：
    - `src/error/mod.rs`
    - `src/main.rs`（解析错误映射）
-5. 改 licenses 输出：
+5. 改 `about licenses` 输出：
    - `src/licenses.rs`
    - `src/commands/handlers/licenses.rs`
 6. 改 `txt view-day` 或 TXT runtime JSON mapping：

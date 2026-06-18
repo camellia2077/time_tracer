@@ -1,3 +1,4 @@
+pub mod chart;
 pub mod export;
 pub mod render;
 pub mod support;
@@ -11,6 +12,7 @@ use crate::commands::handler::{CommandContext, CommandHandler};
 use crate::core::runtime::{CliConfig, CoreApi, RuntimeSession};
 use crate::error::AppError;
 
+use self::chart::ChartHandler;
 use self::export::ExportHandler;
 use self::render::RenderHandler;
 
@@ -106,6 +108,7 @@ impl CommandHandler<ReportArgs> for ReportHandler {
         match args.command {
             ReportCommand::Render(args) => RenderHandler.handle(args, ctx),
             ReportCommand::Export(args) => ExportHandler.handle(args, ctx),
+            ReportCommand::Chart(args) => ChartHandler.handle(args, ctx),
         }
     }
 }

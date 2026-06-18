@@ -2,7 +2,7 @@ use serde_json::Value;
 
 use crate::cli::{ChartArgs, ChartTheme, ChartType};
 
-use super::assets::ChartAssets;
+use super::chart_assets::ChartAssets;
 
 pub(crate) fn build_chart_html(
     args: &ChartArgs,

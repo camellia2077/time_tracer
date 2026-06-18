@@ -1,7 +1,7 @@
 use crate::cli::{ChartArgs, ChartType};
 use crate::error::AppError;
 
-use super::config::HeatmapConfig;
+use super::chart_config::HeatmapConfig;
 
 pub(crate) fn resolve_heatmap_visuals(
     args: &ChartArgs,

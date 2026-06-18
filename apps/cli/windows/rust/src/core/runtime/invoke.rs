@@ -9,7 +9,7 @@ use super::codec::{read_c_json, to_request_json};
 use super::env_flags::log_timing;
 use super::errors::{ErrorContract, format_error_detail, format_tree_error_detail};
 use super::ffi::RuntimeJsonFn;
-use super::{CoreRuntime, TreeResponse, TxtResolveOutput};
+use super::{CoreRuntime, TreeResponse, TxtReplaceOutput, TxtResolveOutput};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) struct ReportWindowMetadata {
@@ -87,6 +87,23 @@ struct TxtResolveResponse {
     day_body: String,
     #[serde(default)]
     day_content_iso_date: Option<String>,
+    #[serde(flatten)]
+    error_contract: ErrorContract,
+}
+
+#[derive(Deserialize)]
+struct TxtReplaceResponse {
+    ok: bool,
+    #[serde(default)]
+    error_message: String,
+    #[serde(default)]
+    normalized_day_marker: String,
+    #[serde(default)]
+    found: bool,
+    #[serde(default)]
+    is_marker_valid: bool,
+    #[serde(default)]
+    updated_content: String,
     #[serde(flatten)]
     error_contract: ErrorContract,
 }
@@ -240,6 +257,29 @@ pub(crate) fn run_txt_resolve_day_block(
         can_save: payload.can_save,
         day_body: payload.day_body,
         day_content_iso_date: payload.day_content_iso_date,
+    })
+}
+
+pub(crate) fn run_txt_replace_day_block(
+    runtime: &CoreRuntime,
+    request: &Value,
+) -> Result<TxtReplaceOutput, AppError> {
+    let run_start = Instant::now();
+    let request_json = to_request_json(request)?;
+    let raw = unsafe { (runtime.api.symbols.runtime_txt)(runtime.handle, request_json.as_ptr()) };
+    let payload = read_c_json::<TxtReplaceResponse>(raw, "txt")?;
+    log_timing("runtime.txt", run_start.elapsed());
+    if !payload.ok {
+        return Err(map_runtime_text_error(
+            payload.error_message,
+            &payload.error_contract,
+        ));
+    }
+    Ok(TxtReplaceOutput {
+        normalized_day_marker: payload.normalized_day_marker,
+        found: payload.found,
+        is_marker_valid: payload.is_marker_valid,
+        updated_content: payload.updated_content,
     })
 }
 

@@ -86,6 +86,9 @@ pub enum PipelineCommand {
 }
 
 #[derive(Debug, Args)]
+#[command(
+    after_help = "Source TXT authored events may be written as HHMMtoken or HHMM-HHMMtoken.\nTimeline validation and ingest semantics remain owned by core runtime."
+)]
 pub struct PipelineArgs {
     #[command(subcommand)]
     pub command: PipelineCommand,

@@ -31,15 +31,16 @@
 ## 5. 命令特定要求
 
 1. `tree/query/export` 帮助和参数错误文本应保持稳定关键字。
-2. `crypto` 输出需保留进度与终态（success/failed/cancelled）语义。
-3. `crypto decrypt` 的成功摘要应表达“事务式完整导入”结果，而不是旧的解包目录语义。
-4. `crypto decrypt` 成功摘要至少应稳定包含：
+2. `report chart` 继续作为 `report` family 的子命令维护；不要把图表呈现重新写回独立顶层命令口径。
+3. `crypto` 输出需保留进度与终态（success/failed/cancelled）语义。
+4. `crypto decrypt` 的成功摘要应表达“事务式完整导入”结果，而不是旧的解包目录语义。
+5. `crypto decrypt` 成功摘要至少应稳定包含：
    - `Updated active text root`
    - `Replaced months`
    - `Preserved local months`
    - `Rebuilt months`
    - `Database rebuilt`
-5. `licenses` 仅保留摘要与 `--full` 详细文本。
+6. `about licenses` 仅保留摘要与 `--full` 详细文本。
 
 ## 6. 变更检查清单
 

@@ -117,7 +117,8 @@ mod tests {
                 remark: None,
                 day_remark: None,
                 root: Some("study".to_string()),
-                overnight: false,
+                cross_midnight_activity: false,
+                missing_wake_anchor: true,
                 exercise: None,
                 status: None,
                 numbers: None,
@@ -140,6 +141,7 @@ mod tests {
         assert_eq!(request["action"], "activity-suggest");
         assert_eq!(request["output_mode"], "json");
         assert_eq!(request["root"], "study");
+        assert_eq!(request["missing_wake_anchor"], true);
         assert_eq!(request["top_n"], 5);
         assert_eq!(request["lookback_days"], 10);
         assert_eq!(request["activity_prefix"], "stu");

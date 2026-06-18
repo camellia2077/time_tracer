@@ -48,8 +48,11 @@ pub(crate) fn run_data_with_port(
     if let Some(v) = args.root {
         request["root"] = json!(v);
     }
-    if args.overnight {
-        request["overnight"] = json!(true);
+    if args.cross_midnight_activity {
+        request["cross_midnight_activity"] = json!(true);
+    }
+    if args.missing_wake_anchor {
+        request["missing_wake_anchor"] = json!(true);
     }
     if let Some(v) = args.exercise {
         request["exercise"] = json!(v);

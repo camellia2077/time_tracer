@@ -41,9 +41,9 @@ pub(crate) fn parse_chart_payload(semantic_payload: &str) -> Result<Value, AppEr
 fn chart_query_action(args: &ChartArgs) -> &'static str {
     match args.chart_type {
         ChartType::Pie => "report-composition",
-        ChartType::Line |
-        ChartType::Bar |
-        ChartType::HeatmapYear |
-        ChartType::HeatmapMonth => "report-chart",
+        ChartType::Line
+        | ChartType::Bar
+        | ChartType::HeatmapYear
+        | ChartType::HeatmapMonth => "report-chart",
     }
 }

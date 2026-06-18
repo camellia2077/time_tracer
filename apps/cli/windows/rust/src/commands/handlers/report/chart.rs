@@ -1,10 +1,16 @@
-mod assets;
-mod config;
-mod render;
-mod request;
-mod visuals;
+#[path = "chart_assets.rs"]
+mod chart_assets;
+#[path = "chart_config.rs"]
+mod chart_config;
+#[path = "chart_render.rs"]
+mod chart_render;
+#[path = "chart_request.rs"]
+mod chart_request;
+#[path = "chart_visuals.rs"]
+mod chart_visuals;
 
-// Orchestration-only handler: validation + flow control, with heavy logic moved into chart/* modules.
+// Orchestration-only handler: validation + flow control, with heavy logic kept
+// inside report/chart_* helpers so `report chart` stays in the report family.
 use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -16,11 +22,11 @@ use crate::commands::handler::{CommandContext, CommandHandler};
 use crate::core::runtime::CoreApi;
 use crate::error::AppError;
 
-use self::assets::load_chart_assets;
-use self::config::load_heatmap_config;
-use self::render::{build_chart_html, chart_type_token};
-use self::request::{build_chart_query_request, parse_chart_payload};
-use self::visuals::resolve_heatmap_visuals;
+use self::chart_assets::load_chart_assets;
+use self::chart_config::load_heatmap_config;
+use self::chart_render::{build_chart_html, chart_type_token};
+use self::chart_request::{build_chart_query_request, parse_chart_payload};
+use self::chart_visuals::resolve_heatmap_visuals;
 
 pub struct ChartHandler;
 
@@ -83,7 +89,7 @@ fn run_chart_with_query_port(
     validate_chart_filters(&args)?;
 
     let request = build_chart_query_request(&args);
-    let semantic_payload = query_port.query_data("chart", ctx, &request)?;
+    let semantic_payload = query_port.query_data("report", ctx, &request)?;
     let payload_json = parse_chart_payload(&semantic_payload)?;
 
     let heatmap_config = load_heatmap_config(&exe_path)?;
@@ -209,7 +215,7 @@ mod tests {
 
         let recorded_commands = recorder.command_names();
         let recorded_requests = recorder.requests();
-        assert_eq!(recorded_commands, vec!["chart".to_string()]);
+        assert_eq!(recorded_commands, vec!["report".to_string()]);
         assert_eq!(recorded_requests.len(), 1);
         assert_eq!(recorded_requests[0]["action"], "report-chart");
         assert_eq!(recorded_requests[0]["output_mode"], "semantic_json");

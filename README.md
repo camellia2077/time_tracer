@@ -1,8 +1,15 @@
 [English Version](README.en.md) | [中文版本](README.md)
 
-# time tracer ![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg) [![Windows Build Matrix](https://github.com/camellia2077/time_tracer/actions/workflows/windows-build-matrix.yml/badge.svg)](https://github.com/camellia2077/time_tracer/actions/workflows/windows-build-matrix.yml) [![Android CI](https://github.com/camellia2077/time_tracer/actions/workflows/android-ci.yml/badge.svg)](https://github.com/camellia2077/time_tracer/actions/workflows/android-ci.yml)
+# Time Tracer ![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg) [![Windows Build Matrix](https://github.com/camellia2077/time_tracer/actions/workflows/windows-build-matrix.yml/badge.svg)](https://github.com/camellia2077/time_tracer/actions/workflows/windows-build-matrix.yml) [![Android CI](https://github.com/camellia2077/time_tracer/actions/workflows/android-ci.yml/badge.svg)](https://github.com/camellia2077/time_tracer/actions/workflows/android-ci.yml)
 
-**time tracer** - 基于 C++23 构建的个人时间追踪与分析系统，以纯文本日志为事实来源，并通过可配置 alias mapping（别名映射）将被记录的活动 token 归一为可统计的规范活动路径。
+<p align="center">
+  <img src="ui/branding/master/time_tracer_brand_master_symbol.svg" alt="Time Tracer Logo" width="120" height="120">
+  <br>
+  <em>Icon designed for camellia2077/time_tracer</em>
+</p>
+
+**Time Tracer** - 基于 C++23 构建的个人时间追踪与分析系统，以纯文本日志为事实来源，并通过可配置 alias mapping（别名映射）将被记录的活动 token 归一为可统计的规范活动路径。
+
 
 这是一套功能强大的个人时间管理工具集，采用 **Clean Architecture** (整洁架构) 设计，旨在提供极致的输入效率、稳健的数据存储以及多维度的可视化分析。
 它也是一套以纯文本日志为事实来源的个人时间账本系统。用户可用任意语言、缩写或别名书写活动 token，系统通过可配置映射将其转换为规范活动语义，并用于统计、查询和报表。

@@ -7,7 +7,8 @@ use serde_json::Value;
 
 use crate::commands::handlers::report::{RenderedReport, ReportWindowMetadata};
 use crate::core::runtime::{
-    CliCommandDefaults, CliConfig, CliDefaults, TreeResponse, TxtResolveOutput,
+    CliCommandDefaults, CliConfig, CliDefaults, TreeResponse, TxtReplaceOutput,
+    TxtResolveOutput,
 };
 use crate::error::AppError;
 
@@ -305,16 +306,29 @@ impl RecordedExchangeSession {
 pub(crate) struct RecordedTxtSession {
     command_names: RefCell<Vec<String>>,
     requests: RefCell<Vec<Value>>,
-    response: TxtResolveOutput,
+    resolve_response: TxtResolveOutput,
+    replace_response: TxtReplaceOutput,
 }
 
 impl RecordedTxtSession {
     pub(crate) fn new(response: TxtResolveOutput) -> Self {
+        let replace_response = TxtReplaceOutput {
+            normalized_day_marker: response.normalized_day_marker.clone(),
+            found: response.found,
+            is_marker_valid: response.is_marker_valid,
+            updated_content: String::new(),
+        };
         Self {
             command_names: RefCell::new(Vec::new()),
             requests: RefCell::new(Vec::new()),
-            response,
+            resolve_response: response,
+            replace_response,
         }
+    }
+
+    pub(crate) fn with_replace_response(mut self, response: TxtReplaceOutput) -> Self {
+        self.replace_response = response;
+        self
     }
 
     pub(crate) fn record_resolve(
@@ -326,7 +340,19 @@ impl RecordedTxtSession {
             .borrow_mut()
             .push(command_name.to_string());
         self.requests.borrow_mut().push(request.clone());
-        Ok(self.response.clone())
+        Ok(self.resolve_response.clone())
+    }
+
+    pub(crate) fn record_replace(
+        &self,
+        command_name: &str,
+        request: &Value,
+    ) -> Result<TxtReplaceOutput, AppError> {
+        self.command_names
+            .borrow_mut()
+            .push(command_name.to_string());
+        self.requests.borrow_mut().push(request.clone());
+        Ok(self.replace_response.clone())
     }
 
     pub(crate) fn command_names(&self) -> Vec<String> {

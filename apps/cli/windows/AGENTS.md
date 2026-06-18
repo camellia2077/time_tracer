@@ -49,7 +49,7 @@ description: Windows Rust CLI capability-family layout, build, and verification 
    - `apps/cli/windows/rust/src/commands/handlers/query/*`
    - `apps/cli/windows/rust/src/commands/handlers/report/*`
    - `apps/cli/windows/rust/src/commands/handlers/exchange/*`
-   - `apps/cli/windows/rust/src/commands/handlers/chart/*`
+   - `apps/cli/windows/rust/src/commands/handlers/report/chart*.rs`
 4. Core C ABI 桥接：
    - `apps/cli/windows/rust/src/core/runtime.rs`
    - `apps/cli/windows/rust/src/core/runtime/*.rs`
@@ -85,8 +85,15 @@ description: Windows Rust CLI capability-family layout, build, and verification 
 - `query tree`
 - `report render`
 - `report export`
+- `report chart`
 - `exchange export/import/inspect`
 - `pipeline convert/import/ingest/validate`
+- `txt view-day`
+- `txt append-event`
+- `system doctor`
+- `about licenses`
+- `about tracer`
+- `about motto`
 
 ## Recent 固定窗口
 
@@ -99,9 +106,9 @@ description: Windows Rust CLI capability-family layout, build, and verification 
 
 ## Chart 语义
 
-- `chart --type line|bar|heatmap-*` 继续走 `report-chart`，语义是 trend / daily series。
-- `chart --type pie` 现已改为走 `report-composition`，语义是 selected period 的 root breakdown。
-- 因为 breakdown pie 固定展示整个时间窗口的 root 构成，`chart --type pie` 不允许再带 `--root`。
+- `report chart --type line|bar|heatmap-*` 继续走 `report-chart`，语义是 trend / daily series。
+- `report chart --type pie` 现已改为走 `report-composition`，语义是 selected period 的 root breakdown。
+- 因为 breakdown pie 固定展示整个时间窗口的 root 构成，`report chart --type pie` 不允许再带 `--root`。
 
 ## Exchange Import 语义
 
