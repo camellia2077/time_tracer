@@ -2,6 +2,7 @@
 #ifndef INFRASTRUCTURE_CONFIG_CONFIG_H_
 #define INFRASTRUCTURE_CONFIG_CONFIG_H_
 
+#include <filesystem>
 #include <optional>
 #include <string>
 #include <toml++/toml.hpp>
@@ -10,11 +11,13 @@
 
 class ConfigLoader {
  public:
-  static std::optional<TomlConfigData> load_from_content(
-      const std::string& settings_content, const std::string& mapping_content);
+  static std::optional<TomlConfigData> load_from_sources(
+      const std::string& settings_content,
+      const std::filesystem::path& alias_mapping_index_path);
 
  private:
-  static bool _parse_mapping_keys(const std::string& content,
+  static bool _parse_mapping_keys(
+      const std::filesystem::path& alias_mapping_index_path,
                                   TomlConfigData& config_data);
   static bool _parse_settings(const std::string& content,
                               TomlConfigData& config_data);

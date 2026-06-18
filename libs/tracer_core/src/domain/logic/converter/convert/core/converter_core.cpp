@@ -31,6 +31,11 @@ auto HasGeneratedOvernightSleep(const DailyLog& day,
           ResolveGeneratedSleepProjectPath(config));
 }
 
+auto ShouldUsePreviousBoundaryForLeadingPoint(const DailyLog& day) -> bool {
+  return day.isContinuation && !day.rawEvents.empty() &&
+         day.rawEvents.front().kind == RawEventKind::Point;
+}
+
 }  // namespace
 
 DayProcessor::DayProcessor(const ConverterConfig& config) : config_(config) {}
@@ -40,7 +45,8 @@ void DayProcessor::Process(DailyLog& previous_day, DailyLog& day_to_process) {
     return;
   }
 
-  if (day_to_process.isContinuation && !previous_day.rawEvents.empty()) {
+  if (ShouldUsePreviousBoundaryForLeadingPoint(day_to_process) &&
+      !previous_day.rawEvents.empty()) {
     day_to_process.getupTime = converter_core_internal::NormalizeTime(
         previous_day.rawEvents.back().endTimeStr);
   }

@@ -42,6 +42,7 @@ struct DayDurationStats {
 struct ActivitySuggestionQueryOptions {
   int lookback_days = kDefaultActivitySuggestionLookbackDays;
   int limit = kDefaultActivitySuggestionLimit;
+  std::optional<std::string> anchor_date;
   std::optional<std::string> prefix;
   bool score_by_duration = false;
 };

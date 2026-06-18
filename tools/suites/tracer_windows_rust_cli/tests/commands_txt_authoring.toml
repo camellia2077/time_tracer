@@ -1,0 +1,184 @@
+# TXT append-event command tests
+
+[[commands]]
+name = "Prepare TXT Append Fixture"
+stage = "txt-authoring"
+raw_command = true
+args = [
+  "python",
+  "-c",
+  "from pathlib import Path; src = Path(r'{data_path}/2025/2025-01.txt'); dst = Path(r'{output_dir}/txt_authoring/2025/2025-01.txt'); dst.parent.mkdir(parents=True, exist_ok=True); dst.write_text(src.read_text(encoding='utf-8'), encoding='utf-8'); print('[PASS] prepared txt append fixture')",
+]
+expect_exit = 0
+expect_stdout_contains = ["[PASS] prepared txt append fixture"]
+expect_files = ["{output_dir}/txt_authoring/2025/2025-01.txt"]
+
+[[commands]]
+name = "TXT Append Interval Event"
+stage = "txt-authoring"
+args = [
+  "txt",
+  "append-event",
+  "--in",
+  "{output_dir}/txt_authoring/2025/2025-01.txt",
+  "--day",
+  "0102",
+  "--start",
+  "2330",
+  "--end",
+  "2359",
+  "--activity",
+  "快递",
+  "--remark",
+  "cli interval",
+]
+expect_exit = 0
+expect_stdout_contains = [
+  "Appended event to 0102",
+  "2330-2359快递 //cli interval",
+]
+expect_file_contains = [
+  "{output_dir}/txt_authoring/2025/2025-01.txt::2330-2359快递 //cli interval",
+]
+
+[[commands]]
+name = "TXT Append Point Event"
+stage = "txt-authoring"
+args = [
+  "txt",
+  "append-event",
+  "--in",
+  "{output_dir}/txt_authoring/2025/2025-01.txt",
+  "--day",
+  "0102",
+  "--time",
+  "0005",
+  "--activity",
+  "bilibili",
+  "--remark",
+  "cli point",
+]
+expect_exit = 0
+expect_stdout_contains = [
+  "Appended event to 0102",
+  "0005bilibili //cli point",
+]
+expect_file_contains = [
+  "{output_dir}/txt_authoring/2025/2025-01.txt::0005bilibili //cli point",
+]
+
+[[commands]]
+name = "TXT View-Day Shows Appended Events"
+stage = "txt-authoring"
+args = ["txt", "view-day", "--in", "{output_dir}/txt_authoring/2025/2025-01.txt", "--day", "0102"]
+expect_exit = 0
+expect_stdout_contains = [
+  "2330-2359快递 //cli interval",
+  "0005bilibili //cli point",
+]
+
+[[commands]]
+name = "TXT Append Event Rejects Invalid Time"
+stage = "txt-authoring"
+args = [
+  "txt",
+  "append-event",
+  "--in",
+  "{output_dir}/txt_authoring/2025/2025-01.txt",
+  "--day",
+  "0102",
+  "--time",
+  "2460",
+  "--activity",
+  "快递",
+]
+expect_exit = 3
+expect_error_code = "cli.invalid_arguments"
+expect_error_category = "cli"
+expect_hints_contains = ["Run command --help to inspect required arguments."]
+expect_stderr_contains = ["--time expects a valid HHMM time"]
+
+[[commands]]
+name = "TXT Append Event Rejects Missing Block"
+stage = "txt-authoring"
+args = [
+  "txt",
+  "append-event",
+  "--in",
+  "{output_dir}/txt_authoring/2025/2025-01.txt",
+  "--day",
+  "0201",
+  "--time",
+  "0900",
+  "--activity",
+  "快递",
+]
+expect_exit = 6
+expect_error_code = "runtime.logic_error"
+expect_error_category = "runtime"
+expect_hints_contains = ["Inspect error_message for detailed reason."]
+expect_stderr_contains = ["Day block 0201 was not found"]
+
+[[commands]]
+name = "Prepare TXT Append Ingest Fixture"
+stage = "txt-authoring"
+raw_command = true
+args = [
+  "python",
+  "-c",
+  "from pathlib import Path; src = Path(r'{output_dir}/txt_authoring/2025/2025-01.txt'); dst = Path(r'{output_dir}/txt_authoring_input/2025/2025-01.txt'); dst.parent.mkdir(parents=True, exist_ok=True); dst.write_text(src.read_text(encoding='utf-8'), encoding='utf-8'); print('[PASS] prepared txt append ingest fixture')",
+]
+expect_exit = 0
+expect_stdout_contains = ["[PASS] prepared txt append ingest fixture"]
+expect_files = ["{output_dir}/txt_authoring_input/2025/2025-01.txt"]
+
+[[commands]]
+name = "TXT Append Pipeline Validate All"
+stage = "txt-authoring"
+args = ["pipeline", "validate", "all", "{output_dir}/txt_authoring_input", "--no-date-check"]
+expect_exit = 0
+
+[[commands]]
+name = "TXT Append Pipeline Ingest"
+stage = "txt-authoring"
+args = [
+  "--db",
+  "{output_dir}/txt_authoring/append.sqlite3",
+  "pipeline",
+  "ingest",
+  "{output_dir}/txt_authoring_input",
+  "--no-date-check",
+]
+expect_exit = 0
+expect_files = ["{output_dir}/txt_authoring/append.sqlite3"]
+
+[[commands]]
+name = "TXT Append Query Data Search Point Remark"
+stage = "txt-authoring"
+args = [
+  "query",
+  "data",
+  "search",
+  "--remark",
+  "cli point",
+  "--db",
+  "{output_dir}/txt_authoring/append.sqlite3",
+]
+expect_exit = 0
+expect_stdout_contains = ["2025-01-02", "Total: 1"]
+
+[[commands]]
+name = "TXT Append Report Render Day"
+stage = "txt-authoring"
+args = [
+  "report",
+  "render",
+  "day",
+  "2025-01-02",
+  "--format",
+  "md",
+  "--db",
+  "{output_dir}/txt_authoring/append.sqlite3",
+]
+expect_exit = 0
+expect_stdout_contains = ["2025-01-02"]

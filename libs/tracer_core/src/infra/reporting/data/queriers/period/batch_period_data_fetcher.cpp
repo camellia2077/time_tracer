@@ -164,7 +164,7 @@ auto BatchPeriodDataFetcher::FetchAllData(const std::vector<int>& days_list)
     for (const auto& flag : raw_day_flags) {
       if (flag.date >= data.start_date) {
         if (flag.sleep != 0) {
-          data.wake_anchor_true_days++;
+          data.wake_anchor_days++;
         }
       }
     }

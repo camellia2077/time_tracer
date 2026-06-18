@@ -10,7 +10,7 @@ auto validate(const TomlConfigData& config_data,
   errors.clear();
   if (config_data.mapped_activities.empty()) {
     errors.emplace_back(
-        "配置错误: 未能从 alias_mapping.toml 中加载到任何活动映射键。");
+        "配置错误: 未能从 converter alias mapping bundle 中加载到任何活动映射键。");
   }
 
   return errors.empty();

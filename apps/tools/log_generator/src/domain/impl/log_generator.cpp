@@ -13,12 +13,14 @@ LogGenerator::LogGenerator(
     const std::optional<DailyRemarkConfig>& remark_config,
     const std::optional<ActivityRemarkConfig>& activity_remark_config,
     const std::vector<std::string>& wake_keywords)
-    : gen_(std::random_device{}())  // 初始化随机数引擎
+    : gen_(config.seed.has_value()
+               ? static_cast<std::mt19937::result_type>(*config.seed)
+               : std::random_device{}())
 {
   // 初始化 DayGenerator
   day_generator_ = std::make_unique<DayGenerator>(
       config.items_per_day, activities, remark_config, activity_remark_config,
-      wake_keywords, gen_);
+      wake_keywords, config.event_style, gen_);
 
   // [新增] 初始化 SleepScheduler，将策略逻辑委托给它
   // 注意：gen_ 的引用传递给了 scheduler，共享同一个随机源

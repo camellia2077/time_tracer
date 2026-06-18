@@ -208,6 +208,12 @@ gradle_tasks = [
     ":app:qaRelease",
 ]
 
+[build.profiles.android_release_device]
+description = "Android release verification on a connected device: release QA plus install-and-launch smoke."
+gradle_tasks = [
+    ":app:qaReleaseDeviceSmoke",
+]
+
 [build.profiles.android_release]
 description = "Android release APK build with native optimization enabled and without QA finalizers."
 gradle_tasks = [":app:assembleRelease"]

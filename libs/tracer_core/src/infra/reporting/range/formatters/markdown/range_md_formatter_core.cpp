@@ -73,7 +73,7 @@ void RangeMdFormatter::FormatHeaderContent(std::string& report_stream,
       FormatRatio(data.status_true_days, data.actual_days));
   report_stream += BuildMarkdownItemLine(
       config_->GetWakeAnchorDaysLabel(),
-      FormatRatio(data.wake_anchor_true_days, data.actual_days));
+      FormatRatio(data.wake_anchor_days, data.actual_days));
   report_stream += BuildMarkdownItemLine(
       config_->GetExerciseDaysLabel(),
       FormatRatio(data.exercise_true_days, data.actual_days));

@@ -40,11 +40,13 @@ struct DataQueryRequest {
   std::optional<std::string> project;
   std::optional<int> exercise;
   std::optional<int> status;
-  bool overnight = false;
+  bool cross_midnight_activity = false;
+  bool missing_wake_anchor = false;
   bool reverse = false;
   std::optional<int> limit;
   std::optional<int> top_n;
   std::optional<int> lookback_days;
+  std::optional<std::string> anchor_date;
   std::optional<std::string> activity_prefix;
   bool activity_score_by_duration = false;
   std::optional<std::string> tree_period;

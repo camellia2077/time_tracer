@@ -280,7 +280,8 @@ auto BuildCliFilters(const tracer_core::core::dto::DataQueryRequest& request)
   }
   filters.exercise = request.exercise;
   filters.status = request.status;
-  filters.overnight = request.overnight;
+  filters.cross_midnight_activity = request.cross_midnight_activity;
+  filters.missing_wake_anchor = request.missing_wake_anchor;
   filters.reverse = request.reverse;
   filters.limit = request.limit;
   return filters;

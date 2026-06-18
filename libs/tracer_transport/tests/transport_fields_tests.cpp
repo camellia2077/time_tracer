@@ -92,11 +92,11 @@ void TestTryReadStringField(int& failures) {
 
 void TestTryReadBoolField(int& failures) {
   const json payload = {
-      {"overnight", true},
+      {"cross_midnight_activity", true},
       {"reverse", "no"},
   };
 
-  const auto ok = TryReadBoolField(payload, "overnight");
+  const auto ok = TryReadBoolField(payload, "cross_midnight_activity");
   Expect(!ok.HasError(), "TryReadBoolField should succeed on bool.", failures);
   Expect(ok.value.has_value() && *ok.value,
          "TryReadBoolField bool value mismatch.", failures);

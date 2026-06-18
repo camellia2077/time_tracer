@@ -2,15 +2,118 @@
 
 # time tracer ![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg) [![Windows Build Matrix](https://github.com/camellia2077/time_tracer/actions/workflows/windows-build-matrix.yml/badge.svg)](https://github.com/camellia2077/time_tracer/actions/workflows/windows-build-matrix.yml) [![Android CI](https://github.com/camellia2077/time_tracer/actions/workflows/android-ci.yml/badge.svg)](https://github.com/camellia2077/time_tracer/actions/workflows/android-ci.yml)
 
-**time tracer** - A personal time tracking and analysis system built with C++23.
+**time tracer** - A personal time tracking and analysis system built with C++23, using plain-text logs as the source of truth and configurable alias mapping to normalize recorded activity tokens into analyzable canonical activity paths.
 
 A powerful personal time management toolset designed using **Clean Architecture** principles to provide maximum efficiency, robust data storage, and multi-dimensional analysis.
+It also functions as a personal time ledger system with plain-text logs as the source of truth. Users may write activity tokens in any language, shorthand, or alias form, and the system converts them through configurable mapping into canonical activity semantics for statistics, queries, and reports.
 
 ### Design Principles (Brief)
 
 1. **Users own their data**: records are stored in readable text, so users can keep, back up, and migrate data without being locked to one app.  
 2. **Fast data editing**: users can directly edit text logs (rename activities, add remarks), then sync to database and reports.  
 3. **One input format across platforms**: CLI, Android, and other clients use the same text input format to minimize switching cost.  
+4. **Authored activity tokens are separate from analytics semantics**: users may write activity tokens in any language, abbreviation, or alias form, and the system normalizes them through configurable alias mapping before query, aggregation, and reporting.  
+
+### Text Input And Alias Mapping Examples
+
+The text log is the source of truth. What users write in TXT is an authored activity token; during ingest, query, and reporting, those tokens are resolved into canonical activity paths.
+
+At the moment, TXT event lines use the `HHMM + activity token` shape:
+
+```text
+0813o
+0406r
+0622rda // rank dva academy skins
+```
+
+#### Routine Activity Example
+
+A corresponding alias child file can look like this:
+
+```toml
+parent = "routine"
+
+[aliases]
+"oral-care" = "oral-hygiene"
+"toothbrushing" = "oral-hygiene"
+"o" = "oral-hygiene"
+```
+
+This means:
+
+* `oral-care`, `toothbrushing`, and `o` all resolve to the same canonical activity path `routine_oral-hygiene`
+* the left-hand side is the activity token the user actually writes, so it may be a full word, shorthand, abbreviation, or any other configured form
+* multiple left-hand keys mapping to the same right-hand leaf is valid and is the intended way to unify analytics semantics
+
+#### Game Activity Example
+
+A deeper hierarchy example:
+
+```toml
+parent = "others"
+
+[aliases]
+"r" = "rest"
+```
+
+```toml
+parent = "games"
+
+[aliases]
+"ow" = "overwatch"
+"mc" = "minecraft"
+
+[aliases.overwatch]
+"owr" = "rank"
+"owrank" = "rank"
+"owq" = "quickplay"
+
+[aliases.overwatch.rank]
+"dva" = "dva"
+"tr" = "tracer"
+
+[aliases.overwatch.rank.dva]
+"rda" = "academy"
+```
+
+These rules expand into canonical activity paths such as:
+
+* `r -> others_rest`
+* `ow -> games_overwatch`
+* `mc -> games_minecraft`
+* `owr` / `owrank -> games_overwatch_rank`
+* `owq -> games_overwatch_quickplay`
+* `dva -> games_overwatch_rank_dva`
+* `tr -> games_overwatch_rank_tracer`
+* `rda -> games_overwatch_rank_dva_academy`
+
+These paths are not only longer names for activity tokens; they also define where each activity sits in the activity tree.
+
+For example, `rda -> games_overwatch_rank_dva_academy` can represent time spent playing Overwatch in ranked mode, on D.Va, using the Academy skin. When a duration is recorded on the leaf node `games_overwatch_rank_dva_academy`, aggregate statistics will also include that same duration in all of its ancestor nodes, including:
+
+* `games_overwatch_rank_dva`
+* `games_overwatch_rank`
+* `games_overwatch`
+* `games`
+
+Because of this, the same source text can support both very fine-grained tracking and higher-level roll-up analysis.
+
+D.Va and the Academy skin are used here not because Overwatch lacks per-hero tracking, but because the example has enough depth to show how alias mapping can attach an authored activity token to a deep leaf node in the activity tree.
+
+From an analytics and query perspective, you can think of this mapping as a weighted activity tree:
+
+* nodes are the activity names along the canonical path
+* weights come from the accumulated duration assigned to each node and its descendants
+* users are free to author convenient tokens, while query/reporting runs on normalized canonical paths
+
+This is an analytics model, not a complete description of the ingest pipeline itself. The main program flow first parses text into normalized activity records and persists them, and only then projects those records into tree-shaped aggregates when a query or report needs that view.
+
+The current alias child-file expansion rule is:
+
+* `parent` provides the top-level canonical segment
+* `[aliases.xxx.yyy]` provides intermediate hierarchy segments
+* the right-hand string provides the leaf segment
+* the final canonical path uses `_` as the separator, for example `games_overwatch_rank_dva_academy`
 
 ### Core Components
 

@@ -5,3 +5,40 @@ name = "Pipeline Validate All"
 stage = "pipeline"
 args = ["pipeline", "validate", "all", "{data_path}", "--no-date-check"]
 expect_exit = 0
+
+[[commands]]
+name = "Pipeline Validate Structure Interval Fixture"
+stage = "pipeline"
+args = [
+  "pipeline",
+  "validate",
+  "structure",
+  "{data_path}/2025/2025-01.txt",
+]
+expect_exit = 0
+
+[[commands]]
+name = "Pipeline Validate Logic Interval Fixture"
+stage = "pipeline"
+args = [
+  "pipeline",
+  "validate",
+  "logic",
+  "{data_path}/2025/2025-01.txt",
+  "--no-date-check",
+]
+expect_exit = 0
+
+[[commands]]
+name = "Pipeline Ingest Interval Fixture"
+stage = "pipeline"
+args = [
+  "--db",
+  "{output_dir}/pipeline/interval.sqlite3",
+  "pipeline",
+  "ingest",
+  "{data_path}",
+  "--no-date-check",
+]
+expect_exit = 0
+expect_files = ["{output_dir}/pipeline/interval.sqlite3"]

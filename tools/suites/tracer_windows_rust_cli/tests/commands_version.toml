@@ -17,11 +17,11 @@ expect_stdout_contains = [
   "Usage: time_tracer_cli.exe [OPTIONS] <COMMAND>",
   "Commands:",
   "query",
-  "chart",
   "pipeline",
   "report",
   "exchange",
-  "licenses",
+  "system",
+  "about",
   "Options:",
   "-v, --version",
   "-h, --help",
@@ -32,39 +32,39 @@ name = "Project License"
 stage = "version"
 args = ["--license"]
 expect_exit = 0
-expect_stdout_contains = ["TimeTracer project license: Apache License 2.0", "Run `licenses`"]
+expect_stdout_contains = ["TimeTracer project license: Apache License 2.0", "Run `about licenses`"]
 
 [[commands]]
 name = "Third-party Licenses Summary"
 stage = "version"
-args = ["licenses"]
+args = ["about", "licenses"]
 expect_exit = 0
 expect_stdout_contains = ["Third-party licenses (summary):", "nlohmann/json", "clap"]
 
 [[commands]]
 name = "Third-party Licenses Full"
 stage = "version"
-args = ["licenses", "--full"]
+args = ["about", "licenses", "--full"]
 expect_exit = 0
 expect_stdout_contains = ["Third-party licenses (full):", "License URL: https://www.apache.org/licenses/LICENSE-2.0"]
 
 [[commands]]
 name = "Tracer Easter Egg"
 stage = "version"
-args = ["tracer"]
+args = ["about", "tracer"]
 expect_exit = 0
 expect_stdout_contains = ["timetracer is here"]
 
 [[commands]]
 name = "Motto Easter Egg"
 stage = "version"
-args = ["motto"]
+args = ["about", "motto"]
 expect_exit = 0
 expect_stdout_contains = ["Trace your time, log your life."]
 
 [[commands]]
 name = "Doctor Check"
 stage = "version"
-args = ["doctor"]
+args = ["system", "doctor"]
 expect_exit = 0
 expect_stdout_contains = ["Runtime Doctor", "Summary: required"]

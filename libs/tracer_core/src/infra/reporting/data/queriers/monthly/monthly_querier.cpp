@@ -115,20 +115,20 @@ auto BatchMonthDataFetcher::FetchAllData()
   std::map<std::string, int> actual_days;
   FetchActualDays(actual_days);
 
-  std::map<std::string, int> sleep_days;
-  FetchSleepDays(sleep_days);
+  std::map<std::string, int> wake_anchor_days;
+  FetchWakeAnchorDays(wake_anchor_days);
 
   reports::data::batch::FinalizeGroupedAggregationWithDays(
       all_months_data, project_agg, actual_days, name_cache);
 
   for (auto& [year_month, data] : all_months_data) {
     auto status_it = status_days.find(year_month);
-    auto sleep_it = sleep_days.find(year_month);
+    auto wake_anchor_it = wake_anchor_days.find(year_month);
     auto exercise_it = exercise_days.find(year_month);
     data.status_true_days =
         (status_it != status_days.end()) ? status_it->second : 0;
-    data.wake_anchor_true_days =
-        (sleep_it != sleep_days.end()) ? sleep_it->second : 0;
+    data.wake_anchor_days =
+        (wake_anchor_it != wake_anchor_days.end()) ? wake_anchor_it->second : 0;
     data.exercise_true_days =
         (exercise_it != exercise_days.end()) ? exercise_it->second : 0;
     auto cardio_it = cardio_days.find(year_month);
@@ -251,8 +251,8 @@ void BatchMonthDataFetcher::FetchActualDays(
 }
 
 // NOLINTBEGIN(bugprone-easily-swappable-parameters)
-void BatchMonthDataFetcher::FetchSleepDays(
-    std::map<std::string, int>& sleep_days) {
+void BatchMonthDataFetcher::FetchWakeAnchorDays(
+    std::map<std::string, int>& wake_anchor_days) {
   sqlite3_stmt* stmt = nullptr;
   const std::string kSql = std::format(
       "SELECT strftime('%Y-%m', {0}) as ym, "
@@ -264,7 +264,7 @@ void BatchMonthDataFetcher::FetchSleepDays(
 
   if (sqlite3_prepare_v2(db_, kSql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
     throw std::runtime_error(
-        "Failed to prepare statement for monthly sleep counts.");
+        "Failed to prepare statement for monthly wake-anchor counts.");
   }
 
   while (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -274,7 +274,7 @@ void BatchMonthDataFetcher::FetchSleepDays(
     }
 
     std::string year_month = reinterpret_cast<const char*>(ym_ptr);
-    sleep_days[year_month] = sqlite3_column_int(stmt, 1);
+    wake_anchor_days[year_month] = sqlite3_column_int(stmt, 1);
   }
   sqlite3_finalize(stmt);
 }

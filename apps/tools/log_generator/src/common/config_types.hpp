@@ -8,6 +8,7 @@
 
 // 生成模式枚举
 enum class GenerationMode { YearRange, SingleYear };
+enum class EventStyle { Point, Interval, Mixed };
 
 // 每日备注配置
 struct DailyRemarkConfig {
@@ -30,6 +31,8 @@ struct Config {
   int end_year;
   int items_per_day;
   GenerationMode mode;
+  EventStyle event_style = EventStyle::Point;
+  std::optional<int> seed;
   bool enable_nosleep = false;
   bool enable_monthly_average_report = false;
   double nosleep_probability = 1.0;
@@ -40,8 +43,9 @@ struct Config {
 struct TomlConfigData {
   // 为了保证生成的数据能被下游 ETL 程序准确识别并入库，
   // 我们不再允许使用未定义的通用活动。
-  // 唯一的活动来源必须是 alias_mapping.toml 中定义的 Keys。
-  // 这是从 alias_mapping.toml 左侧键名解析出的活动列表，是合法的活动全集。
+  // 唯一的活动来源必须是 converter alias mapping bundle 中定义的 alias keys。
+  // 这是从 alias_mapping.toml index + converter/aliases/*.toml 解析出的作者态
+  // token 列表，是合法的活动全集。
   std::vector<std::string> mapped_activities;
 
   std::optional<DailyRemarkConfig> remarks;

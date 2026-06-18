@@ -18,7 +18,8 @@ void PrintUsage(std::string_view prog_name) {
                "range.\n";
   std::cerr << "             Reads configuration from "
                "'config/activities_config.toml'\n";
-  std::cerr << "             and 'config/alias_mapping.toml'.\n\n";
+  std::cerr << "             and 'config/converter/alias_mapping.toml'\n";
+  std::cerr << "             plus 'config/converter/aliases/*.toml'.\n\n";
   std::cerr << GREEN_COLOR << "Options:\n" << RESET_COLOR;
   std::cerr << "  -y, --year <year>       Generate data for a single year.\n";
   std::cerr << "  -s, --start <year>      The starting year for a range. (Used "
@@ -27,6 +28,10 @@ void PrintUsage(std::string_view prog_name) {
                "(inclusive). (Used with --start)\n";
   std::cerr << "  -i, --items <number>    Number of log items per day (must be "
                ">= 2). (Default: 10)\n";
+  std::cerr << "      --seed <int>        Fixed random seed for reproducible "
+               "output.\n";
+  std::cerr << "      --event-style <s>   Event line style: point | interval | "
+               "mixed. (Default: point)\n";
   std::cerr << "  -o, --output <dir>      Output directory for generated "
                "files. (Default: dates)\n";
   std::cerr << "  -n, --nosleep           Enable the generation of 'no sleep' "
@@ -43,6 +48,10 @@ void PrintUsage(std::string_view prog_name) {
             << " --start 2024 --end 2025 --items 5 --nosleep\n";
   std::cerr << "  " << prog_name
             << " --year 2025 --nosleep --monthly-average\n";
+  std::cerr << "  " << prog_name
+            << " --year 2025 --event-style interval\n";
+  std::cerr << "  " << prog_name
+            << " --year 2025 --seed 123 --event-style interval\n";
   std::cerr << "  " << prog_name
             << " --year 2025 --output \"custom_output/dates\"\n";
 }

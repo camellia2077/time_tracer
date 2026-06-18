@@ -80,7 +80,7 @@ using tracer::core::infrastructure::reports::data::stats::IsStudyProjectPath;
 
 struct DayFlagCounts {
   int status_true_days = 0;
-  int wake_anchor_true_days = 0;
+  int wake_anchor_days = 0;
   int exercise_true_days = 0;
   int cardio_true_days = 0;
   int anaerobic_true_days = 0;
@@ -137,7 +137,7 @@ auto LoadWeeklyFlagCounts(sqlite3* sqlite_db)
 
     auto& counts = flag_counts[week_row->week_label];
     if (sqlite3_column_int(flag_stmt, kFlagWakeAnchorColumn) != 0) {
-      counts.wake_anchor_true_days++;
+      counts.wake_anchor_days++;
     }
   }
 
@@ -236,7 +236,7 @@ auto BatchWeekDataFetcher::FetchAllData()
       continue;
     }
     data.status_true_days = static_cast<int>(status_dates[week_label].size());
-    data.wake_anchor_true_days = flag_it->second.wake_anchor_true_days;
+    data.wake_anchor_days = flag_it->second.wake_anchor_days;
     data.exercise_true_days =
         static_cast<int>(exercise_dates[week_label].size());
     data.cardio_true_days = static_cast<int>(cardio_dates[week_label].size());

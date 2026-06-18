@@ -85,6 +85,74 @@ TXT structure validation, TXT logic validation, or ingest validation order:
 2. [Validation error codes](../../docs/time_tracer/core/errors/error-codes.md)
 3. [Core architecture index](../../docs/time_tracer/core/architecture/README.md)
 
+## Current Authored TXT Event Semantics
+
+1. Current ingest accepts two authored event forms:
+   - point event: `HHMMtoken`
+   - interval event: `HHMM-HHMMtoken`
+2. The authored event model is represented as `RawEvent`, which keeps authored
+   facts before canonical activity mapping and record materialization:
+   - point event stores only the authored end boundary
+   - interval event stores explicit authored start/end boundaries
+3. Current semantic meaning:
+   - point event means "this activity ends at `HHMM`"
+   - interval event means "this activity explicitly happened from `start` to `end`"
+   - activity token parsing and canonical mapping stay separate from time
+     semantics
+4. Current mixed-timeline rules:
+   - conversion advances by the last known boundary
+   - point event materializes `last_known_boundary -> point.end`
+   - interval event materializes `interval.start -> interval.end`
+   - after either event, the next boundary becomes the current event end
+5. Current validation rules:
+   - gaps are allowed and remain unrecorded
+   - overlap is invalid
+   - interval must satisfy `start < end` after relative-boundary expansion
+   - wrapped cross-midnight interval chains are allowed when they remain
+     monotonic after expansion
+   - short backward interval ranges are rejected
+   - wake keyword remains point-event-only and must be the first semantic event
+6. This is a current ingest and validation semantic model, not a claim that the
+   entire ingest main flow is "a weighted tree". Tree-style aggregation belongs
+   to downstream statistics/query semantics after records have already been
+   materialized.
+
+## Interval Support Implementation Notes
+
+1. Parser stage:
+   - `TextParser` recognizes both `HHMMtoken` and `HHMM-HHMMtoken`
+   - inline remark extraction stays shared across both forms
+2. Validation stage:
+   - TXT line validation accepts both point and interval syntax
+   - structure/logic validation owns overlap, invalid-range, wake-position, and
+     mixed-timeline checks
+3. Converter stage:
+   - point events still derive duration from the last known boundary
+   - interval events use authored start/end directly
+   - continuation-day behavior remains supported; an explicit first interval may
+     leave a gap from the previous-day boundary
+4. Persistence stage:
+   - processed records remain standard `start/end/duration/project_path/remark`
+     records
+   - interval support in stage 1 does not require a DB schema change
+
+## Interval Test Intent
+
+1. Parser / line-validation tests should cover both point and interval syntax.
+2. Structure tests should cover:
+   - wake as first point event only
+   - point after interval uses the interval end as the next boundary
+   - legal gaps
+   - illegal overlaps
+   - explicit invalid backward intervals
+   - wrapped cross-midnight interval chains
+3. Converter tests should cover:
+   - pure point timelines stay unchanged
+   - pure interval timelines preserve authored start/end
+   - mixed point/interval timelines advance by interval end
+   - cross-midnight intervals preserve wrapped duration
+   - continuation-day first-interval gaps stay unfilled
+
 ## Tests / Semantics Covered
 
 1. `libs/tracer_core/tests/**` 主要保护 core 业务语义与 capability DTO 边界。

@@ -9,15 +9,18 @@ namespace tracer_core::api::android::bridge_internal {
 auto NativeQuery(JNIEnv* env, jobject /*thiz*/, jint action, jint year,
                  jint month, jstring from_date, jstring to_date, jstring remark,
                  jstring day_remark, jstring project, jstring root,
-                 jint exercise, jint status, jboolean overnight,
-                 jboolean reverse, jint limit, jint top_n, jint lookback_days,
+                 jint exercise, jint status, jboolean cross_midnight_activity,
+                 jboolean missing_wake_anchor, jboolean reverse, jint limit,
+                 jint top_n, jint lookback_days, jstring anchor_date,
                  jboolean score_by_duration, jstring tree_period,
                  jstring tree_period_argument, jint tree_max_depth,
                  jstring output_mode) -> jstring {
   return ExecuteJniMethod(env, [&]() -> std::string {
     tt_transport::QueryRequestPayload request_payload{};
     request_payload.action = ParseDataQueryAction(action);
-    request_payload.overnight = (overnight == JNI_TRUE);
+    request_payload.cross_midnight_activity =
+        (cross_midnight_activity == JNI_TRUE);
+    request_payload.missing_wake_anchor = (missing_wake_anchor == JNI_TRUE);
     request_payload.reverse = (reverse == JNI_TRUE);
     request_payload.activity_score_by_duration =
         (score_by_duration == JNI_TRUE);
@@ -66,6 +69,10 @@ auto NativeQuery(JNIEnv* env, jobject /*thiz*/, jint action, jint year,
     }
     if (lookback_days != kUnsetInt) {
       request_payload.lookback_days = static_cast<int>(lookback_days);
+    }
+    if (const auto anchor_date_value = ReadOptionalText(env, anchor_date);
+        anchor_date_value.has_value()) {
+      request_payload.anchor_date = *anchor_date_value;
     }
     if (const auto tree_period_value = ReadOptionalText(env, tree_period);
         tree_period_value.has_value()) {

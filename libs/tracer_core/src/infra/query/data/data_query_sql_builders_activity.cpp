@@ -16,11 +16,15 @@ auto BuildActivitySuggestionsSql(const ActivitySuggestionQueryOptions& options)
   std::string sql;
   sql.reserve(kActivitySuggestionsSqlReserve);
   sql += "WITH latest_record AS (";
-  sql += "  SELECT MAX(tr.";
-  sql += schema::time_records::db::kDate;
-  sql += ") AS max_date FROM ";
-  sql += schema::time_records::db::kTable;
-  sql += " tr";
+  if (options.anchor_date.has_value() && !options.anchor_date->empty()) {
+    sql += "  SELECT ? AS max_date";
+  } else {
+    sql += "  SELECT MAX(tr.";
+    sql += schema::time_records::db::kDate;
+    sql += ") AS max_date FROM ";
+    sql += schema::time_records::db::kTable;
+    sql += " tr";
+  }
   sql += "), scored_records AS (";
   sql += "  SELECT tr.";
   sql += schema::time_records::db::kProjectPathSnapshot;

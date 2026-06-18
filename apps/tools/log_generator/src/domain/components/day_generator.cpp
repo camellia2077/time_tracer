@@ -4,15 +4,19 @@
 #include <format>
 #include <iterator>
 
+#include "domain/formatting/event_line_formatter.hpp"
+
 DayGenerator::DayGenerator(
     int items_per_day, const std::vector<std::string>& activities,
     const std::optional<DailyRemarkConfig>& remark_config,
     const std::optional<ActivityRemarkConfig>& activity_remark_config,
-    const std::vector<std::string>& wake_keywords, std::mt19937& gen) {
+    const std::vector<std::string>& wake_keywords, EventStyle event_style,
+    std::mt19937& gen) {
   // 创建并持有子系统的实例
   remark_generator_ = std::make_unique<RemarkGenerator>(remark_config, gen);
   event_generator_ = std::make_unique<EventGenerator>(
-      items_per_day, activities, activity_remark_config, wake_keywords, gen);
+      items_per_day, activities, activity_remark_config, wake_keywords,
+      event_style, gen);
 }
 
 void DayGenerator::reset_for_new_month() {
@@ -38,5 +42,9 @@ void DayGenerator::generate_for_day(std::string& log_content, int month,
   }
 
   // 3. 委托给 EventGenerator，生成当天的所有活动
-  event_generator_->generate_events_for_day(log_content, is_nosleep_day);
+  const auto events = event_generator_->generate_events_for_day(is_nosleep_day);
+  for (const auto& event : events) {
+    EventLineFormatter::append_formatted_event(log_content, event);
+    log_content.push_back('\n');
+  }
 }

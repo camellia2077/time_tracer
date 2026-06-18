@@ -49,6 +49,18 @@ args = ["query", "data", "search", "--day-remark", "背叛", "--db", "{db_path}"
 expect_exit = 0
 
 [[commands]]
+name = "Query Data Days Cross Midnight Activity"
+stage = "query-data"
+args = ["query", "data", "days", "--cross-midnight-activity", "--db", "{db_path}"]
+expect_exit = 0
+
+[[commands]]
+name = "Query Data Days Missing Wake Anchor"
+stage = "query-data"
+args = ["query", "data", "days", "--missing-wake-anchor", "--db", "{db_path}"]
+expect_exit = 0
+
+[[commands]]
 name = "Query Data Days Stats Day Root"
 stage = "query-data"
 args = ["query", "data", "days-stats", "--period", "day", "--period-arg", "20260103", "--root", "study", "--top", "5", "--db", "{db_path}"]
@@ -129,7 +141,7 @@ expect_json_fields = [
 [[commands]]
 name = "Chart Export Line Html"
 stage = "query-data"
-args = ["chart", "--from", "20260101", "--to", "20260107", "--root", "study", "-o", "{output_dir}/report_chart_study_line.html", "--db", "{db_path}"]
+args = ["report", "chart", "--from", "20260101", "--to", "20260107", "--root", "study", "-o", "{output_dir}/report_chart_study_line.html", "--db", "{db_path}"]
 expect_exit = 0
 expect_stdout_contains = ["Saved chart line HTML:"]
 expect_files = ["{output_dir}/report_chart_study_line.html"]
@@ -142,7 +154,7 @@ expect_file_contains = [
 [[commands]]
 name = "Chart Export Bar Html"
 stage = "query-data"
-args = ["chart", "--from", "20260101", "--to", "20260107", "--root", "study", "--type", "bar", "-o", "{output_dir}/report_chart_study_bar.html", "--db", "{db_path}"]
+args = ["report", "chart", "--from", "20260101", "--to", "20260107", "--root", "study", "--type", "bar", "-o", "{output_dir}/report_chart_study_bar.html", "--db", "{db_path}"]
 expect_exit = 0
 expect_stdout_contains = ["Saved chart bar HTML:"]
 expect_files = ["{output_dir}/report_chart_study_bar.html"]
@@ -155,7 +167,7 @@ expect_file_contains = [
 [[commands]]
 name = "Chart Export Pie Html"
 stage = "query-data"
-args = ["chart", "--from", "20260101", "--to", "20260107", "--type", "pie", "-o", "{output_dir}/report_chart_breakdown_pie.html", "--db", "{db_path}"]
+args = ["report", "chart", "--from", "20260101", "--to", "20260107", "--type", "pie", "-o", "{output_dir}/report_chart_breakdown_pie.html", "--db", "{db_path}"]
 expect_exit = 0
 expect_stdout_contains = ["Saved chart pie HTML:"]
 expect_files = ["{output_dir}/report_chart_breakdown_pie.html"]
@@ -169,7 +181,7 @@ expect_file_contains = [
 [[commands]]
 name = "Chart Export Pie Rejects Root"
 stage = "query-data"
-args = ["chart", "--from", "20260101", "--to", "20260107", "--root", "study", "--type", "pie", "-o", "{output_dir}/report_chart_invalid_pie.html", "--db", "{db_path}"]
+args = ["report", "chart", "--from", "20260101", "--to", "20260107", "--root", "study", "--type", "pie", "-o", "{output_dir}/report_chart_invalid_pie.html", "--db", "{db_path}"]
 # Pie is validated as a full-window breakdown request before the runtime query starts.
 expect_exit = 3
 expect_stderr_contains = ["--type pie renders period root breakdown, so --root is not allowed"]
@@ -177,7 +189,7 @@ expect_stderr_contains = ["--type pie renders period root breakdown, so --root i
 [[commands]]
 name = "Chart Export Heatmap Year Html"
 stage = "query-data"
-args = ["chart", "--from", "20260101", "--to", "20261231", "--root", "study", "--type", "heatmap-year", "-o", "{output_dir}/report_chart_study_heatmap_year.html", "--db", "{db_path}"]
+args = ["report", "chart", "--from", "20260101", "--to", "20261231", "--root", "study", "--type", "heatmap-year", "-o", "{output_dir}/report_chart_study_heatmap_year.html", "--db", "{db_path}"]
 expect_exit = 0
 expect_stdout_contains = ["Saved chart heatmap-year HTML:"]
 expect_files = ["{output_dir}/report_chart_study_heatmap_year.html"]
@@ -191,7 +203,7 @@ expect_file_contains = [
 [[commands]]
 name = "Chart Export Heatmap Month Html"
 stage = "query-data"
-args = ["chart", "--from", "20260101", "--to", "20260131", "--root", "study", "--type", "heatmap-month", "-o", "{output_dir}/report_chart_study_heatmap_month.html", "--db", "{db_path}"]
+args = ["report", "chart", "--from", "20260101", "--to", "20260131", "--root", "study", "--type", "heatmap-month", "-o", "{output_dir}/report_chart_study_heatmap_month.html", "--db", "{db_path}"]
 expect_exit = 0
 expect_stdout_contains = ["Saved chart heatmap-month HTML:"]
 expect_files = ["{output_dir}/report_chart_study_heatmap_month.html"]
@@ -205,7 +217,7 @@ expect_file_contains = [
 [[commands]]
 name = "Chart Export Heatmap Month Html Github Theme"
 stage = "query-data"
-args = ["chart", "--from", "20260101", "--to", "20260131", "--root", "study", "--type", "heatmap-month", "--theme", "github", "-o", "{output_dir}/report_chart_study_heatmap_month_github.html", "--db", "{db_path}"]
+args = ["report", "chart", "--from", "20260101", "--to", "20260131", "--root", "study", "--type", "heatmap-month", "--theme", "github", "-o", "{output_dir}/report_chart_study_heatmap_month_github.html", "--db", "{db_path}"]
 expect_exit = 0
 expect_stdout_contains = ["Saved chart heatmap-month HTML:"]
 expect_files = ["{output_dir}/report_chart_study_heatmap_month_github.html"]
@@ -218,14 +230,14 @@ expect_file_contains = [
 [[commands]]
 name = "Chart List Heatmap Palettes"
 stage = "query-data"
-args = ["chart", "--list-heatmap-palettes", "--db", "{db_path}"]
+args = ["report", "chart", "--list-heatmap-palettes", "--db", "{db_path}"]
 expect_exit = 0
 expect_stdout_contains = ["Heatmap palettes", "GITHUB_GREEN_LIGHT", "LAVA_RED_LIGHT", "default-light"]
 
 [[commands]]
 name = "Chart Export Heatmap Month Html Blue Palette"
 stage = "query-data"
-args = ["chart", "--from", "20260101", "--to", "20260131", "--root", "study", "--type", "heatmap-month", "--heatmap-palette", "BLUE_LIGHT", "-o", "{output_dir}/report_chart_study_heatmap_month_blue.html", "--db", "{db_path}"]
+args = ["report", "chart", "--from", "20260101", "--to", "20260131", "--root", "study", "--type", "heatmap-month", "--heatmap-palette", "BLUE_LIGHT", "-o", "{output_dir}/report_chart_study_heatmap_month_blue.html", "--db", "{db_path}"]
 expect_exit = 0
 expect_stdout_contains = ["Saved chart heatmap-month HTML:"]
 expect_files = ["{output_dir}/report_chart_study_heatmap_month_blue.html"]

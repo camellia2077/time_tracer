@@ -41,6 +41,8 @@ auto SeedDataQueryFixture(sqlite3* database) -> bool {
   constexpr std::string_view kCreateTimeRecordsTable =
       "CREATE TABLE time_records ("
       "  date TEXT NOT NULL,"
+      "  start TEXT NOT NULL DEFAULT '',"
+      "  end TEXT NOT NULL DEFAULT '',"
       "  duration INTEGER NOT NULL,"
       "  project_path_snapshot TEXT,"
       "  activity_remark TEXT"
@@ -51,10 +53,10 @@ auto SeedDataQueryFixture(sqlite3* database) -> bool {
       "('2026-02-02', 2026, 2),"
       "('2026-02-03', 2026, 2);";
   constexpr std::string_view kInsertRecords =
-      "INSERT INTO time_records(date, duration, project_path_snapshot, "
+      "INSERT INTO time_records(date, start, end, duration, project_path_snapshot, "
       "activity_remark) VALUES "
-      "('2026-02-01', 3600, 'study_cpp', ''),"
-      "('2026-02-03', 1800, 'study_cpp', '');";
+      "('2026-02-01', '09:00', '10:00', 3600, 'study_cpp', ''),"
+      "('2026-02-03', '21:00', '22:30', 1800, 'study_cpp', '');";
 
   return ExecuteSql(database, std::string(kCreateDaysTable)) &&
          ExecuteSql(database, std::string(kCreateTimeRecordsTable)) &&

@@ -18,6 +18,8 @@ import tracer.core.domain.logic.validator.common.validator_utils;
 namespace android_runtime_tests {
 namespace {
 
+using RawEventKindType = decltype(RawEvent{}.kind);
+
 using tracer::core::domain::modlogic::validator_common::Error;
 using tracer::core::domain::modlogic::validator_txt::TextValidator;
 
@@ -25,7 +27,9 @@ auto BuildTestConverterConfig() -> ConverterConfig {
   ConverterConfig config;
   config.remark_prefix = "r ";
   config.wake_keywords = {"wake"};
-  config.text_mapping = {{"study", "study"}, {"wake", "wake"}};
+  config.text_mapping = {{"study", "study"},
+                         {"sleep", "sleep"},
+                         {"wake", "wake"}};
   config.top_parent_mapping = {{"study", "study"}};
   config.initial_top_parents = {{"study", "study"}};
   return config;
@@ -78,6 +82,41 @@ auto TestParserPrefersMonthHeader(int& failures) -> void {
   }
   Expect(parsed_days.front().date == "2026-02-01",
          "TextParser should prefer mMM over MMDD month digits.", failures);
+}
+
+auto TestParserSupportsIntervalEventLines(int& failures) -> void {
+  const ConverterConfig kConfig = BuildTestConverterConfig();
+  TextParser parser(kConfig);
+
+  std::istringstream input(
+      "y2026\nm02\n0201\n0641wake\n0900-1030study //focus\n1353sleep\n");
+  std::vector<DailyLog> parsed_days;
+  parser.Parse(
+      input,
+      [&parsed_days](DailyLog& day) -> void { parsed_days.push_back(day); },
+      "interval_sample.txt");
+
+  Expect(parsed_days.size() == 1,
+         "TextParser should parse one day from interval sample.", failures);
+  if (parsed_days.empty() || parsed_days.front().rawEvents.size() != 3) {
+    return;
+  }
+
+  const RawEvent& interval_event = parsed_days.front().rawEvents[1];
+  Expect(interval_event.kind == RawEventKindType::Interval,
+         "Parser should classify HHMM-HHMMtoken as interval event.",
+         failures);
+  Expect(interval_event.startTimeStr.has_value() &&
+             *interval_event.startTimeStr == "0900" &&
+             interval_event.endTimeStr == "1030",
+         "Interval parser should preserve authored start/end times.",
+         failures);
+  Expect(interval_event.remark == "focus",
+         "Interval parser should preserve inline remarks.", failures);
+
+  const RawEvent& point_event = parsed_days.front().rawEvents[2];
+  Expect(point_event.kind == RawEventKindType::Point,
+         "Parser should keep HHMMtoken as point event.", failures);
 }
 
 auto TestParserRejectsMissingMonthHeader(int& failures) -> void {
@@ -229,15 +268,78 @@ auto TestValidatorRejectsMonthConflicts(int& failures) -> void {
          "Late month header error should explain ordering rule.", failures);
 }
 
+auto TestValidatorSupportsIntervalEventLines(int& failures) -> void {
+  const ConverterConfig kConfig = BuildTestConverterConfig();
+  TextValidator text_validator(kConfig);
+
+  std::set<Error> interval_errors;
+  const bool kIntervalOk = text_validator.Validate(
+      "interval_ok.txt", "y2026\nm02\n0201\n0641wake\n0900-1030study\n",
+      interval_errors);
+  Expect(kIntervalOk && interval_errors.empty(),
+         "TextValidator should accept interval event lines.", failures);
+
+  std::set<Error> missing_activity_errors;
+  const bool kMissingActivityOk = text_validator.Validate(
+      "interval_missing_activity.txt", "y2026\nm02\n0201\n0900-1030\n",
+      missing_activity_errors);
+  Expect(!kMissingActivityOk,
+         "TextValidator should reject interval lines without an activity token.",
+         failures);
+
+  std::set<Error> invalid_time_errors;
+  const bool kInvalidTimeOk = text_validator.Validate(
+      "interval_bad_time.txt", "y2026\nm02\n0201\n0900-2460study\n",
+      invalid_time_errors);
+  Expect(!kInvalidTimeOk,
+         "TextValidator should reject interval lines with invalid HHMM values.",
+         failures);
+
+  std::set<Error> unknown_interval_errors;
+  const bool kUnknownIntervalOk = text_validator.Validate(
+      "interval_unknown.txt", "y2026\nm02\n0201\n0900-1030unknown\n",
+      unknown_interval_errors);
+  Expect(!kUnknownIntervalOk,
+         "TextValidator should reject unknown interval activities semantically.",
+         failures);
+  Expect(Contains(CollectErrorMessages(unknown_interval_errors),
+                  "Unrecognized activity 'unknown'"),
+         "Unknown interval activity should keep semantic validation wording.",
+         failures);
+}
+
+auto TestValidatorReadsIntervalFixture(int& failures) -> void {
+  const ConverterConfig kConfig = BuildTestConverterConfig();
+  TextValidator text_validator(kConfig);
+
+  const std::string fixture_text = ReadFixtureText(
+      "test/fixtures/text/minimal_month/2026-01.interval_day.txt");
+  Expect(!fixture_text.empty(),
+         "interval-day fixture should be readable from test/fixtures.",
+         failures);
+  if (fixture_text.empty()) {
+    return;
+  }
+
+  std::set<Error> errors;
+  const bool ok = text_validator.Validate("2026-01.interval_day.txt",
+                                          fixture_text, errors);
+  Expect(ok && errors.empty(),
+         "TextValidator should accept the interval-day fixture.", failures);
+}
+
 }  // namespace
 
 auto RunTxtMonthHeaderTests(int& failures) -> void {
   TestParserPrefersMonthHeader(failures);
+  TestParserSupportsIntervalEventLines(failures);
   TestParserRejectsMissingMonthHeader(failures);
   TestParserRejectsMissingMonthHeaderFixture(failures);
   TestValidatorRequiresMonthHeader(failures);
   TestValidatorRequiresMonthHeaderFixture(failures);
   TestValidatorRejectsMonthConflicts(failures);
+  TestValidatorSupportsIntervalEventLines(failures);
+  TestValidatorReadsIntervalFixture(failures);
 }
 
 }  // namespace android_runtime_tests

@@ -123,8 +123,8 @@ auto TestAdapterBoundaryGuardrails(int& failures) -> void {
            "variance_seconds", "stddev_seconds", "mad_seconds"},
       },
       {
-          "apps/cli/windows/rust/src/commands/handlers/chart/"
-          "request.rs",
+          "apps/cli/windows/rust/src/commands/handlers/report/"
+          "chart_request.rs",
           {"ComputeDayDurationStats(", "BuildReportChartSeries(",
            "ResolveExplicitDateRange(", "ResolveRollingDateRange(",
            "variance_seconds", "stddev_seconds", "mad_seconds"},

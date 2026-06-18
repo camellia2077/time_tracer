@@ -19,12 +19,12 @@ auto ConfigHandler::load(const Config& config,
 
   std::filesystem::path settings_path =
       exe_dir / "config" / "activities_config.toml";
-  std::filesystem::path alias_mapping_path =
-      exe_dir / "config" / "alias_mapping.toml";
+  std::filesystem::path alias_mapping_index_path =
+      exe_dir / "config" / "converter" / "alias_mapping.toml";
 
-  auto alias_mapping_content_opt = file_system_.read_file(alias_mapping_path);
-  if (!alias_mapping_content_opt) {
-    std::cerr << RED_COLOR << "Critical: Failed to read alias mapping config."
+  if (!std::filesystem::exists(alias_mapping_index_path)) {
+    std::cerr << RED_COLOR
+              << "Critical: Failed to locate converter alias mapping index."
               << RESET_COLOR << std::endl;
     return std::nullopt;
   }
@@ -37,8 +37,8 @@ auto ConfigHandler::load(const Config& config,
   }
 
   auto toml_configs_opt =
-      ConfigLoader::load_from_content(*settings_content_opt,
-                                      *alias_mapping_content_opt);
+      ConfigLoader::load_from_sources(*settings_content_opt,
+                                      alias_mapping_index_path);
   if (!toml_configs_opt) {
     std::cerr << RED_COLOR << "Config parse failed. Exiting." << RESET_COLOR
               << std::endl;
@@ -48,7 +48,8 @@ auto ConfigHandler::load(const Config& config,
   context.all_activities = toml_configs_opt->mapped_activities;
   if (context.all_activities.empty()) {
     std::cerr << RED_COLOR
-              << "Critical: No mapped activities found in alias_mapping.toml."
+              << "Critical: No mapped activities found in converter alias "
+                 "mapping bundle."
               << RESET_COLOR << std::endl;
     return std::nullopt;
   }

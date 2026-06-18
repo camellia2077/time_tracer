@@ -42,6 +42,8 @@ auto BuildStatsSampleRows() -> std::vector<DayDurationRow> {
 }
 
 auto BuildSparseReportChartRows() -> std::vector<DayDurationRow> {
+  // Sparse interval recording: the missing middle date and any unrecorded gaps
+  // inside recorded days must remain zero time, not inferred activity.
   return {
       {.date = "2026-02-01", .total_seconds = kDuration3600},
       {.date = "2026-02-03", .total_seconds = kDuration1800},
@@ -102,13 +104,18 @@ auto TestReportChartSeriesCalculator(int& failures) -> void {
            "report chart epoch_day should remain contiguous.", failures);
   }
   Expect(kResult.stats.total_duration_seconds == kDuration5400,
-         "report chart total duration should match sum.", failures);
+         "report chart total duration should sum recorded interval durations only.",
+         failures);
   Expect(kResult.stats.active_days == 2,
          "report chart active days should count non-zero days.", failures);
   Expect(kResult.stats.range_days == 3,
          "report chart range_days should cover inclusive interval.", failures);
   Expect(kResult.stats.average_duration_seconds == kDuration1800,
-         "report chart average should use range_days denominator.", failures);
+         "report chart average should use calendar range_days denominator.",
+         failures);
+  Expect(kResult.stats.total_duration_seconds < (3LL * 24LL * 60LL * 60LL),
+         "sparse interval recorded duration may be less than calendar span.",
+         failures);
 }
 
 auto TestSemanticDayStatsSnapshot(int& failures) -> void {
@@ -285,6 +292,12 @@ auto CheckReportChartOrchestratorSemanticSnapshot(sqlite3* database,
   Expect(kChartPayload.value("range_days", -1) == 3,
          "report-chart orchestrator semantic snapshot should keep range_days.",
          failures);
+  Expect(!kChartPayload.contains("recorded_coverage_ratio"),
+         "report-chart semantic snapshot should not expose recorded_coverage_ratio yet.",
+         failures);
+  Expect(!kChartPayload.contains("calendar_span_seconds"),
+         "report-chart semantic snapshot should not expose calendar span output yet.",
+         failures);
   const auto kChartSeriesIt = kChartPayload.find("series");
   const bool kHasChartSeries =
       kChartSeriesIt != kChartPayload.end() && kChartSeriesIt->is_array();
@@ -368,10 +381,10 @@ auto CheckReportCompositionOrchestratorSemanticSnapshot(sqlite3* database,
              "report_composition",
          "report-composition orchestrator semantic snapshot should keep action.",
          failures);
-  Expect(kCompositionPayload.value("active_root_count", -1) == 2,
+  Expect(kCompositionPayload.value("active_root_count", -1) == 1,
          "report-composition orchestrator should count active roots.",
          failures);
-  Expect(kCompositionPayload.value("total_duration_seconds", -1LL) == 9000LL,
+  Expect(kCompositionPayload.value("total_duration_seconds", -1LL) == 5400LL,
          "report-composition orchestrator should keep total duration.",
          failures);
   Expect(kCompositionPayload.value("range_days", -1) == 3,
@@ -383,21 +396,15 @@ auto CheckReportCompositionOrchestratorSemanticSnapshot(sqlite3* database,
          "report-composition orchestrator semantic snapshot should include slices array.",
          failures);
   if (kHasSlices) {
-    Expect(kSlicesIt->size() == 2U,
+    Expect(kSlicesIt->size() == 1U,
            "report-composition orchestrator should emit one slice per active root.",
            failures);
-    if (kSlicesIt->size() >= 2U) {
+    if (kSlicesIt->size() >= 1U) {
       Expect((*kSlicesIt)[0].value("root", std::string{}) == "study",
              "report-composition should sort slices by descending duration.",
              failures);
       Expect((*kSlicesIt)[0].value("duration_seconds", -1LL) == 5400LL,
              "report-composition first slice should keep study duration.",
-             failures);
-      Expect((*kSlicesIt)[1].value("root", std::string{}) == "sleep",
-             "report-composition second slice should keep sleep root.",
-             failures);
-      Expect((*kSlicesIt)[1].value("duration_seconds", -1LL) == 3600LL,
-             "report-composition second slice should keep sleep duration.",
              failures);
     }
   }
@@ -482,6 +489,101 @@ auto TestDerivedStatusExerciseFilters(int& failures) -> void {
              kExerciseFalseDates[0] == "2026-02-01" &&
              kExerciseFalseDates[1] == "2026-02-03",
          "exercise=false filter should exclude exercise days.", failures);
+}
+
+auto TestCrossMidnightActivityFilterUsesTimeline(int& failures) -> void {
+  const auto kDatabase = OpenInMemoryDatabase();
+  Expect(kDatabase != nullptr,
+         "cross-midnight activity filter test should open sqlite database.",
+         failures);
+  if (kDatabase == nullptr) {
+    return;
+  }
+
+  const bool kCreatedDays = ExecuteSql(kDatabase.get(),
+                                       "CREATE TABLE days ("
+                                       "date TEXT PRIMARY KEY,"
+                                       "year INTEGER NOT NULL,"
+                                       "month INTEGER NOT NULL,"
+                                       "sleep INTEGER NOT NULL DEFAULT 0,"
+                                       "remark TEXT NOT NULL DEFAULT '',"
+                                       "getup_time TEXT"
+                                       ");");
+  const bool kCreatedRecords = ExecuteSql(kDatabase.get(),
+                                          "CREATE TABLE time_records ("
+                                          "date TEXT NOT NULL,"
+                                          "start TEXT NOT NULL DEFAULT '',"
+                                          "end TEXT NOT NULL DEFAULT '',"
+                                          "duration INTEGER NOT NULL,"
+                                          "project_path_snapshot TEXT,"
+                                          "activity_remark TEXT"
+                                          ");");
+  const bool kSeededDays = ExecuteSql(
+      kDatabase.get(),
+      "INSERT INTO days(date, year, month, sleep, remark, getup_time) VALUES "
+      "('2026-02-01', 2026, 2, 0, '', ''),"
+      "('2026-02-02', 2026, 2, 1, '', '07:30'),"
+      "('2026-02-03', 2026, 2, 0, '', ''),"
+      "('2026-02-04', 2026, 2, 0, '', '00:00');");
+  const bool kSeededRecords = ExecuteSql(
+      kDatabase.get(),
+      "INSERT INTO time_records(date, start, end, duration, "
+      "project_path_snapshot, activity_remark) VALUES "
+      "('2026-02-01', '21:32', '01:35', 14580, 'study_late', ''),"
+      "('2026-02-02', '09:00', '10:00', 3600, 'study_cpp', ''),"
+      "('2026-02-02', '21:00', '22:30', 5400, 'sleep_night', ''),"
+      "('2026-02-03', '09:00', '10:00', 3600, 'study_cpp', ''),"
+      "('2026-02-04', '09:00', '10:00', 3600, 'study_cpp', '');");
+  Expect(kCreatedDays && kCreatedRecords && kSeededDays && kSeededRecords,
+         "cross-midnight activity filter test should seed sqlite fixture.",
+         failures);
+  if (!(kCreatedDays && kCreatedRecords && kSeededDays && kSeededRecords)) {
+    return;
+  }
+
+  QueryFilters cross_midnight_activity_filters;
+  cross_midnight_activity_filters.cross_midnight_activity = true;
+  const auto kCrossMidnightActivityDates = data_query::QueryDatesByFilters(
+      kDatabase.get(), cross_midnight_activity_filters);
+  Expect(kCrossMidnightActivityDates.size() == 1U &&
+             kCrossMidnightActivityDates.front() == "2026-02-01",
+         "cross-midnight activity filter should match only days with an activity interval crossing 00:00.",
+         failures);
+
+  const auto kCrossMidnightActivityDurations = data_query::QueryDayDurations(
+      kDatabase.get(), cross_midnight_activity_filters);
+  Expect(kCrossMidnightActivityDurations.size() == 1U &&
+             kCrossMidnightActivityDurations.front().date == "2026-02-01",
+         "cross-midnight activity duration query should ignore missing sleep and missing wake-anchor metadata.",
+         failures);
+  if (kCrossMidnightActivityDurations.size() == 1U) {
+    Expect(kCrossMidnightActivityDurations.front().total_seconds == 14580,
+           "cross-midnight activity duration query should return only recorded activity duration, not missing wake-anchor or sleep proxy duration.",
+           failures);
+  }
+
+  QueryFilters missing_wake_anchor_filters;
+  missing_wake_anchor_filters.missing_wake_anchor = true;
+  const auto kMissingWakeAnchorDates =
+      data_query::QueryDatesByFilters(kDatabase.get(),
+                                      missing_wake_anchor_filters);
+  Expect(kMissingWakeAnchorDates.size() == 3U &&
+             kMissingWakeAnchorDates[0] == "2026-02-01" &&
+             kMissingWakeAnchorDates[1] == "2026-02-03" &&
+             kMissingWakeAnchorDates[2] == "2026-02-04",
+         "missing_wake_anchor filter should match only days without a valid wake anchor.",
+         failures);
+
+  QueryFilters missing_wake_anchor_cross_midnight_filters;
+  missing_wake_anchor_cross_midnight_filters.missing_wake_anchor = true;
+  missing_wake_anchor_cross_midnight_filters.cross_midnight_activity = true;
+  const auto kMissingWakeAnchorCrossMidnightDates =
+      data_query::QueryDatesByFilters(
+          kDatabase.get(), missing_wake_anchor_cross_midnight_filters);
+  Expect(kMissingWakeAnchorCrossMidnightDates.size() == 1U &&
+             kMissingWakeAnchorCrossMidnightDates.front() == "2026-02-01",
+         "missing_wake_anchor and cross_midnight_activity should compose as separate filters.",
+         failures);
 }
 
 auto TestSingleDayCompositionKeepsAllRoots(int& failures) -> void {
@@ -587,6 +689,7 @@ auto RunDataQueryRefactorStatsScenarioTests(int& failures) -> void {
   TestReportChartSeriesCalculator(failures);
   TestSemanticDayStatsSnapshot(failures);
   TestDerivedStatusExerciseFilters(failures);
+  TestCrossMidnightActivityFilterUsesTimeline(failures);
   TestSingleDayCompositionKeepsAllRoots(failures);
   TestOrchestratorRendererSemanticSnapshot(failures);
 }

@@ -38,8 +38,10 @@ class TextParser {
   };
 
   struct EventInput {
+    RawEventKind kind = RawEventKind::Point;
     std::string_view description;
-    std::string_view time_str_hhmm;
+    std::optional<std::string_view> start_time_str_hhmm;
+    std::string_view end_time_str_hhmm;
   };
 
   [[nodiscard]] static auto ExtractRemark(std::string_view remaining_line)

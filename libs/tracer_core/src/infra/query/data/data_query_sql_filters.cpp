@@ -46,7 +46,7 @@ auto AddTextPredicateClause(std::vector<std::string>& clauses,
 
 auto NeedRecordsJoinForFilters(const QueryFilters& filters) -> bool {
   return filters.project.has_value() || filters.root.has_value() ||
-         filters.remark.has_value();
+         filters.remark.has_value() || filters.cross_midnight_activity;
 }
 
 auto BuildDayFilterClauses(const std::optional<int>& year,

@@ -6,7 +6,7 @@
 
 1. 原始 TXT 的格式合同是什么
 2. 每一类行在业务上分别表示什么
-3. 活动时长是如何从时间点推导出来的
+3. 活动时长如何由点事件或区间事件转换得到
 4. `wake_keywords`、跨日补链、跨月补链分别在什么语义下成立
 5. `sleep_night` 在什么条件下自动生成
 6. 整体流程如何从 `validate -> parse struct -> insert db`
@@ -26,6 +26,10 @@
 可以把整条链路理解为：
 
 `TXT raw text -> validated text -> parsed day struct -> generated activities -> DB rows`
+
+关于新区间事件与点事件混用的目标语义，见：
+
+- [interval_event_and_mixed_timeline_semantics.md](/C:/code/time_tracer/docs/time_tracer/core/ingest/interval_event_and_mixed_timeline_semantics.md)
 
 ## 2. 原始 TXT 合同
 
@@ -80,7 +84,7 @@ m01
 
 1. 日期行：`MMDD`
 2. 日备注行：以 `remark_prefix` 开头
-3. 事件行：`HHMM + 活动名`
+3. 事件行：点事件或区间事件
 
 ### 3.1 日备注行
 
@@ -105,22 +109,25 @@ r alpha
 
 ### 3.2 事件行
 
-事件行格式为：
+目标口径下，事件行分为两类：
 
-`HHMM + activity token`
+1. 点事件：`HHMM + activity token`
+2. 区间事件：`HHMM-HHMM + activity token`
 
 示例：
 
 ```text
 0606w
 1353睡觉 //remark
+0900-1030概率统计
 ```
 
 其中：
 
-1. `0606`、`1353` 是时间点
-2. `w`、`睡觉` 是活动名
-3. `//remark` 是该事件的行内备注
+1. `0606`、`1353` 是点事件的时间点
+2. `0900-1030` 是区间事件的显式开始/结束时间
+3. `w`、`睡觉`、`概率统计` 是活动 token
+4. `//remark` 是该事件的行内备注
 
 ## 4. 行内备注语义
 
@@ -149,13 +156,27 @@ r alpha
 
 ## 5. 活动时长的核心规则
 
-本系统记录的是“时间点 + 活动名”，而不是“开始时间 + 结束时间”。
+本系统最终写入数据库的是标准活动区间（start/end/duration）。
 
-核心换算规则是：
+在作者态文本中，区间来源有两种：
 
-> 上一个时间点减去下一个时间点，得到下一个活动持续的时间。
+1. 点事件：
+   - 记录“时间点 + 活动 token”
+   - 其持续时间由“最后已知时间边界 -> 当前时间点”推导
+2. 区间事件：
+   - 记录“开始时间 - 结束时间 + 活动 token”
+   - 其持续时间由显式 `start -> end` 直接给出
 
-也就是说，后一条活动使用“前一个时间点 -> 当前时间点”的时间差作为自身持续时间。
+在只有点事件的传统模式下，核心换算规则仍然可以理解为：
+
+> 上一个已知时间边界与当前时间点共同决定当前活动持续时间。
+
+在引入区间事件后：
+
+1. 区间事件会把最后已知时间边界推进到自己的显式结束时间
+2. 后续点事件若继续记录，则应从这个结束时间起算
+3. 两个已记录区间之间允许存在未记录时间缺口
+4. 未记录时间不自动归属给任何活动，也不参与统计
 
 例如：
 
@@ -169,6 +190,20 @@ r alpha
 1. 当前活动是 `睡觉`
 2. 备注是 `remark`
 3. `睡觉` 的持续时间来自 `06:06 -> 13:53`
+
+混用示例：
+
+```text
+0606w
+0900-1030概率统计
+1353睡觉
+```
+
+这里：
+
+1. `0900-1030概率统计` 是显式区间事件
+2. 该区间结束后，最后已知时间边界推进到 `10:30`
+3. 后续点事件 `1353睡觉` 的持续时间应来自 `10:30 -> 13:53`
 
 换算为秒：
 
@@ -310,6 +345,7 @@ sleep_project_path = "sleep_night"
 1. 检查 `yYYYY` / `mMM` / `MMDD` / 事件行等格式是否合法
 2. 检查头部顺序是否正确
 3. 检查文本是否满足基础结构约束
+4. 检查事件行属于合法点事件或合法区间事件格式
 
 ### 10.2 逻辑校验
 
@@ -318,6 +354,7 @@ sleep_project_path = "sleep_night"
 1. 检查活动名是否在允许范围内
 2. 检查 wake 是否只出现在当天第一个语义活动位置
 3. 检查时长、顺序、跨日语义是否成立
+4. 在目标语义下允许未记录时间缺口，但不允许已记录区间重叠
 
 “一天少于 2 条 authored events”不再属于阻断性逻辑错误。
 
@@ -328,6 +365,7 @@ sleep_project_path = "sleep_night"
 1. 将原始文本解析为日级结构
 2. 建立 `rawEvents`
 3. 根据首个语义活动建立 `getupTime` 或 `isContinuation`
+4. 在未来支持区间事件后，同时保留点事件与区间事件的作者态信息
 
 ### 10.4 插入数据库
 
@@ -370,8 +408,8 @@ r alpha
 4. `0606w` 的 `w` 命中 `wake_keywords`
 5. 因为这是当天首个语义活动，所以这一天是 wake-start day
 6. 若存在上一天末事件，则系统可生成一条 `sleep_night`
-7. `1353睡觉 //remark` 表示活动名 `睡觉`，备注 `remark`
-8. `睡觉` 的持续时间来自 `06:06 -> 13:53`
+7. `1353睡觉 //remark` 表示活动 token `睡觉`，备注 `remark`
+8. 在只有点事件的模式下，`睡觉` 的持续时间来自 `06:06 -> 13:53`
 
 ## 12. 最终业务流程
 
@@ -390,6 +428,7 @@ r alpha
 更细的专题说明见：
 
 1. [day_bucket_and_wake_anchor_semantics.md](/C:/code/time_tracer/docs/time_tracer/core/ingest/day_bucket_and_wake_anchor_semantics.md)
-2. [record_input_and_day_completeness_semantics.md](/C:/code/time_tracer/docs/time_tracer/core/ingest/record_input_and_day_completeness_semantics.md)
-3. [txt_logic.md](/C:/code/time_tracer/docs/time_tracer/core/capabilities/validation/txt_logic.md)
-4. [input_format_cn.md](/C:/code/time_tracer/docs/time_tracer/user_manual/input_format_cn.md)
+2. [interval_event_and_mixed_timeline_semantics.md](/C:/code/time_tracer/docs/time_tracer/core/ingest/interval_event_and_mixed_timeline_semantics.md)
+3. [record_input_and_day_completeness_semantics.md](/C:/code/time_tracer/docs/time_tracer/core/ingest/record_input_and_day_completeness_semantics.md)
+4. [txt_logic.md](/C:/code/time_tracer/docs/time_tracer/core/capabilities/validation/txt_logic.md)
+5. [input_format_cn.md](/C:/code/time_tracer/docs/time_tracer/user_manual/input_format_cn.md)

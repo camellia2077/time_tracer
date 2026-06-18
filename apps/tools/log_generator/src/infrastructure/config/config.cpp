@@ -2,24 +2,42 @@
 #include "infrastructure/config/config.hpp"
 
 #include <algorithm>
+#include <fstream>
 #include <iostream>
+#include <sstream>
+
+#include "infra/config/loader/alias_mapping_index_utils.hpp"
 
 namespace {
 constexpr double kDefaultGenerationChance = 0.5;
 constexpr double kMinProbability = 0.0;
 constexpr double kMaxProbability = 1.0;
 constexpr double kDefaultNoSleepProbability = 1.0;
+
+namespace modalias = tracer::core::infrastructure::config::loader::detail;
+
+auto ReadTomlFile(const std::filesystem::path& path) -> toml::table {
+  std::ifstream in_file(path);
+  if (!in_file.is_open()) {
+    throw std::runtime_error("Could not open TOML file: " + path.string());
+  }
+
+  std::stringstream buffer;
+  buffer << in_file.rdbuf();
+  return toml::parse(buffer.str());
+}
 }  // namespace
 
 // --- Public Method Implementation ---
 
-auto ConfigLoader::load_from_content(const std::string& settings_content,
-                                     const std::string& mapping_content)
+auto ConfigLoader::load_from_sources(
+    const std::string& settings_content,
+    const std::filesystem::path& alias_mapping_index_path)
     -> std::optional<TomlConfigData> {
   TomlConfigData config_data;
 
   // 解析顺序：映射 -> 设置
-  if (!_parse_mapping_keys(mapping_content, config_data) ||
+  if (!_parse_mapping_keys(alias_mapping_index_path, config_data) ||
       !_parse_settings(settings_content, config_data)) {
     return std::nullopt;
   }
@@ -27,23 +45,26 @@ auto ConfigLoader::load_from_content(const std::string& settings_content,
   return config_data;
 }
 
-auto ConfigLoader::_parse_mapping_keys(const std::string& content,
+auto ConfigLoader::_parse_mapping_keys(
+    const std::filesystem::path& alias_mapping_index_path,
                                        TomlConfigData& config_data) -> bool {
   try {
-    toml::table tbl = toml::parse(content);
+    toml::table alias_index_tbl = ReadTomlFile(alias_mapping_index_path);
+    const modalias::AliasMappingDefinition definition =
+        modalias::LoadAliasMappingDefinition(alias_mapping_index_path,
+                                             alias_index_tbl, ReadTomlFile);
 
-    if (auto* mapping_node = tbl.get_as<toml::table>("aliases")) {
-      for (auto&& [key, value] : *mapping_node) {
-        // [设计说明] 收集 Key 作为生成器的活动种子
-        config_data.mapped_activities.emplace_back(key.str());
-      }
-      return true;
+    for (const auto& entry : definition.expanded_entries) {
+      // Collect authored alias keys as the generator's activity token pool.
+      config_data.mapped_activities.push_back(entry.alias_key);
     }
-    std::cerr << "Error: [aliases] section not found in alias mapping config.\n";
-    return false;
+    return true;
 
+  } catch (const std::runtime_error& e) {
+    std::cerr << "Alias mapping load error: " << e.what() << "\n";
+    return false;
   } catch (const toml::parse_error& e) {
-    std::cerr << "TOML Parse Error in alias mapping config: "
+    std::cerr << "TOML Parse Error in alias mapping index config: "
               << e.description() << "\n";
     return false;
   }

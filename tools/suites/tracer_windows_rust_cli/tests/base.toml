@@ -46,3 +46,23 @@ subdir = "exchange"
 stage = "txt-view-day"
 command_prefix = ["txt"]
 subdir = "txt-view-day"
+
+[[log_routing.rules]]
+stage = "txt-authoring"
+command_prefix = ["txt"]
+subdir = "txt-authoring"
+
+[[log_routing.rules]]
+stage = "txt-authoring"
+command_prefix = ["pipeline"]
+subdir = "txt-authoring"
+
+[[log_routing.rules]]
+stage = "txt-authoring"
+command_prefix = ["query"]
+subdir = "txt-authoring"
+
+[[log_routing.rules]]
+stage = "txt-authoring"
+command_prefix = ["report"]
+subdir = "txt-authoring"

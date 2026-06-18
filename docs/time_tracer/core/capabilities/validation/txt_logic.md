@@ -27,6 +27,13 @@ It no longer treats "a day has fewer than 2 authored events" as a blocking
 logic-validation failure. That situation is considered authoring completeness,
 not ingest invalidity.
 
+For the target interval-event semantics, logic validation must also preserve
+this distinction:
+1. unrecorded gaps between authored intervals are allowed
+2. overlapping recorded intervals are not allowed
+3. `Total Time Recorded` still means recorded durations only, not full-day
+   coverage
+
 ## Wake Anchor And Day Semantics
 
 The most commonly misunderstood logic rules are documented separately in:
@@ -38,6 +45,15 @@ That document explains:
 3. why `wake_anchor` and `sleep_*` activities are related but not equivalent
 4. why `<2 authored events` is surfaced only as authoring-time warning in
    `Record Input` / `TXT save+sync`
+
+For interval events and mixed timelines, see:
+1. [../../ingest/interval_event_and_mixed_timeline_semantics.md](../../ingest/interval_event_and_mixed_timeline_semantics.md)
+
+That document explains:
+1. point events vs interval events
+2. how mixed timelines advance the last-known boundary
+3. why gaps are allowed but overlaps are invalid
+4. why query/reporting should aggregate recorded intervals only
 
 ## Why Config Still Matters Here
 

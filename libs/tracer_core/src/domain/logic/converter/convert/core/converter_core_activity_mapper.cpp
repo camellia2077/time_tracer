@@ -24,6 +24,39 @@ constexpr size_t kTimeHourLength = 2;
 constexpr size_t kTimeMinuteOffset = 3;
 constexpr size_t kTimeMinuteLength = 2;
 
+[[nodiscard]] auto IsValidExplicitIntervalClockRange(
+    std::string_view start_hhmm, std::string_view end_hhmm) -> bool {
+  if (start_hhmm.length() != kTimeStringLength ||
+      end_hhmm.length() != kTimeStringLength) {
+    return false;
+  }
+
+  try {
+    const int start_hour = std::stoi(
+        std::string(start_hhmm.substr(kTimeHourOffset, kTimeHourLength)));
+    const int start_minute = std::stoi(
+        std::string(start_hhmm.substr(kTimeMinuteOffset, kTimeMinuteLength)));
+    const int end_hour = std::stoi(
+        std::string(end_hhmm.substr(kTimeHourOffset, kTimeHourLength)));
+    const int end_minute = std::stoi(
+        std::string(end_hhmm.substr(kTimeMinuteOffset, kTimeMinuteLength)));
+    const int start_total = (start_hour * kMinutesPerHour) + start_minute;
+    const int end_total = (end_hour * kMinutesPerHour) + end_minute;
+    if (start_total == end_total) {
+      return false;
+    }
+    return true;
+  } catch (const std::exception&) {
+    return false;
+  }
+}
+
+[[nodiscard]] auto HasExplicitIntervalEvent(const DailyLog& day) -> bool {
+  return std::ranges::any_of(day.rawEvents, [](const RawEvent& raw_event) {
+    return raw_event.kind == RawEventKind::Interval;
+  });
+}
+
 }  // namespace
 
 ActivityMapper::ActivityMapper(const ConverterConfig& config)
@@ -32,7 +65,8 @@ ActivityMapper::ActivityMapper(const ConverterConfig& config)
 auto ActivityMapper::MapActivities(DailyLog& day) -> void {
   day.processedActivities.clear();
 
-  if (day.getupTime.empty() && !day.isContinuation) {
+  if (day.getupTime.empty() && !day.isContinuation &&
+      !HasExplicitIntervalEvent(day)) {
     return;
   }
 
@@ -49,14 +83,32 @@ auto ActivityMapper::MapActivities(DailyLog& day) -> void {
     }
 
     std::string formatted_event_end_time = NormalizeTime(raw_event.endTimeStr);
+    std::string explicit_interval_start;
+    std::optional<SourceSpan> effective_start_span = start_span;
     TimeRange range{.start_hhmm = start_time,
                     .end_hhmm = formatted_event_end_time};
+    if (raw_event.kind == RawEventKind::Interval) {
+      // Point events derive [last_known_boundary, end). Interval events keep
+      // their authored [start, end) range, and the explicit interval end still
+      // becomes the boundary for the next point event.
+      if (!raw_event.startTimeStr.has_value()) {
+        continue;
+      }
+      explicit_interval_start = NormalizeTime(*raw_event.startTimeStr);
+      if (!IsValidExplicitIntervalClockRange(explicit_interval_start,
+                                             formatted_event_end_time)) {
+        continue;
+      }
+      range.start_hhmm = explicit_interval_start;
+      effective_start_span = raw_event.source_span;
+    }
 
     std::string mapped_description = MapDescription(raw_event.description);
     const int kDuration = CalculateDurationMinutes(range);
     mapped_description = ApplyDurationRules(mapped_description, kDuration);
 
-    AppendActivity(day, raw_event, range, mapped_description, start_span);
+    AppendActivity(day, raw_event, range, mapped_description,
+                   effective_start_span);
     start_time = formatted_event_end_time;
     start_span = raw_event.source_span;
   }

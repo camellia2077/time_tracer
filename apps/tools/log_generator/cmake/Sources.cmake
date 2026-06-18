@@ -27,6 +27,7 @@ set(SOURCES
     src/domain/components/remark_generator.cpp
     src/domain/components/event_generator.cpp
     src/domain/components/day_generator.cpp
+    src/domain/formatting/event_line_formatter.cpp
 
     # Domain - Impl
     src/domain/impl/log_generator.cpp

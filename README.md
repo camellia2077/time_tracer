@@ -2,15 +2,118 @@
 
 # time tracer ![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg) [![Windows Build Matrix](https://github.com/camellia2077/time_tracer/actions/workflows/windows-build-matrix.yml/badge.svg)](https://github.com/camellia2077/time_tracer/actions/workflows/windows-build-matrix.yml) [![Android CI](https://github.com/camellia2077/time_tracer/actions/workflows/android-ci.yml/badge.svg)](https://github.com/camellia2077/time_tracer/actions/workflows/android-ci.yml)
 
-**time tracer** - 基于 C++23 构建的个人时间追踪与分析系统。
+**time tracer** - 基于 C++23 构建的个人时间追踪与分析系统，以纯文本日志为事实来源，并通过可配置 alias mapping（别名映射）将被记录的活动 token 归一为可统计的规范活动路径。
 
 这是一套功能强大的个人时间管理工具集，采用 **Clean Architecture** (整洁架构) 设计，旨在提供极致的输入效率、稳健的数据存储以及多维度的可视化分析。
+它也是一套以纯文本日志为事实来源的个人时间账本系统。用户可用任意语言、缩写或别名书写活动 token，系统通过可配置映射将其转换为规范活动语义，并用于统计、查询和报表。
 
 ### 设计理念（简要）
 
 1. **数据归用户所有**：记录以可读文本保存，用户可长期持有、备份、迁移，不被单一 App 绑定。  
 2. **支持快速修改数据**：可直接编辑文本（改活动名、加备注等），再同步更新数据库与报告。  
 3. **跨平台同一输入**：CLI、Android 等平台使用同一种文本数据作为输入，减少格式切换成本。  
+4. **作者态活动 token 与统计语义分离**：用户可使用任意语言、缩写或别名书写活动 token，系统通过可配置 alias mapping 将其归一为规范活动路径，再进行查询、统计与报表。  
+
+### 文本输入与别名映射示例
+
+记录文本是事实来源，用户在文本里写下的是作者态活动 token；系统会在导入、查询和报表阶段把这些 token 解析为规范活动路径。
+
+例如，当前 TXT 中的事件行采用 `HHMM + 活动 token` 形式：
+
+```text
+0813o
+0406r
+0622rda // rank dva academy skins
+```
+
+#### 日常活动示例
+
+对应的 alias child file 可以写成：
+
+```toml
+parent = "routine"
+
+[aliases]
+"洗漱" = "oral-hygiene"
+"刷牙" = "oral-hygiene"
+"o" = "oral-hygiene"
+```
+
+上面的配置表示：
+
+* `洗漱`、`刷牙`、`o` 都会被解析为同一个规范活动路径 `routine_oral-hygiene`
+* 左键是用户实际输入的活动 token，因此可以是中文、英文、缩写或其他自定义写法
+* 多个左键映射到同一个右键是合法的，用于统一统计口径
+
+#### 游戏活动示例
+
+更复杂的层级示例如下：
+
+```toml
+parent = "others"
+
+[aliases]
+"r" = "rest"
+```
+
+```toml
+parent = "games"
+
+[aliases]
+"ow" = "overwatch"
+"mc" = "minecraft"
+
+[aliases.overwatch]
+"owr" = "rank"
+"owrank" = "rank"
+"owq" = "quickplay"
+
+[aliases.overwatch.rank]
+"dva" = "dva"
+"tr" = "tracer"
+
+[aliases.overwatch.rank.dva]
+"rda" = "academy"
+```
+
+这些配置会展开成类似下面的规范活动路径：
+
+* `r -> others_rest`
+* `ow -> games_overwatch`
+* `mc -> games_minecraft`
+* `owr` / `owrank -> games_overwatch_rank`
+* `owq -> games_overwatch_quickplay`
+* `dva -> games_overwatch_rank_dva`
+* `tr -> games_overwatch_rank_tracer`
+* `rda -> games_overwatch_rank_dva_academy`
+
+这些路径不仅用于“把活动 token 变成长名字”，还定义了活动树中的落点。
+
+例如，`rda -> games_overwatch_rank_dva_academy` 可以表示“守望先锋中 rank 模式下，使用 D.Va 的 academy 皮肤所花费的时间”。当一段时长被记到叶子节点 `games_overwatch_rank_dva_academy` 时，聚合统计会同时把这段时间计入它的所有父节点，包括：
+
+* `games_overwatch_rank_dva`
+* `games_overwatch_rank`
+* `games_overwatch`
+* `games`
+
+因此，同一份文本事实数据既可以支持非常细粒度的统计，也可以支持更高层级的汇总。
+
+这里用 D.Va 和 academy 皮肤举例，不是因为 Overwatch 本身缺少角色游玩时间统计，而是因为这个例子层级更深，适合演示 alias mapping 如何把作者态活动 token 挂到活动树的深层叶子节点上。
+
+从统计与查询语义上，可以把这套映射理解为一棵带权活动树：
+
+* 节点是规范活动路径中的各级活动名
+* 权重来自最终归属于该节点及其子节点的持续时间
+* 用户写法可以自由变化，但统计、查询、报表都基于归一后的规范路径进行
+
+需要注意的是，这是一种统计语义模型，而不是 ingest 主流程本体的完整描述。程序的主流程是先把文本解析为标准化活动记录并持久化，再在查询或报表阶段按需要把这些记录投影为树状聚合结果。
+
+当前 alias child file 的展开规则是：
+
+* `parent` 是顶层路径段
+* `[aliases.xxx.yyy]` 是中间层级
+* 右值字符串是叶子路径段
+* 最终规范活动路径采用 `_` 连接，例如 `games_overwatch_rank_dva_academy`
 
 ### 核心组件
 

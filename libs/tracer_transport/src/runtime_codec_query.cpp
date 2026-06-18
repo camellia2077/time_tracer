@@ -52,11 +52,15 @@ auto DecodeQueryRequest(std::string_view request_json) -> QueryRequestPayload {
   const auto kRoot = TryReadStringField(kPayload, "root");
   const auto kExercise = TryReadIntField(kPayload, "exercise");
   const auto kStatus = TryReadIntField(kPayload, "status");
-  const auto kOvernight = TryReadBoolField(kPayload, "overnight");
+  const auto kCrossMidnightActivity =
+      TryReadBoolField(kPayload, "cross_midnight_activity");
+  const auto kMissingWakeAnchor =
+      TryReadBoolField(kPayload, "missing_wake_anchor");
   const auto kReverse = TryReadBoolField(kPayload, "reverse");
   const auto kLimit = TryReadIntField(kPayload, "limit");
   const auto kTopN = TryReadIntField(kPayload, "top_n");
   const auto kLookbackDays = TryReadIntField(kPayload, "lookback_days");
+  const auto kAnchorDate = TryReadStringField(kPayload, "anchor_date");
   const auto kActivityPrefix = TryReadStringField(kPayload, "activity_prefix");
   const auto kScoreByDuration =
       TryReadBoolField(kPayload, "activity_score_by_duration");
@@ -98,8 +102,11 @@ auto DecodeQueryRequest(std::string_view request_json) -> QueryRequestPayload {
   if (kStatus.HasError()) {
     throw std::invalid_argument(kStatus.error.message);
   }
-  if (kOvernight.HasError()) {
-    throw std::invalid_argument(kOvernight.error.message);
+  if (kCrossMidnightActivity.HasError()) {
+    throw std::invalid_argument(kCrossMidnightActivity.error.message);
+  }
+  if (kMissingWakeAnchor.HasError()) {
+    throw std::invalid_argument(kMissingWakeAnchor.error.message);
   }
   if (kReverse.HasError()) {
     throw std::invalid_argument(kReverse.error.message);
@@ -112,6 +119,9 @@ auto DecodeQueryRequest(std::string_view request_json) -> QueryRequestPayload {
   }
   if (kLookbackDays.HasError()) {
     throw std::invalid_argument(kLookbackDays.error.message);
+  }
+  if (kAnchorDate.HasError()) {
+    throw std::invalid_argument(kAnchorDate.error.message);
   }
   if (kActivityPrefix.HasError()) {
     throw std::invalid_argument(kActivityPrefix.error.message);
@@ -140,11 +150,13 @@ auto DecodeQueryRequest(std::string_view request_json) -> QueryRequestPayload {
   out.root = kRoot.value;
   out.exercise = kExercise.value;
   out.status = kStatus.value;
-  out.overnight = kOvernight.value;
+  out.cross_midnight_activity = kCrossMidnightActivity.value;
+  out.missing_wake_anchor = kMissingWakeAnchor.value;
   out.reverse = kReverse.value;
   out.limit = kLimit.value;
   out.top_n = kTopN.value;
   out.lookback_days = kLookbackDays.value;
+  out.anchor_date = kAnchorDate.value;
   out.activity_prefix = kActivityPrefix.value;
   out.activity_score_by_duration = kScoreByDuration.value;
   out.tree_period = kTreePeriod.value;
@@ -191,8 +203,11 @@ auto EncodeQueryRequest(const QueryRequestPayload& request) -> std::string {
   if (request.status.has_value()) {
     payload["status"] = *request.status;
   }
-  if (request.overnight.has_value()) {
-    payload["overnight"] = *request.overnight;
+  if (request.cross_midnight_activity.has_value()) {
+    payload["cross_midnight_activity"] = *request.cross_midnight_activity;
+  }
+  if (request.missing_wake_anchor.has_value()) {
+    payload["missing_wake_anchor"] = *request.missing_wake_anchor;
   }
   if (request.reverse.has_value()) {
     payload["reverse"] = *request.reverse;
@@ -205,6 +220,9 @@ auto EncodeQueryRequest(const QueryRequestPayload& request) -> std::string {
   }
   if (request.lookback_days.has_value()) {
     payload["lookback_days"] = *request.lookback_days;
+  }
+  if (request.anchor_date.has_value()) {
+    payload["anchor_date"] = *request.anchor_date;
   }
   if (request.activity_prefix.has_value()) {
     payload["activity_prefix"] = *request.activity_prefix;

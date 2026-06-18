@@ -189,15 +189,28 @@ auto BuildWhereClauses(const QueryFilters& filters,
     clauses.emplace_back(
         BuildDerivedRootExistsClause("study", *filters.status != 0));
   }
-  if (filters.overnight) {
-    std::string clause = "(d.";
-    clause += schema::day::db::kGetupTime;
-    clause += " IS NULL OR d.";
-    clause += schema::day::db::kGetupTime;
-    clause += " = '' OR d.";
-    clause += schema::day::db::kGetupTime;
-    clause += " = '00:00')";
-    clauses.push_back(std::move(clause));
+  if (filters.cross_midnight_activity) {
+    clauses.emplace_back(
+        "EXISTS (SELECT 1 FROM " + std::string(schema::time_records::db::kTable) +
+        " tr_cross_midnight_activity WHERE tr_cross_midnight_activity." +
+        std::string(schema::time_records::db::kDate) + " = d." +
+        std::string(schema::day::db::kDate) + " AND " +
+        "tr_cross_midnight_activity." +
+        std::string(schema::time_records::db::kStart) +
+        " <> '' AND tr_cross_midnight_activity." +
+        std::string(schema::time_records::db::kEnd) +
+        " <> '' AND tr_cross_midnight_activity." +
+        std::string(schema::time_records::db::kStart) +
+        " > tr_cross_midnight_activity." +
+        std::string(schema::time_records::db::kEnd) + ")");
+  }
+  if (filters.missing_wake_anchor) {
+    clauses.emplace_back("(d." + std::string(schema::day::db::kGetupTime) +
+                         " IS NULL OR d." +
+                         std::string(schema::day::db::kGetupTime) +
+                         " = '' OR d." +
+                         std::string(schema::day::db::kGetupTime) +
+                         " = '00:00')");
   }
   return clauses;
 }

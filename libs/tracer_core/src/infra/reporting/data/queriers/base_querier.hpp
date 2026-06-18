@@ -43,7 +43,7 @@ class BaseQuerier {
  protected:
   struct DayFlagCounts {
     int status_true_days = 0;
-    int wake_anchor_true_days = 0;
+    int wake_anchor_days = 0;
     int exercise_true_days = 0;
     int cardio_true_days = 0;
     int anaerobic_true_days = 0;
@@ -75,8 +75,8 @@ class BaseQuerier {
     sqlite3_stmt* stmt;
 
     // Report total_duration is defined as the sum of persisted activity
-    // durations. It is not "first start -> last end", so in overnight-heavy
-    // day buckets it may legitimately exceed 24 hours.
+    // durations. It is not "first start -> last end", so in multi-day spans it
+    // may legitimately exceed 24 hours.
     std::string sql = "SELECT ";
     sql += schema::time_records::db::kProjectId;
     sql += ", SUM(";
@@ -184,7 +184,7 @@ class BaseQuerier {
     DayFlagCounts counts{};
     sqlite3_stmt* stmt = nullptr;
     // Wake-anchor day counts come from persisted day metadata, not from
-    // generated overnight sleep activities or arbitrary sleep_* records.
+    // generated sleep activities or arbitrary sleep_* records.
     std::string sql = "SELECT SUM(CASE WHEN ";
     sql += schema::day::db::kWakeAnchor;
     sql +=
@@ -199,7 +199,7 @@ class BaseQuerier {
         SQLITE_OK) {
       BindSqlParameters(stmt);
       if (sqlite3_step(stmt) == SQLITE_ROW) {
-        counts.wake_anchor_true_days = sqlite3_column_int(stmt, 0);
+        counts.wake_anchor_days = sqlite3_column_int(stmt, 0);
       }
     }
     sqlite3_finalize(stmt);

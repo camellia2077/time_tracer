@@ -11,6 +11,7 @@ import tracer.core.infrastructure.reporting.dto;
 #include <filesystem>
 #include <iostream>
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "application/ports/reporting/i_report_formatter_registry.hpp"
@@ -212,8 +213,9 @@ template <typename RangeReportType>
 auto BuildRangeFixture(const std::string& range_label,
                        const std::string& start_date,
                        const std::string& end_date, int requested_days,
-                       int actual_days, int status_days, int sleep_days,
-                       int exercise_days, int cardio_days, int anaerobic_days)
+                       int actual_days, int status_days,
+                       int wake_anchor_days, int exercise_days,
+                       int cardio_days, int anaerobic_days)
     -> RangeReportType {
   RangeReportType report;
   report.range_label = range_label;
@@ -223,7 +225,7 @@ auto BuildRangeFixture(const std::string& range_label,
   report.total_duration = 54000;
   report.actual_days = actual_days;
   report.status_true_days = status_days;
-  report.wake_anchor_true_days = sleep_days;
+  report.wake_anchor_days = wake_anchor_days;
   report.exercise_true_days = exercise_days;
   report.cardio_true_days = cardio_days;
   report.anaerobic_true_days = anaerobic_days;
@@ -246,6 +248,50 @@ auto CollectOutputs(infra_reports::ReportDtoFormatter& formatter,
   outputs.year = formatter.FormatYearly(yearly_report, format);
   outputs.range = formatter.FormatPeriod(range_report, format);
   return outputs;
+}
+
+auto ExpectContains(std::string_view case_name, std::string_view content,
+                    std::string_view expected, int& failures) -> void {
+  if (content.find(expected) != std::string_view::npos) {
+    return;
+  }
+  ++failures;
+  std::cerr << "[FAIL] " << case_name << " should contain `" << expected
+            << "`.\n";
+}
+
+auto ExpectNotContains(std::string_view case_name, std::string_view content,
+                       std::string_view unexpected, int& failures) -> void {
+  if (content.find(unexpected) == std::string_view::npos) {
+    return;
+  }
+  ++failures;
+  std::cerr << "[FAIL] " << case_name << " should not contain `"
+            << unexpected << "`.\n";
+}
+
+auto CheckWakeAnchorMetadataLabels(const ParityOutputs& outputs,
+                                   int& failures) -> void {
+  const auto& markdown = outputs.cli_by_format[0];
+  ExpectContains("daily markdown wake-anchor metadata label", markdown.day,
+                 "Wake Anchor", failures);
+  ExpectContains("monthly markdown wake-anchor metadata count", markdown.month,
+                 "Wake Anchor Days (True)", failures);
+  ExpectContains("weekly markdown wake-anchor metadata count", markdown.week,
+                 "Wake Anchor Days (True)", failures);
+  ExpectContains("yearly markdown wake-anchor metadata count", markdown.year,
+                 "Wake Anchor Days (True)", failures);
+  ExpectContains("range markdown wake-anchor metadata count", markdown.range,
+                 "Wake Anchor Days (True)", failures);
+
+  ExpectNotContains("monthly markdown wake-anchor metadata count",
+                    markdown.month, "recorded_coverage_ratio", failures);
+  ExpectNotContains("weekly markdown wake-anchor metadata count", markdown.week,
+                    "recorded_coverage_ratio", failures);
+  ExpectNotContains("yearly markdown wake-anchor metadata count", markdown.year,
+                    "recorded_coverage_ratio", failures);
+  ExpectNotContains("range markdown wake-anchor metadata count", markdown.range,
+                    "recorded_coverage_ratio", failures);
 }
 
 // NOLINTEND(readability-magic-numbers,readability-identifier-naming,bugprone-easily-swappable-parameters,modernize-use-auto,modernize-use-designated-initializers)
@@ -316,6 +362,7 @@ auto RunFormatterParityTests() -> int {
   RunMarkdownSnapshotCases(snapshot_root, outputs, update_snapshots, failures);
   RunLatexSnapshotCases(snapshot_root, outputs, update_snapshots, failures);
   RunTypstSnapshotCases(snapshot_root, outputs, update_snapshots, failures);
+  CheckWakeAnchorMetadataLabels(outputs, failures);
 
   if (failures == 0) {
     std::cout << "[PASS] time_tracker_formatter_parity_tests\n";

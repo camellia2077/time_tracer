@@ -2,6 +2,7 @@
 #include "domain/logic/validator/structure/structure_validator.hpp"
 
 #include <algorithm>
+#include <cctype>
 #include <optional>
 #include <set>
 #include <string>
@@ -33,10 +34,109 @@ constexpr int kIsoYearMonthLength = 7;
 constexpr int kIsoDayOffset = 8;
 constexpr int kIsoDayLength = 2;
 constexpr int kSingleDigitThreshold = 10;
+constexpr int kPointBoundaryWrapThresholdMinutes = 4 * 60;
 
 auto IsLeap(int year) -> bool {
   return (year % kYearDivisor4 == 0 &&
           (year % kYearDivisor100 != 0 || year % kYearDivisor400 == 0));
+}
+
+[[nodiscard]] auto ParseFlexibleHhmm(std::string_view time_value)
+    -> std::optional<int> {
+  std::string digits;
+  digits.reserve(4);
+  for (const char value : time_value) {
+    if (std::isdigit(static_cast<unsigned char>(value)) != 0) {
+      digits.push_back(value);
+    }
+  }
+  if (digits.length() != 4) {
+    return std::nullopt;
+  }
+
+  try {
+    const int hour = std::stoi(digits.substr(0, 2));
+    const int minute = std::stoi(digits.substr(2, 2));
+    if (hour < 0 || hour >= 24 || minute < 0 || minute >= 60) {
+      return std::nullopt;
+    }
+    return (hour * 60) + minute;
+  } catch (const std::exception&) {
+    return std::nullopt;
+  }
+}
+
+[[nodiscard]] auto IsPlausiblePointBoundaryWrap(int previous_raw_minutes,
+                                                int current_raw_minutes)
+    -> bool {
+  return previous_raw_minutes > current_raw_minutes &&
+         (previous_raw_minutes - current_raw_minutes) >=
+             kPointBoundaryWrapThresholdMinutes;
+}
+
+[[nodiscard]] auto ExpandRelativeToBoundary(int raw_minutes, int boundary_minutes,
+                                            bool allow_equal)
+    -> std::optional<int> {
+  // Expand authored boundary values against the last known boundary so
+  // point-style midnight wraps stay monotonic, while short backward moves still
+  // fail as overlap. Explicit interval end wrapping is handled separately by
+  // ExpandIntervalEndRelativeToStart and does not use this heuristic.
+  const int day_offset = boundary_minutes / (24 * 60);
+  const int boundary_raw_minutes = boundary_minutes % (24 * 60);
+  int candidate = raw_minutes + (day_offset * 24 * 60);
+
+  if (raw_minutes > boundary_raw_minutes) {
+    return candidate;
+  }
+  if (raw_minutes == boundary_raw_minutes) {
+    if (allow_equal) {
+      return boundary_minutes;
+    }
+    return std::nullopt;
+  }
+
+  if (!IsPlausiblePointBoundaryWrap(boundary_raw_minutes, raw_minutes)) {
+    return std::nullopt;
+  }
+  candidate += 24 * 60;
+  if (!allow_equal && candidate <= boundary_minutes) {
+    return std::nullopt;
+  }
+  return candidate;
+}
+
+[[nodiscard]] auto ExpandIntervalEndRelativeToStart(int end_raw_minutes,
+                                                    int start_minutes)
+    -> std::optional<int> {
+  const int day_offset = start_minutes / (24 * 60);
+  const int start_raw_minutes = start_minutes % (24 * 60);
+  int candidate = end_raw_minutes + (day_offset * 24 * 60);
+
+  if (end_raw_minutes == start_raw_minutes) {
+    return std::nullopt;
+  }
+  if (end_raw_minutes < start_raw_minutes) {
+    candidate += 24 * 60;
+  }
+  return candidate;
+}
+
+[[nodiscard]] auto ContainsIntervalEvent(const std::vector<DailyLog>& days)
+    -> bool {
+  return std::ranges::any_of(days, [](const DailyLog& day) {
+    return std::ranges::any_of(day.rawEvents, [](const RawEvent& raw_event) {
+      return raw_event.kind == RawEventKind::Interval;
+    });
+  });
+}
+
+[[nodiscard]] auto ShouldSeedTimelineFromDayBoundary(const DailyLog& day)
+    -> bool {
+  if (day.getupTime.empty()) {
+    return false;
+  }
+  return day.rawEvents.empty() ||
+         day.rawEvents.front().kind != RawEventKind::Interval;
 }
 
 // NOLINTBEGIN(bugprone-easily-swappable-parameters)
@@ -129,6 +229,17 @@ void ValidateWakeKeywordPosition(
       continue;
     }
 
+    if (raw_event.kind == RawEventKind::Interval) {
+      diagnostics.push_back(
+          {.severity = DiagnosticSeverity::kError,
+           .code = "wake.keyword.interval_not_allowed",
+           .message = "In file for date " + day.date +
+                      ": Wake keyword activity '" + raw_event.description +
+                      "' cannot be authored as an interval event.",
+           .source_span = raw_event.source_span});
+      continue;
+    }
+
     diagnostics.push_back(
         {.severity = DiagnosticSeverity::kError,
          .code = "wake.keyword.not_first_event",
@@ -139,10 +250,128 @@ void ValidateWakeKeywordPosition(
   }
 }
 
+void ValidateMixedTimeline(
+    const DailyLog& day, const std::unordered_set<std::string>& wake_keywords,
+    std::vector<Diagnostic>& diagnostics) {
+  std::optional<int> last_known_boundary_minutes;
+  if (ShouldSeedTimelineFromDayBoundary(day)) {
+    last_known_boundary_minutes = ParseFlexibleHhmm(day.getupTime);
+  }
+
+  for (const auto& raw_event : day.rawEvents) {
+    const bool is_wake =
+        wake_keywords.contains(raw_event.description) &&
+        raw_event.kind == RawEventKind::Point;
+    if (is_wake) {
+      if (!last_known_boundary_minutes.has_value()) {
+        last_known_boundary_minutes = ParseFlexibleHhmm(raw_event.endTimeStr);
+      }
+      continue;
+    }
+
+    const std::optional<int> end_minutes =
+        ParseFlexibleHhmm(raw_event.endTimeStr);
+    if (!end_minutes.has_value()) {
+      continue;
+    }
+
+    if (raw_event.kind == RawEventKind::Interval) {
+      if (!raw_event.startTimeStr.has_value()) {
+        diagnostics.push_back(
+            {.severity = DiagnosticSeverity::kError,
+             .code = "timeline.interval.missing_start",
+             .message = "In file for date " + day.date +
+                        ": Interval event is missing an explicit start time.",
+             .source_span = raw_event.source_span});
+        continue;
+      }
+
+      if (wake_keywords.contains(raw_event.description)) {
+        diagnostics.push_back(
+            {.severity = DiagnosticSeverity::kError,
+             .code = "wake.keyword.interval_not_allowed",
+             .message = "In file for date " + day.date +
+                        ": Wake keyword activity '" + raw_event.description +
+                        "' cannot be authored as an interval event.",
+             .source_span = raw_event.source_span});
+      }
+
+      const std::optional<int> start_minutes =
+          ParseFlexibleHhmm(*raw_event.startTimeStr);
+      if (!start_minutes.has_value()) {
+        continue;
+      }
+
+      if (*start_minutes == *end_minutes) {
+        diagnostics.push_back(
+            {.severity = DiagnosticSeverity::kError,
+             .code = "timeline.interval.invalid_range",
+             .message = "In file for date " + day.date +
+                        ": Interval event must not have zero duration.",
+             .source_span = raw_event.source_span});
+        continue;
+      }
+
+      int expanded_start_minutes = *start_minutes;
+      if (last_known_boundary_minutes.has_value()) {
+        const std::optional<int> expanded_start =
+            ExpandRelativeToBoundary(*start_minutes,
+                                     *last_known_boundary_minutes, true);
+        if (!expanded_start.has_value()) {
+          diagnostics.push_back(
+              {.severity = DiagnosticSeverity::kError,
+               .code = "timeline.event.overlap",
+               .message =
+                   "In file for date " + day.date +
+                   ": Interval event overlaps an earlier recorded boundary.",
+               .source_span = raw_event.source_span});
+          continue;
+        }
+        expanded_start_minutes = *expanded_start;
+      }
+
+      const std::optional<int> expanded_end =
+          ExpandIntervalEndRelativeToStart(*end_minutes, expanded_start_minutes);
+      if (!expanded_end.has_value()) {
+        diagnostics.push_back(
+            {.severity = DiagnosticSeverity::kError,
+             .code = "timeline.interval.invalid_range",
+             .message = "In file for date " + day.date +
+                        ": Interval event must not have zero duration.",
+             .source_span = raw_event.source_span});
+        continue;
+      }
+      last_known_boundary_minutes = *expanded_end;
+      continue;
+    }
+
+    int expanded_end_minutes = *end_minutes;
+    if (last_known_boundary_minutes.has_value()) {
+      const std::optional<int> expanded_end = ExpandRelativeToBoundary(
+          *end_minutes, *last_known_boundary_minutes, false);
+      if (!expanded_end.has_value()) {
+        diagnostics.push_back(
+            {.severity = DiagnosticSeverity::kError,
+             .code = "timeline.event.overlap",
+             .message = "In file for date " + day.date +
+                        ": Point event must end after the last known boundary.",
+             .source_span = raw_event.source_span});
+        continue;
+      }
+      expanded_end_minutes = *expanded_end;
+    }
+
+    last_known_boundary_minutes = expanded_end_minutes;
+  }
+}
+
 void ValidateDateContinuity(const std::vector<DailyLog>& days,
                             std::vector<Diagnostic>& diagnostics,
                             DateCheckMode mode) {
   if (mode == DateCheckMode::kNone || days.empty()) {
+    return;
+  }
+  if (ContainsIntervalEvent(days)) {
     return;
   }
 
@@ -206,6 +435,7 @@ auto StructValidator::Validate(const std::string& /*filename*/,
   for (const auto& day : days) {
     ValidateActivityDuration(day, diagnostics);
     ValidateWakeKeywordPosition(day, wake_keywords_, diagnostics);
+    ValidateMixedTimeline(day, wake_keywords_, diagnostics);
   }
   return !std::ranges::any_of(
       diagnostics, [](const Diagnostic& diagnostic) -> bool {

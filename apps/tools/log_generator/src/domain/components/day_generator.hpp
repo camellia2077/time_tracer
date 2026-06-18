@@ -16,7 +16,8 @@ class DayGenerator {
       int items_per_day, const std::vector<std::string>& activities,
       const std::optional<DailyRemarkConfig>& remark_config,
       const std::optional<ActivityRemarkConfig>& activity_remark_config,
-      const std::vector<std::string>& wake_keywords, std::mt19937& gen);
+      const std::vector<std::string>& wake_keywords, EventStyle event_style,
+      std::mt19937& gen);
 
   void reset_for_new_month();
   void generate_for_day(std::string& log_content, int month, int day,

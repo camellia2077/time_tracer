@@ -1,5 +1,6 @@
 import tracer.core.domain;
 
+#include <algorithm>
 #include <iostream>
 #include <map>
 #include <set>
@@ -29,6 +30,8 @@ using tracer::core::domain::modlogic::validator_txt::TextValidator;
 using tracer::core::domain::types::ConverterConfig;
 using tracer::core::domain::types::DateCheckMode;
 
+using RawEventKindType = decltype(RawEvent{}.kind);
+
 auto Expect(bool condition, std::string_view message, int& failures) -> void {
   if (condition) {
     return;
@@ -42,6 +45,8 @@ auto BuildTestConfig() -> ConverterConfig {
   config.remark_prefix = "#";
   config.text_mapping["study"] = "study";
   config.text_mapping["sleep"] = "sleep";
+  config.text_mapping["wake"] = "wake";
+  config.wake_keywords = {"wake"};
   return config;
 }
 
@@ -126,6 +131,21 @@ void TestValidatorBridge(int& failures) {
              unknown_errors.begin()->type == ErrorType::kUnrecognizedActivity,
          "Unknown activity error type mismatch.", failures);
 
+  std::set<Error> interval_errors;
+  const bool interval_event = line_rules.IsValidEventLine(
+      "0900-1030study # focus", 6, interval_errors, span);
+  Expect(interval_event && interval_errors.empty(),
+         "Interval activity should pass structural line validation.",
+         failures);
+
+  std::set<Error> bad_interval_errors;
+  const bool bad_interval_event =
+      line_rules.IsValidEventLine("0900-2460study", 7, bad_interval_errors,
+                                  span);
+  Expect(!bad_interval_event,
+         "Interval activity with invalid end time should fail line validation.",
+         failures);
+
   StructureRules structure_rules;
   std::set<Error> structure_errors;
   structure_rules.ProcessYearLine(1, "y2026", structure_errors, span);
@@ -182,6 +202,69 @@ void TestStructureValidatorBridge(int& failures) {
          "StructValidator diagnostics should be empty for valid sample.",
          failures);
 
+  DailyLog interval_gap_day;
+  interval_gap_day.date = "2026-03-01";
+  interval_gap_day.rawEvents.push_back(
+      RawEvent{.kind = RawEventKindType::Interval,
+               .startTimeStr = std::string("0900"),
+               .endTimeStr = "1030",
+               .description = "study",
+               .source_span = SourceSpan{.file_path = "module-smoke.txt",
+                                         .line_start = 10,
+                                         .line_end = 10,
+                                         .column_start = 1,
+                                         .column_end = 14,
+                                         .raw_text = "0900-1030study"}});
+  interval_gap_day.rawEvents.push_back(
+      RawEvent{.kind = RawEventKindType::Interval,
+               .startTimeStr = std::string("1401"),
+               .endTimeStr = "1900",
+               .description = "sleep",
+               .source_span = SourceSpan{.file_path = "module-smoke.txt",
+                                         .line_start = 11,
+                                         .line_end = 11,
+                                         .column_start = 1,
+                                         .column_end = 14,
+                                         .raw_text = "1401-1900sleep"}});
+
+  std::vector<DailyLog> interval_gap_days{interval_gap_day};
+  std::vector<Diagnostic> interval_gap_diagnostics;
+  const bool interval_gap_ok = struct_validator.Validate(
+      "module-smoke.txt", interval_gap_days, interval_gap_diagnostics);
+  Expect(interval_gap_ok,
+         "StructValidator should allow gaps between explicit intervals.",
+         failures);
+  Expect(interval_gap_diagnostics.empty(),
+         "Gaps between explicit intervals should not emit diagnostics.",
+         failures);
+
+  StructValidator full_mode_validator(DateCheckMode::kFull, {"wake"});
+  DailyLog sparse_interval_day;
+  sparse_interval_day.date = "2026-03-05";
+  sparse_interval_day.rawEvents.push_back(
+      RawEvent{.kind = RawEventKindType::Interval,
+               .startTimeStr = std::string("0803"),
+               .endTimeStr = "0907",
+               .description = "study",
+               .source_span = SourceSpan{.file_path = "module-smoke.txt",
+                                         .line_start = 12,
+                                         .line_end = 12,
+                                         .column_start = 1,
+                                         .column_end = 14,
+                                         .raw_text = "0803-0907study"}});
+
+  std::vector<DailyLog> sparse_interval_days{interval_gap_day,
+                                             sparse_interval_day};
+  std::vector<Diagnostic> sparse_interval_diagnostics;
+  const bool sparse_interval_ok = full_mode_validator.Validate(
+      "module-smoke.txt", sparse_interval_days, sparse_interval_diagnostics);
+  Expect(sparse_interval_ok,
+         "Date continuity checks should not reject sparse interval months.",
+         failures);
+  Expect(sparse_interval_diagnostics.empty(),
+         "Sparse interval months should not emit date continuity diagnostics.",
+         failures);
+
   DailyLog invalid_day;
   invalid_day.date = "2026-03-02";
   invalid_day.rawEvents.push_back(
@@ -206,6 +289,495 @@ void TestStructureValidatorBridge(int& failures) {
   Expect(!invalid_diagnostics.empty() &&
              invalid_diagnostics.front().code == "wake.keyword.not_first_event",
          "Wake keyword ordering should surface dedicated logic diagnostic.",
+         failures);
+
+  DailyLog overlap_day;
+  overlap_day.date = "2026-03-03";
+  overlap_day.getupTime = "06:06";
+  overlap_day.rawEvents.push_back(
+      RawEvent{.kind = RawEventKindType::Interval,
+               .startTimeStr = std::string("0900"),
+               .endTimeStr = "1030",
+               .description = "study",
+               .source_span = SourceSpan{.file_path = "module-smoke.txt",
+                                         .line_start = 3,
+                                         .line_end = 3,
+                                         .column_start = 1,
+                                         .column_end = 14,
+                                         .raw_text = "0900-1030study"}});
+  overlap_day.rawEvents.push_back(
+      RawEvent{.endTimeStr = "1000",
+               .description = "sleep",
+               .source_span = SourceSpan{.file_path = "module-smoke.txt",
+                                         .line_start = 4,
+                                         .line_end = 4,
+                                         .column_start = 1,
+                                         .column_end = 9,
+                                         .raw_text = "1000sleep"}});
+
+  std::vector<DailyLog> overlap_days{overlap_day};
+  std::vector<Diagnostic> overlap_diagnostics;
+  const bool overlap_ok = struct_validator.Validate("module-smoke.txt",
+                                                    overlap_days,
+                                                    overlap_diagnostics);
+  Expect(!overlap_ok,
+         "StructValidator should fail when a point event overlaps an interval.",
+         failures);
+  Expect(std::any_of(
+             overlap_diagnostics.begin(), overlap_diagnostics.end(),
+             [](const Diagnostic& diagnostic) -> bool {
+               return diagnostic.code == "timeline.event.overlap";
+             }),
+         "Mixed timeline overlap should surface a dedicated logic diagnostic.",
+         failures);
+
+  DailyLog interval_overlap_day;
+  interval_overlap_day.date = "2026-03-07";
+  interval_overlap_day.rawEvents.push_back(
+      RawEvent{.kind = RawEventKindType::Interval,
+               .startTimeStr = std::string("0954"),
+               .endTimeStr = "1007",
+               .description = "study",
+               .source_span = SourceSpan{.file_path = "module-smoke.txt",
+                                         .line_start = 13,
+                                         .line_end = 13,
+                                         .column_start = 1,
+                                         .column_end = 14,
+                                         .raw_text = "0954-1007study"}});
+  interval_overlap_day.rawEvents.push_back(
+      RawEvent{.kind = RawEventKindType::Interval,
+               .startTimeStr = std::string("0954"),
+               .endTimeStr = "1409",
+               .description = "sleep",
+               .source_span = SourceSpan{.file_path = "module-smoke.txt",
+                                         .line_start = 14,
+                                         .line_end = 14,
+                                         .column_start = 1,
+                                         .column_end = 14,
+                                         .raw_text = "0954-1409sleep"}});
+
+  std::vector<DailyLog> interval_overlap_days{interval_overlap_day};
+  std::vector<Diagnostic> interval_overlap_diagnostics;
+  const bool interval_overlap_ok = struct_validator.Validate(
+      "module-smoke.txt", interval_overlap_days, interval_overlap_diagnostics);
+  Expect(!interval_overlap_ok,
+         "StructValidator should reject overlapping explicit intervals.",
+         failures);
+  Expect(std::any_of(
+             interval_overlap_diagnostics.begin(),
+             interval_overlap_diagnostics.end(),
+             [](const Diagnostic& diagnostic) -> bool {
+               return diagnostic.code == "timeline.event.overlap";
+             }),
+         "Overlapping explicit intervals should report overlap diagnostic.",
+         failures);
+
+  DailyLog interval_wake_day;
+  interval_wake_day.date = "2026-03-04";
+  interval_wake_day.rawEvents.push_back(
+      RawEvent{.kind = RawEventKindType::Interval,
+               .startTimeStr = std::string("0600"),
+               .endTimeStr = "0700",
+               .description = "wake",
+               .source_span = SourceSpan{.file_path = "module-smoke.txt",
+                                         .line_start = 5,
+                                         .line_end = 5,
+                                         .column_start = 1,
+                                         .column_end = 13,
+                                         .raw_text = "0600-0700wake"}});
+
+  std::vector<DailyLog> interval_wake_days{interval_wake_day};
+  std::vector<Diagnostic> interval_wake_diagnostics;
+  const bool interval_wake_ok = struct_validator.Validate(
+      "module-smoke.txt", interval_wake_days, interval_wake_diagnostics);
+  Expect(!interval_wake_ok,
+         "StructValidator should fail when wake is authored as an interval.",
+         failures);
+  Expect(std::any_of(
+             interval_wake_diagnostics.begin(), interval_wake_diagnostics.end(),
+             [](const Diagnostic& diagnostic) -> bool {
+               return diagnostic.code == "wake.keyword.interval_not_allowed";
+             }),
+         "Interval wake should report a dedicated wake interval diagnostic.",
+         failures);
+
+  DailyLog wrapped_interval_day;
+  wrapped_interval_day.date = "2026-03-05";
+  wrapped_interval_day.isContinuation = true;
+  wrapped_interval_day.rawEvents.push_back(
+      RawEvent{.kind = RawEventKindType::Interval,
+               .startTimeStr = std::string("2132"),
+               .endTimeStr = "0135",
+               .description = "study",
+               .source_span = SourceSpan{.file_path = "module-smoke.txt",
+                                         .line_start = 6,
+                                         .line_end = 6,
+                                         .column_start = 1,
+                                         .column_end = 14,
+                                         .raw_text = "2132-0135study"}});
+  wrapped_interval_day.rawEvents.push_back(
+      RawEvent{.kind = RawEventKindType::Interval,
+               .startTimeStr = std::string("0135"),
+               .endTimeStr = "0217",
+               .description = "sleep",
+               .source_span = SourceSpan{.file_path = "module-smoke.txt",
+                                         .line_start = 7,
+                                         .line_end = 7,
+                                         .column_start = 1,
+                                         .column_end = 14,
+                                         .raw_text = "0135-0217sleep"}});
+  wrapped_interval_day.rawEvents.push_back(
+      RawEvent{.kind = RawEventKindType::Interval,
+               .startTimeStr = std::string("0217"),
+               .endTimeStr = "0239",
+               .description = "study",
+               .source_span = SourceSpan{.file_path = "module-smoke.txt",
+                                         .line_start = 8,
+                                         .line_end = 8,
+                                         .column_start = 1,
+                                         .column_end = 14,
+                                         .raw_text = "0217-0239study"}});
+
+  std::vector<DailyLog> wrapped_interval_days{wrapped_interval_day};
+  std::vector<Diagnostic> wrapped_interval_diagnostics;
+  const bool wrapped_interval_ok = struct_validator.Validate(
+      "module-smoke.txt", wrapped_interval_days,
+      wrapped_interval_diagnostics);
+  Expect(wrapped_interval_ok,
+         "StructValidator should allow monotonic wrapped cross-midnight intervals.",
+         failures);
+  Expect(wrapped_interval_diagnostics.empty(),
+         "Wrapped interval chain should not emit diagnostics.",
+         failures);
+
+  ConverterConfig converter_config = BuildTestConfig();
+  DayProcessor processor(converter_config);
+
+  DailyLog cross_midnight_point_too_long_day;
+  cross_midnight_point_too_long_day.date = "2026-03-11";
+  cross_midnight_point_too_long_day.isContinuation = true;
+  cross_midnight_point_too_long_day.rawEvents.push_back(
+      RawEvent{.kind = RawEventKindType::Interval,
+               .startTimeStr = std::string("2132"),
+               .endTimeStr = "0135",
+               .description = "sleep",
+               .source_span = SourceSpan{.file_path = "module-smoke.txt",
+                                         .line_start = 19,
+                                         .line_end = 19,
+                                         .column_start = 1,
+                                         .column_end = 14,
+                                         .raw_text = "2132-0135sleep"}});
+  cross_midnight_point_too_long_day.rawEvents.push_back(
+      RawEvent{.kind = RawEventKindType::Point,
+               .endTimeStr = "2350",
+               .description = "study",
+               .source_span = SourceSpan{.file_path = "module-smoke.txt",
+                                         .line_start = 20,
+                                         .line_end = 20,
+                                         .column_start = 1,
+                                         .column_end = 9,
+                                         .raw_text = "2350study"}});
+  DailyLog previous_for_cross_midnight_point;
+  previous_for_cross_midnight_point.date = "2026-03-10";
+  processor.Process(previous_for_cross_midnight_point,
+                    cross_midnight_point_too_long_day);
+
+  Expect(cross_midnight_point_too_long_day.processedActivities.size() == 2,
+         "Point event after cross-midnight interval should still produce a derived activity.",
+         failures);
+  if (cross_midnight_point_too_long_day.processedActivities.size() == 2) {
+    const auto& trailing_activity =
+        cross_midnight_point_too_long_day.processedActivities.back();
+    Expect(trailing_activity.start_time_str == "01:35" &&
+               trailing_activity.end_time_str == "23:50",
+           "Point event after cross-midnight interval should start at the previous interval end.",
+           failures);
+    Expect(trailing_activity.duration_seconds == ((22 * 60) + 15) * 60,
+           "Point event after cross-midnight interval should not be reinterpreted as same-day 23:50.",
+           failures);
+  }
+
+  std::vector<DailyLog> cross_midnight_point_too_long_days{
+      cross_midnight_point_too_long_day};
+  std::vector<Diagnostic> cross_midnight_point_too_long_diagnostics;
+  const bool cross_midnight_point_too_long_ok = struct_validator.Validate(
+      "module-smoke.txt", cross_midnight_point_too_long_days,
+      cross_midnight_point_too_long_diagnostics);
+  Expect(!cross_midnight_point_too_long_ok,
+         "StructValidator should reject too-long point activity after cross-midnight interval.",
+         failures);
+  Expect(std::any_of(
+             cross_midnight_point_too_long_diagnostics.begin(),
+             cross_midnight_point_too_long_diagnostics.end(),
+             [](const Diagnostic& diagnostic) -> bool {
+               return diagnostic.code == "activity.duration.too_long";
+             }),
+         "Too-long point activity after cross-midnight interval should report duration diagnostic.",
+         failures);
+
+  DailyLog cross_midnight_point_allowed_day =
+      cross_midnight_point_too_long_day;
+  cross_midnight_point_allowed_day.rawEvents.back().remark =
+      "special case @allow-long";
+  processor.Process(previous_for_cross_midnight_point,
+                    cross_midnight_point_allowed_day);
+
+  std::vector<DailyLog> cross_midnight_point_allowed_days{
+      cross_midnight_point_allowed_day};
+  std::vector<Diagnostic> cross_midnight_point_allowed_diagnostics;
+  const bool cross_midnight_point_allowed_ok = struct_validator.Validate(
+      "module-smoke.txt", cross_midnight_point_allowed_days,
+      cross_midnight_point_allowed_diagnostics);
+  Expect(cross_midnight_point_allowed_ok,
+         "StructValidator should allow too-long point activity when @allow-long is authored.",
+         failures);
+  Expect(cross_midnight_point_allowed_diagnostics.empty(),
+         "@allow-long point activity after cross-midnight interval should not emit diagnostics.",
+         failures);
+
+  DailyLog cross_midnight_interval_overlap_day;
+  cross_midnight_interval_overlap_day.date = "2026-03-12";
+  cross_midnight_interval_overlap_day.rawEvents.push_back(
+      RawEvent{.kind = RawEventKindType::Interval,
+               .startTimeStr = std::string("2300"),
+               .endTimeStr = "0100",
+               .description = "sleep",
+               .source_span = SourceSpan{.file_path = "module-smoke.txt",
+                                         .line_start = 21,
+                                         .line_end = 21,
+                                         .column_start = 1,
+                                         .column_end = 14,
+                                         .raw_text = "2300-0100sleep"}});
+  cross_midnight_interval_overlap_day.rawEvents.push_back(
+      RawEvent{.kind = RawEventKindType::Interval,
+               .startTimeStr = std::string("0030"),
+               .endTimeStr = "0200",
+               .description = "study",
+               .remark = "special case @allow-long",
+               .source_span = SourceSpan{.file_path = "module-smoke.txt",
+                                         .line_start = 22,
+                                         .line_end = 22,
+                                         .column_start = 1,
+                                         .column_end = 34,
+                                         .raw_text =
+                                             "0030-0200study # @allow-long"}});
+  std::vector<DailyLog> cross_midnight_interval_overlap_days{
+      cross_midnight_interval_overlap_day};
+  std::vector<Diagnostic> cross_midnight_interval_overlap_diagnostics;
+  const bool cross_midnight_interval_overlap_ok = struct_validator.Validate(
+      "module-smoke.txt", cross_midnight_interval_overlap_days,
+      cross_midnight_interval_overlap_diagnostics);
+  Expect(!cross_midnight_interval_overlap_ok,
+         "StructValidator should reject overlapping interval after cross-midnight interval.",
+         failures);
+  Expect(std::any_of(
+             cross_midnight_interval_overlap_diagnostics.begin(),
+             cross_midnight_interval_overlap_diagnostics.end(),
+             [](const Diagnostic& diagnostic) -> bool {
+               return diagnostic.code == "timeline.event.overlap";
+             }),
+         "@allow-long should not bypass cross-midnight interval overlap.",
+         failures);
+
+  DailyLog cross_midnight_interval_gap_day;
+  cross_midnight_interval_gap_day.date = "2026-03-13";
+  cross_midnight_interval_gap_day.rawEvents.push_back(
+      RawEvent{.kind = RawEventKindType::Interval,
+               .startTimeStr = std::string("2300"),
+               .endTimeStr = "0100",
+               .description = "sleep",
+               .source_span = SourceSpan{.file_path = "module-smoke.txt",
+                                         .line_start = 23,
+                                         .line_end = 23,
+                                         .column_start = 1,
+                                         .column_end = 14,
+                                         .raw_text = "2300-0100sleep"}});
+  cross_midnight_interval_gap_day.rawEvents.push_back(
+      RawEvent{.kind = RawEventKindType::Interval,
+               .startTimeStr = std::string("0130"),
+               .endTimeStr = "0200",
+               .description = "study",
+               .source_span = SourceSpan{.file_path = "module-smoke.txt",
+                                         .line_start = 24,
+                                         .line_end = 24,
+                                         .column_start = 1,
+                                         .column_end = 14,
+                                         .raw_text = "0130-0200study"}});
+  std::vector<DailyLog> cross_midnight_interval_gap_days{
+      cross_midnight_interval_gap_day};
+  std::vector<Diagnostic> cross_midnight_interval_gap_diagnostics;
+  const bool cross_midnight_interval_gap_ok = struct_validator.Validate(
+      "module-smoke.txt", cross_midnight_interval_gap_days,
+      cross_midnight_interval_gap_diagnostics);
+  Expect(cross_midnight_interval_gap_ok,
+         "StructValidator should allow a gap after a cross-midnight interval.",
+         failures);
+  Expect(cross_midnight_interval_gap_diagnostics.empty(),
+         "Gap after cross-midnight interval should not emit diagnostics.",
+         failures);
+
+  DailyLog zero_interval_day;
+  zero_interval_day.date = "2026-03-06";
+  zero_interval_day.rawEvents.push_back(
+      RawEvent{.kind = RawEventKindType::Interval,
+               .startTimeStr = std::string("1030"),
+               .endTimeStr = "1030",
+               .description = "study",
+               .source_span = SourceSpan{.file_path = "module-smoke.txt",
+                                         .line_start = 9,
+                                         .line_end = 9,
+                                         .column_start = 1,
+                                         .column_end = 14,
+                                         .raw_text = "1030-1030study"}});
+
+  std::vector<DailyLog> zero_interval_days{zero_interval_day};
+  std::vector<Diagnostic> zero_interval_diagnostics;
+  const bool zero_interval_ok = struct_validator.Validate(
+      "module-smoke.txt", zero_interval_days, zero_interval_diagnostics);
+  Expect(!zero_interval_ok,
+         "StructValidator should reject zero-duration interval ranges.",
+         failures);
+  Expect(std::any_of(
+             zero_interval_diagnostics.begin(),
+             zero_interval_diagnostics.end(),
+             [](const Diagnostic& diagnostic) -> bool {
+               return diagnostic.code == "timeline.interval.invalid_range";
+             }),
+         "Zero-duration interval should report invalid_range diagnostic.",
+         failures);
+
+  DailyLog too_long_interval_day;
+  too_long_interval_day.date = "2026-03-08";
+  too_long_interval_day.isContinuation = true;
+  too_long_interval_day.rawEvents.push_back(
+      RawEvent{.kind = RawEventKindType::Interval,
+               .startTimeStr = std::string("1030"),
+               .endTimeStr = "0900",
+               .description = "study",
+               .source_span = SourceSpan{.file_path = "module-smoke.txt",
+                                         .line_start = 15,
+                                         .line_end = 15,
+                                         .column_start = 1,
+                                         .column_end = 14,
+                                         .raw_text = "1030-0900study"}});
+  DailyLog previous_for_too_long;
+  previous_for_too_long.date = "2026-03-07";
+  processor.Process(previous_for_too_long, too_long_interval_day);
+
+  std::vector<DailyLog> too_long_interval_days{too_long_interval_day};
+  std::vector<Diagnostic> too_long_interval_diagnostics;
+  const bool too_long_interval_ok = struct_validator.Validate(
+      "module-smoke.txt", too_long_interval_days,
+      too_long_interval_diagnostics);
+  Expect(!too_long_interval_ok,
+         "StructValidator should reject cross-midnight intervals over 16h without @allow-long.",
+         failures);
+  Expect(std::any_of(
+             too_long_interval_diagnostics.begin(),
+             too_long_interval_diagnostics.end(),
+             [](const Diagnostic& diagnostic) -> bool {
+               return diagnostic.code == "activity.duration.too_long";
+             }),
+         "Too-long cross-midnight interval should report duration diagnostic.",
+         failures);
+  Expect(std::none_of(
+             too_long_interval_diagnostics.begin(),
+             too_long_interval_diagnostics.end(),
+             [](const Diagnostic& diagnostic) -> bool {
+               return diagnostic.code == "timeline.interval.invalid_range";
+             }),
+         "Too-long cross-midnight interval should not be rejected as invalid_range.",
+         failures);
+
+  DailyLog boundary_overlap_interval_day;
+  boundary_overlap_interval_day.date = "2026-03-10";
+  boundary_overlap_interval_day.isContinuation = true;
+  boundary_overlap_interval_day.rawEvents.push_back(
+      RawEvent{.kind = RawEventKindType::Interval,
+               .startTimeStr = std::string("0900"),
+               .endTimeStr = "1200",
+               .description = "sleep",
+               .source_span = SourceSpan{.file_path = "module-smoke.txt",
+                                         .line_start = 17,
+                                         .line_end = 17,
+                                         .column_start = 1,
+                                         .column_end = 14,
+                                         .raw_text = "0900-1200sleep"}});
+  boundary_overlap_interval_day.rawEvents.push_back(
+      RawEvent{.kind = RawEventKindType::Interval,
+               .startTimeStr = std::string("1030"),
+               .endTimeStr = "0900",
+               .description = "study",
+               .remark = "special case @allow-long",
+               .source_span = SourceSpan{.file_path = "module-smoke.txt",
+                                         .line_start = 18,
+                                         .line_end = 18,
+                                         .column_start = 1,
+                                         .column_end = 34,
+                                         .raw_text =
+                                             "1030-0900study # @allow-long"}});
+  DailyLog previous_for_boundary_overlap;
+  previous_for_boundary_overlap.date = "2026-03-09";
+  processor.Process(previous_for_boundary_overlap, boundary_overlap_interval_day);
+
+  std::vector<DailyLog> boundary_overlap_interval_days{
+      boundary_overlap_interval_day};
+  std::vector<Diagnostic> boundary_overlap_interval_diagnostics;
+  const bool boundary_overlap_interval_ok = struct_validator.Validate(
+      "module-smoke.txt", boundary_overlap_interval_days,
+      boundary_overlap_interval_diagnostics);
+  Expect(!boundary_overlap_interval_ok,
+         "StructValidator should reject cross-midnight interval text that starts before the last boundary.",
+         failures);
+  Expect(std::any_of(
+             boundary_overlap_interval_diagnostics.begin(),
+             boundary_overlap_interval_diagnostics.end(),
+             [](const Diagnostic& diagnostic) -> bool {
+               return diagnostic.code == "timeline.event.overlap";
+             }),
+         "Boundary-overlapping cross-midnight interval should report overlap.",
+         failures);
+
+  DailyLog allowed_long_interval_day;
+  allowed_long_interval_day.date = "2026-03-09";
+  allowed_long_interval_day.isContinuation = true;
+  allowed_long_interval_day.rawEvents.push_back(
+      RawEvent{.kind = RawEventKindType::Interval,
+               .startTimeStr = std::string("1030"),
+               .endTimeStr = "0900",
+               .description = "study",
+               .remark = "special case @allow-long",
+               .source_span = SourceSpan{.file_path = "module-smoke.txt",
+                                         .line_start = 16,
+                                         .line_end = 16,
+                                         .column_start = 1,
+                                         .column_end = 34,
+                                         .raw_text =
+                                             "1030-0900study # @allow-long"}});
+  DailyLog previous_for_allowed_long;
+  previous_for_allowed_long.date = "2026-03-08";
+  processor.Process(previous_for_allowed_long, allowed_long_interval_day);
+
+  Expect(allowed_long_interval_day.processedActivities.size() == 1,
+         "Allowed long cross-midnight interval should produce one activity.",
+         failures);
+  if (!allowed_long_interval_day.processedActivities.empty()) {
+    Expect(allowed_long_interval_day.processedActivities.front()
+               .duration_seconds == ((22 * 60) + 30) * 60,
+           "Allowed long cross-midnight interval should keep next-day duration.",
+           failures);
+  }
+
+  std::vector<DailyLog> allowed_long_interval_days{allowed_long_interval_day};
+  std::vector<Diagnostic> allowed_long_interval_diagnostics;
+  const bool allowed_long_interval_ok = struct_validator.Validate(
+      "module-smoke.txt", allowed_long_interval_days,
+      allowed_long_interval_diagnostics);
+  Expect(allowed_long_interval_ok,
+         "StructValidator should allow >16h cross-midnight intervals with @allow-long.",
+         failures);
+  Expect(allowed_long_interval_diagnostics.empty(),
+         "Allowed long cross-midnight interval should not emit diagnostics.",
          failures);
 }
 

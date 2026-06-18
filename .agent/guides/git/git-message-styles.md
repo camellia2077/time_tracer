@@ -61,7 +61,8 @@ Release-Version: vX.Y.Z
 ## Section Rules
 
 - `[Summary]` 必填
-- `[Component Versions]` 可选；仅在需要说明 libs / cli / android presentation 等子系统独立版本线或版本状态时出现
+- [Component Versions] 可选；仅在需要说明 libs / cli / android presentation 等子系统独立版本线或版本状态时出现
+- 仅修改 android 且未改 libs 时，可只写 android 版本；libs: unchanged 可写可不写（不强制）
 - `[Verification]` 必填
 - `[Breaking Changes]` 仅在存在 breaking changes 时出现
 - `[Added]`、`[Changed & Refactored]`、`[Fixed]` 按实际改动保留
@@ -99,3 +100,4 @@ refactor: simplify module structure
 
 Release-Version: vX.Y.Z
 ```
+

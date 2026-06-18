@@ -16,7 +16,7 @@ expect_files = ["{db_path}"]
 [[commands]]
 name = "Doctor Sees Runtime Database File"
 stage = "persistence-runtime"
-args = ["doctor", "--db", "{db_path}"]
+args = ["system", "doctor", "--db", "{db_path}"]
 expect_exit = 0
 expect_stdout_contains = [
   "db_file ->",

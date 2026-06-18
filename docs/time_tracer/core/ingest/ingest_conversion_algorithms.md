@@ -5,6 +5,7 @@
 若要理解“单日总时长可超过 `24h`”、“wake anchor 是什么”、“自动补出的 `sleep_night` 与 day status 的区别”，请先阅读：
 
 - `docs/time_tracer/core/ingest/day_bucket_and_wake_anchor_semantics.md`
+- `docs/time_tracer/core/ingest/interval_event_and_mixed_timeline_semantics.md`
 
 权威代码入口（以实现为准）：
 - `libs/tracer_core/src/application/parser/text_parser.cpp`
@@ -18,7 +19,7 @@
 ## 1. 输入与输出
 
 输入：
-- 年/月/日+事件行文本（例如 `y2021`、`0101`、`0827英语单词`）
+- 年/月/日+事件行文本（例如 `y2021`、`0101`、`0827英语单词`、`0900-1030概率统计`）
 
 输出（入库前）：
 - `ParsedData`
@@ -52,9 +53,12 @@ txt
    1. 4 位数字视为 `MMDD`。
    2. 拼成 `YYYY-MM-DD` 并开启新 `DailyLog`。
 4. 事件行
-   1. 前 4 位必须是 `HHMM` 且时分合法（`00:00`~`23:59`）。
-   2. 后半段解析描述和备注，备注分隔符支持 `//`、`#`、`;`。
-   3. 写入 `RawEvent{endTimeStr, description, remark, source_span}`。
+   1. 当前实现主路径仍以点事件 `HHMM + token` 为主。
+   2. 目标语义下，事件行允许是点事件或区间事件：
+      1. 点事件：`HHMM + token`
+      2. 区间事件：`HHMM-HHMM + token`
+   3. 备注分隔符继续支持 `//`、`#`、`;`。
+   4. 解析阶段应保留足够信息供后续转换为标准活动区间。
 5. 起床与续写识别
    1. 描述命中 `wake_keywords` 时记录 `getupTime`。
    2. 如果首事件不是 wake 且无 `getupTime`，标记 `isContinuation=true`（表示延续上一天）。
@@ -83,12 +87,19 @@ txt
 `DayProcessor::Process(...)` 由三部分组成：
 
 1. `ActivityMapper::MapActivities`
-   1. 以 `getupTime` 作为首段起点。
-   2. 遍历 `rawEvents`，每个事件的 `endTime` 构成当前段终点。
-   3. `description` 先经过 `text_mapping` / `text_duration_mapping` 映射。
-   4. 计算时长（分钟）后应用 `duration_mappings` 规则二次映射。
-   5. 项目路径按 `_` 分层，应用 `top_parent_mapping` / `initial_top_parents` 后重组。
-   6. 生成 `BaseActivityRecord`（含 `start/end/project_path/remark/source_span`）。
+   1. 以 `getupTime` 或上一有效边界作为首段起点。
+   2. 在传统点事件模式下：
+      1. 遍历 `rawEvents`，每个事件的 `endTime` 构成当前段终点。
+      2. 当前活动区间由“上一边界 -> 当前事件时间”得到。
+   3. 在目标混用语义下：
+      1. 点事件继续使用“最后已知时间边界 -> 当前点时间”
+      2. 区间事件直接使用显式 `start -> end`
+      3. 区间事件完成后，应把最后已知时间边界推进到显式结束时间
+      4. 两个已记录区间之间允许存在未记录时间缺口
+   4. `description` 先经过 `text_mapping` / `text_duration_mapping` 映射。
+   5. 计算时长（分钟）后应用 `duration_mappings` 规则二次映射。
+   6. 项目路径按 `_` 分层，应用 `top_parent_mapping` / `initial_top_parents` 后重组。
+   7. 生成 `BaseActivityRecord`（含 `start/end/project_path/remark/source_span`）。
 2. 同日跨天睡眠补全
    1. 若 `previous_day` 存在末事件且 `current_day` 有有效 `getupTime`，在当天头部插入 `sleep_night`。
 3. 续写日修复
@@ -168,3 +179,4 @@ txt
 2. 跨日/跨月睡眠自动补链：同月在 `DayProcessor`，跨月在 `LogLinker`。
 3. 路径协议固定：数据库内部层级分隔符统一 `_`。
 4. 容错策略明确：日期不可解析的日数据在 `MemoryParser` 被过滤并记录告警。
+5. 目标混用语义下，允许未记录时间缺口；查询和报表只统计最终生成的标准 record facts。

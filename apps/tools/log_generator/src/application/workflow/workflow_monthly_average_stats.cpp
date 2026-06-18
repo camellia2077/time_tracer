@@ -17,7 +17,9 @@ namespace {
 constexpr int kMinutesPerDay = 24 * 60;
 
 struct ParsedEventForStats {
-  int minute_of_day = 0;
+  int start_minute_of_day = 0;
+  int end_minute_of_day = 0;
+  bool is_interval = false;
   std::string description;
 };
 
@@ -61,6 +63,16 @@ auto IsEventLine(std::string_view line) -> bool {
   return std::ranges::all_of(line.substr(0, 4), [](char value) -> bool {
     return IsAsciiDigit(value);
   });
+}
+
+auto IsIntervalEventLine(std::string_view line) -> bool {
+  if (line.size() < 10) {
+    return false;
+  }
+  return IsEventLine(line) && line[4] == '-' &&
+         std::ranges::all_of(line.substr(5, 4), [](char value) -> bool {
+           return IsAsciiDigit(value);
+         });
 }
 
 auto ParseMinute(std::string_view hhmm) -> int {
@@ -126,13 +138,18 @@ auto ParseMonthDaysForStats(
       continue;
     }
 
-    const int minute_of_day = ParseMinute(view.substr(0, 4));
-    std::string description = ExtractDescription(view.substr(4));
+    const bool is_interval = IsIntervalEventLine(view);
+    const int start_minute_of_day = ParseMinute(view.substr(0, 4));
+    const int end_minute_of_day =
+        is_interval ? ParseMinute(view.substr(5, 4)) : start_minute_of_day;
+    const std::string_view description_tail =
+        is_interval ? view.substr(9) : view.substr(4);
+    std::string description = ExtractDescription(description_tail);
     const bool is_wake = wake_keywords.contains(description);
 
     if (is_wake) {
       if (!current_day->getup_minute.has_value()) {
-        current_day->getup_minute = minute_of_day;
+        current_day->getup_minute = end_minute_of_day;
       }
     } else if (!current_day->getup_minute.has_value() &&
                current_day->events.empty()) {
@@ -142,7 +159,9 @@ auto ParseMonthDaysForStats(
     }
 
     current_day->events.push_back(
-        ParsedEventForStats{.minute_of_day = minute_of_day,
+        ParsedEventForStats{.start_minute_of_day = start_minute_of_day,
+                            .end_minute_of_day = end_minute_of_day,
+                            .is_interval = is_interval,
                             .description = std::move(description)});
   }
 
@@ -179,22 +198,28 @@ auto CalculateMonthAverageFromDays(
       const bool is_wake = wake_keywords.contains(event.description);
       if (is_wake) {
         if (!current_start_minute.has_value()) {
-          current_start_minute = event.minute_of_day;
+          current_start_minute = event.end_minute_of_day;
         }
+        continue;
+      }
+
+      if (event.is_interval) {
+        day_minutes +=
+            DiffWrapMinutes(event.start_minute_of_day, event.end_minute_of_day);
+        current_start_minute = event.end_minute_of_day;
         continue;
       }
 
       if (!current_start_minute.has_value()) {
         continue;
       }
-
       day_minutes +=
-          DiffWrapMinutes(*current_start_minute, event.minute_of_day);
-      current_start_minute = event.minute_of_day;
+          DiffWrapMinutes(*current_start_minute, event.end_minute_of_day);
+      current_start_minute = event.end_minute_of_day;
     }
 
     if (!day.events.empty()) {
-      previous_day_last_minute = day.events.back().minute_of_day;
+      previous_day_last_minute = day.events.back().end_minute_of_day;
     }
 
     total_minutes += day_minutes;

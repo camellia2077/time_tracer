@@ -18,7 +18,9 @@ DEFAULT_WAKE_KEYWORD = "起床"
 
 @dataclass
 class ParsedEvent:
-    minute_of_day: int
+    start_minute_of_day: int
+    end_minute_of_day: int
+    is_interval: bool
     description: str
 
 
@@ -49,6 +51,10 @@ def is_day_marker(line: str) -> bool:
 
 def is_event_line(line: str) -> bool:
     return len(line) >= 5 and line[:4].isdigit()
+
+
+def is_interval_event_line(line: str) -> bool:
+    return len(line) >= 10 and is_event_line(line) and line[4] == "-" and line[5:9].isdigit()
 
 
 def parse_minute_of_day(hhmm: str) -> int:
@@ -104,17 +110,28 @@ def parse_month_file(path: Path, wake_keywords: set[str]) -> list[ParsedDay]:
         if current_day is None or not is_event_line(line):
             continue
 
-        minute_of_day = parse_minute_of_day(line[:4])
-        description = extract_description(line[4:])
+        is_interval = is_interval_event_line(line)
+        start_minute_of_day = parse_minute_of_day(line[:4])
+        end_minute_of_day = (
+            parse_minute_of_day(line[5:9]) if is_interval else start_minute_of_day
+        )
+        description = extract_description(line[9:] if is_interval else line[4:])
         is_wake_event = description in wake_keywords
 
         if is_wake_event:
             if current_day.getup_minute is None:
-                current_day.getup_minute = minute_of_day
+                current_day.getup_minute = end_minute_of_day
         elif current_day.getup_minute is None and not current_day.events:
             current_day.is_continuation = True
 
-        current_day.events.append(ParsedEvent(minute_of_day=minute_of_day, description=description))
+        current_day.events.append(
+            ParsedEvent(
+                start_minute_of_day=start_minute_of_day,
+                end_minute_of_day=end_minute_of_day,
+                is_interval=is_interval,
+                description=description,
+            )
+        )
 
     return days
 
@@ -156,17 +173,24 @@ def calculate_day_minutes(
     for event in day.events:
         if event.description in wake_keywords:
             if current_start is None:
-                current_start = event.minute_of_day
+                current_start = event.end_minute_of_day
+            continue
+
+        if event.is_interval:
+            day_minutes += diff_wrap_minutes(
+                event.start_minute_of_day, event.end_minute_of_day
+            )
+            current_start = event.end_minute_of_day
             continue
 
         if current_start is None:
             continue
 
-        day_minutes += diff_wrap_minutes(current_start, event.minute_of_day)
-        current_start = event.minute_of_day
+        day_minutes += diff_wrap_minutes(current_start, event.end_minute_of_day)
+        current_start = event.end_minute_of_day
 
     if day.events:
-        previous_day_last_minute = day.events[-1].minute_of_day
+        previous_day_last_minute = day.events[-1].end_minute_of_day
 
     return day_minutes, previous_day_last_minute
 

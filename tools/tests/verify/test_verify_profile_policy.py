@@ -17,3 +17,9 @@ class TestVerifyProfilePolicy(TestCase):
             resolve_suite_config_override("tracer_android", "android_ci"),
             "config_android_ci.toml",
         )
+
+    def test_tracer_android_release_device_uses_release_device_config(self):
+        self.assertEqual(
+            resolve_suite_config_override("tracer_android", "android_release_device"),
+            "config_android_release_device.toml",
+        )

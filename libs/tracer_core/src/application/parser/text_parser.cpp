@@ -24,6 +24,10 @@ constexpr size_t kDayMarkerLength = 4;
 constexpr size_t kDayDigitsLength = 2;
 constexpr size_t kDayStartOffset = 2;
 constexpr size_t kTimeDigitsLength = 4;
+constexpr size_t kIntervalSeparatorOffset = 4;
+constexpr char kIntervalSeparator = '-';
+constexpr size_t kIntervalEndOffset = 5;
+constexpr size_t kIntervalMinimumLength = 10;
 constexpr size_t kTimeHourOffset = 0;
 constexpr size_t kTimeHourLength = 2;
 constexpr size_t kTimeMinuteOffset = 2;
@@ -57,6 +61,20 @@ auto FormatTime(const std::string& time_str_hhmm) -> std::string {
   }
   throw std::runtime_error(prefix + "Parse error: " + message + " => '" + line +
                            "'");
+}
+
+[[nodiscard]] auto IsValidHhmm(std::string_view hhmm) -> bool {
+  if (hhmm.length() != kTimeDigitsLength ||
+      !std::ranges::all_of(hhmm,
+                           [](char value) -> bool { return IsAsciiDigit(value); })) {
+    return false;
+  }
+
+  const int hour =
+      ((hhmm[kTimeHourOffset] - '0') * 10) + (hhmm[kTimeHourOffset + 1] - '0');
+  const int minute = ((hhmm[kTimeMinuteOffset] - '0') * 10) +
+                     (hhmm[kTimeMinuteOffset + 1] - '0');
+  return hour <= kMaxHour && minute <= kMaxMinute;
 }
 }  // namespace
 
@@ -199,22 +217,27 @@ auto TextParser::ProcessEventContext(DailyLog& current_day,
     }
   }
 
+  const bool is_first_semantic_event =
+      current_day.getupTime.empty() && current_day.rawEvents.empty();
+
   if (is_wake) {
     // Wake keywords define the day-level wake anchor, not a sleep activity.
     // Parser ownership stops at establishing first-event day semantics.
     // Only the first semantic event may establish that anchor here; later wake
     // keywords are not rejected in parser, but must be rejected later by
     // logic validation and must not redefine the day.
-    if (current_day.getupTime.empty() && current_day.rawEvents.empty()) {
-      current_day.getupTime = FormatTime(std::string(input.time_str_hhmm));
+    if (input.kind == RawEventKind::Point && is_first_semantic_event) {
+      current_day.getupTime = FormatTime(std::string(input.end_time_str_hhmm));
     }
 
-  } else {
-    // No wake on the first semantic event means this day continues a previous
-    // overnight segment. This affects wake-anchor status, not activity naming.
-    if (current_day.getupTime.empty() && current_day.rawEvents.empty()) {
-      current_day.isContinuation = true;
-    }
+    return is_wake;
+  }
+
+  // A first point event without wake semantics needs previous-day context to
+  // close its leading segment. A first interval event is self-contained and
+  // must not inherit a previous-day boundary.
+  if (input.kind == RawEventKind::Point && is_first_semantic_event) {
+    current_day.isContinuation = true;
   }
   return is_wake;
 }
@@ -244,32 +267,60 @@ auto TextParser::ParseLine(const std::string& line, int line_number,
                     "Invalid event line format");
   }
 
-  const int kHour =
-      ((line[kTimeHourOffset] - '0') * 10) + (line[kTimeHourOffset + 1] - '0');
-  const int kMinute = ((line[kTimeMinuteOffset] - '0') * 10) +
-                      (line[kTimeMinuteOffset + 1] - '0');
-
-  if (kHour > kMaxHour || kMinute > kMaxMinute) {
-    ThrowParseError(source_file, line_number, line, "Time out of range");
+  RawEventKind event_kind = RawEventKind::Point;
+  std::optional<std::string> start_time_hhmm;
+  std::string end_time_hhmm;
+  std::string_view event_payload;
+  if (line.length() >= kIntervalMinimumLength &&
+      line[kIntervalSeparatorOffset] == kIntervalSeparator) {
+    const std::string_view start_hhmm(line.data(), kTimeDigitsLength);
+    const std::string_view end_hhmm(line.data() + kIntervalEndOffset,
+                                    kTimeDigitsLength);
+    if (!IsValidHhmm(start_hhmm) || !IsValidHhmm(end_hhmm)) {
+      ThrowParseError(source_file, line_number, line, "Time out of range");
+    }
+    event_kind = RawEventKind::Interval;
+    start_time_hhmm = std::string(start_hhmm);
+    end_time_hhmm = std::string(end_hhmm);
+    event_payload = std::string_view(line).substr(kIntervalEndOffset +
+                                                  kTimeDigitsLength);
+  } else {
+    const std::string_view end_hhmm(line.data(), kTimeDigitsLength);
+    if (!IsValidHhmm(end_hhmm)) {
+      ThrowParseError(source_file, line_number, line, "Time out of range");
+    }
+    end_time_hhmm = std::string(end_hhmm);
+    event_payload = std::string_view(line).substr(kTimeDigitsLength);
   }
 
-  std::string time_str_hhmm = line.substr(0, kTimeDigitsLength);
-  RemarkResult remark_data = ExtractRemark(line.substr(kTimeDigitsLength));
+  RemarkResult remark_data = ExtractRemark(event_payload);
 
   if (remark_data.description.empty()) {
     ThrowParseError(source_file, line_number, line,
                     "Missing activity description");
   }
 
-  ProcessEventContext(current_day, {.description = remark_data.description,
-                                    .time_str_hhmm = time_str_hhmm});
+  std::optional<std::string_view> start_time_view;
+  if (start_time_hhmm.has_value()) {
+    start_time_view = *start_time_hhmm;
+  }
 
-  current_day.rawEvents.push_back(
-      {time_str_hhmm, remark_data.description, remark_data.remark,
-       SourceSpan{.file_path = std::string(source_file),
-                  .line_start = line_number,
-                  .line_end = line_number,
-                  .column_start = 1,
-                  .column_end = static_cast<int>(line.length()),
-                  .raw_text = line}});
+  ProcessEventContext(current_day, {.kind = event_kind,
+                                    .description = remark_data.description,
+                                    .start_time_str_hhmm = start_time_view,
+                                    .end_time_str_hhmm = end_time_hhmm});
+
+  RawEvent raw_event;
+  raw_event.kind = event_kind;
+  raw_event.startTimeStr = std::move(start_time_hhmm);
+  raw_event.endTimeStr = std::move(end_time_hhmm);
+  raw_event.description = std::move(remark_data.description);
+  raw_event.remark = std::move(remark_data.remark);
+  raw_event.source_span = SourceSpan{.file_path = std::string(source_file),
+                                     .line_start = line_number,
+                                     .line_end = line_number,
+                                     .column_start = 1,
+                                     .column_end = static_cast<int>(line.length()),
+                                     .raw_text = line};
+  current_day.rawEvents.push_back(std::move(raw_event));
 }

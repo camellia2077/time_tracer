@@ -9,8 +9,17 @@
 #include "domain/model/source_span.hpp"
 #include "domain/model/time_data_models.hpp"
 
-// RawEvent 属于 Converter 解析阶段的中间产物，保留在此
+// RawEvent is the authored-event fact model used between parsing and
+// conversion. Point events only carry an end boundary; interval events keep an
+// explicit start/end pair until canonical activity records are materialized.
+enum class RawEventKind {
+  Point,
+  Interval,
+};
+
 struct RawEvent {
+  RawEventKind kind = RawEventKind::Point;
+  std::optional<std::string> startTimeStr;
   std::string endTimeStr;
   std::string description;
   std::string remark;

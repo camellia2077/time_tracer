@@ -78,6 +78,7 @@ auto HandleActivitySuggestQuery(
       request.lookback_days.value_or(kDefaultSuggestLookbackDays);
   options.limit =
       request.top_n.value_or(request.limit.value_or(kDefaultSuggestLimit));
+  options.anchor_date = request.anchor_date;
   options.prefix = request.activity_prefix;
   options.score_by_duration = request.activity_score_by_duration;
   const auto kRows =

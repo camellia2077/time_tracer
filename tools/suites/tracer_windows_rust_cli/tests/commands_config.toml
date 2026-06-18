@@ -3,7 +3,7 @@
 [[commands]]
 name = "Doctor Runtime Config"
 stage = "config"
-args = ["doctor"]
+args = ["system", "doctor"]
 expect_exit = 0
 expect_stdout_contains = [
   "Runtime Doctor",
@@ -15,7 +15,7 @@ expect_stdout_contains = [
 [[commands]]
 name = "Chart Heatmap Palette Config Loads"
 stage = "config"
-args = ["chart", "--list-heatmap-palettes"]
+args = ["report", "chart", "--list-heatmap-palettes"]
 expect_exit = 0
 expect_stdout_contains = [
   "Heatmap palettes",

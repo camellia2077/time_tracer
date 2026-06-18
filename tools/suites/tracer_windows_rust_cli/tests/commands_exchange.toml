@@ -148,7 +148,7 @@ expect_files = [
   "{exe_dir}/output/db/time_data.sqlite3",
 ]
 expect_file_contains = [
-  "{exe_dir}/input/full/2026/2026-03.txt::0210cliimportalias",
+  "{exe_dir}/input/full/2026/2026-03.txt::0329cliimportalias",
   "{exe_dir}/config/converter/aliases/zzdemo.toml::\"cliimportalias\" = \"only\"",
 ]
 

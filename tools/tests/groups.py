@@ -2,6 +2,7 @@ from __future__ import annotations
 
 VERIFY_STACK_TESTS: tuple[str, ...] = (
     "tools.tests.platform.core.test_capability_boundary_scan",
+    "tools.tests.platform.core.test_android_native_bridge_signature_guard",
     "tools.tests.platform.core.test_context_config_resolution",
     "tools.tests.platform.core.test_core_boundary_policy",
     "tools.tests.platform.core.test_platform_config_sync",
@@ -39,6 +40,7 @@ VERIFY_STACK_TESTS: tuple[str, ...] = (
 
 PLATFORM_TESTS: tuple[str, ...] = (
     "tools.tests.platform.core.test_capability_boundary_scan",
+    "tools.tests.platform.core.test_android_native_bridge_signature_guard",
     "tools.tests.platform.core.test_context_config_resolution",
     "tools.tests.platform.core.test_core_boundary_policy",
     "tools.tests.platform.core.test_platform_config_sync",

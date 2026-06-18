@@ -20,6 +20,9 @@ library, client, and workflow documents before you search the repository.
 1. Change core business logic, use cases, workflow, config, query, or reports:
    - start with [architecture/libraries/tracer_core.md](architecture/libraries/tracer_core.md)
    - then use [Core Docs](core/README.md)
+   - for current TXT authored-event semantics (`HHMMtoken` point events,
+     `HHMM-HHMMtoken` interval events, mixed timeline validation, gap/overlap
+     rules), also open [libs/tracer_core/README.md](../../libs/tracer_core/README.md)
 2. Change runtime envelope, field readers, or request/response codecs:
    - start with [architecture/libraries/tracer_transport.md](architecture/libraries/tracer_transport.md)
 3. Change C API / JNI shared bridge helpers:
@@ -41,3 +44,19 @@ library, client, and workflow documents before you search the repository.
 2. [Core data query architecture](core/architecture/data_query/README.md)
 3. [Native modules guide](guides/native/native_modules.md)
 4. [Project history](history/)
+
+## Current TXT Timeline Semantics
+1. Current ingest accepts two authored event forms:
+   - point event: `HHMMtoken`
+   - interval event: `HHMM-HHMMtoken`
+2. Point/interval mixed-timeline semantics are implemented in `tracer_core`,
+   not in transport or IO layers.
+3. Current logic summary:
+   - point event means "this activity ends at `HHMM`"
+   - interval event means "this activity explicitly happened from `start` to `end`"
+   - mixed timelines advance by the last known boundary
+   - gaps are allowed and remain unrecorded
+   - overlaps and invalid interval ranges are rejected during validation
+   - wake keywords remain point-event-only semantics
+4. Read [libs/tracer_core/README.md](../../libs/tracer_core/README.md) first
+   when the task changes these rules or their tests.

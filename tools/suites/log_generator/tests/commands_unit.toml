@@ -1,0 +1,7 @@
+[[commands]]
+name = "Unit Formatter Checks"
+stage = "unit"
+raw_command = true
+args = ["{exe_dir}/log_generator_unit_tests.exe"]
+expect_exit = 0
+expect_stdout_contains = ["[PASS] log_generator_unit_tests"]

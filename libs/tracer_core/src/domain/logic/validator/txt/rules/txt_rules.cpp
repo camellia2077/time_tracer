@@ -13,6 +13,51 @@ using tracer::core::shared::string_utils::Trim;
 namespace {
 constexpr int kMinMonth = 1;
 constexpr int kMaxMonth = 12;
+
+[[nodiscard]] auto IsAsciiDigit(char value) -> bool {
+  return value >= '0' && value <= '9';
+}
+
+[[nodiscard]] auto IsValidHhmm(std::string_view hhmm) -> bool {
+  constexpr size_t kTimeDigitsLength = 4;
+  constexpr int kMaxHours = 23;
+  constexpr int kMaxMinutes = 59;
+  if (hhmm.length() != kTimeDigitsLength ||
+      !std::ranges::all_of(hhmm, [](char value) -> bool {
+        return IsAsciiDigit(value);
+      })) {
+    return false;
+  }
+
+  try {
+    const int hours = std::stoi(std::string(hhmm.substr(0, 2)));
+    const int minutes = std::stoi(std::string(hhmm.substr(2, 2)));
+    return hours >= 0 && hours <= kMaxHours && minutes >= 0 &&
+           minutes <= kMaxMinutes;
+  } catch (const std::exception&) {
+    return false;
+  }
+}
+
+struct ParsedEventLine {
+  std::string description;
+};
+
+auto ExtractRemarkAndDescription(std::string_view remaining_line)
+    -> ParsedEventLine {
+  size_t comment_pos = std::string::npos;
+  constexpr std::array<const char*, 3> kDelimiters = {"//", "#", ";"};
+  for (const char* delimiter : kDelimiters) {
+    const size_t pos = remaining_line.find(delimiter);
+    if (pos != std::string::npos &&
+        (comment_pos == std::string::npos || pos < comment_pos)) {
+      comment_pos = pos;
+    }
+  }
+
+  return {.description =
+              Trim(std::string(remaining_line.substr(0, comment_pos)))};
+}
 }  // namespace
 
 LineRules::LineRules(const ConverterConfig& config) : config_(config) {
@@ -79,52 +124,49 @@ auto LineRules::IsValidEventLine(const std::string& line, int line_number,
     -> bool {
   constexpr size_t kMinimumEventLineLength = 5;
   constexpr size_t kTimePrefixLength = 4;
-  constexpr int kMaxHours = 23;
-  constexpr int kMaxMinutes = 59;
+  constexpr size_t kIntervalSeparatorOffset = 4;
+  constexpr size_t kIntervalEndOffset = 5;
+  constexpr size_t kIntervalMinLength = 10;
 
   if (line.length() < kMinimumEventLineLength ||
-      !std::all_of(line.begin(), line.begin() + kTimePrefixLength, ::isdigit)) {
+      !std::ranges::all_of(line.substr(0, kTimePrefixLength),
+                           [](char value) -> bool {
+                             return IsAsciiDigit(value);
+                           })) {
     return false;
   }
-  try {
-    int hours = std::stoi(line.substr(0, 2));
-    int minutes = std::stoi(line.substr(2, 2));
-    if (hours > kMaxHours || minutes > kMaxMinutes) {
+  std::string_view remaining_line;
+  if (line.length() >= kIntervalMinLength &&
+      line[kIntervalSeparatorOffset] == '-') {
+    if (!IsValidHhmm(std::string_view(line).substr(0, kTimePrefixLength)) ||
+        !IsValidHhmm(std::string_view(line).substr(kIntervalEndOffset,
+                                                   kTimePrefixLength))) {
       return false;
     }
-
-    const std::string kRemainingLine = line.substr(kTimePrefixLength);
-    size_t comment_pos = std::string::npos;
-    constexpr std::array<const char*, 3> kDelimiters = {"//", "#", ";"};
-    // Keep parser/validator behavior aligned: inline remark begins at the
-    // earliest delimiter occurrence.
-    for (const char* delimiter : kDelimiters) {
-      size_t pos = kRemainingLine.find(delimiter);
-      if (pos != std::string::npos &&
-          (comment_pos == std::string::npos || pos < comment_pos)) {
-        comment_pos = pos;
-      }
-    }
-
-    const std::string kDescription =
-        Trim(kRemainingLine.substr(0, comment_pos));
-    if (kDescription.empty()) {
+    remaining_line =
+        std::string_view(line).substr(kIntervalEndOffset + kTimePrefixLength);
+  } else {
+    if (!IsValidHhmm(std::string_view(line).substr(0, kTimePrefixLength))) {
       return false;
     }
+    remaining_line = std::string_view(line).substr(kTimePrefixLength);
+  }
 
-    if (!wake_keywords_.contains(kDescription) &&
-        !valid_event_keywords_.contains(kDescription)) {
-      // Unknown activity is a semantic validation error, not a syntax error:
-      // the line is structurally valid but references unmapped domain terms.
-      errors.insert({line_number,
-                     "Unrecognized activity '" + kDescription +
-                         "'. Please check spelling or update config file.",
-                     ErrorType::kUnrecognizedActivity, span});
-    }
-    return true;
-  } catch (const std::exception&) {
+  const ParsedEventLine parsed = ExtractRemarkAndDescription(remaining_line);
+  if (parsed.description.empty()) {
     return false;
   }
+
+  if (!wake_keywords_.contains(parsed.description) &&
+      !valid_event_keywords_.contains(parsed.description)) {
+    // Unknown activity is a semantic validation error, not a syntax error:
+    // the line is structurally valid but references unmapped domain terms.
+    errors.insert({line_number,
+                   "Unrecognized activity '" + parsed.description +
+                       "'. Please check spelling or update config file.",
+                   ErrorType::kUnrecognizedActivity, span});
+  }
+  return true;
 }
 
 void StructureRules::Reset() {

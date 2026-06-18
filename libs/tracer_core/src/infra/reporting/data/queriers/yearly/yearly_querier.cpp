@@ -200,7 +200,7 @@ auto BatchYearDataFetcher::FetchAllData()
   for (auto& [year_label, data] : results) {
     data.status_true_days = static_cast<int>(status_dates[year_label].size());
     const auto sleep_it = sleep_day_counts.find(year_label);
-    data.wake_anchor_true_days =
+    data.wake_anchor_days =
         (sleep_it != sleep_day_counts.end()) ? sleep_it->second : 0;
     data.exercise_true_days =
         static_cast<int>(exercise_dates[year_label].size());

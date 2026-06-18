@@ -48,12 +48,16 @@ extern "C" TT_CORE_API auto tracer_core_runtime_query_json(
     request.limit = kPayload.limit;
     request.top_n = kPayload.top_n;
     request.lookback_days = kPayload.lookback_days;
+    request.anchor_date = kPayload.anchor_date;
     request.activity_prefix = kPayload.activity_prefix;
     request.tree_period = kPayload.tree_period;
     request.tree_period_argument = kPayload.tree_period_argument;
     request.tree_max_depth = kPayload.tree_max_depth;
-    if (kPayload.overnight.has_value()) {
-      request.overnight = *kPayload.overnight;
+    if (kPayload.cross_midnight_activity.has_value()) {
+      request.cross_midnight_activity = *kPayload.cross_midnight_activity;
+    }
+    if (kPayload.missing_wake_anchor.has_value()) {
+      request.missing_wake_anchor = *kPayload.missing_wake_anchor;
     }
     if (kPayload.reverse.has_value()) {
       request.reverse = *kPayload.reverse;

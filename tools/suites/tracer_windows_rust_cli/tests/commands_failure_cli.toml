@@ -64,6 +64,16 @@ expect_hints_contains = ["Run command --help to inspect required arguments."]
 expect_stderr_contains = ["invalid value 'abc' for '--level <LEVEL>'", "For more information, try '--help'."]
 
 [[commands]]
+name = "Legacy Query Overnight Flag Removed"
+stage = "failure"
+args = ["query", "data", "days", "--overnight", "--db", "{db_path}"]
+expect_exit = 3
+expect_error_code = "cli.invalid_arguments"
+expect_error_category = "cli"
+expect_hints_contains = ["Run command --help to inspect required arguments."]
+expect_stderr_contains = ["unexpected argument '--overnight'"]
+
+[[commands]]
 name = "Report Export Missing Day Argument Returns InvalidArguments"
 stage = "failure"
 args = ["report", "export", "day", "--db", "{db_path}"]

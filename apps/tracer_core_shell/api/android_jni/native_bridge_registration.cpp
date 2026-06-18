@@ -98,10 +98,14 @@ const std::array<JNINativeMethod, 18> kNativeMethods = {
     },
     JNINativeMethod{
         const_cast<char*>("nativeQuery"),
+        // Keep this descriptor in sync with NativeBridge.nativeQuery(...):
+        // action, year, month, 6 strings, 2 ints, 3 bools, 3 ints,
+        // anchorDate string, scoreByDuration bool, 2 strings, int, string.
         const_cast<char*>(
             "(IIILjava/lang/String;Ljava/lang/String;Ljava/lang/String;"
-            "Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IIZZIIIZ"
-            "Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;)"
+            "Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IIZZZIII"
+            "Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;I"
+            "Ljava/lang/String;)"
             "Ljava/lang/String;"),
         reinterpret_cast<void*>(&NativeQuery),
     },

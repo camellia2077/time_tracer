@@ -26,7 +26,23 @@ tt_attach_build_metadata(log_generator
     HEADER_NAME "log_generator_build_metadata.hpp"
 )
 target_include_directories(log_generator PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(log_generator PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}/../../..
+    ${CMAKE_CURRENT_LIST_DIR}/../../../libs/tracer_core/src
+)
 target_link_libraries(log_generator PRIVATE tomlplusplus::tomlplusplus)
+
+add_executable(log_generator_unit_tests
+    src/tests/log_generator_unit_tests.cpp
+    src/domain/components/event_generator.cpp
+    src/domain/formatting/event_line_formatter.cpp
+)
+target_include_directories(log_generator_unit_tests PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+set_target_properties(log_generator_unit_tests PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)
 
 if(ENABLE_CLANG_TIDY AND CLANG_TIDY_EXE)
     if(NOT DEFINED TT_CLANG_TIDY_HEADER_FILTER OR "${TT_CLANG_TIDY_HEADER_FILTER}" STREQUAL "")

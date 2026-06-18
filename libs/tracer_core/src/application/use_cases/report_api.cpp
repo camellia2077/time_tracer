@@ -114,7 +114,7 @@ auto CopyRangeFields(const RangeReportData& source, RangeReportData& target)
   target.total_duration = source.total_duration;
   target.actual_days = source.actual_days;
   target.status_true_days = source.status_true_days;
-  target.wake_anchor_true_days = source.wake_anchor_true_days;
+  target.wake_anchor_days = source.wake_anchor_days;
   target.exercise_true_days = source.exercise_true_days;
   target.cardio_true_days = source.cardio_true_days;
   target.anaerobic_true_days = source.anaerobic_true_days;
@@ -638,10 +638,10 @@ auto ReportApi::RunTemporalReportQuery(const TemporalReportQueryRequest& request
     const auto structured = RunTemporalStructuredReportQuery(
         {.display_mode = request.display_mode, .selection = request.selection});
     if (!structured.ok) {
-      return {.ok = false,
-              .content = "",
-              .error_message = structured.error_message,
-              .error_contract = structured.error_contract};
+      auto failure = core_api_failure::BuildTextFailure(
+          "RunTemporalReportQuery", structured.error_message);
+      failure.error_contract = structured.error_contract;
+      return failure;
     }
     return FormatTemporalStructuredReport(structured, request.format,
                                           *report_dto_formatter_);

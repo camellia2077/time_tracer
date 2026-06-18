@@ -19,6 +19,8 @@ enum class OptionType {
   kStart,
   kEnd,
   kItems,
+  kSeed,
+  kEventStyle,
   kNoSleep,
   kMonthlyAverage,
   kOutput
@@ -51,6 +53,12 @@ auto ClassifyOption(const std::string& arg) -> OptionType {
   if (arg == "-i" || arg == "--items") {
     return OptionType::kItems;
   }
+  if (arg == "--seed") {
+    return OptionType::kSeed;
+  }
+  if (arg == "--event-style") {
+    return OptionType::kEventStyle;
+  }
   if (arg == "-n" || arg == "--nosleep") {
     return OptionType::kNoSleep;
   }
@@ -81,6 +89,20 @@ auto ParseNextString(const std::vector<std::string>& args, size_t& index,
   return args[++index];
 }
 
+auto ParseEventStyle(const std::string& value) -> EventStyle {
+  if (value == "point") {
+    return EventStyle::Point;
+  }
+  if (value == "interval") {
+    return EventStyle::Interval;
+  }
+  if (value == "mixed") {
+    return EventStyle::Mixed;
+  }
+  throw std::invalid_argument(
+      "--event-style must be one of: point, interval, mixed.");
+}
+
 auto ParseOptions(const std::vector<std::string>& args) -> ParsedOptions {
   ParsedOptions parsed;
   parsed.config.items_per_day = kDefaultItemsPerDay;
@@ -105,6 +127,13 @@ auto ParseOptions(const std::vector<std::string>& args) -> ParsedOptions {
         break;
       case OptionType::kItems:
         parsed.config.items_per_day = ParseNextInt(args, i, "--items");
+        break;
+      case OptionType::kSeed:
+        parsed.config.seed = ParseNextInt(args, i, "--seed");
+        break;
+      case OptionType::kEventStyle:
+        parsed.config.event_style =
+            ParseEventStyle(ParseNextString(args, i, "--event-style"));
         break;
       case OptionType::kNoSleep:
         parsed.config.enable_nosleep = true;
@@ -159,6 +188,10 @@ void ValidateConfig(const Config& config) {
   }
   if (config.output_directory.empty()) {
     throw std::logic_error("--output directory cannot be empty.");
+  }
+  if (config.event_style == EventStyle::Mixed) {
+    throw std::logic_error(
+        "--event-style mixed is not implemented yet in phase 1.");
   }
 }
 

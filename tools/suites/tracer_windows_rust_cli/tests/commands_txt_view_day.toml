@@ -6,9 +6,9 @@ stage = "txt-view-day"
 args = ["txt", "view-day", "--in", "{data_path}/2025/2025-01.txt", "--day", "0102"]
 expect_exit = 0
 expect_stdout_contains = [
-  "0656w",
-  "0904无氧训练 #cherry",
-  "2207minecraft",
+  "0638醒",
+  "0638-2014数据结构二叉树 //banana",
+  "2014-2328无氧训练 #cherry",
 ]
 expect_stderr_contains = []
 
@@ -51,8 +51,8 @@ stage = "txt-view-day"
 args = ["txt", "view-day", "--in", "{output_dir}/txt/journal.txt", "--day", "0102"]
 expect_exit = 0
 expect_stdout_contains = [
-  "0656w",
-  "0904无氧训练 #cherry",
-  "2207minecraft",
+  "0638醒",
+  "0638-2014数据结构二叉树 //banana",
+  "2014-2328无氧训练 #cherry",
 ]
 expect_stderr_contains = []

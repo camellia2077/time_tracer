@@ -2,8 +2,14 @@
 
 CLI app for generating test log datasets used by validation pipelines.
 
+Current generator styles:
+
+- default `point` output
+- optional `interval` output via `--event-style interval`
+- reserved `mixed` style placeholder, not implemented yet
+
 This README is the fallback build/test guide when
-`apps/tools/log_generator/agent.md`
+`apps/tools/log_generator/AGENTS.md`
 is unavailable.
 
 ## Build/Test Entry Policy

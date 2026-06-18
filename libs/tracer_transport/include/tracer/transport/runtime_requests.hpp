@@ -60,11 +60,13 @@ struct QueryRequestPayload {
   std::optional<std::string> root;
   std::optional<int> exercise;
   std::optional<int> status;
-  std::optional<bool> overnight;
+  std::optional<bool> cross_midnight_activity;
+  std::optional<bool> missing_wake_anchor;
   std::optional<bool> reverse;
   std::optional<int> limit;
   std::optional<int> top_n;
   std::optional<int> lookback_days;
+  std::optional<std::string> anchor_date;
   std::optional<std::string> activity_prefix;
   std::optional<bool> activity_score_by_duration;
   std::optional<std::string> tree_period;

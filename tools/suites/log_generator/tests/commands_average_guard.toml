@@ -38,6 +38,47 @@ expect_exit = 0
 expect_stdout_contains = ["[PASS] nosleep"]
 
 [[commands]]
+name = "Generate Logs (Average Guard, Nosleep, Interval)"
+stage = "duration-stats"
+args = [
+  "--year",
+  "2026",
+  "--items",
+  "8",
+  "--event-style",
+  "interval",
+  "--nosleep",
+  "--output",
+  "{output_dir}/avg_guard_nosleep_interval"
+]
+expect_exit = 0
+expect_files = [
+  "{output_dir}/avg_guard_nosleep_interval/2026/2026-01.txt",
+  "{output_dir}/avg_guard_nosleep_interval/2026/2026-12.txt"
+]
+
+[[commands]]
+name = "Validate Daily Average (Nosleep, Interval)"
+stage = "duration-stats"
+raw_command = true
+args = [
+  "python",
+  "${repo_root}/tools/suites/log_generator/scripts/check_daily_average.py",
+  "--input-root",
+  "{output_dir}/avg_guard_nosleep_interval",
+  "--activities-config",
+  "{exe_dir}/config/activities_config.toml",
+  "--min-hours",
+  "23.8",
+  "--max-hours",
+  "24.2",
+  "--label",
+  "nosleep-interval"
+]
+expect_exit = 0
+expect_stdout_contains = ["[PASS] nosleep-interval"]
+
+[[commands]]
 name = "Generate Logs (Average Guard, Normal)"
 stage = "duration-stats"
 args = [
@@ -74,3 +115,43 @@ args = [
 ]
 expect_exit = 0
 expect_stdout_contains = ["[PASS] normal"]
+
+[[commands]]
+name = "Generate Logs (Average Guard, Normal, Interval)"
+stage = "duration-stats"
+args = [
+  "--year",
+  "2026",
+  "--items",
+  "8",
+  "--event-style",
+  "interval",
+  "--output",
+  "{output_dir}/avg_guard_normal_interval"
+]
+expect_exit = 0
+expect_files = [
+  "{output_dir}/avg_guard_normal_interval/2026/2026-01.txt",
+  "{output_dir}/avg_guard_normal_interval/2026/2026-12.txt"
+]
+
+[[commands]]
+name = "Validate Daily Average (Normal, Interval)"
+stage = "duration-stats"
+raw_command = true
+args = [
+  "python",
+  "${repo_root}/tools/suites/log_generator/scripts/check_daily_average.py",
+  "--input-root",
+  "{output_dir}/avg_guard_normal_interval",
+  "--activities-config",
+  "{exe_dir}/config/activities_config.toml",
+  "--min-hours",
+  "23.8",
+  "--max-hours",
+  "24.2",
+  "--label",
+  "normal-interval"
+]
+expect_exit = 0
+expect_stdout_contains = ["[PASS] normal-interval"]

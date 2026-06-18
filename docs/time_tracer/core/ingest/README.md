@@ -13,8 +13,10 @@
    - 解释原始 TXT 合同、wake/sleep 语义、跨日跨月补链，以及 `validate -> parse -> insert db`
 2. `docs/time_tracer/core/ingest/ingest_data_structures.md`
 3. `docs/time_tracer/core/ingest/ingest_conversion_algorithms.md`
-4. `docs/time_tracer/core/ingest/day_bucket_and_wake_anchor_semantics.md`
+4. `docs/time_tracer/core/ingest/interval_event_and_mixed_timeline_semantics.md`
+   - 定义区间事件、点事件与区间事件混用、未记录时间缺口、以及“只统计 recorded time”的目标业务口径
+5. `docs/time_tracer/core/ingest/day_bucket_and_wake_anchor_semantics.md`
    - 解释 day bucket、wake anchor、自动补睡眠和 `>24h` 合法口径
-5. `docs/time_tracer/core/ingest/record_input_and_day_completeness_semantics.md`
+6. `docs/time_tracer/core/ingest/record_input_and_day_completeness_semantics.md`
    - 解释首条记录、day completeness、跨日上下文和 warning/error 边界
 

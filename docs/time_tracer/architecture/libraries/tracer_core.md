@@ -111,6 +111,14 @@ Detailed navigation for the core business-logic library.
    - if the change is host-visible, inspect
      `apps/tracer_core_shell/api/c_api/capabilities/txt/`,
      Android runtime bridging, and the Windows CLI `txt` handler
+8. Change current TXT authored-event semantics (`HHMMtoken`,
+   `HHMM-HHMMtoken`, mixed timeline validation, wake/gap/overlap rules):
+   - start in `src/application/parser/**`, `src/domain/model/daily_log.hpp`,
+     `src/domain/logic/validator/**`, and
+     `src/domain/logic/converter/convert/**`
+   - if the change is host-visible, also inspect CLI/Android runtime callers
+   - keep authored event semantics separate from canonical activity-path
+     mapping and downstream stats/query aggregation
 
 ## Tests / Validate Entry Points
 
@@ -128,6 +136,57 @@ python tools/run.py validate --plan tools/toolchain/config/validate/tracer_core/
 python tools/run.py verify --app tracer_core_shell --profile cap_query --concise
 ```
 
+## Current Authored TXT Event Semantics
+
+1. Current ingest accepts two authored event forms:
+   - point event: `HHMMtoken`
+   - interval event: `HHMM-HHMMtoken`
+2. The authored event model is represented as `RawEvent`, which keeps authored
+   facts before canonical activity mapping and processed-record materialization:
+   - point event stores only the authored end boundary
+   - interval event stores explicit authored start/end boundaries
+3. Current semantic meaning:
+   - point event means "this activity ends at `HHMM`"
+   - interval event means "this activity explicitly happened from `start` to `end`"
+   - authored activity token parsing and canonical mapping stay separate from
+     timeline semantics
+4. Current mixed-timeline rules:
+   - conversion advances by the last known boundary
+   - point event materializes `last_known_boundary -> point.end`
+   - interval event materializes `interval.start -> interval.end`
+   - after either event, the next boundary becomes the current event end
+5. Current validation rules:
+   - gaps are allowed and remain unrecorded
+   - overlap is invalid
+   - interval must satisfy `start < end` after relative-boundary expansion
+   - wrapped cross-midnight interval chains are allowed when they remain
+     monotonic after expansion
+   - short backward interval ranges are rejected
+   - wake keyword remains point-event-only and must be the first semantic event
+6. This is a current ingest/validation semantic model, not a claim that the
+   entire ingest main flow is itself a weighted tree. Tree-style accumulation
+   belongs to downstream query/report/statistics semantics after records have
+   already been materialized.
+
+## Interval Support Implementation Notes
+
+1. Parser stage:
+   - `TextParser` recognizes both `HHMMtoken` and `HHMM-HHMMtoken`
+   - inline remark extraction stays shared across both forms
+2. Validation stage:
+   - TXT line validation accepts both point and interval syntax
+   - structure/logic validation owns overlap, invalid-range, wake-position, and
+     mixed-timeline checks
+3. Converter stage:
+   - point events still derive duration from the last known boundary
+   - interval events use authored start/end directly
+   - continuation-day behavior remains supported; an explicit first interval may
+     leave a gap from the previous-day boundary
+4. Persistence stage:
+   - processed records remain standard `start/end/duration/project_path/remark`
+     records
+   - current interval support does not require a DB schema change
+
 ## Test Intent
 
 1. `libs/tracer_core/tests/**` 主要保护业务语义，而不是 transport 级 JSON
@@ -143,6 +202,13 @@ python tools/run.py verify --app tracer_core_shell --profile cap_query --concise
 4. 当测试覆盖 capability-owned DTO、structured output 或 error contract
    传播时，文档应强调这是 `tracer_core` 语义边界，而不是 `tracer_transport`
    的 envelope 归一化职责。
+5. Interval-related tests should cover:
+   - point and interval line syntax
+   - mixed point/interval boundary advancement
+   - legal gaps vs illegal overlaps
+   - wake keyword as first point event only
+   - explicit invalid backward intervals
+   - wrapped cross-midnight interval chains and wrapped duration preservation
 
 ## Read-First Docs
 

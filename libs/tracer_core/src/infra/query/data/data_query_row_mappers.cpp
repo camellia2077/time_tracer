@@ -54,6 +54,10 @@ auto BindActivitySuggestions(sqlite3_stmt* statement,
                              const ActivitySuggestionQueryOptions& options,
                              int lookback_days, int limit) -> void {
   int bind_index = 1;
+  if (options.anchor_date.has_value() && !options.anchor_date->empty()) {
+    sqlite3_bind_text(statement, bind_index++, options.anchor_date->c_str(), -1,
+                      SQLITE_TRANSIENT);
+  }
   sqlite3_bind_int(statement, bind_index++, lookback_days);
   sqlite3_bind_int(statement, bind_index++, lookback_days);
   sqlite3_bind_int(statement, bind_index++, lookback_days);

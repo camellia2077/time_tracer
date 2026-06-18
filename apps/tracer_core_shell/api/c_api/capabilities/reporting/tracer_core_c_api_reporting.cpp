@@ -94,7 +94,13 @@ auto BuildTemporalStructuredQueryRequest(
 auto BuildTemporalTargetsRequest(
     const tt_transport::TemporalReportRequestPayload& payload)
     -> TemporalReportTargetsRequest {
-  return {.display_mode = ParseReportDisplayMode(payload.display_mode)};
+  try {
+    return {.display_mode = ParseReportDisplayMode(payload.display_mode)};
+  } catch (const std::invalid_argument&) {
+    throw std::invalid_argument(
+        "field `type` must be one of: day|week|month|year. Use display_mode "
+        "to select the report target type.");
+  }
 }
 
 auto BuildTemporalExportRequest(
@@ -219,7 +225,7 @@ auto EncodePeriodReport(const PeriodReportData& report) -> json {
       {"total_duration", report.total_duration},
       {"actual_days", report.actual_days},
       {"status_true_days", report.status_true_days},
-      {"wake_anchor_true_days", report.wake_anchor_true_days},
+      {"wake_anchor_days", report.wake_anchor_days},
       {"exercise_true_days", report.exercise_true_days},
       {"cardio_true_days", report.cardio_true_days},
       {"anaerobic_true_days", report.anaerobic_true_days},
