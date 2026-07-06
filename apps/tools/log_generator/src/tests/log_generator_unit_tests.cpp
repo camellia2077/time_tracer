@@ -95,7 +95,11 @@ auto main() -> int {
   all_passed &= ExpectEqual(mixed_buffer, "0606w\n0900-1030study #focus",
                             "wake point plus non-wake interval rendering");
 
-  const std::vector<std::string> activities = {"study", "rest", "w"};
+  const std::vector<ActivityTokenVariant> activities = {
+      {.alias_token = "study", .canonical_token = "routine_study"},
+      {.alias_token = "rest", .canonical_token = "recovery_rest"},
+      {.alias_token = "w", .canonical_token = "wake"},
+  };
   const std::vector<std::string> wake_keywords = {"w"};
   const ActivityRemarkConfig remark_config{
       .contents = {"remark-a", "remark-b"},
@@ -137,6 +141,30 @@ auto main() -> int {
                             "same seed yields identical rendered events");
   all_passed &= ExpectTrue(rendered_a != rendered_c,
                            "different seeds may yield different rendered events");
+
+  std::mt19937 mixed_gen(123);
+  EventGenerator mixed_generator(24, activities, remark_config, wake_keywords,
+                                 EventStyle::Mixed, mixed_gen);
+  const auto mixed_events = mixed_generator.generate_events_for_day(false);
+  int mixed_point_count = 0;
+  int mixed_interval_count = 0;
+  bool mixed_wake_is_point = false;
+  for (const auto& event : mixed_events) {
+    if (event.kind == GeneratedEventKind::Point) {
+      ++mixed_point_count;
+    }
+    if (event.kind == GeneratedEventKind::Interval) {
+      ++mixed_interval_count;
+    }
+    if ((event.activity_token == "w" || event.activity_token == "wake") &&
+        event.kind == GeneratedEventKind::Point) {
+      mixed_wake_is_point = true;
+    }
+  }
+  all_passed &= ExpectTrue(mixed_wake_is_point,
+                           "mixed generation keeps wake as point event");
+  all_passed &= ExpectTrue(mixed_point_count > 1 && mixed_interval_count > 0,
+                           "mixed generation emits point and interval events");
 
   if (!all_passed) {
     return 1;

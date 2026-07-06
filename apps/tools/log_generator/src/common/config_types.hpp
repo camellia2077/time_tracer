@@ -25,6 +25,11 @@ struct ActivityRemarkConfig {
   double generation_chance = 0.5;
 };
 
+struct ActivityTokenVariant {
+  std::string alias_token;
+  std::string canonical_token;
+};
+
 // 核心运行时配置
 struct Config {
   int start_year;
@@ -41,12 +46,10 @@ struct Config {
 
 // TOML 文件对应的原始数据结构
 struct TomlConfigData {
-  // 为了保证生成的数据能被下游 ETL 程序准确识别并入库，
-  // 我们不再允许使用未定义的通用活动。
-  // 唯一的活动来源必须是 converter alias mapping bundle 中定义的 alias keys。
-  // 这是从 alias_mapping.toml index + converter/aliases/*.toml 解析出的作者态
-  // token 列表，是合法的活动全集。
-  std::vector<std::string> mapped_activities;
+  // 活动来源来自 converter alias mapping bundle。
+  // 生成器按映射项持有 alias/canonical 成对 token，并在事件生成时以固定 50%
+  // 概率选择 canonical，以便为后续 canonical authoring / ingest 能力准备混合样本。
+  std::vector<ActivityTokenVariant> mapped_activities;
 
   std::optional<DailyRemarkConfig> remarks;
   std::optional<ActivityRemarkConfig> activity_remarks;

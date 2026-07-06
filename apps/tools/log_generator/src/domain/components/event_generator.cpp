@@ -24,7 +24,7 @@ constexpr int kMaxSingleActivityMinutes = 16 * kMinutesPerHour;
 }  // namespace
 
 EventGenerator::EventGenerator(
-    int items_per_day, const std::vector<std::string>& activities,
+    int items_per_day, const std::vector<ActivityTokenVariant>& activities,
     const std::optional<ActivityRemarkConfig>& remark_config,
     const std::vector<std::string>& wake_keywords, EventStyle event_style,
     std::mt19937& gen)
@@ -38,13 +38,16 @@ EventGenerator::EventGenerator(
       dis_activity_selector_(0, 0),
       dis_wake_keyword_selector_(0, static_cast<int>(wake_keywords.size()) - 1),
       dis_budget_jitter_minutes_(-kBudgetJitterMinutes, kBudgetJitterMinutes),
+      should_generate_mixed_point_(0.5),
+      should_use_canonical_token_(0.5),
       should_generate_remark_(
           remark_config.has_value() ? remark_config->generation_chance : 0.0) {
   activity_candidates_.reserve(activities.size());
   for (int index = 0; index < static_cast<int>(activities.size()); ++index) {
     const auto& candidate = activities[static_cast<size_t>(index)];
     const bool is_wake_keyword =
-        std::find(wake_keywords.begin(), wake_keywords.end(), candidate) !=
+        std::find(wake_keywords.begin(), wake_keywords.end(),
+                  candidate.alias_token) !=
         wake_keywords.end();
     if (!is_wake_keyword) {
       activity_candidates_.push_back(index);
@@ -183,6 +186,14 @@ auto EventGenerator::maybe_build_remark_suffix() -> std::optional<std::string> {
   return suffix;
 }
 
+auto EventGenerator::resolve_activity_token(const ActivityTokenVariant& activity)
+    -> std::string_view {
+  if (!activity.canonical_token.empty() && should_use_canonical_token_(gen_)) {
+    return activity.canonical_token;
+  }
+  return activity.alias_token;
+}
+
 auto EventGenerator::build_day_events(int day_start_minutes, int day_end_minutes,
                                       bool is_nosleep_day)
     -> std::vector<GeneratedEvent> {
@@ -210,9 +221,10 @@ auto EventGenerator::build_day_events(int day_start_minutes, int day_end_minutes
   for (int minute_index = 0;
        minute_index < static_cast<int>(event_minutes.size()); ++minute_index) {
     const int candidate_index = activity_candidates_[dis_activity_selector_(gen_)];
+    const auto& activity = common_activities_[static_cast<size_t>(candidate_index)];
     events.push_back(build_point_event(
         event_minutes[minute_index],
-        common_activities_[static_cast<size_t>(candidate_index)],
+        resolve_activity_token(activity),
         maybe_build_remark_suffix()));
   }
 
@@ -254,10 +266,65 @@ auto EventGenerator::build_interval_events(
        minute_index < static_cast<int>(event_minutes.size()); ++minute_index) {
     const int current_end = event_minutes[minute_index];
     const int candidate_index = activity_candidates_[dis_activity_selector_(gen_)];
+    const auto& activity = common_activities_[static_cast<size_t>(candidate_index)];
     events.push_back(build_interval_event(
         current_start, current_end,
-        common_activities_[static_cast<size_t>(candidate_index)],
+        resolve_activity_token(activity),
         maybe_build_remark_suffix()));
+    current_start = current_end;
+  }
+
+  const int generated_minutes = day_end_minutes - day_start_minutes;
+  carry_error_minutes_ += generated_minutes - kMinutesPerDay;
+  carry_error_minutes_ =
+      std::clamp(carry_error_minutes_, -kMaxCarryErrorMinutes,
+                 kMaxCarryErrorMinutes);
+  previous_day_last_minutes_ = to_minute_of_day(day_end_minutes);
+  return events;
+}
+
+auto EventGenerator::build_mixed_events(int day_start_minutes,
+                                        int day_end_minutes,
+                                        bool is_nosleep_day)
+    -> std::vector<GeneratedEvent> {
+  std::vector<GeneratedEvent> events;
+  int segment_start_minutes = day_start_minutes;
+  int non_wake_event_count = items_per_day_;
+
+  events.reserve(static_cast<size_t>(items_per_day_));
+
+  if (!is_nosleep_day) {
+    non_wake_event_count = items_per_day_ - 1;
+    const int wake_minutes =
+        select_wake_time_minutes(day_start_minutes, day_end_minutes,
+                                 std::max(0, non_wake_event_count));
+    events.push_back(build_point_event(
+        wake_minutes, wake_keywords_[dis_wake_keyword_selector_(gen_)],
+        std::nullopt));
+    segment_start_minutes = wake_minutes;
+  }
+
+  const auto event_minutes =
+      build_event_minutes(segment_start_minutes, day_end_minutes,
+                          std::max(0, non_wake_event_count));
+
+  int current_start = segment_start_minutes;
+  for (int minute_index = 0;
+       minute_index < static_cast<int>(event_minutes.size()); ++minute_index) {
+    const int current_end = event_minutes[minute_index];
+    const int candidate_index = activity_candidates_[dis_activity_selector_(gen_)];
+    const auto& activity =
+        common_activities_[static_cast<size_t>(candidate_index)];
+    const auto activity_token = resolve_activity_token(activity);
+    auto remark_suffix = maybe_build_remark_suffix();
+
+    if (should_generate_mixed_point_(gen_)) {
+      events.push_back(
+          build_point_event(current_end, activity_token, std::move(remark_suffix)));
+    } else {
+      events.push_back(build_interval_event(
+          current_start, current_end, activity_token, std::move(remark_suffix)));
+    }
     current_start = current_end;
   }
 
@@ -285,6 +352,10 @@ auto EventGenerator::generate_events_for_day(bool is_nosleep_day)
   if (event_style_ == EventStyle::Interval) {
     return build_interval_events(day_start_minutes, day_end_minutes,
                                  is_nosleep_day);
+  }
+  if (event_style_ == EventStyle::Mixed) {
+    return build_mixed_events(day_start_minutes, day_end_minutes,
+                              is_nosleep_day);
   }
   return build_day_events(day_start_minutes, day_end_minutes, is_nosleep_day);
 }

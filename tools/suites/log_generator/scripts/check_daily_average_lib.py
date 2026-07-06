@@ -46,6 +46,8 @@ class MonthStats:
 
 
 def is_day_marker(line: str) -> bool:
+    if len(line) == 5 and line.startswith("d") and line[1:].isdigit():
+        return True
     return len(line) == 4 and line.isdigit()
 
 

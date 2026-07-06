@@ -21,6 +21,7 @@ expect_files = [
 ]
 expect_file_contains = [
   "{output_dir}/log_generator_output/{start}/{start}-01.txt::m01",
+  "{output_dir}/log_generator_output/{start}/{start}-01.txt::d0101",
   "{output_dir}/log_generator_output/{end}/{end}-12.txt::m12"
 ]
 expect_stdout_contains = ["Output Directory:"]
@@ -49,20 +50,33 @@ expect_files = [
   "{output_dir}/log_generator_output_interval/{end}/{end}-12.txt"
 ]
 expect_file_contains = [
+  "{output_dir}/log_generator_output_interval/{start}/{start}-01.txt::d0101",
   "{output_dir}/log_generator_output_interval/{start}/{start}-01.txt::-",
   "{output_dir}/log_generator_output_interval/{end}/{end}-12.txt::-"
 ]
 
 [[commands]]
-name = "Reject Mixed Event Style"
+name = "Generate Mixed Event Style"
 stage = "generate"
 args = [
   "--year",
   "2025",
   "--event-style",
   "mixed",
+  "--items",
+  "24",
+  "--seed",
+  "123",
   "--output",
-  "{output_dir}/mixed_not_implemented"
+  "{output_dir}/log_generator_output_mixed"
 ]
-expect_exit = 2
-expect_stderr_contains = ["not implemented yet"]
+expect_exit = 0
+expect_files = [
+  "{output_dir}/log_generator_output_mixed/2025/2025-01.txt",
+  "{output_dir}/log_generator_output_mixed/2025/2025-12.txt"
+]
+expect_file_contains = [
+  "{output_dir}/log_generator_output_mixed/2025/2025-01.txt::d0101",
+  "{output_dir}/log_generator_output_mixed/2025/2025-01.txt::-",
+  "{output_dir}/log_generator_output_mixed/2025/2025-01.txt::w"
+]

@@ -7,7 +7,7 @@
 #include "domain/formatting/event_line_formatter.hpp"
 
 DayGenerator::DayGenerator(
-    int items_per_day, const std::vector<std::string>& activities,
+    int items_per_day, const std::vector<ActivityTokenVariant>& activities,
     const std::optional<DailyRemarkConfig>& remark_config,
     const std::optional<ActivityRemarkConfig>& activity_remark_config,
     const std::vector<std::string>& wake_keywords, EventStyle event_style,
@@ -34,7 +34,7 @@ void DayGenerator::reset_for_new_month() {
 void DayGenerator::generate_for_day(std::string& log_content, int month,
                                     int day, bool is_nosleep_day) {
   // 1. 生成日期标题
-  std::format_to(std::back_inserter(log_content), "{:02}{:02}\n", month, day);
+  std::format_to(std::back_inserter(log_content), "d{:02}{:02}\n", month, day);
 
   // 2. 委托给 RemarkGenerator，尝试生成备注
   if (auto remark = remark_generator_->try_generate()) {

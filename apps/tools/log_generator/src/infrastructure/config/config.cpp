@@ -55,17 +55,19 @@ auto ConfigLoader::_parse_mapping_keys(
                                              alias_index_tbl, ReadTomlFile);
 
     for (const auto& entry : definition.expanded_entries) {
-      // Collect authored alias keys as the generator's activity token pool.
-      config_data.mapped_activities.push_back(entry.alias_key);
+      config_data.mapped_activities.push_back(ActivityTokenVariant{
+          .alias_token = entry.alias_key,
+          .canonical_token = entry.canonical_value,
+      });
     }
     return true;
 
-  } catch (const std::runtime_error& e) {
-    std::cerr << "Alias mapping load error: " << e.what() << "\n";
-    return false;
   } catch (const toml::parse_error& e) {
     std::cerr << "TOML Parse Error in alias mapping index config: "
               << e.description() << "\n";
+    return false;
+  } catch (const std::runtime_error& e) {
+    std::cerr << "Alias mapping load error: " << e.what() << "\n";
     return false;
   }
 }

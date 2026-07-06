@@ -14,7 +14,8 @@
 
 class EventGenerator {
  public:
-  EventGenerator(int items_per_day, const std::vector<std::string>& activities,
+  EventGenerator(int items_per_day,
+                 const std::vector<ActivityTokenVariant>& activities,
                  const std::optional<ActivityRemarkConfig>& remark_config,
                  const std::vector<std::string>& wake_keywords,
                  EventStyle event_style,
@@ -34,6 +35,8 @@ class EventGenerator {
   auto build_interval_events(int day_start_minutes, int day_end_minutes,
                              bool is_nosleep_day)
       -> std::vector<GeneratedEvent>;
+  auto build_mixed_events(int day_start_minutes, int day_end_minutes,
+                          bool is_nosleep_day) -> std::vector<GeneratedEvent>;
   auto build_point_event(int logical_minutes, std::string_view activity_token,
                          std::optional<std::string> remark_suffix) const
       -> GeneratedEvent;
@@ -41,10 +44,11 @@ class EventGenerator {
       int start_minutes, int end_minutes, std::string_view activity_token,
       std::optional<std::string> remark_suffix) const -> GeneratedEvent;
   auto maybe_build_remark_suffix() -> std::optional<std::string>;
+  auto resolve_activity_token(const ActivityTokenVariant& activity) -> std::string_view;
 
   int items_per_day_;
   EventStyle event_style_;
-  const std::vector<std::string>& common_activities_;
+  const std::vector<ActivityTokenVariant>& common_activities_;
   const std::optional<ActivityRemarkConfig>& remark_config_;
   const std::vector<std::string>& wake_keywords_;
   std::mt19937& gen_;
@@ -52,6 +56,8 @@ class EventGenerator {
   std::uniform_int_distribution<> dis_activity_selector_;
   std::uniform_int_distribution<> dis_wake_keyword_selector_;
   std::uniform_int_distribution<> dis_budget_jitter_minutes_;
+  std::bernoulli_distribution should_generate_mixed_point_;
+  std::bernoulli_distribution should_use_canonical_token_;
   std::bernoulli_distribution should_generate_remark_;
   std::vector<int> activity_candidates_;
   const std::vector<std::string> remark_delimiters_ = {"//", "#", ";"};

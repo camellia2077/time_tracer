@@ -8,9 +8,10 @@ description: Navigation entry for coding agents working in apps/tools/log_genera
 
 Local navigation entry for coding agents working in `apps/tools/log_generator`.
 
-`log_generator` is a tool app that generates canonical TXT test inputs used by
-the repository's validation, ingest, query, report, and golden-comparison
-flows.
+`log_generator` is a tool app that generates TXT test inputs used by the
+repository's validation, ingest, query, report, and golden-comparison flows.
+Current prework semantics allow generated activity tokens to mix alias and
+canonical forms.
 
 ## When To Open
 
@@ -44,6 +45,9 @@ Open additional docs only when needed:
 ## Current Role In The Repo
 
 - `apps/tools/log_generator` generates canonical TXT datasets.
+  Activity tokens now intentionally mix alias/canonical forms for prework
+  coverage; canonical selection is per generated activity at a fixed 50%
+  probability.
 - `test/data/**` stores shared TXT input assets used across CLI, shell, and
   Android.
 - Main program pipelines consume those TXT files and produce downstream query /
@@ -103,6 +107,9 @@ Open additional docs only when needed:
   - tool-app self-check logic
   - suite guards
   - downstream consumers and golden expectations
+- If you refresh `test/data/**` for canonical-token prework, do not assume the
+  rest of the repo can already ingest those files. Only run downstream parsing /
+  ingest validation when the task explicitly asks for it.
 - Store temporary files under repository `temp/`.
 
 ## Canonical Verify Flow

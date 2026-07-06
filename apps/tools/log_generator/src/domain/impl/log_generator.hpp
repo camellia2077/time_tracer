@@ -16,7 +16,7 @@
 class LogGenerator : public ILogGenerator {
  public:
   LogGenerator(
-      const Config& config, const std::vector<std::string>& activities,
+      const Config& config, const std::vector<ActivityTokenVariant>& activities,
       const std::optional<DailyRemarkConfig>& remark_config,
       const std::optional<ActivityRemarkConfig>& activity_remark_config,
       const std::vector<std::string>& wake_keywords);

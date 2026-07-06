@@ -16,7 +16,7 @@ namespace Core {
  */
 struct AppContext {
   Config config;
-  std::vector<std::string> all_activities;
+  std::vector<ActivityTokenVariant> all_activities;
   std::optional<DailyRemarkConfig> remarks;
   std::optional<ActivityRemarkConfig> activity_remarks;
   std::vector<std::string> wake_keywords;

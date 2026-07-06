@@ -5,8 +5,8 @@
 #include <string>
 
 // GeneratedEvent is the internal semantic unit between timeline generation
-// and TXT rendering. activity_token is the authored token payload, not a
-// canonical activity path.
+// and TXT rendering. activity_token may be either an authored alias token or
+// a canonical activity token, depending on generator mode.
 enum class GeneratedEventKind { Point, Interval };
 
 struct GeneratedEvent {

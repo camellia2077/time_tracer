@@ -62,7 +62,9 @@ canonical TXT 契约的月日志文件。
   - 提供可用于生成的活动 token 来源
 
 当前实现中，生成器使用 canonical converter alias bundle 中收集到的活动
-token 作为活动池，从而尽量保证生成出的文本能被下游 ETL / ingest 逻辑识别。
+映射项作为活动池。每次生成非 wake 活动时，会在该映射项的 alias token 与
+canonical token 之间做一次固定 50/50 选择，用于产出包含 canonical 活动名的
+prework 样本。
 
 ## 命令行参数
 
@@ -92,8 +94,9 @@ log_generator.exe [options]
   - 不传时保持当前非确定性行为
 - `--event-style <point|interval|mixed>`
   - 控制事件行输出风格，默认是 `point`
-  - 当前已实现 `point` 与 `interval`
-  - `mixed` 作为后续阶段能力，当前会显式拒绝
+  - 当前已实现 `point`、`interval` 与 `mixed`
+  - `mixed` 会保持 wake 为 point event，并让非 wake 活动按固定 50/50
+    概率输出为 point 或 interval
 - `-n, --nosleep`
   - 启用“通宵日”生成
 - `--monthly-average`
@@ -146,7 +149,7 @@ TXT 文件。
 y2025
 m01
 
-0101
+d0101
 0606w
 1353睡觉
 ```
@@ -163,11 +166,19 @@ m01
   - 例如 `1353睡觉`
 - `interval`
   - 例如 `0900-1030概率统计`
+- `mixed`
+  - 例如同一天内同时出现 `1353睡觉` 与 `0900-1030概率统计`
 
 其中 `interval` 风格当前采用第一阶段实现：
 
 - wake 继续输出为 point event
 - 非 wake 活动输出为连续、不重叠的 interval 行
+
+其中 `mixed` 风格采用固定策略：
+
+- wake 继续输出为 point event
+- 非 wake 活动共享同一套时间边界
+- 每个非 wake 活动独立按 50/50 概率输出为 point 或 interval
 
 ## 示例
 
@@ -195,7 +206,13 @@ log_generator.exe --year 2025 --items 8 --event-style interval --output dates
 log_generator.exe --year 2025 --items 8 --seed 123 --event-style interval --output dates
 ```
 
-### 示例 5：打印月均 tracked-time 统计
+### 示例 5：生成 mixed 风格数据
+
+```powershell
+log_generator.exe --year 2025 --items 8 --seed 123 --event-style mixed --output dates
+```
+
+### 示例 6：打印月均 tracked-time 统计
 
 ```powershell
 log_generator.exe --year 2026 --items 8 --nosleep --monthly-average --output dates

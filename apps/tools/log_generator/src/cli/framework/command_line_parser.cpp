@@ -189,10 +189,6 @@ void ValidateConfig(const Config& config) {
   if (config.output_directory.empty()) {
     throw std::logic_error("--output directory cannot be empty.");
   }
-  if (config.event_style == EventStyle::Mixed) {
-    throw std::logic_error(
-        "--event-style mixed is not implemented yet in phase 1.");
-  }
 }
 
 }  // namespace

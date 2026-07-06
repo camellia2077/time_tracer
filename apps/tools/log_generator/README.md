@@ -6,7 +6,8 @@ Current generator styles:
 
 - default `point` output
 - optional `interval` output via `--event-style interval`
-- reserved `mixed` style placeholder, not implemented yet
+- optional `mixed` output via `--event-style mixed`; wake stays point, while
+  non-wake events choose point/interval with a fixed 50/50 probability
 
 This README is the fallback build/test guide when
 `apps/tools/log_generator/AGENTS.md`
