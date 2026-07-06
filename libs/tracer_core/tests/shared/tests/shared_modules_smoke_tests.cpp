@@ -43,9 +43,9 @@ void TestStringModuleContract(int& failures) {
 }
 
 void TestCanonicalTextContract(int& failures) {
-  const std::string legacy_text = "\xEF\xBB\xBFy2026\r\nm03\r0101\n";
+  const std::string legacy_text = "\xEF\xBB\xBFy2026\r\nm03\rd0101\n";
   Expect(
-      RequireCanonicalText(legacy_text, "legacy.txt") == "y2026\nm03\n0101\n",
+      RequireCanonicalText(legacy_text, "legacy.txt") == "y2026\nm03\nd0101\n",
       "Canonical text normalization should drop BOM and normalize line "
       "endings.",
       failures);

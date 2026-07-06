@@ -43,6 +43,7 @@ auto Expect(bool condition, std::string_view message, int& failures) -> void {
 auto BuildTestConfig() -> ConverterConfig {
   ConverterConfig config;
   config.remark_prefix = "#";
+  config.text_mapping["Clash Royale"] = "recreation_game_clash-royale";
   config.text_mapping["study"] = "study";
   config.text_mapping["sleep"] = "sleep";
   config.text_mapping["wake"] = "wake";
@@ -101,8 +102,10 @@ void TestValidatorBridge(int& failures) {
          failures);
   Expect(LineRules::IsMonth("m03"), "LineRules::IsMonth bridge mismatch.",
          failures);
-  Expect(LineRules::IsDate("0301"), "LineRules::IsDate bridge mismatch.",
+  Expect(LineRules::IsDate("d0301"), "LineRules::IsDate bridge mismatch.",
          failures);
+  Expect(!LineRules::IsDate("0301"),
+         "Bare MMDD should no longer be a date marker.", failures);
   Expect(line_rules.IsRemark("# note"), "LineRules::IsRemark bridge mismatch.",
          failures);
 
@@ -120,9 +123,16 @@ void TestValidatorBridge(int& failures) {
   Expect(valid_event && valid_errors.empty(),
          "Known activity should pass without validation errors.", failures);
 
+  std::set<Error> canonical_errors;
+  const bool canonical_event = line_rules.IsValidEventLine(
+      "0900recreation_game_clash-royale", 5, canonical_errors, span);
+  Expect(canonical_event && canonical_errors.empty(),
+         "Canonical activity token should pass without validation errors.",
+         failures);
+
   std::set<Error> unknown_errors;
   const bool unknown_event =
-      line_rules.IsValidEventLine("0900unknown", 5, unknown_errors, span);
+      line_rules.IsValidEventLine("0900unknown", 6, unknown_errors, span);
   Expect(unknown_event,
          "Unknown activity should remain a structural-valid line.", failures);
   Expect(!unknown_errors.empty(),
@@ -133,14 +143,14 @@ void TestValidatorBridge(int& failures) {
 
   std::set<Error> interval_errors;
   const bool interval_event = line_rules.IsValidEventLine(
-      "0900-1030study # focus", 6, interval_errors, span);
+      "0900-1030study # focus", 7, interval_errors, span);
   Expect(interval_event && interval_errors.empty(),
          "Interval activity should pass structural line validation.",
          failures);
 
   std::set<Error> bad_interval_errors;
   const bool bad_interval_event =
-      line_rules.IsValidEventLine("0900-2460study", 7, bad_interval_errors,
+      line_rules.IsValidEventLine("0900-2460study", 8, bad_interval_errors,
                                   span);
   Expect(!bad_interval_event,
          "Interval activity with invalid end time should fail line validation.",
@@ -150,7 +160,7 @@ void TestValidatorBridge(int& failures) {
   std::set<Error> structure_errors;
   structure_rules.ProcessYearLine(1, "y2026", structure_errors, span);
   structure_rules.ProcessMonthLine(2, "m03", structure_errors, span);
-  structure_rules.ProcessDateLine(3, "0301", structure_errors, span);
+  structure_rules.ProcessDateLine(3, "d0301", structure_errors, span);
   structure_rules.ProcessEventLine(4, "0730study", structure_errors, span);
   Expect(structure_rules.HasSeenYear(),
          "StructureRules should track year header state.", failures);
@@ -160,10 +170,19 @@ void TestValidatorBridge(int& failures) {
   TextValidator text_validator(config);
   std::set<Error> text_errors;
   const bool text_ok = text_validator.Validate(
-      "module-smoke.txt", "y2026\nm03\n0301\n0730study\n0800sleep\n",
+      "module-smoke.txt", "y2026\nm03\nd0301\n0730study\n0800sleep\n",
       text_errors);
   Expect(text_ok && text_errors.empty(),
          "TextValidator should pass a minimal valid text sample.", failures);
+
+  std::set<Error> canonical_text_errors;
+  const bool canonical_text_ok = text_validator.Validate(
+      "module-smoke-canonical.txt",
+      "y2026\nm03\nd0301\n0700wake\n0900recreation_game_clash-royale\n",
+      canonical_text_errors);
+  Expect(canonical_text_ok && canonical_text_errors.empty(),
+         "TextValidator should accept canonical activity tokens in source TXT.",
+         failures);
 
   Diagnostic diagnostic;
   diagnostic.code = "module.smoke";

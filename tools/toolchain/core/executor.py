@@ -1,6 +1,7 @@
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 _DEFAULT_BUILD_PROCESS_NAMES = ["cmake.exe", "ninja.exe", "ccache.exe"]
 _DEFAULT_RUNTIME_LOCK_PROCESS_NAMES = [
@@ -105,6 +106,46 @@ def _taskkill_processes(names: list[str], start_message: str, done_message: str)
         print("--- No matching build processes found.")
 
 
+def _terminate_process_tree(process: Any) -> None:
+    pid = getattr(process, "pid", None)
+    if sys.platform == "win32" and pid:
+        try:
+            subprocess.run(
+                ["taskkill", "/T", "/PID", str(pid)],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=False,
+            )
+            return
+        except FileNotFoundError:
+            pass
+
+    process.terminate()
+
+
+def _kill_process_tree(process: Any) -> None:
+    pid = getattr(process, "pid", None)
+    if sys.platform == "win32" and pid:
+        try:
+            subprocess.run(
+                ["taskkill", "/F", "/T", "/PID", str(pid)],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=False,
+            )
+            return
+        except FileNotFoundError:
+            pass
+
+    process.kill()
+
+
 def kill_build_processes(process_names: list[str] | None = None) -> None:
     names = process_names or _DEFAULT_BUILD_PROCESS_NAMES
     _taskkill_processes(
@@ -188,20 +229,46 @@ def run_command(
             encoding="utf-8",
             errors="replace",
             bufsize=1,
+            close_fds=True,
         )
 
         line_count = 0
-        for line in process.stdout:
+        try:
+            for line in process.stdout:
+                if normalized_output_mode == "live":
+                    _write_stdout_safe(line)
+                line_count += 1
+                should_flush = (line_count % flush_interval) == 0
+                if normalized_output_mode == "live" and should_flush:
+                    sys.stdout.flush()
+                if f:
+                    f.write(line)
+                    if should_flush:
+                        f.flush()
+        except KeyboardInterrupt:
             if normalized_output_mode == "live":
-                _write_stdout_safe(line)
-            line_count += 1
-            should_flush = (line_count % flush_interval) == 0
-            if normalized_output_mode == "live" and should_flush:
-                sys.stdout.flush()
+                _write_stdout_safe(
+                    "\n--- Command interrupted. Terminating child process and returning failure.\n"
+                )
             if f:
-                f.write(line)
-                if should_flush:
-                    f.flush()
+                f.write(
+                    "\n--- Command interrupted. Terminating child process and returning failure.\n"
+                )
+                f.flush()
+            _terminate_process_tree(process)
+            try:
+                return process.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                _kill_process_tree(process)
+                return process.wait()
+        except BaseException:
+            _terminate_process_tree(process)
+            try:
+                process.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                _kill_process_tree(process)
+                process.wait()
+            raise
 
         if normalized_output_mode == "live":
             sys.stdout.flush()

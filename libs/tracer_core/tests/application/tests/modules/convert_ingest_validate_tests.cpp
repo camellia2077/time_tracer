@@ -471,12 +471,12 @@ auto TestPureIntervalTxtParsesSparseDaysWithoutContext(TestState& state)
       "interval-month.txt",
       "y2026\n"
       "m03\n"
-      "0301\n"
+      "d0301\n"
       "0901-1200math\n"
       "1220-1409lunch\n"
       "1608-1900english\n"
       "\n"
-      "0305\n"
+      "d0305\n"
       "0803-0907game\n"
       "1320-1409lunch\n"
       "1608-1900english\n");
@@ -523,7 +523,7 @@ auto TestMixedTxtUsesIntervalEndAndLeavesGapsUnrecorded(TestState& state)
       "mixed-month.txt",
       "y2026\n"
       "m03\n"
-      "0301\n"
+      "d0301\n"
       "0809breakfast\n"
       "1200game\n"
       "1230-1304sleep\n"
@@ -572,7 +572,7 @@ auto TestMixedTxtContiguousSampleUsesSharedTimeline(TestState& state) -> void {
       "mixed-contiguous-month.txt",
       "y2026\n"
       "m03\n"
-      "0301\n"
+      "d0301\n"
       "0809breakfast\n"
       "1200game\n"
       "1200-1304sleep\n"
@@ -626,7 +626,7 @@ auto TestMixedTxtPointAfterCrossMidnightIntervalUsesExpandedBoundary(
       "mixed-cross-midnight-month.txt",
       "y2026\n"
       "m03\n"
-      "0302\n"
+      "d0302\n"
       "2132-0135study\n"
       "2350game\n");
 

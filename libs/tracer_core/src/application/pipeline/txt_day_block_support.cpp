@@ -140,7 +140,14 @@ struct ParsedYearMonth {
 }
 
 [[nodiscard]] auto IsDayMarkerLine(std::string_view line) -> bool {
-  return IsValidDayMarker(Trim(std::string(line)));
+  const std::string trimmed = Trim(std::string(line));
+  return trimmed.size() == 5U && trimmed.front() == 'd' &&
+         IsValidDayMarker(std::string_view(trimmed).substr(1));
+}
+
+[[nodiscard]] auto BuildDayMarkerLine(std::string_view normalized_day_marker)
+    -> std::string {
+  return "d" + std::string(normalized_day_marker);
 }
 
 [[nodiscard]] auto SplitLines(std::string_view content)
@@ -179,8 +186,9 @@ struct ParsedYearMonth {
 
 [[nodiscard]] auto FindDayBlockStart(const std::vector<std::string>& lines,
                                      std::string_view day_marker) -> int {
+  const std::string day_marker_line = BuildDayMarkerLine(day_marker);
   for (int index = 0; index < static_cast<int>(lines.size()); ++index) {
-    if (Trim(lines[static_cast<std::size_t>(index)]) == day_marker) {
+    if (Trim(lines[static_cast<std::size_t>(index)]) == day_marker_line) {
       return index;
     }
   }
@@ -203,7 +211,8 @@ struct ParsedYearMonth {
     -> std::vector<std::string> {
   std::vector<std::string> lines =
       SplitLinesPreserveTrailingEmpty(edited_day_body);
-  if (!lines.empty() && Trim(lines.front()) == normalized_day_marker) {
+  const std::string day_marker_line = BuildDayMarkerLine(normalized_day_marker);
+  if (!lines.empty() && Trim(lines.front()) == day_marker_line) {
     lines.erase(lines.begin());
   }
   return lines;

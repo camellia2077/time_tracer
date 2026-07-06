@@ -55,10 +55,12 @@ struct ImportedPayloadFile {
 };
 
 struct ActiveConverterConfigPaths {
+  fs::path config_root_path;
   fs::path main_config_path;
   fs::path alias_mapping_path;
   fs::path duration_rules_path;
   std::vector<fs::path> alias_child_paths;
+  std::vector<fs::path> report_markdown_paths;
 };
 
 class TracerExchangeService final : public app_ports::ITracerExchangeService {
@@ -120,6 +122,11 @@ auto EnsureActiveConverterConfigExists(
 auto BackupActiveConverterConfig(const ActiveConverterConfigPaths& active_paths,
                                  const fs::path& backup_root) -> void;
 auto ValidatePackageConverterConfig(const fs::path& work_root) -> void;
+auto InstallPackageMarkdownReportConfig(const fs::path& package_root,
+                                        const fs::path& active_config_root)
+    -> void;
+auto RestoreMarkdownReportConfig(const fs::path& backup_root,
+                                 const fs::path& active_config_root) -> void;
 auto BuildCryptoOptions(
     app_dto::TracerExchangeSecurityLevel security_level,
     const app_dto::TracerExchangeProgressObserver& progress_observer)

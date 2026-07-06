@@ -20,9 +20,12 @@ constexpr size_t kYearMarkerLength = 5;
 constexpr char kYearMarkerPrefix = 'y';
 constexpr size_t kMonthMarkerLength = 3;
 constexpr char kMonthMarkerPrefix = 'm';
-constexpr size_t kDayMarkerLength = 4;
+constexpr size_t kDayMarkerLength = 5;
+constexpr char kDayMarkerPrefix = 'd';
+constexpr size_t kDayMonthStartOffset = 1;
+constexpr size_t kDayMonthDigitsLength = 2;
 constexpr size_t kDayDigitsLength = 2;
-constexpr size_t kDayStartOffset = 2;
+constexpr size_t kDayStartOffset = 3;
 constexpr size_t kTimeDigitsLength = 4;
 constexpr size_t kIntervalSeparatorOffset = 4;
 constexpr char kIntervalSeparator = '-';
@@ -130,7 +133,14 @@ auto TextParser::Parse(std::istream& input_stream,
         on_new_day(current_day);
       }
       current_day.Clear();
-      const std::string kMonthPrefix = current_month_prefix;
+      const std::string kMonthPrefix =
+          line.substr(kDayMonthStartOffset, kDayMonthDigitsLength);
+      if (kMonthPrefix != current_month_prefix) {
+        ThrowParseError(source_file, line_number, line,
+                        "Date month '" + kMonthPrefix +
+                            "' does not match month header '" +
+                            current_month_prefix + "'");
+      }
       current_day.date = current_year_prefix + "-" + kMonthPrefix + "-" +
                          line.substr(kDayStartOffset, kDayDigitsLength);
       current_day.source_span =
@@ -172,9 +182,10 @@ auto TextParser::IsMonthMarker(const std::string& line) -> bool {
 }
 
 auto TextParser::IsNewDayMarker(const std::string& line) -> bool {
-  return line.length() == kDayMarkerLength &&
+  return line.length() == kDayMarkerLength && line[0] == kDayMarkerPrefix &&
          std::ranges::all_of(
-             line, [](char value) -> bool { return IsAsciiDigit(value); });
+             line.substr(1),
+             [](char value) -> bool { return IsAsciiDigit(value); });
 }
 
 auto TextParser::ExtractRemark(std::string_view remaining_line)

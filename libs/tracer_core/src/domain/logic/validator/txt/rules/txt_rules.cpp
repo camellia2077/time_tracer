@@ -63,6 +63,7 @@ auto ExtractRemarkAndDescription(std::string_view remaining_line)
 LineRules::LineRules(const ConverterConfig& config) : config_(config) {
   for (const auto& entry : config.text_mapping) {
     valid_event_keywords_.insert(entry.first);
+    valid_event_keywords_.insert(entry.second);
   }
   for (const auto& entry : config.text_duration_mapping) {
     valid_event_keywords_.insert(entry.first);
@@ -103,11 +104,14 @@ auto LineRules::IsMonth(const std::string& line) -> bool {
 }
 
 auto LineRules::IsDate(const std::string& line) -> bool {
-  constexpr size_t kDateStringLength = 4;
-  return line.length() == kDateStringLength &&
-         std::ranges::all_of(line, [](unsigned char kChar) -> bool {
-           return std::isdigit(kChar) != 0;
-         });
+  constexpr size_t kDateStringLength = 5;
+  if (line.length() != kDateStringLength || line[0] != 'd') {
+    return false;
+  }
+  return std::ranges::all_of(line.begin() + 1, line.end(),
+                             [](unsigned char kChar) -> bool {
+                               return std::isdigit(kChar) != 0;
+                             });
 }
 
 auto LineRules::IsRemark(const std::string& line) const -> bool {
@@ -229,7 +233,7 @@ void StructureRules::ProcessMonthLine(int line_number, const std::string& line,
   if (has_seen_any_date_) {
     errors.insert({line_number,
                    "Month header (mMM) must appear before the first date "
-                   "line (MMDD).",
+                   "line (dMMDD).",
                    ErrorType::kStructural, span});
     return;
   }
@@ -269,7 +273,7 @@ void StructureRules::ProcessDateLine(int line_number, const std::string& line,
   }
 
   if (has_seen_month_) {
-    const std::string kLineMonth = line.substr(0, 2);
+    const std::string kLineMonth = line.substr(1, 2);
     if (kLineMonth != month_header_) {
       errors.insert({line_number,
                      "Date month '" + kLineMonth +
@@ -282,12 +286,12 @@ void StructureRules::ProcessDateLine(int line_number, const std::string& line,
   if (!has_seen_any_date_) {
     // Business invariant for single-month ingest files: first date must start
     // from day 01 to keep continuity and gap checks predictable.
-    if (line.length() >= 4) {
-      std::string day_part = line.substr(2, 2);
+    if (line.length() >= 5) {
+      std::string day_part = line.substr(3, 2);
       if (day_part != "01") {
         errors.insert({line_number,
                        "The first date in the file must be the 1st day of the "
-                       "month (e.g., 0101). Found: " +
+                       "month (e.g., d0101). Found: " +
                            line,
                        ErrorType::kDateContinuity, span});
       }

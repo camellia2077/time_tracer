@@ -63,8 +63,13 @@ auto BuildInspectResult(
       FindEntrySummary(package, exchange_pkg::kDurationRulesPath),
   };
   result.converter_entries.reserve(result.converter_entries.size() +
+                                   package.manifest.report_markdown_files
+                                       .size() +
                                    package.manifest.converter_alias_mapping_files
                                        .size());
+  for (const auto& report_path : package.manifest.report_markdown_files) {
+    result.converter_entries.push_back(FindEntrySummary(package, report_path));
+  }
   for (const auto& alias_child_path :
        package.manifest.converter_alias_mapping_files) {
     result.converter_entries.push_back(FindEntrySummary(package, alias_child_path));

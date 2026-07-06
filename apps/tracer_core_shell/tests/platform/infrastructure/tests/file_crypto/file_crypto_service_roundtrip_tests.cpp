@@ -19,7 +19,7 @@ auto TestEncryptDecryptRoundTrip(int& failures) -> void {
   const auto kRestoredTxt = kPaths.test_root / "restored.txt";
   constexpr std::string_view kPassphrase = "phase0-phase1-passphrase";
   const std::string kPlaintext =
-      "y2026\nm02\n0201\n0600 study_math_calculus r alpha\n";
+      "y2026\nm02\nd0201\n0600 study_math_calculus r alpha\n";
 
   RemoveTree(kPaths.test_root);
   if (!WriteFileWithParents(kInputTxt, kPlaintext)) {
@@ -88,7 +88,7 @@ auto TestEncryptBytesDecryptToBytesRoundTrip(int& failures) -> void {
   const auto kEncrypted = kPaths.test_root / "payload_bytes.tracer";
   constexpr std::string_view kPassphrase = "phase0-phase1-passphrase";
   const std::string kPlaintext =
-      "y2026\nm03\n0301\n0630 study_math_linear_algebra\n";
+      "y2026\nm03\nd0301\n0630 study_math_linear_algebra\n";
   const std::vector<std::uint8_t> kPlaintextBytes(kPlaintext.begin(),
                                                   kPlaintext.end());
   const tracer_core::infrastructure::crypto::FileCryptoPathContext kPathContext{
@@ -152,7 +152,7 @@ auto TestEncryptBytesWriterDecryptToBytesRoundTrip(int& failures) -> void {
   const auto kEncrypted = kPaths.test_root / "payload_writer.tracer";
   constexpr std::string_view kPassphrase = "phase0-phase1-passphrase";
   const std::string kPlaintext =
-      "y2026\nm04\n0401\n0700 study_native_android\n";
+      "y2026\nm04\nd0401\n0700 study_native_android\n";
   const std::vector<std::uint8_t> kPlaintextBytes(kPlaintext.begin(),
                                                   kPlaintext.end());
   std::size_t emitted_ciphertext_size = 0;

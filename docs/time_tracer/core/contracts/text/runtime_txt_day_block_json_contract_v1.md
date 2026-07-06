@@ -21,11 +21,12 @@
 1. `day_marker` is normalized by keeping digits only and truncating to 4
    characters.
 2. A valid `day_marker` must be a legal `MMDD` value.
-3. Day-block extraction never includes the marker line itself in `day_body`.
-4. Day-block replacement removes a duplicated leading `MMDD` marker when the
-   edited body starts with the same marker.
-5. Day-block replacement preserves user-authored trailing blank lines.
-6. `day_content_iso_date` is only produced when both `selected_month` and the
+3. Month TXT content stores day marker lines as `dMMDD`.
+4. Day-block extraction never includes the marker line itself in `day_body`.
+5. Day-block replacement removes a duplicated leading `dMMDD` marker when the
+   edited body starts with the same marker line.
+6. Day-block replacement preserves user-authored trailing blank lines.
+7. `day_content_iso_date` is only produced when both `selected_month` and the
    normalized `day_marker` are valid.
 
 ## Standard Envelope
@@ -79,7 +80,7 @@ Request:
 ```json
 {
   "action": "resolve_day_block",
-  "content": "y2025\nm01\n\n0101\n...\n0102\n...\n",
+  "content": "y2025\nm01\n\nd0101\n...\nd0102\n...\n",
   "day_marker": "0102",
   "selected_month": "2025-01"
 }
@@ -117,9 +118,9 @@ Request:
 ```json
 {
   "action": "replace_day_block",
-  "content": "y2025\nm01\n\n0101\n...\n0102\n...\n",
+  "content": "y2025\nm01\n\nd0101\n...\nd0102\n...\n",
   "day_marker": "0102",
-  "edited_day_body": "0102\n0656w\n0904无氧训练 #cherry\n"
+  "edited_day_body": "d0102\n0656w\n0904无氧训练 #cherry\n"
 }
 ```
 
@@ -131,7 +132,7 @@ Response:
   "normalized_day_marker": "0102",
   "found": true,
   "is_marker_valid": true,
-  "updated_content": "y2025\nm01\n\n0101\n...\n0102\n0656w\n0904无氧训练 #cherry\n",
+  "updated_content": "y2025\nm01\n\nd0101\n...\nd0102\n0656w\n0904无氧训练 #cherry\n",
   "error_message": ""
 }
 ```
@@ -140,8 +141,8 @@ Rules:
 
 1. `edited_day_body` replaces the day-block body only; the runtime keeps the
    marker line in the full month content.
-2. A duplicated leading marker line equal to the normalized `day_marker` is
-   removed before merge.
+2. A duplicated leading marker line equal to `d` plus the normalized
+   `day_marker` is removed before merge.
 3. `updated_content` is omitted when `found=false` or `is_marker_valid=false`.
 4. The runtime does not create a new block when the requested block is missing.
 

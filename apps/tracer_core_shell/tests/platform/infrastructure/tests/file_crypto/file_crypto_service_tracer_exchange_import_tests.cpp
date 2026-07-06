@@ -21,7 +21,7 @@ auto TestTracerExchangeImportCanonicalizesLegacyText(int& failures) -> void {
   const fs::path package_path = paths.test_root / "package" / "legacy.ttpkg";
   const fs::path tracer_path = paths.test_root / "package" / "legacy.tracer";
   const std::string legacy_payload =
-      "\xEF\xBB\xBFy2025\r\nm01\r\n0101\r\n0600w\r\n0630meal\r\n0700rest\r\n";
+      "\xEF\xBB\xBFy2025\r\nm01\r\nd0101\r\n0600w\r\n0630meal\r\n0700rest\r\n";
   const std::string legacy_main = ReadLegacyRepoConverterConfig(
       "assets/tracer_core/config/converter/interval_processor_config.toml");
   const std::string legacy_alias = ReadLegacyRepoConverterConfig(
@@ -91,7 +91,7 @@ auto TestTracerExchangeImportCanonicalizesLegacyText(int& failures) -> void {
          failures);
   for (const auto& alias_child_config : alias_child_configs) {
     const fs::path alias_child_path =
-        config_root /
+        config_root / "converter" /
         fs::path(alias_child_config.relative_path)
             .lexically_relative("config/converter");
     Expect(ReadTextFile(alias_child_path) ==
@@ -119,6 +119,8 @@ auto TestTracerExchangeImportPreservesExtraMonthsAndRebuildsDatabase(
   const fs::path alias_config_path = active_config_root / "alias_mapping.toml";
   const fs::path duration_config_path =
       active_config_root / "duration_rules.toml";
+  const fs::path report_day_path =
+      config_root / "reports" / "markdown" / "day.toml";
   const fs::path active_text_root = paths.test_root / "input";
   const fs::path runtime_work_root = paths.test_root / "work";
   const fs::path package_path = paths.test_root / "package" / "exchange.ttpkg";
@@ -136,14 +138,20 @@ auto TestTracerExchangeImportPreservesExtraMonthsAndRebuildsDatabase(
       "# active-duration fixture\n" +
       ReadRepoConverterConfig(
           "assets/tracer_core/config/converter/duration_rules.toml");
+  const std::string original_report_day =
+      "# active-report-day fixture\n" +
+      ReadRepoConverterConfig(
+          "assets/tracer_core/config/reports/markdown/day.toml");
   const std::string preserved_month =
-      "y2024\nm01\n0101\n0600w\n0630meal\n0700rest\n";
+      "y2024\nm01\nd0101\n0600w\n0630meal\n0700rest\n";
   const std::string package_main = ReadRepoConverterConfig(
       "assets/tracer_core/config/converter/interval_processor_config.toml");
   const std::string package_alias = ReadRepoConverterConfig(
       "assets/tracer_core/config/converter/alias_mapping.toml");
   const std::string package_duration = ReadRepoConverterConfig(
       "assets/tracer_core/config/converter/duration_rules.toml");
+  const std::string package_report_day = ReadRepoConverterConfig(
+      "assets/tracer_core/config/reports/markdown/day.toml");
   const auto package_alias_children = BuildRepoAliasChildConfigs();
 
   if (!PrepareRuntimeFixture(paths, config_root, failures)) {
@@ -152,6 +160,7 @@ auto TestTracerExchangeImportPreservesExtraMonthsAndRebuildsDatabase(
   if (!WriteFileWithParents(main_config_path, original_main) ||
       !WriteFileWithParents(alias_config_path, original_alias) ||
       !WriteFileWithParents(duration_config_path, original_duration) ||
+      !WriteFileWithParents(report_day_path, original_report_day) ||
       !WriteFileWithParents(active_text_root / "2024" / "2024-01.txt",
                             preserved_month)) {
     ++failures;
@@ -229,6 +238,11 @@ auto TestTracerExchangeImportPreservesExtraMonthsAndRebuildsDatabase(
              NormalizeLf(package_duration),
          "RunTracerExchangeImport should overwrite active duration config.",
          failures);
+  Expect(NormalizeLf(ReadTextFile(report_day_path)) ==
+             NormalizeLf(package_report_day),
+         "RunTracerExchangeImport should overwrite active markdown report "
+         "config.",
+         failures);
   for (const auto& alias_child_config : package_alias_children) {
     const fs::path alias_child_path =
         active_config_root /
@@ -271,6 +285,8 @@ auto TestTracerExchangeImportApplyFailureRollsBackConfig(int& failures)
   const fs::path alias_config_path = active_config_root / "alias_mapping.toml";
   const fs::path duration_config_path =
       active_config_root / "duration_rules.toml";
+  const fs::path report_day_path =
+      config_root / "reports" / "markdown" / "day.toml";
   const fs::path active_text_root = paths.test_root / "input";
   const fs::path runtime_work_root = paths.test_root / "work";
   const fs::path package_path = paths.test_root / "package" / "exchange.ttpkg";
@@ -288,8 +304,12 @@ auto TestTracerExchangeImportApplyFailureRollsBackConfig(int& failures)
       "# active-duration fixture\n" +
       ReadRepoConverterConfig(
           "assets/tracer_core/config/converter/duration_rules.toml");
+  const std::string original_report_day =
+      "# active-report-day fixture\n" +
+      ReadRepoConverterConfig(
+          "assets/tracer_core/config/reports/markdown/day.toml");
   const std::string original_month =
-      "y2024\nm01\n0101\n0600w\n0630meal\n0700rest\n";
+      "y2024\nm01\nd0101\n0600w\n0630meal\n0700rest\n";
   const std::string package_main = ReadRepoConverterConfig(
       "assets/tracer_core/config/converter/interval_processor_config.toml");
   const std::string package_alias = ReadRepoConverterConfig(
@@ -304,7 +324,9 @@ auto TestTracerExchangeImportApplyFailureRollsBackConfig(int& failures)
   if (!WriteFileWithParents(main_config_path, original_main) ||
       !WriteFileWithParents(alias_config_path, original_alias) ||
       !WriteFileWithParents(duration_config_path, original_duration) ||
-      !WriteFileWithParents(active_text_root / "2024" / "2024-01.txt", original_month)) {
+      !WriteFileWithParents(report_day_path, original_report_day) ||
+      !WriteFileWithParents(active_text_root / "2024" / "2024-01.txt",
+                            original_month)) {
     ++failures;
     std::cerr << "[FAIL] Failed to prepare active transaction import files.\n";
     RemoveTree(paths.test_root);
@@ -366,6 +388,11 @@ auto TestTracerExchangeImportApplyFailureRollsBackConfig(int& failures)
              NormalizeLf(original_duration),
          "Rollback should preserve the original duration config after apply "
          "failure.",
+         failures);
+  Expect(NormalizeLf(ReadTextFile(report_day_path)) ==
+             NormalizeLf(original_report_day),
+         "Rollback should preserve the original markdown report config after "
+         "apply failure.",
          failures);
   for (const auto& alias_child_config : package_alias_children) {
     const fs::path alias_child_path =

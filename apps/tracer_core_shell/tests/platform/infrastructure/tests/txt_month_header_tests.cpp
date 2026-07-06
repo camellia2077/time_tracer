@@ -67,7 +67,7 @@ auto TestParserPrefersMonthHeader(int& failures) -> void {
   const ConverterConfig kConfig = BuildTestConverterConfig();
   TextParser parser(kConfig);
 
-  std::istringstream input("y2026\nm02\n0101\n0641wake\n");
+  std::istringstream input("y2026\nm02\nd0201\n0641wake\n");
   std::vector<DailyLog> parsed_days;
   parser.Parse(
       input,
@@ -81,7 +81,8 @@ auto TestParserPrefersMonthHeader(int& failures) -> void {
     return;
   }
   Expect(parsed_days.front().date == "2026-02-01",
-         "TextParser should prefer mMM over MMDD month digits.", failures);
+         "TextParser should parse dMMDD date markers with mMM context.",
+         failures);
 }
 
 auto TestParserSupportsIntervalEventLines(int& failures) -> void {
@@ -89,7 +90,7 @@ auto TestParserSupportsIntervalEventLines(int& failures) -> void {
   TextParser parser(kConfig);
 
   std::istringstream input(
-      "y2026\nm02\n0201\n0641wake\n0900-1030study //focus\n1353sleep\n");
+      "y2026\nm02\nd0201\n0641wake\n0900-1030study //focus\n1353sleep\n");
   std::vector<DailyLog> parsed_days;
   parser.Parse(
       input,
@@ -119,11 +120,32 @@ auto TestParserSupportsIntervalEventLines(int& failures) -> void {
          "Parser should keep HHMMtoken as point event.", failures);
 }
 
+auto TestParserRejectsDateMonthMismatch(int& failures) -> void {
+  const ConverterConfig kConfig = BuildTestConverterConfig();
+  TextParser parser(kConfig);
+
+  bool threw = false;
+  std::string message;
+  try {
+    std::vector<DailyLog> parsed_days;
+    std::istringstream input("y2026\nm02\nd0101\n0641wake\n");
+    parser.Parse(
+        input,
+        [&parsed_days](DailyLog& day) -> void { parsed_days.push_back(day); },
+        "parser_mismatch.txt");
+  } catch (const std::exception& error) {
+    message = error.what();
+    threw = Contains(message, "does not match month header");
+  }
+  Expect(threw, "TextParser should reject dMMDD month/header mismatch.",
+         failures);
+}
+
 auto TestParserRejectsMissingMonthHeader(int& failures) -> void {
   const ConverterConfig kConfig = BuildTestConverterConfig();
   TextParser parser(kConfig);
 
-  std::istringstream input("y2026\n0301\n0641wake\n");
+  std::istringstream input("y2026\nd0301\n0641wake\n");
   bool threw = false;
   std::string message;
   try {
@@ -187,13 +209,14 @@ auto TestValidatorRequiresMonthHeader(int& failures) -> void {
 
   std::set<Error> month_errors;
   const bool kMonthOk = text_validator.Validate(
-      "month_ok.txt", "y2026\nm02\n0201\n0641wake\n", month_errors);
+      "month_ok.txt", "y2026\nm02\nd0201\n0641wake\n", month_errors);
   Expect(kMonthOk && month_errors.empty(),
-         "TextValidator should accept yYYYY + mMM + matching MMDD.", failures);
+         "TextValidator should accept yYYYY + mMM + matching dMMDD.",
+         failures);
 
   std::set<Error> missing_month_errors;
   const bool kMissingMonthOk = text_validator.Validate(
-      "missing_month.txt", "y2026\n0201\n0641wake\n", missing_month_errors);
+      "missing_month.txt", "y2026\nd0201\n0641wake\n", missing_month_errors);
   const std::string kMissingMonthText =
       CollectErrorMessages(missing_month_errors);
   Expect(!kMissingMonthOk,
@@ -202,6 +225,15 @@ auto TestValidatorRequiresMonthHeader(int& failures) -> void {
   Expect(Contains(kMissingMonthText, "Month header (mMM) is required"),
          "Missing month header should report explicit mMM requirement.",
          failures);
+
+  std::set<Error> bare_mmdd_errors;
+  const bool kBareMmddOk = text_validator.Validate(
+      "bare_mmdd.txt", "y2026\nm02\n0201\n0641wake\n", bare_mmdd_errors);
+  const std::string kBareMmddText = CollectErrorMessages(bare_mmdd_errors);
+  Expect(!kBareMmddOk, "Bare MMDD should no longer validate as a date marker.",
+         failures);
+  Expect(Contains(kBareMmddText, "Unrecognized line format: 0201"),
+         "Bare MMDD should be reported as an unrecognized line.", failures);
 
   std::set<Error> year_only_errors;
   const bool kYearOnlyOk =
@@ -243,7 +275,7 @@ auto TestValidatorRejectsMonthConflicts(int& failures) -> void {
 
   std::set<Error> mismatch_errors;
   const bool kMismatchOk = text_validator.Validate(
-      "mismatch.txt", "y2026\nm02\n0101\n0641wake\n", mismatch_errors);
+      "mismatch.txt", "y2026\nm02\nd0101\n0641wake\n", mismatch_errors);
   const std::string kMismatchText = CollectErrorMessages(mismatch_errors);
   Expect(!kMismatchOk, "Month/date mismatch should fail validation.", failures);
   Expect(Contains(kMismatchText, "does not match month header"),
@@ -251,7 +283,7 @@ auto TestValidatorRejectsMonthConflicts(int& failures) -> void {
 
   std::set<Error> duplicate_errors;
   const bool kDuplicateOk = text_validator.Validate(
-      "duplicate_month.txt", "y2026\nm02\nm03\n0201\n0641wake\n",
+      "duplicate_month.txt", "y2026\nm02\nm03\nd0201\n0641wake\n",
       duplicate_errors);
   const std::string kDuplicateText = CollectErrorMessages(duplicate_errors);
   Expect(!kDuplicateOk, "Duplicate mMM headers should fail validation.",
@@ -261,7 +293,7 @@ auto TestValidatorRejectsMonthConflicts(int& failures) -> void {
 
   std::set<Error> late_month_errors;
   const bool kLateMonthOk = text_validator.Validate(
-      "late_month.txt", "y2026\n0201\n0641wake\nm02\n", late_month_errors);
+      "late_month.txt", "y2026\nd0201\n0641wake\nm02\n", late_month_errors);
   const std::string kLateMonthText = CollectErrorMessages(late_month_errors);
   Expect(!kLateMonthOk, "Late mMM header should fail validation.", failures);
   Expect(Contains(kLateMonthText, "must appear before the first date line"),
@@ -274,14 +306,14 @@ auto TestValidatorSupportsIntervalEventLines(int& failures) -> void {
 
   std::set<Error> interval_errors;
   const bool kIntervalOk = text_validator.Validate(
-      "interval_ok.txt", "y2026\nm02\n0201\n0641wake\n0900-1030study\n",
+      "interval_ok.txt", "y2026\nm02\nd0201\n0641wake\n0900-1030study\n",
       interval_errors);
   Expect(kIntervalOk && interval_errors.empty(),
          "TextValidator should accept interval event lines.", failures);
 
   std::set<Error> missing_activity_errors;
   const bool kMissingActivityOk = text_validator.Validate(
-      "interval_missing_activity.txt", "y2026\nm02\n0201\n0900-1030\n",
+      "interval_missing_activity.txt", "y2026\nm02\nd0201\n0900-1030\n",
       missing_activity_errors);
   Expect(!kMissingActivityOk,
          "TextValidator should reject interval lines without an activity token.",
@@ -289,7 +321,7 @@ auto TestValidatorSupportsIntervalEventLines(int& failures) -> void {
 
   std::set<Error> invalid_time_errors;
   const bool kInvalidTimeOk = text_validator.Validate(
-      "interval_bad_time.txt", "y2026\nm02\n0201\n0900-2460study\n",
+      "interval_bad_time.txt", "y2026\nm02\nd0201\n0900-2460study\n",
       invalid_time_errors);
   Expect(!kInvalidTimeOk,
          "TextValidator should reject interval lines with invalid HHMM values.",
@@ -297,7 +329,7 @@ auto TestValidatorSupportsIntervalEventLines(int& failures) -> void {
 
   std::set<Error> unknown_interval_errors;
   const bool kUnknownIntervalOk = text_validator.Validate(
-      "interval_unknown.txt", "y2026\nm02\n0201\n0900-1030unknown\n",
+      "interval_unknown.txt", "y2026\nm02\nd0201\n0900-1030unknown\n",
       unknown_interval_errors);
   Expect(!kUnknownIntervalOk,
          "TextValidator should reject unknown interval activities semantically.",
@@ -333,6 +365,7 @@ auto TestValidatorReadsIntervalFixture(int& failures) -> void {
 auto RunTxtMonthHeaderTests(int& failures) -> void {
   TestParserPrefersMonthHeader(failures);
   TestParserSupportsIntervalEventLines(failures);
+  TestParserRejectsDateMonthMismatch(failures);
   TestParserRejectsMissingMonthHeader(failures);
   TestParserRejectsMissingMonthHeaderFixture(failures);
   TestValidatorRequiresMonthHeader(failures);

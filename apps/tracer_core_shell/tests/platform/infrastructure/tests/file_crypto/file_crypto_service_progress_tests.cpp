@@ -20,11 +20,11 @@ auto TestBatchEncryptProgressSnapshot(int& failures) -> void {
 
   RemoveTree(kPaths.test_root);
   const bool kSeeded = WriteFileWithParents(kInputRoot / "2025" / "2025-01.txt",
-                                            "y2025\nm01\n0101\n0600 study\n") &&
+                                            "y2025\nm01\nd0101\n0600 study\n") &&
                        WriteFileWithParents(kInputRoot / "2025" / "2025-02.txt",
-                                            "y2025\nm02\n0201\n0630 work\n") &&
+                                            "y2025\nm02\nd0201\n0630 work\n") &&
                        WriteFileWithParents(kInputRoot / "2026" / "2026-01.txt",
-                                            "y2026\nm01\n0101\n0700 run\n");
+                                            "y2026\nm01\nd0101\n0700 run\n");
   if (!kSeeded) {
     ++failures;
     std::cerr << "[FAIL] Failed to seed batch progress plaintext files.\n";
@@ -114,11 +114,11 @@ auto TestBatchDecryptCancellation(int& failures) -> void {
   RemoveTree(kPaths.test_root);
   const bool kSeeded =
       WriteFileWithParents(kPlaintextRoot / "2025" / "2025-01.txt",
-                           "y2025\nm01\n0101\n0600 study\n") &&
+                           "y2025\nm01\nd0101\n0600 study\n") &&
       WriteFileWithParents(kPlaintextRoot / "2025" / "2025-02.txt",
-                           "y2025\nm02\n0202\n0630 work\n") &&
+                           "y2025\nm02\nd0202\n0630 work\n") &&
       WriteFileWithParents(kPlaintextRoot / "2026" / "2026-01.txt",
-                           "y2026\nm01\n0103\n0700 run\n");
+                           "y2026\nm01\nd0103\n0700 run\n");
   if (!kSeeded) {
     ++failures;
     std::cerr << "[FAIL] Failed to seed batch cancel plaintext files.\n";
@@ -190,7 +190,7 @@ auto TestSingleFileEncryptCancelToken(int& failures) -> void {
 
   RemoveTree(kPaths.test_root);
   if (!WriteFileWithParents(kInputTxt,
-                            "y2026\nm02\n0201\n0600 study_math_calculus\n")) {
+                            "y2026\nm02\nd0201\n0600 study_math_calculus\n")) {
     ++failures;
     std::cerr << "[FAIL] Failed to seed cancel token input file.\n";
     RemoveTree(kPaths.test_root);

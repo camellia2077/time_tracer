@@ -103,6 +103,11 @@ auto TestTracerExchangeExportEndToEnd(int& failures) -> void {
          "Exported package should contain alias_mapping.toml.", failures);
   Expect(FindEntry(package, exchange_pkg::kDurationRulesPath) != nullptr,
          "Exported package should contain duration_rules.toml.", failures);
+  for (const auto report_path : exchange_pkg::kReportMarkdownPackagePaths) {
+    Expect(FindEntry(package, report_path) != nullptr,
+           "Exported package should contain each markdown report config.",
+           failures);
+  }
   Expect(package.manifest.converter_alias_mapping_files.size() == 7U,
          "Exported package should list every alias child config.", failures);
   for (const auto& alias_child_path : package.manifest.converter_alias_mapping_files) {
@@ -275,7 +280,7 @@ auto TestTracerExchangeInspectEndToEnd(int& failures) -> void {
          failures);
   Expect(result.package_type == "tracer_exchange",
          "RunTracerExchangeInspect should report package_type.", failures);
-  Expect(result.package_version == 4,
+  Expect(result.package_version == 5,
          "RunTracerExchangeInspect should report package_version.", failures);
   Expect(result.producer_platform == "windows",
          "RunTracerExchangeInspect should report producer_platform.", failures);
@@ -303,8 +308,9 @@ auto TestTracerExchangeInspectEndToEnd(int& failures) -> void {
              result.converter_entries[2].present,
          "RunTracerExchangeInspect should report duration_rules.toml.",
          failures);
-  Expect(result.converter_entries.size() == 4U,
-         "RunTracerExchangeInspect should report alias child entries.",
+  Expect(result.converter_entries.size() ==
+             4U + exchange_pkg::kReportMarkdownPackagePaths.size(),
+         "RunTracerExchangeInspect should report report and alias child entries.",
          failures);
   Expect(!fs::exists(tracer_path.parent_path() / ".tracer_staging"),
          "RunTracerExchangeInspect should not create a tracer staging directory.",
@@ -329,7 +335,7 @@ auto TestTracerExchangeExportCanonicalizesLegacyText(int& failures) -> void {
   const fs::path decrypted_package_path =
       paths.test_root / "export" / "legacy.ttpkg";
   const std::string legacy_payload =
-      "\xEF\xBB\xBFy2025\r\nm01\r\n0101\r\n0600w\r\n0630meal\r\n0700rest\r\n";
+      "\xEF\xBB\xBFy2025\r\nm01\r\nd0101\r\n0600w\r\n0630meal\r\n0700rest\r\n";
   const std::string legacy_main = ReadLegacyRepoConverterConfig(
       "assets/tracer_core/config/converter/interval_processor_config.toml");
   const std::string legacy_alias = ReadLegacyRepoConverterConfig(
@@ -467,7 +473,7 @@ auto TestTracerExchangeExportKeepsCanonicalTextStableAcrossHosts(int& failures)
   const fs::path android_package = paths.test_root / "export" / "android.ttpkg";
   const fs::path windows_package = paths.test_root / "export" / "windows.ttpkg";
   const std::string legacy_payload =
-      "\xEF\xBB\xBFy2025\r\nm01\r\n0101\r\n0600w\r\n0630meal\r\n0700rest\r\n";
+      "\xEF\xBB\xBFy2025\r\nm01\r\nd0101\r\n0600w\r\n0630meal\r\n0700rest\r\n";
 
   if (!PrepareRuntimeFixture(paths, config_root, failures)) {
     return;

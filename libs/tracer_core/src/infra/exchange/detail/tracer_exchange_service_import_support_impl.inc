@@ -78,6 +78,7 @@ auto TryRollbackImportTransaction(
     const fs::path& active_text_root, const fs::path& backup_text_root,
     const fs::path& backup_config_root,
     const fs::path& active_converter_main_config_path,
+    const fs::path& active_config_root,
     const std::vector<ImportedPayloadFile>& imported_payloads,
     bool text_root_updated, bool config_applied) -> std::string {
   try {
@@ -93,6 +94,7 @@ auto TryRollbackImportTransaction(
           .target_main_config_path =
               active_converter_main_config_path.string(),
       });
+      RestoreMarkdownReportConfig(backup_config_root, active_config_root);
     }
   } catch (const std::exception& rollback_error) {
     return rollback_error.what();

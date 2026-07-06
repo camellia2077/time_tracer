@@ -123,3 +123,9 @@ def hold_process_lock(
             handle.write(" ")
             handle.flush()
             _unlock_handle(handle)
+    try:
+        lock_path.unlink()
+    except FileNotFoundError:
+        pass
+    except OSError:
+        pass

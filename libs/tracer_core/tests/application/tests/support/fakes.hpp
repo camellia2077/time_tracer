@@ -279,7 +279,7 @@ class FakeTracerExchangeService final
       .resolved_output_root_path = "out/unpacked",
       .source_root_name = "data",
       .payload_file_count = 2,
-      .converter_file_count = 4,
+      .converter_file_count = 9,
       .manifest_included = true,
       .error_message = "",
   };
@@ -287,7 +287,7 @@ class FakeTracerExchangeService final
       .ok = true,
       .input_tracer_path = "out/sample.tracer",
       .package_type = "tracer_exchange",
-      .package_version = 4,
+      .package_version = 5,
       .source_root_name = "data",
       .payload_file_count = 2,
       .error_message = "",

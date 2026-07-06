@@ -180,7 +180,7 @@ auto TestValidateLogicRejectsWakeKeywordAfterFirstEvent(int& failures) -> void {
   const std::filesystem::path kSourceFile = kSourceRoot / "2026-03.txt";
   if (!WriteFileWithParents(
           kSourceFile,
-          "y2026\nm03\n0301\n0700w\n0800高等数学\n0900wake\n1000有氧训练\n")) {
+          "y2026\nm03\nd0301\n0700w\n0800高等数学\n0900wake\n1000有氧训练\n")) {
     ++failures;
     std::cerr << "[FAIL] Wake-position logic validation test should write "
                  "input file.\n";
@@ -256,7 +256,7 @@ auto TestValidateLogicAllowsSingleAuthoredEventDay(int& failures) -> void {
   const std::filesystem::path kSourceRoot =
       kPaths.test_root / "source" / "2026";
   const std::filesystem::path kSourceFile = kSourceRoot / "2026-03.txt";
-  if (!WriteFileWithParents(kSourceFile, "y2026\nm03\n0301\n0700w\n")) {
+  if (!WriteFileWithParents(kSourceFile, "y2026\nm03\nd0301\n0700w\n")) {
     ++failures;
     std::cerr << "[FAIL] Single-authored-event logic validation test should "
                  "write input file.\n";
@@ -471,6 +471,63 @@ auto TestRecordActivityAtomicallyAcceptsWakeKeywordFromConfigOnly(
   cleanup();
 }
 
+auto TestRecordActivityAtomicallyAcceptsCanonicalActivityToken(
+    int& failures) -> void {
+  const RuntimeTestPaths kPaths = BuildTempTestPaths(
+      "time_tracer_android_runtime_record_canonical_token_test");
+  RemoveTree(kPaths.test_root);
+
+  const auto cleanup = [&]() -> void { RemoveTree(kPaths.test_root); };
+
+  const std::filesystem::path kRepoRoot = BuildRepoRoot();
+  const std::filesystem::path kConfigTomlPath =
+      kRepoRoot / "assets" / "tracer_core" / "config" / "converter" /
+      "interval_processor_config.toml";
+
+  infrastructure::bootstrap::AndroidRuntime runtime;
+  try {
+    runtime = infrastructure::bootstrap::BuildAndroidRuntime(
+        BuildRuntimeRequest(kPaths, kConfigTomlPath));
+  } catch (const std::exception& exception) {
+    ++failures;
+    std::cerr << "[FAIL] BuildAndroidRuntime should succeed for canonical "
+                 "record token test: "
+              << exception.what() << '\n';
+    cleanup();
+    return;
+  }
+
+  const auto kAck = runtime.runtime_api->pipeline().RunRecordActivityAtomically(
+      {.target_date_iso = "2026-03-01",
+       .raw_activity_name = "recreation_game_clash-royale",
+       .remark = "",
+       .preferred_txt_path = "",
+       .date_check_mode = DateCheckMode::kNone,
+       .time_order_mode = TimeOrderMode::kStrictCalendar});
+  if (!kAck.ok) {
+    ++failures;
+    std::cerr << "[FAIL] RunRecordActivityAtomically should accept canonical "
+                 "activity tokens from alias mapping values: "
+              << kAck.message << '\n';
+    cleanup();
+    return;
+  }
+
+  const std::filesystem::path kMonthFile =
+      kPaths.test_root / "input" / "2026" / "2026-03.txt";
+  std::ifstream month_input(kMonthFile);
+  std::stringstream month_buffer;
+  month_buffer << month_input.rdbuf();
+  if (!month_input.good() ||
+      !Contains(month_buffer.str(), "recreation_game_clash-royale")) {
+    ++failures;
+    std::cerr << "[FAIL] Canonical record token should be written into the "
+                 "target TXT file unchanged.\n";
+  }
+
+  cleanup();
+}
+
 auto TestRecordActivityAtomicallyWarnsForOvernightContinuationDay(
     int& failures) -> void {
   const RuntimeTestPaths kPaths = BuildTempTestPaths(
@@ -541,7 +598,7 @@ auto TestRecordActivityAtomicallySkipsCompletenessWarningForCompleteDay(
   const std::filesystem::path kMonthFile =
       kPaths.test_root / "input" / "2026" / "2026-03.txt";
   const std::string month_file_text =
-      std::string("y2026\nm03\n0301\n") + BuildRecentWakeEventLine();
+      std::string("y2026\nm03\nd0301\n") + BuildRecentWakeEventLine();
   if (!WriteFileWithParents(kMonthFile, month_file_text)) {
     ++failures;
     std::cerr << "[FAIL] Complete-day record warning test should write the "
@@ -628,7 +685,7 @@ auto TestConvertLogsActualConversionFailure(int& failures) -> void {
   const std::filesystem::path kSourceRoot =
       kPaths.test_root / "source" / "2026";
   const std::filesystem::path kSourceFile = kSourceRoot / "2026-03.txt";
-  if (!WriteFileWithParents(kSourceFile, "y2026\nm03\n0101\nr\n")) {
+  if (!WriteFileWithParents(kSourceFile, "y2026\nm03\nd0301\nr\n")) {
     ++failures;
     std::cerr << "[FAIL] Conversion failure wording test should write input "
                  "file.\n";
@@ -668,8 +725,7 @@ auto TestConvertLogsActualConversionFailure(int& failures) -> void {
   }
 
   const std::string kExpectedParseError =
-      kSourceFile.string() +
-      ":4: Parse error: Invalid event line format => 'r'";
+      "Parse error: Invalid event line format => 'r'";
   if (!Contains(diagnostics_sink->Errors(), kExpectedParseError)) {
     ++failures;
     std::cerr << "[FAIL] RunConvert should still surface parser-style "
@@ -775,6 +831,7 @@ auto RunPipelineValidationRegressionTests(int& failures) -> void {
   TestValidateLogicRejectsBadTimeRangeFixture(failures);
   TestRecordActivityAtomicallyWarnsForWakeOnlyDay(failures);
   TestRecordActivityAtomicallyAcceptsWakeKeywordFromConfigOnly(failures);
+  TestRecordActivityAtomicallyAcceptsCanonicalActivityToken(failures);
   TestRecordActivityAtomicallyWarnsForOvernightContinuationDay(failures);
   TestRecordActivityAtomicallySkipsCompletenessWarningForCompleteDay(failures);
   TestConvertLogsActualConversionFailure(failures);

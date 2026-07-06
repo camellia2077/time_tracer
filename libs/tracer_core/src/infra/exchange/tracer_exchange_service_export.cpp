@@ -176,6 +176,13 @@ auto TracerExchangeService::RunExport(
                                    kConfigPaths.alias_mapping_path));
   entries.push_back(BuildFileEntry(exchange_pkg::kDurationRulesPath,
                                    kConfigPaths.duration_rules_path));
+  for (std::size_t index = 0;
+       index < exchange_pkg::kReportMarkdownPackagePaths.size();
+       ++index) {
+    entries.push_back(BuildFileEntry(
+        exchange_pkg::kReportMarkdownPackagePaths[index],
+        kConfigPaths.report_markdown_paths[index]));
+  }
   for (std::size_t index = 0; index < kAliasDefinition.child_files.size();
        ++index) {
     entries.push_back(BuildFileEntry(
@@ -233,7 +240,9 @@ auto TracerExchangeService::RunExport(
       .source_root_name = kSourceRootName,
       .payload_file_count = static_cast<std::uint64_t>(kPayloadFiles.size()),
       .converter_file_count =
-          static_cast<std::uint64_t>(3U + kAliasDefinition.child_files.size()),
+          static_cast<std::uint64_t>(
+              3U + exchange_pkg::kReportMarkdownPackagePaths.size() +
+              kAliasDefinition.child_files.size()),
       .manifest_included = true,
       .error_message = "",
   };

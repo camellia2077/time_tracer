@@ -64,6 +64,7 @@ auto TracerExchangeService::RunImport(
   std::vector<ImportedPayloadFile> imported_payloads;
   std::string rollback_error_message;
   std::string failure_message;
+  fs::path active_config_root;
 
   EnsureTransactionRootCreated(kTransactionPaths.transaction_root);
 
@@ -146,6 +147,7 @@ auto TracerExchangeService::RunImport(
     const ActiveConverterConfigPaths kActivePaths =
         ResolveActiveConverterConfigPaths(
             request.active_converter_main_config_path);
+    active_config_root = kActivePaths.config_root_path;
     BackupActiveConverterConfig(kActivePaths,
                                 kTransactionPaths.backup_config_root);
     BackupManagedTextFiles(kActiveTextRoot, imported_payloads,
@@ -167,6 +169,8 @@ auto TracerExchangeService::RunImport(
         .target_main_config_path =
             request.active_converter_main_config_path.string(),
     });
+    InstallPackageMarkdownReportConfig(kTransactionPaths.extracted_root,
+                                       kActivePaths.config_root_path);
     EmitImportTransactionProgress(
         request.progress_observer, "apply_converter_config", 5U, kPhaseCount,
         "converter_config", 1U, 1U, kInputPath, kActiveTextRoot,
@@ -248,15 +252,15 @@ auto TracerExchangeService::RunImport(
     rollback_error_message = TryRollbackImportTransaction(
         workflow_handler_, kActiveTextRoot, kTransactionPaths.backup_text_root,
         kTransactionPaths.backup_config_root,
-        request.active_converter_main_config_path, imported_payloads,
-        text_root_updated, config_applied);
+        request.active_converter_main_config_path, active_config_root,
+        imported_payloads, text_root_updated, config_applied);
   } catch (...) {
     failure_message = "unexpected tracer exchange import failure";
     rollback_error_message = TryRollbackImportTransaction(
         workflow_handler_, kActiveTextRoot, kTransactionPaths.backup_text_root,
         kTransactionPaths.backup_config_root,
-        request.active_converter_main_config_path, imported_payloads,
-        text_root_updated, config_applied);
+        request.active_converter_main_config_path, active_config_root,
+        imported_payloads, text_root_updated, config_applied);
   }
 
   return BuildFailedImportResult(kTransactionPaths.transaction_root,

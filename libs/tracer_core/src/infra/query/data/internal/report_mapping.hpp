@@ -14,6 +14,8 @@ namespace tracer::core::infrastructure::query::data::repository::internal {
 using tracer::core::infrastructure::query::data::internal::
     BuildMappingNamesContent;
 using tracer::core::infrastructure::query::data::internal::
+    BuildActivityAliasMappingsContent;
+using tracer::core::infrastructure::query::data::internal::
     BuildMappingAliasKeysContent;
 using tracer::core::infrastructure::query::data::internal::
     BuildWakeKeywordsContent;

@@ -34,6 +34,15 @@ auto QueryRuntimeService::RunDataQuery(
     return {.ok = true, .content = std::move(content), .error_message = ""};
   }
   if (request.action ==
+      tracer_core::core::dto::DataQueryAction::kActivityAliasMappings) {
+    std::string content =
+        runtime_service_internal::BuildActivityAliasMappingsContent(
+            converter_config_toml_path_);
+    content = infra_data_query_renderers::RenderJsonObjectOutput(
+        "activity_alias_mappings", std::move(content), request.output_mode);
+    return {.ok = true, .content = std::move(content), .error_message = ""};
+  }
+  if (request.action ==
       tracer_core::core::dto::DataQueryAction::kMappingAliasKeys) {
     std::string content =
         runtime_service_internal::BuildMappingAliasKeysContent(

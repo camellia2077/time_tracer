@@ -1,4 +1,25 @@
 from . import cargo as build_cargo, cmake as build_cmake, gradle as build_gradle
+from . import common as build_common
+
+
+def _resolve_android_gradle_output_dir(command, app_name: str, profile_name) -> str:
+    app_dir = command.ctx.get_app_dir(app_name)
+    gradle_tasks = [
+        task.strip().lower()
+        for task in build_common.resolve_gradle_tasks(
+            ctx=command.ctx,
+            app_name=app_name,
+            profile_name=profile_name,
+        )
+        if str(task).strip()
+    ]
+    if any("release" in task for task in gradle_tasks):
+        build_root = app_dir / "app" / "build" / "outputs" / "final-apk" / "release"
+    elif any("debug" in task or "assemble" in task for task in gradle_tasks):
+        build_root = app_dir / "app" / "build" / "outputs" / "apk" / "debug"
+    else:
+        build_root = app_dir / "app" / "build"
+    return build_root.resolve().as_posix()
 
 
 def _print_build_output_dir(
@@ -7,14 +28,15 @@ def _print_build_output_dir(
     backend: str,
     build_dir_name: str,
     tidy: bool,
+    profile_name=None,
 ) -> None:
     if backend == "gradle":
-        build_root = (command.ctx.get_app_dir(app_name) / "app" / "build" / "outputs" / "apk" / "release").resolve()
+        build_root = _resolve_android_gradle_output_dir(command, app_name, profile_name)
     elif tidy:
-        build_root = command.ctx.get_tidy_dir(app_name, build_dir_name)
+        build_root = command.ctx.get_tidy_dir(app_name, build_dir_name).as_posix()
     else:
-        build_root = command.ctx.get_build_dir(app_name, build_dir_name)
-    print(f"Build files have been written to: {build_root.as_posix()}")
+        build_root = command.ctx.get_build_dir(app_name, build_dir_name).as_posix()
+    print(f"Build files have been written to: {build_root}")
 
 
 def configure_entry(
@@ -153,6 +175,7 @@ def build_entry(
                 backend=backend,
                 build_dir_name=resolved_build_dir_name,
                 tidy=tidy,
+                profile_name=profile_name,
             )
         return ret
     if backend == "cargo":
@@ -178,6 +201,7 @@ def build_entry(
                 backend=backend,
                 build_dir_name=resolved_build_dir_name,
                 tidy=tidy,
+                profile_name=profile_name,
             )
         return ret
 
@@ -210,6 +234,7 @@ def build_entry(
             backend=backend,
             build_dir_name=resolved_build_dir_name,
             tidy=tidy,
+            profile_name=profile_name,
         )
     return ret
 

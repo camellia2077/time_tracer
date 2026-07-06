@@ -28,7 +28,7 @@ auto ExpectNoDbArtifacts(const std::filesystem::path& db_path,
 auto BuildValidSingleMonthTxt() -> std::string {
   return "y2026\n"
          "m02\n"
-         "0201\n"
+         "d0201\n"
          "0700w\n"
          "0900rest\n"
          "1000meal\n";
@@ -37,7 +37,7 @@ auto BuildValidSingleMonthTxt() -> std::string {
 auto BuildInvalidStructureSingleMonthTxt() -> std::string {
   return "y2026\n"
          "m02\n"
-         "0201\n"
+         "d0201\n"
          "0700w\n"
          "0900wavebits\n"
          "1000meal\n";
@@ -46,12 +46,12 @@ auto BuildInvalidStructureSingleMonthTxt() -> std::string {
 auto BuildInvalidLogicSingleMonthTxt() -> std::string {
   return "y2026\n"
          "m02\n"
-         "0201\n"
+         "d0201\n"
          "0700w\n"
          "0900rest\n"
          "1000meal\n"
          "\n"
-         "0203\n"
+         "d0203\n"
          "0700w\n"
          "0900rest\n"
          "1000meal\n";

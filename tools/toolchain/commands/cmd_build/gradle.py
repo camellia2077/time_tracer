@@ -10,6 +10,7 @@ from . import common as build_common
 _ANDROID_STABLE_GRADLE_ARGS = (
     "--no-configuration-cache",
     "--no-parallel",
+    "--console=plain",
 )
 
 

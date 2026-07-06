@@ -2,6 +2,10 @@ auto BuildMappingNamesContent(
     const std::optional<std::filesystem::path>& converter_config_toml_path)
     -> std::string;
 
+auto BuildActivityAliasMappingsContent(
+    const std::optional<std::filesystem::path>& converter_config_toml_path)
+    -> std::string;
+
 auto BuildMappingAliasKeysContent(
     const std::optional<std::filesystem::path>& converter_config_toml_path)
     -> std::string;

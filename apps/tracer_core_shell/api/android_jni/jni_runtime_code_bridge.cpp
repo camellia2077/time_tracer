@@ -22,11 +22,12 @@ constexpr int kQueryActionSearch = 5;
 constexpr int kQueryActionActivitySuggest = 6;
 constexpr int kQueryActionTree = 7;
 constexpr int kQueryActionMappingNames = 8;
-constexpr int kQueryActionReportChart = 9;
-constexpr int kQueryActionMappingAliasKeys = 10;
-constexpr int kQueryActionWakeKeywords = 11;
-constexpr int kQueryActionAuthorableEventTokens = 12;
-constexpr int kQueryActionReportComposition = 13;
+constexpr int kQueryActionActivityAliasMappings = 9;
+constexpr int kQueryActionReportChart = 10;
+constexpr int kQueryActionMappingAliasKeys = 11;
+constexpr int kQueryActionWakeKeywords = 12;
+constexpr int kQueryActionAuthorableEventTokens = 13;
+constexpr int kQueryActionReportComposition = 14;
 
 constexpr int kReportTypeDay = 0;
 constexpr int kReportTypeMonth = 1;
@@ -94,6 +95,9 @@ constexpr int kReportFormatTypst = 2;
   }
   if (value == kQueryActionMappingNames) {
     return "mapping_names";
+  }
+  if (value == kQueryActionActivityAliasMappings) {
+    return "activity_alias_mappings";
   }
   if (value == kQueryActionReportChart) {
     return "report_chart";

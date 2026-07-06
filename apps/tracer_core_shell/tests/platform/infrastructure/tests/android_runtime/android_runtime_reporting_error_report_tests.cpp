@@ -105,7 +105,7 @@ auto TestValidateLogicReusesStructureReporter(int& failures) -> void {
   const std::filesystem::path kSourceRoot =
       kPaths.test_root / "source" / "2026";
   const std::filesystem::path kSourceFile = kSourceRoot / "2026-03.txt";
-  if (!WriteFileWithParents(kSourceFile, "y2026\nm03\n0101\nr\n")) {
+  if (!WriteFileWithParents(kSourceFile, "y2026\nm03\nd0301\nr\n")) {
     ++failures;
     std::cerr << "[FAIL] Validate-logic structure reporting test should write "
                  "input file.\n";
@@ -215,7 +215,7 @@ auto TestValidateStructureSkipsErrorReportFiles(int& failures) -> void {
   const std::filesystem::path kSourceRoot =
       kPaths.test_root / "source" / "2026";
   const std::filesystem::path kSourceFile = kSourceRoot / "2026-03.txt";
-  if (!WriteFileWithParents(kSourceFile, "y2026\nm03\n0101\nr\n")) {
+  if (!WriteFileWithParents(kSourceFile, "y2026\nm03\nd0301\nr\n")) {
     ++failures;
     std::cerr << "[FAIL] Validate-structure terminal-only test should write "
                  "input file.\n";
@@ -297,7 +297,7 @@ auto TestAndroidDefaultRuntimeSkipsErrorReportFiles(int& failures) -> void {
   const std::filesystem::path kSourceRoot =
       kPaths.test_root / "source" / "2026";
   const std::filesystem::path kSourceFile = kSourceRoot / "2026-03.txt";
-  if (!WriteFileWithParents(kSourceFile, "y2026\nm03\n0101\nr\n")) {
+  if (!WriteFileWithParents(kSourceFile, "y2026\nm03\nd0301\nr\n")) {
     ++failures;
     std::cerr << "[FAIL] Default error-report policy test should write input "
                  "file.\n";
@@ -320,8 +320,7 @@ auto TestAndroidDefaultRuntimeSkipsErrorReportFiles(int& failures) -> void {
   }
 
   const std::string kExpectedParseError =
-      kSourceFile.string() +
-      ":4: Parse error: Invalid event line format => 'r'";
+      "Parse error: Invalid event line format => 'r'";
   if (!Contains(diagnostics_sink->Errors(), kExpectedParseError)) {
     ++failures;
     std::cerr << "[FAIL] Android default runtime should still emit parser "

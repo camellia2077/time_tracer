@@ -92,6 +92,11 @@ constexpr std::string_view kOvernightContinuationWarning =
                      logical_date.month);
 }
 
+[[nodiscard]] auto BuildDayMarkerLine(std::string_view normalized_day_marker)
+    -> std::string {
+  return "d" + std::string(normalized_day_marker);
+}
+
 [[nodiscard]] auto NormalizeLineInput(std::string_view raw) -> std::string {
   std::string cleaned;
   cleaned.reserve(raw.size());
@@ -186,7 +191,8 @@ constexpr std::string_view kOvernightContinuationWarning =
 
 [[nodiscard]] auto IsDayMarkerLine(std::string_view line) -> bool {
   const std::string trimmed = Trim(std::string(line));
-  return trimmed.size() == 4U && IsDigitsOnly(trimmed);
+  return trimmed.size() == 5U && trimmed.front() == 'd' &&
+         IsDigitsOnly(std::string_view(trimmed).substr(1U));
 }
 
 [[nodiscard]] auto FindDayBlockEnd(const std::vector<std::string>& lines,
@@ -341,23 +347,28 @@ constexpr std::string_view kOvernightContinuationWarning =
     std::string_view raw_activity_name, const ConverterConfig& config)
     -> std::string {
   // Design intent:
-  // 1) Atomic record validates authorable event tokens against alias_mapping.toml
-  //    index + converter/aliases/*.toml child files, before later canonical mapping.
-  //    keys plus converter-config wake_keywords.
-  // 2) On success, TXT keeps the user-entered key text unchanged (no key->value rewrite here).
-  // 3) Alias key->value mapping happens later during full TXT parse/ingest into DB.
-  // This prevents record-time behavior from diverging from the TXT-first authoring model.
+  // 1) Atomic record accepts either authored alias keys or already-canonical
+  //    activity tokens from alias_mapping.toml index + converter/aliases/*.toml,
+  //    plus converter-config wake_keywords.
+  // 2) On success, TXT keeps the user-entered text unchanged; canonical tokens
+  //    are not rewritten back to aliases at record time.
+  // 3) Full TXT parse/ingest still maps aliases forward to canonical, while
+  //    canonical input passes through unchanged.
   const std::string normalized = NormalizeActivityNameForRecord(raw_activity_name);
   if (normalized.empty()) {
     throw std::invalid_argument("Activity name is empty.");
   }
-  if (config.text_mapping.contains(normalized) ||
+  const bool matches_canonical = std::ranges::any_of(
+      config.text_mapping, [&](const auto& entry) -> bool {
+        return entry.second == normalized;
+      });
+  if (config.text_mapping.contains(normalized) || matches_canonical ||
       IsWakeKeywordActivity(normalized, config.wake_keywords)) {
     return normalized;
   }
   throw std::invalid_argument(
       "Activity name must match configured authorable event token "
-      "(alias key or wake keyword): " +
+      "(alias key, canonical token, or wake keyword): " +
       normalized);
 }
 
@@ -374,10 +385,12 @@ constexpr std::string_view kOvernightContinuationWarning =
   const std::string event_time = GetCurrentLocalHhmm();
   const std::string event_line =
       BuildRawEventLine(event_time, record_activity_name, remark);
+  const std::string day_marker_line =
+      BuildDayMarkerLine(logical_date.day_marker);
 
   const auto block_start_it = std::ranges::find_if(
       lines, [&](const std::string& line) -> bool {
-        return Trim(line) == logical_date.day_marker;
+        return Trim(line) == day_marker_line;
       });
 
   std::vector<std::string> warnings;
@@ -385,7 +398,7 @@ constexpr std::string_view kOvernightContinuationWarning =
     if (!lines.empty() && !lines.back().empty()) {
       lines.push_back("");
     }
-    lines.push_back(logical_date.day_marker);
+    lines.push_back(day_marker_line);
     lines.push_back(event_line);
     const int block_start = static_cast<int>(lines.size()) - 2;
     const auto completeness_warning = ResolveAuthoredEventCompletenessWarning(

@@ -20,6 +20,20 @@ void RunQueryChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime) {
               kMappingNamesContent["names"].is_array(),
           "baseline query mapping names content should include names array");
 
+  const json kActivityAliasMappingsResponse =
+      ParseResponse(api.runtime_query(runtime,
+                                      json{{"action", "activity_alias_mappings"}}
+                                          .dump()
+                                          .c_str()),
+                    "baseline query activity alias mappings");
+  Require(kActivityAliasMappingsResponse.value("ok", false),
+          "baseline query activity alias mappings should return ok=true");
+  const json kActivityAliasMappingsContent =
+      json::parse(kActivityAliasMappingsResponse.value("content", "{}"));
+  Require(kActivityAliasMappingsContent.contains("entries") &&
+              kActivityAliasMappingsContent["entries"].is_array(),
+          "baseline query activity alias mappings content should include entries array");
+
   const json kMappingAliasKeysResponse =
       ParseResponse(api.runtime_query(runtime,
                                       json{{"action", "mapping_alias_keys"}}
@@ -61,6 +75,17 @@ void RunQueryChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime) {
               kAuthorableTokensContent["names"].is_array(),
           "baseline query authorable event tokens content should include names "
           "array");
+  bool contains_canonical_authorable = false;
+  for (const auto& item : kAuthorableTokensContent["names"]) {
+    if (item.is_string() &&
+        item.get<std::string>() == "recreation_game_clash-royale") {
+      contains_canonical_authorable = true;
+      break;
+    }
+  }
+  Require(contains_canonical_authorable,
+          "baseline query authorable event tokens should include canonical "
+          "activity names.");
 
   const json kReportChartResponse = ParseResponse(
       api.runtime_query(runtime,

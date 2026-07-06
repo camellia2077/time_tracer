@@ -41,15 +41,15 @@ constexpr std::string_view kMonthContent =
     "y2025\n"
     "m01\n"
     "\n"
-    "0101\n"
+    "d0101\n"
     "0900study\n"
     "\n"
-    "0102\n"
+    "d0102\n"
     "0656w\n"
     "0904无氧训练 #cherry\n"
     "2207minecraft\n"
     "\n"
-    "0103\n"
+    "d0103\n"
     "0900sleep\n";
 
 auto TestTxtDayBlockSemantics(TestState& state) -> void {
@@ -98,15 +98,15 @@ auto TestTxtDayBlockSemantics(TestState& state) -> void {
   const auto replaced = ReplaceDayBlock({
       .content = std::string(kMonthContent),
       .day_marker = "0102",
-      .edited_day_body = "0102\n1111new_line\n2222tail\n",
+      .edited_day_body = "d0102\n1111new_line\n2222tail\n",
   });
   Expect(state, replaced.ok, "ReplaceDayBlock should return ok=true.");
   Expect(state, replaced.found,
          "ReplaceDayBlock should find existing day block.");
   Expect(state,
-         Contains(replaced.updated_content, "0102\n1111new_line\n2222tail\n") &&
-             Contains(replaced.updated_content, "0101\n0900study\n") &&
-             Contains(replaced.updated_content, "0103\n0900sleep\n"),
+         Contains(replaced.updated_content, "d0102\n1111new_line\n2222tail\n") &&
+             Contains(replaced.updated_content, "d0101\n0900study\n") &&
+             Contains(replaced.updated_content, "d0103\n0900sleep\n"),
          "ReplaceDayBlock should only rewrite the target day block.");
   const auto replaced_resolved = ResolveDayBlock({
       .content = replaced.updated_content,

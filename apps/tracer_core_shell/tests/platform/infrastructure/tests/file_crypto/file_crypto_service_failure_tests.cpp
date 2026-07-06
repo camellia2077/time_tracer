@@ -18,7 +18,7 @@ auto TestWrongPassphraseRejected(int& failures) -> void {
   const auto kRestoredTxt = kPaths.test_root / "restored.txt";
 
   RemoveTree(kPaths.test_root);
-  if (!WriteFileWithParents(kInputTxt, "y2026\nm02\n0202\n0630 study\n")) {
+  if (!WriteFileWithParents(kInputTxt, "y2026\nm02\nd0202\n0630 study\n")) {
     ++failures;
     std::cerr << "[FAIL] Failed to write wrong-passphrase input file.\n";
     RemoveTree(kPaths.test_root);
@@ -61,7 +61,7 @@ auto TestCompressionMetadataMismatchRejected(int& failures) -> void {
   constexpr std::size_t kMinimumEncryptedHeaderSize = 80;
 
   RemoveTree(kPaths.test_root);
-  if (!WriteFileWithParents(kInputTxt, "y2026\nm02\n0203\n0700 study\n")) {
+  if (!WriteFileWithParents(kInputTxt, "y2026\nm02\nd0203\n0700 study\n")) {
     ++failures;
     std::cerr << "[FAIL] Failed to write compression mismatch input file.\n";
     RemoveTree(kPaths.test_root);
@@ -119,7 +119,7 @@ auto TestDecryptFileToBytesWrongPassphraseRejected(int& failures) -> void {
   const RuntimeTestPaths kPaths =
       BuildTempTestPaths("tracer_core_file_crypto_bytes_wrong_passphrase_test");
   const auto kEncrypted = kPaths.test_root / "payload.tracer";
-  const std::string kPlaintext = "y2026\nm02\n0204\n0700 study\n";
+  const std::string kPlaintext = "y2026\nm02\nd0204\n0700 study\n";
 
   RemoveTree(kPaths.test_root);
 

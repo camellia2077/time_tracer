@@ -74,7 +74,7 @@ void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
   const json kResolveDay = ParseResponse(
       api.runtime_txt(runtime, json{{"action", "resolve_day_block"},
                                     {"content", std::string(
-                                                    "y2025\nm01\n\n0101\n0900study\n\n0102\n0656w\n0904无氧训练\n")},
+                                                    "y2025\nm01\n\nd0101\n0900study\n\nd0102\n0656w\n0904无氧训练\n")},
                                     {"day_marker", "0102"},
                                     {"selected_month", "2025-01"}}
                                    .dump()
@@ -93,7 +93,7 @@ void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
   const json kMissingDay = ParseResponse(
       api.runtime_txt(runtime, json{{"action", "resolve_day_block"},
                                     {"content", std::string(
-                                                    "y2025\nm01\n\n0101\n0900study\n")},
+                                                    "y2025\nm01\n\nd0101\n0900study\n")},
                                     {"day_marker", "0102"},
                                     {"selected_month", "2025-01"}}
                                    .dump()
@@ -109,16 +109,16 @@ void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
   const json kReplaceDay = ParseResponse(
       api.runtime_txt(runtime, json{{"action", "replace_day_block"},
                                     {"content", std::string(
-                                                    "y2025\nm01\n\n0101\n0900study\n\n0102\n0656w\n0904无氧训练\n")},
+                                                    "y2025\nm01\n\nd0101\n0900study\n\nd0102\n0656w\n0904无氧训练\n")},
                                     {"day_marker", "0102"},
-                                    {"edited_day_body", "0102\n1111new_line\n"}}
+                                    {"edited_day_body", "d0102\n1111new_line\n"}}
                                    .dump()
                                    .c_str()),
       "txt replace day");
   Require(kReplaceDay.value("ok", false),
           "replace_day_block should return ok=true");
   Require(kReplaceDay.value("updated_content", std::string{}).find(
-              "0102\n1111new_line\n") != std::string::npos,
+              "d0102\n1111new_line\n") != std::string::npos,
           "replace_day_block should strip duplicated marker and update content");
 
   const json kDefaultMarker = ParseResponse(

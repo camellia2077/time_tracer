@@ -15,6 +15,7 @@ enum class DataQueryAction {
   kSearch,
   kActivitySuggest,
   kMappingNames,
+  kActivityAliasMappings,
   kMappingAliasKeys,
   kWakeKeywords,
   kAuthorableEventTokens,

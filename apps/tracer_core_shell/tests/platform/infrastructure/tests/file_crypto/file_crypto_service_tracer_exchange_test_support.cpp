@@ -80,6 +80,13 @@ auto BuildValidPackageEntries(
       BuildEntry(exchange_pkg::kAliasMappingIndexPath, alias_index_config));
   entries.push_back(
       BuildEntry(exchange_pkg::kDurationRulesPath, duration_config));
+  for (const auto report_path : exchange_pkg::kReportMarkdownPackagePaths) {
+    const fs::path asset_relative =
+        fs::path("assets/tracer_core") / fs::path(report_path);
+    entries.push_back(
+        BuildEntry(report_path,
+                   ReadRepoConverterConfig(asset_relative.generic_string())));
+  }
   for (const auto& alias_child : sorted_alias_child_configs) {
     entries.push_back(BuildEntry(alias_child.relative_path, alias_child.text));
   }
@@ -186,18 +193,18 @@ auto BuildRepoAliasChildConfigs() -> std::vector<PayloadFixture> {
 auto BuildSamplePayloads() -> std::vector<PayloadFixture> {
   return {
       {.relative_path = "payload/2025/2025-01.txt",
-       .text = "y2025\nm01\n0101\n0600w\n0630meal\n0700rest\n"},
+       .text = "y2025\nm01\nd0101\n0600w\n0630meal\n0700rest\n"},
       {.relative_path = "payload/2026/2026-12.txt",
-       .text = "y2026\nm12\n1201\n0630w\n0700rest\n0730meal\n"},
+       .text = "y2026\nm12\nd1201\n0630w\n0700rest\n0730meal\n"},
   };
 }
 
 auto BuildValidExportPayloads() -> std::vector<PayloadFixture> {
   return {
       {.relative_path = "payload/2025/2025-01.txt",
-       .text = "y2025\nm01\n0101\n0600w\n0630meal\n0700rest\n"},
+       .text = "y2025\nm01\nd0101\n0600w\n0630meal\n0700rest\n"},
       {.relative_path = "payload/2025/2025-02.txt",
-       .text = "y2025\nm02\n0201\n0630w\n0700rest\n0730meal\n"},
+       .text = "y2025\nm02\nd0201\n0630w\n0700rest\n0730meal\n"},
   };
 }
 

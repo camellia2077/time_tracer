@@ -13,6 +13,8 @@
 #include <vector>
 
 #include "domain/reports/models/project_tree.hpp"
+#include "infra/config/loader/alias_mapping_index_utils.hpp"
+#include "infra/config/loader/toml_loader_utils.hpp"
 #include "infra/query/data/internal/report_mapping.hpp"
 
 import tracer.core.infrastructure.config.file_converter_config_provider;
@@ -29,6 +31,7 @@ namespace infra_data_query_stats =
 namespace modtypes = tracer::core::domain::modtypes;
 using FileConverterConfigProvider =
     tracer::core::infrastructure::config::FileConverterConfigProvider;
+namespace modloader = tracer::core::infrastructure::config::loader;
 
 namespace tracer::core::infrastructure::query::data::internal {
 namespace {
@@ -98,6 +101,20 @@ auto BuildNamesPayload(const std::set<std::string>& names) -> std::string {
   payload["names"] = json::array();
   for (const auto& name : names) {
     payload["names"].push_back(name);
+  }
+  return payload.dump();
+}
+
+auto BuildAliasEntriesPayload(
+    const std::vector<modloader::detail::ExpandedAliasMappingEntry>& entries)
+    -> std::string {
+  json payload = json::object();
+  payload["entries"] = json::array();
+  for (const auto& entry : entries) {
+    payload["entries"].push_back(json{
+        {"alias", entry.alias_key},
+        {"canonical", entry.canonical_value},
+    });
   }
   return payload.dump();
 }
@@ -209,6 +226,28 @@ auto BuildMappingNamesContent(
   return BuildNamesPayload(names);
 }
 
+auto BuildActivityAliasMappingsContent(
+    const std::optional<std::filesystem::path>& converter_config_toml_path)
+    -> std::string {
+  if (!converter_config_toml_path.has_value() ||
+      converter_config_toml_path->empty()) {
+    throw std::runtime_error(
+        "activity_alias_mappings query requires converter config path.");
+  }
+
+  const std::filesystem::path config_path = *converter_config_toml_path;
+  const std::filesystem::path config_dir = config_path.parent_path();
+  const std::filesystem::path alias_index_path = config_dir / "alias_mapping.toml";
+  const toml::table alias_index_tbl = modloader::ReadToml(alias_index_path);
+  const auto definition = modloader::detail::LoadAliasMappingDefinition(
+      alias_index_path,
+      alias_index_tbl,
+      [](const std::filesystem::path& path) {
+        return modloader::ReadToml(path);
+      });
+  return BuildAliasEntriesPayload(definition.expanded_entries);
+}
+
 auto BuildMappingAliasKeysContent(
     const std::optional<std::filesystem::path>& converter_config_toml_path)
     -> std::string {
@@ -250,10 +289,13 @@ auto BuildAuthorableEventTokensContent(
 
   std::set<std::string> authorable_tokens;
   for (const auto& [alias, full_name] : kConfig.text_mapping) {
-    static_cast<void>(full_name);
     const std::string kTrimmedAlias = TrimCopy(alias);
+    const std::string kTrimmedCanonical = TrimCopy(full_name);
     if (!kTrimmedAlias.empty()) {
       authorable_tokens.insert(kTrimmedAlias);
+    }
+    if (!kTrimmedCanonical.empty()) {
+      authorable_tokens.insert(kTrimmedCanonical);
     }
   }
   for (const auto& wake_keyword : kConfig.wake_keywords) {

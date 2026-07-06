@@ -39,7 +39,7 @@ auto RunInfrastructureModuleCryptoExchangeSmoke() -> int {
   const exchange::TracerExchangeManifest parsed_manifest =
       exchange::ParseManifestText(manifest_text);
   if (parsed_manifest.package_type != "tracer_exchange" ||
-      parsed_manifest.package_version != 4 ||
+      parsed_manifest.package_version != 5 ||
       parsed_manifest.producer_platform != "windows" ||
       parsed_manifest.producer_app != "time_tracer_cli" ||
       parsed_manifest.source_root_name != "data" ||
@@ -56,13 +56,16 @@ auto RunInfrastructureModuleCryptoExchangeSmoke() -> int {
                  "includes = [\"aliases/default.toml\"]\n"));
   entries.push_back(
       BuildEntry(exchange::kDurationRulesPath, "duration = \"rule\"\n"));
+  for (const auto report_path : exchange::kReportMarkdownPackagePaths) {
+    entries.push_back(BuildEntry(report_path, "title = \"report\"\n"));
+  }
   entries.push_back(BuildEntry("config/converter/aliases/default.toml",
                                "parent = \"study\"\n\n[aliases]\n\"study\" = "
                                "\"math\"\n"));
   entries.push_back(BuildEntry("payload/2025/2025-01.txt",
-                               "y2025\nm01\n0101\n0600 study_math r alpha\n"));
+                               "y2025\nm01\nd0101\n0600 study_math r alpha\n"));
   entries.push_back(BuildEntry("payload/2026/2026-12.txt",
-                               "y2026\nm12\n1201\n0600 study_math r alpha\n"));
+                               "y2026\nm12\nd1201\n0600 study_math r alpha\n"));
 
   const auto package_bytes = exchange::EncodePackageBytes(entries);
   const exchange::DecodedTracerExchangePackage decoded =

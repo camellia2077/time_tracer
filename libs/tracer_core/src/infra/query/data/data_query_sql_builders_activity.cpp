@@ -17,7 +17,11 @@ auto BuildActivitySuggestionsSql(const ActivitySuggestionQueryOptions& options)
   sql.reserve(kActivitySuggestionsSqlReserve);
   sql += "WITH latest_record AS (";
   if (options.anchor_date.has_value() && !options.anchor_date->empty()) {
-    sql += "  SELECT ? AS max_date";
+    sql += "  SELECT MIN(?, MAX(tr.";
+    sql += schema::time_records::db::kDate;
+    sql += ")) AS max_date FROM ";
+    sql += schema::time_records::db::kTable;
+    sql += " tr";
   } else {
     sql += "  SELECT MAX(tr.";
     sql += schema::time_records::db::kDate;

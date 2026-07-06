@@ -101,6 +101,12 @@ auto QueryDayDurationsByRootInDateRange(sqlite3* db_conn,
 auto QueryActivitySuggestions(sqlite3* db_conn,
                               const ActivitySuggestionQueryOptions& options)
     -> std::vector<ActivitySuggestionRow> {
+  // `0` is a valid business input for suggestions. It means "skip querying any
+  // suggestion data", which both keeps the runtime semantics explicit and lets
+  // UI callers clear the numeric fields before typing replacement values.
+  if (options.lookback_days <= 0 || options.limit <= 0) {
+    return {};
+  }
   const int kLookbackDays = query_data_internal::ClampPositiveOrDefault(
       options.lookback_days, kDefaultLookbackDays);
   const int kLimit = query_data_internal::ClampPositiveOrDefault(

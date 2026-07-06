@@ -660,6 +660,35 @@ auto TestSingleDayCompositionKeepsAllRoots(int& failures) -> void {
   }
 }
 
+auto TestActivitySuggestionsAnchorAfterLatestRecord(int& failures) -> void {
+  const auto kDatabase = OpenSeededDatabaseOrRecordFailure(failures);
+  if (kDatabase == nullptr) {
+    return;
+  }
+
+  data_query::ActivitySuggestionQueryOptions options;
+  options.lookback_days = 7;
+  options.limit = 5;
+  options.anchor_date = "2026-02-20";
+
+  const auto kRows =
+      data_query::QueryActivitySuggestions(kDatabase.get(), options);
+  Expect(kRows.size() == 1U,
+         "activity suggestions should fall back to the latest recorded day "
+         "when anchor is after all records.",
+         failures);
+  if (kRows.size() != 1U) {
+    return;
+  }
+  Expect(kRows.front().activity_name == "study_cpp",
+         "activity suggestions should preserve the recorded activity name.",
+         failures);
+  Expect(kRows.front().usage_count == 2,
+         "activity suggestions should count records in the latest recorded "
+         "lookback window.",
+         failures);
+}
+
 auto TestOrchestratorRendererSemanticSnapshot(int& failures) -> void {
   const auto kDatabase = OpenSeededDatabaseOrRecordFailure(failures);
   if (kDatabase == nullptr) {
@@ -691,6 +720,7 @@ auto RunDataQueryRefactorStatsScenarioTests(int& failures) -> void {
   TestDerivedStatusExerciseFilters(failures);
   TestCrossMidnightActivityFilterUsesTimeline(failures);
   TestSingleDayCompositionKeepsAllRoots(failures);
+  TestActivitySuggestionsAnchorAfterLatestRecord(failures);
   TestOrchestratorRendererSemanticSnapshot(failures);
 }
 

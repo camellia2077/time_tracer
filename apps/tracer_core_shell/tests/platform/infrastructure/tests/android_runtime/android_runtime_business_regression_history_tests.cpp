@@ -216,14 +216,14 @@ auto TestSingleTxtIngestFallsBackToSiblingPreviousMonthTxt(int& failures)
     const std::string previous_month_txt =
         "y2026\n"
         "m01\n"
-        "0131\n"
+        "d0131\n"
         "2100w\n"
         "2200rest\n"
         "2330meal\n";
     const std::string current_month_txt =
         "y2026\n"
         "m02\n"
-        "0201\n"
+        "d0201\n"
         "0700w\n"
         "0900rest\n"
         "1000meal\n";

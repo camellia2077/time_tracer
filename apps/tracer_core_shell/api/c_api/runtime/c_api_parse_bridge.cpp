@@ -91,6 +91,11 @@ namespace tracer_core::shell::c_api_bridge {
   if (normalized == "mapping_names" || normalized == "mapping-names") {
     return DataQueryAction::kMappingNames;
   }
+  if (normalized == "activity_alias_mappings" ||
+      normalized == "activity-alias-mappings" ||
+      normalized == "alias_mappings" || normalized == "alias-mappings") {
+    return DataQueryAction::kActivityAliasMappings;
+  }
   if (normalized == "mapping_alias_keys" ||
       normalized == "mapping-alias-keys" ||
       normalized == "alias_keys" || normalized == "alias-keys") {
@@ -118,7 +123,7 @@ namespace tracer_core::shell::c_api_bridge {
   }
   throw std::invalid_argument(
       "field `action` must be one of: years|months|days|days_duration|"
-      "days_stats|search|activity_suggest|mapping_names|mapping_alias_keys|"
+      "days_stats|search|activity_suggest|mapping_names|activity_alias_mappings|mapping_alias_keys|"
       "wake_keywords|authorable_event_tokens|report_chart|"
       "report_composition|tree.");
 }

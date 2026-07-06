@@ -95,14 +95,34 @@ auto CopyConverterAliasDirectory(const std::filesystem::path& source_root,
                              target_root.string() + " | " + io_error.message());
   }
 
-  std::filesystem::copy(source_root, target_root,
-                        std::filesystem::copy_options::recursive |
-                            std::filesystem::copy_options::overwrite_existing,
-                        io_error);
-  if (io_error) {
-    throw std::runtime_error("Failed to copy alias config directory: " +
-                             source_root.string() + " -> " +
-                             target_root.string() + " | " + io_error.message());
+  for (const auto& entry :
+       std::filesystem::recursive_directory_iterator(source_root)) {
+    if (!entry.is_regular_file()) {
+      continue;
+    }
+    const auto relative_path = std::filesystem::relative(entry.path(),
+                                                         source_root, io_error);
+    if (io_error) {
+      throw std::runtime_error("Failed to resolve alias config child path: " +
+                               entry.path().string() + " | " +
+                               io_error.message());
+    }
+    const std::filesystem::path target_path = target_root / relative_path;
+    std::filesystem::create_directories(target_path.parent_path(), io_error);
+    if (io_error) {
+      throw std::runtime_error("Failed to prepare alias config child target: " +
+                               target_path.string() + " | " +
+                               io_error.message());
+    }
+    std::filesystem::copy_file(
+        entry.path(), target_path,
+        std::filesystem::copy_options::overwrite_existing, io_error);
+    if (io_error) {
+      throw std::runtime_error("Failed to copy alias config child: " +
+                               entry.path().string() + " -> " +
+                               target_path.string() + " | " +
+                               io_error.message());
+    }
   }
 }
 
