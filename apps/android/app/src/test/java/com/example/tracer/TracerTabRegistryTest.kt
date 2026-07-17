@@ -14,6 +14,9 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneId
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class TracerTabRegistryTest {
@@ -60,7 +63,11 @@ class TracerTabRegistryTest {
                 queryGateway = runtime
             )
         )
-        val configViewModel = ConfigViewModel(runtime)
+        val configViewModel = ConfigViewModel(
+            runtime,
+            runtime,
+            FakeQuickActivitiesPreferenceGateway()
+        )
         advanceUntilIdle()
 
         recordViewModel.setStatusText("Activity authorable token validation unavailable: stale")
@@ -70,6 +77,10 @@ class TracerTabRegistryTest {
             tab = TracerTab.RECORD,
             args = TracerTabLifecycleArgs(
                 queryGateway = runtime,
+                queryReportViewModel = QueryReportViewModel(
+                    reportGateway = runtime,
+                    queryGateway = runtime
+                ),
                 recordViewModel = recordViewModel,
                 configViewModel = configViewModel,
                 recordStatusText = { recordViewModel.uiState.statusText },
@@ -103,7 +114,11 @@ class TracerTabRegistryTest {
                 queryGateway = runtime
             )
         )
-        val configViewModel = ConfigViewModel(runtime)
+        val configViewModel = ConfigViewModel(
+            runtime,
+            runtime,
+            FakeQuickActivitiesPreferenceGateway()
+        )
         advanceUntilIdle()
 
         recordViewModel.openHistoryFile("draft.txt")
@@ -115,6 +130,10 @@ class TracerTabRegistryTest {
             tab = TracerTab.TXT,
             args = TracerTabLifecycleArgs(
                 queryGateway = runtime,
+                queryReportViewModel = QueryReportViewModel(
+                    reportGateway = runtime,
+                    queryGateway = runtime
+                ),
                 recordViewModel = recordViewModel,
                 configViewModel = configViewModel,
                 recordStatusText = { recordViewModel.uiState.statusText },
@@ -135,7 +154,11 @@ class TracerTabRegistryTest {
                 queryGateway = runtime
             )
         )
-        val configViewModel = ConfigViewModel(runtime)
+        val configViewModel = ConfigViewModel(
+            runtime,
+            runtime,
+            FakeQuickActivitiesPreferenceGateway()
+        )
         advanceUntilIdle()
 
         configViewModel.onEditableContentChange("unsaved")
@@ -145,6 +168,10 @@ class TracerTabRegistryTest {
             tab = TracerTab.CONFIG,
             args = TracerTabLifecycleArgs(
                 queryGateway = runtime,
+                queryReportViewModel = QueryReportViewModel(
+                    reportGateway = runtime,
+                    queryGateway = runtime
+                ),
                 recordViewModel = recordViewModel,
                 configViewModel = configViewModel,
                 recordStatusText = { recordViewModel.uiState.statusText },
@@ -169,6 +196,188 @@ class TracerTabRegistryTest {
 
         assertNull(event)
     }
+
+    @Test
+    fun statusEvent_report_query_data_status_is_suppressed() {
+        val event = TracerTabRegistry.statusEvent(
+            tab = TracerTab.REPORT,
+            args = TracerTabStatusEventArgs(
+                selectedTab = TracerTab.REPORT,
+                statusText = "query data report-chart -> OK=true",
+                lastObservedTab = TracerTab.REPORT,
+                lastObservedStatus = "query data report-chart running..."
+            )
+        )
+
+        assertNull(event)
+    }
+
+    @Test
+    fun statusEvent_report_markdown_generation_status_is_suppressed() {
+        val event = TracerTabRegistry.statusEvent(
+            tab = TracerTab.REPORT,
+            args = TracerTabStatusEventArgs(
+                selectedTab = TracerTab.REPORT,
+                statusText = "nativeReportJson(Day, md) -> OK=true",
+                lastObservedTab = TracerTab.REPORT,
+                lastObservedStatus = "nativeReportJson(Day, md) running..."
+            )
+        )
+
+        assertNull(event)
+    }
+
+    @Test
+    fun statusEvent_record_success_uses_structured_snackbar_visuals() {
+        val event = TracerTabRegistry.statusEvent(
+            tab = TracerTab.RECORD,
+            args = TracerTabStatusEventArgs(
+                selectedTab = TracerTab.RECORD,
+                statusText = "routine_toilet\n13h 57m",
+                lastObservedTab = TracerTab.RECORD,
+                lastObservedStatus = "previous"
+            )
+        )
+
+        require(event is TracerTabUiEvent.ShowSnackbar)
+        assertEquals("routine_toilet", event.visuals.message)
+        assertEquals("13h 57m", event.visuals.supportingText)
+        assertEquals(SnackbarDuration.Short, event.visuals.duration)
+    }
+
+    @Test
+    fun onEnter_report_refreshes_day_parameter_to_current_logical_day() = runTest(dispatcher) {
+        val runtime = FakeRuntimeServices()
+        val queryReportViewModel = QueryReportViewModel(
+            reportGateway = runtime,
+            queryGateway = runtime,
+            clock = fixedClock("2026-03-29T21:30:00Z", "Asia/Shanghai")
+        )
+        val recordViewModel = RecordViewModel(
+            RecordUseCases(
+                recordGateway = runtime,
+                txtStorageGateway = runtime,
+                queryGateway = runtime
+            )
+        )
+        val configViewModel = ConfigViewModel(
+            runtime,
+            runtime,
+            FakeQuickActivitiesPreferenceGateway()
+        )
+        queryReportViewModel.onReportDateChange("20260330")
+
+        TracerTabRegistry.onEnter(
+            tab = TracerTab.REPORT,
+            args = TracerTabLifecycleArgs(
+                queryGateway = runtime,
+                queryReportViewModel = queryReportViewModel,
+                recordViewModel = recordViewModel,
+                configViewModel = configViewModel,
+                recordStatusText = { recordViewModel.uiState.statusText },
+                onValidAuthorableEventTokensChanged = {}
+            )
+        )
+
+        assertEquals("20260329", queryReportViewModel.uiState.reportDate)
+    }
+
+    @Test
+    fun clearDataAndReinitialize_uses_user_facing_success_text() = runTest(dispatcher) {
+        val runtime = FakeRuntimeServices(
+            clearAndInitResult = ClearAndInitResult(
+                initialized = true,
+                operationOk = true,
+                clearMessage = "clear -> removed /data/user/0/...",
+                initResponse = """{"content":""}"""
+            )
+        )
+        val viewModel = DataViewModel(runtime, runtime)
+        advanceUntilIdle()
+
+        viewModel.clearDataAndReinitialize(
+            DestructiveActionStatusText(
+                running = "Clearing all data...",
+                success = "All data cleared.",
+                failure = "Could not clear all data."
+            )
+        )
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.initialized)
+        assertEquals("All data cleared.", viewModel.uiState.statusText)
+    }
+
+    @Test
+    fun clearDataAndReinitialize_uses_user_facing_failure_text() = runTest(dispatcher) {
+        val runtime = FakeRuntimeServices(
+            clearAndInitResult = ClearAndInitResult(
+                initialized = false,
+                operationOk = false,
+                clearMessage = "clear -> failed",
+                initResponse = """{"error":"internal details"}"""
+            )
+        )
+        val viewModel = DataViewModel(runtime, runtime)
+        advanceUntilIdle()
+
+        viewModel.clearDataAndReinitialize(
+            DestructiveActionStatusText(
+                running = "Clearing all data...",
+                success = "All data cleared.",
+                failure = "Could not clear all data."
+            )
+        )
+        advanceUntilIdle()
+
+        assertEquals("Could not clear all data.", viewModel.uiState.statusText)
+    }
+
+    @Test
+    fun clearDatabase_uses_user_facing_success_text() = runTest(dispatcher) {
+        val runtime = FakeRuntimeServices(
+            clearDatabaseResult = ClearDatabaseResult(
+                ok = true,
+                message = "clear database -> removed /data/user/0/..."
+            )
+        )
+        val viewModel = DataViewModel(runtime, runtime)
+        advanceUntilIdle()
+
+        viewModel.clearDatabase(
+            DestructiveActionStatusText(
+                running = "Clearing database...",
+                success = "Database cleared.",
+                failure = "Could not clear database."
+            )
+        )
+        advanceUntilIdle()
+
+        assertEquals("Database cleared.", viewModel.uiState.statusText)
+    }
+
+    @Test
+    fun clearTxt_uses_user_facing_failure_text() = runTest(dispatcher) {
+        val runtime = FakeRuntimeServices(
+            clearTxtResult = ClearTxtResult(
+                ok = false,
+                message = "clear txt -> failed with internal details"
+            )
+        )
+        val viewModel = DataViewModel(runtime, runtime)
+        advanceUntilIdle()
+
+        viewModel.clearTxt(
+            DestructiveActionStatusText(
+                running = "Clearing TXT files...",
+                success = "TXT files cleared.",
+                failure = "Could not clear TXT files."
+            )
+        )
+        advanceUntilIdle()
+
+        assertEquals("Could not clear TXT files.", viewModel.uiState.statusText)
+    }
 }
 
 private class FakeRuntimeServices(
@@ -178,9 +387,24 @@ private class FakeRuntimeServices(
         message = "ok"
     ),
     private val inspectionEntries: List<TxtInspectionEntry> = emptyList(),
-    private val readTxtContents: Map<String, String> = emptyMap()
+    private val readTxtContents: Map<String, String> = emptyMap(),
+    private val clearAndInitResult: ClearAndInitResult = ClearAndInitResult(
+        initialized = true,
+        operationOk = true,
+        clearMessage = "ok",
+        initResponse = """{"ok":true}"""
+    ),
+    private val clearDatabaseResult: ClearDatabaseResult = ClearDatabaseResult(
+        ok = true,
+        message = "ok"
+    ),
+    private val clearTxtResult: ClearTxtResult = ClearTxtResult(
+        ok = true,
+        message = "ok"
+    )
 ) : RuntimeInitializer,
     RecordGateway,
+    ReportGateway,
     TxtStorageGateway,
     QueryGateway,
     ConfigGateway {
@@ -193,17 +417,11 @@ private class FakeRuntimeServices(
     override suspend fun ingestSingleTxtReplaceMonth(inputPath: String): NativeCallResult =
         initializeRuntime()
 
-    override suspend fun clearAndReinitialize(): ClearAndInitResult = ClearAndInitResult(
-        initialized = true,
-        operationOk = true,
-        clearMessage = "ok",
-        initResponse = """{"ok":true}"""
-    )
+    override suspend fun clearAndReinitialize(): ClearAndInitResult = clearAndInitResult
 
-    override suspend fun clearDatabase(): ClearDatabaseResult = ClearDatabaseResult(
-        ok = true,
-        message = "ok"
-    )
+    override suspend fun clearDatabase(): ClearDatabaseResult = clearDatabaseResult
+
+    override suspend fun rebuildDatabase(): NativeCallResult = initializeRuntime()
 
     override suspend fun createCurrentMonthTxt(): RecordActionResult = RecordActionResult(
         ok = true,
@@ -240,10 +458,7 @@ private class FakeRuntimeServices(
 
     override suspend fun syncLiveToDatabase(): NativeCallResult = initializeRuntime()
 
-    override suspend fun clearTxt(): ClearTxtResult = ClearTxtResult(
-        ok = true,
-        message = "ok"
-    )
+    override suspend fun clearTxt(): ClearTxtResult = clearTxtResult
 
     override suspend fun queryActivitySuggestions(
         lookbackDays: Int,
@@ -264,9 +479,6 @@ private class FakeRuntimeServices(
     override suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult =
         TreeQueryResult(ok = true, found = false, message = "ok")
 
-    override suspend fun queryProjectTreeText(params: DataTreeQueryParams): DataQueryTextResult =
-        DataQueryTextResult(ok = true, outputText = "", message = "ok")
-
     override suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult =
         ReportChartQueryResult(
             ok = true,
@@ -277,6 +489,14 @@ private class FakeRuntimeServices(
                 points = emptyList()
             ),
             message = "ok"
+        )
+
+    override suspend fun reportMarkdown(request: TemporalReportQueryRequest): ReportCallResult =
+        ReportCallResult(
+            initialized = true,
+            operationOk = true,
+            outputText = "",
+            rawResponse = ""
         )
 
     override suspend fun listActivityMappingNames(): ActivityMappingNamesResult = mappingNamesResult
@@ -334,6 +554,14 @@ private class FakeRuntimeServices(
         message = "ok"
     )
 
+    override suspend fun deleteConfigTomlFile(relativePath: String): TxtFileContentResult =
+        TxtFileContentResult(
+            ok = true,
+            filePath = relativePath,
+            content = "",
+            message = "ok"
+        )
+
     override suspend fun listRecentDiagnostics(limit: Int): RuntimeDiagnosticsListResult =
         RuntimeDiagnosticsListResult(
             ok = true,
@@ -351,3 +579,6 @@ private class FakeRuntimeServices(
             diagnosticsLogPath = ""
         )
 }
+
+private fun fixedClock(instantIso: String, zoneId: String): Clock =
+    Clock.fixed(Instant.parse(instantIso), ZoneId.of(zoneId))

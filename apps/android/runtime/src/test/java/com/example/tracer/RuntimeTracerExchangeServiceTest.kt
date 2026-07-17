@@ -35,7 +35,7 @@ class RuntimeTracerExchangeServiceTest {
                         .put("output_path", "/resolved/data.tracer")
                         .put("source_root_name", "data")
                         .put("payload_file_count", 2)
-                        .put("converter_file_count", 3)
+                        .put("converter_file_count", 8)
                         .put("manifest_included", true)
                         .toString()
                 )
@@ -60,7 +60,7 @@ class RuntimeTracerExchangeServiceTest {
         assertEquals("/resolved/data.tracer", result.outputPath)
         assertEquals("data", result.sourceRootName)
         assertEquals(2, result.payloadFileCount)
-        assertEquals(3, result.converterFileCount)
+        assertEquals(8, result.converterFileCount)
         assertTrue(result.manifestIncluded)
         assertEquals(1, progressEvents.size)
         assertEquals(FileCryptoOperation.ENCRYPT, progressEvents.single().operation)
@@ -102,7 +102,7 @@ class RuntimeTracerExchangeServiceTest {
                         .put("output_path", "data.tracer")
                         .put("source_root_name", "data")
                         .put("payload_file_count", 1)
-                        .put("converter_file_count", 3)
+                        .put("converter_file_count", 8)
                         .put("manifest_included", true)
                         .toString()
                 )
@@ -117,7 +117,7 @@ class RuntimeTracerExchangeServiceTest {
             payloads = listOf(
                 TracerExchangePayloadItem(
                     relativePathHint = "2026/2026-03.txt",
-                    content = "y2026\nm03\n0301\n0600 study\n"
+                    content = "y2026\nm03\nd0301\n0600 study\n"
                 )
             ),
             outputFd = 37,
@@ -131,7 +131,7 @@ class RuntimeTracerExchangeServiceTest {
         assertEquals("data.tracer", result.outputPath)
         assertEquals("data", result.sourceRootName)
         assertEquals(1, result.payloadFileCount)
-        assertEquals(3, result.converterFileCount)
+        assertEquals(8, result.converterFileCount)
         assertTrue(result.manifestIncluded)
         assertEquals(1, progressEvents.size)
         assertEquals(FileCryptoPhase.WRITE_OUTPUT, progressEvents.single().phase)

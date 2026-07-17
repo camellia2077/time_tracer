@@ -17,6 +17,9 @@ internal fun Modifier.tracerTabContentModifier(
     val bottomOuterPadding = if (selectedTab == TracerTab.RECORD) 0.dp else ScreenOuterPadding
     val baseModifier = this
         .fillMaxSize()
+        // TracerBottomNavShell already provides the status-bar inset through innerPadding.
+        // Report consumes it below its fixed Day/Week/Month header; the other tabs do not
+        // have that header and must not add a second top inset that becomes empty space.
         .padding(innerPadding)
         .padding(
             start = ScreenOuterPadding,
@@ -25,7 +28,13 @@ internal fun Modifier.tracerTabContentModifier(
         )
     val selectedEntry = TracerTabRegistry.entry(selectedTab)
     return if (selectedEntry.scrollBehavior == TracerTabScrollBehavior.VERTICAL) {
-        baseModifier.verticalScroll(rememberScrollState())
+        // Apply the navigation clearance after verticalScroll so it becomes part of the
+        // scrollable child rather than a fixed shell inset. The former lets the final Chart
+        // Result (and other vertical-tab content) move above the floating bar; the latter
+        // leaves a permanently visible root-Surface strip below the bar.
+        baseModifier
+            .verticalScroll(rememberScrollState())
+            .padding(bottom = floatingBottomNavScrollPadding())
     } else {
         baseModifier
     }
@@ -52,6 +61,12 @@ internal fun TracerTabRouteContent(
     onReportPiePalettePresetChange: (ReportPiePalettePreset) -> Unit,
     reportChartShowAverageLine: Boolean,
     onReportChartShowAverageLineChange: (Boolean) -> Unit,
+    reportChartSemanticMode: ReportChartSemanticMode,
+    onReportChartSemanticModeChange: (ReportChartSemanticMode) -> Unit,
+    reportResultDisplayMode: ReportResultDisplayMode,
+    onReportResultDisplayModeChange: (ReportResultDisplayMode) -> Unit,
+    reportParameterSection: ReportParameterSection,
+    onReportParameterSectionChange: (ReportParameterSection) -> Unit,
     reportHeatmapTomlConfig: ReportHeatmapTomlConfig,
     reportHeatmapStylePreference: ReportHeatmapStylePreference,
     onReportHeatmapThemePolicyChange: (ReportHeatmapThemePolicy) -> Unit,
@@ -62,18 +77,22 @@ internal fun TracerTabRouteContent(
     onSetAppLanguage: (com.example.tracer.data.AppLanguage) -> Unit,
     validAuthorableEventTokens: Set<String>,
     onPersistRecordQuickActivities: (List<String>) -> Unit,
-    onPersistRecordAssistExpanded: (Boolean) -> Unit,
     onPersistRecordAssistSettingsExpanded: (Boolean) -> Unit,
+    onPersistRecordCanonicalCatalogDisplayMode: (RecordSuggestionOutputMode) -> Unit,
+    onPersistRecordCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
+    onPersistRecordOrderedCanonicalRootPaths: (List<String>) -> Unit,
     onPersistRecordSuggestLookbackDays: (Int) -> Unit,
+    onPersistRecordSuggestOutputMode: (RecordSuggestionOutputMode) -> Unit,
     onPersistRecordSuggestTopN: (Int) -> Unit,
     onImportSingleTxt: () -> Unit,
+    onImportTomlFolder: () -> Unit,
     onImportSingleTracer: () -> Unit,
     onExportAllMonthsTracer: () -> Unit,
+    onExportCurrentTxtTracer: () -> Unit,
     isTracerExportInProgress: Boolean,
     selectedTracerSecurityLevel: FileCryptoSecurityLevel,
     onTracerSecurityLevelChange: (FileCryptoSecurityLevel) -> Unit,
-    onCopyDiagnosticsPayload: () -> Unit,
-    onClearDatabase: () -> Unit
+    onCopyDiagnosticsPayload: () -> Unit
 ) {
     val args = TracerTabRouteArgs(
         dataViewModel = dataViewModel,
@@ -93,6 +112,12 @@ internal fun TracerTabRouteContent(
         onReportPiePalettePresetChange = onReportPiePalettePresetChange,
         reportChartShowAverageLine = reportChartShowAverageLine,
         onReportChartShowAverageLineChange = onReportChartShowAverageLineChange,
+        reportChartSemanticMode = reportChartSemanticMode,
+        onReportChartSemanticModeChange = onReportChartSemanticModeChange,
+        reportResultDisplayMode = reportResultDisplayMode,
+        onReportResultDisplayModeChange = onReportResultDisplayModeChange,
+        reportParameterSection = reportParameterSection,
+        onReportParameterSectionChange = onReportParameterSectionChange,
         reportHeatmapTomlConfig = reportHeatmapTomlConfig,
         reportHeatmapStylePreference = reportHeatmapStylePreference,
         onReportHeatmapThemePolicyChange = onReportHeatmapThemePolicyChange,
@@ -103,18 +128,22 @@ internal fun TracerTabRouteContent(
         onSetAppLanguage = onSetAppLanguage,
         validAuthorableEventTokens = validAuthorableEventTokens,
         onPersistRecordQuickActivities = onPersistRecordQuickActivities,
-        onPersistRecordAssistExpanded = onPersistRecordAssistExpanded,
         onPersistRecordAssistSettingsExpanded = onPersistRecordAssistSettingsExpanded,
+        onPersistRecordCanonicalCatalogDisplayMode = onPersistRecordCanonicalCatalogDisplayMode,
+        onPersistRecordCollapsedCanonicalRootPaths = onPersistRecordCollapsedCanonicalRootPaths,
+        onPersistRecordOrderedCanonicalRootPaths = onPersistRecordOrderedCanonicalRootPaths,
         onPersistRecordSuggestLookbackDays = onPersistRecordSuggestLookbackDays,
+        onPersistRecordSuggestOutputMode = onPersistRecordSuggestOutputMode,
         onPersistRecordSuggestTopN = onPersistRecordSuggestTopN,
         onImportSingleTxt = onImportSingleTxt,
+        onImportTomlFolder = onImportTomlFolder,
         onImportSingleTracer = onImportSingleTracer,
         onExportAllMonthsTracer = onExportAllMonthsTracer,
+        onExportCurrentTxtTracer = onExportCurrentTxtTracer,
         isTracerExportInProgress = isTracerExportInProgress,
         selectedTracerSecurityLevel = selectedTracerSecurityLevel,
         onTracerSecurityLevelChange = onTracerSecurityLevelChange,
-        onCopyDiagnosticsPayload = onCopyDiagnosticsPayload,
-        onClearDatabase = onClearDatabase
+        onCopyDiagnosticsPayload = onCopyDiagnosticsPayload
     )
     TracerTabRegistry.entry(selectedTab).content(modifier, args)
 }

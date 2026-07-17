@@ -14,18 +14,30 @@ internal fun SyncTracerScreenRecordPreferences(
     LaunchedEffect(
         recordSuggestionPreferences.lookbackDays,
         recordSuggestionPreferences.topN,
+        recordSuggestionPreferences.outputMode,
+        recordSuggestionPreferences.canonicalCatalogDisplayMode,
         recordSuggestionPreferences.quickActivities,
-        recordSuggestionPreferences.assistExpanded,
-        recordSuggestionPreferences.assistSettingsExpanded
+        recordSuggestionPreferences.assistSettingsExpanded,
+        recordSuggestionPreferences.collapsedCanonicalRootPaths,
+        recordSuggestionPreferences.orderedCanonicalRootPaths
     ) {
         recordViewModel.updateSuggestionPreferences(
             lookbackDays = recordSuggestionPreferences.lookbackDays,
             topN = recordSuggestionPreferences.topN
         )
+        recordViewModel.updateSuggestionOutputMode(recordSuggestionPreferences.outputMode)
+        recordViewModel.updateCanonicalCatalogDisplayMode(
+            recordSuggestionPreferences.canonicalCatalogDisplayMode
+        )
         recordViewModel.updateQuickActivities(recordSuggestionPreferences.quickActivities)
         recordViewModel.updateAssistUiState(
-            assistExpanded = recordSuggestionPreferences.assistExpanded,
             assistSettingsExpanded = recordSuggestionPreferences.assistSettingsExpanded
+        )
+        recordViewModel.updateCollapsedCanonicalRootPaths(
+            recordSuggestionPreferences.collapsedCanonicalRootPaths
+        )
+        recordViewModel.updateOrderedCanonicalRootPaths(
+            recordSuggestionPreferences.orderedCanonicalRootPaths
         )
     }
 

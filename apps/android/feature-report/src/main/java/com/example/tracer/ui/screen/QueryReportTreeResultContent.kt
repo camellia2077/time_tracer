@@ -19,32 +19,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import java.util.Locale
 
 @Composable
 internal fun QueryReportTreeResultContent(
     result: QueryResult.Tree,
     modifier: Modifier = Modifier
 ) {
-    if (result.usesTextFallback && result.fallbackText.isNotBlank()) {
-        Column(modifier = modifier) {
-            if (result.message.isNotBlank()) {
-                Text(
-                    text = result.message,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.tertiary
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-            }
-            Text(
-                text = result.fallbackText,
-                style = MaterialTheme.typography.bodyMedium,
-                fontFamily = FontFamily.Monospace,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-        return
-    }
-
     if (!result.found || result.nodes.isEmpty()) {
         Column(modifier = modifier) {
             Text(
@@ -86,7 +67,13 @@ private fun TreeResultNodeItem(
     val hasChildren = node.children.isNotEmpty()
     var expanded by remember(nodeKey) { mutableStateOf(true) }
     val indent = (depth * 16).dp
-    val durationSuffix = node.durationSeconds?.let { " [$it]" }.orEmpty()
+    val details = buildList {
+        node.durationSeconds?.let { add(formatTreeDurationHoursMinutes(it)) }
+        node.parentDurationPercent?.let { add(formatTreeParentDurationPercent(it)) }
+    }
+    val detailSuffix = details.takeIf { it.isNotEmpty() }
+        ?.joinToString(separator = " · ", prefix = " [", postfix = "]")
+        .orEmpty()
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -104,7 +91,7 @@ private fun TreeResultNodeItem(
         )
         Spacer(modifier = Modifier.width(6.dp))
         Text(
-            text = node.name + durationSuffix,
+            text = node.name + detailSuffix,
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.fillMaxWidth()
         )
@@ -128,3 +115,16 @@ private fun buildNodeKey(parentKey: String, node: TreeNode): String {
     val identity = if (node.path.isNotBlank()) node.path else node.name
     return "$parentKey:$identity"
 }
+
+private fun formatTreeDurationHoursMinutes(durationSeconds: Long): String {
+    val totalMinutes = durationSeconds.coerceAtLeast(0L) / 60L
+    return String.format(
+        Locale.ROOT,
+        "%02d:%02d",
+        totalMinutes / 60L,
+        totalMinutes % 60L
+    )
+}
+
+private fun formatTreeParentDurationPercent(percent: Float): String =
+    String.format(Locale.ROOT, "%.1f%%", percent.coerceAtLeast(0f))

@@ -34,39 +34,9 @@ class QueryReportTreePipelineTest {
         val activeResult = viewModel.uiState.activeResult
         assertTrue(activeResult is QueryResult.Tree)
         val treeResult = activeResult as QueryResult.Tree
-        assertEquals(false, treeResult.usesTextFallback)
         assertEquals(true, treeResult.found)
         assertEquals(1, treeResult.nodes.size)
         assertEquals("study", treeResult.nodes[0].name)
-    }
-
-    @Test
-    fun loadTree_whenStructuredResultFallsBackToText_keepsFallbackText() = runTest {
-        val fakeQueryGateway = FakeTreeQueryGateway().apply {
-            treeResult = TreeQueryResult(
-                ok = true,
-                found = true,
-                roots = emptyList(),
-                nodes = emptyList(),
-                message = "Loaded tree via legacy text fallback.",
-                legacyText = "study\n└── math",
-                usesTextFallback = true
-            )
-        }
-        val viewModel = QueryReportViewModel(
-            reportGateway = FakeTreeReportGateway(),
-            queryGateway = fakeQueryGateway
-        )
-
-        viewModel.onReportRecentDaysChange("7")
-        viewModel.loadTree(period = DataTreePeriod.RECENT, level = -1)
-        advanceUntilIdle()
-
-        val activeResult = viewModel.uiState.activeResult
-        assertTrue(activeResult is QueryResult.Tree)
-        val treeResult = activeResult as QueryResult.Tree
-        assertEquals(true, treeResult.usesTextFallback)
-        assertTrue(treeResult.fallbackText.contains("study"))
     }
 }
 
@@ -95,7 +65,8 @@ private class FakeTreeQueryGateway : QueryGateway {
                     TreeNode(
                         name = "math",
                         path = "study_math",
-                        durationSeconds = 3600L
+                        durationSeconds = 3600L,
+                        parentDurationPercent = 50f
                     )
                 )
             )
@@ -105,7 +76,8 @@ private class FakeTreeQueryGateway : QueryGateway {
 
     override suspend fun queryActivitySuggestions(
         lookbackDays: Int,
-        topN: Int
+        topN: Int,
+        anchorDateIso: String?
     ): ActivitySuggestionResult = ActivitySuggestionResult(
         ok = true,
         suggestions = emptyList(),
@@ -122,9 +94,6 @@ private class FakeTreeQueryGateway : QueryGateway {
         lastTreeRequest = params
         return treeResult
     }
-
-    override suspend fun queryProjectTreeText(params: DataTreeQueryParams): DataQueryTextResult =
-        DataQueryTextResult(ok = true, outputText = "", message = "ok")
 
     override suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult =
         ReportChartQueryResult(

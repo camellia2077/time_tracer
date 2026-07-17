@@ -13,6 +13,17 @@ internal class RecordUseCaseCaller(
         topN = topN
     )
 
+    suspend fun loadCanonicalCatalog(state: RecordUiState): RecordUiState =
+        recordUseCases.loadCanonicalCatalog(state)
+
+    suspend fun applySuggestedActivity(
+        state: RecordUiState,
+        suggestedActivityToken: String
+    ): RecordUiState = recordUseCases.applySuggestedActivity(
+        state = state,
+        suggestedActivityToken = suggestedActivityToken
+    )
+
     suspend fun recordNow(state: RecordUiState): RecordUiState =
         recordUseCases.recordNow(state)
 

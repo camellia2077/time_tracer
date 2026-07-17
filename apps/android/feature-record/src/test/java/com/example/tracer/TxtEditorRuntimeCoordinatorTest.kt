@@ -3,6 +3,7 @@ package com.example.tracer
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.Clock
@@ -120,7 +121,7 @@ class TxtEditorRuntimeCoordinatorTest {
                 isMarkerValid = true,
                 canSave = false,
                 dayBody = "",
-                dayContentIsoDate = null,
+                dayContentIsoDate = "2026-05-01",
                 message = "ok"
             )
         )
@@ -135,7 +136,232 @@ class TxtEditorRuntimeCoordinatorTest {
         assertTrue(result.canEdit)
         assertTrue(result.resolveResult.found)
         assertTrue(result.resolveResult.canSave)
-        assertEquals("y2026\nm05\n\n0501\n", result.monthContent)
+        assertEquals("y2026\nm05\n\nd0501\n", result.monthContent)
+    }
+
+    @Test
+    fun prepareEditableDayBlock_whenMarkerMonthDoesNotMatchSelectedMonth_doesNotSeedDraft() = runBlocking {
+        val gateway = FakeTxtEditorRuntimeGateway(
+            resolveResult = TxtDayBlockResolveResult(
+                ok = true,
+                normalizedDayMarker = "0101",
+                found = false,
+                isMarkerValid = true,
+                canSave = false,
+                dayBody = "",
+                dayContentIsoDate = null,
+                message = "ok"
+            )
+        )
+        val coordinator = TxtEditorRuntimeCoordinator(gateway, testClock())
+
+        val result = coordinator.prepareEditableDayBlock(
+            monthContent = "y2026\nm06\n",
+            dayMarker = "0101",
+            selectedMonth = "2026-06"
+        )
+
+        assertFalse(result.canEdit)
+        assertFalse(result.resolveResult.found)
+        assertEquals("y2026\nm06\n", result.monthContent)
+    }
+
+    @Test
+    fun openDayEditor_whenColdStartResolveIsStillDefault_reloadsMarkerBeforeOpening() = runBlocking {
+        val gateway = FakeTxtEditorRuntimeGateway(
+            defaultMarkerResult = TxtDayMarkerResult(
+                ok = true,
+                normalizedDayMarker = "0417",
+                message = "ok"
+            ),
+            resolveTxtDayBlockOverride = { _, dayMarker, selectedMonth ->
+                if (dayMarker == "0417" && selectedMonth == "2026-04") {
+                    TxtDayBlockResolveResult(
+                        ok = true,
+                        normalizedDayMarker = "0417",
+                        found = true,
+                        isMarkerValid = true,
+                        canSave = true,
+                        dayBody = "0900study\n1000break\n",
+                        dayContentIsoDate = "2026-04-17",
+                        message = "ok"
+                    )
+                } else {
+                    TxtDayBlockResolveResult(
+                        ok = true,
+                        normalizedDayMarker = dayMarker,
+                        found = false,
+                        isMarkerValid = true,
+                        canSave = false,
+                        dayBody = "",
+                        dayContentIsoDate = null,
+                        message = "ok"
+                    )
+                }
+            }
+        )
+        val coordinator = TxtEditorRuntimeCoordinator(gateway, testClock())
+        val controller = TxtEditorSessionController()
+        var reconciledMonthContent = ""
+
+        controller.syncExternalMonthDraft(
+            selectedHistoryContent = "y2026\nm04\n\nd0417\n0900study\n1000break\n",
+            editableHistoryContent = "y2026\nm04\n\nd0417\n0900study\n1000break\n"
+        )
+
+        coordinator.openDayEditor(
+            sessionController = controller,
+            selectedHistoryFile = "2026/2026-04.txt",
+            selectedMonth = "2026-04",
+            logicalDayTarget = RecordLogicalDayTarget.TODAY,
+            fallbackMonthContent = controller.state.allDraftState.draftText,
+            persistedMonthContent = controller.state.allDraftState.draftText,
+            currentResolveResult = TxtDayBlockResolveResult(
+                ok = true,
+                normalizedDayMarker = "0101",
+                found = false,
+                isMarkerValid = true,
+                canSave = false,
+                dayBody = "",
+                dayContentIsoDate = null,
+                message = "ok"
+            ),
+            onMonthContentReconciled = { reconciledMonthContent = it }
+        )
+
+        assertEquals("0417", controller.state.dayMarkerInput)
+        assertTrue(controller.state.isEditorContentVisible)
+        assertEquals("0900study\n1000break\n", controller.state.dayDraftState.draftText)
+        assertEquals("", reconciledMonthContent)
+    }
+
+    @Test
+    fun prepareEditableDayBlock_whenMonthHeadersAreMissing_doesNotSeedPlaceholderDay() = runBlocking {
+        val gateway = FakeTxtEditorRuntimeGateway()
+        val coordinator = TxtEditorRuntimeCoordinator(gateway, testClock())
+
+        val result = coordinator.prepareEditableDayBlock(
+            monthContent = "",
+            dayMarker = "0624",
+            selectedMonth = "2026-06"
+        )
+
+        assertFalse(result.canEdit)
+        assertFalse(result.resolveResult.found)
+        assertEquals("", result.monthContent)
+    }
+
+    @Test
+    fun determineOpenDayPreparationStrategy_prefersCanonicalPersistedContent_forInvalidSessionDraft() {
+        val strategy = determineOpenDayPreparationStrategy(
+            sessionMonthContent = "d0624\n",
+            editableMonthContent = "d0624\n",
+            persistedMonthContent = "y2026\nm06\n\nd0624\n0650w\n0700study\n",
+            currentResolveResult = TxtDayBlockResolveResult(
+                ok = false,
+                normalizedDayMarker = "0624",
+                found = false,
+                isMarkerValid = false,
+                canSave = false,
+                dayBody = "",
+                dayContentIsoDate = null,
+                message = ""
+            )
+        )
+
+        assertEquals("y2026\nm06\n\nd0624\n0650w\n0700study\n", strategy.monthContent)
+        assertNull(strategy.resolveResult)
+        assertTrue(strategy.requiresMarkerReload)
+    }
+
+    @Test
+    fun determineOpenDayPreparationStrategy_reusesCurrentResolve_whenIsoDateIsAlreadyValid() {
+        val currentResolve = TxtDayBlockResolveResult(
+            ok = true,
+            normalizedDayMarker = "0624",
+            found = true,
+            isMarkerValid = true,
+            canSave = true,
+            dayBody = "0650w\n0700study\n",
+            dayContentIsoDate = "2026-06-24",
+            message = "ok"
+        )
+
+        val strategy = determineOpenDayPreparationStrategy(
+            sessionMonthContent = "y2026\nm06\n\nd0624\n0650w\n0700study\n",
+            editableMonthContent = "y2026\nm06\n\nd0624\n0650w\n0700study\n",
+            persistedMonthContent = "y2026\nm06\n\nd0624\n0650w\n0700study\n",
+            currentResolveResult = currentResolve
+        )
+
+        assertEquals(currentResolve, strategy.resolveResult)
+        assertFalse(strategy.requiresMarkerReload)
+    }
+
+    @Test
+    fun openDayEditor_prefersPersistedMonthContent_overInvalidSessionPlaceholder() = runBlocking {
+        val gateway = FakeTxtEditorRuntimeGateway(
+            defaultMarkerResult = TxtDayMarkerResult(
+                ok = true,
+                normalizedDayMarker = "0624",
+                message = "ok"
+            ),
+            resolveTxtDayBlockOverride = { content, dayMarker, selectedMonth ->
+                if (content.contains("d0624") && dayMarker == "0624" && selectedMonth == "2026-06") {
+                    TxtDayBlockResolveResult(
+                        ok = true,
+                        normalizedDayMarker = "0624",
+                        found = true,
+                        isMarkerValid = true,
+                        canSave = true,
+                        dayBody = "0650w\n0700study\n",
+                        dayContentIsoDate = "2026-06-24",
+                        message = "ok"
+                    )
+                } else {
+                    TxtDayBlockResolveResult(
+                        ok = true,
+                        normalizedDayMarker = dayMarker,
+                        found = false,
+                        isMarkerValid = true,
+                        canSave = false,
+                        dayBody = "",
+                        dayContentIsoDate = null,
+                        message = "ok"
+                    )
+                }
+            }
+        )
+        val coordinator = TxtEditorRuntimeCoordinator(gateway, testClock())
+        val controller = TxtEditorSessionController()
+
+        controller.syncExternalMonthDraft(
+            selectedHistoryContent = "d0624\n",
+            editableHistoryContent = "d0624\n"
+        )
+
+        coordinator.openDayEditor(
+            sessionController = controller,
+            selectedHistoryFile = "2026/2026-06.txt",
+            selectedMonth = "2026-06",
+            logicalDayTarget = RecordLogicalDayTarget.TODAY,
+            fallbackMonthContent = "d0624\n",
+            persistedMonthContent = "y2026\nm06\n\nd0624\n0650w\n0700study\n",
+            currentResolveResult = TxtDayBlockResolveResult(
+                ok = false,
+                normalizedDayMarker = "0624",
+                found = false,
+                isMarkerValid = false,
+                canSave = false,
+                dayBody = "",
+                dayContentIsoDate = null,
+                message = ""
+            ),
+            onMonthContentReconciled = {}
+        )
+
+        assertTrue(controller.state.isEditorContentVisible)
+        assertEquals("0650w\n0700study\n", controller.state.dayDraftState.draftText)
     }
 }
 
@@ -165,7 +391,8 @@ private class FakeTxtEditorRuntimeGateway(
         dayBody = "",
         dayContentIsoDate = null,
         message = "ok"
-    )
+    ),
+    private val resolveTxtDayBlockOverride: (suspend (String, String, String) -> TxtDayBlockResolveResult)? = null
 ) : TxtStorageGateway {
     var lastDefaultMarkerMonth: String = ""
         private set
@@ -215,7 +442,8 @@ private class FakeTxtEditorRuntimeGateway(
         content: String,
         dayMarker: String,
         selectedMonth: String
-    ): TxtDayBlockResolveResult = resolveResult
+    ): TxtDayBlockResolveResult =
+        resolveTxtDayBlockOverride?.invoke(content, dayMarker, selectedMonth) ?: resolveResult
 
     override suspend fun replaceTxtDayBlock(
         content: String,

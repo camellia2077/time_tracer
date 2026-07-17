@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Keep the product name fixed as "Tracer" in every locale. Do not localize or rename. -->
     <string name="app_name">Tracer</string>
 
     <string name="tracer_tab_data">データ</string>
@@ -10,7 +11,9 @@
 
 
     <string name="tracer_export_all_tracer_canceled">完全交換パッケージのエクスポートをキャンセルしました。</string>
+    <string name="tracer_export_current_txt_canceled">TXT/TOML のエクスポートをキャンセルしました。</string>
     <string name="tracer_export_all_failed_no_months">完全交換パッケージのエクスポート失敗: 利用可能な月がありません。</string>
+    <string name="tracer_export_current_txt_failed_no_selection">TXT/TOML のエクスポート失敗: エクスポート対象の TXT または TOML がありません。</string>
     <string name="tracer_export_error_invalid_month_key">%1$s: 月キーが無効です。</string>
     <string name="tracer_export_error_source_file_not_found">%1$s: ソースファイルが見つかりません。</string>
     <string name="tracer_export_error_read_failed">%1$s: %2$s</string>
@@ -26,15 +29,24 @@
     </plurals>
     <string name="tracer_export_all_tracer_completed">完全交換パッケージのエクスポート完了 -&gt; TXT %1$d/%2$d、設定 TOML %3$d、manifest %4$d。%5$s</string>
     <string name="tracer_export_all_tracer_failed">完全交換パッケージのエクスポート失敗: %1$s</string>
+    <string name="tracer_export_current_txt_completed">TXT/TOML のエクスポート完了 -&gt; TXT %1$d、TOML %2$d。</string>
+    <string name="tracer_export_current_txt_failed">TXT/TOML のエクスポート失敗: %1$s</string>
     <string name="tracer_export_unknown_error">不明なエラー</string>
     <string name="tracer_export_already_in_progress">エクスポートはすでに進行中です。</string>
     <string name="tracer_export_select_tracer_destination">完全交換パッケージの出力先フォルダを選択してください。</string>
+    <string name="tracer_export_select_current_txt_destination">TXT/TOML の出力先フォルダを選択してください。</string>
     <string name="tracer_import_select_txt_folder">TXT フォルダを選択中...</string>
     <string name="tracer_import_txt_folder_canceled">TXT フォルダの取り込みをキャンセルしました。</string>
     <string name="tracer_import_txt_folder_failed">TXT フォルダの取り込み失敗: %1$s</string>
     <string name="tracer_import_txt_folder_no_txt_found">TXT フォルダの取り込みをスキップしました: TXT ファイルが見つかりません。</string>
     <string name="tracer_import_txt_folder_completed_success">TXT フォルダの取り込み完了 -&gt; %1$d/%2$d 個の TXT ファイル。</string>
     <string name="tracer_import_txt_folder_completed_with_errors">TXT フォルダの取り込み完了 -&gt; %1$d/%2$d 個の TXT ファイル。%3$s</string>
+    <string name="tracer_import_select_toml_folder">TOML フォルダを選択中...</string>
+    <string name="tracer_import_toml_folder_canceled">TOML フォルダの取り込みをキャンセルしました。</string>
+    <string name="tracer_import_toml_folder_failed">TOML フォルダの取り込み失敗: %1$s</string>
+    <string name="tracer_import_toml_folder_no_toml_found">TOML フォルダの取り込みをスキップしました: TOML ファイルが見つかりません。</string>
+    <string name="tracer_import_toml_folder_completed_success">TOML フォルダの取り込み完了 -&gt; %1$d/%2$d 個の TOML ファイル。</string>
+    <string name="tracer_import_toml_folder_completed_with_errors">TOML フォルダの取り込み完了 -&gt; %1$d/%2$d 個の TOML ファイル。%3$s</string>
     <string name="tracer_import_select_single_tracer">単一 TRACER を選択中...</string>
     <string name="tracer_import_single_tracer_canceled">単一 TRACER の取り込みをキャンセルしました。</string>
     <string name="tracer_import_single_tracer_failed">単一 TRACER の取り込み失敗: %1$s</string>
@@ -92,7 +104,7 @@
     <string name="config_label_report_breakdown_palette">内訳チャート配色</string>
     <string name="config_report_breakdown_palette_current">内訳チャート配色（現在: %1$s）</string>
     <string name="config_report_breakdown_palette_tap_expand">内訳チャート配色（タップして展開）</string>
-    <string name="config_report_breakdown_palette_preview_hint">内訳の円グラフと横棒グラフに適用されます。下の 2 種類のプレビューで見え方を比較できます。</string>
+    <string name="config_report_breakdown_palette_preview_hint">内訳の円グラフと横棒グラフに適用されます。色は比率の大きい順です。下の 2 種類のプレビューで見え方を比較できます。</string>
     <string name="config_report_breakdown_palette_pie_preview">内訳円グラフプレビュー</string>
     <string name="config_report_breakdown_palette_bar_preview">内訳横棒グラフプレビュー</string>
     <string name="config_report_breakdown_palette_soft">Soft</string>
@@ -107,6 +119,16 @@
 
     <string name="config_title_configuration_files">設定ファイル</string>
     <string name="config_action_refresh_list">一覧を更新</string>
+    <string name="config_action_new_alias_mapping">アクティビティ名マッピングを新規作成</string>
+    <string name="config_action_delete_alias_mapping">アクティビティ名マッピングを削除</string>
+    <string name="config_title_delete_alias_mapping">%1$s を削除しますか？</string>
+    <string name="config_delete_alias_mapping_warning">このマッピングを削除すると、過去にその別名を使用した記録を正しく解析できなくなる可能性があります。この操作は元に戻せません。</string>
+    <string name="config_title_new_alias_mapping">アクティビティ名マッピングを新規作成</string>
+    <string name="config_label_new_alias_file_name">ファイル名</string>
+    <string name="config_new_alias_file_location">作成先: converter/aliases/</string>
+    <string name="config_action_create">作成</string>
+    <string name="config_action_cancel">キャンセル</string>
+    <string name="config_action_delete">削除</string>
     <string name="config_category_converter">Converter</string>
     <string name="config_category_charts">Charts</string>
     <string name="config_category_meta">Meta</string>
@@ -119,6 +141,10 @@
     <string name="config_title_editor_file">エディタ: %1$s</string>
     <string name="config_label_toml_content">TOML 内容</string>
     <string name="config_action_save_changes">保存</string>
+    <string name="config_auto_save_status_idle">自動保存の準備完了</string>
+    <string name="config_auto_save_status_saving">自動保存中...</string>
+    <string name="config_auto_save_status_saved">保存済み</string>
+    <string name="config_auto_save_status_failed">保存失敗</string>
     <string name="config_alias_mode_structured">Structured</string>
     <string name="config_alias_mode_advanced">Advanced</string>
     <string name="config_alias_structured_unavailable">このファイルでは構造化 alias 編集を利用できません。</string>
@@ -128,14 +154,16 @@
     <string name="config_alias_action_rename">編集</string>
     <string name="config_alias_action_delete">削除</string>
     <string name="config_alias_dialog_add_group_title">Alias グループを追加</string>
-    <string name="config_alias_dialog_rename_group_title">Alias グループ名を変更</string>
     <string name="config_alias_dialog_add_entry_title">Alias エントリを追加</string>
     <string name="config_alias_dialog_edit_entry_title">Alias エントリを編集</string>
+    <string name="config_alias_dialog_rename_alias_title">Alias 名を変更</string>
     <string name="config_alias_group_name_label">グループ名</string>
     <string name="config_alias_group_name_required">グループ名は必須です。</string>
     <string name="config_alias_alias_key_label">Alias Key</string>
     <string name="config_alias_canonical_leaf_label">Canonical Leaf</string>
+    <string name="config_alias_canonical_leaf_readonly">Canonical Leaf: %1$s</string>
     <string name="config_alias_entry_required">Alias key と canonical leaf は必須です。</string>
+    <string name="config_alias_alias_key_required">Alias key は必須です。</string>
 
     <string name="config_title_about">情報</string>
     <string name="config_about_author">作者: %1$s</string>

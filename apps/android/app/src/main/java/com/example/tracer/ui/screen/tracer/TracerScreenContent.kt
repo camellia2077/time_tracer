@@ -2,10 +2,7 @@ package com.example.tracer
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -13,8 +10,6 @@ import androidx.compose.ui.unit.dp
 @Composable
 internal fun TracerScreenContent(
     selectedTab: TracerTab,
-    statusText: String,
-    isDebuggableBuild: Boolean,
     snackbarHostState: SnackbarHostState,
     onCoordinatorEvent: (TracerCoordinatorEvent) -> Unit,
     dataViewModel: DataViewModel,
@@ -34,6 +29,12 @@ internal fun TracerScreenContent(
     onReportPiePalettePresetChange: (ReportPiePalettePreset) -> Unit,
     reportChartShowAverageLine: Boolean,
     onReportChartShowAverageLineChange: (Boolean) -> Unit,
+    reportChartSemanticMode: ReportChartSemanticMode,
+    onReportChartSemanticModeChange: (ReportChartSemanticMode) -> Unit,
+    reportResultDisplayMode: ReportResultDisplayMode,
+    onReportResultDisplayModeChange: (ReportResultDisplayMode) -> Unit,
+    reportParameterSection: ReportParameterSection,
+    onReportParameterSectionChange: (ReportParameterSection) -> Unit,
     reportHeatmapTomlConfig: ReportHeatmapTomlConfig,
     reportHeatmapStylePreference: ReportHeatmapStylePreference,
     onReportHeatmapThemePolicyChange: (ReportHeatmapThemePolicy) -> Unit,
@@ -44,18 +45,22 @@ internal fun TracerScreenContent(
     onSetAppLanguage: (com.example.tracer.data.AppLanguage) -> Unit,
     validAuthorableEventTokens: Set<String>,
     onPersistRecordQuickActivities: (List<String>) -> Unit,
-    onPersistRecordAssistExpanded: (Boolean) -> Unit,
     onPersistRecordAssistSettingsExpanded: (Boolean) -> Unit,
+    onPersistRecordCanonicalCatalogDisplayMode: (RecordSuggestionOutputMode) -> Unit,
+    onPersistRecordCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
+    onPersistRecordOrderedCanonicalRootPaths: (List<String>) -> Unit,
     onPersistRecordSuggestLookbackDays: (Int) -> Unit,
+    onPersistRecordSuggestOutputMode: (RecordSuggestionOutputMode) -> Unit,
     onPersistRecordSuggestTopN: (Int) -> Unit,
     onImportSingleTxt: () -> Unit,
+    onImportTomlFolder: () -> Unit,
     onImportSingleTracer: () -> Unit,
     onExportAllMonthsTracer: () -> Unit,
+    onExportCurrentTxtTracer: () -> Unit,
     isTracerExportInProgress: Boolean,
     selectedTracerSecurityLevel: FileCryptoSecurityLevel,
     onTracerSecurityLevelChange: (FileCryptoSecurityLevel) -> Unit,
-    onCopyDiagnosticsPayload: () -> Unit,
-    onClearDatabase: () -> Unit
+    onCopyDiagnosticsPayload: () -> Unit
 ) {
     TracerBottomNavShell(
         selectedTab = selectedTab,
@@ -70,14 +75,6 @@ internal fun TracerScreenContent(
             modifier = tabContentModifier,
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            if (isDebuggableBuild && selectedTab != TracerTab.TXT && statusText.isNotBlank()) {
-                Text(
-                    text = statusText,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-
             TracerTabRouteContent(
                 modifier = if (selectedTab == TracerTab.DATA) Modifier.weight(1f) else Modifier,
                 selectedTab = selectedTab,
@@ -98,6 +95,12 @@ internal fun TracerScreenContent(
                 onReportPiePalettePresetChange = onReportPiePalettePresetChange,
                 reportChartShowAverageLine = reportChartShowAverageLine,
                 onReportChartShowAverageLineChange = onReportChartShowAverageLineChange,
+                reportChartSemanticMode = reportChartSemanticMode,
+                onReportChartSemanticModeChange = onReportChartSemanticModeChange,
+                reportResultDisplayMode = reportResultDisplayMode,
+                onReportResultDisplayModeChange = onReportResultDisplayModeChange,
+                reportParameterSection = reportParameterSection,
+                onReportParameterSectionChange = onReportParameterSectionChange,
                 reportHeatmapTomlConfig = reportHeatmapTomlConfig,
                 reportHeatmapStylePreference = reportHeatmapStylePreference,
                 onReportHeatmapThemePolicyChange = onReportHeatmapThemePolicyChange,
@@ -108,18 +111,25 @@ internal fun TracerScreenContent(
                 onSetAppLanguage = onSetAppLanguage,
                 validAuthorableEventTokens = validAuthorableEventTokens,
                 onPersistRecordQuickActivities = onPersistRecordQuickActivities,
-                onPersistRecordAssistExpanded = onPersistRecordAssistExpanded,
                 onPersistRecordAssistSettingsExpanded = onPersistRecordAssistSettingsExpanded,
+                onPersistRecordCanonicalCatalogDisplayMode =
+                    onPersistRecordCanonicalCatalogDisplayMode,
+                onPersistRecordCollapsedCanonicalRootPaths =
+                    onPersistRecordCollapsedCanonicalRootPaths,
+                onPersistRecordOrderedCanonicalRootPaths =
+                    onPersistRecordOrderedCanonicalRootPaths,
                 onPersistRecordSuggestLookbackDays = onPersistRecordSuggestLookbackDays,
+                onPersistRecordSuggestOutputMode = onPersistRecordSuggestOutputMode,
                 onPersistRecordSuggestTopN = onPersistRecordSuggestTopN,
                 onImportSingleTxt = onImportSingleTxt,
+                onImportTomlFolder = onImportTomlFolder,
                 onImportSingleTracer = onImportSingleTracer,
                 onExportAllMonthsTracer = onExportAllMonthsTracer,
+                onExportCurrentTxtTracer = onExportCurrentTxtTracer,
                 isTracerExportInProgress = isTracerExportInProgress,
                 selectedTracerSecurityLevel = selectedTracerSecurityLevel,
                 onTracerSecurityLevelChange = onTracerSecurityLevelChange,
-                onCopyDiagnosticsPayload = onCopyDiagnosticsPayload,
-                onClearDatabase = onClearDatabase
+                onCopyDiagnosticsPayload = onCopyDiagnosticsPayload
             )
         }
     }

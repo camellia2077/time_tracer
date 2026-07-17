@@ -104,7 +104,9 @@ internal class QueryReportChartUseCase(
         val domainModel = mapCorePayloadToDomainModel(payload)
         val renderModel = mapDomainModelToRenderModel(
             model = domainModel,
-            selectedRootOverride = requestedRoot
+            selectedRootOverride = requestedRoot,
+            fromDateIso = params.fromDateIso,
+            toDateIso = params.toDateIso
         )
         putCache(cacheKey, renderModel)
 
@@ -219,7 +221,7 @@ internal class QueryReportCompositionUseCase(
                 operationId = operationId,
                 parameterHash = parameterHash,
                 durationMs = 0L,
-                pointCount = cached.slices.size,
+                pointCount = cached.tree.size,
                 rootCount = cached.activeRootCount,
                 cacheHit = true
             )
@@ -275,7 +277,7 @@ internal class QueryReportCompositionUseCase(
             operationId = operationId,
             parameterHash = parameterHash,
             durationMs = elapsedMs,
-            pointCount = renderModel.slices.size,
+            pointCount = renderModel.tree.size,
             rootCount = renderModel.activeRootCount,
             cacheHit = false
         )

@@ -3,8 +3,6 @@ package com.example.tracer
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Tab
@@ -31,13 +29,14 @@ enum class ReportMode {
 
 @Composable
 internal fun QueryReportSection(
+    showModeTabs: Boolean = true,
     reportMode: ReportMode,
     onReportModeChange: (ReportMode) -> Unit,
     reportDate: String,
     onReportDateChange: (String) -> Unit,
     reportMonth: String,
     onReportMonthChange: (String) -> Unit,
-    availableTxtYears: List<String>,
+    calendarAvailability: com.example.tracer.ui.components.CalendarAvailability,
     reportYear: String,
     onReportYearChange: (String) -> Unit,
     reportWeek: String,
@@ -56,16 +55,16 @@ internal fun QueryReportSection(
     onReportRecent: () -> Unit,
     resultDisplayMode: ReportResultDisplayMode,
     onResultDisplayModeChange: (ReportResultDisplayMode) -> Unit,
+    chartSemanticMode: ReportChartSemanticMode,
+    onChartSemanticModeChange: (ReportChartSemanticMode) -> Unit,
+    selectedParameterSection: ReportParameterSection,
+    onSelectedParameterSectionChange: (ReportParameterSection) -> Unit,
     analysisLoading: Boolean,
     onLoadDayStats: (DataTreePeriod) -> Unit,
     onLoadTree: (DataTreePeriod, Int) -> Unit
 ) {
     val analysisPeriod = reportMode.toDataTreePeriod()
     var treeLevel by rememberSaveable { mutableStateOf("-1") }
-
-    var reportExpanded by rememberSaveable { mutableStateOf(true) }
-    var statsExpanded by rememberSaveable { mutableStateOf(false) }
-    var treeExpanded by rememberSaveable { mutableStateOf(false) }
     val reportModes = ReportMode.entries
     val selectedIndex = reportModes.indexOf(reportMode)
     val numericKeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
@@ -74,70 +73,74 @@ internal fun QueryReportSection(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        ReportModeTabs(
-            selectedIndex = selectedIndex,
-            reportModes = reportModes,
-            reportMode = reportMode,
-            onReportModeChange = onReportModeChange
-        )
-        ReportResultModeSwitcher(
-            mode = resultDisplayMode,
-            onModeChange = onResultDisplayModeChange,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-
-        QueryReportParameterCards(
-            reportMode = reportMode,
-            resultDisplayMode = resultDisplayMode,
-            analysisPeriod = analysisPeriod,
-            reportExpanded = reportExpanded,
-            statsExpanded = statsExpanded,
-            treeExpanded = treeExpanded,
-            treeLevel = treeLevel,
-            keyboardOptions = numericKeyboardOptions,
-            reportDate = reportDate,
-            onReportDateChange = onReportDateChange,
-            reportMonth = reportMonth,
-            onReportMonthChange = onReportMonthChange,
-            availableTxtYears = availableTxtYears,
-            reportYear = reportYear,
-            onReportYearChange = onReportYearChange,
-            reportWeek = reportWeek,
-            onReportWeekChange = onReportWeekChange,
-            reportRangeStartDate = reportRangeStartDate,
-            onReportRangeStartDateChange = onReportRangeStartDateChange,
-            reportRangeEndDate = reportRangeEndDate,
-            onReportRangeEndDateChange = onReportRangeEndDateChange,
-            reportRecentDays = reportRecentDays,
-            onReportRecentDaysChange = onReportRecentDaysChange,
-            analysisLoading = analysisLoading,
-            onReportExpandedChange = { reportExpanded = it },
-            onStatsExpandedChange = { statsExpanded = it },
-            onTreeExpandedChange = { treeExpanded = it },
-            onTreeLevelChange = { treeLevel = normalizeSignedIntInput(it, 3) },
-            onRunReport = {
-                runReportForMode(
-                    reportMode = reportMode,
-                    onReportDay = onReportDay,
-                    onReportMonth = onReportMonth,
-                    onReportWeek = onReportWeek,
-                    onReportYear = onReportYear,
-                    onReportRange = onReportRange,
-                    onReportRecent = onReportRecent
+        if (showModeTabs) {
+            ReportModeTabs(
+                selectedIndex = selectedIndex,
+                reportModes = reportModes,
+                reportMode = reportMode,
+                onReportModeChange = onReportModeChange
+            )
+        }
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            ReportResultModeSwitcher(
+                mode = resultDisplayMode,
+                onModeChange = onResultDisplayModeChange,
+                modifier = Modifier.fillMaxWidth()
+            )
+            if (resultDisplayMode == ReportResultDisplayMode.CHART &&
+                reportMode != ReportMode.DAY
+            ) {
+                ReportChartSemanticModeSelector(
+                    chartSemanticMode = chartSemanticMode,
+                    onChartSemanticModeChange = onChartSemanticModeChange
                 )
-                reportExpanded = false
-            },
-            onLoadStats = {
-                onLoadDayStats(analysisPeriod)
-                statsExpanded = false
-            },
-            onLoadTree = {
-                val parsedLevel = treeLevel.trim().toIntOrNull() ?: -1
-                onLoadTree(analysisPeriod, parsedLevel)
-                treeExpanded = false
             }
-        )
+
+            QueryReportParameterCards(
+                reportMode = reportMode,
+                resultDisplayMode = resultDisplayMode,
+                analysisPeriod = analysisPeriod,
+                selectedSection = selectedParameterSection,
+                treeLevel = treeLevel,
+                keyboardOptions = numericKeyboardOptions,
+                reportDate = reportDate,
+                onReportDateChange = onReportDateChange,
+                reportMonth = reportMonth,
+                onReportMonthChange = onReportMonthChange,
+                calendarAvailability = calendarAvailability,
+                reportYear = reportYear,
+                onReportYearChange = onReportYearChange,
+                reportWeek = reportWeek,
+                onReportWeekChange = onReportWeekChange,
+                reportRangeStartDate = reportRangeStartDate,
+                onReportRangeStartDateChange = onReportRangeStartDateChange,
+                reportRangeEndDate = reportRangeEndDate,
+                onReportRangeEndDateChange = onReportRangeEndDateChange,
+                reportRecentDays = reportRecentDays,
+                onReportRecentDaysChange = onReportRecentDaysChange,
+                analysisLoading = analysisLoading,
+                onSelectedSectionChange = onSelectedParameterSectionChange,
+                onTreeLevelChange = { treeLevel = normalizeSignedIntInput(it, 3) },
+                onRunReport = {
+                    runReportForMode(
+                        reportMode = reportMode,
+                        onReportDay = onReportDay,
+                        onReportMonth = onReportMonth,
+                        onReportWeek = onReportWeek,
+                        onReportYear = onReportYear,
+                        onReportRange = onReportRange,
+                        onReportRecent = onReportRecent
+                    )
+                },
+                onLoadStats = {
+                    onLoadDayStats(analysisPeriod)
+                },
+                onLoadTree = {
+                    val parsedLevel = treeLevel.trim().toIntOrNull() ?: -1
+                    onLoadTree(analysisPeriod, parsedLevel)
+                }
+            )
+        }
     }
 }
 

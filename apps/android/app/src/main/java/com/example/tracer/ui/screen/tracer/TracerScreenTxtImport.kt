@@ -171,7 +171,7 @@ private fun buildTxtFolderImportProgressText(
     return "TXT folder import $current/$total -> $relativePath"
 }
 
-private fun extractImportFailureSummary(statusText: String): String {
+internal fun extractImportFailureSummary(statusText: String): String {
     val raw = statusText.substringAfter("->", statusText).trim()
     if (raw.isBlank()) {
         return "import failed"

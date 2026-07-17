@@ -17,7 +17,7 @@ internal data class DomainChartModel(
     val rangeDays: Int,
     val usesLegacyStatsFallback: Boolean,
     val schemaVersion: Int?,
-    val usesSchemaVersionFallback: Boolean
+    val usesSchemaVersionFallback: Boolean,
 )
 
 data class ChartRenderModel(
@@ -31,14 +31,16 @@ data class ChartRenderModel(
     val rangeDays: Int,
     val usesLegacyStatsFallback: Boolean,
     val schemaVersion: Int?,
-    val usesSchemaVersionFallback: Boolean
+    val usesSchemaVersionFallback: Boolean,
+    val fromDateIso: String? = null,
+    val toDateIso: String? = null
 )
 
 data class CompositionChartRenderModel(
-    val slices: List<ReportCompositionSlice>,
     val totalDurationSeconds: Long,
     val activeRootCount: Int,
-    val rangeDays: Int
+    val rangeDays: Int,
+    val tree: List<TreeNode>
 )
 
 data class ChartQueryTrace(

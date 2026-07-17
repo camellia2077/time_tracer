@@ -9,8 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,21 +29,25 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.tracer.ui.components.NativeMultilineTextEditor
 import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
+import kotlinx.coroutines.delay
 
 @Composable
 internal fun ConfigAliasEditorCard(
     selectedFileDisplayName: String,
+    selectedFileContent: String,
     mode: AliasEditorMode,
     document: AliasTomlDocument?,
     parentOptions: List<String>,
     advancedTomlDraft: String,
     errorMessage: String,
+    autoSaveStatus: ConfigAutoSaveStatus,
+    onCreateAliasTomlFile: (String) -> Unit,
+    onDeleteAliasTomlFile: () -> Unit,
     onSelectStructuredMode: () -> Unit,
     onSelectAdvancedMode: () -> Unit,
     onParentChange: (String) -> Unit,
     onAdvancedTomlChange: (String) -> Unit,
     onAddGroup: (parentGroupId: String?, name: String) -> Unit,
-    onRenameGroup: (groupId: String, name: String) -> Unit,
     onDeleteGroup: (groupId: String) -> Unit,
     onAddEntry: (parentGroupId: String?, aliasKey: String, canonicalLeaf: String) -> Unit,
     onUpdateEntry: (entryId: String, aliasKey: String, canonicalLeaf: String) -> Unit,
@@ -52,8 +55,30 @@ internal fun ConfigAliasEditorCard(
     onSave: () -> Unit
 ) {
     var dialogState by remember { mutableStateOf<AliasEditorDialogState?>(null) }
+    var showDeleteAliasTomlDialog by remember { mutableStateOf(false) }
     var currentPathGroupIds by remember(selectedFileDisplayName) {
         mutableStateOf(emptyList<String>())
+    }
+    val renderedStructuredDraft = remember(document) {
+        document?.let(AliasTomlEditorCodec::serialize).orEmpty()
+    }
+
+    LaunchedEffect(mode, selectedFileContent, advancedTomlDraft, renderedStructuredDraft) {
+        val currentDraft = when (mode) {
+            AliasEditorMode.STRUCTURED -> renderedStructuredDraft
+            AliasEditorMode.ADVANCED -> advancedTomlDraft
+        }
+        if (currentDraft.isBlank() || currentDraft == selectedFileContent) {
+            return@LaunchedEffect
+        }
+        delay(CONFIG_ALIAS_EDITOR_AUTO_SAVE_DELAY_MS)
+        val latestDraft = when (mode) {
+            AliasEditorMode.STRUCTURED -> renderedStructuredDraft
+            AliasEditorMode.ADVANCED -> advancedTomlDraft
+        }
+        if (latestDraft.isNotBlank() && latestDraft != selectedFileContent) {
+            onSave()
+        }
     }
 
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
@@ -66,6 +91,27 @@ internal fun ConfigAliasEditorCard(
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary
             )
+
+            ConfigEditorFileControls(
+                onCreateAliasTomlFile = onCreateAliasTomlFile
+            )
+
+            if (mode == AliasEditorMode.STRUCTURED && document != null) {
+                AliasParentSelector(
+                    parent = document.parent,
+                    parentOptions = parentOptions,
+                    onParentChange = onParentChange
+                )
+            }
+
+            OutlinedButton(
+                onClick = { showDeleteAliasTomlDialog = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Filled.Delete, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(stringResource(R.string.config_action_delete_alias_mapping))
+            }
 
             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                 val modes = listOf(
@@ -98,6 +144,11 @@ internal fun ConfigAliasEditorCard(
                 )
             }
 
+            ConfigAutoSaveStatusText(
+                autoSaveStatus = autoSaveStatus,
+                modifier = Modifier.fillMaxWidth()
+            )
+
             when (mode) {
                 AliasEditorMode.STRUCTURED -> {
                     if (document == null) {
@@ -120,9 +171,7 @@ internal fun ConfigAliasEditorCard(
                         }
                         AliasStructuredEditorContent(
                             document = document,
-                            parentOptions = parentOptions,
                             layer = layer,
-                            onParentChange = onParentChange,
                             onNavigateBack = {
                                 currentPathGroupIds = layer.normalizedPathGroupIds.dropLast(1)
                             },
@@ -137,12 +186,6 @@ internal fun ConfigAliasEditorCard(
                             onRequestAddCurrentEntry = {
                                 dialogState = AliasEditorDialogState.AddEntry(
                                     parentGroupId = layer.currentParentGroupId
-                                )
-                            },
-                            onRequestRenameGroup = { group ->
-                                dialogState = AliasEditorDialogState.RenameGroup(
-                                    groupId = group.id,
-                                    initialName = group.name
                                 )
                             },
                             onDeleteGroup = onDeleteGroup,
@@ -180,14 +223,6 @@ internal fun ConfigAliasEditorCard(
                 }
             }
 
-            Button(
-                onClick = onSave,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(Icons.Filled.Check, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(stringResource(R.string.config_action_save_changes))
-            }
         }
     }
 
@@ -200,18 +235,6 @@ internal fun ConfigAliasEditorCard(
                 onConfirm = { name ->
                     dialogState = null
                     onAddGroup(activeDialog.parentGroupId, name)
-                }
-            )
-        }
-
-        is AliasEditorDialogState.RenameGroup -> {
-            AliasGroupNameDialog(
-                title = stringResource(R.string.config_alias_dialog_rename_group_title),
-                initialName = activeDialog.initialName,
-                onDismiss = { dialogState = null },
-                onConfirm = { name ->
-                    dialogState = null
-                    onRenameGroup(activeDialog.groupId, name)
                 }
             )
         }
@@ -231,9 +254,10 @@ internal fun ConfigAliasEditorCard(
 
         is AliasEditorDialogState.EditEntry -> {
             AliasEntryDialog(
-                title = stringResource(R.string.config_alias_dialog_edit_entry_title),
+                title = stringResource(R.string.config_alias_dialog_rename_alias_title),
                 initialAliasKey = activeDialog.initialAliasKey,
                 initialCanonicalLeaf = activeDialog.initialCanonicalLeaf,
+                showCanonicalLeafField = false,
                 onDismiss = { dialogState = null },
                 onConfirm = { aliasKey, canonicalLeaf ->
                     dialogState = null
@@ -244,31 +268,35 @@ internal fun ConfigAliasEditorCard(
 
         null -> Unit
     }
+
+    if (showDeleteAliasTomlDialog) {
+        ConfigAliasTomlDeleteDialog(
+            fileName = selectedFileDisplayName,
+            onDismiss = { showDeleteAliasTomlDialog = false },
+            onConfirm = {
+                showDeleteAliasTomlDialog = false
+                onDeleteAliasTomlFile()
+            }
+        )
+    }
 }
+
+private const val CONFIG_ALIAS_EDITOR_AUTO_SAVE_DELAY_MS = 600L
 
 @Composable
 private fun AliasStructuredEditorContent(
     document: AliasTomlDocument,
-    parentOptions: List<String>,
     layer: AliasStructuredLayer,
-    onParentChange: (String) -> Unit,
     onNavigateBack: () -> Unit,
     onNavigateToGroup: (String) -> Unit,
     onRequestAddCurrentGroup: () -> Unit,
     onRequestAddCurrentEntry: () -> Unit,
-    onRequestRenameGroup: (AliasTomlGroup) -> Unit,
     onDeleteGroup: (String) -> Unit,
     onRequestAddChildGroup: (String) -> Unit,
     onRequestAddChildEntry: (String) -> Unit,
     onRequestEditEntry: (AliasTomlEntry) -> Unit,
     onDeleteEntry: (String) -> Unit
 ) {
-    AliasParentSelector(
-        parent = document.parent,
-        parentOptions = parentOptions,
-        onParentChange = onParentChange
-    )
-
     AliasPathBar(
         breadcrumbs = layer.breadcrumbs,
         onNavigateBack = onNavigateBack
@@ -300,7 +328,6 @@ private fun AliasStructuredEditorContent(
         AliasGroupRowCard(
             group = group,
             onEnterGroup = { onNavigateToGroup(group.id) },
-            onRequestRenameGroup = onRequestRenameGroup,
             onDeleteGroup = onDeleteGroup,
             onRequestAddChildGroup = onRequestAddChildGroup,
             onRequestAddChildEntry = onRequestAddChildEntry
@@ -368,7 +395,6 @@ internal fun resolveAliasStructuredLayer(
 
 internal sealed interface AliasEditorDialogState {
     data class AddGroup(val parentGroupId: String?) : AliasEditorDialogState
-    data class RenameGroup(val groupId: String, val initialName: String) : AliasEditorDialogState
     data class AddEntry(val parentGroupId: String?) : AliasEditorDialogState
     data class EditEntry(
         val entryId: String,

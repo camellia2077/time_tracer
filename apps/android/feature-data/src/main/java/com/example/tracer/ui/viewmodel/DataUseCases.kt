@@ -10,11 +10,15 @@ internal class DataUseCases(
     )
 
     suspend fun initializeRuntime(currentState: DataUiState): DataUiState {
-        val runningState = currentState.copy(statusText = "nativeInit running...")
+        val runningState = currentState.copy(statusText = "Initializing runtime...")
         val result = runtimeInitializer.initializeRuntime()
         return runningState.copy(
             initialized = result.initialized,
-            statusText = "nativeInit -> ${result.rawResponse}"
+            statusText = if (result.initialized && result.operationOk) {
+                "Runtime initialized."
+            } else {
+                "Runtime initialization failed."
+            }
         )
     }
 
@@ -36,33 +40,76 @@ internal class DataUseCases(
         return OperationUpdate(
             state = runningState.copy(
                 initialized = result.initialized,
-                statusText = "TXT import -> ${result.rawResponse}"
+                statusText = if (result.initialized && result.operationOk) {
+                    "TXT import completed."
+                } else {
+                    "TXT import failed."
+                }
             ),
             operationOk = result.operationOk
         )
     }
 
-    suspend fun clearDataAndReinitialize(currentState: DataUiState): DataUiState {
-        val runningState = currentState.copy(statusText = "clearing app data...")
+    suspend fun clearDataAndReinitialize(
+        currentState: DataUiState,
+        statusText: DestructiveActionStatusText
+    ): DataUiState {
+        val runningState = currentState.copy(statusText = statusText.running)
         val result = runtimeInitializer.clearAndReinitialize()
         return runningState.copy(
             initialized = result.initialized,
-            statusText = "${result.clearMessage}\nnativeInit -> ${result.initResponse}"
+            statusText = if (result.operationOk) {
+                statusText.success
+            } else {
+                statusText.failure
+            }
         )
     }
 
-    suspend fun clearDatabase(currentState: DataUiState): DataUiState {
-        val runningState = currentState.copy(statusText = "clearing database...")
+    suspend fun clearDatabase(
+        currentState: DataUiState,
+        statusText: DestructiveActionStatusText
+    ): DataUiState {
+        val runningState = currentState.copy(statusText = statusText.running)
         val result = runtimeInitializer.clearDatabase()
         return runningState.copy(
             initialized = false,
-            statusText = result.message
+            statusText = if (result.ok) {
+                statusText.success
+            } else {
+                statusText.failure
+            }
         )
     }
 
-    suspend fun clearTxt(currentState: DataUiState): DataUiState {
-        val runningState = currentState.copy(statusText = "clearing txt...")
+    suspend fun rebuildDatabase(
+        currentState: DataUiState,
+        statusText: DestructiveActionStatusText
+    ): DataUiState {
+        val runningState = currentState.copy(statusText = statusText.running)
+        val result = runtimeInitializer.rebuildDatabase()
+        return runningState.copy(
+            initialized = result.initialized,
+            statusText = if (result.initialized && result.operationOk) {
+                statusText.success
+            } else {
+                statusText.failure
+            }
+        )
+    }
+
+    suspend fun clearTxt(
+        currentState: DataUiState,
+        statusText: DestructiveActionStatusText
+    ): DataUiState {
+        val runningState = currentState.copy(statusText = statusText.running)
         val result = recordGateway.clearTxt()
-        return runningState.copy(statusText = result.message)
+        return runningState.copy(
+            statusText = if (result.ok) {
+                statusText.success
+            } else {
+                statusText.failure
+            }
+        )
     }
 }

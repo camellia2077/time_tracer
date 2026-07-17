@@ -12,9 +12,12 @@ internal data class TracerScreenActions(
     val onCoordinatorEvent: (TracerCoordinatorEvent) -> Unit,
     val onCopyDiagnosticsPayload: () -> Unit,
     val onPersistRecordQuickActivities: (List<String>) -> Unit,
-    val onPersistRecordAssistExpanded: (Boolean) -> Unit,
     val onPersistRecordAssistSettingsExpanded: (Boolean) -> Unit,
+    val onPersistRecordCanonicalCatalogDisplayMode: (RecordSuggestionOutputMode) -> Unit,
+    val onPersistRecordCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
+    val onPersistRecordOrderedCanonicalRootPaths: (List<String>) -> Unit,
     val onPersistRecordSuggestLookbackDays: (Int) -> Unit,
+    val onPersistRecordSuggestOutputMode: (RecordSuggestionOutputMode) -> Unit,
     val onPersistRecordSuggestTopN: (Int) -> Unit
 )
 
@@ -24,9 +27,12 @@ private data class TracerScreenDiagnosticsActions(
 
 private data class TracerScreenPreferenceActions(
     val onPersistRecordQuickActivities: (List<String>) -> Unit,
-    val onPersistRecordAssistExpanded: (Boolean) -> Unit,
     val onPersistRecordAssistSettingsExpanded: (Boolean) -> Unit,
+    val onPersistRecordCanonicalCatalogDisplayMode: (RecordSuggestionOutputMode) -> Unit,
+    val onPersistRecordCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
+    val onPersistRecordOrderedCanonicalRootPaths: (List<String>) -> Unit,
     val onPersistRecordSuggestLookbackDays: (Int) -> Unit,
+    val onPersistRecordSuggestOutputMode: (RecordSuggestionOutputMode) -> Unit,
     val onPersistRecordSuggestTopN: (Int) -> Unit
 )
 
@@ -64,9 +70,15 @@ internal fun rememberTracerScreenActions(
         },
         onCopyDiagnosticsPayload = diagnosticsActions.onCopyDiagnosticsPayload,
         onPersistRecordQuickActivities = preferenceActions.onPersistRecordQuickActivities,
-        onPersistRecordAssistExpanded = preferenceActions.onPersistRecordAssistExpanded,
         onPersistRecordAssistSettingsExpanded = preferenceActions.onPersistRecordAssistSettingsExpanded,
+        onPersistRecordCanonicalCatalogDisplayMode =
+            preferenceActions.onPersistRecordCanonicalCatalogDisplayMode,
+        onPersistRecordCollapsedCanonicalRootPaths =
+            preferenceActions.onPersistRecordCollapsedCanonicalRootPaths,
+        onPersistRecordOrderedCanonicalRootPaths =
+            preferenceActions.onPersistRecordOrderedCanonicalRootPaths,
         onPersistRecordSuggestLookbackDays = preferenceActions.onPersistRecordSuggestLookbackDays,
+        onPersistRecordSuggestOutputMode = preferenceActions.onPersistRecordSuggestOutputMode,
         onPersistRecordSuggestTopN = preferenceActions.onPersistRecordSuggestTopN
     )
 }
@@ -109,19 +121,34 @@ private fun rememberTracerScreenPreferenceActions(
                 userPreferencesRepository.setRecordQuickActivities(activities)
             }
         },
-        onPersistRecordAssistExpanded = { value ->
-            coroutineScope.launch {
-                userPreferencesRepository.setRecordAssistExpanded(value)
-            }
-        },
         onPersistRecordAssistSettingsExpanded = { value ->
             coroutineScope.launch {
                 userPreferencesRepository.setRecordAssistSettingsExpanded(value)
             }
         },
+        onPersistRecordCanonicalCatalogDisplayMode = { value ->
+            coroutineScope.launch {
+                userPreferencesRepository.setRecordCanonicalCatalogDisplayMode(value)
+            }
+        },
+        onPersistRecordCollapsedCanonicalRootPaths = { values ->
+            coroutineScope.launch {
+                userPreferencesRepository.setRecordCollapsedCanonicalRootPaths(values)
+            }
+        },
+        onPersistRecordOrderedCanonicalRootPaths = { values ->
+            coroutineScope.launch {
+                userPreferencesRepository.setRecordOrderedCanonicalRootPaths(values)
+            }
+        },
         onPersistRecordSuggestLookbackDays = { value ->
             coroutineScope.launch {
                 userPreferencesRepository.setRecordSuggestLookbackDays(value)
+            }
+        },
+        onPersistRecordSuggestOutputMode = { value ->
+            coroutineScope.launch {
+                userPreferencesRepository.setRecordSuggestOutputMode(value)
             }
         },
         onPersistRecordSuggestTopN = { value ->

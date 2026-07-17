@@ -98,6 +98,26 @@ internal object RecordStateReducer {
         )
     }
 
+    fun updateSuggestionOutputMode(
+        state: RecordUiState,
+        value: RecordSuggestionOutputMode
+    ): RecordUiState {
+        if (state.suggestionOutputMode == value) {
+            return state
+        }
+        return state.copy(suggestionOutputMode = value)
+    }
+
+    fun updateCanonicalCatalogDisplayMode(
+        state: RecordUiState,
+        value: RecordSuggestionOutputMode
+    ): RecordUiState {
+        if (state.canonicalCatalogDisplayMode == value) {
+            return state
+        }
+        return state.copy(canonicalCatalogDisplayMode = value)
+    }
+
     fun updateQuickActivities(state: RecordUiState, values: List<String>): RecordUiState {
         val normalized = values
             .map { it.trim() }
@@ -113,19 +133,42 @@ internal object RecordStateReducer {
 
     fun updateAssistUiState(
         state: RecordUiState,
-        assistExpanded: Boolean,
         assistSettingsExpanded: Boolean
     ): RecordUiState {
-        if (
-            state.assistExpanded == assistExpanded &&
-            state.assistSettingsExpanded == assistSettingsExpanded
-        ) {
+        if (state.assistSettingsExpanded == assistSettingsExpanded) {
             return state
         }
         return state.copy(
-            assistExpanded = assistExpanded,
             assistSettingsExpanded = assistSettingsExpanded
         )
+    }
+
+    fun updateCollapsedCanonicalRootPaths(
+        state: RecordUiState,
+        paths: Set<String>
+    ): RecordUiState {
+        val normalized = paths
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .toSet()
+        if (state.collapsedCanonicalRootPaths == normalized) {
+            return state
+        }
+        return state.copy(collapsedCanonicalRootPaths = normalized)
+    }
+
+    fun updateOrderedCanonicalRootPaths(
+        state: RecordUiState,
+        paths: List<String>
+    ): RecordUiState {
+        val normalized = paths
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .distinct()
+        if (state.orderedCanonicalRootPaths == normalized) {
+            return state
+        }
+        return state.copy(orderedCanonicalRootPaths = normalized)
     }
 
     fun hideSuggestions(state: RecordUiState): RecordUiState =
@@ -135,11 +178,32 @@ internal object RecordStateReducer {
         state.copy(
             suggestionsVisible = true,
             isSuggestionsLoading = true,
+            canonicalCatalogStatusText = "",
             statusText = "Loading activity suggestions..."
+        )
+
+    fun hideCanonicalCatalog(state: RecordUiState): RecordUiState =
+        state.copy(isCanonicalCatalogVisible = false)
+
+    fun showCanonicalCatalogLoading(state: RecordUiState): RecordUiState =
+        state.copy(
+            isCanonicalCatalogVisible = true,
+            isCanonicalCatalogLoading = true,
+            canonicalCatalogStatusText = "",
+            statusText = "Loading canonical catalog..."
         )
 
     fun applySuggestedActivity(state: RecordUiState, activityName: String): RecordUiState =
         state.copy(recordContent = activityName)
+
+    fun applyCanonicalCatalogEntry(state: RecordUiState, token: String): RecordUiState =
+        state.copy(
+            recordContent = token.trim(),
+            suggestionsVisible = false,
+            isCanonicalCatalogVisible = false,
+            isCanonicalCatalogLoading = false,
+            statusText = ""
+        )
 
     fun setStatusText(state: RecordUiState, message: String): RecordUiState =
         state.copy(statusText = message)

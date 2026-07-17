@@ -78,7 +78,7 @@ class NativeTxtRuntimeCodecTest {
                   "normalized_day_marker": "0102",
                   "found": true,
                   "is_marker_valid": true,
-                  "updated_content": "0102\n1111work\n",
+                  "updated_content": "d0102\n1111work\n",
                   "error_message": ""
                 }
             """.trimIndent()
@@ -88,7 +88,7 @@ class NativeTxtRuntimeCodecTest {
         assertEquals("0102", payload.normalizedDayMarker)
         assertTrue(payload.found)
         assertTrue(payload.isMarkerValid)
-        assertEquals("0102\n1111work\n", payload.updatedContent)
+        assertEquals("d0102\n1111work\n", payload.updatedContent)
     }
 
     @Test

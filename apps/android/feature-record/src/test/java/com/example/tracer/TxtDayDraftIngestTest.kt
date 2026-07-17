@@ -14,7 +14,7 @@ class TxtDayDraftIngestTest {
             dayMarker = "0501"
         )
 
-        assertEquals("y2026\nm05\n\n0501\n", result)
+        assertEquals("y2026\nm05\n\nd0501\n", result)
     }
 
     @Test
@@ -25,7 +25,7 @@ class TxtDayDraftIngestTest {
                 normalizedDayMarker = "0417",
                 found = true,
                 isMarkerValid = true,
-                updatedContent = "y2026\nm04\n0417\nnew-body\n",
+                updatedContent = "y2026\nm04\nd0417\nnew-body\n",
                 message = "ok"
             )
         )
@@ -34,7 +34,7 @@ class TxtDayDraftIngestTest {
 
         val result = ingestDayDraft(
             txtStorageGateway = gateway,
-            monthContent = "y2026\nm04\n0417\nold-body\n",
+            monthContent = "y2026\nm04\nd0417\nold-body\n",
             dayMarker = "0417",
             dayDraftBody = "new-body\n",
             onMergedMonthContent = { mergedMonthContent = it },
@@ -42,10 +42,10 @@ class TxtDayDraftIngestTest {
         )
 
         assertTrue(result)
-        assertEquals("y2026\nm04\n0417\nold-body\n", gateway.lastReplaceContent)
+        assertEquals("y2026\nm04\nd0417\nold-body\n", gateway.lastReplaceContent)
         assertEquals("0417", gateway.lastReplaceDayMarker)
         assertEquals("new-body\n", gateway.lastReplaceDayBody)
-        assertEquals("y2026\nm04\n0417\nnew-body\n", mergedMonthContent)
+        assertEquals("y2026\nm04\nd0417\nnew-body\n", mergedMonthContent)
         assertTrue(saveCalled)
     }
 
@@ -66,7 +66,7 @@ class TxtDayDraftIngestTest {
 
         val result = ingestDayDraft(
             txtStorageGateway = gateway,
-            monthContent = "y2026\nm04\n0417\nold-body\n",
+            monthContent = "y2026\nm04\nd0417\nold-body\n",
             dayMarker = "0417",
             dayDraftBody = "new-body\n",
             onMergedMonthContent = { mergedMonthContent = it },

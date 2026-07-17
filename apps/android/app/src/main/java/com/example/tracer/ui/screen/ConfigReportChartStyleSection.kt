@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -160,10 +159,10 @@ private fun PiePalettePreviewStrip(
     val previewColors = reportPiePaletteHexColors(palettePreset)
         .mapNotNull(::parseConfigPaletteHexColor)
         .ifEmpty { listOf(MaterialTheme.colorScheme.surfaceVariant) }
-        .take(5)
+        .take(10)
         .toMutableList()
         .apply {
-            while (size < 5) {
+            while (size < 10) {
                 add(last())
             }
         }
@@ -181,17 +180,6 @@ private fun PiePalettePreviewStrip(
                     .border(1.dp, outlineColor, CircleShape)
             )
         }
-        Spacer(modifier = Modifier.width(4.dp))
-        Box(
-            modifier = Modifier
-                .size(18.dp)
-                .background(
-                    parseConfigPaletteHexColor(reportPiePaletteOthersHexColor())
-                        ?: MaterialTheme.colorScheme.surfaceVariant,
-                    CircleShape
-                )
-                .border(1.dp, outlineColor, CircleShape)
-        )
     }
 }
 
@@ -260,8 +248,8 @@ private fun ConfigBreakdownBarPreview(
             } else {
                 0f
             }
-            val barColor = resolveConfigBreakdownColor(
-                slice = slice,
+            val barColor = resolveConfigBreakdownRankColor(
+                rank = index,
                 palettePreset = palettePreset
             )
             Column(
@@ -353,16 +341,12 @@ private fun ReportPiePalettePreset.labelRes(): Int =
 private fun parseConfigPaletteHexColor(raw: String): Color? =
     runCatching { Color(AndroidColor.parseColor(raw.trim())) }.getOrNull()
 
-private fun resolveConfigBreakdownColor(
-    slice: ReportCompositionSlice,
+private fun resolveConfigBreakdownRankColor(
+    rank: Int,
     palettePreset: ReportPiePalettePreset
 ): Color {
-    if (slice.root == "Others") {
-        return parseConfigPaletteHexColor(reportPiePaletteOthersHexColor())
-            ?: Color(0xFF94A3B8)
-    }
     val palette = reportPiePaletteHexColors(palettePreset)
         .mapNotNull(::parseConfigPaletteHexColor)
         .ifEmpty { listOf(Color(0xFF4F46E5)) }
-    return palette[slice.root.hashCode().mod(palette.size)]
+    return palette[rank.mod(palette.size)]
 }

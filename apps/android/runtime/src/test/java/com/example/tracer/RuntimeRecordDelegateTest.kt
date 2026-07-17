@@ -17,7 +17,7 @@ class RuntimeRecordDelegateTest {
             val paths = createPaths(root)
             val targetFile = File(paths.inputRootPath, "2026/2026-03.txt").apply {
                 parentFile?.mkdirs()
-                writeText("y2026\nm03\n0329\n0900study_cpp\n")
+                writeText("y2026\nm03\nd0329\n0900study_cpp\n")
             }
             val originalContent = targetFile.readText()
 
@@ -238,7 +238,7 @@ class RuntimeRecordDelegateTest {
 
             val result = delegate.saveTxtFileAndSync(
                 relativePath = "2026/2026-03.txt",
-                content = "y2026\nm03\n0101\nr\n"
+                content = "y2026\nm03\nd0301\nr\n"
             )
 
             assertFalse(result.ok)
@@ -263,7 +263,7 @@ class RuntimeRecordDelegateTest {
 
             val result = delegate.saveTxtFileAndSync(
                 relativePath = "2026/2026-03.txt",
-                content = "y2026\nm03\n0301\n0700w\n"
+                content = "y2026\nm03\nd0301\n0700w\n"
             )
 
             assertTrue(result.ok)
@@ -292,7 +292,7 @@ class RuntimeRecordDelegateTest {
 
             val result = delegate.saveTxtFileAndSync(
                 relativePath = "2026/2026-03.txt",
-                content = "y2026\nm03\n0301\n0700bilibili\n"
+                content = "y2026\nm03\nd0301\n0700bilibili\n"
             )
 
             assertTrue(result.ok)
@@ -323,7 +323,7 @@ class RuntimeRecordDelegateTest {
 
             val result = delegate.saveTxtFileAndSync(
                 relativePath = "2026/2026-03.txt",
-                content = "y2026\nm03\n0301\n0700w\n0800bilibili\n"
+                content = "y2026\nm03\nd0301\n0700w\n0800bilibili\n"
             )
 
             assertTrue(result.ok)
@@ -349,7 +349,7 @@ class RuntimeRecordDelegateTest {
 
             val result = delegate.saveTxtFileAndSync(
                 relativePath = "2026/2026-03.txt",
-                content = "y2026\nm03\n0301\n0700riseup\n"
+                content = "y2026\nm03\nd0301\n0700riseup\n"
             )
 
             assertTrue(result.ok)
@@ -372,7 +372,7 @@ class RuntimeRecordDelegateTest {
 
             val result = delegate.saveTxtFileAndSync(
                 relativePath = "2026/2026-03.txt",
-                content = "y2026\nm03\n0301\n0700bilibili\n"
+                content = "y2026\nm03\nd0301\n0700bilibili\n"
             )
 
             assertTrue(result.ok)
@@ -390,7 +390,7 @@ class RuntimeRecordDelegateTest {
             val paths = createPaths(root)
             val targetFile = File(paths.inputRootPath, "2026/2026-03.txt").apply {
                 parentFile?.mkdirs()
-                writeText("y2026\nm03\n0329\n0700w\n")
+                writeText("y2026\nm03\nd0329\n0700w\n")
             }
             val writes = mutableListOf<Pair<String, String>>()
             val storage = object : TextStorage {
@@ -436,7 +436,7 @@ class RuntimeRecordDelegateTest {
                         found = true,
                         isMarkerValid = true,
                         canSave = true,
-                        dayBody = content.substringAfter("0329\n"),
+                        dayBody = content.substringAfter("d0329\n"),
                         dayContentIsoDate = "2026-03-29",
                         message = "ok"
                     )
@@ -447,7 +447,7 @@ class RuntimeRecordDelegateTest {
                         normalizedDayMarker = "0329",
                         found = true,
                         isMarkerValid = true,
-                        updatedContent = "y2026\nm03\n0329\n$editedDayBody",
+                        updatedContent = "y2026\nm03\nd0329\n$editedDayBody",
                         message = "ok"
                     )
                 },
@@ -483,7 +483,7 @@ class RuntimeRecordDelegateTest {
 
             assertTrue(result.ok)
             assertEquals(1, writes.size)
-            assertTrue(writes.single().second.contains("0900-1030study // focus"))
+            assertTrue(writes.single().second.contains("090000-103000study // focus"))
         } finally {
             root.deleteRecursively()
         }

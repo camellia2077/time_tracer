@@ -1,27 +1,26 @@
 {
   "target": "android",
   "source_root": "C:\\code\\time_tracer\\assets\\tracer_core\\config",
-  "input_hash": "4397488e9060fa80a2dd9c4382cdb7712e433617fde58491512a3bbf181121a0",
-  "planned_file_count": 18,
+  "input_hash": "45de99d24b5149dd77c17fd7d30b38d8a94d5cd2397da15aa512faabdcc1d0a3",
+  "planned_file_count": 17,
   "file_hashes": {
-    "charts/heatmap.toml": "7d03d6428d057d252a8518321424b511ffe7ae9a87f9901958029557a29278a2",
+    "charts/heatmap.toml": "6ad0f28fd9cb645df803f041cfd75d496b518dc7494ce717e71ab63da5d84135",
     "config.toml": "509e2a3085c548639da2fe144865a8f50bfdaa2cb527726f752d7706c3d045e6",
     "converter/alias_mapping.toml": "529320459b745ae7f2c730a6a47065f140f61ee0c1a7a2b7e7305ca8a2310dbf",
     "converter/aliases/exercise.toml": "86667f84e2e4f2ac5f762a65a43d944898668a5e93db3652a551f114ff4f6300",
-    "converter/aliases/meal.toml": "466814d43d6a668b1605e724e8c7244cbc9b555d7bfe32638e1d261cc7c96377",
+    "converter/aliases/meal.toml": "15a368b40201587bd9a1edf46e01d7b7d0cd0b1495b956fd312ce81d6a1007a5",
     "converter/aliases/recreation.toml": "dbc2fd9b12f3fd4444fa15c3729dff6850f29e722336e5cb1c8e53342287f343",
-    "converter/aliases/rest.toml": "d1b1f7b5566d7058704f8a3de690e4a517a728dba706268b8ecfcc5dadafd479",
+    "converter/aliases/rest.toml": "457f92965cd2714385411fc608138a8e220a6510ad345970e04a6dca0b7cd0a0",
     "converter/aliases/routine.toml": "1a55d70caaf18c3656bd7bb501f1d357c865fd6451aabdd0c9a090d94b8ac22a",
-    "converter/aliases/sleep.toml": "9f82dd9f5b1baaa1e519681a082e1e1e24217da79fe8be7e0842624c1b205986",
+    "converter/aliases/sleep.toml": "e40b9780f732950f03bca98407326bcdd8874a89a473142762728954889a4989",
     "converter/aliases/study.toml": "01722c1813418bcc592e2ec9ca4da90ee05e65af8d703d1e20272733bfb6f25c",
-    "converter/duration_rules.toml": "8f4b5f430d26e4e4c959b3193226d712c6e00e8d0afeafc4a3c68ade683c2a7b",
-    "converter/interval_processor_config.toml": "0ad36e30bf0449ee72c25ec818dae6c7144b6be19b34fd773ccd5dd53107fac7",
-    "meta/bundle.toml": "0320976d9fdda59196ccb5119c018e7897f928f502c068f2510d31e993d7eaeb",
-    "reports/markdown/day.toml": "6a02b89b311aa5184a7f95b9d6852cd813e9fef705b5a907f6360db6750783c3",
-    "reports/markdown/month.toml": "1c9156e6c5bd2a09e708cdb61bbe39eb03a1d78db5d944117fb54acded3d8697",
-    "reports/markdown/period.toml": "70f5cf16431635fc8d13aa26b1225e38b9765af830a3f886b5d1733045eac423",
-    "reports/markdown/week.toml": "8fa9a44fbacdd055cf7d3ecbd5209ce9592197ab82814b8a113c6e77f80a5327",
-    "reports/markdown/year.toml": "a0b80911567b56f913c8afa9e7d92d1e1161ae67fae034b51f8b9868fd724cae"
+    "converter/interval_processor_config.toml": "266ae9c4f1412e960fcb8a084b53a67687fd6d209888cfc1cfc47daa72998423",
+    "meta/bundle.toml": "fa5fc49cfd7f58db7932a15513ed967778f1d0ea6408c416abb0ae597b8cf1aa",
+    "reports/markdown/day.toml": "399ca7e956db4dbbae327e4d357214c5afdff0d16e5a675a2092f7839c17d34e",
+    "reports/markdown/month.toml": "5c6a557fce81fb1a6154fd6eb355b26293ae7b1b26464d4b02fccad2ce9b2601",
+    "reports/markdown/period.toml": "137b7e49dd40cbc257eb3e09c66c3fe2cfd72c08b9035d11c5bd201647f3df58",
+    "reports/markdown/week.toml": "8069ce9cb96b0d783bd6a5d7e04f9778725818841b3b4510010f1b81f4fa34e8",
+    "reports/markdown/year.toml": "250ac44c78b25502fd45aebab605e5a83101d3357962529bb73bf330b61293d0"
   },
-  "generated_at_utc": "2026-04-07T12:27:01.907370+00:00"
+  "generated_at_utc": "2026-07-12T13:13:06.198800+00:00"
 }

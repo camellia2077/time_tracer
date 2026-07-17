@@ -50,24 +50,48 @@ internal class RecordIntentHandler(
         topN: Int
     ): RecordUiState = RecordStateReducer.updateSuggestionPreferences(state, lookbackDays, topN)
 
+    fun updateSuggestionOutputMode(
+        state: RecordUiState,
+        value: RecordSuggestionOutputMode
+    ): RecordUiState = RecordStateReducer.updateSuggestionOutputMode(state, value)
+
+    fun updateCanonicalCatalogDisplayMode(
+        state: RecordUiState,
+        value: RecordSuggestionOutputMode
+    ): RecordUiState = RecordStateReducer.updateCanonicalCatalogDisplayMode(state, value)
+
     fun updateQuickActivities(state: RecordUiState, values: List<String>): RecordUiState =
         RecordStateReducer.updateQuickActivities(state, values)
 
     fun updateAssistUiState(
         state: RecordUiState,
-        assistExpanded: Boolean,
         assistSettingsExpanded: Boolean
     ): RecordUiState = RecordStateReducer.updateAssistUiState(
         state = state,
-        assistExpanded = assistExpanded,
         assistSettingsExpanded = assistSettingsExpanded
     )
+
+    fun updateCollapsedCanonicalRootPaths(
+        state: RecordUiState,
+        paths: Set<String>
+    ): RecordUiState = RecordStateReducer.updateCollapsedCanonicalRootPaths(state, paths)
+
+    fun updateOrderedCanonicalRootPaths(
+        state: RecordUiState,
+        paths: List<String>
+    ): RecordUiState = RecordStateReducer.updateOrderedCanonicalRootPaths(state, paths)
 
     fun hideSuggestions(state: RecordUiState): RecordUiState =
         RecordStateReducer.hideSuggestions(state)
 
     fun showSuggestionsLoading(state: RecordUiState): RecordUiState =
         RecordStateReducer.showSuggestionsLoading(state)
+
+    fun hideCanonicalCatalog(state: RecordUiState): RecordUiState =
+        RecordStateReducer.hideCanonicalCatalog(state)
+
+    fun showCanonicalCatalogLoading(state: RecordUiState): RecordUiState =
+        RecordStateReducer.showCanonicalCatalogLoading(state)
 
     suspend fun loadActivitySuggestions(state: RecordUiState): RecordUiState =
         useCaseCaller.loadActivitySuggestions(
@@ -76,8 +100,21 @@ internal class RecordIntentHandler(
             topN = state.suggestionTopN
         )
 
-    fun applySuggestedActivity(state: RecordUiState, activityName: String): RecordUiState =
-        RecordStateReducer.applySuggestedActivity(state, activityName)
+    suspend fun loadCanonicalCatalog(state: RecordUiState): RecordUiState =
+        useCaseCaller.loadCanonicalCatalog(state)
+
+    suspend fun applySuggestedActivity(
+        state: RecordUiState,
+        suggestedActivityToken: String
+    ): RecordUiState = useCaseCaller.applySuggestedActivity(
+        state = state,
+        suggestedActivityToken = suggestedActivityToken
+    )
+
+    fun applyCanonicalCatalogEntry(
+        state: RecordUiState,
+        token: String
+    ): RecordUiState = RecordStateReducer.applyCanonicalCatalogEntry(state, token)
 
     fun setStatusText(state: RecordUiState, message: String): RecordUiState =
         RecordStateReducer.setStatusText(state, message)

@@ -1,8 +1,11 @@
 package com.example.tracer
 
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
+import java.time.Clock
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
+import java.time.temporal.WeekFields
 import java.util.Locale
 
 sealed class QueryResult {
@@ -16,9 +19,7 @@ sealed class QueryResult {
         val nodes: List<TreeNode>,
         val found: Boolean,
         val roots: List<String> = emptyList(),
-        val message: String = "",
-        val fallbackText: String = "",
-        val usesTextFallback: Boolean = false
+        val message: String = ""
     ) : QueryResult()
 }
 
@@ -57,7 +58,10 @@ data class QueryReportUiState(
     val statsPeriod: DataTreePeriod = DataTreePeriod.RECENT,
     val treePeriod: DataTreePeriod = DataTreePeriod.RECENT,
     val resultDisplayMode: ReportResultDisplayMode = ReportResultDisplayMode.TEXT,
+    val parameterSection: ReportParameterSection = ReportParameterSection.DAY,
     val chartSemanticMode: ReportChartSemanticMode = ReportChartSemanticMode.COMPOSITION,
+    val preferredChartSemanticMode: ReportChartSemanticMode =
+        ReportChartSemanticMode.COMPOSITION,
     val compositionVisualMode: ReportCompositionVisualMode =
         ReportCompositionVisualMode.HORIZONTAL_BAR,
     val trendChartRoots: List<String> = emptyList(),
@@ -81,21 +85,55 @@ data class QueryReportUiState(
     val statusText: String = ""
 )
 
-private fun currentDateDigits(): String =
-    SimpleDateFormat("yyyyMMdd", Locale.US).format(Date())
+internal fun initialQueryReportUiState(
+    clock: Clock = Clock.systemDefaultZone()
+): QueryReportUiState = QueryReportUiState(
+    reportDate = currentDateDigits(clock),
+    reportMonth = currentMonthDigits(clock),
+    reportYear = currentIsoYear(clock),
+    reportWeek = currentWeekDigits(clock),
+    reportRangeStartDate = currentMonthStartDateDigits(clock),
+    reportRangeEndDate = currentDateDigits(clock)
+)
 
-private fun currentMonthDigits(): String =
-    SimpleDateFormat("yyyyMM", Locale.US).format(Date())
+internal fun currentDateDigits(clock: Clock = Clock.systemDefaultZone()): String =
+    resolveCurrentReportLogicalDate(clock).format(QUERY_REPORT_DAY_FORMATTER)
 
-private fun currentIsoYear(): String =
-    Calendar.getInstance().get(Calendar.YEAR).toString()
+private fun currentMonthDigits(clock: Clock = Clock.systemDefaultZone()): String =
+    YearMonth.from(resolveCurrentReportLogicalDate(clock)).format(QUERY_REPORT_MONTH_FORMATTER)
 
-private fun currentWeekDigits(): String =
-    SimpleDateFormat("YYYYww", Locale.US).format(Date())
+private fun currentIsoYear(clock: Clock = Clock.systemDefaultZone()): String =
+    resolveCurrentReportLogicalDate(clock).year.toString()
 
-private fun currentMonthStartDateDigits(): String {
-    val cal = Calendar.getInstance().apply {
-        set(Calendar.DAY_OF_MONTH, 1)
+private fun currentWeekDigits(clock: Clock = Clock.systemDefaultZone()): String =
+    resolveCurrentReportLogicalDate(clock).let { date ->
+        // Core reporting uses ISO 8601 weeks. Do not replace this with the
+        // locale-dependent `YYYYww` formatter: near year boundaries it can
+        // produce a different week-based year and an unqueryable target.
+        val isoWeekFields = WeekFields.ISO
+        String.format(
+            Locale.US,
+            "%04d%02d",
+            date.get(isoWeekFields.weekBasedYear()),
+            date.get(isoWeekFields.weekOfWeekBasedYear())
+        )
     }
-    return SimpleDateFormat("yyyyMMdd", Locale.US).format(cal.time)
+
+private fun currentMonthStartDateDigits(clock: Clock = Clock.systemDefaultZone()): String =
+    YearMonth.from(resolveCurrentReportLogicalDate(clock))
+        .atDay(1)
+        .format(QUERY_REPORT_DAY_FORMATTER)
+
+private fun resolveCurrentReportLogicalDate(clock: Clock): LocalDate {
+    val now = LocalDate.now(clock)
+    val localTime = LocalTime.now(clock)
+    return if (localTime.isBefore(QUERY_REPORT_LOGICAL_DAY_CUTOFF)) {
+        now.minusDays(1)
+    } else {
+        now
+    }
 }
+
+private val QUERY_REPORT_LOGICAL_DAY_CUTOFF: LocalTime = LocalTime.of(6, 0)
+private val QUERY_REPORT_DAY_FORMATTER: DateTimeFormatter = DateTimeFormatter.BASIC_ISO_DATE
+private val QUERY_REPORT_MONTH_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMM")

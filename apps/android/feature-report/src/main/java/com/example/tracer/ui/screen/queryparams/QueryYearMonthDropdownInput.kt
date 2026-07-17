@@ -45,7 +45,7 @@ internal fun QueryYearMonthDropdownInput(
     var monthExpanded by remember { mutableStateOf(false) }
 
     Text(
-        text = "$title (YYYY-MM)",
+        text = title,
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant
     )

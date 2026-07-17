@@ -35,7 +35,7 @@ internal fun SegmentedAnalysisPeriodInputs(
     onReportDateChange: (String) -> Unit,
     reportMonth: String,
     onReportMonthChange: (String) -> Unit,
-    availableTxtYears: List<String>,
+    calendarAvailability: com.example.tracer.ui.components.CalendarAvailability,
     reportYear: String,
     onReportYearChange: (String) -> Unit,
     reportWeek: String,
@@ -63,7 +63,7 @@ internal fun SegmentedAnalysisPeriodInputs(
         onReportDateChange = onReportDateChange,
         reportMonth = reportMonth,
         onReportMonthChange = onReportMonthChange,
-        availableTxtYears = availableTxtYears,
+        calendarAvailability = calendarAvailability,
         reportYear = reportYear,
         onReportYearChange = onReportYearChange,
         reportWeek = reportWeek,
@@ -126,6 +126,23 @@ internal fun ExpandableParameterCard(
                     content()
                 }
             }
+        }
+    }
+}
+
+@Composable
+internal fun ParameterContentCard(
+    content: @Composable () -> Unit
+) {
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.extraLarge
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            content()
         }
     }
 }

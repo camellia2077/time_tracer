@@ -4,6 +4,7 @@ import android.graphics.Color as AndroidColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 
 private const val OTHERS_ROOT = "Others"
 
@@ -24,9 +25,7 @@ internal fun resolveCompositionSliceColor(
     }
     // Pie and bar share the same root-color mapping so a root keeps one stable color
     // across day composition views instead of drifting when users switch visuals.
-    val palette = reportPiePaletteHexColors(palettePreset)
-        .mapNotNull(::parsePiePaletteHexColor)
-        .ifEmpty { listOf(Color(0xFF4F46E5)) }
+    val palette = resolveReportBreakdownPaletteColors(palettePreset)
     val paletteIndex = slice.root.hashCode().mod(palette.size)
     return palette[paletteIndex]
 }
@@ -35,20 +34,68 @@ internal fun resolveCompositionSliceColor(
 internal fun rememberPieSliceColors(
     slices: List<ReportCompositionSlice>,
     palettePreset: ReportPiePalettePreset
-): List<Color> = rememberCompositionSliceColors(
-    slices = slices,
-    palettePreset = palettePreset
-)
+): List<Color> = remember(slices, palettePreset) {
+    resolveAdjacentPieSliceColors(slices, palettePreset)
+}
 
 internal fun resolvePieSliceColor(
     slice: ReportCompositionSlice,
     palettePreset: ReportPiePalettePreset
 ): Color = resolveCompositionSliceColor(slice = slice, palettePreset = palettePreset)
 
-internal fun resolvePiePalettePreviewColors(
+internal fun resolveAdjacentPieSliceColors(
+    slices: List<ReportCompositionSlice>,
+    palettePreset: ReportPiePalettePreset
+): List<Color> {
+    val palette = resolveReportBreakdownPaletteColors(palettePreset)
+    // Preserve draw order while deriving palette positions from the actual weight.
+    // Ties keep their input order, making equal slices deterministic as well.
+    val rankBySliceIndex = IntArray(slices.size)
+    slices.indices
+        .sortedWith(compareByDescending<Int> { slices[it].durationSeconds }.thenBy { it })
+        .forEachIndexed { rank, sliceIndex -> rankBySliceIndex[sliceIndex] = rank }
+    return buildList {
+        slices.forEachIndexed { index, slice ->
+            val baseColor = palette[rankBySliceIndex[index].mod(palette.size)]
+            val previousColor = lastOrNull()
+            val firstColor = firstOrNull()
+            val forbidden = buildSet {
+                previousColor?.let(::add)
+                if (index == slices.lastIndex) {
+                    firstColor?.let(::add)
+                }
+            }
+            add(resolveNonAdjacentPieColor(baseColor, forbidden, palette))
+        }
+    }
+}
+
+private fun resolveNonAdjacentPieColor(
+    baseColor: Color,
+    forbidden: Set<Color>,
+    palette: List<Color>
+): Color {
+    if (baseColor !in forbidden) {
+        return baseColor
+    }
+    palette.firstOrNull { it !in forbidden }?.let { return it }
+
+    val hsv = FloatArray(3)
+    AndroidColor.colorToHSV(baseColor.toArgb(), hsv)
+    hsv[0] = (hsv[0] + 137f) % 360f
+    hsv[1] = (hsv[1] * 0.9f).coerceIn(0.45f, 1f)
+    return Color(AndroidColor.HSVToColor(hsv))
+}
+
+internal fun resolveReportBreakdownPaletteColors(
     palettePreset: ReportPiePalettePreset
 ): List<Color> = reportPiePaletteHexColors(palettePreset)
     .mapNotNull(::parsePiePaletteHexColor)
+    .ifEmpty { listOf(Color(0xFF4F46E5), Color(0xFF0F766E), Color(0xFFB45309)) }
+
+internal fun resolvePiePalettePreviewColors(
+    palettePreset: ReportPiePalettePreset
+): List<Color> = resolveReportBreakdownPaletteColors(palettePreset)
 
 private fun parsePiePaletteHexColor(raw: String): Color? =
     runCatching { Color(AndroidColor.parseColor(raw.trim())) }.getOrNull()

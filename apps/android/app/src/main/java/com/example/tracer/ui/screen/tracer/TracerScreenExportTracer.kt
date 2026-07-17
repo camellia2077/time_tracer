@@ -5,6 +5,7 @@ import android.net.Uri
 import android.provider.DocumentsContract
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import java.io.OutputStreamWriter
 
 internal data class TracerBatchCryptoExportResult(
     val message: String,
@@ -15,8 +16,8 @@ private const val TRACER_EXCHANGE_EXPORT_ROOT_NAME = "data"
 private const val TRACER_EXCHANGE_EXPORT_FILE_NAME = "data.tracer"
 private const val TRACER_EXCHANGE_STAGE_COUNT = 2
 
-// Android only exposes complete exchange package export to users.
-// Do not reintroduce TXT-only or TOML-only export flows here.
+// Complete exchange export remains encrypted .tracer; current TXT export is a
+// plain ZIP for easy human-side backup and sharing.
 internal suspend fun exportAllMonthsTracerToTree(
     context: Context,
     treeUri: Uri,
@@ -32,11 +33,8 @@ internal suspend fun exportAllMonthsTracerToTree(
     val partialText = context.getString(R.string.tracer_progress_status_partial)
     var progressStatusText = failedText
     val message = runCatching {
-        val monthKeys = recordUiState.availableMonths.sorted()
-        if (monthKeys.isEmpty()) {
-            return@runCatching context.getString(R.string.tracer_export_all_failed_no_months)
-        }
-
+        // Complete exchange export must include every valid TXT month from
+        // storage, even when the Record tab currently has only one month open.
         val exportItems = buildMonthExportItems(
             context = context,
             recordUiState = recordUiState,
@@ -72,7 +70,7 @@ internal suspend fun exportAllMonthsTracerToTree(
             return@runCatching buildTracerExchangeExportSummary(
                 context = context,
                 exportedTxtCount = 0,
-                totalTxtCount = monthKeys.size,
+                totalTxtCount = exportItems.totalCount,
                 converterFileCount = 0,
                 manifestFileCount = 0,
                 errors = exportItems.errors
@@ -96,7 +94,7 @@ internal suspend fun exportAllMonthsTracerToTree(
             return@runCatching buildTracerExchangeExportSummary(
                 context = context,
                 exportedTxtCount = 0,
-                totalTxtCount = monthKeys.size,
+                totalTxtCount = exportItems.totalCount,
                 converterFileCount = 0,
                 manifestFileCount = 0,
                 errors = exportItems.errors + context.getString(
@@ -115,7 +113,7 @@ internal suspend fun exportAllMonthsTracerToTree(
             return@runCatching buildTracerExchangeExportSummary(
                 context = context,
                 exportedTxtCount = 0,
-                totalTxtCount = monthKeys.size,
+                totalTxtCount = exportItems.totalCount,
                 converterFileCount = 0,
                 manifestFileCount = 0,
                 errors = exportItems.errors + context.getString(
@@ -195,7 +193,7 @@ internal suspend fun exportAllMonthsTracerToTree(
             buildTracerExchangeExportSummary(
                 context = context,
                 exportedTxtCount = exportResult.payloadFileCount,
-                totalTxtCount = monthKeys.size,
+                totalTxtCount = exportItems.totalCount,
                 converterFileCount = exportResult.converterFileCount,
                 manifestFileCount = if (exportResult.manifestIncluded) 1 else 0,
                 errors = exportItems.errors
@@ -213,6 +211,144 @@ internal suspend fun exportAllMonthsTracerToTree(
         message = message,
         progressStatusText = progressStatusText
     )
+}
+
+internal suspend fun exportCurrentTxtZipToTree(
+    context: Context,
+    treeUri: Uri,
+    recordUiState: RecordUiState,
+    txtStorageGateway: TxtStorageGateway,
+    configGateway: ConfigGateway
+): String {
+    return runCatching {
+        val txtInspection = txtStorageGateway.inspectTxtFiles()
+        if (!txtInspection.ok) {
+            return@runCatching context.getString(
+                R.string.tracer_export_current_txt_failed,
+                txtInspection.message
+            )
+        }
+        val txtPaths = txtInspection.entries
+            .filter { it.canOpen }
+            .map { it.relativePath.replace('\\', '/') }
+            .distinct()
+            .sorted()
+
+        val configListResult = configGateway.listConfigTomlFiles()
+        if (!configListResult.ok) {
+            return@runCatching context.getString(
+                R.string.tracer_export_current_txt_failed,
+                configListResult.message
+            )
+        }
+        val configPaths = (
+            configListResult.converterFiles +
+                configListResult.chartFiles +
+                configListResult.metaFiles +
+                configListResult.reportFiles
+            )
+            .map { it.relativePath.replace('\\', '/') }
+            .distinct()
+            .sorted()
+
+        if (txtPaths.isEmpty() && configPaths.isEmpty()) {
+            return@runCatching context.getString(R.string.tracer_export_current_txt_failed_no_selection)
+        }
+        val treeDocumentId = DocumentsContract.getTreeDocumentId(treeUri)
+        val rootDocumentUri = DocumentsContract.buildDocumentUriUsingTree(
+            treeUri,
+            treeDocumentId
+        )
+
+        txtPaths.forEach { relativePath ->
+            val content = if (recordUiState.selectedHistoryFile.replace('\\', '/') == relativePath) {
+                recordUiState.editableHistoryContent
+            } else {
+                val readResult = txtStorageGateway.readTxtFile(relativePath)
+                if (!readResult.ok) {
+                    error(
+                        context.getString(
+                            R.string.tracer_export_error_read_failed,
+                            relativePath,
+                            readResult.message
+                        )
+                    )
+                }
+                readResult.content
+            }
+            writeTextDocumentToTree(
+                context = context,
+                treeUri = treeUri,
+                rootDocumentUri = rootDocumentUri,
+                relativePath = "txt/$relativePath",
+                content = content
+            )
+        }
+
+        configPaths.forEach { relativePath ->
+            val readResult = configGateway.readConfigTomlFile(relativePath)
+            if (!readResult.ok) {
+                error(
+                    context.getString(
+                        R.string.tracer_export_error_read_failed,
+                        relativePath,
+                        readResult.message
+                    )
+                )
+            }
+            writeTextDocumentToTree(
+                context = context,
+                treeUri = treeUri,
+                rootDocumentUri = rootDocumentUri,
+                relativePath = "config/$relativePath",
+                content = readResult.content
+            )
+        }
+
+        context.getString(
+            R.string.tracer_export_current_txt_completed,
+            txtPaths.size,
+            configPaths.size
+        )
+    }.getOrElse { error ->
+        context.getString(
+            R.string.tracer_export_current_txt_failed,
+            error.message ?: context.getString(R.string.tracer_export_unknown_error)
+        )
+    }
+}
+
+private fun writeTextDocumentToTree(
+    context: Context,
+    treeUri: Uri,
+    rootDocumentUri: Uri,
+    relativePath: String,
+    content: String
+) {
+    val normalizedPath = relativePath.replace('\\', '/').trim('/')
+    val parentRelativePath = normalizedPath.substringBeforeLast('/', "")
+    val fileName = normalizedPath.substringAfterLast('/').ifBlank {
+        error("Invalid export path: $relativePath")
+    }
+    val parentDocumentUri = resolveOrCreateDirectoryPath(
+        contentResolver = context.contentResolver,
+        treeUri = treeUri,
+        rootDocumentUri = rootDocumentUri,
+        relativeDirectoryPath = parentRelativePath
+    ) ?: error("Failed to create export directory for $relativePath")
+    val outputUri = resolveOrCreateDocumentForOverwrite(
+        contentResolver = context.contentResolver,
+        treeUri = treeUri,
+        parentDocumentUri = parentDocumentUri,
+        fileName = fileName,
+        mimeType = "text/plain"
+    ) ?: error(context.getString(R.string.tracer_export_error_create_target_file, fileName))
+    context.contentResolver.openOutputStream(outputUri, "wt")?.use { output ->
+        OutputStreamWriter(output, Charsets.UTF_8).use { writer ->
+            writer.write(content)
+            writer.flush()
+        }
+    } ?: error(context.getString(R.string.tracer_export_error_write_failed, fileName))
 }
 
 private fun buildTracerExchangeExportSummary(

@@ -116,12 +116,12 @@ internal class ConfigTomlStorage(private val configRootPath: String) {
                 message = "TOML path is outside config root."
             )
         }
-        if (!target.exists() || !target.isFile) {
+        if (target.exists() && !target.isFile) {
             return TxtFileContentResult(
                 ok = false,
                 filePath = requested,
                 content = "",
-                message = "TOML file not found."
+                message = "TOML path is not a file."
             )
         }
 
@@ -136,6 +136,7 @@ internal class ConfigTomlStorage(private val configRootPath: String) {
             )
         }
         runCatching {
+            target.parentFile?.mkdirs()
             CanonicalTextCodec.writeFile(target, canonicalContent)
         }.getOrElse { error ->
             return TxtFileContentResult(
@@ -150,6 +151,49 @@ internal class ConfigTomlStorage(private val configRootPath: String) {
             filePath = relative.invariantSeparatorsPath,
             content = canonicalContent,
             message = "Save TOML success."
+        )
+    }
+
+    fun deleteTomlFile(relativePath: String): TxtFileContentResult {
+        val requested = normalizeRequestedPath(relativePath)
+            ?: return TxtFileContentResult(
+                ok = false,
+                filePath = relativePath,
+                content = "",
+                message = "TOML file path is invalid."
+            )
+        val root = File(configRootPath).canonicalFile
+        val target = File(root, requested).canonicalFile
+        val relative = target.relativeToOrNull(root)
+        if (relative == null) {
+            return TxtFileContentResult(
+                ok = false,
+                filePath = requested,
+                content = "",
+                message = "TOML path is outside config root."
+            )
+        }
+        if (!target.exists() || !target.isFile) {
+            return TxtFileContentResult(
+                ok = false,
+                filePath = requested,
+                content = "",
+                message = "TOML file not found."
+            )
+        }
+        if (!target.delete()) {
+            return TxtFileContentResult(
+                ok = false,
+                filePath = relative.invariantSeparatorsPath,
+                content = "",
+                message = "Cannot delete TOML file."
+            )
+        }
+        return TxtFileContentResult(
+            ok = true,
+            filePath = relative.invariantSeparatorsPath,
+            content = "",
+            message = "Delete TOML success."
         )
     }
 

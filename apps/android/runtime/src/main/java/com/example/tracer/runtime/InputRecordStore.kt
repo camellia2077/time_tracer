@@ -9,7 +9,7 @@ import java.util.Locale
 internal class InputRecordStore {
     private val appMonthFileFormatter = SimpleDateFormat("yyyy-MM", Locale.US)
     private val dayMarkerFormatter = SimpleDateFormat("MMdd", Locale.US)
-    private val hhmmFormatter = SimpleDateFormat("HHmm", Locale.US)
+    private val hhmmssFormatter = SimpleDateFormat("HHmmss", Locale.US)
     private val txtFileStore = InputTxtFileStore()
     private val normalization = LiveRawRecordNormalization()
     private val parsing = LiveRawRecordParsing(normalization)
@@ -56,7 +56,7 @@ internal class InputRecordStore {
             ?: throw IllegalArgumentException("Invalid logicalDate format: $logicalDateString")
 
         val dayMarker = dayMarkerFormatter.format(logicalDate)
-        val eventTime = hhmmFormatter.format(now)
+        val eventTime = hhmmssFormatter.format(now)
         val monthFile = resolveTargetMonthFile(
             inputRootPath = inputRootPath,
             logicalDate = logicalDate,
@@ -80,7 +80,7 @@ internal class InputRecordStore {
 
         val warnings = mutableListOf<String>()
         if (insertResult.duplicateSuspected) {
-            warnings += "Possible duplicate record: same HHmm and activity already exists in this day."
+            warnings += "Possible duplicate record: same HHmmss and activity already exists in this day."
         }
         resolveCompletenessWarningForDayContent(
             content = monthFile.readText(),
@@ -171,7 +171,8 @@ internal class InputRecordStore {
         wakeKeywords: Set<String> = emptySet()
     ): String? {
         val lines = content.lineSequence().toList()
-        val blockStart = lines.indexOfFirst { it.trim() == dayMarker }
+        val dayMarkerLine = buildDayMarkerLine(dayMarker)
+        val blockStart = lines.indexOfFirst { it.trim() == dayMarkerLine }
         if (blockStart < 0 || !parsing.isDayMarker(lines[blockStart])) {
             return null
         }
@@ -194,6 +195,10 @@ internal class InputRecordStore {
             WarningKind.NONE -> null
         }
     }
+
+    // Keep Android/runtime APIs on MMDD for day identity; add the TXT-only "d"
+    // prefix only when matching the raw month-file day-block header.
+    private fun buildDayMarkerLine(dayMarker: String): String = "d$dayMarker"
 
     private fun buildRawEventLine(hhmm: String, activity: String, remark: String): String {
         return persistence.buildRawEventLine(hhmm, activity, remark)

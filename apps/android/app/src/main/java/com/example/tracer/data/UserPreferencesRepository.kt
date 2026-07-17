@@ -12,7 +12,11 @@ import com.example.tracer.PersistedRecordInputDraft
 import com.example.tracer.PersistedRecordInputSnapshot
 import com.example.tracer.RecordAuthoringMode
 import com.example.tracer.RecordLogicalDayTarget
+import com.example.tracer.RecordSuggestionOutputMode
+import com.example.tracer.ReportChartSemanticMode
+import com.example.tracer.ReportParameterSection
 import com.example.tracer.ReportPiePalettePreset
+import com.example.tracer.ReportResultDisplayMode
 import com.example.tracer.defaultReportPiePalettePreset
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -71,27 +75,45 @@ data class ThemeConfig(
 data class RecordSuggestionPreferences(
     val lookbackDays: Int,
     val topN: Int,
+    val outputMode: RecordSuggestionOutputMode,
+    val canonicalCatalogDisplayMode: RecordSuggestionOutputMode,
     val quickActivities: List<String>,
-    val assistExpanded: Boolean,
-    val assistSettingsExpanded: Boolean
+    val assistSettingsExpanded: Boolean,
+    val collapsedCanonicalRootPaths: Set<String>,
+    val orderedCanonicalRootPaths: List<String>
 )
 
 class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
     companion object {
         const val DEFAULT_RECORD_SUGGEST_LOOKBACK_DAYS: Int = 7
         const val DEFAULT_RECORD_SUGGEST_TOP_N: Int = 5
+        val DEFAULT_RECORD_SUGGEST_OUTPUT_MODE: RecordSuggestionOutputMode =
+            RecordSuggestionOutputMode.CANONICAL
+        val DEFAULT_RECORD_CANONICAL_CATALOG_DISPLAY_MODE: RecordSuggestionOutputMode =
+            RecordSuggestionOutputMode.CANONICAL
         val DEFAULT_RECORD_QUICK_ACTIVITIES: List<String> = listOf("meal", "洗漱", "上厕所")
         const val DEFAULT_REPORT_CHART_SHOW_AVERAGE_LINE: Boolean = false
+        val DEFAULT_REPORT_CHART_SEMANTIC_MODE: ReportChartSemanticMode =
+            ReportChartSemanticMode.COMPOSITION
+        val DEFAULT_REPORT_RESULT_DISPLAY_MODE: ReportResultDisplayMode =
+            ReportResultDisplayMode.TEXT
+        val DEFAULT_REPORT_PARAMETER_SECTION: ReportParameterSection =
+            ReportParameterSection.DAY
         val DEFAULT_REPORT_PIE_PALETTE_PRESET: ReportPiePalettePreset =
             defaultReportPiePalettePreset()
-        private const val MIN_RECORD_SUGGEST_LOOKBACK_DAYS: Int = 1
+        private const val MIN_RECORD_SUGGEST_LOOKBACK_DAYS: Int = 0
         private const val MAX_RECORD_SUGGEST_LOOKBACK_DAYS: Int = 60
-        private const val MIN_RECORD_SUGGEST_TOP_N: Int = 1
+        private const val MIN_RECORD_SUGGEST_TOP_N: Int = 0
         private const val MAX_RECORD_SUGGEST_TOP_N: Int = 20
         private const val MAX_RECORD_QUICK_ACTIVITY_COUNT: Int = 12
         private const val MAX_RECORD_QUICK_ACTIVITY_LENGTH: Int = 40
-        const val DEFAULT_RECORD_ASSIST_EXPANDED: Boolean = false
         const val DEFAULT_RECORD_ASSIST_SETTINGS_EXPANDED: Boolean = false
+        val DEFAULT_COLLAPSED_CANONICAL_ROOT_PATHS: Set<String> = emptySet()
+        val DEFAULT_ORDERED_CANONICAL_ROOT_PATHS: List<String> = emptyList()
+        private const val MAX_COLLAPSED_CANONICAL_ROOT_COUNT: Int = 64
+        private const val MAX_COLLAPSED_CANONICAL_ROOT_LENGTH: Int = 120
+        private const val MAX_ORDERED_CANONICAL_ROOT_COUNT: Int = 64
+        private const val MAX_ORDERED_CANONICAL_ROOT_LENGTH: Int = 120
     }
 
     private object PreferencesKeys {
@@ -102,9 +124,15 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         val APP_LANGUAGE = stringPreferencesKey("app_language")
         val RECORD_SUGGEST_LOOKBACK_DAYS = intPreferencesKey("record_suggest_lookback_days")
         val RECORD_SUGGEST_TOP_N = intPreferencesKey("record_suggest_top_n")
+        val RECORD_SUGGEST_OUTPUT_MODE = stringPreferencesKey("record_suggest_output_mode")
+        val RECORD_CANONICAL_CATALOG_DISPLAY_MODE =
+            stringPreferencesKey("record_canonical_catalog_display_mode")
         val RECORD_QUICK_ACTIVITIES = stringPreferencesKey("record_quick_activities")
-        val RECORD_ASSIST_EXPANDED = booleanPreferencesKey("record_assist_expanded")
         val RECORD_ASSIST_SETTINGS_EXPANDED = booleanPreferencesKey("record_assist_settings_expanded")
+        val RECORD_COLLAPSED_CANONICAL_ROOT_PATHS =
+            stringPreferencesKey("record_collapsed_canonical_root_paths")
+        val RECORD_ORDERED_CANONICAL_ROOT_PATHS =
+            stringPreferencesKey("record_ordered_canonical_root_paths")
         val RECORD_LAST_AUTHORING_MODE = stringPreferencesKey("record_last_authoring_mode")
         val RECORD_DRAFT_PRESENT = booleanPreferencesKey("record_draft_present")
         val RECORD_DRAFT_CONTENT = stringPreferencesKey("record_draft_content")
@@ -113,6 +141,9 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         val RECORD_DRAFT_INTERVAL_END = stringPreferencesKey("record_draft_interval_end")
         val RECORD_DRAFT_LOGICAL_DAY_TARGET = stringPreferencesKey("record_draft_logical_day_target")
         val REPORT_CHART_SHOW_AVERAGE_LINE = booleanPreferencesKey("report_chart_show_average_line")
+        val REPORT_CHART_SEMANTIC_MODE = stringPreferencesKey("report_chart_semantic_mode")
+        val REPORT_RESULT_DISPLAY_MODE = stringPreferencesKey("report_result_display_mode")
+        val REPORT_PARAMETER_SECTION = stringPreferencesKey("report_parameter_section")
         val REPORT_PIE_PALETTE_PRESET = stringPreferencesKey("report_pie_palette_preset")
     }
 
@@ -141,22 +172,37 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             ?: DEFAULT_RECORD_SUGGEST_LOOKBACK_DAYS
         val storedTopN = preferences[PreferencesKeys.RECORD_SUGGEST_TOP_N]
             ?: DEFAULT_RECORD_SUGGEST_TOP_N
+        val storedOutputMode = preferences[PreferencesKeys.RECORD_SUGGEST_OUTPUT_MODE]
+            ?: DEFAULT_RECORD_SUGGEST_OUTPUT_MODE.name
+        val storedCanonicalCatalogDisplayMode =
+            preferences[PreferencesKeys.RECORD_CANONICAL_CATALOG_DISPLAY_MODE]
+                ?: DEFAULT_RECORD_CANONICAL_CATALOG_DISPLAY_MODE.name
         val hasStoredQuickActivities = preferences.contains(PreferencesKeys.RECORD_QUICK_ACTIVITIES)
         val quickActivities = parseQuickActivities(
             raw = preferences[PreferencesKeys.RECORD_QUICK_ACTIVITIES],
             hasStoredValue = hasStoredQuickActivities
         )
-        val assistExpanded = preferences[PreferencesKeys.RECORD_ASSIST_EXPANDED]
-            ?: DEFAULT_RECORD_ASSIST_EXPANDED
         val assistSettingsExpanded = preferences[PreferencesKeys.RECORD_ASSIST_SETTINGS_EXPANDED]
             ?: DEFAULT_RECORD_ASSIST_SETTINGS_EXPANDED
+        val collapsedCanonicalRootPaths = parseCollapsedCanonicalRootPaths(
+            preferences[PreferencesKeys.RECORD_COLLAPSED_CANONICAL_ROOT_PATHS]
+        )
+        val orderedCanonicalRootPaths = parseOrderedCanonicalRootPaths(
+            preferences[PreferencesKeys.RECORD_ORDERED_CANONICAL_ROOT_PATHS]
+        )
 
         RecordSuggestionPreferences(
             lookbackDays = normalizeLookbackDays(storedLookbackDays),
             topN = normalizeTopN(storedTopN),
+            outputMode = runCatching { RecordSuggestionOutputMode.valueOf(storedOutputMode) }
+                .getOrDefault(DEFAULT_RECORD_SUGGEST_OUTPUT_MODE),
+            canonicalCatalogDisplayMode = runCatching {
+                RecordSuggestionOutputMode.valueOf(storedCanonicalCatalogDisplayMode)
+            }.getOrDefault(DEFAULT_RECORD_CANONICAL_CATALOG_DISPLAY_MODE),
             quickActivities = quickActivities,
-            assistExpanded = assistExpanded,
-            assistSettingsExpanded = assistSettingsExpanded
+            assistSettingsExpanded = assistSettingsExpanded,
+            collapsedCanonicalRootPaths = collapsedCanonicalRootPaths,
+            orderedCanonicalRootPaths = orderedCanonicalRootPaths
         )
     }
 
@@ -241,6 +287,39 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         }
     }
 
+    suspend fun setRecordSuggestOutputMode(value: RecordSuggestionOutputMode) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.RECORD_SUGGEST_OUTPUT_MODE] = value.name
+        }
+    }
+
+    val reportChartSemanticMode: Flow<ReportChartSemanticMode> = dataStore.data.map { preferences ->
+        val rawValue = preferences[PreferencesKeys.REPORT_CHART_SEMANTIC_MODE]
+            ?: DEFAULT_REPORT_CHART_SEMANTIC_MODE.name
+        runCatching { ReportChartSemanticMode.valueOf(rawValue) }
+            .getOrDefault(DEFAULT_REPORT_CHART_SEMANTIC_MODE)
+    }
+
+    val reportResultDisplayMode: Flow<ReportResultDisplayMode> = dataStore.data.map { preferences ->
+        val rawValue = preferences[PreferencesKeys.REPORT_RESULT_DISPLAY_MODE]
+            ?: DEFAULT_REPORT_RESULT_DISPLAY_MODE.name
+        runCatching { ReportResultDisplayMode.valueOf(rawValue) }
+            .getOrDefault(DEFAULT_REPORT_RESULT_DISPLAY_MODE)
+    }
+
+    val reportParameterSection: Flow<ReportParameterSection> = dataStore.data.map { preferences ->
+        val rawValue = preferences[PreferencesKeys.REPORT_PARAMETER_SECTION]
+            ?: DEFAULT_REPORT_PARAMETER_SECTION.name
+        runCatching { ReportParameterSection.valueOf(rawValue) }
+            .getOrDefault(DEFAULT_REPORT_PARAMETER_SECTION)
+    }
+
+    suspend fun setRecordCanonicalCatalogDisplayMode(value: RecordSuggestionOutputMode) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.RECORD_CANONICAL_CATALOG_DISPLAY_MODE] = value.name
+        }
+    }
+
     suspend fun setRecordQuickActivities(values: List<String>) {
         dataStore.edit { preferences ->
             val normalized = normalizeQuickActivities(values)
@@ -249,15 +328,23 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         }
     }
 
-    suspend fun setRecordAssistExpanded(value: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.RECORD_ASSIST_EXPANDED] = value
-        }
-    }
-
     suspend fun setRecordAssistSettingsExpanded(value: Boolean) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.RECORD_ASSIST_SETTINGS_EXPANDED] = value
+        }
+    }
+
+    suspend fun setRecordCollapsedCanonicalRootPaths(values: Set<String>) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.RECORD_COLLAPSED_CANONICAL_ROOT_PATHS] =
+                normalizeCollapsedCanonicalRootPaths(values).joinToString(separator = "\n")
+        }
+    }
+
+    suspend fun setRecordOrderedCanonicalRootPaths(values: List<String>) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.RECORD_ORDERED_CANONICAL_ROOT_PATHS] =
+                normalizeOrderedCanonicalRootPaths(values).joinToString(separator = "\n")
         }
     }
 
@@ -341,6 +428,78 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             }
             unique += limited
             if (unique.size >= MAX_RECORD_QUICK_ACTIVITY_COUNT) {
+                break
+            }
+        }
+        return unique.toList()
+    }
+
+    suspend fun setReportChartSemanticMode(value: ReportChartSemanticMode) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.REPORT_CHART_SEMANTIC_MODE] = value.name
+        }
+    }
+
+    suspend fun setReportResultDisplayMode(value: ReportResultDisplayMode) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.REPORT_RESULT_DISPLAY_MODE] = value.name
+        }
+    }
+
+    suspend fun setReportParameterSection(value: ReportParameterSection) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.REPORT_PARAMETER_SECTION] = value.name
+        }
+    }
+
+    private fun parseCollapsedCanonicalRootPaths(raw: String?): Set<String> {
+        if (raw.isNullOrBlank()) {
+            return DEFAULT_COLLAPSED_CANONICAL_ROOT_PATHS
+        }
+        return normalizeCollapsedCanonicalRootPaths(raw.lineSequence().toList())
+    }
+
+    private fun normalizeCollapsedCanonicalRootPaths(values: Iterable<String>): Set<String> {
+        val unique = linkedSetOf<String>()
+        for (raw in values) {
+            val trimmed = raw.trim()
+            if (trimmed.isEmpty()) {
+                continue
+            }
+            val limited = if (trimmed.length > MAX_COLLAPSED_CANONICAL_ROOT_LENGTH) {
+                trimmed.take(MAX_COLLAPSED_CANONICAL_ROOT_LENGTH)
+            } else {
+                trimmed
+            }
+            unique += limited
+            if (unique.size >= MAX_COLLAPSED_CANONICAL_ROOT_COUNT) {
+                break
+            }
+        }
+        return unique
+    }
+
+    private fun parseOrderedCanonicalRootPaths(raw: String?): List<String> {
+        if (raw.isNullOrBlank()) {
+            return DEFAULT_ORDERED_CANONICAL_ROOT_PATHS
+        }
+        return normalizeOrderedCanonicalRootPaths(raw.lineSequence().toList())
+    }
+
+    private fun normalizeOrderedCanonicalRootPaths(values: Iterable<String>): List<String> {
+        val unique = linkedSetOf<String>()
+        for (raw in values) {
+            val trimmed = raw.trim()
+            if (trimmed.isEmpty()) {
+                continue
+            }
+            val limited = if (trimmed.length > MAX_ORDERED_CANONICAL_ROOT_LENGTH) {
+                trimmed.take(MAX_ORDERED_CANONICAL_ROOT_LENGTH)
+            } else {
+                trimmed
+            }
+            unique += limited
+            if (unique.size >= MAX_ORDERED_CANONICAL_ROOT_COUNT) {
                 break
             }
         }

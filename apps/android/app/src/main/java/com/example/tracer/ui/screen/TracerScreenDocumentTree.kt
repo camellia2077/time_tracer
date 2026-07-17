@@ -102,6 +102,41 @@ internal fun resolveOrCreateDocumentForOverwrite(
     }.getOrNull()
 }
 
+internal fun resolveOrCreateDirectoryPath(
+    contentResolver: ContentResolver,
+    treeUri: Uri,
+    rootDocumentUri: Uri,
+    relativeDirectoryPath: String
+): Uri? {
+    val segments = relativeDirectoryPath
+        .split('/')
+        .map { it.trim() }
+        .filter { it.isNotEmpty() }
+    var currentDocumentUri = rootDocumentUri
+    for (segment in segments) {
+        val existing = findDirectChildDocument(
+            contentResolver = contentResolver,
+            treeUri = treeUri,
+            parentDocumentUri = currentDocumentUri,
+            childName = segment
+        )
+        currentDocumentUri = if (existing != null) {
+            if (existing.mimeType != DocumentsContract.Document.MIME_TYPE_DIR) {
+                return null
+            }
+            DocumentsContract.buildDocumentUriUsingTree(treeUri, existing.documentId)
+        } else {
+            DocumentsContract.createDocument(
+                contentResolver,
+                currentDocumentUri,
+                DocumentsContract.Document.MIME_TYPE_DIR,
+                segment
+            ) ?: return null
+        }
+    }
+    return currentDocumentUri
+}
+
 internal data class TreeTextDocument(
     val documentUri: Uri,
     val relativePath: String
@@ -110,6 +145,25 @@ internal data class TreeTextDocument(
 internal fun listTextDocumentsRecursively(
     contentResolver: ContentResolver,
     treeUri: Uri
+): List<TreeTextDocument> = listDocumentsRecursively(
+    contentResolver = contentResolver,
+    treeUri = treeUri,
+    extension = ".txt"
+)
+
+internal fun listTomlDocumentsRecursively(
+    contentResolver: ContentResolver,
+    treeUri: Uri
+): List<TreeTextDocument> = listDocumentsRecursively(
+    contentResolver = contentResolver,
+    treeUri = treeUri,
+    extension = ".toml"
+)
+
+private fun listDocumentsRecursively(
+    contentResolver: ContentResolver,
+    treeUri: Uri,
+    extension: String
 ): List<TreeTextDocument> {
     val rootDocumentId = runCatching {
         DocumentsContract.getTreeDocumentId(treeUri)
@@ -121,6 +175,7 @@ internal fun listTextDocumentsRecursively(
         treeUri = treeUri,
         parentDocumentUri = rootDocumentUri,
         currentRelativeDir = "",
+        extension = extension,
         output = output
     )
     return output.sortedBy { it.relativePath }
@@ -131,6 +186,7 @@ private fun collectTextDocumentsRecursively(
     treeUri: Uri,
     parentDocumentUri: Uri,
     currentRelativeDir: String,
+    extension: String,
     output: MutableList<TreeTextDocument>
 ) {
     val children = listDirectChildDocuments(
@@ -151,12 +207,13 @@ private fun collectTextDocumentsRecursively(
                 treeUri = treeUri,
                 parentDocumentUri = childDocumentUri,
                 currentRelativeDir = nextRelativeDir,
+                extension = extension,
                 output = output
             )
             continue
         }
 
-        if (!child.displayName.endsWith(".txt", ignoreCase = true)) {
+        if (!child.displayName.endsWith(extension, ignoreCase = true)) {
             continue
         }
 

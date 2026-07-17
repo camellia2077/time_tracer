@@ -9,6 +9,9 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneId
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class QueryReportViewModelReportSyncTest {
@@ -163,7 +166,35 @@ class QueryReportViewModelReportSyncTest {
         assertEquals("2026-02-01", request?.selection?.startDate)
         assertEquals("2026-02-28", request?.selection?.endDate)
     }
+
+    @Test
+    fun refreshReportDayDefault_beforeCutoff_uses_previous_logical_day() = runTest {
+        val viewModel = QueryReportViewModel(
+            reportGateway = FakeStructuredReportGateway(),
+            queryGateway = FakeReportSyncQueryGateway(),
+            clock = fixedClock("2026-03-29T21:30:00Z", "Asia/Shanghai")
+        )
+
+        assertEquals("20260329", viewModel.uiState.reportDate)
+    }
+
+    @Test
+    fun refreshReportDayDefault_discards_previous_day_selection_when_reentering_report() = runTest {
+        val viewModel = QueryReportViewModel(
+            reportGateway = FakeStructuredReportGateway(),
+            queryGateway = FakeReportSyncQueryGateway(),
+            clock = fixedClock("2026-03-30T02:30:00Z", "Asia/Shanghai")
+        )
+
+        viewModel.onReportDateChange("20260320")
+        viewModel.refreshReportDayDefault()
+
+        assertEquals("20260330", viewModel.uiState.reportDate)
+    }
 }
+
+private fun fixedClock(instantIso: String, zoneId: String): Clock =
+    Clock.fixed(Instant.parse(instantIso), ZoneId.of(zoneId))
 
 private class FakeStructuredReportGateway : ReportGateway {
     var dayResult: ReportCallResult = successResult()
@@ -197,7 +228,8 @@ private class FakeStructuredReportGateway : ReportGateway {
 private class FakeReportSyncQueryGateway : QueryGateway {
     override suspend fun queryActivitySuggestions(
         lookbackDays: Int,
-        topN: Int
+        topN: Int,
+        anchorDateIso: String?
     ): ActivitySuggestionResult = ActivitySuggestionResult(
         ok = true,
         suggestions = emptyList(),
@@ -212,9 +244,6 @@ private class FakeReportSyncQueryGateway : QueryGateway {
 
     override suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult =
         TreeQueryResult(ok = true, found = false, message = "ok")
-
-    override suspend fun queryProjectTreeText(params: DataTreeQueryParams): DataQueryTextResult =
-        DataQueryTextResult(ok = true, outputText = "", message = "ok")
 
     override suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult =
         ReportChartQueryResult(

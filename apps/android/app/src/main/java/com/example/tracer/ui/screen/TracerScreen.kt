@@ -60,19 +60,27 @@ fun TracerScreen(
     val recordInputPersistence = remember(userPreferencesRepository) {
         UserPreferencesRecordInputPersistence(userPreferencesRepository)
     }
+    val quickActivitiesPreferenceGateway = remember(userPreferencesRepository) {
+        UserPreferencesQuickActivitiesGateway(userPreferencesRepository)
+    }
     val recordViewModel: RecordViewModel = viewModel(
         factory = remember(recordGateway, txtStorageGateway, queryGateway, recordInputPersistence) {
             RecordViewModelFactory(
                 recordGateway = recordGateway,
                 txtStorageGateway = txtStorageGateway,
                 queryGateway = queryGateway,
-                recordInputPersistence = recordInputPersistence
+                recordInputPersistence = recordInputPersistence,
+                textProvider = AndroidRecordTextProvider(context)
             )
         }
     )
     val configViewModel: ConfigViewModel = viewModel(
-        factory = remember(configGateway) {
-            ConfigViewModelFactory(configGateway)
+        factory = remember(configGateway, txtStorageGateway, quickActivitiesPreferenceGateway) {
+            ConfigViewModelFactory(
+                configGateway = configGateway,
+                txtStorageGateway = txtStorageGateway,
+                quickActivitiesPreferenceGateway = quickActivitiesPreferenceGateway
+            )
         }
     )
 
@@ -84,13 +92,26 @@ fun TracerScreen(
         initial = com.example.tracer.data.RecordSuggestionPreferences(
             lookbackDays = com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_SUGGEST_LOOKBACK_DAYS,
             topN = com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_SUGGEST_TOP_N,
+            outputMode = com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_SUGGEST_OUTPUT_MODE,
+            canonicalCatalogDisplayMode =
+                com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_CANONICAL_CATALOG_DISPLAY_MODE,
             quickActivities = com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_QUICK_ACTIVITIES,
-            assistExpanded = com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_ASSIST_EXPANDED,
-            assistSettingsExpanded = com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_ASSIST_SETTINGS_EXPANDED
+            assistSettingsExpanded = com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_ASSIST_SETTINGS_EXPANDED,
+            collapsedCanonicalRootPaths = com.example.tracer.data.UserPreferencesRepository.DEFAULT_COLLAPSED_CANONICAL_ROOT_PATHS,
+            orderedCanonicalRootPaths = com.example.tracer.data.UserPreferencesRepository.DEFAULT_ORDERED_CANONICAL_ROOT_PATHS
         )
     )
     val reportChartShowAverageLine by userPreferencesRepository.reportChartShowAverageLine.collectAsState(
         initial = com.example.tracer.data.UserPreferencesRepository.DEFAULT_REPORT_CHART_SHOW_AVERAGE_LINE
+    )
+    val reportChartSemanticMode by userPreferencesRepository.reportChartSemanticMode.collectAsState(
+        initial = com.example.tracer.data.UserPreferencesRepository.DEFAULT_REPORT_CHART_SEMANTIC_MODE
+    )
+    val reportResultDisplayMode by userPreferencesRepository.reportResultDisplayMode.collectAsState(
+        initial = com.example.tracer.data.UserPreferencesRepository.DEFAULT_REPORT_RESULT_DISPLAY_MODE
+    )
+    val reportParameterSection by userPreferencesRepository.reportParameterSection.collectAsState(
+        initial = com.example.tracer.data.UserPreferencesRepository.DEFAULT_REPORT_PARAMETER_SECTION
     )
     val persistedRecordInput by userPreferencesRepository.recordPersistedInput.collectAsState(
         initial = null as PersistedRecordInputSnapshot?
@@ -116,6 +137,20 @@ fun TracerScreen(
         recordViewModel = recordViewModel
     )
 
+    LaunchedEffect(configUiState.txtReloadRequestVersion) {
+        if (configUiState.txtReloadRequestVersion == 0L) {
+            return@LaunchedEffect
+        }
+        val selectedHistoryFile = recordViewModel.uiState.selectedHistoryFile
+        if (selectedHistoryFile.isBlank()) {
+            return@LaunchedEffect
+        }
+        // Reload the currently opened TXT from disk after a successful alias rename migration.
+        // Without this refresh, the editor can keep showing pre-migration in-memory content,
+        // which makes it look like the TXT alias replacement did not happen.
+        recordViewModel.openHistoryFile(selectedHistoryFile)
+    }
+
     val statusText = TracerTabRegistry.statusText(
         tab = selectedTab,
         args = TracerTabStatusArgs(
@@ -125,15 +160,13 @@ fun TracerScreen(
             configStatusText = configUiState.statusText
         )
     )
-    val isDebuggableBuild = remember(context) {
-        (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
-    }
     val snackbarHostState = remember { SnackbarHostState() }
     val exportActions = rememberTracerExportActions(
         context = context,
         coroutineScope = coroutineScope,
         recordUiState = recordUiState,
         txtStorageGateway = txtStorageGateway,
+        configGateway = configGateway,
         tracerExchangeGateway = tracerExchangeGateway,
         recordViewModel = recordViewModel
     )
@@ -142,6 +175,13 @@ fun TracerScreen(
         coroutineScope = coroutineScope,
         dataViewModel = dataViewModel,
         recordViewModel = recordViewModel
+    )
+    val importTomlFolderAction = rememberTracerTomlFolderImportAction(
+        context = context,
+        coroutineScope = coroutineScope,
+        dataViewModel = dataViewModel,
+        configGateway = configGateway,
+        configViewModel = configViewModel
     )
     val importSingleTracerAction = rememberTracerSingleTracerImportAction(
         context = context,
@@ -153,6 +193,7 @@ fun TracerScreen(
     val tabLifecycleArgs = {
         TracerTabLifecycleArgs(
             queryGateway = queryGateway,
+            queryReportViewModel = queryReportViewModel,
             recordViewModel = recordViewModel,
             configViewModel = configViewModel,
             recordStatusText = { recordViewModel.uiState.statusText },
@@ -194,8 +235,6 @@ fun TracerScreen(
 
     TracerScreenContent(
         selectedTab = selectedTab,
-        statusText = statusText,
-        isDebuggableBuild = isDebuggableBuild,
         snackbarHostState = snackbarHostState,
         onCoordinatorEvent = actions.onCoordinatorEvent,
         dataViewModel = dataViewModel,
@@ -223,6 +262,24 @@ fun TracerScreen(
                 userPreferencesRepository.setReportChartShowAverageLine(value)
             }
         },
+        reportChartSemanticMode = reportChartSemanticMode,
+        onReportChartSemanticModeChange = { value ->
+            coroutineScope.launch {
+                userPreferencesRepository.setReportChartSemanticMode(value)
+            }
+        },
+        reportResultDisplayMode = reportResultDisplayMode,
+        onReportResultDisplayModeChange = { value ->
+            coroutineScope.launch {
+                userPreferencesRepository.setReportResultDisplayMode(value)
+            }
+        },
+        reportParameterSection = reportParameterSection,
+        onReportParameterSectionChange = { value ->
+            coroutineScope.launch {
+                userPreferencesRepository.setReportParameterSection(value)
+            }
+        },
         reportHeatmapTomlConfig = reportHeatmapState.config,
         reportHeatmapStylePreference = reportHeatmapState.stylePreference,
         onReportHeatmapThemePolicyChange = reportHeatmapState.onThemePolicyChange,
@@ -233,17 +290,24 @@ fun TracerScreen(
         onSetAppLanguage = onSetAppLanguage,
         validAuthorableEventTokens = validAuthorableEventTokens,
         onPersistRecordQuickActivities = actions.onPersistRecordQuickActivities,
-        onPersistRecordAssistExpanded = actions.onPersistRecordAssistExpanded,
         onPersistRecordAssistSettingsExpanded = actions.onPersistRecordAssistSettingsExpanded,
+        onPersistRecordCanonicalCatalogDisplayMode =
+            actions.onPersistRecordCanonicalCatalogDisplayMode,
+        onPersistRecordCollapsedCanonicalRootPaths =
+            actions.onPersistRecordCollapsedCanonicalRootPaths,
+        onPersistRecordOrderedCanonicalRootPaths =
+            actions.onPersistRecordOrderedCanonicalRootPaths,
         onPersistRecordSuggestLookbackDays = actions.onPersistRecordSuggestLookbackDays,
+        onPersistRecordSuggestOutputMode = actions.onPersistRecordSuggestOutputMode,
         onPersistRecordSuggestTopN = actions.onPersistRecordSuggestTopN,
         onImportSingleTxt = importSingleTxtAction,
+        onImportTomlFolder = importTomlFolderAction,
         onImportSingleTracer = importSingleTracerAction,
         onExportAllMonthsTracer = exportActions.onExportAllMonthsTracer,
+        onExportCurrentTxtTracer = exportActions.onExportCurrentTxtTracer,
         isTracerExportInProgress = exportActions.isTracerExportInProgress,
         selectedTracerSecurityLevel = exportActions.selectedTracerSecurityLevel,
         onTracerSecurityLevelChange = exportActions.onTracerSecurityLevelChange,
-        onCopyDiagnosticsPayload = actions.onCopyDiagnosticsPayload,
-        onClearDatabase = dataViewModel::clearDatabase
+        onCopyDiagnosticsPayload = actions.onCopyDiagnosticsPayload
     )
 }

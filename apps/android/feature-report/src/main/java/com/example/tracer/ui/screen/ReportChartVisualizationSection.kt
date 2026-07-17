@@ -16,6 +16,8 @@ internal fun ReportChartVisualizationSection(
     chartError: String,
     reportMode: ReportMode,
     sortedChartPoints: List<ReportChartPoint>,
+    chartFromDateIso: String?,
+    chartToDateIso: String?,
     chartVisualMode: ReportChartVisualMode,
     onChartVisualModeChange: (ReportChartVisualMode) -> Unit,
     selectedPointIndex: Int,
@@ -55,13 +57,29 @@ internal fun ReportChartVisualizationSection(
         return
     }
 
+    val availableVisualModes = availableReportChartVisualModes(reportMode)
+    val selectedChartVisualMode = chartVisualMode.takeIf {
+        it in availableVisualModes
+    } ?: availableVisualModes.first()
+    // Keep the selector's logical value separate from the renderer's value:
+    // Range/Recent display one `Heatmap` choice but resolve it to a concrete
+    // single- or multi-month heatmap based on the actual query window.
+    val effectiveChartVisualMode = resolveReportChartVisualMode(
+        reportMode = reportMode,
+        requestedMode = selectedChartVisualMode,
+        points = sortedChartPoints,
+        fromDateIso = chartFromDateIso,
+        toDateIso = chartToDateIso
+    )
+
     ReportChartVisualModeSelector(
-        chartVisualMode = chartVisualMode,
+        reportMode = reportMode,
+        chartVisualMode = selectedChartVisualMode,
         onChartVisualModeChange = onChartVisualModeChange
     )
 
     ReportChartVisualizationHintSection(
-        chartVisualMode = chartVisualMode,
+        chartVisualMode = effectiveChartVisualMode,
         chartShowAverageLine = chartShowAverageLine,
         onChartShowAverageLineChange = onChartShowAverageLineChange,
         heatmapTomlConfig = heatmapTomlConfig,
@@ -71,7 +89,7 @@ internal fun ReportChartVisualizationSection(
         heatmapApplyMessage = heatmapApplyMessage
     )
 
-    when (chartVisualMode) {
+    when (effectiveChartVisualMode) {
         ReportChartVisualMode.LINE -> {
             ReportLineChart(
                 points = sortedChartPoints,
@@ -118,19 +136,16 @@ internal fun ReportChartVisualizationSection(
             )
         }
 
-        ReportChartVisualMode.HEATMAP_YEAR -> {
-            ReportHeatmapChart(
+        ReportChartVisualMode.HEATMAP_MULTI_MONTH -> {
+            ReportMultiMonthHeatmap(
                 points = sortedChartPoints,
                 selectedIndex = selectedPointIndex,
-                mode = ReportHeatmapMode.YEAR,
+                reportMode = reportMode,
                 heatmapTomlConfig = heatmapTomlConfig,
                 heatmapStylePreference = heatmapStylePreference,
                 isAppDarkThemeActive = isAppDarkThemeActive,
                 onPointSelected = onPointSelected,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(220.dp)
-                    .clip(MaterialTheme.shapes.medium)
+                modifier = Modifier.fillMaxWidth()
             )
         }
     }
@@ -140,6 +155,6 @@ internal fun ReportChartVisualizationSection(
         selectedPointIndex = selectedPointIndex,
         chartAverageDurationSeconds = chartAverageDurationSeconds,
         chartUsesLegacyStatsFallback = chartUsesLegacyStatsFallback,
-        chartVisualMode = chartVisualMode
+        chartVisualMode = effectiveChartVisualMode
     )
 }

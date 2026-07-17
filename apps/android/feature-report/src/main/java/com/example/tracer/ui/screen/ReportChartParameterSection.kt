@@ -31,7 +31,6 @@ internal fun ReportChartParameterSection(
     rootOptions: List<String>,
     trendChartSelectedRoot: String,
     chartLoading: Boolean,
-    chartLastTrace: ChartQueryTrace?,
     onChartRootChange: (String) -> Unit,
     onLoadChart: () -> Unit
 ) {
@@ -102,14 +101,4 @@ internal fun ReportChartParameterSection(
         )
     }
 
-    if (chartLastTrace != null) {
-        Text(
-            text = "op=${chartLastTrace.operationId} · " +
-                "cache=${chartLastTrace.cacheHit} · " +
-                "ms=${chartLastTrace.durationMs} · items=${chartLastTrace.pointCount}",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
 }

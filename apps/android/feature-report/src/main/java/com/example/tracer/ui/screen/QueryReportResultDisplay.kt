@@ -1,17 +1,24 @@
 package com.example.tracer
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import com.example.tracer.feature.report.R
 
 @Composable
@@ -42,12 +49,13 @@ internal fun QueryReportResultDisplay(
     onHeatmapPaletteNameChange: (String) -> Unit,
     heatmapApplyMessage: String,
     isAppDarkThemeActive: Boolean,
-    onChartSemanticModeChange: (ReportChartSemanticMode) -> Unit,
     onCompositionVisualModeChange: (ReportCompositionVisualMode) -> Unit,
     onChartRootChange: (String) -> Unit,
     onChartShowAverageLineChange: (Boolean) -> Unit,
     onLoadChart: () -> Unit
 ) {
+    val clipboardManager = LocalClipboardManager.current
+
     if (resultDisplayMode == ReportResultDisplayMode.CHART) {
         ElevatedCard(
             modifier = Modifier.fillMaxWidth()
@@ -81,7 +89,6 @@ internal fun QueryReportResultDisplay(
                     onHeatmapPaletteNameChange = onHeatmapPaletteNameChange,
                     heatmapApplyMessage = heatmapApplyMessage,
                     isAppDarkThemeActive = isAppDarkThemeActive,
-                    onChartSemanticModeChange = onChartSemanticModeChange,
                     onCompositionVisualModeChange = onCompositionVisualModeChange,
                     onChartRootChange = onChartRootChange,
                     onChartShowAverageLineChange = onChartShowAverageLineChange,
@@ -106,10 +113,12 @@ internal fun QueryReportResultDisplay(
             Column(modifier = Modifier.padding(16.dp)) {
                 when (activeResult) {
                     is QueryResult.Report -> {
-                        Text(
-                            text = stringResource(R.string.report_result_title_report),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.primary
+                        MarkdownResultHeader(
+                            title = stringResource(R.string.report_result_title_report),
+                            markdown = activeResult.text,
+                            onCopyMarkdown = {
+                                clipboardManager.setText(AnnotatedString(activeResult.text))
+                            }
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         ReportMarkdownText(
@@ -120,13 +129,15 @@ internal fun QueryReportResultDisplay(
 
                     is QueryResult.Stats -> {
                         val periodLabel = stringResource(activeResult.period.reportModeResId())
-                        Text(
-                            text = stringResource(
+                        MarkdownResultHeader(
+                            title = stringResource(
                                 R.string.report_result_title_stats,
                                 periodLabel
                             ),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.primary
+                            markdown = activeResult.text,
+                            onCopyMarkdown = {
+                                clipboardManager.setText(AnnotatedString(activeResult.text))
+                            }
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         ReportMarkdownText(
@@ -193,6 +204,31 @@ internal fun QueryReportResultDisplay(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun MarkdownResultHeader(
+    title: String,
+    markdown: String,
+    onCopyMarkdown: () -> Unit
+) {
+    Row(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = title,
+            modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
+        IconButton(
+            onClick = onCopyMarkdown,
+            enabled = markdown.isNotBlank()
+        ) {
+            Icon(
+                imageVector = Icons.Default.ContentCopy,
+                contentDescription = stringResource(R.string.report_cd_copy_markdown)
+            )
         }
     }
 }

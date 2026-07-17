@@ -33,7 +33,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -149,7 +148,6 @@ internal fun AliasParentSelector(
 internal fun AliasGroupRowCard(
     group: AliasTomlGroup,
     onEnterGroup: () -> Unit,
-    onRequestRenameGroup: (AliasTomlGroup) -> Unit,
     onDeleteGroup: (String) -> Unit,
     onRequestAddChildGroup: (String) -> Unit,
     onRequestAddChildEntry: (String) -> Unit
@@ -185,13 +183,6 @@ internal fun AliasGroupRowCard(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = { onRequestRenameGroup(group) }) {
-                    Icon(
-                        Icons.Filled.Edit,
-                        contentDescription = stringResource(R.string.config_alias_action_rename),
-                        tint = Color(0xFF4F46E5)
-                    )
-                }
                 IconButton(onClick = { onDeleteGroup(group.id) }) {
                     Icon(
                         Icons.Filled.Delete,

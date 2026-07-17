@@ -72,6 +72,24 @@ class ConfigTomlStorageTest {
     }
 
     @Test
+    fun writeTomlFile_createsMissingTomlFileUnderConfigRoot() {
+        val root = Files.createTempDirectory("config-toml-storage-create").toFile()
+        try {
+            val target = File(root, "converter/aliases/custom.toml")
+
+            val result = ConfigTomlStorage(root.absolutePath).writeTomlFile(
+                relativePath = "converter/aliases/custom.toml",
+                content = "name = \"custom\"\r\n"
+            )
+
+            assertTrue(result.ok)
+            assertEquals("name = \"custom\"\n", target.readText())
+        } finally {
+            root.deleteRecursively()
+        }
+    }
+
+    @Test
     fun readTomlFile_invalidUtf8ReturnsFailure() {
         val root = Files.createTempDirectory("config-toml-storage-invalid").toFile()
         try {

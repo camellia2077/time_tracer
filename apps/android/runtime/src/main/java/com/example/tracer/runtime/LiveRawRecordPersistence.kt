@@ -54,9 +54,10 @@ internal class LiveRawRecordPersistence(
             mutableListOf()
         }
 
-        val blockStart = lines.indexOfFirst { it.trim() == dayMarker }
+        val dayMarkerLine = buildDayMarkerLine(dayMarker)
+        val blockStart = lines.indexOfFirst { it.trim() == dayMarkerLine }
         if (blockStart < 0) {
-            appendNewDayBlock(lines, dayMarker, eventLine)
+            appendNewDayBlock(lines, dayMarkerLine, eventLine)
             CanonicalTextCodec.writeFile(
                 monthFile,
                 lines.joinToString(separator = "\n", postfix = "\n")
@@ -100,11 +101,19 @@ internal class LiveRawRecordPersistence(
         )
     }
 
-    private fun appendNewDayBlock(lines: MutableList<String>, dayMarker: String, eventLine: String) {
+    private fun appendNewDayBlock(
+        lines: MutableList<String>,
+        dayMarkerLine: String,
+        eventLine: String
+    ) {
         if (lines.isNotEmpty() && lines.last().isNotEmpty()) {
             lines += ""
         }
-        lines += dayMarker
+        lines += dayMarkerLine
         lines += eventLine
     }
+
+    // dayMarker is the Android/API day identity (MMDD); month TXT stores the
+    // structural day-block header as dMMDD to disambiguate it from HHMM events.
+    private fun buildDayMarkerLine(dayMarker: String): String = "d$dayMarker"
 }

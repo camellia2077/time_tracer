@@ -11,4 +11,7 @@ internal class RuntimeConfigService(
 
     suspend fun saveConfigTomlFile(relativePath: String, content: String): TxtFileContentResult =
         storageDelegate.saveConfigTomlFile(relativePath, content)
+
+    suspend fun deleteConfigTomlFile(relativePath: String): TxtFileContentResult =
+        storageDelegate.deleteConfigTomlFile(relativePath)
 }

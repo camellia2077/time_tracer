@@ -29,7 +29,7 @@ class LiveRawRecordPersistenceTest {
         try {
             val target = File(root, "input/2026/2026-03.txt")
             target.parentFile?.mkdirs()
-            target.writeText("y2024\nm11\n0101\n0800work\n")
+            target.writeText("y2024\nm11\nd1101\n0800work\n")
             val original = target.readText()
             val persistence = createPersistence()
 
@@ -46,13 +46,13 @@ class LiveRawRecordPersistenceTest {
         val persistence = createPersistence()
 
         val line = persistence.buildRawIntervalEventLine(
-            startHhmm = "0900",
-            endHhmm = "1030",
+            startHhmm = "090000",
+            endHhmm = "103000",
             activity = "study",
             remark = ""
         )
 
-        assertEquals("0900-1030study", line)
+        assertEquals("090000-103000study", line)
     }
 
     @Test
@@ -60,13 +60,13 @@ class LiveRawRecordPersistenceTest {
         val persistence = createPersistence()
 
         val line = persistence.buildRawIntervalEventLine(
-            startHhmm = "0900",
-            endHhmm = "1030",
+            startHhmm = "090000",
+            endHhmm = "103000",
             activity = "study",
             remark = "focus"
         )
 
-        assertEquals("0900-1030study // focus", line)
+        assertEquals("090000-103000study // focus", line)
     }
 
     @Test
@@ -74,8 +74,8 @@ class LiveRawRecordPersistenceTest {
         val normalization = LiveRawRecordNormalization()
         val parsing = LiveRawRecordParsing(normalization)
 
-        assertEquals("1030", parsing.extractEventTimeToken("0900-1030study // focus"))
-        assertEquals("study", parsing.extractActivityName("0900-1030study // focus"))
+        assertEquals("103000", parsing.extractEventTimeToken("090000-103000study // focus"))
+        assertEquals("study", parsing.extractActivityName("090000-103000study // focus"))
     }
 
     private fun createPersistence(): LiveRawRecordPersistence {

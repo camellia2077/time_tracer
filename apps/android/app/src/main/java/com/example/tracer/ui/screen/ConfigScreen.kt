@@ -53,12 +53,14 @@ internal fun ConfigSection(
     reportFiles: List<ConfigTomlFileEntry>,
     selectedFilePath: String,
     selectedFileDisplayName: String,
+    selectedFileContent: String,
     editableContent: String,
     aliasEditorMode: AliasEditorMode,
     aliasDocumentDraft: AliasTomlDocument?,
     aliasParentOptions: List<String>,
     aliasAdvancedTomlDraft: String,
     aliasEditorErrorMessage: String,
+    autoSaveStatus: ConfigAutoSaveStatus,
     themeConfig: com.example.tracer.data.ThemeConfig,
     onSelectConverter: () -> Unit,
     onSelectCharts: () -> Unit,
@@ -68,6 +70,8 @@ internal fun ConfigSection(
     onSelectConverterRules: () -> Unit,
     onRefreshFiles: () -> Unit,
     onOpenFile: (String) -> Unit,
+    onCreateAliasTomlFile: (String) -> Unit,
+    onDeleteAliasTomlFile: () -> Unit,
     onCopyDiagnosticsPayload: () -> Unit,
     onEditableContentChange: (String) -> Unit,
     onSelectAliasStructuredMode: () -> Unit,
@@ -75,7 +79,6 @@ internal fun ConfigSection(
     onAliasParentChange: (String) -> Unit,
     onAliasAdvancedTomlChange: (String) -> Unit,
     onAddAliasGroup: (String?, String) -> Unit,
-    onRenameAliasGroup: (String, String) -> Unit,
     onDeleteAliasGroup: (String) -> Unit,
     onAddAliasEntry: (String?, String, String) -> Unit,
     onUpdateAliasEntry: (String, String, String) -> Unit,
@@ -139,33 +142,33 @@ internal fun ConfigSection(
         ConfigCategorySwitchCard(
             selectedCategory = selectedCategory,
             selectedConverterSubcategory = selectedConverterSubcategory,
-            selectedFileDisplayName = scopedSelectedFileDisplayName,
-            visibleFiles = visibleFiles,
             onSelectConverter = onSelectConverter,
             onSelectCharts = onSelectCharts,
             onSelectMeta = onSelectMeta,
             onSelectReports = onSelectReports,
             onSelectConverterAliases = onSelectConverterAliases,
             onSelectConverterRules = onSelectConverterRules,
-            onRefreshFiles = onRefreshFiles,
-            onOpenFile = onOpenFile
+            onRefreshFiles = onRefreshFiles
         )
 
         if (visibleFiles.isNotEmpty()) {
             if (usesAliasStructuredEditor) {
                 ConfigAliasEditorCard(
                     selectedFileDisplayName = scopedSelectedFileDisplayName,
+                    selectedFileContent = selectedFileContent,
                     mode = aliasEditorMode,
                     document = aliasDocumentDraft,
                     parentOptions = aliasParentOptions,
                     advancedTomlDraft = aliasAdvancedTomlDraft,
                     errorMessage = aliasEditorErrorMessage,
+                    autoSaveStatus = autoSaveStatus,
+                    onCreateAliasTomlFile = onCreateAliasTomlFile,
+                    onDeleteAliasTomlFile = onDeleteAliasTomlFile,
                     onSelectStructuredMode = onSelectAliasStructuredMode,
                     onSelectAdvancedMode = onSelectAliasAdvancedMode,
                     onParentChange = onAliasParentChange,
                     onAdvancedTomlChange = onAliasAdvancedTomlChange,
                     onAddGroup = onAddAliasGroup,
-                    onRenameGroup = onRenameAliasGroup,
                     onDeleteGroup = onDeleteAliasGroup,
                     onAddEntry = onAddAliasEntry,
                     onUpdateEntry = onUpdateAliasEntry,
@@ -175,7 +178,9 @@ internal fun ConfigSection(
             } else {
                 ConfigEditorCard(
                     selectedFileDisplayName = scopedSelectedFileDisplayName,
+                    selectedFileContent = selectedFileContent,
                     editableContent = editableContent,
+                    autoSaveStatus = autoSaveStatus,
                     onEditableContentChange = onEditableContentChange,
                     onSaveCurrentFile = onSaveCurrentFile
                 )

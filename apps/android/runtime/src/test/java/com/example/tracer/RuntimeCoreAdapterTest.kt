@@ -21,7 +21,6 @@ class RuntimeCoreAdapterTest {
             runtimePathsProvider = { currentPaths },
             nativeInit = { """{"ok":true,"content":"","error_message":""}""" },
             nativeQuery = { """{"ok":true,"content":"","error_message":""}""" },
-            nativeTree = { """{"ok":true,"content":"","error_message":""}""" },
             responseCodec = NativeResponseCodec(),
             reportTranslator = NativeReportTranslator(NativeResponseCodec()),
             diagnosticsRecorder = recorder,
@@ -45,7 +44,6 @@ class RuntimeCoreAdapterTest {
             runtimePathsProvider = { null },
             nativeInit = { """{"ok":true,"content":"","error_message":""}""" },
             nativeQuery = { """{"ok":true,"content":"","error_message":""}""" },
-            nativeTree = { """{"ok":true,"content":"","error_message":""}""" },
             responseCodec = NativeResponseCodec(),
             reportTranslator = NativeReportTranslator(NativeResponseCodec()),
             diagnosticsRecorder = recorder,
@@ -82,7 +80,6 @@ class RuntimeCoreAdapterTest {
                 capturedRequest = request
                 """{"ok":true,"content":"query-ok","error_message":""}"""
             },
-            nativeTree = { """{"ok":true,"content":"","error_message":""}""" },
             responseCodec = NativeResponseCodec(),
             reportTranslator = NativeReportTranslator(NativeResponseCodec()),
             diagnosticsRecorder = RuntimeDiagnosticsRecorder(runtimePathsProvider = { currentPaths }),
@@ -113,7 +110,6 @@ class RuntimeCoreAdapterTest {
                 capturedRequest = request
                 """{"ok":true,"content":"query-ok","error_message":""}"""
             },
-            nativeTree = { """{"ok":true,"content":"","error_message":""}""" },
             responseCodec = NativeResponseCodec(),
             reportTranslator = NativeReportTranslator(NativeResponseCodec()),
             diagnosticsRecorder = RuntimeDiagnosticsRecorder(runtimePathsProvider = { paths }),
@@ -144,7 +140,6 @@ class RuntimeCoreAdapterTest {
                 capturedRequest = request
                 """{"ok":true,"content":"query-ok","error_message":""}"""
             },
-            nativeTree = { """{"ok":true,"content":"","error_message":""}""" },
             responseCodec = NativeResponseCodec(),
             reportTranslator = NativeReportTranslator(NativeResponseCodec()),
             diagnosticsRecorder = RuntimeDiagnosticsRecorder(runtimePathsProvider = { paths }),
@@ -161,42 +156,6 @@ class RuntimeCoreAdapterTest {
 
         assertTrue(result.operationOk)
         assertEquals(true, capturedRequest?.missingWakeAnchor)
-    }
-
-    @Test
-    fun executeNativeTreeQuery_usesOriginalOperationNameAndBridgePath() {
-        var currentPaths: RuntimePaths? = null
-        val paths = createPaths(Files.createTempDirectory("core-adapter-tree").toFile())
-        var capturedParams: DataTreeQueryParams? = null
-        val adapter = RuntimeCoreAdapter(
-            ensureRuntimePaths = {
-                currentPaths = paths
-                paths
-            },
-            runtimePathsProvider = { currentPaths },
-            nativeInit = { """{"ok":true,"content":"","error_message":""}""" },
-            nativeQuery = { """{"ok":true,"content":"","error_message":""}""" },
-            nativeTree = { params ->
-                capturedParams = params
-                """{"ok":true,"content":"","error_message":""}"""
-            },
-            responseCodec = NativeResponseCodec(),
-            reportTranslator = NativeReportTranslator(NativeResponseCodec()),
-            diagnosticsRecorder = RuntimeDiagnosticsRecorder(runtimePathsProvider = { currentPaths }),
-            nextOperationId = { stage -> "op-$stage" },
-            errorMapper = RuntimeErrorMapper()
-        )
-
-        val params = DataTreeQueryParams(
-            period = DataTreePeriod.MONTH,
-            periodArgument = "202603",
-            level = 2
-        )
-        val result = adapter.executeNativeTreeQuery(params)
-
-        assertTrue(result.operationOk)
-        assertEquals("op-native_tree", result.operationId)
-        assertEquals(params, capturedParams)
     }
 
     private fun createPaths(root: File): RuntimePaths {

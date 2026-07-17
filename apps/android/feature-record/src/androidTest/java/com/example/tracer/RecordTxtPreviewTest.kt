@@ -38,6 +38,8 @@ class RecordTxtPreviewTest {
                     onIntervalStartChange = {},
                     intervalEnd = "",
                     onIntervalEndChange = {},
+                    lastRecordedActivityAlias = "",
+                    lastRecordedDuration = "",
                     suggestionsVisible = false,
                     onToggleSuggestions = {},
                     onOpenTxtPreview = { clickCount += 1 },
@@ -53,6 +55,34 @@ class RecordTxtPreviewTest {
     }
 
     @Test
+    fun recordInputCard_lastRecordedSummaryUsesSeparateLines() {
+        composeRule.setContent {
+            MaterialTheme {
+                RecordInputCard(
+                    authoringMode = RecordAuthoringMode.POINT,
+                    onAuthoringModeChange = {},
+                    recordContent = "",
+                    onRecordContentChange = {},
+                    recordRemark = "",
+                    onRecordRemarkChange = {},
+                    intervalStart = "",
+                    onIntervalStartChange = {},
+                    intervalEnd = "",
+                    onIntervalEndChange = {},
+                    lastRecordedActivityAlias = "coding",
+                    lastRecordedDuration = "00:25",
+                    suggestionsVisible = false,
+                    onToggleSuggestions = {},
+                    onOpenTxtPreview = {},
+                    onRecordNow = {}
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Last:\ncoding\n00:25").assertIsDisplayed()
+    }
+
+    @Test
     fun recordTxtPreviewSheet_showsResolvedDayBlockBody() {
         composeRule.setContent {
             MaterialTheme {
@@ -60,7 +90,7 @@ class RecordTxtPreviewTest {
                     txtStorageGateway = PreviewTestTxtStorageGateway(),
                     selectedMonth = "2026-04",
                     selectedHistoryFile = "2026/2026-04.txt",
-                    editableHistoryContent = "y2026\nm04\n0416\n  coding\n",
+                    editableHistoryContent = "y2026\nm04\nd0416\n  coding\n",
                     logicalDayTarget = RecordLogicalDayTarget.TODAY,
                     logicalDayClock = fixedClock("2026-04-16T12:00:00Z", "Asia/Shanghai"),
                     isLoading = false,

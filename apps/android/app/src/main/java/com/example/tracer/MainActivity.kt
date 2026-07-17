@@ -23,6 +23,7 @@ import androidx.activity.enableEdgeToEdge
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        title = getString(R.string.app_name)
         enableEdgeToEdge()
         val appContainer = (application as TracerApplication).appContainer
         val runtimeInitializer = appContainer.runtimeInitializer

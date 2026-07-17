@@ -1,7 +1,10 @@
 package com.example.tracer
 
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+
+private const val TXT_STORAGE_LOG_TAG = "TxtStorage"
 
 internal class RuntimeStorageDelegate(
     private val ensureTextStorage: () -> TextStorage,
@@ -23,8 +26,14 @@ internal class RuntimeStorageDelegate(
     suspend fun listTxtFiles(): TxtHistoryListResult = withContext(Dispatchers.IO) {
         try {
             val storage = ensureTextStorage()
-            storage.listTxtFiles()
+            storage.listTxtFiles().also { result ->
+                logInfo(
+                    TXT_STORAGE_LOG_TAG,
+                    "listTxtFiles ok=${result.ok} count=${result.files.size} files=${result.files}"
+                )
+            }
         } catch (error: Exception) {
+            logError(TXT_STORAGE_LOG_TAG, "listTxtFiles exception", error)
             TxtHistoryListResult(
                 ok = false,
                 files = emptyList(),
@@ -36,8 +45,14 @@ internal class RuntimeStorageDelegate(
     suspend fun readTxtFile(relativePath: String): TxtFileContentResult = withContext(Dispatchers.IO) {
         try {
             val storage = ensureTextStorage()
-            storage.readTxtFile(relativePath)
+            storage.readTxtFile(relativePath).also { result ->
+                logInfo(
+                    TXT_STORAGE_LOG_TAG,
+                    "readTxtFile path=$relativePath ok=${result.ok} returnedPath=${result.filePath} content=${result.content.toLogSnippet()}"
+                )
+            }
         } catch (error: Exception) {
+            logError(TXT_STORAGE_LOG_TAG, "readTxtFile exception path=$relativePath", error)
             TxtFileContentResult(
                 ok = false,
                 filePath = relativePath,
@@ -46,6 +61,44 @@ internal class RuntimeStorageDelegate(
             )
         }
     }
+
+    suspend fun saveTxtFile(relativePath: String, content: String): TxtFileContentResult =
+        withContext(Dispatchers.IO) {
+            try {
+                val storage = ensureTextStorage()
+                storage.writeTxtFile(relativePath, content).also { result ->
+                    logInfo(
+                        TXT_STORAGE_LOG_TAG,
+                        "saveTxtFile path=$relativePath ok=${result.ok} returnedPath=${result.filePath} content=${content.toLogSnippet()}"
+                    )
+                }
+            } catch (error: Exception) {
+                logError(TXT_STORAGE_LOG_TAG, "saveTxtFile exception path=$relativePath", error)
+                TxtFileContentResult(
+                    ok = false,
+                    filePath = relativePath,
+                    content = "",
+                    message = formatNativeFailure("save txt failed", error)
+                )
+            }
+        }
+
+private fun logInfo(tag: String, message: String) {
+    runCatching { Log.i(tag, message) }
+}
+
+private fun logError(tag: String, message: String, error: Throwable) {
+    runCatching { Log.e(tag, message, error) }
+}
+
+private fun String.toLogSnippet(maxLength: Int = 160): String {
+    val sanitized = replace("\r", "\\r").replace("\n", "\\n")
+    return if (sanitized.length <= maxLength) {
+        sanitized
+    } else {
+        sanitized.take(maxLength) + "...(${sanitized.length})"
+    }
+}
 
     suspend fun listConfigTomlFiles(): ConfigTomlListResult = withContext(Dispatchers.IO) {
         try {
@@ -88,6 +141,20 @@ internal class RuntimeStorageDelegate(
                     filePath = relativePath,
                     content = "",
                     message = formatNativeFailure("save config toml failed", error)
+                )
+            }
+        }
+
+    suspend fun deleteConfigTomlFile(relativePath: String): TxtFileContentResult =
+        withContext(Dispatchers.IO) {
+            try {
+                ensureConfigTomlStorage().deleteTomlFile(relativePath)
+            } catch (error: Exception) {
+                TxtFileContentResult(
+                    ok = false,
+                    filePath = relativePath,
+                    content = "",
+                    message = formatNativeFailure("delete config toml failed", error)
                 )
             }
         }

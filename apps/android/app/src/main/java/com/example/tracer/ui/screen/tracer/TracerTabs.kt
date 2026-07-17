@@ -11,6 +11,8 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import com.example.tracer.feature.data.R as DataFeatureR
 import com.example.tracer.data.AppLanguage
 import com.example.tracer.data.DarkThemeStyle
 import com.example.tracer.data.ThemeColor
@@ -57,6 +59,12 @@ internal data class TracerTabRouteArgs(
     val onReportPiePalettePresetChange: (ReportPiePalettePreset) -> Unit,
     val reportChartShowAverageLine: Boolean,
     val onReportChartShowAverageLineChange: (Boolean) -> Unit,
+    val reportChartSemanticMode: ReportChartSemanticMode,
+    val onReportChartSemanticModeChange: (ReportChartSemanticMode) -> Unit,
+    val reportResultDisplayMode: ReportResultDisplayMode,
+    val onReportResultDisplayModeChange: (ReportResultDisplayMode) -> Unit,
+    val reportParameterSection: ReportParameterSection,
+    val onReportParameterSectionChange: (ReportParameterSection) -> Unit,
     val reportHeatmapTomlConfig: ReportHeatmapTomlConfig,
     val reportHeatmapStylePreference: ReportHeatmapStylePreference,
     val onReportHeatmapThemePolicyChange: (ReportHeatmapThemePolicy) -> Unit,
@@ -67,22 +75,27 @@ internal data class TracerTabRouteArgs(
     val onSetAppLanguage: (AppLanguage) -> Unit,
     val validAuthorableEventTokens: Set<String>,
     val onPersistRecordQuickActivities: (List<String>) -> Unit,
-    val onPersistRecordAssistExpanded: (Boolean) -> Unit,
     val onPersistRecordAssistSettingsExpanded: (Boolean) -> Unit,
+    val onPersistRecordCanonicalCatalogDisplayMode: (RecordSuggestionOutputMode) -> Unit,
+    val onPersistRecordCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
+    val onPersistRecordOrderedCanonicalRootPaths: (List<String>) -> Unit,
     val onPersistRecordSuggestLookbackDays: (Int) -> Unit,
+    val onPersistRecordSuggestOutputMode: (RecordSuggestionOutputMode) -> Unit,
     val onPersistRecordSuggestTopN: (Int) -> Unit,
     val onImportSingleTxt: () -> Unit,
+    val onImportTomlFolder: () -> Unit,
     val onImportSingleTracer: () -> Unit,
     val onExportAllMonthsTracer: () -> Unit,
+    val onExportCurrentTxtTracer: () -> Unit,
     val isTracerExportInProgress: Boolean,
     val selectedTracerSecurityLevel: FileCryptoSecurityLevel,
     val onTracerSecurityLevelChange: (FileCryptoSecurityLevel) -> Unit,
-    val onCopyDiagnosticsPayload: () -> Unit,
-    val onClearDatabase: () -> Unit
+    val onCopyDiagnosticsPayload: () -> Unit
 )
 
 internal data class TracerTabLifecycleArgs(
     val queryGateway: QueryGateway,
+    val queryReportViewModel: QueryReportViewModel,
     val recordViewModel: RecordViewModel,
     val configViewModel: ConfigViewModel,
     val recordStatusText: () -> String,
@@ -119,12 +132,35 @@ internal object TracerTabRegistry {
             statusText = { args -> args.dataStatusText },
             statusEvent = { args -> defaultStatusUiEvent(args) },
             content = { modifier, args ->
+                val clearTxtStatusText = DestructiveActionStatusText(
+                    running = stringResource(DataFeatureR.string.data_status_clear_txt_running),
+                    success = stringResource(DataFeatureR.string.data_status_clear_txt_success),
+                    failure = stringResource(DataFeatureR.string.data_status_clear_txt_failure)
+                )
+                val clearDatabaseStatusText = DestructiveActionStatusText(
+                    running = stringResource(DataFeatureR.string.data_status_clear_database_running),
+                    success = stringResource(DataFeatureR.string.data_status_clear_database_success),
+                    failure = stringResource(DataFeatureR.string.data_status_clear_database_failure)
+                )
+                val rebuildDatabaseStatusText = DestructiveActionStatusText(
+                    running = stringResource(DataFeatureR.string.data_status_rebuild_database_running),
+                    success = stringResource(DataFeatureR.string.data_status_rebuild_database_success),
+                    failure = stringResource(DataFeatureR.string.data_status_rebuild_database_failure)
+                )
+                val clearAllDataStatusText = DestructiveActionStatusText(
+                    running = stringResource(DataFeatureR.string.data_status_clear_all_data_running),
+                    success = stringResource(DataFeatureR.string.data_status_clear_all_data_success),
+                    failure = stringResource(DataFeatureR.string.data_status_clear_all_data_failure)
+                )
                 DataManagementSection(
                     modifier = modifier,
                     onImportSingleTxt = args.onImportSingleTxt,
+                    onImportTomlFolder = args.onImportTomlFolder,
                     onImportSingleTracer = args.onImportSingleTracer,
                     canExportAllMonthsTracer = args.recordUiState.availableMonths.isNotEmpty(),
+                    canExportCurrentTxtTracer = true,
                     onExportAllMonthsTracer = args.onExportAllMonthsTracer,
+                    onExportCurrentTxtTracer = args.onExportCurrentTxtTracer,
                     isTracerExportInProgress = args.isTracerExportInProgress,
                     selectedTracerSecurityLevel = args.selectedTracerSecurityLevel,
                     onTracerSecurityLevelChange = args.onTracerSecurityLevelChange,
@@ -138,11 +174,18 @@ internal object TracerTabRegistry {
                     cryptoDetailsText = args.recordUiState.cryptoProgress.detailsText,
                     cryptoAdvancedDetailsText = args.recordUiState.cryptoProgress.advancedDetailsText,
                     onClearTxt = {
-                        args.dataViewModel.clearTxt()
+                        args.dataViewModel.clearTxt(clearTxtStatusText)
                         args.recordViewModel.clearTxtEditorState()
                     },
-                    onClearDatabase = args.onClearDatabase,
-                    onClearData = args.dataViewModel::clearDataAndReinitialize
+                    onClearDatabase = {
+                        args.dataViewModel.clearDatabase(clearDatabaseStatusText)
+                    },
+                    onRebuildDatabase = {
+                        args.dataViewModel.rebuildDatabase(rebuildDatabaseStatusText)
+                    },
+                    onClearData = {
+                        args.dataViewModel.clearDataAndReinitialize(clearAllDataStatusText)
+                    }
                 )
             }
         ),
@@ -153,14 +196,32 @@ internal object TracerTabRegistry {
                 icon = Icons.Default.DateRange,
                 testTag = "tab_report"
             ),
-            scrollBehavior = TracerTabScrollBehavior.VERTICAL,
+            scrollBehavior = TracerTabScrollBehavior.NONE,
+            onEnter = { args -> args.queryReportViewModel.refreshReportDayDefault() },
             statusText = { args -> args.queryStatusText },
-            statusEvent = { args -> defaultStatusUiEvent(args) },
-            content = { _, args ->
+            statusEvent = { args ->
+                if (args.statusText.startsWith("query data ", ignoreCase = true) ||
+                    // Markdown report output is rendered directly in the Report result card.
+                    // Showing the nativeReportJson progress/result text as a global snackbar
+                    // duplicates that feedback and obscures the floating navigation.
+                    args.statusText.startsWith("nativeReportJson(", ignoreCase = true)) {
+                    null
+                } else {
+                    defaultStatusUiEvent(args)
+                }
+            },
+            content = { modifier, args ->
                 QueryReportTabContent(
+                    modifier = modifier,
                     queryUiState = args.queryUiState,
                     queryReportViewModel = args.queryReportViewModel,
                     availableTxtMonths = args.recordUiState.availableMonths,
+                    preferredResultDisplayMode = args.reportResultDisplayMode,
+                    onPreferredResultDisplayModeChange = args.onReportResultDisplayModeChange,
+                    preferredParameterSection = args.reportParameterSection,
+                    onPreferredParameterSectionChange = args.onReportParameterSectionChange,
+                    preferredChartSemanticMode = args.reportChartSemanticMode,
+                    onPreferredChartSemanticModeChange = args.onReportChartSemanticModeChange,
                     chartShowAverageLine = args.reportChartShowAverageLine,
                     piePalettePreset = args.reportPiePalettePreset,
                     onChartShowAverageLineChange = args.onReportChartShowAverageLineChange,
@@ -169,7 +230,8 @@ internal object TracerTabRegistry {
                     onHeatmapThemePolicyChange = args.onReportHeatmapThemePolicyChange,
                     onHeatmapPaletteNameChange = args.onReportHeatmapPaletteNameChange,
                     heatmapApplyMessage = args.reportHeatmapApplyMessage,
-                    isAppDarkThemeActive = args.isAppDarkThemeActive
+                    isAppDarkThemeActive = args.isAppDarkThemeActive,
+                    bottomContentPadding = floatingBottomNavScrollPadding()
                 )
             }
         ),
@@ -198,9 +260,15 @@ internal object TracerTabRegistry {
                     txtStorageGateway = args.txtStorageGateway,
                     validAuthorableEventTokens = args.validAuthorableEventTokens,
                     onPersistQuickActivities = args.onPersistRecordQuickActivities,
-                    onPersistAssistExpanded = args.onPersistRecordAssistExpanded,
                     onPersistAssistSettingsExpanded = args.onPersistRecordAssistSettingsExpanded,
+                    onPersistCanonicalCatalogDisplayMode =
+                        args.onPersistRecordCanonicalCatalogDisplayMode,
+                    onPersistCollapsedCanonicalRootPaths =
+                        args.onPersistRecordCollapsedCanonicalRootPaths,
+                    onPersistOrderedCanonicalRootPaths =
+                        args.onPersistRecordOrderedCanonicalRootPaths,
                     onPersistSuggestionLookbackDays = args.onPersistRecordSuggestLookbackDays,
+                    onPersistSuggestionOutputMode = args.onPersistRecordSuggestOutputMode,
                     onPersistSuggestionTopN = args.onPersistRecordSuggestTopN
                 )
             }
@@ -255,7 +323,7 @@ internal object TracerTabRegistry {
                 testTag = "tab_config"
             ),
             scrollBehavior = TracerTabScrollBehavior.VERTICAL,
-            onEnter = { args -> args.configViewModel.refreshConfigFiles() },
+            onEnter = { args -> args.configViewModel.refreshConfigFiles(showStatus = false) },
             statusText = { args -> args.configStatusText },
             statusEvent = { args -> defaultStatusUiEvent(args) },
             content = { _, args ->
@@ -268,12 +336,14 @@ internal object TracerTabRegistry {
                     reportFiles = args.configUiState.reportFiles,
                     selectedFilePath = args.configUiState.selectedFilePath,
                     selectedFileDisplayName = args.configUiState.selectedFileDisplayName,
+                    selectedFileContent = args.configUiState.selectedFileContent,
                     editableContent = args.configUiState.editableContent,
                     aliasEditorMode = args.configUiState.aliasEditorMode,
                     aliasDocumentDraft = args.configUiState.aliasDocumentDraft,
                     aliasParentOptions = args.configUiState.aliasParentOptions,
                     aliasAdvancedTomlDraft = args.configUiState.aliasAdvancedTomlDraft,
                     aliasEditorErrorMessage = args.configUiState.aliasEditorErrorMessage,
+                    autoSaveStatus = args.configUiState.autoSaveStatus,
                     themeConfig = args.themeConfig,
                     onSelectConverter = { args.configViewModel.selectCategory(ConfigCategory.CONVERTER) },
                     onSelectCharts = { args.configViewModel.selectCategory(ConfigCategory.CHARTS) },
@@ -287,6 +357,8 @@ internal object TracerTabRegistry {
                     },
                     onRefreshFiles = args.configViewModel::refreshConfigFiles,
                     onOpenFile = args.configViewModel::openFile,
+                    onCreateAliasTomlFile = args.configViewModel::createAliasTomlFile,
+                    onDeleteAliasTomlFile = args.configViewModel::deleteCurrentAliasTomlFile,
                     onCopyDiagnosticsPayload = args.onCopyDiagnosticsPayload,
                     onEditableContentChange = args.configViewModel::onEditableContentChange,
                     onSelectAliasStructuredMode = {
@@ -298,7 +370,6 @@ internal object TracerTabRegistry {
                     onAliasParentChange = args.configViewModel::updateAliasParent,
                     onAliasAdvancedTomlChange = args.configViewModel::onAliasAdvancedTomlChange,
                     onAddAliasGroup = args.configViewModel::addAliasGroup,
-                    onRenameAliasGroup = args.configViewModel::renameAliasGroup,
                     onDeleteAliasGroup = args.configViewModel::deleteAliasGroup,
                     onAddAliasEntry = args.configViewModel::addAliasEntry,
                     onUpdateAliasEntry = args.configViewModel::updateAliasEntry,
@@ -366,9 +437,49 @@ private fun defaultStatusUiEvent(args: TracerTabStatusEventArgs): TracerTabUiEve
 
     val isFailureStatus = args.statusText.contains("fail", ignoreCase = true) ||
         args.statusText.contains("error", ignoreCase = true)
+    val visuals = if (!isFailureStatus && args.selectedTab == TracerTab.RECORD) {
+        buildStructuredRecordSnackbarVisuals(args.statusText)
+            ?: defaultSnackbarVisuals(
+                message = args.statusText,
+                duration = SnackbarDuration.Short
+            )
+    } else {
+        defaultSnackbarVisuals(
+            message = args.statusText,
+            duration = if (isFailureStatus) SnackbarDuration.Long else SnackbarDuration.Short
+        )
+    }
     return TracerTabUiEvent.ShowSnackbar(
-        message = args.statusText,
-        withDismissAction = true,
-        duration = if (isFailureStatus) SnackbarDuration.Long else SnackbarDuration.Short
+        visuals = visuals
+    )
+}
+
+private fun defaultSnackbarVisuals(
+    message: String,
+    duration: SnackbarDuration
+): TracerSnackbarVisuals = TracerSnackbarVisuals(
+    message = message,
+    duration = duration,
+    withDismissAction = true
+)
+
+private fun buildStructuredRecordSnackbarVisuals(
+    statusText: String
+): TracerSnackbarVisuals? {
+    // Record success intentionally uses exactly two lines: activity first, duration second.
+    // Parsing that shape once here keeps the rest of the snackbar pipeline structured and
+    // avoids scattering Record-specific newline assumptions across the UI host.
+    val lines = statusText.lineSequence()
+        .map { it.trim() }
+        .filter { it.isNotEmpty() }
+        .toList()
+    if (lines.size != 2) {
+        return null
+    }
+    return TracerSnackbarVisuals(
+        message = lines[0],
+        supportingText = lines[1],
+        duration = SnackbarDuration.Short,
+        withDismissAction = true
     )
 }

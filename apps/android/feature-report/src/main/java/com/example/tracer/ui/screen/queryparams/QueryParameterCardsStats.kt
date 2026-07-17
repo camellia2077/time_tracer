@@ -15,13 +15,12 @@ import com.example.tracer.feature.report.R
 @Composable
 internal fun StatsParametersCard(
     analysisPeriod: DataTreePeriod,
-    expanded: Boolean,
     keyboardOptions: KeyboardOptions,
     reportDate: String,
     onReportDateChange: (String) -> Unit,
     reportMonth: String,
     onReportMonthChange: (String) -> Unit,
-    availableTxtYears: List<String>,
+    calendarAvailability: com.example.tracer.ui.components.CalendarAvailability,
     reportYear: String,
     onReportYearChange: (String) -> Unit,
     reportWeek: String,
@@ -33,14 +32,9 @@ internal fun StatsParametersCard(
     reportRecentDays: String,
     onReportRecentDaysChange: (String) -> Unit,
     analysisLoading: Boolean,
-    onToggle: () -> Unit,
     onLoadStats: () -> Unit
 ) {
-    ExpandableParameterCard(
-        title = stringResource(R.string.report_title_stats_parameters),
-        expanded = expanded,
-        onToggle = onToggle
-    ) {
+    ParameterContentCard {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             SegmentedAnalysisPeriodInputs(
                 section = stringResource(R.string.report_section_stats),
@@ -50,7 +44,7 @@ internal fun StatsParametersCard(
                 onReportDateChange = onReportDateChange,
                 reportMonth = reportMonth,
                 onReportMonthChange = onReportMonthChange,
-                availableTxtYears = availableTxtYears,
+                calendarAvailability = calendarAvailability,
                 reportYear = reportYear,
                 onReportYearChange = onReportYearChange,
                 reportWeek = reportWeek,

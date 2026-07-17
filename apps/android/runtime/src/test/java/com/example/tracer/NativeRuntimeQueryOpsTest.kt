@@ -24,6 +24,7 @@ class NativeRuntimeQueryOpsTest {
                       "name": "math",
                       "path": "study_math",
                       "duration_seconds": 3600,
+                      "parent_duration_percent": 50.0,
                       "children": []
                     }
                   ]
@@ -47,12 +48,48 @@ class NativeRuntimeQueryOpsTest {
         assertEquals("math", payload.nodes[0].children[0].name)
         assertEquals("study_math", payload.nodes[0].children[0].path)
         assertEquals(3600L, payload.nodes[0].children[0].durationSeconds)
+        assertEquals(50f, payload.nodes[0].children[0].parentDurationPercent)
     }
 
     @Test
     fun parseTreeQueryContent_invalidPayload_returnsNull() {
         val parsed = parseTreeQueryContent("{bad json")
         assertNull(parsed)
+    }
+
+    @Test
+    fun parseTreeQueryContent_parsesSemanticTreePayload() {
+        val content = """
+            {
+              "schema_version": 1,
+              "action": "tree",
+              "output_mode": "semantic_json",
+              "roots": [
+                {
+                  "name": "study",
+                  "duration_seconds": 7200,
+                  "children": [
+                    {
+                      "name": "math",
+                      "duration_seconds": 3600,
+                      "parent_duration_percent": 50.0,
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            }
+        """.trimIndent()
+
+        val payload = checkNotNull(parseTreeQueryContent(content))
+
+        assertEquals(true, payload.ok)
+        assertEquals(true, payload.found)
+        assertEquals(listOf("study"), payload.roots)
+        assertEquals("study", payload.nodes[0].path)
+        assertEquals(7200L, payload.nodes[0].durationSeconds)
+        assertEquals("study_math", payload.nodes[0].children[0].path)
+        assertEquals(50f, payload.nodes[0].children[0].parentDurationPercent)
     }
 
     @Test
@@ -198,15 +235,22 @@ class NativeRuntimeQueryOpsTest {
     }
 
     @Test
-    fun parseReportCompositionContent_parsesRootSlices() {
+    fun parseReportCompositionContent_parsesWeightedTree() {
         val content = """
             {
               "total_duration_seconds": 9000,
               "active_root_count": 3,
               "range_days": 7,
-              "slices": [
-                {"root": "study", "duration_seconds": 5400, "percent": 60.0},
-                {"root": "sleep", "duration_seconds": 3600, "percent": 40.0}
+              "tree": [
+                {
+                  "name": "study",
+                  "duration_seconds": 5400,
+                  "occurrence_count": 3,
+                  "children": [
+                    {"name": "math", "duration_seconds": 5400, "occurrence_count": 3, "children": []}
+                  ]
+                },
+                {"name": "sleep", "duration_seconds": 3600, "children": []}
               ]
             }
         """.trimIndent()
@@ -218,9 +262,9 @@ class NativeRuntimeQueryOpsTest {
         assertEquals(9000L, data.totalDurationSeconds)
         assertEquals(3, data.activeRootCount)
         assertEquals(7, data.rangeDays)
-        assertEquals(2, data.slices.size)
-        assertEquals("study", data.slices[0].root)
-        assertEquals(5400L, data.slices[0].durationSeconds)
-        assertEquals(60f, data.slices[0].percent)
+        assertEquals(2, data.tree.size)
+        assertEquals("study", data.tree.first().name)
+        assertEquals(3L, data.tree.first().occurrenceCount)
+        assertEquals("math", data.tree.first().children.single().name)
     }
 }

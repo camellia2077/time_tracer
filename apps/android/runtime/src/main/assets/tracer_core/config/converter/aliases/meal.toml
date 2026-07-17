@@ -2,5 +2,6 @@ parent = "meal"
 
 [aliases]
 "meal" = "dining"
+"meal_dining" = "dining"
 "吃饭" = "dining"
 "饭" = "dining"

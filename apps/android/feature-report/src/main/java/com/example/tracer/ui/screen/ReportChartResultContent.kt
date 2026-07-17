@@ -80,7 +80,6 @@ internal fun ReportChartResultContent(
     onHeatmapPaletteNameChange: (String) -> Unit,
     heatmapApplyMessage: String,
     isAppDarkThemeActive: Boolean,
-    onChartSemanticModeChange: (ReportChartSemanticMode) -> Unit,
     onCompositionVisualModeChange: (ReportCompositionVisualMode) -> Unit,
     onChartRootChange: (String) -> Unit,
     onChartShowAverageLineChange: (Boolean) -> Unit,
@@ -88,7 +87,6 @@ internal fun ReportChartResultContent(
     modifier: Modifier = Modifier
 ) {
     val normalizedSemanticMode = chartSemanticMode.normalizeForReportMode(reportMode)
-    val allowTrendChart = reportMode != ReportMode.DAY
     val normalizedRoots = remember(trendChartRoots) { trendChartRoots.distinct() }
     val rootOptions = remember(normalizedRoots) { listOf("") + normalizedRoots }
     val sortedChartPoints = remember(trendChartRenderModel) {
@@ -103,7 +101,7 @@ internal fun ReportChartResultContent(
     }
     val chartAverageDurationSeconds = trendChartRenderModel?.averageDurationSeconds
     val chartUsesLegacyStatsFallback = trendChartRenderModel?.usesLegacyStatsFallback == true
-    val compositionSlices = compositionChartRenderModel?.slices ?: emptyList()
+    val compositionSlices = compositionChartRenderModel?.tree.orEmpty().toReportCompositionSlices()
     var selectedPointIndex by remember(sortedChartPoints) {
         mutableIntStateOf(
             if (sortedChartPoints.isEmpty()) {
@@ -131,19 +129,6 @@ internal fun ReportChartResultContent(
             .padding(top = 4.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text(
-            text = stringResource(R.string.report_title_chart_parameters),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary
-        )
-
-        if (allowTrendChart) {
-            ReportChartSemanticModeSelector(
-                chartSemanticMode = normalizedSemanticMode,
-                onChartSemanticModeChange = onChartSemanticModeChange
-            )
-        }
-
         ReportChartParameterSection(
             chartSemanticMode = normalizedSemanticMode,
             rootOptions = rootOptions,
@@ -152,11 +137,6 @@ internal fun ReportChartResultContent(
                 trendChartLoading
             } else {
                 compositionChartLoading
-            },
-            chartLastTrace = if (normalizedSemanticMode == ReportChartSemanticMode.TREND) {
-                trendChartLastTrace
-            } else {
-                compositionChartLastTrace
             },
             onChartRootChange = onChartRootChange,
             onLoadChart = onLoadChart
@@ -167,6 +147,8 @@ internal fun ReportChartResultContent(
                 chartError = trendChartError,
                 reportMode = reportMode,
                 sortedChartPoints = sortedChartPoints,
+                chartFromDateIso = trendChartRenderModel?.fromDateIso,
+                chartToDateIso = trendChartRenderModel?.toDateIso,
                 chartVisualMode = chartVisualMode,
                 onChartVisualModeChange = { chartVisualMode = it },
                 selectedPointIndex = selectedPointIndex,
@@ -198,7 +180,7 @@ internal fun ReportChartResultContent(
 }
 
 @Composable
-private fun ReportChartSemanticModeSelector(
+internal fun ReportChartSemanticModeSelector(
     chartSemanticMode: ReportChartSemanticMode,
     onChartSemanticModeChange: (ReportChartSemanticMode) -> Unit
 ) {

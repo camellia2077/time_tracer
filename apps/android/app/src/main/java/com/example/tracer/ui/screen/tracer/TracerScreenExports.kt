@@ -12,6 +12,7 @@ import kotlinx.coroutines.withContext
 
 internal data class TracerExportActions(
     val onExportAllMonthsTracer: () -> Unit,
+    val onExportCurrentTxtTracer: () -> Unit,
     val isTracerExportInProgress: Boolean,
     val selectedTracerSecurityLevel: FileCryptoSecurityLevel,
     val onTracerSecurityLevelChange: (FileCryptoSecurityLevel) -> Unit
@@ -23,6 +24,7 @@ internal fun rememberTracerExportActions(
     coroutineScope: kotlinx.coroutines.CoroutineScope,
     recordUiState: RecordUiState,
     txtStorageGateway: TxtStorageGateway,
+    configGateway: ConfigGateway,
     tracerExchangeGateway: TracerExchangeGateway,
     recordViewModel: RecordViewModel
 ): TracerExportActions {
@@ -47,8 +49,9 @@ internal fun rememberTracerExportActions(
         )
     }
     val canceledStatusText = context.getString(R.string.tracer_export_all_tracer_canceled)
+    val currentCanceledStatusText = context.getString(R.string.tracer_export_current_txt_canceled)
     val progressOperationText = context.getString(R.string.tracer_progress_operation_export_tracer)
-    val passphraseRequest = remember(context) {
+    val exportAllPassphraseRequest = remember(context) {
         TracerTransferPassphraseRequest(
             title = context.getString(R.string.tracer_crypto_passphrase_encrypt_title),
             firstHint = context.getString(R.string.tracer_crypto_passphrase_hint),
@@ -58,7 +61,6 @@ internal fun rememberTracerExportActions(
             canceledStatusText = context.getString(R.string.tracer_export_all_tracer_canceled)
         )
     }
-
     val exportAllTracerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree()
     ) { treeUri ->
@@ -73,7 +75,7 @@ internal fun rememberTracerExportActions(
 
         transferCoordinator.launchCryptoTransfer(
             uiCallbacks = transferUiCallbacks,
-            passphraseRequest = passphraseRequest,
+            passphraseRequest = exportAllPassphraseRequest,
             progressOperationText = progressOperationText,
             prepareInput = { treeUri },
             formatPrepareFailure = { error ->
@@ -112,6 +114,50 @@ internal fun rememberTracerExportActions(
             onFinally = { isTracerExportInProgress = false }
         )
     }
+    val exportCurrentTxtTracerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree()
+    ) { treeUri ->
+        if (treeUri == null) {
+            transferCoordinator.handleSelectionCanceled(
+                uiCallbacks = transferUiCallbacks,
+                canceledStatusText = currentCanceledStatusText,
+                onFinally = { isTracerExportInProgress = false }
+            )
+            return@rememberLauncherForActivityResult
+        }
+
+        transferCoordinator.launchPreparedTransfer(
+            uiCallbacks = transferUiCallbacks,
+            prepareInput = { treeUri },
+            formatPrepareFailure = { error ->
+                context.getString(
+                    R.string.tracer_export_current_txt_failed,
+                    error.message ?: context.getString(R.string.tracer_export_unknown_error)
+                )
+            },
+            runTransfer = { selectedTreeUri ->
+                val exportResult = withContext(Dispatchers.IO) {
+                    exportCurrentTxtZipToTree(
+                        context = context,
+                        treeUri = selectedTreeUri,
+                        recordUiState = recordUiState,
+                        txtStorageGateway = txtStorageGateway,
+                        configGateway = configGateway
+                    )
+                }
+                TracerPreparedTransferResult(statusText = exportResult)
+            },
+            formatTransferFailure = { error ->
+                TracerPreparedTransferResult(
+                    statusText = context.getString(
+                        R.string.tracer_export_current_txt_failed,
+                        error.message ?: context.getString(R.string.tracer_export_unknown_error)
+                    )
+                )
+            },
+            onFinally = { isTracerExportInProgress = false }
+        )
+    }
     val onExportAllMonthsTracer: () -> Unit = {
         if (isTracerExportInProgress) {
             recordViewModel.setStatusText(context.getString(R.string.tracer_export_already_in_progress))
@@ -123,9 +169,19 @@ internal fun rememberTracerExportActions(
             exportAllTracerLauncher.launch(null)
         }
     }
+    val onExportCurrentTxtTracer: () -> Unit = {
+        if (isTracerExportInProgress) {
+            recordViewModel.setStatusText(context.getString(R.string.tracer_export_already_in_progress))
+        } else {
+            isTracerExportInProgress = true
+            recordViewModel.setStatusText(context.getString(R.string.tracer_export_select_current_txt_destination))
+            exportCurrentTxtTracerLauncher.launch(null)
+        }
+    }
 
     return TracerExportActions(
         onExportAllMonthsTracer = onExportAllMonthsTracer,
+        onExportCurrentTxtTracer = onExportCurrentTxtTracer,
         isTracerExportInProgress = isTracerExportInProgress,
         selectedTracerSecurityLevel = tracerSecurityLevel,
         onTracerSecurityLevelChange = { nextLevel ->

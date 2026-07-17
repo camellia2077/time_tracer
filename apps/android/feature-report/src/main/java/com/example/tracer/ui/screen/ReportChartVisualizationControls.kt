@@ -20,6 +20,7 @@ import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
 
 @Composable
 internal fun ReportChartVisualModeSelector(
+    reportMode: ReportMode,
     chartVisualMode: ReportChartVisualMode,
     onChartVisualModeChange: (ReportChartVisualMode) -> Unit
 ) {
@@ -29,7 +30,7 @@ internal fun ReportChartVisualModeSelector(
         color = MaterialTheme.colorScheme.onSurfaceVariant
     )
     SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-        val visualModes = ReportChartVisualMode.entries
+        val visualModes = availableReportChartVisualModes(reportMode)
         visualModes.forEachIndexed { index, visualMode ->
             val selected = chartVisualMode == visualMode
             SegmentedButton(
@@ -72,7 +73,7 @@ internal fun ReportChartVisualizationHintSection(
 ) {
     when (chartVisualMode) {
         ReportChartVisualMode.HEATMAP_MONTH,
-        ReportChartVisualMode.HEATMAP_YEAR -> {
+        ReportChartVisualMode.HEATMAP_MULTI_MONTH -> {
             ReportChartHeatmapSettings(
                 heatmapTomlConfig = heatmapTomlConfig,
                 heatmapStylePreference = heatmapStylePreference,

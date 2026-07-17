@@ -4,10 +4,25 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Test
+import java.time.Clock
+import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth
+import java.time.ZoneId
 
 class ReportWeekPickerStateTest {
+    @Test
+    fun initialQueryReportUiState_usesIsoWeekForDefaultWeek() {
+        val state = initialQueryReportUiState(
+            Clock.fixed(
+                Instant.parse("2026-07-12T12:00:00Z"),
+                ZoneId.of("UTC")
+            )
+        )
+
+        assertEquals("202628", state.reportWeek)
+    }
+
     @Test
     fun resolveIsoWeekSelection_returnsWeekRangeForValidDigits() {
         val selection = resolveIsoWeekSelection("202615")

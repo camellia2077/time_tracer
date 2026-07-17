@@ -158,12 +158,12 @@ internal class RuntimeRecordDelegate(
             }
 
             val normalizedRemark = rawRecordStore.normalizeRemark(remark)
-            val normalizedStart = startTime.trim()
-            val normalizedEnd = endTime.trim()
-            if (!isValidHhmm(normalizedStart) || !isValidHhmm(normalizedEnd)) {
+            val normalizedStart = normalizeToHhmmss(startTime)
+            val normalizedEnd = normalizeToHhmmss(endTime)
+            if (normalizedStart == null || normalizedEnd == null) {
                 return@withContext RecordActionResult(
                     ok = false,
-                    message = "Record blocked: start/end must use HHMM."
+                    message = "Record blocked: start/end must use HHMM or HHMMSS."
                 )
             }
 
@@ -271,19 +271,29 @@ internal class RuntimeRecordDelegate(
 
     private fun appendMissingDayBlock(content: String, dayMarker: String, eventLine: String): String {
         val canonicalContent = CanonicalTextCodec.canonicalizeText(content).trimEnd('\n', '\r')
+        val dayMarkerLine = buildDayMarkerLine(dayMarker)
         return if (canonicalContent.isEmpty()) {
-            "$dayMarker\n$eventLine\n"
+            "$dayMarkerLine\n$eventLine\n"
         } else {
-            "$canonicalContent\n\n$dayMarker\n$eventLine\n"
+            "$canonicalContent\n\n$dayMarkerLine\n$eventLine\n"
         }
     }
 
-    private fun isValidHhmm(hhmm: String): Boolean {
-        if (hhmm.length != 4 || !hhmm.all { it.isDigit() }) {
-            return false
+    // dayMarker stays MMDD at the UI/API boundary; dMMDD is only the raw TXT
+    // header written to files so it cannot collide with HHMM event records.
+    private fun buildDayMarkerLine(dayMarker: String): String = "d$dayMarker"
+
+    private fun normalizeToHhmmss(rawTime: String): String? {
+        val time = rawTime.trim()
+        if ((time.length != 4 && time.length != 6) || !time.all { it.isDigit() }) {
+            return null
         }
-        val hours = hhmm.substring(0, 2).toIntOrNull() ?: return false
-        val minutes = hhmm.substring(2, 4).toIntOrNull() ?: return false
-        return hours in 0..23 && minutes in 0..59
+        val hours = time.substring(0, 2).toIntOrNull() ?: return null
+        val minutes = time.substring(2, 4).toIntOrNull() ?: return null
+        val seconds = if (time.length == 6) time.substring(4, 6).toIntOrNull() else 0
+        if (hours !in 0..23 || minutes !in 0..59 || seconds !in 0..59) {
+            return null
+        }
+        return if (time.length == 4) "$time" + "00" else time
     }
 }

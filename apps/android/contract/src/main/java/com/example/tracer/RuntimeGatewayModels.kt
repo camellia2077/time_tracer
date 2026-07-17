@@ -194,6 +194,39 @@ data class ActivityMappingNamesResult(
     val operationId: String = ""
 )
 
+data class ActivityAliasMappingEntry(
+    val alias: String,
+    val canonical: String
+)
+
+data class ActivityAliasMappingListResult(
+    val ok: Boolean,
+    val entries: List<ActivityAliasMappingEntry>,
+    val message: String,
+    val operationId: String = ""
+)
+
+data class CanonicalCatalogEntry(
+    val canonicalLeaf: String,
+    val canonicalPath: String,
+    val sourceFilePath: String,
+    val aliases: List<String> = emptyList()
+)
+
+data class CanonicalPathNode(
+    val name: String,
+    val path: String,
+    val entries: List<CanonicalCatalogEntry> = emptyList(),
+    val children: List<CanonicalPathNode> = emptyList()
+)
+
+data class CanonicalCatalogResult(
+    val ok: Boolean,
+    val roots: List<CanonicalPathNode>,
+    val entries: List<CanonicalCatalogEntry>,
+    val message: String
+)
+
 enum class DataTreePeriod(val wireValue: String) {
     DAY("day"),
     WEEK("week"),
@@ -225,6 +258,8 @@ data class TreeNode(
     val name: String,
     val path: String = "",
     val durationSeconds: Long? = null,
+    val occurrenceCount: Long? = null,
+    val parentDurationPercent: Float? = null,
     val children: List<TreeNode> = emptyList()
 )
 
@@ -234,9 +269,7 @@ data class TreeQueryResult(
     val roots: List<String> = emptyList(),
     val nodes: List<TreeNode> = emptyList(),
     val message: String,
-    val operationId: String = "",
-    val legacyText: String = "",
-    val usesTextFallback: Boolean = false
+    val operationId: String = ""
 )
 
 data class DataQueryTextResult(
@@ -293,10 +326,11 @@ data class ReportCompositionSlice(
 )
 
 data class ReportCompositionData(
-    val slices: List<ReportCompositionSlice>,
     val totalDurationSeconds: Long,
     val activeRootCount: Int,
-    val rangeDays: Int
+    val rangeDays: Int,
+    // The weighted activity tree is the sole composition representation.
+    val tree: List<TreeNode>
 )
 
 data class ReportCompositionQueryResult(

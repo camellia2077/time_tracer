@@ -15,9 +15,12 @@ fun RecordTabContent(
     txtStorageGateway: TxtStorageGateway,
     validAuthorableEventTokens: Set<String>,
     onPersistQuickActivities: (List<String>) -> Unit,
-    onPersistAssistExpanded: (Boolean) -> Unit,
     onPersistAssistSettingsExpanded: (Boolean) -> Unit,
+    onPersistCanonicalCatalogDisplayMode: (RecordSuggestionOutputMode) -> Unit,
+    onPersistCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
+    onPersistOrderedCanonicalRootPaths: (List<String>) -> Unit,
     onPersistSuggestionLookbackDays: (Int) -> Unit,
+    onPersistSuggestionOutputMode: (RecordSuggestionOutputMode) -> Unit,
     onPersistSuggestionTopN: (Int) -> Unit
 ) {
     val configuration = LocalConfiguration.current
@@ -39,9 +42,6 @@ fun RecordTabContent(
         stringResource(R.string.record_status_invalid_quick_activities)
     val quickActivitiesSavedTemplate =
         stringResource(R.string.record_status_quick_activities_saved)
-    val invalidSuggestedActivityTemplate =
-        stringResource(R.string.record_status_invalid_suggested_activity)
-
     RecordSection(
         txtStorageGateway = txtStorageGateway,
         authoringMode = recordUiState.authoringMode,
@@ -107,20 +107,10 @@ fun RecordTabContent(
             onPersistQuickActivities(normalized)
             true
         },
-        assistExpanded = recordUiState.assistExpanded,
         assistSettingsExpanded = recordUiState.assistSettingsExpanded,
-        onToggleAssist = {
-            val nextValue = !recordUiState.assistExpanded
-            recordViewModel.updateAssistUiState(
-                assistExpanded = nextValue,
-                assistSettingsExpanded = recordUiState.assistSettingsExpanded
-            )
-            onPersistAssistExpanded(nextValue)
-        },
         onToggleAssistSettings = {
             val nextValue = !recordUiState.assistSettingsExpanded
             recordViewModel.updateAssistUiState(
-                assistExpanded = recordUiState.assistExpanded,
                 assistSettingsExpanded = nextValue
             )
             onPersistAssistSettingsExpanded(nextValue)
@@ -129,10 +119,10 @@ fun RecordTabContent(
         suggestionTopN = recordUiState.suggestionTopN,
         onSuggestionLookbackDaysChange = { rawValue ->
             val parsed = rawValue.trim().toIntOrNull()
-            if (parsed == null || parsed <= 0) {
+            if (parsed == null || parsed < 0) {
                 return@RecordSection
             }
-            recordViewModel.updateSuggestionPreferences(
+            recordViewModel.updateSuggestionPreferencesAndReloadIfVisible(
                 lookbackDays = parsed,
                 topN = recordUiState.suggestionTopN
             )
@@ -140,17 +130,31 @@ fun RecordTabContent(
         },
         onSuggestionTopNChange = { rawValue ->
             val parsed = rawValue.trim().toIntOrNull()
-            if (parsed == null || parsed <= 0) {
+            if (parsed == null || parsed < 0) {
                 return@RecordSection
             }
-            recordViewModel.updateSuggestionPreferences(
+            recordViewModel.updateSuggestionPreferencesAndReloadIfVisible(
                 lookbackDays = recordUiState.suggestionLookbackDays,
                 topN = parsed
             )
             onPersistSuggestionTopN(parsed)
         },
+        suggestionOutputMode = recordUiState.suggestionOutputMode,
+        onSuggestionOutputModeChange = { mode ->
+            recordViewModel.updateSuggestionOutputMode(mode)
+            onPersistSuggestionOutputMode(mode)
+        },
         suggestedActivities = recordUiState.suggestedActivities,
+        canonicalCatalogRoots = recordUiState.canonicalCatalogRoots,
+        canonicalCatalogStatusText = recordUiState.canonicalCatalogStatusText,
+        canonicalCatalogDisplayMode = recordUiState.canonicalCatalogDisplayMode,
+        lastRecordedActivityAlias = recordUiState.lastRecordedActivityAlias,
+        lastRecordedDuration = recordUiState.lastRecordedDuration,
+        collapsedCanonicalRootPaths = recordUiState.collapsedCanonicalRootPaths,
+        orderedCanonicalRootPaths = recordUiState.orderedCanonicalRootPaths,
         suggestionsVisible = recordUiState.suggestionsVisible,
+        isCanonicalCatalogVisible = recordUiState.isCanonicalCatalogVisible,
+        isCanonicalCatalogLoading = recordUiState.isCanonicalCatalogLoading,
         isSuggestionsLoading = recordUiState.isSuggestionsLoading,
         isTxtPreviewVisible = recordUiState.isTxtPreviewVisible,
         isTxtPreviewLoading = recordUiState.isTxtPreviewLoading,
@@ -164,20 +168,26 @@ fun RecordTabContent(
         onSelectLogicalDayToday = recordViewModel::selectLogicalDayToday,
         onRefreshLogicalDayDefault = recordViewModel::refreshLogicalDayDefault,
         onToggleSuggestions = recordViewModel::toggleSuggestions,
+        onDismissSuggestions = recordViewModel::dismissSuggestions,
         onSuggestedActivityClick = { activity ->
-            if (validAuthorableEventTokens.isNotEmpty() &&
-                !validAuthorableEventTokens.contains(activity)
-            ) {
-                recordViewModel.setStatusText(
-                    formatWithLocale(
-                        locale,
-                        invalidSuggestedActivityTemplate,
-                        activity
-                    )
-                )
-                return@RecordSection
-            }
             recordViewModel.applySuggestedActivity(activity)
+        },
+        onOpenCanonicalCatalog = recordViewModel::openCanonicalCatalog,
+        onDismissCanonicalCatalog = recordViewModel::dismissCanonicalCatalog,
+        onCanonicalCatalogDisplayModeChange = { mode ->
+            recordViewModel.updateCanonicalCatalogDisplayMode(mode)
+            onPersistCanonicalCatalogDisplayMode(mode)
+        },
+        onCollapsedCanonicalRootPathsChange = { paths ->
+            recordViewModel.updateCollapsedCanonicalRootPaths(paths)
+            onPersistCollapsedCanonicalRootPaths(paths)
+        },
+        onOrderedCanonicalRootPathsChange = { paths ->
+            recordViewModel.updateOrderedCanonicalRootPaths(paths)
+            onPersistOrderedCanonicalRootPaths(paths)
+        },
+        onCanonicalCatalogEntryClick = { token ->
+            recordViewModel.applyCanonicalCatalogEntry(token)
         },
         onOpenTxtPreview = recordViewModel::openTxtPreview,
         onDismissTxtPreview = recordViewModel::dismissTxtPreview,

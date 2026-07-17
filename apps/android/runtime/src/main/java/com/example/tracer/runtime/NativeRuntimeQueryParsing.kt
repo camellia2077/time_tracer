@@ -1,5 +1,6 @@
 package com.example.tracer
 
+import android.util.Log
 import org.json.JSONArray
 import org.json.JSONObject
 import java.time.LocalDate
@@ -93,6 +94,7 @@ internal fun parseReportChartContent(content: String): ReportChartData? {
 
 internal fun parseReportCompositionContent(content: String): ReportCompositionData? {
     if (content.isBlank()) {
+        logReportCompositionWarning("Report composition payload is blank")
         return null
     }
 
@@ -101,32 +103,27 @@ internal fun parseReportCompositionContent(content: String): ReportCompositionDa
         val totalDurationSeconds = payload.optLong("total_duration_seconds", 0L).coerceAtLeast(0L)
         val activeRootCount = payload.optInt("active_root_count", 0).coerceAtLeast(0)
         val rangeDays = payload.optInt("range_days", 0).coerceAtLeast(0)
-        val slicesArray = payload.optJSONArray("slices")
-        val slices = mutableListOf<ReportCompositionSlice>()
-        if (slicesArray != null) {
-            for (index in 0 until slicesArray.length()) {
-                val row = slicesArray.optJSONObject(index) ?: continue
-                val root = row.optString("root", "").trim()
-                if (root.isEmpty()) {
-                    continue
-                }
-                val durationSeconds = row.optLong("duration_seconds", 0L).coerceAtLeast(0L)
-                val percent = row.optDouble("percent", 0.0).toFloat().coerceAtLeast(0f)
-                slices += ReportCompositionSlice(
-                    root = root,
-                    durationSeconds = durationSeconds,
-                    percent = percent
-                )
-            }
+        val tree = parseTreeNodes(payload.optJSONArray("tree") ?: return null)
+
+        val occurrenceFieldNodeCount = tree.countNodes { it.occurrenceCount != null }
+        val positiveOccurrenceNodeCount = tree.countNodes {
+            (it.occurrenceCount ?: 0L) > 0L
         }
+        logReportCompositionInfo(
+            "Parsed report composition: roots=${tree.size}, " +
+                "nodes=${countTreeNodes(tree)}, " +
+                "occurrenceFieldNodes=$occurrenceFieldNodeCount, " +
+                "positiveOccurrenceNodes=$positiveOccurrenceNodeCount"
+        )
 
         ReportCompositionData(
-            slices = slices,
             totalDurationSeconds = totalDurationSeconds,
             activeRootCount = activeRootCount,
-            rangeDays = rangeDays
+            rangeDays = rangeDays,
+            tree = tree
         )
-    } catch (_: Exception) {
+    } catch (error: Exception) {
+        logReportCompositionWarning("Invalid report composition payload", error)
         null
     }
 }
@@ -138,11 +135,21 @@ internal fun parseTreeQueryContent(content: String): ParsedTreeQueryPayload? {
 
     return try {
         val payload = JSONObject(content)
-        val roots = parseStringArray(payload.optJSONArray("roots"))
-        val nodes = parseTreeNodes(payload.optJSONArray("nodes"))
+        val legacyNodes = payload.optJSONArray("nodes")
+        val isSemanticTree = legacyNodes == null && payload.optString("action") == "tree"
+        val nodes = if (isSemanticTree) {
+            parseTreeNodes(payload.optJSONArray("roots"))
+        } else {
+            parseTreeNodes(legacyNodes)
+        }
+        val roots = if (isSemanticTree) {
+            nodes.map(TreeNode::name)
+        } else {
+            parseStringArray(payload.optJSONArray("roots"))
+        }
         ParsedTreeQueryPayload(
-            ok = payload.optBoolean("ok", false),
-            found = payload.optBoolean("found", true),
+            ok = if (isSemanticTree) true else payload.optBoolean("ok", false),
+            found = if (isSemanticTree) nodes.isNotEmpty() else payload.optBoolean("found", true),
             roots = roots,
             nodes = nodes,
             errorMessage = payload.optString("error_message", "")
@@ -183,6 +190,33 @@ internal fun parseMappingNamesContent(content: String): List<String> {
             }
         }
         unique.toList()
+    } catch (_: Exception) {
+        emptyList()
+    }
+}
+
+internal fun parseActivityAliasMappingsContent(content: String): List<ActivityAliasMappingEntry> {
+    if (content.isBlank()) {
+        return emptyList()
+    }
+
+    return try {
+        val payload = JSONObject(content)
+        val entriesArray = payload.optJSONArray("entries") ?: return emptyList()
+        val entries = mutableListOf<ActivityAliasMappingEntry>()
+        for (index in 0 until entriesArray.length()) {
+            val entry = entriesArray.optJSONObject(index) ?: continue
+            val alias = entry.optString("alias", "").trim()
+            val canonical = entry.optString("canonical", "").trim()
+            if (alias.isEmpty() || canonical.isEmpty()) {
+                continue
+            }
+            entries += ActivityAliasMappingEntry(
+                alias = alias,
+                canonical = canonical
+            )
+        }
+        entries
     } catch (_: Exception) {
         emptyList()
     }
@@ -233,30 +267,41 @@ private fun parseStringArray(jsonArray: JSONArray?): List<String> {
     return values.toList()
 }
 
-private fun parseTreeNodes(jsonArray: JSONArray?): List<TreeNode> {
+private fun parseTreeNodes(
+    jsonArray: JSONArray?,
+    parentPath: String = ""
+): List<TreeNode> {
     if (jsonArray == null) {
         return emptyList()
     }
     val nodes = mutableListOf<TreeNode>()
     for (index in 0 until jsonArray.length()) {
         val node = jsonArray.optJSONObject(index) ?: continue
-        parseTreeNode(node)?.let(nodes::add)
+        parseTreeNode(node, parentPath)?.let(nodes::add)
     }
     return nodes
 }
 
-private fun parseTreeNode(node: JSONObject): TreeNode? {
+private fun parseTreeNode(node: JSONObject, parentPath: String): TreeNode? {
     val name = node.optString("name", "").trim()
     if (name.isEmpty()) {
         return null
     }
-    val path = node.optString("path", "").trim()
+    val path = node.optString("path", "").trim().ifEmpty {
+        listOf(parentPath, name).filter { it.isNotBlank() }.joinToString("_")
+    }
     val durationSeconds = node.optNullableLong("duration_seconds")
-    val children = parseTreeNodes(node.optJSONArray("children"))
+    val occurrenceCount = node.optNullableLong("occurrence_count")
+    val parentDurationPercent = node.optNullableDouble("parent_duration_percent")
+        ?.toFloat()
+        ?.takeIf { it.isFinite() }
+    val children = parseTreeNodes(node.optJSONArray("children"), path)
     return TreeNode(
         name = name,
         path = path,
         durationSeconds = durationSeconds,
+        occurrenceCount = occurrenceCount,
+        parentDurationPercent = parentDurationPercent,
         children = children
     )
 }
@@ -275,6 +320,34 @@ private fun JSONObject.optNullableInt(fieldName: String): Int? {
     }
     val raw = opt(fieldName)
     return if (raw is Number) raw.toInt() else null
+}
+
+private fun List<TreeNode>.countNodes(predicate: (TreeNode) -> Boolean): Int = sumOf { node ->
+    (if (predicate(node)) 1 else 0) + node.children.countNodes(predicate)
+}
+
+private const val REPORT_COMPOSITION_LOG_TAG = "TracerComposition"
+
+private fun logReportCompositionInfo(message: String) {
+    runCatching { Log.i(REPORT_COMPOSITION_LOG_TAG, message) }
+}
+
+private fun logReportCompositionWarning(message: String, error: Throwable? = null) {
+    runCatching {
+        if (error == null) {
+            Log.w(REPORT_COMPOSITION_LOG_TAG, message)
+        } else {
+            Log.w(REPORT_COMPOSITION_LOG_TAG, message, error)
+        }
+    }
+}
+
+private fun JSONObject.optNullableDouble(fieldName: String): Double? {
+    if (!has(fieldName) || isNull(fieldName)) {
+        return null
+    }
+    val raw = opt(fieldName)
+    return if (raw is Number) raw.toDouble() else null
 }
 
 private fun parseEpochDayOrNull(dateIso: String): Long? =

@@ -1,21 +1,22 @@
 package com.example.tracer
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountTree
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
-import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -25,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.record.R
 
@@ -38,10 +38,7 @@ internal fun RecordQuickAccessCard(
     onQuickActivitiesUpdate: (List<String>) -> Boolean,
     assistSettingsExpanded: Boolean,
     onToggleAssistSettings: () -> Unit,
-    suggestionLookbackDays: Int,
-    suggestionTopN: Int,
-    onSuggestionLookbackDaysChange: (String) -> Unit,
-    onSuggestionTopNChange: (String) -> Unit,
+    onOpenCanonicalCatalog: () -> Unit,
     quickActivitySearch: String,
     onQuickActivitySearchChange: (String) -> Unit,
     maxQuickActivityCount: Int
@@ -74,7 +71,6 @@ internal fun RecordQuickAccessCard(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onToggleAssistSettings() }
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
@@ -88,19 +84,38 @@ internal fun RecordQuickAccessCard(
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
-                    Icon(
-                        imageVector = if (assistSettingsExpanded) {
-                            Icons.Default.ExpandLess
-                        } else {
-                            Icons.Default.ExpandMore
-                        },
-                        contentDescription = if (assistSettingsExpanded) {
-                            stringResource(R.string.record_cd_collapse)
-                        } else {
-                            stringResource(R.string.record_cd_expand)
-                        },
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                    ) {
+                        IconButton(
+                            onClick = onOpenCanonicalCatalog,
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AccountTree,
+                                contentDescription = stringResource(
+                                    R.string.record_cd_open_canonical_catalog
+                                ),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        IconButton(onClick = onToggleAssistSettings) {
+                            Icon(
+                                imageVector = if (assistSettingsExpanded) {
+                                    Icons.Default.ExpandLess
+                                } else {
+                                    Icons.Default.ExpandMore
+                                },
+                                contentDescription = if (assistSettingsExpanded) {
+                                    stringResource(R.string.record_cd_collapse)
+                                } else {
+                                    stringResource(R.string.record_cd_expand)
+                                },
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
                 }
                 Text(
                     text = stringResource(R.string.record_hint_long_press_drag_sort),
@@ -116,31 +131,6 @@ internal fun RecordQuickAccessCard(
                         .padding(bottom = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text(
-                        stringResource(R.string.record_title_assist_settings),
-                        style = MaterialTheme.typography.titleSmall
-                    )
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedTextField(
-                            value = suggestionLookbackDays.toString(),
-                            onValueChange = onSuggestionLookbackDaysChange,
-                            label = { Text(stringResource(R.string.record_label_days)) },
-                            modifier = Modifier.weight(1f),
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Number
-                            )
-                        )
-                        OutlinedTextField(
-                            value = suggestionTopN.toString(),
-                            onValueChange = onSuggestionTopNChange,
-                            label = { Text(stringResource(R.string.record_label_top_n)) },
-                            modifier = Modifier.weight(1f),
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Number
-                            )
-                        )
-                    }
-
                     OutlinedTextField(
                         value = quickActivitySearch,
                         onValueChange = onQuickActivitySearchChange,

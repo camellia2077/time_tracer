@@ -35,7 +35,6 @@ fun DomainResult<DomainNativeEnvelope>.toLegacyNativeCallResult(
         }
     )
 }
-
 fun DomainResult<DomainNativeEnvelope>.toLegacyReportCallResult(
     failureRawResponse: (DomainError) -> String = { error -> error.legacyMessage() },
     failureOutput: (DomainError) -> String = { error -> error.legacyMessage() }
@@ -65,7 +64,6 @@ fun DomainResult<DomainNativeEnvelope>.toLegacyReportCallResult(
         }
     )
 }
-
 fun DomainResult<String>.toLegacyDataQueryTextResult(
     successMessage: (String) -> String = { "query ok" },
     failureOutputText: String = ""
@@ -89,16 +87,3 @@ fun DomainResult<String>.toLegacyDataQueryTextResult(
     )
 }
 
-fun TreeQueryResult.toLegacyDataQueryTextResult(): DataQueryTextResult {
-    val output = if (legacyText.isNotBlank()) {
-        legacyText
-    } else {
-        ""
-    }
-    return DataQueryTextResult(
-        ok = ok,
-        outputText = output,
-        message = message,
-        operationId = operationId
-    )
-}

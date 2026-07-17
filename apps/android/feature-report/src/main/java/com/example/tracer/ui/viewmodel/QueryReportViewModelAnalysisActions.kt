@@ -106,9 +106,7 @@ internal suspend fun runTreeAnalysisAction(
                 nodes = result.nodes,
                 found = result.found,
                 roots = result.roots,
-                message = result.message,
-                fallbackText = result.legacyText,
-                usesTextFallback = result.usesTextFallback
+                message = result.message
             )
         } else {
             null

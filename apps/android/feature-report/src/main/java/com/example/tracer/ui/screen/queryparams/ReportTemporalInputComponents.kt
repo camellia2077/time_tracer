@@ -21,6 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import com.example.tracer.feature.report.R
 import com.example.tracer.ui.components.CalendarDatePickerSheet
+import com.example.tracer.ui.components.CalendarAvailability
 import com.example.tracer.ui.components.CalendarWeekPickerSheet
 import com.example.tracer.ui.components.SegmentedDateInput
 import com.example.tracer.ui.components.TracerOutlinedTextFieldDefaults
@@ -50,7 +51,7 @@ internal fun ReportTemporalInputFields(
     onReportDateChange: (String) -> Unit,
     reportMonth: String,
     onReportMonthChange: (String) -> Unit,
-    availableTxtYears: List<String>,
+    calendarAvailability: CalendarAvailability,
     reportYear: String,
     onReportYearChange: (String) -> Unit,
     reportWeek: String,
@@ -63,83 +64,36 @@ internal fun ReportTemporalInputFields(
     onReportRecentDaysChange: (String) -> Unit
 ) {
     when (period) {
-        DataTreePeriod.DAY -> {
-            val (year, month, day) = splitDateDigits(reportDate)
-            val dayPickerState = resolveReportDayPickerState(
-                year = year,
-                month = month,
-                day = day
-            )
-            QueryYearMonthDropdownInput(
-                title = labels.monthTitle,
-                reportMonth = mergeYearMonthDigits(year, month),
-                availableYears = availableTxtYears,
-                onReportMonthChange = { nextYearMonth ->
-                    val (nextYear, nextMonth) = splitYearMonthDigits(nextYearMonth)
-                    onReportDateChange(mergeDateDigits(nextYear, nextMonth, day))
-                }
-            )
-            ReportDayPickerInput(
-                title = labels.dayTitle,
-                day = day,
-                keyboardOptions = keyboardOptions,
-                dayPickerState = dayPickerState,
-                onDayChange = { nextDay ->
-                    onReportDateChange(mergeDateDigits(year, month, nextDay))
-                },
-                onDayPicked = { pickedDate ->
-                    onReportDateChange(
-                        mergePickedReportDay(
-                            year = year,
-                            month = month,
-                            pickedDate = pickedDate
-                        )
-                    )
-                }
-            )
-        }
+        DataTreePeriod.DAY -> ReportDayTemporalInput(
+            labels = labels,
+            keyboardOptions = keyboardOptions,
+            reportDate = reportDate,
+            calendarAvailability = calendarAvailability,
+            onReportDateChange = onReportDateChange
+        )
 
-        DataTreePeriod.WEEK -> {
-            val weekPickerState = resolveReportWeekPickerState(
-                reportMonthDigits = reportMonth,
-                reportWeekDigits = reportWeek
-            )
-            QueryYearMonthDropdownInput(
-                title = labels.monthTitle,
-                reportMonth = reportMonth,
-                availableYears = availableTxtYears,
-                onReportMonthChange = onReportMonthChange
-            )
-            ReportWeekPickerInput(
-                title = labels.weekTitle,
-                selectedWeekLabel = weekPickerState?.selectedWeekLabel,
-                displayMonth = weekPickerState?.displayMonth,
-                selectedWeekDigits = weekPickerState?.selectedWeekRow?.isoWeekDigits,
-                onWeekPicked = onReportWeekChange
-            )
-        }
+        DataTreePeriod.WEEK -> ReportWeekTemporalInput(
+            labels = labels,
+            reportMonth = reportMonth,
+            reportWeek = reportWeek,
+            calendarAvailability = calendarAvailability,
+            onReportMonthChange = onReportMonthChange,
+            onReportWeekChange = onReportWeekChange
+        )
 
-        DataTreePeriod.MONTH -> {
-            QueryYearMonthDropdownInput(
-                title = labels.monthTitle,
-                reportMonth = reportMonth,
-                availableYears = availableTxtYears,
-                onReportMonthChange = onReportMonthChange
-            )
-        }
+        DataTreePeriod.MONTH -> ReportMonthTemporalInput(
+            title = labels.monthTitle,
+            reportMonth = reportMonth,
+            calendarAvailability = calendarAvailability,
+            onReportMonthChange = onReportMonthChange
+        )
 
-        DataTreePeriod.YEAR -> {
-            OutlinedTextField(
-                value = reportYear,
-                onValueChange = onReportYearChange,
-                label = { Text(labels.yearLabel) },
-                leadingIcon = { Icon(Icons.Filled.DateRange, contentDescription = null) },
-                singleLine = true,
-                keyboardOptions = keyboardOptions,
-                shape = TracerOutlinedTextFieldDefaults.shape,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
+        DataTreePeriod.YEAR -> ReportYearTemporalInput(
+            title = labels.yearLabel,
+            reportYear = reportYear,
+            calendarAvailability = calendarAvailability,
+            onReportYearChange = onReportYearChange
+        )
 
         DataTreePeriod.RANGE -> {
             val (startYear, startMonth, startDay) = splitDateDigits(reportRangeStartDate)
@@ -197,6 +151,94 @@ internal fun ReportTemporalInputFields(
             )
         }
     }
+}
+
+@Composable
+private fun ReportDayTemporalInput(
+    labels: TemporalInputLabels,
+    keyboardOptions: KeyboardOptions,
+    reportDate: String,
+    calendarAvailability: CalendarAvailability,
+    onReportDateChange: (String) -> Unit
+) {
+    val (year, month, day) = splitDateDigits(reportDate)
+    val dayPickerState = resolveReportDayPickerState(year, month, day)
+    ReportYearMonthPickerInput(
+        title = labels.monthTitle,
+        reportMonth = mergeYearMonthDigits(year, month),
+        availability = calendarAvailability,
+        onReportMonthChange = { nextYearMonth ->
+            val (nextYear, nextMonth) = splitYearMonthDigits(nextYearMonth)
+            onReportDateChange(mergeDateDigits(nextYear, nextMonth, day))
+        }
+    )
+    ReportDayPickerInput(
+        title = labels.dayTitle,
+        day = day,
+        keyboardOptions = keyboardOptions,
+        dayPickerState = dayPickerState,
+        onDayChange = { nextDay ->
+            onReportDateChange(mergeDateDigits(year, month, nextDay))
+        },
+        onDayPicked = { pickedDate ->
+            onReportDateChange(mergePickedReportDay(year, month, pickedDate))
+        }
+    )
+}
+
+@Composable
+private fun ReportWeekTemporalInput(
+    labels: TemporalInputLabels,
+    reportMonth: String,
+    reportWeek: String,
+    calendarAvailability: CalendarAvailability,
+    onReportMonthChange: (String) -> Unit,
+    onReportWeekChange: (String) -> Unit
+) {
+    val weekPickerState = resolveReportWeekPickerState(reportMonth, reportWeek)
+    ReportYearMonthPickerInput(
+        title = labels.monthTitle,
+        reportMonth = reportMonth,
+        availability = calendarAvailability,
+        onReportMonthChange = onReportMonthChange
+    )
+    ReportWeekPickerInput(
+        title = labels.weekTitle,
+        selectedWeekLabel = weekPickerState?.selectedWeekLabel,
+        displayMonth = weekPickerState?.displayMonth,
+        selectedWeekDigits = weekPickerState?.selectedWeekRow?.isoWeekDigits,
+        onWeekPicked = onReportWeekChange
+    )
+}
+
+@Composable
+private fun ReportMonthTemporalInput(
+    title: String,
+    reportMonth: String,
+    calendarAvailability: CalendarAvailability,
+    onReportMonthChange: (String) -> Unit
+) {
+    ReportYearMonthPickerInput(
+        title = title,
+        reportMonth = reportMonth,
+        availability = calendarAvailability,
+        onReportMonthChange = onReportMonthChange
+    )
+}
+
+@Composable
+private fun ReportYearTemporalInput(
+    title: String,
+    reportYear: String,
+    calendarAvailability: CalendarAvailability,
+    onReportYearChange: (String) -> Unit
+) {
+    ReportYearPickerInput(
+        title = title,
+        reportYear = reportYear,
+        availability = calendarAvailability,
+        onReportYearChange = onReportYearChange
+    )
 }
 
 @Composable

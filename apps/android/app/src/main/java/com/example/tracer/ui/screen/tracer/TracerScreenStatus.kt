@@ -32,12 +32,7 @@ internal fun StatusSnackbarEffect(
         when (event) {
             is TracerTabUiEvent.ShowSnackbar -> {
                 snackbarHostState.currentSnackbarData?.dismiss()
-                val result = snackbarHostState.showSnackbar(
-                    message = event.message,
-                    actionLabel = event.actionLabel,
-                    withDismissAction = event.withDismissAction,
-                    duration = event.duration
-                )
+                val result = snackbarHostState.showSnackbar(event.visuals)
                 if (result == SnackbarResult.ActionPerformed && event.onActionEvent != null) {
                     onCoordinatorEvent(event.onActionEvent)
                 }

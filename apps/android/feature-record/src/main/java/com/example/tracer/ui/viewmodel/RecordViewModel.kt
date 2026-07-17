@@ -19,6 +19,23 @@ enum class RecordAuthoringMode {
     INTERVAL
 }
 
+enum class RecordSuggestionOutputMode {
+    CANONICAL,
+    ALIAS
+}
+
+data class RecordSuggestedActivity(
+    val canonicalToken: String,
+    val aliasToken: String = ""
+) {
+    fun displayToken(outputMode: RecordSuggestionOutputMode): String =
+        if (outputMode == RecordSuggestionOutputMode.ALIAS && aliasToken.isNotBlank()) {
+            aliasToken
+        } else {
+            canonicalToken
+        }
+}
+
 data class CryptoProgressUiState(
     val isVisible: Boolean = false,
     val operationText: String = "",
@@ -56,12 +73,22 @@ data class RecordUiState(
     // storage.
     val historyDraftsByFile: Map<String, String> = emptyMap(),
     val quickActivities: List<String> = listOf("meal", "洗漱", "上厕所"),
-    val assistExpanded: Boolean = false,
     val assistSettingsExpanded: Boolean = false,
     val suggestionLookbackDays: Int = 7,
     val suggestionTopN: Int = 5,
-    val suggestedActivities: List<String> = emptyList(),
+    val suggestionOutputMode: RecordSuggestionOutputMode = RecordSuggestionOutputMode.CANONICAL,
+    val canonicalCatalogDisplayMode: RecordSuggestionOutputMode =
+        RecordSuggestionOutputMode.CANONICAL,
+    val suggestedActivities: List<RecordSuggestedActivity> = emptyList(),
+    val canonicalCatalogRoots: List<CanonicalPathNode> = emptyList(),
+    val canonicalCatalogStatusText: String = "",
+    val lastRecordedActivityAlias: String = "",
+    val lastRecordedDuration: String = "",
+    val collapsedCanonicalRootPaths: Set<String> = emptySet(),
+    val orderedCanonicalRootPaths: List<String> = emptyList(),
     val suggestionsVisible: Boolean = false,
+    val isCanonicalCatalogVisible: Boolean = false,
+    val isCanonicalCatalogLoading: Boolean = false,
     val isSuggestionsLoading: Boolean = false,
     val isTxtPreviewVisible: Boolean = false,
     val isTxtPreviewLoading: Boolean = false,
@@ -150,16 +177,52 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
         )
     }
 
+    fun updateSuggestionPreferencesAndReloadIfVisible(lookbackDays: Int, topN: Int) {
+        uiState = intentHandler.updateSuggestionPreferences(
+            state = uiState,
+            lookbackDays = lookbackDays,
+            topN = topN
+        )
+        if (!uiState.suggestionsVisible) {
+            return
+        }
+
+        uiState = intentHandler.showSuggestionsLoading(uiState)
+        viewModelScope.launch {
+            val resultState = intentHandler.loadActivitySuggestions(uiState)
+            uiState = uiState.copy(
+                suggestedActivities = resultState.suggestedActivities,
+                isSuggestionsLoading = resultState.isSuggestionsLoading,
+                statusText = resultState.statusText
+            )
+        }
+    }
+
+    fun updateSuggestionOutputMode(value: RecordSuggestionOutputMode) {
+        uiState = intentHandler.updateSuggestionOutputMode(uiState, value)
+    }
+
+    fun updateCanonicalCatalogDisplayMode(value: RecordSuggestionOutputMode) {
+        uiState = intentHandler.updateCanonicalCatalogDisplayMode(uiState, value)
+    }
+
     fun updateQuickActivities(values: List<String>) {
         uiState = intentHandler.updateQuickActivities(uiState, values)
     }
 
-    fun updateAssistUiState(assistExpanded: Boolean, assistSettingsExpanded: Boolean) {
+    fun updateAssistUiState(assistSettingsExpanded: Boolean) {
         uiState = intentHandler.updateAssistUiState(
             state = uiState,
-            assistExpanded = assistExpanded,
             assistSettingsExpanded = assistSettingsExpanded
         )
+    }
+
+    fun updateCollapsedCanonicalRootPaths(paths: Set<String>) {
+        uiState = intentHandler.updateCollapsedCanonicalRootPaths(uiState, paths)
+    }
+
+    fun updateOrderedCanonicalRootPaths(paths: List<String>) {
+        uiState = intentHandler.updateOrderedCanonicalRootPaths(uiState, paths)
     }
 
     fun toggleSuggestions() {
@@ -179,8 +242,31 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
         }
     }
 
+    fun dismissSuggestions() {
+        uiState = intentHandler.hideSuggestions(uiState)
+    }
+
     fun applySuggestedActivity(activityName: String) {
-        uiState = intentHandler.applySuggestedActivity(uiState, activityName)
+        uiState = intentHandler.hideSuggestions(uiState)
+        viewModelScope.launch {
+            uiState = intentHandler.applySuggestedActivity(uiState, activityName)
+            persistRecordInputState()
+        }
+    }
+
+    fun openCanonicalCatalog() {
+        uiState = intentHandler.showCanonicalCatalogLoading(uiState)
+        viewModelScope.launch {
+            uiState = intentHandler.loadCanonicalCatalog(uiState)
+        }
+    }
+
+    fun dismissCanonicalCatalog() {
+        uiState = intentHandler.hideCanonicalCatalog(uiState)
+    }
+
+    fun applyCanonicalCatalogEntry(token: String) {
+        uiState = intentHandler.applyCanonicalCatalogEntry(uiState, token)
         persistRecordInputState()
     }
 
@@ -350,6 +436,7 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
             }
         }
     }
+
 }
 
 class RecordViewModelFactory(
@@ -358,6 +445,7 @@ class RecordViewModelFactory(
     private val queryGateway: QueryGateway,
     private val initialPersistedRecordInput: PersistedRecordInputSnapshot = PersistedRecordInputSnapshot(),
     private val recordInputPersistence: RecordInputPersistence = NoOpRecordInputPersistence,
+    private val textProvider: RecordTextProvider = DefaultRecordTextProvider,
     private val clock: Clock = Clock.systemDefaultZone()
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -369,6 +457,7 @@ class RecordViewModelFactory(
                     txtStorageGateway = txtStorageGateway,
                     queryGateway = queryGateway,
                     recordInputPersistence = recordInputPersistence,
+                    textProvider = textProvider,
                     clock = clock
                 )
             ).also {

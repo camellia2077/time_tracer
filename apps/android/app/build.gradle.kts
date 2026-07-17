@@ -383,11 +383,12 @@ androidComponents {
 
 val releaseApkDir = layout.buildDirectory.dir("outputs/apk/release")
 val renamedReleaseApkDir = layout.buildDirectory.dir("outputs/final-apk/release")
+val renamedReleaseApkName = "TimeTracer-release.apk"
 
 val renameReleaseApk by tasks.registering(Copy::class) {
     from(releaseApkDir)
     include("*-release.apk")
-    rename { "Tracer.apk" }
+    rename { renamedReleaseApkName }
     into(renamedReleaseApkDir)
 }
 
@@ -419,7 +420,7 @@ val qaReleaseDeviceSmoke by tasks.registering {
         qaRelease,
         renameReleaseApk,
     )
-    val releaseApk = renamedReleaseApkDir.map { it.file("Tracer.apk") }
+    val releaseApk = renamedReleaseApkDir.map { it.file(renamedReleaseApkName) }
     val reportDir = layout.buildDirectory.dir("reports/release-startup-smoke")
     inputs.file(releaseApk)
     outputs.dir(reportDir)

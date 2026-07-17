@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Keep the product name fixed as "Tracer" in every locale. Do not localize or rename. -->
     <string name="app_name">Tracer</string>
 
     <string name="tracer_tab_data">Data</string>
@@ -10,7 +11,9 @@
 
 
     <string name="tracer_export_all_tracer_canceled">Complete exchange package export canceled.</string>
+    <string name="tracer_export_current_txt_canceled">TXT/TOML export canceled.</string>
     <string name="tracer_export_all_failed_no_months">Complete exchange package export failed: no available months.</string>
+    <string name="tracer_export_current_txt_failed_no_selection">TXT/TOML export failed: no TXT or TOML files are available.</string>
     <string name="tracer_export_error_invalid_month_key">%1$s: invalid month key.</string>
     <string name="tracer_export_error_source_file_not_found">%1$s: source file not found.</string>
     <string name="tracer_export_error_read_failed">%1$s: %2$s</string>
@@ -28,15 +31,24 @@
     </plurals>
     <string name="tracer_export_all_tracer_completed">Complete exchange package export completed -&gt; TXT %1$d/%2$d, config TOML %3$d, manifest %4$d. %5$s</string>
     <string name="tracer_export_all_tracer_failed">Complete exchange package export failed: %1$s</string>
+    <string name="tracer_export_current_txt_completed">TXT/TOML export completed -&gt; TXT %1$d, TOML %2$d.</string>
+    <string name="tracer_export_current_txt_failed">TXT/TOML export failed: %1$s</string>
     <string name="tracer_export_unknown_error">unknown error</string>
     <string name="tracer_export_already_in_progress">Export already in progress.</string>
     <string name="tracer_export_select_tracer_destination">Select destination folder for complete exchange package export.</string>
+    <string name="tracer_export_select_current_txt_destination">Select destination folder for TXT/TOML export.</string>
     <string name="tracer_import_select_txt_folder">Selecting TXT folder...</string>
     <string name="tracer_import_txt_folder_canceled">TXT folder import canceled.</string>
     <string name="tracer_import_txt_folder_failed">TXT folder import failed: %1$s</string>
     <string name="tracer_import_txt_folder_no_txt_found">TXT folder import skipped: no TXT files found.</string>
     <string name="tracer_import_txt_folder_completed_success">TXT folder import completed -&gt; %1$d/%2$d TXT files.</string>
     <string name="tracer_import_txt_folder_completed_with_errors">TXT folder import completed -&gt; %1$d/%2$d TXT files. %3$s</string>
+    <string name="tracer_import_select_toml_folder">Selecting TOML folder...</string>
+    <string name="tracer_import_toml_folder_canceled">TOML folder import canceled.</string>
+    <string name="tracer_import_toml_folder_failed">TOML folder import failed: %1$s</string>
+    <string name="tracer_import_toml_folder_no_toml_found">TOML folder import skipped: no TOML files found.</string>
+    <string name="tracer_import_toml_folder_completed_success">TOML folder import completed -&gt; %1$d/%2$d TOML files.</string>
+    <string name="tracer_import_toml_folder_completed_with_errors">TOML folder import completed -&gt; %1$d/%2$d TOML files. %3$s</string>
     <string name="tracer_import_select_single_tracer">Selecting single TRACER...</string>
     <string name="tracer_import_single_tracer_canceled">Single TRACER import canceled.</string>
     <string name="tracer_import_single_tracer_failed">Single TRACER import failed: %1$s</string>
@@ -95,7 +107,7 @@
     <string name="config_label_report_breakdown_palette">Breakdown Chart Palette</string>
     <string name="config_report_breakdown_palette_current">Breakdown Chart Palette (Current: %1$s)</string>
     <string name="config_report_breakdown_palette_tap_expand">Breakdown Chart Palette (Tap to Expand)</string>
-    <string name="config_report_breakdown_palette_preview_hint">Used by breakdown pie and horizontal bar charts. Preview both visuals below before applying the palette.</string>
+    <string name="config_report_breakdown_palette_preview_hint">Used by breakdown pie and horizontal bar charts. Colors are ordered from the largest share to the smallest; preview both visuals below before applying.</string>
     <string name="config_report_breakdown_palette_pie_preview">Breakdown Pie Preview</string>
     <string name="config_report_breakdown_palette_bar_preview">Breakdown Horizontal Bar Preview</string>
     <string name="config_report_breakdown_palette_soft">Soft</string>
@@ -110,6 +122,16 @@
 
     <string name="config_title_configuration_files">Configuration Files</string>
     <string name="config_action_refresh_list">Refresh List</string>
+    <string name="config_action_new_alias_mapping">New Alias Mapping</string>
+    <string name="config_action_delete_alias_mapping">Delete Alias Mapping</string>
+    <string name="config_title_delete_alias_mapping">Delete %1$s?</string>
+    <string name="config_delete_alias_mapping_warning">Deleting this alias mapping may prevent past records using its aliases from being parsed correctly. This cannot be undone.</string>
+    <string name="config_title_new_alias_mapping">New Alias Mapping</string>
+    <string name="config_label_new_alias_file_name">File name</string>
+    <string name="config_new_alias_file_location">Created in converter/aliases/</string>
+    <string name="config_action_create">Create</string>
+    <string name="config_action_cancel">Cancel</string>
+    <string name="config_action_delete">Delete</string>
     <string name="config_category_converter">Converter</string>
     <string name="config_category_charts">Charts</string>
     <string name="config_category_meta">Meta</string>
@@ -122,6 +144,10 @@
     <string name="config_title_editor_file">Editor: %1$s</string>
     <string name="config_label_toml_content">TOML Content</string>
     <string name="config_action_save_changes">Save Changes</string>
+    <string name="config_auto_save_status_idle">Auto-save ready</string>
+    <string name="config_auto_save_status_saving">Auto-saving...</string>
+    <string name="config_auto_save_status_saved">Saved</string>
+    <string name="config_auto_save_status_failed">Save failed</string>
     <string name="config_alias_mode_structured">Structured</string>
     <string name="config_alias_mode_advanced">Advanced</string>
     <string name="config_alias_structured_unavailable">Structured alias editing is unavailable for this file.</string>
@@ -131,14 +157,16 @@
     <string name="config_alias_action_rename">Edit</string>
     <string name="config_alias_action_delete">Delete</string>
     <string name="config_alias_dialog_add_group_title">Add Alias Group</string>
-    <string name="config_alias_dialog_rename_group_title">Rename Alias Group</string>
     <string name="config_alias_dialog_add_entry_title">Add Alias Entry</string>
     <string name="config_alias_dialog_edit_entry_title">Edit Alias Entry</string>
+    <string name="config_alias_dialog_rename_alias_title">Rename Alias</string>
     <string name="config_alias_group_name_label">Group Name</string>
     <string name="config_alias_group_name_required">Group name must not be empty.</string>
     <string name="config_alias_alias_key_label">Alias Key</string>
     <string name="config_alias_canonical_leaf_label">Canonical Leaf</string>
+    <string name="config_alias_canonical_leaf_readonly">Canonical leaf: %1$s</string>
     <string name="config_alias_entry_required">Alias key and canonical leaf must not be empty.</string>
+    <string name="config_alias_alias_key_required">Alias key must not be empty.</string>
 
     <string name="config_title_about">About</string>
     <string name="config_about_author">Author: %1$s</string>

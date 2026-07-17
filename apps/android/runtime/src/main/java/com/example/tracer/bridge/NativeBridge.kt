@@ -26,11 +26,12 @@ object NativeBridge {
     const val QUERY_ACTION_ACTIVITY_SUGGEST = 6
     const val QUERY_ACTION_TREE = 7
     const val QUERY_ACTION_MAPPING_NAMES = 8
-    const val QUERY_ACTION_REPORT_CHART = 9
-    const val QUERY_ACTION_MAPPING_ALIAS_KEYS = 10
-    const val QUERY_ACTION_WAKE_KEYWORDS = 11
-    const val QUERY_ACTION_AUTHORABLE_EVENT_TOKENS = 12
-    const val QUERY_ACTION_REPORT_COMPOSITION = 13
+    const val QUERY_ACTION_ACTIVITY_ALIAS_MAPPINGS = 9
+    const val QUERY_ACTION_REPORT_CHART = 10
+    const val QUERY_ACTION_MAPPING_ALIAS_KEYS = 11
+    const val QUERY_ACTION_WAKE_KEYWORDS = 12
+    const val QUERY_ACTION_AUTHORABLE_EVENT_TOKENS = 13
+    const val QUERY_ACTION_REPORT_COMPOSITION = 14
 
     private val cryptoProgressListenerRef = AtomicReference<((String) -> Unit)?>(null)
 
@@ -154,15 +155,6 @@ object NativeBridge {
         treePeriodArgument: String,
         treeMaxDepth: Int,
         outputMode: String
-    ): String
-
-    external fun nativeTree(
-        listRoots: Boolean,
-        rootPattern: String,
-        maxDepth: Int,
-        period: String,
-        periodArgument: String,
-        root: String
     ): String
 
     external fun nativeReportJson(

@@ -21,12 +21,10 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import java.time.LocalDate
-import java.time.temporal.ChronoUnit
 import kotlin.math.min
 
 internal enum class ReportHeatmapMode {
-    MONTH,
-    YEAR
+    MONTH
 }
 
 private data class ParsedHeatmapPoint(
@@ -50,6 +48,7 @@ internal fun ReportHeatmapChart(
     points: List<ReportChartPoint>,
     selectedIndex: Int,
     mode: ReportHeatmapMode,
+    anchorDateOverride: LocalDate? = null,
     heatmapTomlConfig: ReportHeatmapTomlConfig,
     heatmapStylePreference: ReportHeatmapStylePreference,
     isAppDarkThemeActive: Boolean,
@@ -57,8 +56,8 @@ internal fun ReportHeatmapChart(
     modifier: Modifier = Modifier
 ) {
     val parsedPoints = remember(points) { parseHeatmapPoints(points) }
-    val anchorDate = remember(parsedPoints, selectedIndex) {
-        resolveAnchorDate(parsedPoints = parsedPoints, selectedIndex = selectedIndex)
+    val anchorDate = remember(parsedPoints, selectedIndex, anchorDateOverride) {
+        anchorDateOverride ?: resolveAnchorDate(parsedPoints = parsedPoints, selectedIndex = selectedIndex)
     }
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
 
@@ -125,7 +124,7 @@ internal fun ReportHeatmapChart(
             return@Canvas
         }
 
-        val selectedStrokeWidth = if (mode == ReportHeatmapMode.YEAR) 1.2f else 2f
+        val selectedStrokeWidth = 2f
 
         plot.cells.forEach { cell ->
             val color = resolveHeatmapColor(
@@ -188,10 +187,6 @@ private fun buildHeatmapPlot(
         ReportHeatmapMode.MONTH -> HeatmapPlot(
             cells = buildMonthHeatmapCells(points = points, anchorDate = anchorDate, size = size)
         )
-
-        ReportHeatmapMode.YEAR -> HeatmapPlot(
-            cells = buildYearHeatmapCells(points = points, anchorDate = anchorDate, size = size)
-        )
     }
 }
 
@@ -240,53 +235,6 @@ private fun buildMonthHeatmapCells(
             pointIndex = point?.index ?: -1,
             durationSeconds = point?.durationSeconds ?: 0L
         )
-    }
-    return cells
-}
-
-private fun buildYearHeatmapCells(
-    points: List<ParsedHeatmapPoint>,
-    anchorDate: LocalDate,
-    size: Size
-): List<HeatmapCell> {
-    val year = anchorDate.year
-    val startDate = LocalDate.of(year, 1, 1)
-    val endDate = LocalDate.of(year, 12, 31)
-
-    val firstWeekStart = startDate.minusDays((startDate.dayOfWeek.value - 1).toLong())
-    val lastWeekStart = endDate.minusDays((endDate.dayOfWeek.value - 1).toLong())
-    val weekCount = ChronoUnit.WEEKS.between(firstWeekStart, lastWeekStart).toInt() + 1
-    val rows = 7
-
-    val spacing = 2f
-    val horizontalPadding = 8f
-    val verticalPadding = 8f
-    val usableWidth = (size.width - horizontalPadding * 2f - spacing * (weekCount - 1))
-        .coerceAtLeast(1f)
-    val usableHeight = (size.height - verticalPadding * 2f - spacing * (rows - 1))
-        .coerceAtLeast(1f)
-    val cellWidth = usableWidth / weekCount.toFloat()
-    val cellHeight = usableHeight / rows.toFloat()
-
-    val pointsByDate = points.associateBy { point -> point.date }
-    val cells = mutableListOf<HeatmapCell>()
-
-    var cursor = startDate
-    while (!cursor.isAfter(endDate)) {
-        val weekStart = cursor.minusDays((cursor.dayOfWeek.value - 1).toLong())
-        val column = ChronoUnit.WEEKS.between(firstWeekStart, weekStart).toInt()
-        val row = cursor.dayOfWeek.value - 1
-        val topLeft = Offset(
-            x = horizontalPadding + column * (cellWidth + spacing),
-            y = verticalPadding + row * (cellHeight + spacing)
-        )
-        val point = pointsByDate[cursor]
-        cells += HeatmapCell(
-            rect = Rect(topLeft, Size(cellWidth, cellHeight)),
-            pointIndex = point?.index ?: -1,
-            durationSeconds = point?.durationSeconds ?: 0L
-        )
-        cursor = cursor.plusDays(1)
     }
     return cells
 }
@@ -397,9 +345,9 @@ private fun resolveCellCornerRadius(
     mode: ReportHeatmapMode
 ): CornerRadius {
     val base = min(cell.rect.width, cell.rect.height)
-    val ratio = if (mode == ReportHeatmapMode.MONTH) 0.22f else 0.16f
-    val minRadius = if (mode == ReportHeatmapMode.MONTH) 2f else 1f
-    val maxRadius = if (mode == ReportHeatmapMode.MONTH) 8f else 4f
+    val ratio = 0.22f
+    val minRadius = 2f
+    val maxRadius = 8f
     val radius = (base * ratio).coerceIn(minRadius, maxRadius)
     return CornerRadius(radius, radius)
 }

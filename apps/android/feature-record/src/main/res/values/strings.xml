@@ -55,9 +55,11 @@
     <string name="record_action_record_to_today">Today</string>
     <string name="record_title_record_input">Record Input</string>
     <string name="record_cd_open_txt_preview">Open TXT Preview</string>
-    <string name="record_label_authoring_mode">Authoring Mode</string>
     <string name="record_mode_point">Point</string>
     <string name="record_mode_interval">Interval</string>
+    <string name="record_last_recorded_summary">Last:
+%1$s
+%2$s</string>
     <string name="record_label_activity_name">Activity Name</string>
     <string name="record_label_interval_start">Start (HHMM)</string>
     <string name="record_label_interval_end">End (HHMM)</string>
@@ -79,6 +81,16 @@
     <string name="record_hint_no_quick_activities">No quick activities. Use search and Add to create one.</string>
     <string name="record_action_suggestions">Suggestions</string>
     <string name="record_suggestions_sheet_title">Activity Suggestions</string>
+    <string name="record_suggestions_settings_title">Suggestion Settings</string>
+    <string name="record_canonical_catalog_title">Canonical Browser</string>
+    <string name="record_cd_open_canonical_catalog">Open canonical browser</string>
+    <string name="record_canonical_catalog_description">Browse canonical activity paths and tap one to fill the input.</string>
+    <string name="record_canonical_catalog_loading">Loading canonical catalog...</string>
+    <string name="record_canonical_catalog_empty">No canonical paths are available.</string>
+    <string name="record_canonical_catalog_display_mode_canonical">Browser display: canonical token</string>
+    <string name="record_canonical_catalog_display_mode_alias">Browser display: alias token</string>
+    <string name="record_suggestions_output_mode_canonical">Suggestion output: canonical token</string>
+    <string name="record_suggestions_output_mode_alias">Suggestion output: alias token</string>
     <string name="record_suggestions_target_logical_day">Logical Day: %1$s</string>
     <string name="record_suggestions_target_date">Target Date: %1$s</string>
     <string name="record_hint_loading">Loading...</string>
@@ -95,6 +107,14 @@
     <string name="record_txt_preview_day_block_missing">No day block exists for the current logical day yet.</string>
     <string name="record_txt_preview_day_block_empty">This day block is currently empty.</string>
     <string name="record_txt_preview_day_marker">Day Marker: %1$s</string>
+    <string name="record_cd_suggestion_output_canonical_selected">Suggestion output mode is canonical token</string>
+    <string name="record_cd_suggestion_output_alias_selected">Suggestion output mode is alias token</string>
+    <string name="record_cd_suggestion_output_switch_to_canonical">Switch suggestion output mode to canonical token</string>
+    <string name="record_cd_suggestion_output_switch_to_alias">Switch suggestion output mode to alias token</string>
+    <string name="record_cd_canonical_catalog_display_canonical_selected">Canonical browser display mode is canonical token</string>
+    <string name="record_cd_canonical_catalog_display_alias_selected">Canonical browser display mode is alias token</string>
+    <string name="record_cd_canonical_catalog_display_switch_to_canonical">Switch canonical browser display mode to canonical token</string>
+    <string name="record_cd_canonical_catalog_display_switch_to_alias">Switch canonical browser display mode to alias token</string>
 
     <string name="record_status_quick_activities_save_failed_empty_validation">Cannot save quick activities: configured authorable event token set is empty.</string>
     <string name="record_status_quick_activities_cannot_be_empty">Quick activities cannot be empty.</string>
@@ -102,7 +122,8 @@
         <item quantity="one">Quick activities cannot exceed %1$d entry.</item>
         <item quantity="other">Quick activities cannot exceed %1$d entries.</item>
     </plurals>
-    <string name="record_status_invalid_quick_activities">Invalid quick activities: %1$s. Must match configured authorable event token (alias key or wake keyword).</string>
+    <string name="record_status_invalid_quick_activities">Invalid quick activities: %1$s. Must match a configured authorable event token (alias key, canonical token, or wake keyword).</string>
     <string name="record_status_quick_activities_saved">Quick activities saved (%1$d).</string>
-    <string name="record_status_invalid_suggested_activity">Invalid suggested activity: %1$s. Must match configured authorable event token (alias key or wake keyword).</string>
+    <string name="record_status_invalid_suggested_activity">Invalid suggested activity: %1$s. Must match a configured authorable event token (alias key, canonical token, or wake keyword).</string>
+    <string name="record_duration_unavailable">n/a</string>
 </resources>

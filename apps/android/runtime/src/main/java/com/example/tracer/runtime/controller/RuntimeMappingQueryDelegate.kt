@@ -32,6 +32,19 @@ internal class RuntimeMappingQueryDelegate(
             }
         }
 
+    suspend fun listActivityAliasMappings(): ActivityAliasMappingListResult =
+        withContext(Dispatchers.IO) {
+            try {
+                queryActivityAliasMappingsFromCore()
+            } catch (error: Exception) {
+                ActivityAliasMappingListResult(
+                    ok = false,
+                    entries = emptyList(),
+                    message = formatNativeFailure("list activity alias mappings failed", error)
+                )
+            }
+        }
+
     suspend fun listWakeKeywords(): ActivityMappingNamesResult =
         withContext(Dispatchers.IO) {
             try {
@@ -106,6 +119,46 @@ internal class RuntimeMappingQueryDelegate(
         )
     }
 
+    private fun queryActivityAliasMappingsFromCore(): ActivityAliasMappingListResult {
+        val queryResult = runDataQuery(
+            DataQueryRequest(
+                action = NativeBridge.QUERY_ACTION_ACTIVITY_ALIAS_MAPPINGS,
+                outputMode = DataQueryOutputMode.SEMANTIC_JSON
+            )
+        )
+        if (!queryResult.ok) {
+            return ActivityAliasMappingListResult(
+                ok = false,
+                entries = emptyList(),
+                message = appendFailureContext(
+                    message = "activity alias mappings query failed: ${queryResult.message}",
+                    operationId = queryResult.operationId
+                ),
+                operationId = queryResult.operationId
+            )
+        }
+
+        val entries = parseActivityAliasMappingsContent(queryResult.outputText)
+        if (entries.isEmpty()) {
+            return ActivityAliasMappingListResult(
+                ok = false,
+                entries = emptyList(),
+                message = appendFailureContext(
+                    message = "activity alias mappings query failed: empty mappings.",
+                    operationId = queryResult.operationId
+                ),
+                operationId = queryResult.operationId
+            )
+        }
+
+        return ActivityAliasMappingListResult(
+            ok = true,
+            entries = entries,
+            message = "Loaded ${entries.size} activity alias mapping entries.",
+            operationId = queryResult.operationId
+        )
+    }
+
     private fun queryActivityAliasKeysFromCore(): ActivityMappingNamesResult {
         return queryNamedMappingSet(
             action = NativeBridge.QUERY_ACTION_MAPPING_ALIAS_KEYS,
@@ -168,4 +221,3 @@ internal class RuntimeMappingQueryDelegate(
         )
     }
 }
-

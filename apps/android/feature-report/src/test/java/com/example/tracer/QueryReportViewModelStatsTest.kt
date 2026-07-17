@@ -66,6 +66,55 @@ class QueryReportViewModelStatsTest {
             )
         }
     }
+
+    @Test
+    fun onReportModeChange_hidesPreviouslyLoadedDayStats() = runTest {
+        val viewModel = QueryReportViewModel(
+            reportGateway = FakeReportGateway(),
+            queryGateway = FakeQueryGateway()
+        )
+
+        viewModel.loadDayStats(DataTreePeriod.DAY)
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.activeResult is QueryResult.Stats)
+
+        viewModel.onReportModeChange(ReportMode.WEEK)
+
+        assertEquals(ReportMode.WEEK, viewModel.uiState.reportMode)
+        assertEquals(null, viewModel.uiState.activeResult)
+    }
+
+    @Test
+    fun onReportModeChange_hidesPreviouslyLoadedDayProjectTree() = runTest {
+        val viewModel = QueryReportViewModel(
+            reportGateway = FakeReportGateway(),
+            queryGateway = FakeQueryGateway()
+        )
+        viewModel.loadTree(DataTreePeriod.DAY)
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.activeResult is QueryResult.Tree)
+
+        viewModel.onReportModeChange(ReportMode.MONTH)
+
+        assertEquals(ReportMode.MONTH, viewModel.uiState.reportMode)
+        assertEquals(null, viewModel.uiState.activeResult)
+    }
+
+    @Test
+    fun onReportModeChange_hidesProjectTreeFromAnyDifferentPeriod() = runTest {
+        val viewModel = QueryReportViewModel(
+            reportGateway = FakeReportGateway(),
+            queryGateway = FakeQueryGateway()
+        )
+        viewModel.loadTree(DataTreePeriod.WEEK)
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.activeResult is QueryResult.Tree)
+
+        viewModel.onReportModeChange(ReportMode.RANGE)
+
+        assertEquals(ReportMode.RANGE, viewModel.uiState.reportMode)
+        assertEquals(null, viewModel.uiState.activeResult)
+    }
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -97,7 +146,8 @@ private class FakeQueryGateway : QueryGateway {
 
     override suspend fun queryActivitySuggestions(
         lookbackDays: Int,
-        topN: Int
+        topN: Int,
+        anchorDateIso: String?
     ): ActivitySuggestionResult = ActivitySuggestionResult(
         ok = true,
         suggestions = emptyList(),
@@ -118,9 +168,6 @@ private class FakeQueryGateway : QueryGateway {
 
     override suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult =
         TreeQueryResult(ok = true, found = false, message = "ok")
-
-    override suspend fun queryProjectTreeText(params: DataTreeQueryParams): DataQueryTextResult =
-        DataQueryTextResult(ok = true, outputText = "", message = "ok")
 
     override suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult =
         ReportChartQueryResult(

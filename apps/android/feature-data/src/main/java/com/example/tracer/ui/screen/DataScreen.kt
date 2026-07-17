@@ -3,6 +3,7 @@ package com.example.tracer
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -36,16 +37,22 @@ import com.example.tracer.feature.data.R
 private enum class DestructiveAction {
     ClearTxt,
     ClearDatabase,
+    RebuildDatabase,
     ClearAllData
 }
+
+private val DataScreenBottomContentPadding = 96.dp
 
 @Composable
 fun DataManagementSection(
     modifier: Modifier = Modifier,
     onImportSingleTxt: () -> Unit,
+    onImportTomlFolder: () -> Unit,
     onImportSingleTracer: () -> Unit,
     canExportAllMonthsTracer: Boolean,
+    canExportCurrentTxtTracer: Boolean,
     onExportAllMonthsTracer: () -> Unit,
+    onExportCurrentTxtTracer: () -> Unit,
     isTracerExportInProgress: Boolean,
     selectedTracerSecurityLevel: FileCryptoSecurityLevel,
     onTracerSecurityLevelChange: (FileCryptoSecurityLevel) -> Unit,
@@ -60,6 +67,7 @@ fun DataManagementSection(
     cryptoAdvancedDetailsText: String,
     onClearTxt: () -> Unit,
     onClearDatabase: () -> Unit,
+    onRebuildDatabase: () -> Unit,
     onClearData: () -> Unit
 ) {
     var pendingAction by remember { mutableStateOf<DestructiveAction?>(null) }
@@ -74,6 +82,7 @@ fun DataManagementSection(
 
     androidx.compose.foundation.lazy.LazyColumn(
         modifier = modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(bottom = DataScreenBottomContentPadding),
         verticalArrangement = Arrangement.spacedBy(16.dp, androidx.compose.ui.Alignment.Bottom)
     ) {
         item {
@@ -96,6 +105,15 @@ fun DataManagementSection(
                         Icon(Icons.Filled.Refresh, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(stringResource(R.string.data_action_import_single_txt))
+                    }
+
+                    Button(
+                        onClick = onImportTomlFolder,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Filled.Refresh, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(stringResource(R.string.data_action_import_toml_folder))
                     }
 
                     Button(
@@ -222,6 +240,20 @@ fun DataManagementSection(
                     }
 
                     Button(
+                        onClick = onExportCurrentTxtTracer,
+                        enabled = canExportCurrentTxtTracer && !isTracerExportInProgress,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            if (isTracerExportInProgress) {
+                                stringResource(R.string.data_action_exporting)
+                            } else {
+                                stringResource(R.string.data_action_export_current_txt_tracer)
+                            }
+                        )
+                    }
+
+                    Button(
                         onClick = onExportAllMonthsTracer,
                         enabled = canExportAllMonthsTracer && !isTracerExportInProgress,
                         modifier = Modifier.fillMaxWidth()
@@ -275,6 +307,15 @@ fun DataManagementSection(
                         Text(stringResource(R.string.data_action_clear_database))
                     }
 
+                    OutlinedButton(
+                        onClick = { pendingAction = DestructiveAction.RebuildDatabase },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Filled.Refresh, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(stringResource(R.string.data_action_rebuild_database))
+                    }
+
                     Button(
                         onClick = { pendingAction = DestructiveAction.ClearAllData },
                         modifier = Modifier.fillMaxWidth(),
@@ -302,6 +343,10 @@ fun DataManagementSection(
                 R.string.data_dialog_clear_database_title,
                 R.string.data_dialog_clear_database_message
             )
+            DestructiveAction.RebuildDatabase -> Pair(
+                R.string.data_dialog_rebuild_database_title,
+                R.string.data_dialog_rebuild_database_message
+            )
             DestructiveAction.ClearAllData -> Pair(
                 R.string.data_dialog_clear_all_data_title,
                 R.string.data_dialog_clear_all_data_message
@@ -318,6 +363,7 @@ fun DataManagementSection(
                         when (currentAction) {
                             DestructiveAction.ClearTxt -> onClearTxt()
                             DestructiveAction.ClearDatabase -> onClearDatabase()
+                            DestructiveAction.RebuildDatabase -> onRebuildDatabase()
                             DestructiveAction.ClearAllData -> onClearData()
                         }
                         pendingAction = null

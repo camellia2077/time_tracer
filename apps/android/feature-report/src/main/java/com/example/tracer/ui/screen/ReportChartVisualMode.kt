@@ -6,7 +6,7 @@ internal enum class ReportChartVisualMode {
     LINE,
     BAR,
     HEATMAP_MONTH,
-    HEATMAP_YEAR
+    HEATMAP_MULTI_MONTH
 }
 
 internal fun ReportChartVisualMode.supportsAverageLineToggle(): Boolean =
@@ -16,6 +16,6 @@ internal fun ReportChartVisualMode.labelRes(): Int =
     when (this) {
         ReportChartVisualMode.LINE -> R.string.report_chart_visual_line
         ReportChartVisualMode.BAR -> R.string.report_chart_visual_bar
-        ReportChartVisualMode.HEATMAP_MONTH -> R.string.report_chart_visual_heatmap_month
-        ReportChartVisualMode.HEATMAP_YEAR -> R.string.report_chart_visual_heatmap_year
+        ReportChartVisualMode.HEATMAP_MONTH,
+        ReportChartVisualMode.HEATMAP_MULTI_MONTH -> R.string.report_chart_visual_heatmap
     }

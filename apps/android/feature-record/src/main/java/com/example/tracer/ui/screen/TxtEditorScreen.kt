@@ -1,5 +1,4 @@
 package com.example.tracer
-
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.record.R
+import com.example.tracer.ui.components.CalendarAvailability
 import java.time.Clock
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -71,14 +71,15 @@ fun TxtEditorSection(
             .distinctBy { it.key }
             .sortedBy { it.key }
     }
-    val monthsByYear = remember(parsedAvailableMonths) {
-        parsedAvailableMonths
-            .groupBy { it.year }
-            .mapValues { (_, value) -> value.map { it.month }.distinct().sorted() }
+    val calendarAvailability = remember(parsedAvailableMonths) {
+        // CalendarAvailability accepts strict YYYY-MM keys. Do not use
+        // YearMonthKey.toString() here: the data class's default rendering is
+        // "YearMonthKey(year=..., month=...)", which makes every month invalid
+        // and disables the TXT month picker.
+        CalendarAvailability.fromMonthKeys(parsedAvailableMonths.map { it.key })
     }
-    val availableYears = remember(monthsByYear) {
-        monthsByYear.keys.sorted()
-    }
+    val monthsByYear = calendarAvailability.monthsByYear
+    val availableYears = calendarAvailability.years
     val selectedYear = parseYearMonthKey(selectedMonth)?.year
         ?: availableYears.lastOrNull().orEmpty()
     val availableMonthValues = remember(monthsByYear, selectedYear) {
@@ -306,10 +307,31 @@ fun TxtEditorSection(
                                     onDiscardAllDraft = onDiscardUnsavedHistoryDraft
                                 )
                             } else {
-                                // Opening the editor should hydrate DAY from the current
-                                // resolved body so a previously abandoned draft does not leak
-                                // into the next editing session.
-                                sessionController.openEditor(resolvedDayBlockState.dayBody)
+                                if (sessionState.outputMode == TxtOutputMode.DAY) {
+                                    coroutineScope.launch {
+                                        runtimeCoordinator.openDayEditor(
+                                            sessionController = sessionController,
+                                            selectedHistoryFile = selectedHistoryFile,
+                                            selectedMonth = selectedMonth,
+                                            logicalDayTarget = logicalDayTarget,
+                                            fallbackMonthContent = editableHistoryContent,
+                                            persistedMonthContent = selectedHistoryContent,
+                                            currentResolveResult = resolvedDayBlockState,
+                                            onMonthContentReconciled = { reconciledMonthContent ->
+                                                onEditableHistoryContentChange(reconciledMonthContent)
+                                                sessionController.syncExternalMonthDraft(
+                                                    selectedHistoryContent = selectedHistoryContent,
+                                                    editableHistoryContent = reconciledMonthContent
+                                                )
+                                            }
+                                        )
+                                    }
+                                } else {
+                                    // Opening the editor should hydrate DAY from the current
+                                    // resolved body so a previously abandoned draft does not leak
+                                    // into the next editing session.
+                                    sessionController.openEditor(resolvedDayBlockState.dayBody)
+                                }
                             }
                         },
                         editorText = editorUiState.editorText,

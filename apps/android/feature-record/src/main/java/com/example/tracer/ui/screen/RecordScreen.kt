@@ -38,16 +38,25 @@ fun RecordSection(
     quickActivities: List<String>,
     availableActivityNames: List<String>,
     onQuickActivitiesUpdate: (List<String>) -> Boolean,
-    assistExpanded: Boolean,
     assistSettingsExpanded: Boolean,
-    onToggleAssist: () -> Unit,
     onToggleAssistSettings: () -> Unit,
     suggestionLookbackDays: Int,
     suggestionTopN: Int,
     onSuggestionLookbackDaysChange: (String) -> Unit,
     onSuggestionTopNChange: (String) -> Unit,
-    suggestedActivities: List<String>,
+    suggestionOutputMode: RecordSuggestionOutputMode,
+    onSuggestionOutputModeChange: (RecordSuggestionOutputMode) -> Unit,
+    suggestedActivities: List<RecordSuggestedActivity>,
+    canonicalCatalogRoots: List<CanonicalPathNode>,
+    canonicalCatalogStatusText: String,
+    canonicalCatalogDisplayMode: RecordSuggestionOutputMode,
+    lastRecordedActivityAlias: String,
+    lastRecordedDuration: String,
+    collapsedCanonicalRootPaths: Set<String>,
+    orderedCanonicalRootPaths: List<String>,
     suggestionsVisible: Boolean,
+    isCanonicalCatalogVisible: Boolean,
+    isCanonicalCatalogLoading: Boolean,
     isSuggestionsLoading: Boolean,
     isTxtPreviewVisible: Boolean,
     isTxtPreviewLoading: Boolean,
@@ -61,7 +70,14 @@ fun RecordSection(
     onSelectLogicalDayToday: () -> Unit,
     onRefreshLogicalDayDefault: (Long) -> Unit,
     onToggleSuggestions: () -> Unit,
+    onDismissSuggestions: () -> Unit,
     onSuggestedActivityClick: (String) -> Unit,
+    onOpenCanonicalCatalog: () -> Unit,
+    onDismissCanonicalCatalog: () -> Unit,
+    onCanonicalCatalogDisplayModeChange: (RecordSuggestionOutputMode) -> Unit,
+    onCollapsedCanonicalRootPathsChange: (Set<String>) -> Unit,
+    onOrderedCanonicalRootPathsChange: (List<String>) -> Unit,
+    onCanonicalCatalogEntryClick: (String) -> Unit,
     onOpenTxtPreview: () -> Unit,
     onDismissTxtPreview: () -> Unit,
     onRecordNow: () -> Unit,
@@ -101,10 +117,7 @@ fun RecordSection(
             onQuickActivitiesUpdate = onQuickActivitiesUpdate,
             assistSettingsExpanded = assistSettingsExpanded,
             onToggleAssistSettings = onToggleAssistSettings,
-            suggestionLookbackDays = suggestionLookbackDays,
-            suggestionTopN = suggestionTopN,
-            onSuggestionLookbackDaysChange = onSuggestionLookbackDaysChange,
-            onSuggestionTopNChange = onSuggestionTopNChange,
+            onOpenCanonicalCatalog = onOpenCanonicalCatalog,
             quickActivitySearch = quickActivitySearch,
             onQuickActivitySearchChange = { quickActivitySearch = it },
             maxQuickActivityCount = MAX_QUICK_ACTIVITY_COUNT
@@ -121,6 +134,8 @@ fun RecordSection(
             onIntervalStartChange = onIntervalStartChange,
             intervalEnd = intervalEnd,
             onIntervalEndChange = onIntervalEndChange,
+            lastRecordedActivityAlias = lastRecordedActivityAlias,
+            lastRecordedDuration = lastRecordedDuration,
             suggestionsVisible = suggestionsVisible,
             onToggleSuggestions = onToggleSuggestions,
             onOpenTxtPreview = onOpenTxtPreview
@@ -139,10 +154,34 @@ fun RecordSection(
             logicalDayTarget = logicalDayTarget,
             logicalDayClock = logicalDayClock,
             suggestionLookbackDays = suggestionLookbackDays,
+            suggestionTopN = suggestionTopN,
+            suggestionOutputMode = suggestionOutputMode,
             isSuggestionsLoading = isSuggestionsLoading,
             suggestedActivities = suggestedActivities,
-            onDismissRequest = onToggleSuggestions,
+            onDismissRequest = onDismissSuggestions,
+            onSuggestionLookbackDaysChange = onSuggestionLookbackDaysChange,
+            onSuggestionTopNChange = onSuggestionTopNChange,
+            onSuggestionOutputModeChange = onSuggestionOutputModeChange,
             onSuggestedActivityClick = onSuggestedActivityClick
+        )
+    }
+
+    if (isCanonicalCatalogVisible) {
+        RecordCanonicalCatalogScreen(
+            isLoading = isCanonicalCatalogLoading,
+            roots = canonicalCatalogRoots,
+            statusText = canonicalCatalogStatusText,
+            displayMode = canonicalCatalogDisplayMode,
+            collapsedRootPaths = collapsedCanonicalRootPaths,
+            orderedRootPaths = orderedCanonicalRootPaths,
+            onDismissRequest = onDismissCanonicalCatalog,
+            onDisplayModeChange = onCanonicalCatalogDisplayModeChange,
+            onCollapsedRootPathsChange = onCollapsedCanonicalRootPathsChange,
+            onOrderedRootPathsChange = onOrderedCanonicalRootPathsChange,
+            onCanonicalPathClick = {
+                onCanonicalCatalogEntryClick(it)
+                onDismissCanonicalCatalog()
+            }
         )
     }
 

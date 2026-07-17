@@ -1,5 +1,13 @@
 package com.example.tracer
 
+import android.util.Log
+
+private const val REPORT_LOG_TAG = "TimeTracerReport"
+
+// Report failures are logged with the native error code/message so a logcat
+// capture can distinguish request construction problems from JNI startup or
+// runtime initialization failures.
+
 internal class NativeCallExecutor(
     private val initializeRuntime: () -> NativeCallResult,
     private val runtimePathsProvider: () -> RuntimePaths?,
@@ -161,6 +169,7 @@ internal class NativeCallExecutor(
             initializeRuntime()
         } catch (error: Exception) {
             val message = formatFailure("nativeInit failed", error)
+            Log.e(REPORT_LOG_TAG, "report init threw operation=$operationName id=$operationId message=$message", error)
             diagnosticsRecorder.record(
                 RuntimeDiagnosticRecord(
                     timestampEpochMs = System.currentTimeMillis(),
@@ -188,6 +197,11 @@ internal class NativeCallExecutor(
             val initMessage = responseCodec.parse(initResult.rawResponse)
                 .errorMessage
                 .ifEmpty { "native init failed." }
+            Log.e(
+                REPORT_LOG_TAG,
+                "report init failed operation=$operationName id=$operationId " +
+                    "message=$initMessage errorLogPath=${initResult.errorLogPath}"
+            )
             diagnosticsRecorder.record(
                 RuntimeDiagnosticRecord(
                     timestampEpochMs = System.currentTimeMillis(),
@@ -209,6 +223,10 @@ internal class NativeCallExecutor(
         val paths = runtimePathsProvider()
             ?: return reportTranslator.fromRuntimePathsMissing(operationId)
                 .also {
+                    Log.e(
+                        REPORT_LOG_TAG,
+                        "report runtime paths missing operation=$operationName id=$operationId"
+                    )
                     diagnosticsRecorder.record(
                         RuntimeDiagnosticRecord(
                             timestampEpochMs = System.currentTimeMillis(),
@@ -229,6 +247,11 @@ internal class NativeCallExecutor(
             action(paths)
         } catch (error: Exception) {
             val message = formatFailure("runtime report failed", error)
+            Log.e(
+                REPORT_LOG_TAG,
+                "report native call threw operation=$operationName id=$operationId message=$message",
+                error
+            )
             diagnosticsRecorder.record(
                 RuntimeDiagnosticRecord(
                     timestampEpochMs = System.currentTimeMillis(),
@@ -254,6 +277,16 @@ internal class NativeCallExecutor(
             response = response,
             operationId = operationId
         )
+        Log.i(
+            REPORT_LOG_TAG,
+            "report result operation=$operationName id=$operationId " +
+                "initialized=${result.initialized} ok=${result.operationOk} " +
+                "errorCode=${result.errorContract?.errorCode.orEmpty()} " +
+                "errorCategory=${result.errorContract?.errorCategory.orEmpty()} " +
+                "errorLogPath=${result.errorLogPath} " +
+                "window=${result.reportWindowMetadata?.toLogSummary().orEmpty()} " +
+                "outputPreview=${result.outputText.logPreview()}"
+        )
         val diagnosticMessage = if (result.operationOk) {
             "ok"
         } else {
@@ -276,6 +309,14 @@ internal class NativeCallExecutor(
         )
         return result
     }
+
+    private fun ReportWindowMetadata.toLogSummary(): String =
+        "${startDate}..${endDate}, requestedDays=$requestedDays, " +
+            "hasRecords=$hasRecords, matchedDays=$matchedDayCount, " +
+            "matchedRecords=$matchedRecordCount"
+
+    private fun String.logPreview(maxLength: Int = 500): String =
+        replace(Regex("\\s+"), " ").take(maxLength)
 
     private fun extractErrorLogPath(content: String): String {
         if (content.isBlank()) {

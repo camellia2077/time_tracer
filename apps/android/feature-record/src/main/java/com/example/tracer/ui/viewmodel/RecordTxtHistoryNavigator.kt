@@ -1,5 +1,9 @@
 package com.example.tracer
 
+import android.util.Log
+
+private const val TXT_TAB_LOG_TAG = "TxtTab"
+
 internal class RecordTxtHistoryNavigator(
     private val txtStorageGateway: TxtStorageGateway,
     private val currentMonthKeyProvider: () -> String
@@ -121,8 +125,10 @@ internal class RecordTxtHistoryNavigator(
         path: String,
         statusPrefixOverride: String? = null
     ): RecordUiState {
+        logInfo(TXT_TAB_LOG_TAG, "openHistoryFile request path=$path")
         val inspection = txtStorageGateway.inspectTxtFiles()
         if (!inspection.ok) {
+            logError(TXT_TAB_LOG_TAG, "inspectTxtFiles failed: ${inspection.message}")
             return state.copy(statusText = inspection.message)
         }
 
@@ -131,6 +137,10 @@ internal class RecordTxtHistoryNavigator(
         val inspectionEntry = sortedEntries.firstOrNull {
             it.relativePath.replace('\\', '/') == normalizedPath
         } ?: return state.copy(statusText = "TXT file $path not found.")
+        logInfo(
+            TXT_TAB_LOG_TAG,
+            "openHistoryFile resolved path=${inspectionEntry.relativePath} month=${inspectionEntry.headerMonth} canOpen=${inspectionEntry.canOpen}"
+        )
 
         return openInspectionEntry(
             state = state,
@@ -221,8 +231,16 @@ internal class RecordTxtHistoryNavigator(
         availableMonths: List<String>,
         statusPrefix: String?
     ): RecordUiState {
+        logInfo(
+            TXT_TAB_LOG_TAG,
+            "openInspectionEntry read path=${inspectionEntry.relativePath} statusPrefix=${statusPrefix.orEmpty()}"
+        )
         val readResult = txtStorageGateway.readTxtFile(inspectionEntry.relativePath)
         if (!readResult.ok) {
+            logError(
+                TXT_TAB_LOG_TAG,
+                "readTxtFile failed path=${inspectionEntry.relativePath} message=${readResult.message}"
+            )
             val noOpenableMessage = if (entries.isEmpty()) {
                 "$statusPrefix No openable TXT files found under input."
             } else {
@@ -246,6 +264,12 @@ internal class RecordTxtHistoryNavigator(
         // switching aligned with a system editor: unsaved text is visible again, but still not
         // persisted until the explicit ingest/save action runs.
         val restoredDraft = state.historyDraftsByFile[readResult.filePath] ?: readResult.content
+        val usedDraft = state.historyDraftsByFile.containsKey(readResult.filePath)
+        logInfo(
+            TXT_TAB_LOG_TAG,
+            "openInspectionEntry loaded path=${readResult.filePath} usedDraft=$usedDraft " +
+                "persisted=${readResult.content.toLogSnippet()} restored=${restoredDraft.toLogSnippet()}"
+        )
 
         return state.copy(
             historyFiles = entries.map { it.relativePath },
@@ -289,6 +313,23 @@ internal class RecordTxtHistoryNavigator(
             }
         }
         return index
+    }
+}
+
+private fun logInfo(tag: String, message: String) {
+    runCatching { Log.i(tag, message) }
+}
+
+private fun logError(tag: String, message: String) {
+    runCatching { Log.e(tag, message) }
+}
+
+private fun String.toLogSnippet(maxLength: Int = 160): String {
+    val sanitized = replace("\r", "\\r").replace("\n", "\\n")
+    return if (sanitized.length <= maxLength) {
+        sanitized
+    } else {
+        sanitized.take(maxLength) + "...(${sanitized.length})"
     }
 }
 

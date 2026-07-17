@@ -93,18 +93,18 @@ internal fun validateSuggestionQueryParams(
     lookbackDays: Int,
     topN: Int
 ): ActivitySuggestionResult? {
-    if (lookbackDays <= 0) {
+    if (lookbackDays < 0) {
         return ActivitySuggestionResult(
             ok = false,
             suggestions = emptyList(),
-            message = "lookbackDays must be greater than 0."
+            message = "lookbackDays must be greater than or equal to 0."
         )
     }
-    if (topN <= 0) {
+    if (topN < 0) {
         return ActivitySuggestionResult(
             ok = false,
             suggestions = emptyList(),
-            message = "topN must be greater than 0."
+            message = "topN must be greater than or equal to 0."
         )
     }
     return null

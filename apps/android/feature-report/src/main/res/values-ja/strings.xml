@@ -10,6 +10,9 @@
     <string name="report_result_mode_chart">グラフ</string>
 
     <string name="report_title_mode_parameters">%1$s パラメータ</string>
+    <string name="report_parameter_section_day">日</string>
+    <string name="report_parameter_section_tree">ツリー</string>
+    <string name="report_parameter_section_stats">統計</string>
     <string name="report_title_report_date">レポート日付</string>
     <string name="report_title_report_day">レポート日</string>
     <string name="report_title_report_month">レポート月</string>
@@ -31,7 +34,6 @@
     <string name="report_label_tree_level">ツリーレベル（-1 は無制限）</string>
     <string name="report_action_load_project_tree">%1$s プロジェクトツリーを読み込む</string>
 
-    <string name="report_title_chart_parameters">グラフパラメータ</string>
     <string name="report_label_chart_semantic">チャートの焦点</string>
     <string name="report_chart_semantic_trend">推移</string>
     <string name="report_chart_semantic_composition">内訳</string>
@@ -48,6 +50,17 @@
     <string name="report_chart_empty_in_range">選択した日付範囲にグラフデータがありません。</string>
     <string name="report_chart_empty_composition">この範囲には内訳データがありません。</string>
     <string name="report_label_chart_visual">グラフ種類</string>
+    <string name="report_label_chart_measure">内訳の集計方法</string>
+    <string name="report_label_select_year_month">年と月を選択</string>
+    <string name="report_sheet_select_year_month">年と月を選択</string>
+    <string name="report_sheet_select_year">年を選択</string>
+    <string name="report_sheet_current_month">現在：%1$s</string>
+    <string name="report_sheet_current_month_label">現在：</string>
+    <string name="report_sheet_current_month_unselected">未選択</string>
+    <string name="report_picker_field_value">%1$s: %2$s</string>
+    <string name="report_picker_year_title">年</string>
+    <string name="report_picker_year_placeholder">年</string>
+    <string name="report_picker_no_years">年がありません</string>
     <string name="report_label_chart_range_start">開始日</string>
     <string name="report_label_chart_range_end">終了日</string>
     <string name="report_chart_range_error_both_required">範囲フィルタでは開始日と終了日の両方が必要です。</string>
@@ -57,14 +70,21 @@
     <string name="report_chart_visual_line">折れ線</string>
     <string name="report_chart_visual_bar">縦棒</string>
     <string name="report_chart_visual_composition_pie">円</string>
-    <string name="report_chart_visual_composition_bar">横棒グラフ</string>
-    <string name="report_chart_visual_composition_treemap">ツリーマップ</string>
-    <string name="report_chart_visual_heatmap_month">ヒートマップ（月）</string>
-    <string name="report_chart_visual_heatmap_year">ヒートマップ（年）</string>
+    <string name="report_chart_visual_composition_bar">棒</string>
+    <string name="report_chart_visual_composition_treemap">ツリー</string>
+    <string name="report_chart_measure_duration">時間</string>
+    <string name="report_chart_measure_frequency">頻度</string>
+    <string name="report_chart_visual_heatmap">ヒートマップ</string>
     <string name="report_chart_pie_hint">扇形をタップしてルート、時間、割合を表示します。</string>
+    <string name="report_chart_pie_drilldown_hint">子ノードがある扇形または凡例の行をタップして、そのアクティビティ階層に進みます。</string>
+    <string name="report_chart_pie_drilldown_path">現在の階層: %1$s</string>
+    <string name="report_chart_pie_drilldown_back">%1$s に戻る</string>
+    <string name="report_chart_pie_drilldown_summary">アクティビティツリーを階層ごとにたどり、各階層の時間割合を確認できます。</string>
     <string name="report_chart_composition_bar_hint">行をタップしてルート、時間、割合を表示します。</string>
-    <string name="report_chart_composition_treemap_hint">タイルをタップしてルート、時間、割合を表示します。</string>
+    <string name="report_chart_bar_drilldown_hint">子ノードがある行をタップして次のアクティビティ階層に進みます。</string>
+    <string name="report_chart_composition_treemap_hint">タイルまたは凡例の行をタップしてアクティビティ、時間、割合を表示します。子ノードを持つ項目をタップすると次の階層に進みます。</string>
     <string name="report_chart_heatmap_hint">日付セルをタップして日付と時間を表示します。</string>
+    <string name="report_chart_heatmap_multi_month_hint">すべての月で同じ色スケールを使うため、直接比較できます。</string>
     <string name="report_chart_heatmap_theme_policy_label">ヒートマップテーマ</string>
     <string name="report_chart_heatmap_theme_policy_system">システム（デフォルト）</string>
     <string name="report_chart_heatmap_theme_policy_palette">手動</string>
@@ -74,12 +94,14 @@
     <string name="report_chart_toggle_average_line">平均線を表示</string>
     <string name="report_chart_average_duration">平均時間: %1$s</string>
     <string name="report_chart_total_duration">合計時間: %1$s</string>
+    <string name="report_chart_total_frequency">現在の階層の合計: %1$d 回</string>
     <string name="report_chart_active_roots">アクティブルート: %1$d</string>
     <string name="report_chart_range_days">期間日数: %1$d</string>
     <string name="report_chart_legacy_fallback_notice">現在はローカル平均の互換フォールバックを使用中（v0.3.0 で削除予定）。</string>
     <string name="report_chart_selected_detail">選択: %1$s ・ %2$s</string>
     <string name="report_chart_composition_summary">選択期間内の上位ルート内訳です。</string>
     <string name="report_chart_composition_selected_detail">選択: %1$s ・ %2$s (%3$.1f%%)</string>
+    <string name="report_chart_composition_selected_frequency_detail">選択: %1$s ・ %2$d 回 (%3$.1f%%)</string>
 
     <string name="report_title_section_day">%1$s 日</string>
     <string name="report_title_section_month">%1$s 月</string>
@@ -91,6 +113,7 @@
 
     <string name="report_cd_collapse">折りたたむ</string>
     <string name="report_cd_expand">展開</string>
+    <string name="report_cd_copy_markdown">Markdown をコピー</string>
 
     <string name="report_subject_stats">統計</string>
     <string name="report_subject_tree">ツリー</string>

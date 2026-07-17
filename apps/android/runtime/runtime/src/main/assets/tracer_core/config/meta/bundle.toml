@@ -10,7 +10,6 @@ required = [
   "config.toml",
   "converter/interval_processor_config.toml",
   "converter/alias_mapping.toml",
-  "converter/duration_rules.toml",
   "reports/markdown/day.toml",
   "reports/markdown/month.toml",
   "reports/markdown/period.toml",

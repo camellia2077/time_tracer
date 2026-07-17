@@ -18,6 +18,12 @@ data class DataImportOperationResult(
     val statusText: String
 )
 
+data class DestructiveActionStatusText(
+    val running: String,
+    val success: String,
+    val failure: String
+)
+
 class DataViewModel(
     runtimeInitializer: RuntimeInitializer,
     recordGateway: RecordGateway
@@ -32,9 +38,10 @@ class DataViewModel(
     private sealed interface DataIntent {
         data object InitializeRuntime : DataIntent
         data class IngestSingleTxtReplaceMonth(val inputPath: String) : DataIntent
-        data object ClearDataAndReinitialize : DataIntent
-        data object ClearDatabase : DataIntent
-        data object ClearTxt : DataIntent
+        data class ClearDataAndReinitialize(val statusText: DestructiveActionStatusText) : DataIntent
+        data class ClearDatabase(val statusText: DestructiveActionStatusText) : DataIntent
+        data class RebuildDatabase(val statusText: DestructiveActionStatusText) : DataIntent
+        data class ClearTxt(val statusText: DestructiveActionStatusText) : DataIntent
     }
 
     init {
@@ -61,16 +68,20 @@ class DataViewModel(
         )
     }
 
-    fun clearDataAndReinitialize() {
-        dispatchIntent(DataIntent.ClearDataAndReinitialize)
+    fun clearDataAndReinitialize(statusText: DestructiveActionStatusText) {
+        dispatchIntent(DataIntent.ClearDataAndReinitialize(statusText))
     }
 
-    fun clearDatabase() {
-        dispatchIntent(DataIntent.ClearDatabase)
+    fun clearDatabase(statusText: DestructiveActionStatusText) {
+        dispatchIntent(DataIntent.ClearDatabase(statusText))
     }
 
-    fun clearTxt() {
-        dispatchIntent(DataIntent.ClearTxt)
+    fun rebuildDatabase(statusText: DestructiveActionStatusText) {
+        dispatchIntent(DataIntent.RebuildDatabase(statusText))
+    }
+
+    fun clearTxt(statusText: DestructiveActionStatusText) {
+        dispatchIntent(DataIntent.ClearTxt(statusText))
     }
 
     fun setStatusText(text: String) {
@@ -88,9 +99,22 @@ class DataViewModel(
                     )
                 }
 
-                DataIntent.ClearDataAndReinitialize -> useCases.clearDataAndReinitialize(uiState)
-                DataIntent.ClearDatabase -> useCases.clearDatabase(uiState)
-                DataIntent.ClearTxt -> useCases.clearTxt(uiState)
+                is DataIntent.ClearDataAndReinitialize -> useCases.clearDataAndReinitialize(
+                    currentState = uiState,
+                    statusText = intent.statusText
+                )
+                is DataIntent.ClearDatabase -> useCases.clearDatabase(
+                    currentState = uiState,
+                    statusText = intent.statusText
+                )
+                is DataIntent.RebuildDatabase -> useCases.rebuildDatabase(
+                    currentState = uiState,
+                    statusText = intent.statusText
+                )
+                is DataIntent.ClearTxt -> useCases.clearTxt(
+                    currentState = uiState,
+                    statusText = intent.statusText
+                )
             }
         }
     }

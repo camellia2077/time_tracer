@@ -55,9 +55,11 @@
     <string name="record_action_record_to_today">今天</string>
     <string name="record_title_record_input">记录输入</string>
     <string name="record_cd_open_txt_preview">打开 TXT 预览</string>
-    <string name="record_label_authoring_mode">记录模式</string>
     <string name="record_mode_point">点事件</string>
     <string name="record_mode_interval">区间事件</string>
+    <string name="record_last_recorded_summary">上次：
+%1$s
+%2$s</string>
     <string name="record_label_activity_name">活动名称</string>
     <string name="record_label_interval_start">开始时间（HHMM）</string>
     <string name="record_label_interval_end">结束时间（HHMM）</string>
@@ -79,6 +81,16 @@
     <string name="record_hint_no_quick_activities">暂无快捷活动，请使用搜索框并点击“添加”。</string>
     <string name="record_action_suggestions">建议</string>
     <string name="record_suggestions_sheet_title">活动建议</string>
+    <string name="record_suggestions_settings_title">建议设置</string>
+    <string name="record_canonical_catalog_title">Canonical 浏览</string>
+    <string name="record_cd_open_canonical_catalog">打开 canonical 浏览</string>
+    <string name="record_canonical_catalog_description">按路径浏览 canonical 活动，点击即可填入输入框。</string>
+    <string name="record_canonical_catalog_loading">正在加载 canonical 目录...</string>
+    <string name="record_canonical_catalog_empty">当前没有可用的 canonical 路径。</string>
+    <string name="record_canonical_catalog_display_mode_canonical">浏览显示：规范 token</string>
+    <string name="record_canonical_catalog_display_mode_alias">浏览显示：alias token</string>
+    <string name="record_suggestions_output_mode_canonical">建议输出：规范 token</string>
+    <string name="record_suggestions_output_mode_alias">建议输出：alias token</string>
     <string name="record_suggestions_target_logical_day">逻辑日：%1$s</string>
     <string name="record_suggestions_target_date">目标日期：%1$s</string>
     <string name="record_hint_loading">加载中...</string>
@@ -95,13 +107,22 @@
     <string name="record_txt_preview_day_block_missing">当前 logical day 还没有对应的日块。</string>
     <string name="record_txt_preview_day_block_empty">当前日块内容为空。</string>
     <string name="record_txt_preview_day_marker">Day Marker：%1$s</string>
+    <string name="record_cd_suggestion_output_canonical_selected">当前建议输出模式为规范 token</string>
+    <string name="record_cd_suggestion_output_alias_selected">当前建议输出模式为 alias token</string>
+    <string name="record_cd_suggestion_output_switch_to_canonical">切换建议输出模式为规范 token</string>
+    <string name="record_cd_suggestion_output_switch_to_alias">切换建议输出模式为 alias token</string>
+    <string name="record_cd_canonical_catalog_display_canonical_selected">当前 canonical 浏览显示模式为规范 token</string>
+    <string name="record_cd_canonical_catalog_display_alias_selected">当前 canonical 浏览显示模式为 alias token</string>
+    <string name="record_cd_canonical_catalog_display_switch_to_canonical">切换 canonical 浏览显示模式为规范 token</string>
+    <string name="record_cd_canonical_catalog_display_switch_to_alias">切换 canonical 浏览显示模式为 alias token</string>
 
     <string name="record_status_quick_activities_save_failed_empty_validation">无法保存快捷活动：配置的可输入活动 token 集合为空。</string>
     <string name="record_status_quick_activities_cannot_be_empty">快捷活动不能为空。</string>
     <plurals name="record_status_quick_activities_exceed_limit">
         <item quantity="other">快捷活动不能超过 %1$d 项。</item>
     </plurals>
-    <string name="record_status_invalid_quick_activities">无效快捷活动：%1$s。必须匹配配置允许的可输入活动 token（alias key 或 wake keyword）。</string>
+    <string name="record_status_invalid_quick_activities">无效快捷活动：%1$s。必须匹配配置允许的可输入活动 token（alias key、canonical token 或 wake keyword）。</string>
     <string name="record_status_quick_activities_saved">快捷活动已保存（%1$d）。</string>
-    <string name="record_status_invalid_suggested_activity">无效建议活动：%1$s。必须匹配配置允许的可输入活动 token（alias key 或 wake keyword）。</string>
+    <string name="record_status_invalid_suggested_activity">无效建议活动：%1$s。必须匹配配置允许的可输入活动 token（alias key、canonical token 或 wake keyword）。</string>
+    <string name="record_duration_unavailable">不可用</string>
 </resources>

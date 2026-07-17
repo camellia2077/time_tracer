@@ -23,12 +23,8 @@ internal fun buildReportCompositionResultMessage(
 internal fun buildTreeResultMessage(
     found: Boolean,
     roots: List<String>,
-    nodes: List<TreeNode>,
-    usesTextFallback: Boolean = false
+    nodes: List<TreeNode>
 ): String {
-    if (usesTextFallback) {
-        return "Loaded tree via legacy text fallback."
-    }
     if (!found) {
         return if (roots.isEmpty()) {
             "No matching tree nodes."
@@ -48,6 +44,9 @@ internal fun buildSuggestionResultMessage(
     suggestions: List<String>,
     lookbackDays: Int
 ): String {
+    if (lookbackDays == 0) {
+        return "Suggestion query skipped because lookbackDays=0."
+    }
     return if (suggestions.isEmpty()) {
         "No activity suggestions in recent $lookbackDays days."
     } else {

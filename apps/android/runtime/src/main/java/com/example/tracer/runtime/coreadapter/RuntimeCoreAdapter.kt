@@ -5,7 +5,6 @@ internal class RuntimeCoreAdapter(
     private val runtimePathsProvider: () -> RuntimePaths?,
     private val nativeInit: (RuntimePaths) -> String,
     private val nativeQuery: (DataQueryRequest) -> String,
-    private val nativeTree: (DataTreeQueryParams) -> String,
     private val responseCodec: NativeResponseCodec,
     private val reportTranslator: NativeReportTranslator,
     private val diagnosticsRecorder: RuntimeDiagnosticsRecorder,
@@ -110,11 +109,4 @@ internal class RuntimeCoreAdapter(
         }
     }
 
-    fun executeNativeTreeQuery(
-        params: DataTreeQueryParams
-    ): NativeCallResult {
-        return executeAfterInit(operationName = "native_tree") {
-            nativeTree(params)
-        }
-    }
 }

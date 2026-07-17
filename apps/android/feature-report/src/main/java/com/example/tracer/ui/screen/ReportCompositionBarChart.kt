@@ -29,6 +29,7 @@ internal fun ReportCompositionBarChart(
     palettePreset: ReportPiePalettePreset,
     selectedIndex: Int,
     onItemSelected: (Int) -> Unit,
+    valueLabel: (Long) -> String = ::formatDurationHoursMinutes,
     modifier: Modifier = Modifier
 ) {
     val sliceColors = rememberCompositionSliceColors(
@@ -88,7 +89,7 @@ internal fun ReportCompositionBarChart(
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = "${formatDurationHoursMinutes(slice.durationSeconds)}  ${formatPercent(slice.percent)}",
+                        text = "${valueLabel(slice.durationSeconds)}  ${formatPercent(slice.percent)}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

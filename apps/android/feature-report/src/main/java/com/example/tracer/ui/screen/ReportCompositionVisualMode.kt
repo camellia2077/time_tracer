@@ -16,12 +16,3 @@ internal fun ReportCompositionVisualMode.labelRes(): Int =
         ReportCompositionVisualMode.TREEMAP ->
             R.string.report_chart_visual_composition_treemap
     }
-
-internal fun ReportCompositionVisualMode.normalizeForReportMode(
-    reportMode: ReportMode
-): ReportCompositionVisualMode =
-    if (reportMode == ReportMode.DAY || this != ReportCompositionVisualMode.TREEMAP) {
-        this
-    } else {
-        ReportCompositionVisualMode.PIE
-    }

@@ -125,7 +125,8 @@ private class FakePipelineQueryGateway : QueryGateway {
 
     override suspend fun queryActivitySuggestions(
         lookbackDays: Int,
-        topN: Int
+        topN: Int,
+        anchorDateIso: String?
     ): ActivitySuggestionResult = ActivitySuggestionResult(
         ok = true,
         suggestions = emptyList(),
@@ -140,9 +141,6 @@ private class FakePipelineQueryGateway : QueryGateway {
 
     override suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult =
         TreeQueryResult(ok = true, found = false, message = "ok")
-
-    override suspend fun queryProjectTreeText(params: DataTreeQueryParams): DataQueryTextResult =
-        DataQueryTextResult(ok = true, outputText = "", message = "ok")
 
     override suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult {
         chartQueryCount += 1
@@ -174,9 +172,9 @@ private class FakePipelineQueryGateway : QueryGateway {
     ): ReportCompositionQueryResult = ReportCompositionQueryResult(
         ok = true,
         data = ReportCompositionData(
-            slices = listOf(
-                ReportCompositionSlice("study", 5400L, 60f),
-                ReportCompositionSlice("sleep", 3600L, 40f)
+            tree = listOf(
+                TreeNode(name = "study", durationSeconds = 5400L),
+                TreeNode(name = "sleep", durationSeconds = 3600L)
             ),
             totalDurationSeconds = 9000L,
             activeRootCount = 2,

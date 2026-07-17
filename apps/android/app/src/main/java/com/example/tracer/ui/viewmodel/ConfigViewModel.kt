@@ -1,5 +1,6 @@
 package com.example.tracer
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -7,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
+import org.tomlj.Toml
 
 internal enum class ConfigCategory {
     // Converter = `converter/*.toml` and `converter/aliases/*.toml`
@@ -30,6 +32,13 @@ internal enum class ConverterSubcategory {
     RULES
 }
 
+internal enum class ConfigAutoSaveStatus {
+    IDLE,
+    SAVING,
+    SAVED,
+    FAILED
+}
+
 internal data class ConfigUiState(
     val selectedCategory: ConfigCategory = ConfigCategory.CONVERTER,
     val selectedConverterSubcategory: ConverterSubcategory = ConverterSubcategory.ALIASES,
@@ -46,16 +55,28 @@ internal data class ConfigUiState(
     val plainTomlDraftsByFile: Map<String, String> = emptyMap(),
     val aliasEditorMode: AliasEditorMode = AliasEditorMode.STRUCTURED,
     val aliasDocumentDraft: AliasTomlDocument? = null,
+    val aliasBaselineDocument: AliasTomlDocument? = null,
     val aliasParentOptions: List<String> = emptyList(),
     val aliasAdvancedTomlDraft: String = "",
     val aliasStructuredDraftsByFile: Map<String, AliasTomlDocument> = emptyMap(),
     val aliasAdvancedDraftsByFile: Map<String, String> = emptyMap(),
     val aliasEditorModeByFile: Map<String, AliasEditorMode> = emptyMap(),
     val aliasEditorErrorMessage: String = "",
+    val txtReloadRequestVersion: Long = 0L,
+    val autoSaveStatus: ConfigAutoSaveStatus = ConfigAutoSaveStatus.IDLE,
     val statusText: String = "Preparing config..."
 )
 
-internal class ConfigViewModel(private val configGateway: ConfigGateway) : ViewModel() {
+internal class ConfigViewModel(
+    private val configGateway: ConfigGateway,
+    private val txtStorageGateway: TxtStorageGateway,
+    private val quickActivitiesPreferenceGateway: QuickActivitiesPreferenceGateway
+) : ViewModel() {
+    companion object {
+        private const val ALIAS_RENAME_LOG_TAG = "AliasRename"
+        private const val ALIAS_MAPPING_INDEX_PATH = "converter/alias_mapping.toml"
+    }
+
     var uiState by mutableStateOf(ConfigUiState())
         private set
 
@@ -63,9 +84,13 @@ internal class ConfigViewModel(private val configGateway: ConfigGateway) : ViewM
         refreshConfigFiles()
     }
 
-    fun refreshConfigFiles() {
+    fun refreshConfigFiles(showStatus: Boolean = true) {
         viewModelScope.launch {
-            uiState = uiState.copy(statusText = "refreshing config toml...")
+            uiState = uiState.copy(statusText = if (showStatus) {
+                "refreshing config toml..."
+            } else {
+                ""
+            })
             val listResult = configGateway.listConfigTomlFiles()
             if (!listResult.ok) {
                 uiState = uiState.copy(statusText = listResult.message)
@@ -81,14 +106,17 @@ internal class ConfigViewModel(private val configGateway: ConfigGateway) : ViewM
             val files = configFilesForCategory(updated, updated.selectedCategory)
             val targetFile = preferredConfigFilePath(updated, files)
             if (targetFile.isEmpty()) {
-                uiState = clearSelectedConfigFile(updated, statusText = listResult.message)
+                uiState = clearSelectedConfigFile(
+                    updated,
+                    statusText = if (showStatus) listResult.message else ""
+                )
                 return@launch
             }
 
             uiState = readConfigFileIntoState(
                 baseState = updated,
                 path = targetFile,
-                statusText = listResult.message
+                statusText = if (showStatus) listResult.message else ""
             )
         }
     }
@@ -269,28 +297,6 @@ internal class ConfigViewModel(private val configGateway: ConfigGateway) : ViewM
         )
     }
 
-    fun renameAliasGroup(groupId: String, name: String) {
-        val document = uiState.aliasDocumentDraft ?: return
-        val normalizedName = name.trim()
-        if (normalizedName.isEmpty()) {
-            uiState = uiState.copy(aliasEditorErrorMessage = "Alias group name must not be empty.")
-            return
-        }
-        val updatedDocument = document.renameGroup(groupId, normalizedName)
-        uiState = uiState.copy(
-            aliasDocumentDraft = updatedDocument,
-            aliasStructuredDraftsByFile = cacheStructuredDraft(
-                filePath = uiState.selectedFilePath,
-                document = updatedDocument
-            ),
-            aliasEditorModeByFile = cacheAliasMode(
-                filePath = uiState.selectedFilePath,
-                mode = AliasEditorMode.STRUCTURED
-            ),
-            aliasEditorErrorMessage = ""
-        )
-    }
-
     fun deleteAliasGroup(groupId: String) {
         val document = uiState.aliasDocumentDraft ?: return
         val updatedDocument = document.deleteGroup(groupId)
@@ -387,12 +393,166 @@ internal class ConfigViewModel(private val configGateway: ConfigGateway) : ViewM
         uiState = uiState.copy(statusText = message)
     }
 
+    fun createAliasTomlFile(fileName: String) {
+        val targetFilePath = newAliasTomlPath(fileName)
+        if (targetFilePath == null) {
+            uiState = uiState.copy(
+                statusText = "Alias file name must be a single non-empty file name."
+            )
+            return
+        }
+        viewModelScope.launch {
+            val listResult = configGateway.listConfigTomlFiles()
+            if (!listResult.ok) {
+                uiState = uiState.copy(statusText = listResult.message)
+                return@launch
+            }
+            val existingPaths = sequenceOf(
+                listResult.converterFiles,
+                listResult.chartFiles,
+                listResult.metaFiles,
+                listResult.reportFiles
+            ).flatten().map { entry -> entry.relativePath }
+            if (existingPaths.any { path -> path.equals(targetFilePath, ignoreCase = true) }) {
+                uiState = uiState.copy(statusText = "TOML file already exists: $targetFilePath")
+                return@launch
+            }
+
+            val parent = targetFilePath.substringAfterLast('/').removeSuffix(".toml")
+            val initialContent = AliasTomlEditorCodec.serialize(
+                AliasTomlDocument(parent = parent, nodes = emptyList())
+            )
+            val saveResult = configGateway.saveConfigTomlFile(targetFilePath, initialContent)
+            if (!saveResult.ok) {
+                uiState = uiState.copy(statusText = saveResult.message)
+                return@launch
+            }
+
+            val aliasIndexResult = addAliasFileToMappingIndex(targetFilePath)
+            if (!aliasIndexResult.ok) {
+                uiState = uiState.copy(
+                    statusText = "Alias file was created but is not active: ${aliasIndexResult.message}"
+                )
+                return@launch
+            }
+            val reloadResult = (configGateway as? RuntimeInitializer)?.initializeRuntime()
+            if (reloadResult != null && !reloadResult.initialized) {
+                uiState = uiState.copy(
+                    statusText = "Alias file was created but runtime reload failed."
+                )
+                return@launch
+            }
+
+            val refreshedListResult = configGateway.listConfigTomlFiles()
+            if (!refreshedListResult.ok) {
+                uiState = uiState.copy(statusText = refreshedListResult.message)
+                return@launch
+            }
+            val updated = uiState.copy(
+                converterFiles = refreshedListResult.converterFiles,
+                chartFiles = refreshedListResult.chartFiles,
+                metaFiles = refreshedListResult.metaFiles,
+                reportFiles = refreshedListResult.reportFiles
+            )
+            uiState = readConfigFileIntoState(
+                baseState = updated,
+                path = targetFilePath,
+                statusText = "created toml -> $targetFilePath"
+            )
+        }
+    }
+
+    fun deleteCurrentAliasTomlFile() {
+        val targetFilePath = uiState.selectedFilePath
+        if (!isAliasConfigFilePath(targetFilePath)) {
+            uiState = uiState.copy(statusText = "Select an alias TOML file to delete.")
+            return
+        }
+        viewModelScope.launch {
+            val indexReadResult = configGateway.readConfigTomlFile(ALIAS_MAPPING_INDEX_PATH)
+            if (!indexReadResult.ok) {
+                uiState = uiState.copy(statusText = indexReadResult.message)
+                return@launch
+            }
+            val includePath = targetFilePath.removePrefix("converter/")
+            val updatedIndexContent = removeAliasIndexInclude(indexReadResult.content, includePath)
+                ?: run {
+                    uiState = uiState.copy(
+                        statusText = "alias_mapping.toml must contain a string includes array."
+                    )
+                    return@launch
+                }
+            val indexChanged = updatedIndexContent != indexReadResult.content
+            if (indexChanged) {
+                val indexSaveResult = configGateway.saveConfigTomlFile(
+                    relativePath = ALIAS_MAPPING_INDEX_PATH,
+                    content = updatedIndexContent
+                )
+                if (!indexSaveResult.ok) {
+                    uiState = uiState.copy(statusText = indexSaveResult.message)
+                    return@launch
+                }
+            }
+            val deleteResult = configGateway.deleteConfigTomlFile(targetFilePath)
+            if (!deleteResult.ok) {
+                if (indexChanged) {
+                    configGateway.saveConfigTomlFile(
+                        relativePath = ALIAS_MAPPING_INDEX_PATH,
+                        content = indexReadResult.content
+                    )
+                }
+                uiState = uiState.copy(statusText = deleteResult.message)
+                return@launch
+            }
+            reloadRuntimeAfterAliasConfigChange()?.let { message ->
+                uiState = uiState.copy(statusText = message)
+                return@launch
+            }
+            refreshConfigFiles(showStatus = false)
+            uiState = uiState.copy(statusText = "deleted alias toml -> $targetFilePath")
+        }
+    }
+
+    private suspend fun addAliasFileToMappingIndex(targetFilePath: String): AliasIndexUpdateResult {
+        val readResult = configGateway.readConfigTomlFile(ALIAS_MAPPING_INDEX_PATH)
+        if (!readResult.ok) {
+            return AliasIndexUpdateResult(ok = false, message = readResult.message)
+        }
+        val includePath = targetFilePath.removePrefix("converter/")
+        val updatedContent = appendAliasIndexInclude(readResult.content, includePath)
+            ?: return AliasIndexUpdateResult(
+                ok = false,
+                message = "alias_mapping.toml must contain a string includes array."
+            )
+        if (updatedContent == readResult.content) {
+            return AliasIndexUpdateResult(ok = true)
+        }
+        val saveResult = configGateway.saveConfigTomlFile(
+            relativePath = ALIAS_MAPPING_INDEX_PATH,
+            content = updatedContent
+        )
+        return AliasIndexUpdateResult(ok = saveResult.ok, message = saveResult.message)
+    }
+
+    private suspend fun reloadRuntimeAfterAliasConfigChange(): String? {
+        val reloadResult = (configGateway as? RuntimeInitializer)?.initializeRuntime() ?: return null
+        return if (reloadResult.initialized) {
+            null
+        } else {
+            "Alias TOML was saved but runtime reload failed."
+        }
+    }
+
     fun saveCurrentFile() {
         val selectedFile = uiState.selectedFilePath
         if (selectedFile.isEmpty()) {
-            uiState = uiState.copy(statusText = "No TOML file selected.")
+            uiState = uiState.copy(
+                statusText = "No TOML file selected.",
+                autoSaveStatus = ConfigAutoSaveStatus.FAILED
+            )
             return
         }
+        uiState = uiState.copy(autoSaveStatus = ConfigAutoSaveStatus.SAVING)
         viewModelScope.launch {
             if (isAliasConfigFilePath(selectedFile)) {
                 saveAliasFile(selectedFile)
@@ -466,10 +626,14 @@ internal class ConfigViewModel(private val configGateway: ConfigGateway) : ViewM
             uiState.copy(
                 selectedFileContent = uiState.editableContent,
                 plainTomlDraftsByFile = uiState.plainTomlDraftsByFile - selectedFile,
+                autoSaveStatus = ConfigAutoSaveStatus.SAVED,
                 statusText = "save toml -> ${saveResult.filePath}"
             )
         } else {
-            uiState.copy(statusText = saveResult.message)
+            uiState.copy(
+                statusText = saveResult.message,
+                autoSaveStatus = ConfigAutoSaveStatus.FAILED
+            )
         }
     }
 
@@ -482,11 +646,16 @@ internal class ConfigViewModel(private val configGateway: ConfigGateway) : ViewM
 
     private suspend fun saveStructuredAliasFile(selectedFile: String): ConfigUiState {
         val document = uiState.aliasDocumentDraft
-            ?: return uiState.copy(statusText = "Alias editor is unavailable for this file.")
+            ?: return uiState.copy(
+                statusText = "Alias editor is unavailable for this file.",
+                autoSaveStatus = ConfigAutoSaveStatus.FAILED
+            )
+        val baselineDocument = uiState.aliasBaselineDocument
         val validationMessage = AliasTomlEditorCodec.validateForSave(document)
         if (validationMessage != null) {
             return uiState.copy(
                 aliasEditorErrorMessage = validationMessage,
+                autoSaveStatus = ConfigAutoSaveStatus.FAILED,
                 statusText = validationMessage
             )
         }
@@ -499,16 +668,98 @@ internal class ConfigViewModel(private val configGateway: ConfigGateway) : ViewM
         if (duplicateMessage != null) {
             return uiState.copy(
                 aliasEditorErrorMessage = duplicateMessage,
+                autoSaveStatus = ConfigAutoSaveStatus.FAILED,
                 statusText = duplicateMessage
             )
         }
+        val renamePlans = baselineDocument?.let { baseline ->
+            collectAliasRenamePlans(baseline = baseline, current = document)
+        }.orEmpty()
+        logInfo(
+            ALIAS_RENAME_LOG_TAG,
+            "saveStructuredAliasFile path=$selectedFile renamePlanCount=${renamePlans.size}"
+        )
+        val quickActivitiesMigrationCandidate = buildQuickActivitiesAliasMigrationCandidate(
+            quickActivities = quickActivitiesPreferenceGateway.getQuickActivities(),
+            renamePlans = renamePlans
+        )
+        val txtMigrationCandidatesResult = buildTxtAliasMigrationCandidates(
+            txtStorageGateway = txtStorageGateway,
+            renamePlans = renamePlans
+        )
+        val txtMigrationCandidates = txtMigrationCandidatesResult.getOrElse { error ->
+            val message = error.message ?: "Alias rename TXT migration plan failed."
+            return uiState.copy(
+                aliasEditorErrorMessage = message,
+                autoSaveStatus = ConfigAutoSaveStatus.FAILED,
+                statusText = message
+            )
+        }
         val renderedToml = AliasTomlEditorCodec.serialize(document)
+        val txtWriteResult = writeTxtAliasMigrationCandidates(
+            txtStorageGateway = txtStorageGateway,
+            candidates = txtMigrationCandidates
+        )
+        txtWriteResult.exceptionOrNull()?.let { error ->
+            val message = error.message ?: "Alias rename TXT migration failed."
+            return uiState.copy(
+                aliasEditorErrorMessage = message,
+                autoSaveStatus = ConfigAutoSaveStatus.FAILED,
+                statusText = message
+            )
+        }
         val saveResult = configGateway.saveConfigTomlFile(
             relativePath = selectedFile,
             content = renderedToml
         )
         if (!saveResult.ok) {
-            return uiState.copy(statusText = saveResult.message)
+            val rollbackErrors = rollbackTxtAliasMigrationCandidates(
+                txtStorageGateway = txtStorageGateway,
+                candidates = txtMigrationCandidates
+            )
+            val rollbackSuffix = if (rollbackErrors.isEmpty()) {
+                ""
+            } else {
+                "\nTXT rollback issues: ${rollbackErrors.joinToString("; ")}"
+            }
+            return uiState.copy(
+                statusText = saveResult.message + rollbackSuffix,
+                aliasEditorErrorMessage = saveResult.message,
+                autoSaveStatus = ConfigAutoSaveStatus.FAILED
+            )
+        }
+        val quickActivitiesUpdateError = runCatching {
+            quickActivitiesMigrationCandidate?.let { candidate ->
+                logInfo(
+                    ALIAS_RENAME_LOG_TAG,
+                    "applyQuickAccessMigration from=${candidate.originalValues} to=${candidate.updatedValues}"
+                )
+                quickActivitiesPreferenceGateway.setQuickActivities(candidate.updatedValues)
+            }
+        }.exceptionOrNull()
+        if (quickActivitiesUpdateError != null) {
+            val message = quickActivitiesUpdateError.message
+                ?: "Quick Access alias migration failed."
+            return uiState.copy(
+                aliasEditorErrorMessage = message,
+                autoSaveStatus = ConfigAutoSaveStatus.FAILED,
+                statusText = message
+            )
+        }
+        addAliasFileToMappingIndex(selectedFile).takeIf { result -> !result.ok }?.let { result ->
+            val message = "Alias TOML was saved but is not active: ${result.message}"
+            return uiState.copy(
+                aliasEditorErrorMessage = message,
+                autoSaveStatus = ConfigAutoSaveStatus.FAILED,
+                statusText = message
+            )
+        }
+        reloadRuntimeAfterAliasConfigChange()?.let { message ->
+            return uiState.copy(
+                aliasEditorErrorMessage = message,
+                autoSaveStatus = ConfigAutoSaveStatus.FAILED,
+                statusText = message
+            )
         }
         val aliasParentOptions = resolveAliasParentOptions(
             configGateway = configGateway,
@@ -516,17 +767,44 @@ internal class ConfigViewModel(private val configGateway: ConfigGateway) : ViewM
             selectedFilePath = saveResult.filePath,
             selectedFileContent = saveResult.content
         )
+        val migrationSummary = buildString {
+            append("save toml -> ")
+            append(saveResult.filePath)
+            if (renamePlans.isNotEmpty()) {
+                append(" | renamed ")
+                append(renamePlans.size)
+                append(" alias")
+                if (renamePlans.size != 1) {
+                    append("es")
+                }
+                append(", updated ")
+                append(txtMigrationCandidates.size)
+                append(" TXT file")
+                if (txtMigrationCandidates.size != 1) {
+                    append("s")
+                }
+                if (quickActivitiesMigrationCandidate != null) {
+                    append(", updated Quick Access")
+                }
+            }
+        }
         return applyLoadedConfigFile(
             state = uiState.copy(
                 aliasEditorMode = AliasEditorMode.STRUCTURED,
                 aliasStructuredDraftsByFile = uiState.aliasStructuredDraftsByFile - selectedFile,
                 aliasAdvancedDraftsByFile = uiState.aliasAdvancedDraftsByFile - selectedFile,
-                aliasEditorModeByFile = uiState.aliasEditorModeByFile + (selectedFile to AliasEditorMode.STRUCTURED)
+                aliasEditorModeByFile = uiState.aliasEditorModeByFile + (selectedFile to AliasEditorMode.STRUCTURED),
+                txtReloadRequestVersion = if (renamePlans.isNotEmpty()) {
+                    uiState.txtReloadRequestVersion + 1
+                } else {
+                    uiState.txtReloadRequestVersion
+                },
+                autoSaveStatus = ConfigAutoSaveStatus.SAVED
             ),
             filePath = saveResult.filePath,
             content = saveResult.content,
             aliasParentOptions = aliasParentOptions,
-            statusText = "save toml -> ${saveResult.filePath}"
+            statusText = migrationSummary
         )
     }
 
@@ -535,12 +813,14 @@ internal class ConfigViewModel(private val configGateway: ConfigGateway) : ViewM
         val document = parseResult.document
             ?: return uiState.copy(
                 aliasEditorErrorMessage = parseResult.errorMessage,
+                autoSaveStatus = ConfigAutoSaveStatus.FAILED,
                 statusText = parseResult.errorMessage
             )
         val validationMessage = AliasTomlEditorCodec.validateForSave(document)
         if (validationMessage != null) {
             return uiState.copy(
                 aliasEditorErrorMessage = validationMessage,
+                autoSaveStatus = ConfigAutoSaveStatus.FAILED,
                 statusText = validationMessage
             )
         }
@@ -553,6 +833,7 @@ internal class ConfigViewModel(private val configGateway: ConfigGateway) : ViewM
         if (duplicateMessage != null) {
             return uiState.copy(
                 aliasEditorErrorMessage = duplicateMessage,
+                autoSaveStatus = ConfigAutoSaveStatus.FAILED,
                 statusText = duplicateMessage
             )
         }
@@ -561,7 +842,25 @@ internal class ConfigViewModel(private val configGateway: ConfigGateway) : ViewM
             content = uiState.aliasAdvancedTomlDraft
         )
         if (!saveResult.ok) {
-            return uiState.copy(statusText = saveResult.message)
+            return uiState.copy(
+                statusText = saveResult.message,
+                autoSaveStatus = ConfigAutoSaveStatus.FAILED
+            )
+        }
+        addAliasFileToMappingIndex(selectedFile).takeIf { result -> !result.ok }?.let { result ->
+            val message = "Alias TOML was saved but is not active: ${result.message}"
+            return uiState.copy(
+                aliasEditorErrorMessage = message,
+                autoSaveStatus = ConfigAutoSaveStatus.FAILED,
+                statusText = message
+            )
+        }
+        reloadRuntimeAfterAliasConfigChange()?.let { message ->
+            return uiState.copy(
+                aliasEditorErrorMessage = message,
+                autoSaveStatus = ConfigAutoSaveStatus.FAILED,
+                statusText = message
+            )
         }
         val aliasParentOptions = resolveAliasParentOptions(
             configGateway = configGateway,
@@ -578,6 +877,7 @@ internal class ConfigViewModel(private val configGateway: ConfigGateway) : ViewM
             aliasAdvancedDraftsByFile = uiState.aliasAdvancedDraftsByFile - selectedFile,
             aliasEditorModeByFile = uiState.aliasEditorModeByFile + (selectedFile to AliasEditorMode.ADVANCED),
             aliasEditorErrorMessage = "",
+            autoSaveStatus = ConfigAutoSaveStatus.SAVED,
             statusText = "save toml -> ${saveResult.filePath}"
         )
     }
@@ -638,11 +938,85 @@ internal class ConfigViewModel(private val configGateway: ConfigGateway) : ViewM
     }
 }
 
-internal class ConfigViewModelFactory(private val configGateway: ConfigGateway) : ViewModelProvider.Factory {
+private data class AliasIndexUpdateResult(
+    val ok: Boolean,
+    val message: String = ""
+)
+
+private fun appendAliasIndexInclude(rawToml: String, includePath: String): String? {
+    val parsed = Toml.parse(rawToml)
+    if (parsed.hasErrors()) {
+        return null
+    }
+    val includes = parsed.getArray("includes") ?: return null
+    val existingIncludes = buildList {
+        for (index in 0 until includes.size()) {
+            val include = includes.getString(index) ?: return null
+            add(include)
+        }
+    }
+    if (existingIncludes.any { existing -> existing.equals(includePath, ignoreCase = true) }) {
+        return rawToml
+    }
+    return buildString {
+        append("includes = [\n")
+        for (existingInclude in existingIncludes + includePath) {
+            append("  \"")
+            append(existingInclude.replace("\\", "\\\\").replace("\"", "\\\""))
+            append("\",\n")
+        }
+        append("]\n")
+    }
+}
+
+private fun removeAliasIndexInclude(rawToml: String, includePath: String): String? {
+    val parsed = Toml.parse(rawToml)
+    if (parsed.hasErrors()) {
+        return null
+    }
+    val includes = parsed.getArray("includes") ?: return null
+    val remainingIncludes = buildList {
+        for (index in 0 until includes.size()) {
+            val include = includes.getString(index) ?: return null
+            if (!include.equals(includePath, ignoreCase = true)) {
+                add(include)
+            }
+        }
+    }
+    if (remainingIncludes.size == includes.size()) {
+        return rawToml
+    }
+    if (remainingIncludes.isEmpty()) {
+        return null
+    }
+    return buildString {
+        append("includes = [\n")
+        for (remainingInclude in remainingIncludes) {
+            append("  \"")
+            append(remainingInclude.replace("\\", "\\\\").replace("\"", "\\\""))
+            append("\",\n")
+        }
+        append("]\n")
+    }
+}
+
+private fun logInfo(tag: String, message: String) {
+    runCatching { Log.i(tag, message) }
+}
+
+internal class ConfigViewModelFactory(
+    private val configGateway: ConfigGateway,
+    private val txtStorageGateway: TxtStorageGateway,
+    private val quickActivitiesPreferenceGateway: QuickActivitiesPreferenceGateway
+) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ConfigViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return ConfigViewModel(configGateway) as T
+            return ConfigViewModel(
+                configGateway = configGateway,
+                txtStorageGateway = txtStorageGateway,
+                quickActivitiesPreferenceGateway = quickActivitiesPreferenceGateway
+            ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
     }

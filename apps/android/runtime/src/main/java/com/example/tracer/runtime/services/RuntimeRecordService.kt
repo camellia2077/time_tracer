@@ -53,6 +53,9 @@ internal class RuntimeRecordService(
     suspend fun readTxtFile(relativePath: String): TxtFileContentResult =
         storageDelegate.readTxtFile(relativePath)
 
+    suspend fun saveTxtFile(relativePath: String, content: String): TxtFileContentResult =
+        storageDelegate.saveTxtFile(relativePath, content)
+
     suspend fun saveTxtFileAndSync(relativePath: String, content: String): RecordActionResult =
         recordDelegate.saveTxtFileAndSync(relativePath, content)
 

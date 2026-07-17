@@ -164,15 +164,6 @@ internal class NativeRuntimeBridge {
         outputMode = request.outputMode.orEmpty()
     )
 
-    fun nativeTree(params: DataTreeQueryParams): String = NativeBridge.nativeTree(
-        listRoots = false,
-        rootPattern = "",
-        maxDepth = params.level,
-        period = params.period.wireValue,
-        periodArgument = params.periodArgument,
-        root = ""
-    )
-
     fun nativeReportJson(requestJson: String): String =
         NativeBridge.nativeReportJson(requestJson)
 

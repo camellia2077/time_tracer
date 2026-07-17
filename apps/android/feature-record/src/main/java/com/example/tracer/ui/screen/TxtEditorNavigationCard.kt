@@ -5,39 +5,44 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.record.R
+import com.example.tracer.ui.components.CalendarAvailability
 import com.example.tracer.ui.components.CalendarDatePickerSheet
+import com.example.tracer.ui.components.CalendarYearMonthPickerSheet
 import java.time.DayOfWeek
 import java.time.LocalDate
 
@@ -63,22 +68,7 @@ internal fun TxtMonthNavigationCard(
     onRefreshHistory: () -> Unit
 ) {
     var monthPickerVisible by remember { mutableStateOf(false) }
-    var yearMenuExpanded by remember { mutableStateOf(false) }
-    var monthMenuExpanded by remember { mutableStateOf(false) }
-    var pickerYear by remember { mutableStateOf("") }
-    var pickerMonth by remember { mutableStateOf("") }
     var dayPickerVisible by remember { mutableStateOf(false) }
-
-    fun resetPickerSelection() {
-        val initialYear = selectedYear.ifBlank { availableYears.lastOrNull().orEmpty() }
-        val monthsForYear = monthsByYear[initialYear].orEmpty()
-        val initialMonth = when {
-            selectedMonthValue in monthsForYear -> selectedMonthValue
-            else -> monthsForYear.lastOrNull().orEmpty()
-        }
-        pickerYear = initialYear
-        pickerMonth = initialMonth
-    }
 
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         val selectedMonthText = if (selectedMonth.isEmpty()) {
@@ -113,7 +103,6 @@ internal fun TxtMonthNavigationCard(
 
                 TextButton(
                     onClick = {
-                        resetPickerSelection()
                         monthPickerVisible = true
                     },
                     enabled = availableYears.isNotEmpty(),
@@ -127,7 +116,7 @@ internal fun TxtMonthNavigationCard(
                         color = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
+                    Icon(Icons.Filled.DateRange, contentDescription = null)
                 }
 
                 TextButton(onClick = onRefreshHistory) {
@@ -143,7 +132,6 @@ internal fun TxtMonthNavigationCard(
                     )
                 }
             }
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -191,124 +179,26 @@ internal fun TxtMonthNavigationCard(
             }
         }
     }
-    
-    if (monthPickerVisible) {
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-        val monthChoices = monthsByYear[pickerYear].orEmpty()
 
-        ModalBottomSheet(
-            onDismissRequest = {
-                monthPickerVisible = false
-                yearMenuExpanded = false
-                monthMenuExpanded = false
-            },
-            sheetState = sheetState
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                val currentMonthText = if (selectedMonth.isEmpty()) {
+    if (monthPickerVisible) {
+        CalendarYearMonthPickerSheet(
+            selectedYearMonth = selectedMonth,
+            availability = CalendarAvailability(monthsByYear),
+            onYearMonthSelected = onOpenMonth,
+            onDismissRequest = { monthPickerVisible = false },
+            title = stringResource(R.string.txt_sheet_select_year_month),
+            currentText = stringResource(
+                R.string.txt_sheet_current_month,
+                if (selectedMonth.isEmpty()) {
                     stringResource(R.string.txt_sheet_current_month_unselected)
                 } else {
                     selectedMonth
                 }
-
-                Text(
-                    text = stringResource(R.string.txt_sheet_select_year_month),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = stringResource(R.string.txt_sheet_current_month, currentMonthText),
-                    style = MaterialTheme.typography.bodySmall
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    MonthPickerDropdown(
-                        title = stringResource(R.string.txt_picker_year_title),
-                        value = pickerYear,
-                        placeholder = stringResource(R.string.txt_picker_year_placeholder),
-                        enabled = availableYears.isNotEmpty(),
-                        expanded = yearMenuExpanded,
-                        onExpandedChange = { yearMenuExpanded = it },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        if (availableYears.isEmpty()) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.txt_picker_no_years)) },
-                                onClick = { yearMenuExpanded = false }
-                            )
-                        } else {
-                            availableYears.forEach { year ->
-                                DropdownMenuItem(
-                                    text = { Text(year) },
-                                    onClick = {
-                                        yearMenuExpanded = false
-                                        pickerYear = year
-                                        pickerMonth = monthsByYear[year].orEmpty().lastOrNull().orEmpty()
-                                    }
-                                )
-                            }
-                        }
-                    }
-
-                    MonthPickerDropdown(
-                        title = stringResource(R.string.txt_picker_month_title),
-                        value = pickerMonth,
-                        placeholder = stringResource(R.string.txt_picker_month_placeholder),
-                        enabled = pickerYear.isNotBlank() && monthChoices.isNotEmpty(),
-                        expanded = monthMenuExpanded,
-                        onExpandedChange = { monthMenuExpanded = it },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        if (monthChoices.isEmpty()) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.txt_picker_no_months)) },
-                                onClick = { monthMenuExpanded = false }
-                            )
-                        } else {
-                            monthChoices.forEach { month ->
-                                DropdownMenuItem(
-                                    text = { Text(month) },
-                                    onClick = {
-                                        monthMenuExpanded = false
-                                        pickerMonth = month
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
-
-                Button(
-                    onClick = {
-                        val monthKey = if (pickerYear.isNotBlank() && pickerMonth.isNotBlank()) {
-                            "$pickerYear-$pickerMonth"
-                        } else {
-                            ""
-                        }
-                        if (monthKey.isNotBlank()) {
-                            onOpenMonth(monthKey)
-                            monthPickerVisible = false
-                            yearMenuExpanded = false
-                            monthMenuExpanded = false
-                        }
-                    },
-                    enabled = pickerYear.isNotBlank() && pickerMonth.isNotBlank(),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(stringResource(R.string.txt_picker_open_year_month, pickerYear, pickerMonth))
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-        }
+            ),
+            yearTitle = stringResource(R.string.txt_picker_year_title),
+            yearPlaceholder = stringResource(R.string.txt_picker_year_placeholder),
+            noYearsLabel = stringResource(R.string.txt_picker_no_years)
+        )
     }
 
     if (dayPickerVisible && currentDay != null) {
@@ -325,43 +215,3 @@ internal fun TxtMonthNavigationCard(
 
 private fun formatCompactDayText(date: LocalDate): String =
     date.toString().substring(5)
-
-@Composable
-private fun MonthPickerDropdown(
-    title: String,
-    value: String,
-    placeholder: String,
-    enabled: Boolean,
-    expanded: Boolean,
-    onExpandedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-    menuContent: @Composable () -> Unit
-) {
-    Box(modifier = modifier) {
-        OutlinedButton(
-            onClick = { onExpandedChange(true) },
-            enabled = enabled,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.txt_picker_field_value, title, value.ifBlank { placeholder }),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
-            }
-        }
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { onExpandedChange(false) }
-        ) {
-            menuContent()
-        }
-    }
-}

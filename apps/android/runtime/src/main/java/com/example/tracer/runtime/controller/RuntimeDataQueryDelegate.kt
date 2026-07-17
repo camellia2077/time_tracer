@@ -5,7 +5,6 @@ import kotlinx.coroutines.withContext
 
 internal class RuntimeDataQueryDelegate(
     private val queryTranslator: NativeQueryTranslator,
-    private val executeNativeTreeQuery: (DataTreeQueryParams) -> NativeCallResult,
     private val executeNativeDataQuery: (
         request: DataQueryRequest,
         onRuntimePaths: ((RuntimePaths) -> Unit)?
@@ -72,35 +71,8 @@ internal class RuntimeDataQueryDelegate(
             val normalizedParams = params.copy(periodArgument = periodValidation.argument)
 
             try {
-                val structuredResult = queryTranslator.toTreeQueryResult(
-                    executeNativeTreeQuery(normalizedParams)
-                )
-                if (structuredResult.ok) {
-                    return@withContext structuredResult
-                }
-
-                val legacyResult = runLegacyTreeQuery(normalizedParams)
-                if (!legacyResult.ok) {
-                    return@withContext structuredResult
-                }
-                val operationId = structuredResult.operationId.ifBlank {
-                    legacyResult.operationId
-                }
-                TreeQueryResult(
-                    ok = true,
-                    found = legacyResult.outputText.isNotBlank(),
-                    roots = emptyList(),
-                    nodes = emptyList(),
-                    message = buildTreeResultMessage(
-                        found = legacyResult.outputText.isNotBlank(),
-                        roots = emptyList(),
-                        nodes = emptyList(),
-                        usesTextFallback = true
-                    ),
-                    operationId = operationId,
-                    legacyText = legacyResult.outputText,
-                    usesTextFallback = true
-                )
+                val structuredResult = runStructuredTreeQuery(normalizedParams)
+                structuredResult
             } catch (error: Exception) {
                 TreeQueryResult(
                     ok = false,
@@ -108,18 +80,6 @@ internal class RuntimeDataQueryDelegate(
                     message = formatNativeFailure("query project tree failed", error)
                 )
             }
-        }
-
-    suspend fun queryProjectTreeText(params: DataTreeQueryParams): DataQueryTextResult =
-        withContext(Dispatchers.IO) {
-            val periodValidation = validateAndNormalizePeriodArgument(
-                period = params.period,
-                periodArgument = params.periodArgument
-            )
-            if (periodValidation.error != null) {
-                return@withContext periodValidation.error
-            }
-            runLegacyTreeQuery(params.copy(periodArgument = periodValidation.argument))
         }
 
     suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult =
@@ -231,7 +191,7 @@ internal class RuntimeDataQueryDelegate(
             ReportCompositionQueryResult(
                 ok = true,
                 data = parsed,
-                message = buildReportCompositionResultMessage(parsed.slices.size),
+                message = buildReportCompositionResultMessage(parsed.tree.size),
                 operationId = queryResult.operationId
             )
         } catch (error: Exception) {
@@ -248,14 +208,45 @@ internal class RuntimeDataQueryDelegate(
         return queryTranslator.toDataQueryTextResult(queryResult)
     }
 
-    private fun runLegacyTreeQuery(params: DataTreeQueryParams): DataQueryTextResult {
-        return runDataQuery(
+    private fun runStructuredTreeQuery(params: DataTreeQueryParams): TreeQueryResult {
+        val result = runDataQuery(
             request = DataQueryRequest(
                 action = NativeBridge.QUERY_ACTION_TREE,
+                outputMode = DataQueryOutputMode.SEMANTIC_JSON,
                 treePeriod = params.period.wireValue,
                 treePeriodArgument = params.periodArgument,
                 treeMaxDepth = params.level
             )
+        )
+        if (!result.ok) {
+            return TreeQueryResult(
+                ok = false,
+                found = false,
+                message = result.message,
+                operationId = result.operationId
+            )
+        }
+        val payload = parseTreeQueryContent(result.outputText)
+            ?: return TreeQueryResult(
+                ok = false,
+                found = false,
+                message = appendFailureContext(
+                    message = "tree query returned invalid payload.",
+                    operationId = result.operationId
+                ),
+                operationId = result.operationId
+            )
+        return TreeQueryResult(
+            ok = payload.ok,
+            found = payload.found,
+            roots = payload.roots,
+            nodes = payload.nodes,
+            message = buildTreeResultMessage(
+                found = payload.found,
+                roots = payload.roots,
+                nodes = payload.nodes
+            ),
+            operationId = result.operationId
         )
     }
 }

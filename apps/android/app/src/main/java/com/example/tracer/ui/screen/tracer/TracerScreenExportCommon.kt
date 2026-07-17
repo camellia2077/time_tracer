@@ -9,7 +9,8 @@ internal data class MonthExportItem(
 
 internal data class MonthExportItemsResult(
     val items: List<MonthExportItem?>,
-    val errors: List<String>
+    val errors: List<String>,
+    val totalCount: Int
 )
 
 internal suspend fun buildMonthExportItems(
@@ -23,7 +24,8 @@ internal suspend fun buildMonthExportItems(
     if (!inspection.ok) {
         return MonthExportItemsResult(
             items = emptyList(),
-            errors = listOf(inspection.message)
+            errors = listOf(inspection.message),
+            totalCount = 0
         )
     }
     val monthToSourcePath = inspection.entries
@@ -34,8 +36,18 @@ internal suspend fun buildMonthExportItems(
             valueTransform = { it.relativePath.replace('\\', '/') }
         )
 
-    val totalCount = recordUiState.availableMonths.size.coerceAtLeast(1)
-    val items = recordUiState.availableMonths.sorted().mapIndexed { index, monthKey ->
+    // A complete exchange package is a full TXT backup: every valid/openable
+    // month file in the managed storage must be included. Do not use
+    // RecordUiState.availableMonths here; that list is UI state and can contain
+    // only the currently opened month when export starts. The storage
+    // inspection is the authoritative source for the backup set.
+    val monthKeys = inspection.entries
+        .filter { it.canOpen && !it.headerMonth.isNullOrBlank() }
+        .mapNotNull { it.headerMonth }
+        .distinct()
+        .sorted()
+    val totalCount = monthKeys.size.coerceAtLeast(1)
+    val items = monthKeys.mapIndexed { index, monthKey ->
         val normalizedMonthKey = normalizeMonthKey(monthKey)
         if (normalizedMonthKey == null) {
             errors += context.getString(
@@ -96,6 +108,7 @@ internal suspend fun buildMonthExportItems(
 
     return MonthExportItemsResult(
         items = items,
-        errors = errors
+        errors = errors,
+        totalCount = monthKeys.size
     )
 }

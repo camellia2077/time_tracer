@@ -4,7 +4,11 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.example.tracer.PersistedRecordInputDraft
 import com.example.tracer.RecordAuthoringMode
 import com.example.tracer.RecordLogicalDayTarget
+import com.example.tracer.RecordSuggestionOutputMode
+import com.example.tracer.ReportChartSemanticMode
+import com.example.tracer.ReportParameterSection
 import com.example.tracer.ReportPiePalettePreset
+import com.example.tracer.ReportResultDisplayMode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -26,6 +30,14 @@ class UserPreferencesRepositoryTest {
         assertEquals(
             UserPreferencesRepository.DEFAULT_RECORD_QUICK_ACTIVITIES,
             preferences.quickActivities
+        )
+        assertEquals(
+            UserPreferencesRepository.DEFAULT_RECORD_SUGGEST_OUTPUT_MODE,
+            preferences.outputMode
+        )
+        assertEquals(
+            UserPreferencesRepository.DEFAULT_RECORD_CANONICAL_CATALOG_DISPLAY_MODE,
+            preferences.canonicalCatalogDisplayMode
         )
     }
 
@@ -95,6 +107,144 @@ class UserPreferencesRepositoryTest {
         assertEquals(
             RecordAuthoringMode.INTERVAL,
             repository.recordPersistedInput.first().lastAuthoringMode
+        )
+    }
+
+    @Test
+    fun setRecordSuggestOutputMode_persistsSelection() = runTest {
+        val repository = buildRepository(
+            testName = "persist_record_suggest_output_mode",
+            scope = backgroundScope
+        )
+
+        repository.setRecordSuggestOutputMode(RecordSuggestionOutputMode.ALIAS)
+
+        assertEquals(
+            RecordSuggestionOutputMode.ALIAS,
+            repository.recordSuggestionPreferences.first().outputMode
+        )
+    }
+
+    @Test
+    fun reportChartSemanticMode_defaultsToBreakdown_andPersistsSelection() = runTest {
+        val repository = buildRepository(
+            testName = "persist_chart_semantic_mode",
+            scope = backgroundScope
+        )
+
+        assertEquals(
+            ReportChartSemanticMode.COMPOSITION,
+            repository.reportChartSemanticMode.first()
+        )
+
+        repository.setReportChartSemanticMode(ReportChartSemanticMode.TREND)
+
+        assertEquals(
+            ReportChartSemanticMode.TREND,
+            repository.reportChartSemanticMode.first()
+        )
+    }
+
+    @Test
+    fun reportResultDisplayMode_defaultsToText_andPersistsSelection() = runTest {
+        val repository = buildRepository(
+            testName = "persist_report_result_display_mode",
+            scope = backgroundScope
+        )
+
+        assertEquals(ReportResultDisplayMode.TEXT, repository.reportResultDisplayMode.first())
+
+        repository.setReportResultDisplayMode(ReportResultDisplayMode.CHART)
+
+        assertEquals(ReportResultDisplayMode.CHART, repository.reportResultDisplayMode.first())
+    }
+
+    @Test
+    fun reportParameterSection_defaultsToDay_andPersistsSelection() = runTest {
+        val repository = buildRepository(
+            testName = "persist_report_parameter_section",
+            scope = backgroundScope
+        )
+
+        assertEquals(ReportParameterSection.DAY, repository.reportParameterSection.first())
+
+        repository.setReportParameterSection(ReportParameterSection.STATS)
+
+        assertEquals(ReportParameterSection.STATS, repository.reportParameterSection.first())
+    }
+
+    @Test
+    fun setRecordCanonicalCatalogDisplayMode_persistsSelection() = runTest {
+        val repository = buildRepository(
+            testName = "persist_record_canonical_catalog_display_mode",
+            scope = backgroundScope
+        )
+
+        repository.setRecordCanonicalCatalogDisplayMode(RecordSuggestionOutputMode.ALIAS)
+
+        assertEquals(
+            RecordSuggestionOutputMode.ALIAS,
+            repository.recordSuggestionPreferences.first().canonicalCatalogDisplayMode
+        )
+    }
+
+    @Test
+    fun recordSuggestionPreferences_defaultsCollapsedCanonicalRootPathsToEmpty() = runTest {
+        val repository = buildRepository(
+            testName = "default_collapsed_canonical_roots",
+            scope = backgroundScope
+        )
+
+        assertEquals(
+            emptySet<String>(),
+            repository.recordSuggestionPreferences.first().collapsedCanonicalRootPaths
+        )
+    }
+
+    @Test
+    fun setRecordCollapsedCanonicalRootPaths_persistsNormalizedRoots() = runTest {
+        val repository = buildRepository(
+            testName = "persist_collapsed_canonical_roots",
+            scope = backgroundScope
+        )
+
+        repository.setRecordCollapsedCanonicalRootPaths(
+            setOf("study", " study/math ", "", "study")
+        )
+
+        assertEquals(
+            linkedSetOf("study", "study/math"),
+            repository.recordSuggestionPreferences.first().collapsedCanonicalRootPaths
+        )
+    }
+
+    @Test
+    fun recordSuggestionPreferences_defaultsOrderedCanonicalRootPathsToEmpty() = runTest {
+        val repository = buildRepository(
+            testName = "default_ordered_canonical_roots",
+            scope = backgroundScope
+        )
+
+        assertEquals(
+            emptyList<String>(),
+            repository.recordSuggestionPreferences.first().orderedCanonicalRootPaths
+        )
+    }
+
+    @Test
+    fun setRecordOrderedCanonicalRootPaths_persistsNormalizedOrder() = runTest {
+        val repository = buildRepository(
+            testName = "persist_ordered_canonical_roots",
+            scope = backgroundScope
+        )
+
+        repository.setRecordOrderedCanonicalRootPaths(
+            listOf("study", " study/math ", "", "study")
+        )
+
+        assertEquals(
+            listOf("study", "study/math"),
+            repository.recordSuggestionPreferences.first().orderedCanonicalRootPaths
         )
     }
 

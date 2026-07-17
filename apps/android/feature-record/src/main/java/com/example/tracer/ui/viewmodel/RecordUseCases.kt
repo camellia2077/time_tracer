@@ -1,5 +1,6 @@
 package com.example.tracer
 
+import android.util.Log
 import java.time.Clock
 
 class RecordUseCases(
@@ -7,6 +8,7 @@ class RecordUseCases(
     private val txtStorageGateway: TxtStorageGateway,
     private val queryGateway: QueryGateway,
     internal val recordInputPersistence: RecordInputPersistence = NoOpRecordInputPersistence,
+    private val textProvider: RecordTextProvider = DefaultRecordTextProvider,
     private val clock: Clock = Clock.systemDefaultZone()
 ) {
     private val datePolicy = RecordUseCaseDatePolicy(clock)
@@ -45,14 +47,24 @@ class RecordUseCases(
         if (!result.ok) {
             return state.copy(statusText = result.message)
         }
+        val successSummary = buildRecordSuccessSummary(
+            rawActivityToken = state.recordContent,
+            durationClockText = parseGapFromPrevious(result.message)
+        )
         val preferredMonth = datePolicy.resolvePreferredMonthForRecord(targetDateIso)
         // Clear the previous activity/remark only after a successful write. Failed writes keep
         // the draft intact so users can retry without re-entering their in-progress input.
         val stateAfterRecord = state.copy(
             recordContent = "",
-            recordRemark = ""
+            recordRemark = "",
+            lastRecordedActivityAlias = successSummary.aliasToken,
+            lastRecordedDuration = successSummary.inputDurationText
         )
-        return historyNavigator.refreshAndOpen(stateAfterRecord, preferredMonth, result.message)
+        return historyNavigator.refreshAndOpen(
+            stateAfterRecord,
+            preferredMonth,
+            successSummary.statusText
+        )
     }
 
     suspend fun recordInterval(state: RecordUiState): RecordUiState {
@@ -83,14 +95,26 @@ class RecordUseCases(
         if (!result.ok) {
             return state.copy(statusText = result.message)
         }
+        val durationMinutes = calculateHhmmDurationMinutes(normalizedStart, normalizedEnd)
+        val successSummary = buildRecordSuccessSummary(
+            rawActivityToken = state.recordContent,
+            durationClockText = durationMinutes?.let(::formatDurationClock)
+                ?: textProvider.unavailableDuration()
+        )
         val preferredMonth = datePolicy.resolvePreferredMonthForRecord(targetDateIso)
         val stateAfterRecord = state.copy(
             recordContent = "",
             recordRemark = "",
             intervalStart = "",
-            intervalEnd = ""
+            intervalEnd = "",
+            lastRecordedActivityAlias = successSummary.aliasToken,
+            lastRecordedDuration = successSummary.inputDurationText
         )
-        return historyNavigator.refreshAndOpen(stateAfterRecord, preferredMonth, result.message)
+        return historyNavigator.refreshAndOpen(
+            stateAfterRecord,
+            preferredMonth,
+            successSummary.statusText
+        )
     }
 
     suspend fun openTxtPreview(state: RecordUiState): RecordUiState {
@@ -161,10 +185,24 @@ class RecordUseCases(
         lookbackDays: Int = 7,
         topN: Int = 5
     ): RecordUiState {
+        val anchorDateIso = datePolicy.resolveTargetDateIso(state.logicalDayTarget)
+        logActivitySuggestionsRequestStart(
+            logicalDayTarget = state.logicalDayTarget,
+            lookbackDays = lookbackDays,
+            topN = topN,
+            anchorDateIso = anchorDateIso
+        )
         val result = queryGateway.queryActivitySuggestions(
             lookbackDays = lookbackDays,
             topN = topN,
-            anchorDateIso = datePolicy.resolveTargetDateIso(state.logicalDayTarget)
+            anchorDateIso = anchorDateIso
+        )
+        logActivitySuggestionsRequestResult(
+            logicalDayTarget = state.logicalDayTarget,
+            lookbackDays = lookbackDays,
+            topN = topN,
+            anchorDateIso = anchorDateIso,
+            result = result
         )
         if (!result.ok) {
             return state.copy(
@@ -173,11 +211,141 @@ class RecordUseCases(
                 statusText = result.message
             )
         }
+        val aliasMappingsResult = queryGateway.listActivityAliasMappings()
+        val aliasByCanonical = if (aliasMappingsResult.ok) {
+            aliasMappingsResult.entries.firstAliasByCanonical()
+        } else {
+            emptyMap()
+        }
 
         return state.copy(
-            suggestedActivities = result.suggestions,
+            suggestedActivities = result.suggestions.mapNotNull { canonicalToken ->
+                val trimmedCanonical = canonicalToken.trim()
+                if (trimmedCanonical.isEmpty()) {
+                    null
+                } else {
+                    RecordSuggestedActivity(
+                        canonicalToken = trimmedCanonical,
+                        aliasToken = aliasByCanonical[trimmedCanonical].orEmpty()
+                    )
+                }
+            },
             isSuggestionsLoading = false,
             statusText = result.message
+        )
+    }
+
+    suspend fun loadCanonicalCatalog(state: RecordUiState): RecordUiState {
+        val canonicalCatalogResult = queryGateway.listCanonicalCatalog()
+        return if (canonicalCatalogResult.ok) {
+            state.copy(
+                canonicalCatalogRoots = canonicalCatalogResult.roots,
+                canonicalCatalogStatusText = "",
+                isCanonicalCatalogVisible = true,
+                isCanonicalCatalogLoading = false
+            )
+        } else {
+            state.copy(
+                canonicalCatalogRoots = emptyList(),
+                canonicalCatalogStatusText = canonicalCatalogResult.message,
+                isCanonicalCatalogVisible = true,
+                isCanonicalCatalogLoading = false
+            )
+        }
+    }
+
+    suspend fun applySuggestedActivity(
+        state: RecordUiState,
+        suggestedActivityToken: String
+    ): RecordUiState {
+        val trimmedToken = suggestedActivityToken.trim()
+        val matchedSuggestion = state.suggestedActivities.firstOrNull { suggestion ->
+            suggestion.canonicalToken == trimmedToken || suggestion.aliasToken == trimmedToken
+        }
+        val trimmedCanonical = matchedSuggestion?.canonicalToken ?: trimmedToken
+        if (trimmedCanonical.isEmpty()) {
+            logSuggestedActivityApply(
+                canonicalActivityName = suggestedActivityToken,
+                outputMode = state.suggestionOutputMode,
+                appliedToken = null,
+                status = "ignored blank canonical suggestion."
+            )
+            return state.copy(suggestionsVisible = false)
+        }
+
+        if (state.suggestionOutputMode == RecordSuggestionOutputMode.CANONICAL) {
+            logSuggestedActivityApply(
+                canonicalActivityName = trimmedCanonical,
+                outputMode = state.suggestionOutputMode,
+                appliedToken = trimmedCanonical,
+                status = "applied canonical suggested activity."
+            )
+            return state.copy(
+                recordContent = trimmedCanonical,
+                suggestionsVisible = false,
+                statusText = ""
+            )
+        }
+
+        val cachedAlias = matchedSuggestion?.aliasToken?.trim().orEmpty()
+        if (cachedAlias.isNotEmpty()) {
+            logSuggestedActivityApply(
+                canonicalActivityName = trimmedCanonical,
+                outputMode = state.suggestionOutputMode,
+                appliedToken = cachedAlias,
+                status = "applied suggested activity alias."
+            )
+            return state.copy(
+                recordContent = cachedAlias,
+                suggestionsVisible = false,
+                statusText = ""
+            )
+        }
+
+        val mappingResult = queryGateway.listActivityAliasMappings()
+        if (!mappingResult.ok) {
+            logSuggestedActivityApply(
+                canonicalActivityName = trimmedCanonical,
+                outputMode = state.suggestionOutputMode,
+                appliedToken = null,
+                status = mappingResult.message
+            )
+            return state.copy(
+                suggestionsVisible = false,
+                statusText = mappingResult.message
+            )
+        }
+
+        val resolvedAlias = mappingResult.entries
+            .firstOrNull { it.canonical == trimmedCanonical }
+            ?.alias
+            ?.trim()
+            .orEmpty()
+        if (resolvedAlias.isEmpty()) {
+            val message =
+                "Suggested activity unavailable for authoring: no alias mapped for $trimmedCanonical."
+            logSuggestedActivityApply(
+                canonicalActivityName = trimmedCanonical,
+                outputMode = state.suggestionOutputMode,
+                appliedToken = null,
+                status = message
+            )
+            return state.copy(
+                suggestionsVisible = false,
+                statusText = message
+            )
+        }
+
+        logSuggestedActivityApply(
+            canonicalActivityName = trimmedCanonical,
+            outputMode = state.suggestionOutputMode,
+            appliedToken = resolvedAlias,
+            status = "applied suggested activity alias."
+        )
+        return state.copy(
+            recordContent = resolvedAlias,
+            suggestionsVisible = false,
+            statusText = ""
         )
     }
 
@@ -199,7 +367,13 @@ class RecordUseCases(
             editableHistoryContent = "",
             historyDraftsByFile = emptyMap(),
             suggestedActivities = emptyList(),
+            canonicalCatalogRoots = emptyList(),
+            canonicalCatalogStatusText = "",
+            lastRecordedActivityAlias = "",
+            lastRecordedDuration = "",
             suggestionsVisible = false,
+            isCanonicalCatalogVisible = false,
+            isCanonicalCatalogLoading = false,
             isSuggestionsLoading = false,
             statusText = "TXT editor state reset."
         )
@@ -275,7 +449,248 @@ class RecordUseCases(
         return "$year/$monthKey.txt"
     }
 
+    private suspend fun buildRecordSuccessSummary(
+        rawActivityToken: String,
+        durationClockText: String
+    ): RecordSuccessSummary {
+        val tokenSummary = resolveActivityTokenSummary(rawActivityToken)
+        val statusDurationText = formatClockDuration(durationClockText) ?: durationClockText
+        // Record success is surfaced in two places: an inline summary card and a snackbar.
+        // Keep the snackbar payload as a logical two-line string here so the app layer can
+        // either render it structurally (preferred) or still fall back to newline-aware text.
+        return RecordSuccessSummary(
+            canonicalToken = tokenSummary.canonicalToken,
+            aliasToken = tokenSummary.aliasToken,
+            inputDurationText = durationClockText,
+            statusText = textProvider.recordedActivityStatus(
+                canonicalToken = tokenSummary.canonicalToken,
+                durationText = statusDurationText
+            )
+        )
+    }
+
+    private suspend fun resolveActivityTokenSummary(rawActivityToken: String): ActivityTokenSummary {
+        val trimmedToken = rawActivityToken.trim()
+        if (trimmedToken.isEmpty()) {
+            return ActivityTokenSummary(canonicalToken = trimmedToken, aliasToken = trimmedToken)
+        }
+        val mappingResult = queryGateway.listActivityAliasMappings()
+        if (!mappingResult.ok) {
+            return ActivityTokenSummary(canonicalToken = trimmedToken, aliasToken = trimmedToken)
+        }
+        val aliasMatch = mappingResult.entries.firstOrNull { entry ->
+            entry.alias.trim() == trimmedToken
+        }
+        if (aliasMatch != null) {
+            return ActivityTokenSummary(
+                canonicalToken = aliasMatch.canonical.trim().ifEmpty { trimmedToken },
+                aliasToken = aliasMatch.alias.trim().ifEmpty { trimmedToken }
+            )
+        }
+
+        val canonicalMatch = mappingResult.entries.firstOrNull { entry ->
+            entry.canonical.trim() == trimmedToken
+        }
+        return ActivityTokenSummary(
+            canonicalToken = trimmedToken,
+            aliasToken = canonicalMatch?.alias?.trim()?.takeIf { it.isNotEmpty() } ?: trimmedToken
+        )
+    }
+
+    private fun parseGapFromPrevious(message: String): String {
+        val gap = message
+            .lineSequence()
+            .map { it.trim() }
+            .firstOrNull { it.startsWith("gap_from_previous:") }
+            ?.substringAfter(':')
+            ?.trim()
+            .orEmpty()
+        return if (isValidClockDuration(gap)) {
+            gap
+        } else {
+            textProvider.unavailableDuration()
+        }
+    }
+
+    private fun calculateHhmmDurationMinutes(startHhmm: String, endHhmm: String): Int? {
+        val startMinutes = hhmmToMinutes(startHhmm) ?: return null
+        val endMinutes = hhmmToMinutes(endHhmm) ?: return null
+        return if (endMinutes >= startMinutes) {
+            endMinutes - startMinutes
+        } else {
+            endMinutes + MINUTES_PER_DAY - startMinutes
+        }
+    }
+
+    private fun hhmmToMinutes(hhmm: String): Int? {
+        if (!isValidHhmm(hhmm)) {
+            return null
+        }
+        val hours = hhmm.substring(0, 2).toInt()
+        val minutes = hhmm.substring(2, 4).toInt()
+        return hours * 60 + minutes
+    }
+
+    private fun formatClockDuration(value: String): String? {
+        val minutes = clockDurationToMinutes(value) ?: return null
+        return formatDurationHoursMinutes(minutes)
+    }
+
+    private fun isValidClockDuration(value: String): Boolean =
+        clockDurationToMinutes(value) != null
+
+    private fun clockDurationToMinutes(value: String): Int? {
+        val parts = value.split(":")
+        if (parts.size != 2) {
+            return null
+        }
+        val hours = parts[0].toIntOrNull() ?: return null
+        val minutes = parts[1].toIntOrNull() ?: return null
+        if (hours < 0 || minutes !in 0..59) {
+            return null
+        }
+        return hours * MINUTES_PER_HOUR + minutes
+    }
+
+    private fun formatDurationClock(minutes: Int): String {
+        val boundedMinutes = minutes.coerceAtLeast(0)
+        val hours = boundedMinutes / MINUTES_PER_HOUR
+        val remainingMinutes = boundedMinutes % MINUTES_PER_HOUR
+        return "%02d:%02d".format(hours, remainingMinutes)
+    }
+
+    private fun formatDurationHoursMinutes(minutes: Int): String {
+        val boundedMinutes = minutes.coerceAtLeast(0)
+        val hours = boundedMinutes / MINUTES_PER_HOUR
+        val remainingMinutes = boundedMinutes % MINUTES_PER_HOUR
+        return when {
+            hours > 0 && remainingMinutes > 0 -> "${hours}h ${remainingMinutes}m"
+            hours > 0 -> "${hours}h"
+            else -> "${remainingMinutes}m"
+        }
+    }
+
+    private fun logActivitySuggestionsRequestStart(
+        logicalDayTarget: RecordLogicalDayTarget,
+        lookbackDays: Int,
+        topN: Int,
+        anchorDateIso: String?
+    ) {
+        logSuggestions(
+            message = buildString {
+                append("stage=record.activity_suggestions.request")
+                append(" action=start")
+                append(" target=")
+                append(logicalDayTarget.name.lowercase())
+                append(" lookbackDays=")
+                append(lookbackDays)
+                append(" topN=")
+                append(topN)
+                append(" anchorDateIso=")
+                append(anchorDateIso ?: "-")
+            }
+        )
+    }
+
+    private fun logActivitySuggestionsRequestResult(
+        logicalDayTarget: RecordLogicalDayTarget,
+        lookbackDays: Int,
+        topN: Int,
+        anchorDateIso: String?,
+        result: ActivitySuggestionResult
+    ) {
+        logSuggestions(
+            message = buildString {
+                append("stage=record.activity_suggestions.request")
+                append(" action=finish")
+                append(" target=")
+                append(logicalDayTarget.name.lowercase())
+                append(" lookbackDays=")
+                append(lookbackDays)
+                append(" topN=")
+                append(topN)
+                append(" anchorDateIso=")
+                append(anchorDateIso ?: "-")
+                append(" ok=")
+                append(result.ok)
+                append(" op=")
+                append(result.operationId.ifBlank { "-" })
+                append(" suggestionCount=")
+                append(result.suggestions.size)
+                append(" suggestions=")
+                append(result.suggestions.toDiagnosticSample())
+                append(" status=")
+                append(result.message.replaceLineBreaks())
+            }
+        )
+    }
+
+    private fun logSuggestions(message: String) {
+        try {
+            Log.i(SUGGESTION_LOG_TAG, message)
+        } catch (_: Throwable) {
+            // Local JVM tests may use the Android stub jar where Log methods are unavailable.
+        }
+    }
+
+    private fun logSuggestedActivityApply(
+        canonicalActivityName: String,
+        outputMode: RecordSuggestionOutputMode,
+        appliedToken: String?,
+        status: String
+    ) {
+        logSuggestions(
+            message = buildString {
+                append("stage=record.activity_suggestions.apply")
+                append(" canonical=")
+                append(canonicalActivityName.ifBlank { "-" })
+                append(" outputMode=")
+                append(outputMode.name.lowercase())
+                append(" appliedToken=")
+                append(appliedToken?.takeIf { it.isNotBlank() } ?: "-")
+                append(" status=")
+                append(status.replaceLineBreaks())
+            }
+        )
+    }
+
+    private fun List<String>.toDiagnosticSample(maxItems: Int = 5): String =
+        take(maxItems).joinToString(prefix = "[", postfix = "]", separator = ",") {
+            it.replaceLineBreaks()
+        }
+
+    private fun List<ActivityAliasMappingEntry>.firstAliasByCanonical(): Map<String, String> {
+        val aliasesByCanonical = linkedMapOf<String, String>()
+        for (entry in this) {
+            val canonical = entry.canonical.trim()
+            val alias = entry.alias.trim()
+            if (canonical.isEmpty() || alias.isEmpty() || aliasesByCanonical.containsKey(canonical)) {
+                continue
+            }
+            aliasesByCanonical[canonical] = alias
+        }
+        return aliasesByCanonical
+    }
+
+    private fun String.replaceLineBreaks(): String =
+        replace('\n', ' ').replace('\r', ' ')
+
+    private data class ActivityTokenSummary(
+        val canonicalToken: String,
+        val aliasToken: String
+    )
+
+    private data class RecordSuccessSummary(
+        val canonicalToken: String,
+        val aliasToken: String,
+        val inputDurationText: String,
+        val statusText: String
+    )
+
     private companion object {
         private val MONTH_KEY_REGEX = Regex("""\d{4}-\d{2}""")
+        private const val SUGGESTION_LOG_TAG = "TimeTracerSuggestions"
+        private const val MINUTES_PER_DAY = 24 * 60
+        private const val MINUTES_PER_HOUR = 60
     }
 }

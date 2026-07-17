@@ -19,9 +19,6 @@ internal class RuntimeQueryService(
     suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult =
         queryDelegate.queryProjectTree(params)
 
-    suspend fun queryProjectTreeText(params: DataTreeQueryParams): DataQueryTextResult =
-        queryDelegate.queryProjectTreeText(params)
-
     suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult =
         queryDelegate.queryReportChart(params)
 
@@ -32,6 +29,12 @@ internal class RuntimeQueryService(
 
     suspend fun listActivityMappingNames(): ActivityMappingNamesResult =
         queryDelegate.listActivityMappingNames()
+
+    suspend fun listActivityAliasMappings(): ActivityAliasMappingListResult =
+        queryDelegate.listActivityAliasMappings()
+
+    suspend fun listCanonicalCatalog(): CanonicalCatalogResult =
+        queryDelegate.listCanonicalCatalog()
 
     suspend fun listActivityAliasKeys(): ActivityMappingNamesResult =
         queryDelegate.listActivityAliasKeys()

@@ -58,7 +58,9 @@ internal fun mapCorePayloadToDomainModel(payload: ReportChartData): DomainChartM
 
 internal fun mapDomainModelToRenderModel(
     model: DomainChartModel,
-    selectedRootOverride: String?
+    selectedRootOverride: String?,
+    fromDateIso: String? = null,
+    toDateIso: String? = null
 ): ChartRenderModel {
     val roots = model.roots.distinct()
     val requestedRoot = selectedRootOverride?.trim()?.takeIf { it.isNotEmpty() }
@@ -86,7 +88,9 @@ internal fun mapDomainModelToRenderModel(
         rangeDays = model.rangeDays,
         usesLegacyStatsFallback = model.usesLegacyStatsFallback,
         schemaVersion = model.schemaVersion,
-        usesSchemaVersionFallback = model.usesSchemaVersionFallback
+        usesSchemaVersionFallback = model.usesSchemaVersionFallback,
+        fromDateIso = fromDateIso,
+        toDateIso = toDateIso
     )
 }
 
@@ -100,24 +104,27 @@ private fun parseEpochDayOrNull(dateIso: String): Long? =
 internal fun mapCorePayloadToCompositionRenderModel(
     payload: ReportCompositionData
 ): CompositionChartRenderModel {
-    val normalizedSlices = payload.slices
-        .map { slice ->
-            ReportCompositionSlice(
-                root = slice.root.trim(),
-                durationSeconds = slice.durationSeconds.coerceAtLeast(0L),
-                percent = slice.percent.coerceAtLeast(0f)
-            )
-        }
-        .filter { it.root.isNotEmpty() && it.durationSeconds > 0L }
-        .sortedWith(
-            compareByDescending<ReportCompositionSlice> { it.durationSeconds }
-                .thenBy { it.root }
-        )
-
     return CompositionChartRenderModel(
-        slices = normalizedSlices,
         totalDurationSeconds = payload.totalDurationSeconds.coerceAtLeast(0L),
         activeRootCount = payload.activeRootCount.coerceAtLeast(0),
-        rangeDays = payload.rangeDays.coerceAtLeast(0)
+        rangeDays = payload.rangeDays.coerceAtLeast(0),
+        tree = normalizeCompositionTree(payload.tree)
     )
 }
+
+private fun normalizeCompositionTree(nodes: List<TreeNode>): List<TreeNode> = nodes
+    .mapNotNull { node ->
+        val name = node.name.trim()
+        val durationSeconds = node.durationSeconds?.coerceAtLeast(0L) ?: return@mapNotNull null
+        if (name.isEmpty() || durationSeconds <= 0L) {
+            return@mapNotNull null
+        }
+        TreeNode(
+            name = name,
+            path = node.path.trim(),
+            durationSeconds = durationSeconds,
+            occurrenceCount = node.occurrenceCount?.coerceAtLeast(0L),
+            children = normalizeCompositionTree(node.children)
+        )
+    }
+    .sortedWith(compareByDescending<TreeNode> { it.durationSeconds ?: 0L }.thenBy(TreeNode::name))

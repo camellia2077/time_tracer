@@ -38,7 +38,7 @@ class RecordUseCasesTest {
                     "2026/2026-03.txt" to TxtFileContentResult(
                         ok = true,
                         filePath = "2026/2026-03.txt",
-                        content = "y2026\nm03\n0101\n",
+                        content = "y2026\nm03\nd0301\n",
                         message = "Read TXT success."
                     )
                 )
@@ -56,6 +56,43 @@ class RecordUseCasesTest {
 
         assertEquals("", result.recordContent)
         assertEquals("", result.recordRemark)
+    }
+
+    @Test
+    fun recordNow_showsUserFacingSuccessStatusAfterInsert() = runTest {
+        val useCases = RecordUseCases(
+            recordGateway = FakeRecordGateway(
+                recordNowResult = RecordActionResult(
+                    ok = true,
+                    message = "record: ok\n" +
+                        "sync: ok\n" +
+                        "gap_from_previous: 00:25\n" +
+                        "target_file: /data/user/0/app/files/2026-03.txt"
+                )
+            ),
+            txtStorageGateway = FakeTxtStorageGateway(
+                inspectionResult = TxtInspectionResult(
+                    ok = true,
+                    entries = listOf(inspectionEntry("2026/2026-03.txt", "2026-03")),
+                    message = "ok"
+                ),
+                readResults = mapOf(
+                    "2026/2026-03.txt" to txtReadResult("2026/2026-03.txt")
+                )
+            ),
+            queryGateway = FakeQueryGateway()
+        )
+
+        val result = useCases.recordNow(
+            RecordUiState(
+                recordContent = "coding",
+                selectedMonth = "2026-03"
+            )
+        )
+
+        assertEquals("coding\n25m", result.statusText)
+        assertEquals("coding", result.lastRecordedActivityAlias)
+        assertEquals("00:25", result.lastRecordedDuration)
     }
 
     @Test
@@ -87,7 +124,7 @@ class RecordUseCasesTest {
                     "2026/2026-03.txt" to TxtFileContentResult(
                         ok = true,
                         filePath = "2026/2026-03.txt",
-                        content = "y2026\nm03\n0101\n",
+                        content = "y2026\nm03\nd0301\n",
                         message = "Read TXT success."
                     )
                 )
@@ -151,6 +188,49 @@ class RecordUseCasesTest {
         assertEquals("", result.recordRemark)
         assertEquals("", result.intervalStart)
         assertEquals("", result.intervalEnd)
+    }
+
+    @Test
+    fun recordInterval_showsUserFacingSuccessStatusAfterInsert() = runTest {
+        val useCases = RecordUseCases(
+            recordGateway = FakeRecordGateway(
+                recordIntervalResult = RecordActionResult(
+                    ok = true,
+                    message = "record: ok\nsync: ok\ntarget_file: /data/user/0/app/files/2026-03.txt"
+                )
+            ),
+            txtStorageGateway = FakeTxtStorageGateway(
+                inspectionResult = TxtInspectionResult(
+                    ok = true,
+                    entries = listOf(inspectionEntry("2026/2026-03.txt", "2026-03")),
+                    message = "ok"
+                ),
+                readResults = mapOf(
+                    "2026/2026-03.txt" to txtReadResult("2026/2026-03.txt")
+                )
+            ),
+            queryGateway = FakeQueryGateway(
+                aliasMappingsResult = ActivityAliasMappingListResult(
+                    ok = true,
+                    entries = listOf(ActivityAliasMappingEntry("学习", "study")),
+                    message = "ok"
+                )
+            )
+        )
+
+        val result = useCases.recordInterval(
+            RecordUiState(
+                authoringMode = RecordAuthoringMode.INTERVAL,
+                recordContent = "学习",
+                intervalStart = "0900",
+                intervalEnd = "1030",
+                selectedMonth = "2026-03"
+            )
+        )
+
+        assertEquals("study\n1h 30m", result.statusText)
+        assertEquals("学习", result.lastRecordedActivityAlias)
+        assertEquals("01:30", result.lastRecordedDuration)
     }
 
     @Test
@@ -232,6 +312,224 @@ class RecordUseCasesTest {
     }
 
     @Test
+    fun loadActivitySuggestions_keepsCanonicalAndAliasDisplayTokens() = runTest {
+        val useCases = RecordUseCases(
+            recordGateway = FakeRecordGateway(),
+            txtStorageGateway = FakeTxtStorageGateway(
+                inspectionResult = TxtInspectionResult(ok = true, entries = emptyList(), message = "ok"),
+                readResults = emptyMap()
+            ),
+            queryGateway = FakeQueryGateway(
+                activitySuggestionResult = ActivitySuggestionResult(
+                    ok = true,
+                    suggestions = listOf("recreation_game_clash-royale", "meal"),
+                    message = "ok"
+                ),
+                aliasMappingsResult = ActivityAliasMappingListResult(
+                    ok = true,
+                    entries = listOf(
+                        ActivityAliasMappingEntry("皇室战争", "recreation_game_clash-royale")
+                    ),
+                    message = "ok"
+                )
+            )
+        )
+
+        val result = useCases.loadActivitySuggestions(
+            state = RecordUiState(),
+            lookbackDays = 7,
+            topN = 5
+        )
+
+        assertEquals(
+            listOf(
+                RecordSuggestedActivity(
+                    canonicalToken = "recreation_game_clash-royale",
+                    aliasToken = "皇室战争"
+                ),
+                RecordSuggestedActivity(canonicalToken = "meal")
+            ),
+            result.suggestedActivities
+        )
+    }
+
+    @Test
+    fun loadCanonicalCatalog_keepsFailureSeparateFromSuggestionState() = runTest {
+        val useCases = RecordUseCases(
+            recordGateway = FakeRecordGateway(),
+            txtStorageGateway = FakeTxtStorageGateway(
+                inspectionResult = TxtInspectionResult(ok = true, entries = emptyList(), message = "ok"),
+                readResults = emptyMap()
+            ),
+            queryGateway = FakeQueryGateway(
+                activitySuggestionResult = ActivitySuggestionResult(
+                    ok = true,
+                    suggestions = listOf("meal"),
+                    message = "suggest ok"
+                ),
+                canonicalCatalogResult = CanonicalCatalogResult(
+                    ok = false,
+                    roots = emptyList(),
+                    entries = emptyList(),
+                    message = "catalog failed"
+                )
+            )
+        )
+
+        val result = useCases.loadCanonicalCatalog(
+            state = RecordUiState(),
+        )
+
+        assertEquals("catalog failed", result.canonicalCatalogStatusText)
+        assertTrue(result.canonicalCatalogRoots.isEmpty())
+        assertEquals("", result.statusText)
+    }
+
+    @Test
+    fun loadCanonicalCatalog_populatesRootsAndClearsLoadingState() = runTest {
+        val useCases = RecordUseCases(
+            recordGateway = FakeRecordGateway(),
+            txtStorageGateway = FakeTxtStorageGateway(
+                inspectionResult = TxtInspectionResult(ok = true, entries = emptyList(), message = "ok"),
+                readResults = emptyMap()
+            ),
+            queryGateway = FakeQueryGateway()
+        )
+
+        val result = useCases.loadCanonicalCatalog(
+            state = RecordUiState(isCanonicalCatalogLoading = true)
+        )
+
+        assertEquals(false, result.isCanonicalCatalogLoading)
+        assertEquals(true, result.isCanonicalCatalogVisible)
+        assertEquals(
+            listOf("study", "study/math"),
+            result.canonicalCatalogRoots.first().let { root ->
+                listOf(root.path, root.children.single().path)
+            }
+        )
+    }
+
+    @Test
+    fun applySuggestedActivity_defaultsToCanonicalInsertMode() = runTest {
+        val useCases = RecordUseCases(
+            recordGateway = FakeRecordGateway(),
+            txtStorageGateway = FakeTxtStorageGateway(
+                inspectionResult = TxtInspectionResult(ok = true, entries = emptyList(), message = "ok"),
+                readResults = emptyMap()
+            ),
+            queryGateway = FakeQueryGateway()
+        )
+
+        val result = useCases.applySuggestedActivity(
+            state = RecordUiState(suggestionsVisible = true),
+            suggestedActivityToken = "recreation_game_clash-royale"
+        )
+
+        assertEquals("recreation_game_clash-royale", result.recordContent)
+        assertEquals(false, result.suggestionsVisible)
+        assertEquals("", result.statusText)
+    }
+
+    @Test
+    fun applySuggestedActivity_resolvesClickedAliasTokenToCachedCanonicalSuggestion() = runTest {
+        val useCases = RecordUseCases(
+            recordGateway = FakeRecordGateway(),
+            txtStorageGateway = FakeTxtStorageGateway(
+                inspectionResult = TxtInspectionResult(ok = true, entries = emptyList(), message = "ok"),
+                readResults = emptyMap()
+            ),
+            queryGateway = FakeQueryGateway()
+        )
+
+        val result = useCases.applySuggestedActivity(
+            state = RecordUiState(
+                suggestionsVisible = true,
+                suggestionOutputMode = RecordSuggestionOutputMode.ALIAS,
+                suggestedActivities = listOf(
+                    RecordSuggestedActivity(
+                        canonicalToken = "recreation_game_clash-royale",
+                        aliasToken = "皇室战争"
+                    )
+                )
+            ),
+            suggestedActivityToken = "皇室战争"
+        )
+
+        assertEquals("皇室战争", result.recordContent)
+        assertEquals(false, result.suggestionsVisible)
+        assertEquals("", result.statusText)
+    }
+
+    @Test
+    fun applySuggestedActivity_resolvesCanonicalToFirstDeclaredAliasWhenAliasModeEnabled() = runTest {
+        val useCases = RecordUseCases(
+            recordGateway = FakeRecordGateway(),
+            txtStorageGateway = FakeTxtStorageGateway(
+                inspectionResult = TxtInspectionResult(ok = true, entries = emptyList(), message = "ok"),
+                readResults = emptyMap()
+            ),
+            queryGateway = FakeQueryGateway(
+                aliasMappingsResult = ActivityAliasMappingListResult(
+                    ok = true,
+                    entries = listOf(
+                        ActivityAliasMappingEntry("皇室战争", "recreation_game_clash-royale"),
+                        ActivityAliasMappingEntry("cr", "recreation_game_clash-royale"),
+                        ActivityAliasMappingEntry("Clash Royale", "recreation_game_clash-royale")
+                    ),
+                    message = "ok"
+                )
+            )
+        )
+
+        val result = useCases.applySuggestedActivity(
+            state = RecordUiState(
+                suggestionsVisible = true,
+                suggestionOutputMode = RecordSuggestionOutputMode.ALIAS
+            ),
+            suggestedActivityToken = "recreation_game_clash-royale"
+        )
+
+        assertEquals("皇室战争", result.recordContent)
+        assertEquals(false, result.suggestionsVisible)
+        assertEquals("", result.statusText)
+    }
+
+    @Test
+    fun applySuggestedActivity_keepsStateWhenCanonicalHasNoAliasMapping() = runTest {
+        val useCases = RecordUseCases(
+            recordGateway = FakeRecordGateway(),
+            txtStorageGateway = FakeTxtStorageGateway(
+                inspectionResult = TxtInspectionResult(ok = true, entries = emptyList(), message = "ok"),
+                readResults = emptyMap()
+            ),
+            queryGateway = FakeQueryGateway(
+                aliasMappingsResult = ActivityAliasMappingListResult(
+                    ok = true,
+                    entries = listOf(ActivityAliasMappingEntry("快递", "routine_express")),
+                    message = "ok"
+                )
+            )
+        )
+
+        val result = useCases.applySuggestedActivity(
+            state = RecordUiState(
+                recordContent = "existing",
+                suggestionsVisible = true,
+                suggestionOutputMode = RecordSuggestionOutputMode.ALIAS
+            ),
+            suggestedActivityToken = "recreation_game_clash-royale"
+        )
+
+        assertEquals("existing", result.recordContent)
+        assertEquals(false, result.suggestionsVisible)
+        assertEquals(
+            "Suggested activity unavailable for authoring: no alias mapped for recreation_game_clash-royale.",
+            result.statusText
+        )
+    }
+
+    @Test
     fun openHistoryFile_allowsOpeningBlockedTxtForRepair() = runTest {
         val inspectionEntries = listOf(
             TxtInspectionEntry(
@@ -298,7 +596,7 @@ class RecordUseCasesTest {
                     "2026/2026-03.txt" to TxtFileContentResult(
                         ok = true,
                         filePath = "2026/2026-03.txt",
-                        content = "y2026\nm03\n0101\n",
+                        content = "y2026\nm03\nd0301\n",
                         message = "Read TXT success."
                     )
                 )
@@ -617,7 +915,7 @@ class RecordUseCasesTest {
                     "2026/2026-04.txt" to TxtFileContentResult(
                         ok = true,
                         filePath = "2026/2026-04.txt",
-                        content = "y2026\nm04\n0101\n",
+                        content = "y2026\nm04\nd0401\n",
                         message = "Read TXT success."
                     )
                 )
@@ -633,7 +931,7 @@ class RecordUseCasesTest {
         )
 
         assertEquals("2026/2026-03.txt", result.selectedHistoryFile)
-        assertEquals("y2026\nm03\n0101\n", result.selectedHistoryContent)
+        assertEquals("y2026\nm03\nd0301\n", result.selectedHistoryContent)
         assertEquals("draft-content", result.editableHistoryContent)
     }
 
@@ -694,7 +992,7 @@ class RecordUseCasesTest {
                 "2026/2026-05.txt" to TxtFileContentResult(
                     ok = true,
                     filePath = "2026/2026-05.txt",
-                    content = "y2026\nm05\n0501\n",
+                        content = "y2026\nm05\nd0501\n",
                     message = "Read TXT success."
                 )
             ),
@@ -742,7 +1040,7 @@ class RecordUseCasesTest {
                 "2027/2027-01.txt" to TxtFileContentResult(
                     ok = true,
                     filePath = "2027/2027-01.txt",
-                    content = "y2027\nm01\n0101\n",
+                        content = "y2027\nm01\nd0101\n",
                     message = "Read TXT success."
                 )
             ),
@@ -790,7 +1088,7 @@ class RecordUseCasesTest {
                 "2026/2026-05.txt" to TxtFileContentResult(
                     ok = true,
                     filePath = "2026/2026-05.txt",
-                    content = "y2026\nm05\n0501\n",
+                        content = "y2026\nm05\nd0501\n",
                     message = "Read TXT success."
                 )
             ),
@@ -949,18 +1247,42 @@ private class FakeRecordGateway(
     )
 }
 
-private class FakeQueryGateway : QueryGateway {
+private class FakeQueryGateway(
+    private val activitySuggestionResult: ActivitySuggestionResult = ActivitySuggestionResult(
+        ok = true,
+        suggestions = emptyList(),
+        message = "ok"
+    ),
+    private val aliasMappingsResult: ActivityAliasMappingListResult = ActivityAliasMappingListResult(
+        ok = false,
+        entries = emptyList(),
+        message = "not implemented"
+    ),
+    private val canonicalCatalogResult: CanonicalCatalogResult = CanonicalCatalogResult(
+        ok = true,
+        roots = listOf(
+            CanonicalPathNode(
+                name = "study",
+                path = "study",
+                children = listOf(
+                    CanonicalPathNode(
+                        name = "math",
+                        path = "study/math"
+                    )
+                )
+            )
+        ),
+        entries = emptyList(),
+        message = "ok"
+    )
+) : QueryGateway {
     var lastAnchorDateIso: String? = null
 
     override suspend fun queryActivitySuggestions(
         lookbackDays: Int,
         topN: Int,
         anchorDateIso: String?
-    ): ActivitySuggestionResult = ActivitySuggestionResult(
-        ok = true,
-        suggestions = emptyList(),
-        message = "ok"
-    ).also {
+    ): ActivitySuggestionResult = activitySuggestionResult.also {
         lastAnchorDateIso = anchorDateIso
     }
 
@@ -973,14 +1295,17 @@ private class FakeQueryGateway : QueryGateway {
     override suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult =
         TreeQueryResult(ok = true, found = false, message = "ok")
 
-    override suspend fun queryProjectTreeText(params: DataTreeQueryParams): DataQueryTextResult =
-        DataQueryTextResult(ok = true, outputText = "", message = "ok")
-
     override suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult =
         ReportChartQueryResult(ok = true, data = null, message = "ok")
 
     override suspend fun listActivityMappingNames(): ActivityMappingNamesResult =
         ActivityMappingNamesResult(ok = true, names = emptyList(), message = "ok")
+
+    override suspend fun listActivityAliasMappings(): ActivityAliasMappingListResult =
+        aliasMappingsResult
+
+    override suspend fun listCanonicalCatalog(): CanonicalCatalogResult =
+        canonicalCatalogResult
 }
 
 private fun inspectionEntry(relativePath: String, month: String): TxtInspectionEntry =
@@ -997,7 +1322,7 @@ private fun txtReadResult(filePath: String): TxtFileContentResult =
     TxtFileContentResult(
         ok = true,
         filePath = filePath,
-        content = "y2026\nm03\n0101\n",
+        content = "y2026\nm03\nd0301\n",
         message = "Read TXT success."
     )
 

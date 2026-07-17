@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">追踪器</string>
+    <!-- Keep the product name fixed as "Tracer" in every locale. Do not localize or rename. -->
+    <string name="app_name">Tracer</string>
 
     <string name="tracer_tab_data">数据</string>
     <string name="tracer_tab_report">报表</string>
@@ -10,7 +11,9 @@
 
 
     <string name="tracer_export_all_tracer_canceled">已取消完整交换包导出。</string>
+    <string name="tracer_export_current_txt_canceled">已取消 TXT/TOML 导出。</string>
     <string name="tracer_export_all_failed_no_months">完整交换包导出失败：没有可用月份。</string>
+    <string name="tracer_export_current_txt_failed_no_selection">TXT/TOML 导出失败：当前没有可导出的 TXT 或 TOML 文件。</string>
     <string name="tracer_export_error_invalid_month_key">%1$s：月份键无效。</string>
     <string name="tracer_export_error_source_file_not_found">%1$s：未找到源文件。</string>
     <string name="tracer_export_error_read_failed">%1$s：%2$s</string>
@@ -26,15 +29,24 @@
     </plurals>
     <string name="tracer_export_all_tracer_completed">完整交换包导出完成 -&gt; TXT %1$d/%2$d，配置 TOML %3$d，manifest %4$d。%5$s</string>
     <string name="tracer_export_all_tracer_failed">完整交换包导出失败：%1$s</string>
+    <string name="tracer_export_current_txt_completed">TXT/TOML 导出完成 -&gt; TXT %1$d，TOML %2$d。</string>
+    <string name="tracer_export_current_txt_failed">TXT/TOML 导出失败：%1$s</string>
     <string name="tracer_export_unknown_error">未知错误</string>
     <string name="tracer_export_already_in_progress">导出已在进行中。</string>
     <string name="tracer_export_select_tracer_destination">请选择完整交换包导出目标目录。</string>
+    <string name="tracer_export_select_current_txt_destination">请选择 TXT/TOML 导出目标目录。</string>
     <string name="tracer_import_select_txt_folder">正在选择 TXT 文件夹...</string>
     <string name="tracer_import_txt_folder_canceled">已取消导入 TXT 文件夹。</string>
     <string name="tracer_import_txt_folder_failed">导入 TXT 文件夹失败：%1$s</string>
     <string name="tracer_import_txt_folder_no_txt_found">TXT 文件夹导入已跳过：未找到 TXT 文件。</string>
     <string name="tracer_import_txt_folder_completed_success">TXT 文件夹导入完成 -&gt; %1$d/%2$d 个 TXT 文件。</string>
     <string name="tracer_import_txt_folder_completed_with_errors">TXT 文件夹导入完成 -&gt; %1$d/%2$d 个 TXT 文件。%3$s</string>
+    <string name="tracer_import_select_toml_folder">正在选择 TOML 文件夹...</string>
+    <string name="tracer_import_toml_folder_canceled">已取消导入 TOML 文件夹。</string>
+    <string name="tracer_import_toml_folder_failed">导入 TOML 文件夹失败：%1$s</string>
+    <string name="tracer_import_toml_folder_no_toml_found">TOML 文件夹导入已跳过：未找到 TOML 文件。</string>
+    <string name="tracer_import_toml_folder_completed_success">TOML 文件夹导入完成 -&gt; %1$d/%2$d 个 TOML 文件。</string>
+    <string name="tracer_import_toml_folder_completed_with_errors">TOML 文件夹导入完成 -&gt; %1$d/%2$d 个 TOML 文件。%3$s</string>
     <string name="tracer_import_select_single_tracer">正在选择单个 TRACER...</string>
     <string name="tracer_import_single_tracer_canceled">已取消导入单个 TRACER。</string>
     <string name="tracer_import_single_tracer_failed">导入单个 TRACER 失败：%1$s</string>
@@ -92,7 +104,7 @@
     <string name="config_label_report_breakdown_palette">分布图配色</string>
     <string name="config_report_breakdown_palette_current">分布图配色（当前：%1$s）</string>
     <string name="config_report_breakdown_palette_tap_expand">分布图配色（点击展开）</string>
-    <string name="config_report_breakdown_palette_preview_hint">用于分布饼图和横向条形图。可先看下面两种预览，再决定是否应用这套配色。</string>
+    <string name="config_report_breakdown_palette_preview_hint">用于分布饼图和横向条形图。颜色按占比从大到小排列；可先看下面两种预览，再决定是否应用这套配色。</string>
     <string name="config_report_breakdown_palette_pie_preview">分布饼图预览</string>
     <string name="config_report_breakdown_palette_bar_preview">分布横向条形图预览</string>
     <string name="config_report_breakdown_palette_soft">柔和</string>
@@ -107,6 +119,16 @@
 
     <string name="config_title_configuration_files">配置文件</string>
     <string name="config_action_refresh_list">刷新列表</string>
+    <string name="config_action_new_alias_mapping">新建活动名映射</string>
+    <string name="config_action_delete_alias_mapping">删除活动名映射</string>
+    <string name="config_title_delete_alias_mapping">删除 %1$s？</string>
+    <string name="config_delete_alias_mapping_warning">删除此活动名映射后，过去使用其中别名的记录可能无法被正常解析。此操作无法撤销。</string>
+    <string name="config_title_new_alias_mapping">新建活动名映射</string>
+    <string name="config_label_new_alias_file_name">文件名</string>
+    <string name="config_new_alias_file_location">将在 converter/aliases/ 中创建</string>
+    <string name="config_action_create">创建</string>
+    <string name="config_action_cancel">取消</string>
+    <string name="config_action_delete">删除</string>
     <string name="config_category_converter">转换器</string>
     <string name="config_category_charts">图表</string>
     <string name="config_category_meta">元信息</string>
@@ -119,6 +141,10 @@
     <string name="config_title_editor_file">编辑器：%1$s</string>
     <string name="config_label_toml_content">TOML 内容</string>
     <string name="config_action_save_changes">保存更改</string>
+    <string name="config_auto_save_status_idle">自动保存已就绪</string>
+    <string name="config_auto_save_status_saving">正在自动保存...</string>
+    <string name="config_auto_save_status_saved">已保存</string>
+    <string name="config_auto_save_status_failed">保存失败</string>
     <string name="config_alias_mode_structured">结构化</string>
     <string name="config_alias_mode_advanced">高级模式</string>
     <string name="config_alias_structured_unavailable">当前文件暂时无法使用结构化活动名编辑。</string>
@@ -128,14 +154,16 @@
     <string name="config_alias_action_rename">编辑</string>
     <string name="config_alias_action_delete">删除</string>
     <string name="config_alias_dialog_add_group_title">新增活动名分组</string>
-    <string name="config_alias_dialog_rename_group_title">重命名活动名分组</string>
     <string name="config_alias_dialog_add_entry_title">新增活动名条目</string>
     <string name="config_alias_dialog_edit_entry_title">编辑活动名条目</string>
+    <string name="config_alias_dialog_rename_alias_title">修改 alias 名</string>
     <string name="config_alias_group_name_label">分组名</string>
     <string name="config_alias_group_name_required">分组名不能为空。</string>
     <string name="config_alias_alias_key_label">活动名键</string>
     <string name="config_alias_canonical_leaf_label">规范叶子值</string>
+    <string name="config_alias_canonical_leaf_readonly">Canonical leaf：%1$s</string>
     <string name="config_alias_entry_required">活动名键和规范叶子值都不能为空。</string>
+    <string name="config_alias_alias_key_required">活动名键不能为空。</string>
 
     <string name="config_title_about">关于</string>
     <string name="config_about_author">作者：%1$s</string>

@@ -21,13 +21,12 @@ import com.example.tracer.feature.report.R
 internal fun ReportParametersCard(
     reportMode: ReportMode,
     resultDisplayMode: ReportResultDisplayMode,
-    expanded: Boolean,
     keyboardOptions: KeyboardOptions,
     reportDate: String,
     onReportDateChange: (String) -> Unit,
     reportMonth: String,
     onReportMonthChange: (String) -> Unit,
-    availableTxtYears: List<String>,
+    calendarAvailability: com.example.tracer.ui.components.CalendarAvailability,
     reportYear: String,
     onReportYearChange: (String) -> Unit,
     reportWeek: String,
@@ -38,17 +37,9 @@ internal fun ReportParametersCard(
     onReportRangeEndDateChange: (String) -> Unit,
     reportRecentDays: String,
     onReportRecentDaysChange: (String) -> Unit,
-    onToggle: () -> Unit,
     onRunReport: () -> Unit
 ) {
-    ExpandableParameterCard(
-        title = stringResource(
-            R.string.report_title_mode_parameters,
-            stringResource(reportMode.labelRes())
-        ),
-        expanded = expanded,
-        onToggle = onToggle
-    ) {
+    ParameterContentCard {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             ReportTemporalInputFields(
                 period = reportMode.toDataTreePeriod(),
@@ -66,7 +57,7 @@ internal fun ReportParametersCard(
                 onReportDateChange = onReportDateChange,
                 reportMonth = reportMonth,
                 onReportMonthChange = onReportMonthChange,
-                availableTxtYears = availableTxtYears,
+                calendarAvailability = calendarAvailability,
                 reportYear = reportYear,
                 onReportYearChange = onReportYearChange,
                 reportWeek = reportWeek,

@@ -6,6 +6,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -21,9 +22,11 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.min
 
-private data class TreemapNodeRect(
+internal data class TreemapNodeRect(
     val index: Int,
     val slice: ReportCompositionSlice,
     val bounds: Rect
@@ -35,13 +38,11 @@ internal fun ReportCompositionTreemapChart(
     palettePreset: ReportPiePalettePreset,
     selectedIndex: Int,
     onItemSelected: (Int) -> Unit,
+    onSliceColorsResolved: (List<Color>) -> Unit = {},
+    valueLabel: (Long) -> String = ::formatDurationHoursMinutes,
     modifier: Modifier = Modifier
 ) {
     val density = LocalDensity.current
-    val colors = rememberCompositionSliceColors(
-        slices = slices,
-        palettePreset = palettePreset
-    )
     BoxWithConstraints(modifier = modifier) {
         val widthPx = with(density) { maxWidth.toPx() }
         val heightPx = with(density) { maxHeight.toPx() }
@@ -50,6 +51,17 @@ internal fun ReportCompositionTreemapChart(
                 slices = slices,
                 widthPx = widthPx,
                 heightPx = heightPx
+            )
+        }
+        val colors = remember(layout, palettePreset) {
+            resolveTreemapColors(
+                layout = layout,
+                palettePreset = palettePreset
+            )
+        }
+        LaunchedEffect(colors, slices) {
+            onSliceColorsResolved(
+                slices.indices.map { index -> colors[index] ?: Color(0xFF4F46E5) }
             )
         }
         Canvas(
@@ -67,7 +79,7 @@ internal fun ReportCompositionTreemapChart(
             val cornerRadiusPx = 14.dp.toPx()
             val strokeWidthPx = 2.dp.toPx()
             layout.forEach { node ->
-                val color = colors.getOrElse(node.index) { Color(0xFF4F46E5) }
+                val color = colors[node.index] ?: Color(0xFF4F46E5)
                 val insetBounds = Rect(
                     left = node.bounds.left + gapPx,
                     top = node.bounds.top + gapPx,
@@ -106,14 +118,15 @@ internal fun ReportCompositionTreemapChart(
                     bounds = insetBounds,
                     slice = node.slice,
                     fillColor = color,
-                    roundRect = roundRect
+                    roundRect = roundRect,
+                    valueLabel = valueLabel
                 )
             }
         }
     }
 }
 
-private fun computeTreemapRects(
+internal fun computeTreemapRects(
     slices: List<ReportCompositionSlice>,
     widthPx: Float,
     heightPx: Float
@@ -133,6 +146,57 @@ private fun computeTreemapRects(
         vertical = widthPx >= heightPx
     )
 }
+
+internal fun resolveTreemapColors(
+    layout: List<TreemapNodeRect>,
+    palettePreset: ReportPiePalettePreset
+): Map<Int, Color> {
+    val palette = resolveReportBreakdownPaletteColors(palettePreset)
+    val colorsByIndex = mutableMapOf<Int, Color>()
+    layout
+        .sortedWith(
+            compareByDescending<TreemapNodeRect> { it.slice.durationSeconds }
+                .thenBy { it.index }
+        )
+        .forEachIndexed { rank, node ->
+            val neighboringColors = layout.asSequence()
+                .filter { candidate ->
+                    candidate.index in colorsByIndex &&
+                        areTreemapNodesAdjacent(node, candidate)
+                }
+                .mapNotNull { candidate -> colorsByIndex[candidate.index] }
+                .toSet()
+            val baseColor = palette[rank.mod(palette.size)]
+            colorsByIndex[node.index] = if (baseColor !in neighboringColors) {
+                baseColor
+            } else {
+                palette.firstOrNull { color -> color !in neighboringColors } ?: baseColor
+            }
+        }
+    return colorsByIndex
+}
+
+internal fun areTreemapNodesAdjacent(
+    first: TreemapNodeRect,
+    second: TreemapNodeRect
+): Boolean {
+    val firstBounds = first.bounds
+    val secondBounds = second.bounds
+    val sharesVerticalEdge =
+        abs(firstBounds.right - secondBounds.left) <= TREEMAP_ADJACENCY_EPSILON_PX ||
+            abs(secondBounds.right - firstBounds.left) <= TREEMAP_ADJACENCY_EPSILON_PX
+    val sharesHorizontalEdge =
+        abs(firstBounds.bottom - secondBounds.top) <= TREEMAP_ADJACENCY_EPSILON_PX ||
+            abs(secondBounds.bottom - firstBounds.top) <= TREEMAP_ADJACENCY_EPSILON_PX
+    val verticalOverlap = min(firstBounds.bottom, secondBounds.bottom) -
+        max(firstBounds.top, secondBounds.top)
+    val horizontalOverlap = min(firstBounds.right, secondBounds.right) -
+        max(firstBounds.left, secondBounds.left)
+    return (sharesVerticalEdge && verticalOverlap > TREEMAP_ADJACENCY_EPSILON_PX) ||
+        (sharesHorizontalEdge && horizontalOverlap > TREEMAP_ADJACENCY_EPSILON_PX)
+}
+
+private const val TREEMAP_ADJACENCY_EPSILON_PX = 0.5f
 
 private fun sliceDiceTreemap(
     indexedSlices: List<IndexedValue<ReportCompositionSlice>>,
@@ -196,7 +260,8 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawTreemapLabel(
     bounds: Rect,
     slice: ReportCompositionSlice,
     fillColor: Color,
-    roundRect: RoundRect
+    roundRect: RoundRect,
+    valueLabel: (Long) -> String
 ) {
     if (bounds.width < 88f || bounds.height < 44f) {
         return
@@ -236,7 +301,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawTreemapLabel(
             val canShowSubtitle = bounds.width >= 132f && bounds.height >= 82f
             if (canShowSubtitle) {
                 val subtitle = ellipsizeForWidth(
-                    text = formatDurationHoursMinutes(slice.durationSeconds),
+                    text = valueLabel(slice.durationSeconds),
                     paint = detailPaint,
                     maxWidthPx = availableTextWidth
                 )

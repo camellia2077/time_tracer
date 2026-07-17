@@ -360,7 +360,7 @@ class QueryReportViewModelChartTest {
     }
 
     @Test
-    fun leavingDayMode_normalizesTreemapBackToPieForNonDayComposition() = runTest {
+    fun changingReportPeriod_preservesTreemapForComposition() = runTest {
         val fakeQueryGateway = FakeChartQueryGateway()
         val viewModel = QueryReportViewModel(
             reportGateway = FakeChartReportGateway(),
@@ -372,10 +372,17 @@ class QueryReportViewModelChartTest {
         advanceUntilIdle()
         viewModel.onCompositionVisualModeChange(ReportCompositionVisualMode.TREEMAP)
 
-        viewModel.onReportModeChange(ReportMode.WEEK)
-        advanceUntilIdle()
+        listOf(
+            ReportMode.WEEK,
+            ReportMode.MONTH,
+            ReportMode.YEAR,
+            ReportMode.RANGE,
+            ReportMode.RECENT
+        ).forEach { reportMode ->
+            viewModel.onReportModeChange(reportMode)
 
-        assertEquals(ReportCompositionVisualMode.PIE, viewModel.uiState.compositionVisualMode)
+            assertEquals(ReportCompositionVisualMode.TREEMAP, viewModel.uiState.compositionVisualMode)
+        }
     }
 }
 
@@ -399,7 +406,8 @@ private class FakeChartQueryGateway(
 
     override suspend fun queryActivitySuggestions(
         lookbackDays: Int,
-        topN: Int
+        topN: Int,
+        anchorDateIso: String?
     ): ActivitySuggestionResult = ActivitySuggestionResult(
         ok = true,
         suggestions = emptyList(),
@@ -414,9 +422,6 @@ private class FakeChartQueryGateway(
 
     override suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult =
         TreeQueryResult(ok = true, found = false, message = "ok")
-
-    override suspend fun queryProjectTreeText(params: DataTreeQueryParams): DataQueryTextResult =
-        DataQueryTextResult(ok = true, outputText = "", message = "ok")
 
     override suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult {
         chartQueryCount += 1
@@ -457,9 +462,9 @@ private class FakeChartQueryGateway(
         return ReportCompositionQueryResult(
             ok = true,
             data = ReportCompositionData(
-                slices = listOf(
-                    ReportCompositionSlice(root = "study", durationSeconds = 5400L, percent = 60f),
-                    ReportCompositionSlice(root = "sleep", durationSeconds = 3600L, percent = 40f)
+                tree = listOf(
+                    TreeNode(name = "study", durationSeconds = 5400L),
+                    TreeNode(name = "sleep", durationSeconds = 3600L)
                 ),
                 totalDurationSeconds = 9000L,
                 activeRootCount = 2,

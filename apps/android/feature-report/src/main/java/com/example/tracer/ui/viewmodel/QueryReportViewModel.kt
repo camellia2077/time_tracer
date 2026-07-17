@@ -6,13 +6,15 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
+import java.time.Clock
 
 class QueryReportViewModel(
     reportGateway: ReportGateway,
     queryGateway: QueryGateway,
-    textProvider: QueryReportTextProvider = DefaultQueryReportTextProvider
+    textProvider: QueryReportTextProvider = DefaultQueryReportTextProvider,
+    private val clock: Clock = Clock.systemDefaultZone()
 ) : ViewModel() {
-    var uiState by mutableStateOf(QueryReportUiState())
+    var uiState by mutableStateOf(initialQueryReportUiState(clock))
         private set
     private val useCases = QueryReportUseCases(
         reportGateway = reportGateway,
@@ -43,16 +45,16 @@ class QueryReportViewModel(
 
     fun onReportModeChange(mode: ReportMode) {
         updateReportParams {
+            val hidesStaleAnalysis = activeResult.isAnalysisResultForDifferentPeriod(
+                mode.toDataTreePeriod()
+            )
             copy(
                 reportMode = mode,
-                chartSemanticMode = defaultChartSemanticMode(mode),
-                compositionVisualMode = if (mode == ReportMode.DAY) {
-                    // Day composition defaults to horizontal bar because single-day root
-                    // breakdown is primarily about ranking and comparison, not area share.
-                    ReportCompositionVisualMode.HORIZONTAL_BAR
-                } else {
-                    compositionVisualMode.normalizeForReportMode(mode)
-                }
+                // Stats and Project Tree cards are scoped to the period used to query them.
+                // Do not retain an analysis card after changing to a different report window.
+                activeResult = if (hidesStaleAnalysis) null else activeResult,
+                analysisError = if (hidesStaleAnalysis) "" else analysisError,
+                chartSemanticMode = preferredChartSemanticMode.normalizeForReportMode(mode)
             )
         }
     }
@@ -81,17 +83,23 @@ class QueryReportViewModel(
         }
     }
 
+    fun refreshReportDayDefault() {
+        // Report day parameters are intentionally session-local. When users return to the
+        // Report tab, the day field should reflect the current logical log day instead of
+        // preserving a previously inspected date from an earlier tab visit.
+        val currentLogicalDayDigits = currentDateDigits(clock)
+        if (uiState.reportDate == currentLogicalDayDigits) {
+            return
+        }
+        uiState = uiState.copy(reportDate = currentLogicalDayDigits)
+    }
+
     fun onResultDisplayModeChange(mode: ReportResultDisplayMode) {
         val normalizedState = if (mode == ReportResultDisplayMode.CHART) {
             uiState.copy(
                 resultDisplayMode = mode,
-                chartSemanticMode = defaultChartSemanticMode(uiState.reportMode),
-                compositionVisualMode = if (uiState.reportMode == ReportMode.DAY) {
-                    // Re-entering day chart should start from the comparison-first view.
-                    ReportCompositionVisualMode.HORIZONTAL_BAR
-                } else {
-                    uiState.compositionVisualMode.normalizeForReportMode(uiState.reportMode)
-                }
+                chartSemanticMode = uiState.preferredChartSemanticMode
+                    .normalizeForReportMode(uiState.reportMode)
             )
         } else {
             uiState.copy(resultDisplayMode = mode)
@@ -117,16 +125,41 @@ class QueryReportViewModel(
 
     fun onChartSemanticModeChange(mode: ReportChartSemanticMode) {
         val normalizedMode = mode.normalizeForReportMode(uiState.reportMode)
-        if (uiState.chartSemanticMode == normalizedMode) {
+        if (uiState.chartSemanticMode == normalizedMode &&
+            uiState.preferredChartSemanticMode == mode
+        ) {
             return
         }
-        uiState = uiState.copy(chartSemanticMode = normalizedMode)
+        uiState = uiState.copy(
+            chartSemanticMode = normalizedMode,
+            preferredChartSemanticMode = mode
+        )
         if (uiState.resultDisplayMode == ReportResultDisplayMode.CHART &&
             !uiState.isChartLoading() &&
             !uiState.hasChartData()
         ) {
             loadChart()
         }
+    }
+
+    fun onParameterSectionChange(section: ReportParameterSection) {
+        if (uiState.parameterSection == section) {
+            return
+        }
+        uiState = uiState.copy(parameterSection = section)
+    }
+
+    fun onPersistedChartSemanticModeChange(mode: ReportChartSemanticMode) {
+        val normalizedMode = mode.normalizeForReportMode(uiState.reportMode)
+        if (uiState.preferredChartSemanticMode == mode &&
+            uiState.chartSemanticMode == normalizedMode
+        ) {
+            return
+        }
+        uiState = uiState.copy(
+            chartSemanticMode = normalizedMode,
+            preferredChartSemanticMode = mode
+        )
     }
 
     fun onCompositionVisualModeChange(mode: ReportCompositionVisualMode) {
@@ -218,6 +251,14 @@ class QueryReportViewModel(
         compositionChartLoading = false,
         compositionChartError = ""
     )
+
+    private fun QueryResult?.isAnalysisResultForDifferentPeriod(
+        selectedPeriod: DataTreePeriod
+    ): Boolean = when (this) {
+        is QueryResult.Stats -> period != selectedPeriod
+        is QueryResult.Tree -> period != selectedPeriod
+        else -> false
+    }
 
     private fun QueryReportUiState.isChartLoading(): Boolean =
         when (chartSemanticMode.normalizeForReportMode(reportMode)) {

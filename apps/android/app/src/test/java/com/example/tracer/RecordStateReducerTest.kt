@@ -70,6 +70,53 @@ class RecordStateReducerTest {
     }
 
     @Test
+    fun suggestionOutputMode_updatesState() {
+        val viewModel = buildRecordViewModel()
+
+        viewModel.updateSuggestionOutputMode(RecordSuggestionOutputMode.ALIAS)
+
+        assertEquals(RecordSuggestionOutputMode.ALIAS, viewModel.uiState.suggestionOutputMode)
+    }
+
+    @Test
+    fun canonicalCatalogDisplayMode_updatesState() {
+        val viewModel = buildRecordViewModel()
+
+        viewModel.updateCanonicalCatalogDisplayMode(RecordSuggestionOutputMode.ALIAS)
+
+        assertEquals(
+            RecordSuggestionOutputMode.ALIAS,
+            viewModel.uiState.canonicalCatalogDisplayMode
+        )
+    }
+
+    @Test
+    fun applyCanonicalCatalogEntry_insertsCanonicalPathAndDismissesOverlays() {
+        val viewModel = buildRecordViewModel()
+        viewModel.toggleSuggestions()
+        viewModel.openCanonicalCatalog()
+
+        viewModel.applyCanonicalCatalogEntry("study/math/calculus")
+
+        assertEquals("study/math/calculus", viewModel.uiState.recordContent)
+        assertFalse(viewModel.uiState.suggestionsVisible)
+        assertFalse(viewModel.uiState.isCanonicalCatalogVisible)
+    }
+
+    @Test
+    fun applyCanonicalCatalogEntry_insertsAliasTokenAndDismissesOverlays() {
+        val viewModel = buildRecordViewModel()
+        viewModel.toggleSuggestions()
+        viewModel.openCanonicalCatalog()
+
+        viewModel.applyCanonicalCatalogEntry("高数")
+
+        assertEquals("高数", viewModel.uiState.recordContent)
+        assertFalse(viewModel.uiState.suggestionsVisible)
+        assertFalse(viewModel.uiState.isCanonicalCatalogVisible)
+    }
+
+    @Test
     fun refreshLogicalDayDefault_keepsDraftTargetAcrossCutoff() {
         val viewModel = buildRecordViewModel()
         viewModel.onRecordContentChange("study")
@@ -159,12 +206,15 @@ private class ReducerTestQueryGateway : QueryGateway {
     override suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult =
         TreeQueryResult(ok = true, found = false, message = "ok")
 
-    override suspend fun queryProjectTreeText(params: DataTreeQueryParams): DataQueryTextResult =
-        DataQueryTextResult(ok = true, outputText = "", message = "ok")
-
     override suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult =
         ReportChartQueryResult(ok = true, data = null, message = "ok")
 
     override suspend fun listActivityMappingNames(): ActivityMappingNamesResult =
         ActivityMappingNamesResult(ok = true, names = emptyList(), message = "ok")
+
+    override suspend fun listActivityAliasMappings(): ActivityAliasMappingListResult =
+        ActivityAliasMappingListResult(ok = true, entries = emptyList(), message = "ok")
+
+    override suspend fun listCanonicalCatalog(): CanonicalCatalogResult =
+        CanonicalCatalogResult(ok = true, roots = emptyList(), entries = emptyList(), message = "ok")
 }

@@ -55,9 +55,11 @@
     <string name="record_action_record_to_today">今日</string>
     <string name="record_title_record_input">記録入力</string>
     <string name="record_cd_open_txt_preview">TXT プレビューを開く</string>
-    <string name="record_label_authoring_mode">記録モード</string>
     <string name="record_mode_point">Point</string>
     <string name="record_mode_interval">Interval</string>
+    <string name="record_last_recorded_summary">前回:
+%1$s
+%2$s</string>
     <string name="record_label_activity_name">アクティビティ名</string>
     <string name="record_label_interval_start">開始 (HHMM)</string>
     <string name="record_label_interval_end">終了 (HHMM)</string>
@@ -79,12 +81,30 @@
     <string name="record_hint_no_quick_activities">クイック活動がありません。検索して「追加」を押してください。</string>
     <string name="record_action_suggestions">提案</string>
     <string name="record_suggestions_sheet_title">アクティビティ提案</string>
+    <string name="record_suggestions_settings_title">提案設定</string>
+    <string name="record_canonical_catalog_title">Canonical ブラウザ</string>
+    <string name="record_cd_open_canonical_catalog">Canonical ブラウザを開く</string>
+    <string name="record_canonical_catalog_description">canonical アクティビティパスを参照して、タップで入力欄へ反映します。</string>
+    <string name="record_canonical_catalog_loading">canonical カタログを読み込み中...</string>
+    <string name="record_canonical_catalog_empty">利用可能な canonical パスがありません。</string>
+    <string name="record_canonical_catalog_display_mode_canonical">ブラウザ表示: canonical トークン</string>
+    <string name="record_canonical_catalog_display_mode_alias">ブラウザ表示: alias トークン</string>
+    <string name="record_suggestions_output_mode_canonical">提案出力: canonical トークン</string>
+    <string name="record_suggestions_output_mode_alias">提案出力: alias トークン</string>
     <string name="record_suggestions_target_logical_day">論理日: %1$s</string>
     <string name="record_suggestions_target_date">対象日: %1$s</string>
     <string name="record_hint_loading">読み込み中...</string>
     <string name="record_hint_loading_suggestions_for_logical_day">論理日 %1$s の提案を読み込み中...</string>
     <string name="record_hint_no_suggestions">提案がありません。</string>
     <string name="record_hint_no_suggestions_lookback">現在の論理日を終点とする過去 %1$d 日のウィンドウには利用可能な提案がありません。</string>
+    <string name="record_cd_suggestion_output_canonical_selected">提案出力モードは canonical トークンです</string>
+    <string name="record_cd_suggestion_output_alias_selected">提案出力モードは alias トークンです</string>
+    <string name="record_cd_suggestion_output_switch_to_canonical">提案出力モードを canonical トークンに切り替える</string>
+    <string name="record_cd_suggestion_output_switch_to_alias">提案出力モードを alias トークンに切り替える</string>
+    <string name="record_cd_canonical_catalog_display_canonical_selected">Canonical ブラウザ表示モードは canonical トークンです</string>
+    <string name="record_cd_canonical_catalog_display_alias_selected">Canonical ブラウザ表示モードは alias トークンです</string>
+    <string name="record_cd_canonical_catalog_display_switch_to_canonical">Canonical ブラウザ表示モードを canonical トークンに切り替える</string>
+    <string name="record_cd_canonical_catalog_display_switch_to_alias">Canonical ブラウザ表示モードを alias トークンに切り替える</string>
     <string name="record_txt_preview_title">現在の TXT プレビュー</string>
     <string name="record_txt_preview_target_date">対象日: %1$s</string>
     <string name="record_txt_preview_target_month">対象月: %1$s</string>
@@ -101,7 +121,8 @@
     <plurals name="record_status_quick_activities_exceed_limit">
         <item quantity="other">クイック活動は %1$d 件を超えられません。</item>
     </plurals>
-    <string name="record_status_invalid_quick_activities">無効なクイック活動: %1$s。設定された入力可能イベントトークン（alias key または wake keyword）に一致する必要があります。</string>
+    <string name="record_status_invalid_quick_activities">無効なクイック活動: %1$s。設定された入力可能イベントトークン（alias key、canonical token、または wake keyword）に一致する必要があります。</string>
     <string name="record_status_quick_activities_saved">クイック活動を保存しました (%1$d)。</string>
-    <string name="record_status_invalid_suggested_activity">無効な提案活動: %1$s。設定された入力可能イベントトークン（alias key または wake keyword）に一致する必要があります。</string>
+    <string name="record_status_invalid_suggested_activity">無効な提案活動: %1$s。設定された入力可能イベントトークン（alias key、canonical token、または wake keyword）に一致する必要があります。</string>
+    <string name="record_duration_unavailable">なし</string>
 </resources>

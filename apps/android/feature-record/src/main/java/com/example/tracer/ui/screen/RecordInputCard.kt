@@ -47,6 +47,8 @@ internal fun RecordInputCard(
     onIntervalStartChange: (String) -> Unit,
     intervalEnd: String,
     onIntervalEndChange: (String) -> Unit,
+    lastRecordedActivityAlias: String,
+    lastRecordedDuration: String,
     suggestionsVisible: Boolean,
     onToggleSuggestions: () -> Unit,
     onOpenTxtPreview: () -> Unit,
@@ -97,11 +99,17 @@ internal fun RecordInputCard(
                 }
             }
 
-            Text(
-                text = stringResource(R.string.record_label_authoring_mode),
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            if (lastRecordedActivityAlias.isNotBlank() && lastRecordedDuration.isNotBlank()) {
+                Text(
+                    text = stringResource(
+                        R.string.record_last_recorded_summary,
+                        lastRecordedActivityAlias,
+                        lastRecordedDuration
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                 listOf(

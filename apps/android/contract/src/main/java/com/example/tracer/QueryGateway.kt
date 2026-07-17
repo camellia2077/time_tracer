@@ -9,7 +9,6 @@ interface QueryGateway {
     suspend fun queryDayDurations(params: DataDurationQueryParams): DataQueryTextResult
     suspend fun queryDayDurationStats(params: DataDurationQueryParams): DataQueryTextResult
     suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult
-    suspend fun queryProjectTreeText(params: DataTreeQueryParams): DataQueryTextResult
     suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult
     suspend fun queryReportComposition(
         params: ReportCompositionQueryParams
@@ -20,6 +19,19 @@ interface QueryGateway {
             message = "report composition query not implemented."
         )
     suspend fun listActivityMappingNames(): ActivityMappingNamesResult
+    suspend fun listActivityAliasMappings(): ActivityAliasMappingListResult =
+        ActivityAliasMappingListResult(
+            ok = false,
+            entries = emptyList(),
+            message = "Activity alias mappings query not implemented."
+        )
+    suspend fun listCanonicalCatalog(): CanonicalCatalogResult =
+        CanonicalCatalogResult(
+            ok = false,
+            roots = emptyList(),
+            entries = emptyList(),
+            message = "Canonical catalog query not implemented."
+        )
 
     // Keep this API alias-only so callers never have to infer left keys from mixed name sets.
     suspend fun listActivityAliasKeys(): ActivityMappingNamesResult =

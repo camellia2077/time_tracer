@@ -77,6 +77,7 @@ internal fun AliasEntryDialog(
     title: String,
     initialAliasKey: String,
     initialCanonicalLeaf: String,
+    showCanonicalLeafField: Boolean = true,
     onDismiss: () -> Unit,
     onConfirm: (String, String) -> Unit
 ) {
@@ -99,19 +100,36 @@ internal fun AliasEntryDialog(
                     modifier = Modifier.fillMaxWidth(),
                     isError = showError
                 )
-                OutlinedTextField(
-                    value = canonicalLeaf,
-                    onValueChange = {
-                        canonicalLeaf = it
-                        showError = false
-                    },
-                    label = { Text(stringResource(R.string.config_alias_canonical_leaf_label)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    isError = showError
-                )
+                if (showCanonicalLeafField) {
+                    OutlinedTextField(
+                        value = canonicalLeaf,
+                        onValueChange = {
+                            canonicalLeaf = it
+                            showError = false
+                        },
+                        label = { Text(stringResource(R.string.config_alias_canonical_leaf_label)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        isError = showError
+                    )
+                } else {
+                    Text(
+                        text = stringResource(
+                            R.string.config_alias_canonical_leaf_readonly,
+                            initialCanonicalLeaf
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 if (showError) {
                     Text(
-                        text = stringResource(R.string.config_alias_entry_required),
+                        text = stringResource(
+                            if (showCanonicalLeafField) {
+                                R.string.config_alias_entry_required
+                            } else {
+                                R.string.config_alias_alias_key_required
+                            }
+                        ),
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall
                     )
@@ -121,7 +139,12 @@ internal fun AliasEntryDialog(
         confirmButton = {
             TextButton(
                 onClick = {
-                    if (aliasKey.trim().isEmpty() || canonicalLeaf.trim().isEmpty()) {
+                    val isInvalid = if (showCanonicalLeafField) {
+                        aliasKey.trim().isEmpty() || canonicalLeaf.trim().isEmpty()
+                    } else {
+                        aliasKey.trim().isEmpty()
+                    }
+                    if (isInvalid) {
                         showError = true
                     } else {
                         onConfirm(aliasKey, canonicalLeaf)

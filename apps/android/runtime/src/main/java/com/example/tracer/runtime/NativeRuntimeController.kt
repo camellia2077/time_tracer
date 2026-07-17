@@ -25,7 +25,6 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         runtimePathsProvider = runtimeSession::runtimePathsOrNull,
         nativeInit = runtimeBridge::nativeInit,
         nativeQuery = runtimeBridge::nativeQuery,
-        nativeTree = runtimeBridge::nativeTree,
         responseCodec = responseCodec,
         reportTranslator = reportTranslator,
         diagnosticsRecorder = diagnosticsRecorder,
@@ -41,8 +40,10 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     )
     private val queryDelegate = RuntimeQueryDelegate(
         queryTranslator = queryTranslator,
-        executeNativeTreeQuery = coreAdapter::executeNativeTreeQuery,
-        executeNativeDataQuery = coreAdapter::executeNativeDataQuery
+        executeNativeDataQuery = coreAdapter::executeNativeDataQuery,
+        ensureConfigTomlStorage = runtimeSession::ensureConfigTomlStorage,
+        diagnosticsRecorder = diagnosticsRecorder,
+        nextOperationId = operationIdGenerator::next
     )
     private val txtDayBlockService = RuntimeTxtDayBlockService(
         initializeRuntimeInternal = coreAdapter::initializeRuntimeInternal,
@@ -82,7 +83,9 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         initializeRuntimeInternal = coreAdapter::initializeRuntimeInternal,
         clearRuntimeData = runtimeEnvironment::clearRuntimeData,
         clearDatabaseData = runtimeEnvironment::clearDatabaseData,
-        resetRuntimeCaches = runtimeSession::reset
+        resetRuntimeCaches = runtimeSession::reset,
+        executeAfterInit = coreAdapter::executeAfterInit,
+        nativeIngest = runtimeBridge::nativeIngest
     )
     private val ingestService = RuntimeIngestService(
         ensureRuntimePaths = runtimeSession::ensureRuntimePaths,
@@ -138,6 +141,9 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     override suspend fun clearDatabase(): ClearDatabaseResult =
         initService.clearDatabase()
 
+    override suspend fun rebuildDatabase(): NativeCallResult =
+        initService.rebuildDatabase()
+
 
     // ingest
     override suspend fun ingestSingleTxtReplaceMonth(inputPath: String): NativeCallResult =
@@ -187,6 +193,9 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     override suspend fun readTxtFile(relativePath: String): TxtFileContentResult =
         recordService.readTxtFile(relativePath)
 
+    override suspend fun saveTxtFile(relativePath: String, content: String): TxtFileContentResult =
+        recordService.saveTxtFile(relativePath, content)
+
     override suspend fun saveTxtFileAndSync(relativePath: String, content: String): RecordActionResult =
         recordService.saveTxtFileAndSync(relativePath, content)
 
@@ -230,6 +239,9 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
 
     override suspend fun saveConfigTomlFile(relativePath: String, content: String): TxtFileContentResult =
         configService.saveConfigTomlFile(relativePath, content)
+
+    override suspend fun deleteConfigTomlFile(relativePath: String): TxtFileContentResult =
+        configService.deleteConfigTomlFile(relativePath)
 
     // file crypto
     override suspend fun encryptTxtFile(
@@ -343,9 +355,6 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     override suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult =
         queryService.queryProjectTree(params)
 
-    override suspend fun queryProjectTreeText(params: DataTreeQueryParams): DataQueryTextResult =
-        queryService.queryProjectTreeText(params)
-
     override suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult =
         queryService.queryReportChart(params)
 
@@ -356,6 +365,12 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
 
     override suspend fun listActivityMappingNames(): ActivityMappingNamesResult =
         queryService.listActivityMappingNames()
+
+    override suspend fun listActivityAliasMappings(): ActivityAliasMappingListResult =
+        queryService.listActivityAliasMappings()
+
+    override suspend fun listCanonicalCatalog(): CanonicalCatalogResult =
+        queryService.listCanonicalCatalog()
 
     override suspend fun listActivityAliasKeys(): ActivityMappingNamesResult =
         queryService.listActivityAliasKeys()

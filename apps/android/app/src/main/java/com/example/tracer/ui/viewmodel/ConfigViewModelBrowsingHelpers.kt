@@ -39,6 +39,7 @@ internal fun clearSelectedConfigFile(
         selectedFileContent = "",
         editableContent = "",
         aliasDocumentDraft = null,
+        aliasBaselineDocument = null,
         aliasParentOptions = emptyList(),
         aliasAdvancedTomlDraft = "",
         aliasEditorErrorMessage = "",
@@ -77,6 +78,7 @@ internal fun applyLoadedConfigFile(
             editableContent = restoredDraft,
             aliasEditorMode = AliasEditorMode.STRUCTURED,
             aliasDocumentDraft = null,
+            aliasBaselineDocument = null,
             aliasParentOptions = emptyList(),
             aliasAdvancedTomlDraft = "",
             aliasEditorErrorMessage = ""
@@ -98,6 +100,7 @@ internal fun applyLoadedConfigFile(
                 editableContent = "",
                 aliasEditorMode = AliasEditorMode.ADVANCED,
                 aliasDocumentDraft = restoredStructuredDraft ?: advancedParseResult.document,
+                aliasBaselineDocument = document,
                 aliasParentOptions = aliasParentOptions,
                 aliasAdvancedTomlDraft = restoredAdvancedDraft,
                 aliasEditorErrorMessage = advancedParseResult.errorMessage
@@ -108,6 +111,7 @@ internal fun applyLoadedConfigFile(
                 editableContent = "",
                 aliasEditorMode = AliasEditorMode.STRUCTURED,
                 aliasDocumentDraft = restoredStructuredDraft,
+                aliasBaselineDocument = document,
                 aliasParentOptions = aliasParentOptions,
                 aliasAdvancedTomlDraft = restoredAdvancedDraft,
                 aliasEditorErrorMessage = ""
@@ -118,6 +122,7 @@ internal fun applyLoadedConfigFile(
                 editableContent = "",
                 aliasEditorMode = AliasEditorMode.STRUCTURED,
                 aliasDocumentDraft = document,
+                aliasBaselineDocument = document,
                 aliasParentOptions = aliasParentOptions,
                 aliasAdvancedTomlDraft = restoredAdvancedDraft,
                 aliasEditorErrorMessage = ""
@@ -130,6 +135,7 @@ internal fun applyLoadedConfigFile(
                 editableContent = "",
                 aliasEditorMode = AliasEditorMode.ADVANCED,
                 aliasDocumentDraft = null,
+                aliasBaselineDocument = null,
                 aliasParentOptions = aliasParentOptions,
                 aliasAdvancedTomlDraft = restoredAdvancedDraft,
                 aliasEditorErrorMessage = parseResult.errorMessage,
@@ -153,3 +159,23 @@ internal fun findConfigFileEntry(
 
 internal fun isAliasConfigFilePath(path: String): Boolean =
     path.startsWith("converter/aliases/") && path.endsWith(".toml", ignoreCase = true)
+
+internal fun newAliasTomlPath(
+    fileName: String
+): String? {
+    val requestedName = fileName.trim()
+    if (
+        requestedName.isBlank() ||
+        requestedName == "." ||
+        requestedName == ".." ||
+        requestedName.any { character -> character == '/' || character == '\\' || character.isISOControl() }
+    ) {
+        return null
+    }
+    val normalizedFileName = if (requestedName.endsWith(".toml", ignoreCase = true)) {
+        requestedName
+    } else {
+        "$requestedName.toml"
+    }
+    return "converter/aliases/$normalizedFileName"
+}

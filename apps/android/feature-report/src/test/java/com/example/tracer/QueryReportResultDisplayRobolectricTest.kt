@@ -1,16 +1,15 @@
 package com.example.tracer
 
 import android.content.Context
-import androidx.compose.ui.test.assertDoesNotExist
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.core.app.ApplicationProvider
-import com.example.tracer.data.ThemeColor
-import com.example.tracer.data.ThemeConfig
-import com.example.tracer.data.ThemeMode
 import com.example.tracer.feature.report.R
-import com.example.tracer.ui.theme.TracerTheme
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -41,6 +40,9 @@ class QueryReportResultDisplayRobolectricTest {
 
         composeRule.onNodeWithText(dayStatsResultLabel).assertIsDisplayed()
         composeRule.onNodeWithText("stats-md-marker").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription(
+            context.getString(R.string.report_cd_copy_markdown)
+        ).assertIsDisplayed()
     }
 
     @Test
@@ -78,6 +80,9 @@ class QueryReportResultDisplayRobolectricTest {
         composeRule.onNodeWithText(emptyWindowTitle).assertIsDisplayed()
         composeRule.onNodeWithText(emptyWindowBody).assertIsDisplayed()
         composeRule.onNodeWithText("recent-md-marker").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription(
+            context.getString(R.string.report_cd_copy_markdown)
+        ).assertIsDisplayed()
     }
 
     @Test
@@ -106,7 +111,8 @@ class QueryReportResultDisplayRobolectricTest {
 
         composeRule.onNodeWithText(missingTitle).assertIsDisplayed()
         composeRule.onNodeWithText(missingBody).assertIsDisplayed()
-        composeRule.onNodeWithText("runtime report failed. [op=missing-day]").assertDoesNotExist()
+        composeRule.onAllNodesWithText("runtime report failed. [op=missing-day]")
+            .assertCountEquals(0)
     }
 
     private fun renderReportResultDisplay(
@@ -114,13 +120,8 @@ class QueryReportResultDisplayRobolectricTest {
         reportSummary: ReportSummary? = null,
         reportMode: ReportMode
     ) {
-        val themeConfig = ThemeConfig(
-            themeColor = ThemeColor.Slate,
-            themeMode = ThemeMode.Light,
-            useDynamicColor = false
-        )
         composeRule.setContent {
-            TracerTheme(themeConfig = themeConfig) {
+            MaterialTheme {
                 QueryReportResultDisplay(
                     resultDisplayMode = ReportResultDisplayMode.TEXT,
                     activeResult = activeResult,
@@ -148,7 +149,6 @@ class QueryReportResultDisplayRobolectricTest {
                     onHeatmapPaletteNameChange = {},
                     heatmapApplyMessage = "",
                     isAppDarkThemeActive = false,
-                    onChartSemanticModeChange = {},
                     onCompositionVisualModeChange = {},
                     onChartRootChange = {},
                     onChartShowAverageLineChange = {},

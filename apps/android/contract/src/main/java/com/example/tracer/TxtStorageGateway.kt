@@ -4,6 +4,13 @@ interface TxtStorageGateway {
     suspend fun inspectTxtFiles(): TxtInspectionResult
     suspend fun listTxtFiles(): TxtHistoryListResult
     suspend fun readTxtFile(relativePath: String): TxtFileContentResult
+    suspend fun saveTxtFile(relativePath: String, content: String): TxtFileContentResult =
+        TxtFileContentResult(
+            ok = false,
+            filePath = relativePath,
+            content = "",
+            message = "TXT save runtime is unavailable."
+        )
     suspend fun saveTxtFileAndSync(relativePath: String, content: String): RecordActionResult
 
     suspend fun defaultTxtDayMarker(
