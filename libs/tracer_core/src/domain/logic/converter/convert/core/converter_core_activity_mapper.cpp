@@ -18,16 +18,20 @@ namespace {
 
 constexpr int kHoursPerDay = 24;
 constexpr int kMinutesPerHour = 60;
-constexpr size_t kTimeStringLength = 5;
+constexpr int kSecondsPerMinute = 60;
+constexpr size_t kTimeStringLength = 8;
 constexpr size_t kTimeHourOffset = 0;
 constexpr size_t kTimeHourLength = 2;
 constexpr size_t kTimeMinuteOffset = 3;
 constexpr size_t kTimeMinuteLength = 2;
+constexpr size_t kTimeSecondOffset = 6;
+constexpr size_t kTimeSecondLength = 2;
 
 [[nodiscard]] auto IsValidExplicitIntervalClockRange(
     std::string_view start_hhmm, std::string_view end_hhmm) -> bool {
   if (start_hhmm.length() != kTimeStringLength ||
-      end_hhmm.length() != kTimeStringLength) {
+      end_hhmm.length() != kTimeStringLength || start_hhmm[2] != ':' ||
+      start_hhmm[5] != ':' || end_hhmm[2] != ':' || end_hhmm[5] != ':') {
     return false;
   }
 
@@ -40,8 +44,16 @@ constexpr size_t kTimeMinuteLength = 2;
         std::string(end_hhmm.substr(kTimeHourOffset, kTimeHourLength)));
     const int end_minute = std::stoi(
         std::string(end_hhmm.substr(kTimeMinuteOffset, kTimeMinuteLength)));
-    const int start_total = (start_hour * kMinutesPerHour) + start_minute;
-    const int end_total = (end_hour * kMinutesPerHour) + end_minute;
+    const int start_second = std::stoi(
+        std::string(start_hhmm.substr(kTimeSecondOffset, kTimeSecondLength)));
+    const int end_second = std::stoi(
+        std::string(end_hhmm.substr(kTimeSecondOffset, kTimeSecondLength)));
+    const int start_total =
+        ((start_hour * kMinutesPerHour) + start_minute) * kSecondsPerMinute +
+        start_second;
+    const int end_total =
+        ((end_hour * kMinutesPerHour) + end_minute) * kSecondsPerMinute +
+        end_second;
     if (start_total == end_total) {
       return false;
     }
@@ -104,9 +116,6 @@ auto ActivityMapper::MapActivities(DailyLog& day) -> void {
     }
 
     std::string mapped_description = MapDescription(raw_event.description);
-    const int kDuration = CalculateDurationMinutes(range);
-    mapped_description = ApplyDurationRules(mapped_description, kDuration);
-
     AppendActivity(day, raw_event, range, mapped_description,
                    effective_start_span);
     start_time = formatted_event_end_time;
@@ -136,28 +145,7 @@ auto ActivityMapper::MapActivities(DailyLog& day) -> void {
     mapped_description = map_it->second;
   }
 
-  auto duration_map_it = config_.text_duration_mapping.find(mapped_description);
-  if (duration_map_it != config_.text_duration_mapping.end()) {
-    mapped_description = duration_map_it->second;
-  }
   return mapped_description;
-}
-
-[[nodiscard]] auto ActivityMapper::ApplyDurationRules(
-    std::string_view mapped_description, int duration_minutes) const
-    -> std::string {
-  std::string description_str(mapped_description);
-  auto duration_rules_it = config_.duration_mappings.find(description_str);
-  if (duration_rules_it == config_.duration_mappings.end()) {
-    return description_str;
-  }
-
-  for (const auto& rule : duration_rules_it->second) {
-    if (duration_minutes < rule.less_than_minutes) {
-      return rule.value;
-    }
-  }
-  return description_str;
 }
 
 auto ActivityMapper::ApplyTopParentMapping(

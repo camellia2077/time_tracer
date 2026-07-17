@@ -90,7 +90,9 @@ void LogLinker::LinkLogs(
     DailyLog& current_first_day = days.front();
     if (prev_month_last_day != nullptr) {
       const bool kHasValidGetup = !current_first_day.getupTime.empty() &&
-                                  current_first_day.getupTime != "00:00";
+                                  converter_core_internal::NormalizeTime(
+                                      current_first_day.getupTime) !=
+                                      "00:00:00";
       const bool kMissingGeneratedSleep =
           !HasGeneratedOvernightSleep(current_first_day, config_);
       // Linking depends on "do we have a valid wake anchor?" and "have we
@@ -125,7 +127,9 @@ void LogLinker::LinkFirstDayWithExternalPreviousEvent(
 
   DailyLog& current_first_day = first_month_iter->second.front();
   const bool kHasValidGetup = !current_first_day.getupTime.empty() &&
-                              current_first_day.getupTime != "00:00";
+                              converter_core_internal::NormalizeTime(
+                                  current_first_day.getupTime) !=
+                                  "00:00:00";
   const bool kMissingGeneratedSleep =
       !HasGeneratedOvernightSleep(current_first_day, config_);
   if (!kHasValidGetup || !kMissingGeneratedSleep) {

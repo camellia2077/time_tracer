@@ -44,7 +44,6 @@ auto EncodeCapabilitiesResponse(const CapabilitiesResponsePayload& response)
             response.features.runtime_temporal_report_json},
            {"runtime_report_batch_json",
             response.features.runtime_report_batch_json},
-           {"runtime_tree_json", response.features.runtime_tree_json},
            {"processed_json_io", response.features.processed_json_io},
            {"report_markdown", response.features.report_markdown},
            {"report_latex", response.features.report_latex},

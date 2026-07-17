@@ -1,2 +1,1 @@
 using ::ConverterConfig;
-using ::DurationMappingRule;

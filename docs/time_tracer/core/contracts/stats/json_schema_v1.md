@@ -127,6 +127,7 @@
         {
           "name": "cpp",
           "duration_seconds": 1800,
+          "parent_duration_percent": 50.0,
           "children": []
         }
       ]
@@ -134,6 +135,39 @@
   ]
 }
 ```
+
+说明：
+1. 每个节点的 `duration_seconds` 为该节点聚合时长，单位为秒。
+2. 根节点不包含 `parent_duration_percent`；子节点包含时，该字段表示其时长占直接父节点时长的百分比。
+
+## `report_composition`
+`report-composition` 的完整约束见
+`docs/time_tracer/core/contracts/stats/report_composition_contract_v1.md`。
+
+```json
+{
+  "schema_version": 1,
+  "action": "report_composition",
+  "output_mode": "semantic_json",
+  "total_duration_seconds": 7200,
+  "active_root_count": 1,
+  "range_days": 7,
+  "tree": [
+    {
+      "name": "study",
+      "duration_seconds": 7200,
+      "occurrence_count": 2,
+      "children": [
+        { "name": "cpp", "duration_seconds": 3600, "occurrence_count": 1, "children": [] }
+      ]
+    }
+  ]
+}
+```
+
+说明：
+1. `tree` 是唯一的分布数据源，始终保留未折叠的完整加权活动树。
+2. 端侧从根节点或当前节点的 `children` 逐层构建分布图和下钻路径；可按 `duration_seconds` 或 `occurrence_count` 统计分布。
 
 ## 兼容性规则
 1. `text` 模式不受此文档约束。

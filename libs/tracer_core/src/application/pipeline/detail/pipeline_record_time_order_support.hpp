@@ -10,14 +10,14 @@
 namespace tracer::core::application::pipeline::record_time_order {
 
 // Logical-day mode uses 06:00 as the day-boundary pivot.
-// We do not special-case concrete pairs like 0009/2058; all HHmm values follow
-// this generic axis mapping.
+// We do not special-case concrete pairs like 0009/2058; all HHMM and HHMMSS
+// values follow this generic axis mapping.
 inline constexpr int kLogicalDayCutoffMinutes = 6 * 60;
 inline constexpr int kMinutesPerDay = 24 * 60;
 
 [[nodiscard]] inline auto TryParseHhmmToMinutes(std::string_view hhmm)
     -> std::optional<int> {
-  if (hhmm.size() != 4U) {
+  if (hhmm.size() != 4U && hhmm.size() != 6U) {
     return std::nullopt;
   }
   for (const char ch : hhmm) {
@@ -32,6 +32,12 @@ inline constexpr int kMinutesPerDay = 24 * 60;
       (hhmm[2] - '0') * 10 + (hhmm[3] - '0');
   if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
     return std::nullopt;
+  }
+  if (hhmm.size() == 6U) {
+    const int seconds = (hhmm[4] - '0') * 10 + (hhmm[5] - '0');
+    if (seconds < 0 || seconds > 59) {
+      return std::nullopt;
+    }
   }
   return hours * 60 + minutes;
 }

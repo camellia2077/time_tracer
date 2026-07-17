@@ -44,6 +44,7 @@
    - terminal output and exit-code mapping
 3. Core owns:
    - `MMDD` normalization and validation
+   - month-TXT day marker line format (`dMMDD`)
    - day-block extraction
    - default day marker semantics
    - day-block replacement semantics for future write flows

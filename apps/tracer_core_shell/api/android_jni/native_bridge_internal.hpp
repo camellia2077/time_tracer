@@ -134,14 +134,10 @@ auto NativeQuery(JNIEnv* env, jobject thiz, jint action, jint year, jint month,
                  jstring tree_period_argument, jint tree_max_depth,
                  jstring output_mode) -> jstring;
 
-auto NativeTree(JNIEnv* env, jobject thiz, jboolean list_roots,
-                jstring root_pattern, jint max_depth, jstring period,
-                jstring period_argument, jstring root) -> jstring;
-
 auto NativeReportJson(JNIEnv* env, jobject thiz, jstring request_json)
     -> jstring;
 
-extern const std::array<JNINativeMethod, 18> kNativeMethods;
+extern const std::array<JNINativeMethod, 17> kNativeMethods;
 
 auto TryRegisterNativeMethods(JNIEnv* env, const char* class_name) -> bool;
 

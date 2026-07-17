@@ -763,8 +763,6 @@ if(BUILD_TESTING)
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_test_common.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_tracer_exchange_test_support.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_tracer_exchange_package_tests.cpp"
-        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_tracer_exchange_export_tests.cpp"
-        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_tracer_exchange_import_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_tracer_exchange_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_exchange_test_main.cpp"
     )

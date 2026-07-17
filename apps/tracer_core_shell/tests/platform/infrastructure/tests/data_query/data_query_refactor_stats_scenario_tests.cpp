@@ -389,22 +389,26 @@ auto CheckReportCompositionOrchestratorSemanticSnapshot(sqlite3* database,
          failures);
   Expect(kCompositionPayload.value("range_days", -1) == 3,
          "report-composition orchestrator should keep range_days.", failures);
-  const auto kSlicesIt = kCompositionPayload.find("slices");
-  const bool kHasSlices =
-      kSlicesIt != kCompositionPayload.end() && kSlicesIt->is_array();
-  Expect(kHasSlices,
-         "report-composition orchestrator semantic snapshot should include slices array.",
+  const auto kTreeIt = kCompositionPayload.find("tree");
+  const bool kHasTree =
+      kTreeIt != kCompositionPayload.end() && kTreeIt->is_array();
+  Expect(kHasTree,
+         "report-composition orchestrator semantic snapshot should include tree array.",
          failures);
-  if (kHasSlices) {
-    Expect(kSlicesIt->size() == 1U,
-           "report-composition orchestrator should emit one slice per active root.",
+  if (kHasTree) {
+    Expect(kTreeIt->size() == 1U,
+           "report-composition orchestrator should emit one tree root per active root.",
            failures);
-    if (kSlicesIt->size() >= 1U) {
-      Expect((*kSlicesIt)[0].value("root", std::string{}) == "study",
-             "report-composition should sort slices by descending duration.",
+    if (kTreeIt->size() >= 1U) {
+      Expect((*kTreeIt)[0].value("name", std::string{}) == "study",
+             "report-composition should preserve the root name in the tree.",
              failures);
-      Expect((*kSlicesIt)[0].value("duration_seconds", -1LL) == 5400LL,
-             "report-composition first slice should keep study duration.",
+      Expect((*kTreeIt)[0].value("duration_seconds", -1LL) == 5400LL,
+             "report-composition tree root should keep study duration.",
+             failures);
+      Expect((*kTreeIt)[0].contains("occurrence_count") &&
+                 (*kTreeIt)[0]["occurrence_count"].is_number_integer(),
+             "report-composition tree root should include occurrence count.",
              failures);
     }
   }
@@ -642,21 +646,21 @@ auto TestSingleDayCompositionKeepsAllRoots(int& failures) -> void {
   }
 
   const auto kPayload = json::parse(kCompositionOutput.content);
-  const auto kSlicesIt = kPayload.find("slices");
-  const bool kHasSlices =
-      kSlicesIt != kPayload.end() && kSlicesIt->is_array();
-  Expect(kHasSlices,
-         "single-day composition payload should include slices array.",
+  const auto kTreeIt = kPayload.find("tree");
+  const bool kHasTree =
+      kTreeIt != kPayload.end() && kTreeIt->is_array();
+  Expect(kHasTree,
+         "single-day composition payload should include tree array.",
          failures);
-  if (!kHasSlices) {
+  if (!kHasTree) {
     return;
   }
-  Expect(kSlicesIt->size() == 9U,
-         "single-day composition should keep every root instead of collapsing into Others.",
+  Expect(kTreeIt->size() == 9U,
+         "single-day composition should keep every root in the tree.",
          failures);
-  for (const auto& slice : *kSlicesIt) {
-    Expect(slice.value("root", std::string{}) != "Others",
-           "single-day composition should not emit Others slice.", failures);
+  for (const auto& node : *kTreeIt) {
+    Expect(node.value("name", std::string{}) != "Others",
+           "single-day composition should not synthesize an Others node.", failures);
   }
 }
 

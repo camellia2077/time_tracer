@@ -38,9 +38,6 @@ namespace {
 
 constexpr int kDefaultReportChartLookbackDays = 7;
 constexpr int kDefaultReportCompositionLookbackDays = 7;
-constexpr size_t kMaxCompositionSlices = 8;
-constexpr size_t kTopCompositionSlicesBeforeOthers = 7;
-constexpr std::string_view kCompositionOthersLabel = "Others";
 
 using nlohmann::json;
 
@@ -50,10 +47,54 @@ struct ResolvedReportQueryWindow {
   infra_data_query_orchestrators::ResolvedDateRange range;
 };
 
-struct CompositionRootSlice {
-  std::string root;
-  std::int64_t duration_seconds = 0;
-};
+
+[[nodiscard]] auto BuildCompositionTreeNodePayload(
+    std::string_view name, const reporting::ProjectNode& node) -> json {
+  json payload = {
+      {"name", name},
+      {"duration_seconds", node.duration},
+      {"occurrence_count", node.occurrence_count},
+      {"children", json::array()},
+  };
+
+  std::vector<std::pair<std::string_view, const reporting::ProjectNode*>>
+      children;
+  children.reserve(node.children.size());
+  for (const auto& [child_name, child] : node.children) {
+    if (!child_name.empty() && child.occurrence_count > 0) {
+      children.push_back({child_name, &child});
+    }
+  }
+  std::ranges::sort(
+      children, [](const auto& left, const auto& right) {
+        return left.first < right.first;
+      });
+  for (const auto& [child_name, child] : children) {
+    payload["children"].push_back(
+        BuildCompositionTreeNodePayload(child_name, *child));
+  }
+  return payload;
+}
+
+[[nodiscard]] auto BuildCompositionTreePayload(
+    const reporting::ProjectTree& tree) -> json {
+  json payload = json::array();
+  std::vector<std::pair<std::string_view, const reporting::ProjectNode*>>
+      roots;
+  roots.reserve(tree.size());
+  for (const auto& [root_name, root] : tree) {
+    if (!root_name.empty() && root.occurrence_count > 0) {
+      roots.push_back({root_name, &root});
+    }
+  }
+  std::ranges::sort(roots, [](const auto& left, const auto& right) {
+    return left.first < right.first;
+  });
+  for (const auto& [root_name, root] : roots) {
+    payload.push_back(BuildCompositionTreeNodePayload(root_name, *root));
+  }
+  return payload;
+}
 
 auto ParseIsoDateOrThrow(std::string_view value) -> std::chrono::sys_days {
   if (value.size() != 10 || value[4] != '-' || value[7] != '-') {
@@ -156,52 +197,6 @@ auto ResolveReportQueryWindow(
       },
       explicit_range_errors.validation);
   return window;
-}
-
-auto BuildCompositionSlicesPayload(const reporting::ProjectTree& tree,
-                                   int range_days)
-    -> std::pair<std::vector<CompositionRootSlice>, int> {
-  std::vector<CompositionRootSlice> slices;
-  slices.reserve(tree.size());
-  for (const auto& [root, node] : tree) {
-    if (root.empty() || node.duration <= 0) {
-      continue;
-    }
-    slices.push_back({.root = root, .duration_seconds = node.duration});
-  }
-
-  std::sort(slices.begin(), slices.end(),
-            [](const CompositionRootSlice& left,
-               const CompositionRootSlice& right) {
-              if (left.duration_seconds != right.duration_seconds) {
-                return left.duration_seconds > right.duration_seconds;
-              }
-              return left.root < right.root;
-            });
-
-  const int active_root_count = static_cast<int>(slices.size());
-  if (range_days <= 1 || slices.size() <= kMaxCompositionSlices) {
-    // Day pie should mirror the full single-day root breakdown instead of
-    // collapsing low-duration roots into Others like multi-day summaries do.
-    return {std::move(slices), active_root_count};
-  }
-
-  std::vector<CompositionRootSlice> limited;
-  limited.reserve(kMaxCompositionSlices);
-  std::int64_t others_duration = 0;
-  for (size_t index = 0; index < slices.size(); ++index) {
-    if (index < kTopCompositionSlicesBeforeOthers) {
-      limited.push_back(slices[index]);
-    } else {
-      others_duration += slices[index].duration_seconds;
-    }
-  }
-  if (others_duration > 0) {
-    limited.push_back(
-        {.root = std::string(kCompositionOthersLabel),
-         .duration_seconds = others_duration});
-  }
-  return {std::move(limited), active_root_count};
 }
 
 }  // namespace
@@ -441,11 +436,11 @@ auto BuildReportCompositionContent(
   payload["total_duration_seconds"] = 0;
   payload["active_root_count"] = 0;
   payload["range_days"] = 0;
+  payload["tree"] = json::array();
   if (kWindow.explicit_range.has_value()) {
     payload["from_date"] = kWindow.explicit_range->start_date;
     payload["to_date"] = kWindow.explicit_range->end_date;
   }
-  payload["slices"] = json::array();
 
   const auto kAnyTrackedDate =
       infra_data_query::QueryLatestTrackedDate(db_conn);
@@ -469,28 +464,23 @@ auto BuildReportCompositionContent(
       infra_data_query::QueryProjectTree(db_conn, filters);
   const int kRangeDays =
       InclusiveRangeDays(range.start_date, range.end_date);
-  const auto [slices, active_root_count] =
-      BuildCompositionSlicesPayload(tree, kRangeDays);
   const std::int64_t total_duration_seconds = std::accumulate(
-      slices.begin(), slices.end(), static_cast<std::int64_t>(0),
-      [](std::int64_t total, const CompositionRootSlice& slice) {
-        return total + slice.duration_seconds;
+      tree.begin(), tree.end(), static_cast<std::int64_t>(0),
+      [](std::int64_t total, const auto& entry) {
+        const auto& [root_name, node] = entry;
+        return total + (!root_name.empty() && node.duration > 0 ? node.duration : 0);
       });
+  const int active_root_count = static_cast<int>(std::count_if(
+      tree.begin(), tree.end(), [](const auto& entry) {
+        const auto& [root_name, node] = entry;
+        return !root_name.empty() && node.duration > 0;
+      }));
   payload["total_duration_seconds"] = total_duration_seconds;
   payload["active_root_count"] = active_root_count;
   payload["range_days"] = kRangeDays;
-  for (const auto& slice : slices) {
-    const double percent = total_duration_seconds > 0
-                               ? (static_cast<double>(slice.duration_seconds) /
-                                  static_cast<double>(total_duration_seconds)) *
-                                     100.0
-                               : 0.0;
-    payload["slices"].push_back(json{
-        {"root", slice.root},
-        {"duration_seconds", slice.duration_seconds},
-        {"percent", percent},
-    });
-  }
+  // The complete weighted activity tree is the sole composition payload.
+  // Every client derives its current visual layer from a tree node's children.
+  payload["tree"] = BuildCompositionTreePayload(tree);
 
   return payload.dump();
 }

@@ -34,33 +34,40 @@ constexpr int kIsoYearMonthLength = 7;
 constexpr int kIsoDayOffset = 8;
 constexpr int kIsoDayLength = 2;
 constexpr int kSingleDigitThreshold = 10;
-constexpr int kPointBoundaryWrapThresholdMinutes = 4 * 60;
+constexpr int kSecondsPerMinute = 60;
+constexpr int kSecondsPerDay = 24 * 60 * kSecondsPerMinute;
+constexpr int kPointBoundaryWrapThresholdSeconds = 4 * 60 * kSecondsPerMinute;
 
 auto IsLeap(int year) -> bool {
   return (year % kYearDivisor4 == 0 &&
           (year % kYearDivisor100 != 0 || year % kYearDivisor400 == 0));
 }
 
-[[nodiscard]] auto ParseFlexibleHhmm(std::string_view time_value)
+[[nodiscard]] auto ParseFlexibleHhmmss(std::string_view time_value)
     -> std::optional<int> {
   std::string digits;
-  digits.reserve(4);
+  digits.reserve(6);
   for (const char value : time_value) {
     if (std::isdigit(static_cast<unsigned char>(value)) != 0) {
       digits.push_back(value);
     }
   }
-  if (digits.length() != 4) {
+  if (digits.length() == 4) {
+    digits.append("00");
+  }
+  if (digits.length() != 6) {
     return std::nullopt;
   }
 
   try {
     const int hour = std::stoi(digits.substr(0, 2));
     const int minute = std::stoi(digits.substr(2, 2));
-    if (hour < 0 || hour >= 24 || minute < 0 || minute >= 60) {
+    const int second = std::stoi(digits.substr(4, 2));
+    if (hour < 0 || hour >= 24 || minute < 0 || minute >= 60 || second < 0 ||
+        second >= 60) {
       return std::nullopt;
     }
-    return (hour * 60) + minute;
+    return ((hour * 60) + minute) * kSecondsPerMinute + second;
   } catch (const std::exception&) {
     return std::nullopt;
   }
@@ -71,7 +78,7 @@ auto IsLeap(int year) -> bool {
     -> bool {
   return previous_raw_minutes > current_raw_minutes &&
          (previous_raw_minutes - current_raw_minutes) >=
-             kPointBoundaryWrapThresholdMinutes;
+             kPointBoundaryWrapThresholdSeconds;
 }
 
 [[nodiscard]] auto ExpandRelativeToBoundary(int raw_minutes, int boundary_minutes,
@@ -81,9 +88,9 @@ auto IsLeap(int year) -> bool {
   // point-style midnight wraps stay monotonic, while short backward moves still
   // fail as overlap. Explicit interval end wrapping is handled separately by
   // ExpandIntervalEndRelativeToStart and does not use this heuristic.
-  const int day_offset = boundary_minutes / (24 * 60);
-  const int boundary_raw_minutes = boundary_minutes % (24 * 60);
-  int candidate = raw_minutes + (day_offset * 24 * 60);
+  const int day_offset = boundary_minutes / kSecondsPerDay;
+  const int boundary_raw_minutes = boundary_minutes % kSecondsPerDay;
+  int candidate = raw_minutes + (day_offset * kSecondsPerDay);
 
   if (raw_minutes > boundary_raw_minutes) {
     return candidate;
@@ -98,7 +105,7 @@ auto IsLeap(int year) -> bool {
   if (!IsPlausiblePointBoundaryWrap(boundary_raw_minutes, raw_minutes)) {
     return std::nullopt;
   }
-  candidate += 24 * 60;
+  candidate += kSecondsPerDay;
   if (!allow_equal && candidate <= boundary_minutes) {
     return std::nullopt;
   }
@@ -108,15 +115,15 @@ auto IsLeap(int year) -> bool {
 [[nodiscard]] auto ExpandIntervalEndRelativeToStart(int end_raw_minutes,
                                                     int start_minutes)
     -> std::optional<int> {
-  const int day_offset = start_minutes / (24 * 60);
-  const int start_raw_minutes = start_minutes % (24 * 60);
-  int candidate = end_raw_minutes + (day_offset * 24 * 60);
+  const int day_offset = start_minutes / kSecondsPerDay;
+  const int start_raw_minutes = start_minutes % kSecondsPerDay;
+  int candidate = end_raw_minutes + (day_offset * kSecondsPerDay);
 
   if (end_raw_minutes == start_raw_minutes) {
     return std::nullopt;
   }
   if (end_raw_minutes < start_raw_minutes) {
-    candidate += 24 * 60;
+    candidate += kSecondsPerDay;
   }
   return candidate;
 }
@@ -255,7 +262,7 @@ void ValidateMixedTimeline(
     std::vector<Diagnostic>& diagnostics) {
   std::optional<int> last_known_boundary_minutes;
   if (ShouldSeedTimelineFromDayBoundary(day)) {
-    last_known_boundary_minutes = ParseFlexibleHhmm(day.getupTime);
+    last_known_boundary_minutes = ParseFlexibleHhmmss(day.getupTime);
   }
 
   for (const auto& raw_event : day.rawEvents) {
@@ -264,13 +271,13 @@ void ValidateMixedTimeline(
         raw_event.kind == RawEventKind::Point;
     if (is_wake) {
       if (!last_known_boundary_minutes.has_value()) {
-        last_known_boundary_minutes = ParseFlexibleHhmm(raw_event.endTimeStr);
+        last_known_boundary_minutes = ParseFlexibleHhmmss(raw_event.endTimeStr);
       }
       continue;
     }
 
     const std::optional<int> end_minutes =
-        ParseFlexibleHhmm(raw_event.endTimeStr);
+        ParseFlexibleHhmmss(raw_event.endTimeStr);
     if (!end_minutes.has_value()) {
       continue;
     }
@@ -297,7 +304,7 @@ void ValidateMixedTimeline(
       }
 
       const std::optional<int> start_minutes =
-          ParseFlexibleHhmm(*raw_event.startTimeStr);
+          ParseFlexibleHhmmss(*raw_event.startTimeStr);
       if (!start_minutes.has_value()) {
         continue;
       }

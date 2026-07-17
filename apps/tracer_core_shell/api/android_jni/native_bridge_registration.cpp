@@ -6,7 +6,7 @@
 
 namespace tracer_core::api::android::bridge_internal {
 
-const std::array<JNINativeMethod, 18> kNativeMethods = {
+const std::array<JNINativeMethod, 17> kNativeMethods = {
     JNINativeMethod{
         const_cast<char*>("nativeInit"),
         const_cast<char*>(
@@ -108,13 +108,6 @@ const std::array<JNINativeMethod, 18> kNativeMethods = {
             "Ljava/lang/String;)"
             "Ljava/lang/String;"),
         reinterpret_cast<void*>(&NativeQuery),
-    },
-    JNINativeMethod{
-        const_cast<char*>("nativeTree"),
-        const_cast<char*>(
-            "(ZLjava/lang/String;ILjava/lang/String;Ljava/lang/String;"
-            "Ljava/lang/String;)Ljava/lang/String;"),
-        reinterpret_cast<void*>(&NativeTree),
     },
     JNINativeMethod{
         const_cast<char*>("nativeReportJson"),

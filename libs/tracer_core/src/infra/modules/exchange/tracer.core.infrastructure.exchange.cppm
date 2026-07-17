@@ -28,8 +28,6 @@ inline constexpr std::string_view kConverterMainPath =
     "config/converter/interval_processor_config.toml";
 inline constexpr std::string_view kAliasMappingIndexPath =
     "config/converter/alias_mapping.toml";
-inline constexpr std::string_view kDurationRulesPath =
-    "config/converter/duration_rules.toml";
 inline constexpr std::string_view kReportMarkdownDayPath =
     "config/reports/markdown/day.toml";
 inline constexpr std::string_view kReportMarkdownMonthPath =
@@ -42,11 +40,10 @@ inline constexpr std::string_view kReportMarkdownYearPath =
     "config/reports/markdown/year.toml";
 inline constexpr std::string_view kPayloadRoot = "payload";
 
-inline constexpr std::array<std::string_view, 9> kRequiredPackagePaths = {
+inline constexpr std::array<std::string_view, 8> kRequiredPackagePaths = {
     kManifestPath,
     kConverterMainPath,
     kAliasMappingIndexPath,
-    kDurationRulesPath,
     kReportMarkdownDayPath,
     kReportMarkdownMonthPath,
     kReportMarkdownPeriodPath,
@@ -69,9 +66,9 @@ inline constexpr std::uint16_t kStandardEntryFlags =
 
 struct TracerExchangeManifest {
   std::string package_type = "tracer_exchange";
-  // v5 extends the exchange package to include Android markdown report TOML
+  // v4 extends the exchange package to include Android markdown report TOML
   // configs in addition to converter TOML and payload TXT.
-  std::int64_t package_version = 5;
+  std::int64_t package_version = 4;
   std::string producer_platform;
   std::string producer_app;
   std::string created_at_utc;
@@ -82,7 +79,6 @@ struct TracerExchangeManifest {
   std::string converter_alias_mapping_index =
       std::string(kAliasMappingIndexPath);
   std::vector<std::string> converter_alias_mapping_files;
-  std::string converter_duration_rules = std::string(kDurationRulesPath);
   std::vector<std::string> report_markdown_files = {
       std::string(kReportMarkdownDayPath),
       std::string(kReportMarkdownMonthPath),
@@ -526,7 +522,6 @@ auto BuildManifestText(const TracerExchangeManifest& manifest) -> std::string {
     alias_mapping_files.push_back(path);
   }
   converter.insert("alias_mapping_files", std::move(alias_mapping_files));
-  converter.insert("duration_rules", manifest.converter_duration_rules);
   table.insert("converter", std::move(converter));
 
   toml::table markdown_reports;
@@ -584,8 +579,6 @@ auto ParseManifestText(std::string_view manifest_text)
       ParseExpectedString(*converter_table, "alias_mapping_index");
   manifest.converter_alias_mapping_files =
       ParseStringArray(*converter_table, "alias_mapping_files");
-  manifest.converter_duration_rules =
-      ParseExpectedString(*converter_table, "duration_rules");
 
   const toml::table* reports_table = table["reports"].as_table();
   if (reports_table == nullptr) {
@@ -602,8 +595,8 @@ auto ParseManifestText(std::string_view manifest_text)
   if (manifest.package_type != "tracer_exchange") {
     ThrowMalformedPackage("manifest `package_type` must be `tracer_exchange`.");
   }
-  if (manifest.package_version != 5) {
-    ThrowMalformedPackage("manifest `package_version` must be 5.");
+  if (manifest.package_version != 4) {
+    ThrowMalformedPackage("manifest `package_version` must be 4.");
   }
   if (manifest.payload_root != kPayloadRoot) {
     ThrowMalformedPackage("manifest payload root must be `payload`.");
@@ -612,8 +605,7 @@ auto ParseManifestText(std::string_view manifest_text)
   ValidateAliasMappingFiles(manifest.converter_alias_mapping_files);
   ValidateReportMarkdownFiles(manifest.report_markdown_files);
   if (manifest.converter_main_config != kConverterMainPath ||
-      manifest.converter_alias_mapping_index != kAliasMappingIndexPath ||
-      manifest.converter_duration_rules != kDurationRulesPath) {
+      manifest.converter_alias_mapping_index != kAliasMappingIndexPath) {
     ThrowMalformedPackage(
         "manifest converter paths must match fixed package "
         "layout.");

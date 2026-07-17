@@ -157,11 +157,14 @@ constexpr std::string_view kOvernightContinuationWarning =
       first_non_space + 4U > line.size()) {
     return std::nullopt;
   }
-  const std::string_view hhmm = line.substr(first_non_space, 4);
-  if (!IsDigitsOnly(hhmm)) {
+  const bool has_hhmmss = first_non_space + 6U <= line.size() &&
+      IsDigitsOnly(line.substr(first_non_space, 6U));
+  const std::string_view time =
+      line.substr(first_non_space, has_hhmmss ? 6U : 4U);
+  if (!IsDigitsOnly(time)) {
     return std::nullopt;
   }
-  return std::string(hhmm);
+  return std::string(time);
 }
 
 [[nodiscard]] auto ExtractActivityName(std::string_view line) -> std::string {
@@ -174,7 +177,8 @@ constexpr std::string_view kOvernightContinuationWarning =
   if (first_non_space == std::string_view::npos) {
     return "";
   }
-  std::string raw_body = Trim(std::string(line.substr(first_non_space + 4U)));
+  std::string raw_body = Trim(std::string(
+      line.substr(first_non_space + hhmm->size())));
   if (raw_body.empty()) {
     return "";
   }
@@ -331,7 +335,7 @@ constexpr std::string_view kOvernightContinuationWarning =
   return std::string(kIncompleteDayWarning);
 }
 
-[[nodiscard]] auto GetCurrentLocalHhmm() -> std::string {
+[[nodiscard]] auto GetCurrentLocalHhmmss() -> std::string {
   const auto now = std::chrono::system_clock::now();
   const std::time_t now_time = std::chrono::system_clock::to_time_t(now);
   std::tm local_time{};
@@ -340,7 +344,8 @@ constexpr std::string_view kOvernightContinuationWarning =
 #else
   localtime_r(&now_time, &local_time);
 #endif
-  return std::format("{:02d}{:02d}", local_time.tm_hour, local_time.tm_min);
+  return std::format("{:02d}{:02d}{:02d}", local_time.tm_hour,
+                     local_time.tm_min, local_time.tm_sec);
 }
 
 [[nodiscard]] auto ValidateRecordActivityName(
@@ -382,7 +387,7 @@ constexpr std::string_view kOvernightContinuationWarning =
   // defined for a whole month TXT. Build the full candidate content in memory first so the new
   // line is judged in document context before official TXT is modified.
   std::vector<std::string> lines = SplitLines(existing_content);
-  const std::string event_time = GetCurrentLocalHhmm();
+  const std::string event_time = GetCurrentLocalHhmmss();
   const std::string event_line =
       BuildRawEventLine(event_time, record_activity_name, remark);
   const std::string day_marker_line =

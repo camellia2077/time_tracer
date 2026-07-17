@@ -10,6 +10,7 @@ namespace reporting {
 
 struct ProjectNode {
   std::int64_t duration = 0;
+  std::int64_t occurrence_count = 0;
   // 使用 unordered_map 提升构建速度
   // 在生成报告时（如 ProjectTreeFormatter），
   // 程序显式地按 duration（时长）进行了重新排序。

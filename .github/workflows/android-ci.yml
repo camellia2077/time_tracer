@@ -41,6 +41,7 @@ jobs:
   android-default-ci:
     name: android-default-ci
     runs-on: windows-latest
+    timeout-minutes: 45
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -102,6 +103,9 @@ jobs:
           name: android-default-ci-logs
           path: |
             apps/android/build/build.log
+            apps/android/build/reports/problems/problems-report.html
+            apps/android/.gradle/**/executionHistory/**
+            ~/.gradle/daemon/**/daemon-*.out.log
             out/test/artifact_android/result.json
             out/test/artifact_android/logs/failure-summary.txt
             out/test/artifact_android/logs/output.log
@@ -112,6 +116,7 @@ jobs:
     name: android-release-verify
     runs-on: windows-latest
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_release_verify }}
+    timeout-minutes: 60
     env:
       TT_ANDROID_KEYSTORE_BASE64: ${{ secrets.TT_ANDROID_KEYSTORE_BASE64 }}
       TT_ANDROID_STORE_PASSWORD: ${{ secrets.TT_ANDROID_STORE_PASSWORD }}
@@ -177,6 +182,9 @@ jobs:
           name: android-release-verify-logs
           path: |
             apps/android/build/build.log
+            apps/android/build/reports/problems/problems-report.html
+            apps/android/.gradle/**/executionHistory/**
+            ~/.gradle/daemon/**/daemon-*.out.log
             out/test/artifact_android/result.json
             out/test/artifact_android/logs/failure-summary.txt
             out/test/artifact_android/logs/output.log

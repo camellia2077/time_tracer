@@ -13,6 +13,5 @@ export namespace tracer::core::domain::types {
 export namespace tracer::core::domain::modtypes {
 
 using tracer::core::domain::types::ConverterConfig;
-using tracer::core::domain::types::DurationMappingRule;
 
 }  // namespace tracer::core::domain::modtypes

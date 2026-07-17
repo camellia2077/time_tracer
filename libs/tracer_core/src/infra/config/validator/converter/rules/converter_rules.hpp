@@ -8,7 +8,6 @@
 #include <string>
 
 struct MainConfigPaths {
-  std::string duration_rules_config_path;
   std::string alias_mapping_path;
 };
 
@@ -16,11 +15,6 @@ class MainRule {
  public:
   static auto Validate(const toml::table& main_tbl, MainConfigPaths& out_paths)
       -> bool;
-};
-
-class DurationRule {
- public:
-  static auto Validate(const toml::table& duration_tbl) -> bool;
 };
 
 class MappingRule {

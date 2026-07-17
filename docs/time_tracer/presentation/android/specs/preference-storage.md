@@ -40,6 +40,7 @@ Do not store UI preferences in the runtime SQLite database.
   - assist panel expansion flags
 - Report chart preference:
   - show average line
+  - preferred chart semantic mode (Breakdown or Trend)
 
 ## Ownership
 

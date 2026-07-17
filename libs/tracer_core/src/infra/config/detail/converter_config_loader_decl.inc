@@ -24,6 +24,4 @@ class ConverterConfigLoader {
                                        ConverterConfig& config) -> void;
   static auto ParseMappings(const toml::table& tbl, ConverterConfig& config)
       -> void;
-  static auto ParseDurationMappings(const toml::table& tbl,
-                                    ConverterConfig& config) -> void;
 };

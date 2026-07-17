@@ -287,7 +287,7 @@ class FakeTracerExchangeService final
       .ok = true,
       .input_tracer_path = "out/sample.tracer",
       .package_type = "tracer_exchange",
-      .package_version = 5,
+      .package_version = 4,
       .source_root_name = "data",
       .payload_file_count = 2,
       .error_message = "",

@@ -2,6 +2,6 @@ parent = "rest"
 
 [aliases]
 "rest" = "rest"
+"rest_insomnia" = "insomnia"
 "休息" = "rest"
 "r" = "rest"
-"失眠" = "insomnia"

@@ -97,6 +97,9 @@ log_generator.exe [options]
   - 当前已实现 `point`、`interval` 与 `mixed`
   - `mixed` 会保持 wake 为 point event，并让非 wake 活动按固定 50/50
     概率输出为 point 或 interval
+- `--time-format <HHMM|HHMMSS>`
+  - 控制事件行的时间精度，默认是兼容旧 TXT 的 `HHMM`
+  - 选择 `HHMMSS` 时，生成器会输出六位时间；当前生成的秒固定为 `00`
 - `-n, --nosleep`
   - 启用“通宵日”生成
 - `--monthly-average`
@@ -180,6 +183,15 @@ d0101
 - 非 wake 活动共享同一套时间边界
 - 每个非 wake 活动独立按 50/50 概率输出为 point 或 interval
 
+时间格式可单独选择。默认的 `HHMM` 保持上面的兼容输出；指定
+`--time-format HHMMSS` 后，同一内容会写成：
+
+```text
+d0101
+060600w
+090000-103000概率统计
+```
+
 ## 示例
 
 ### 示例 1：生成单年数据
@@ -216,6 +228,12 @@ log_generator.exe --year 2025 --items 8 --seed 123 --event-style mixed --output 
 
 ```powershell
 log_generator.exe --year 2026 --items 8 --nosleep --monthly-average --output dates
+```
+
+### 示例 7：生成 HHMMSS 时间格式
+
+```powershell
+log_generator.exe --year 2025 --time-format HHMMSS --output dates
 ```
 
 ## 推荐构建与验证方式

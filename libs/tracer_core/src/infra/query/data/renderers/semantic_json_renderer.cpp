@@ -107,9 +107,14 @@ void AppendProjectNodeChildren(json& out_children, const ProjectTreeNode& node,
   for (const auto& child : kChildren) {
     json child_json = {
         {"name", child.name},
+        {"path", child.node->path},
         {"duration_seconds", ResolveNodeDurationSeconds(*child.node)},
         {"children", json::array()},
     };
+    if (child.node->parent_duration_percent.has_value()) {
+      child_json["parent_duration_percent"] =
+          *child.node->parent_duration_percent;
+    }
     AppendProjectNodeChildren(child_json["children"], *child.node,
                               current_depth + 1, max_depth);
     out_children.push_back(std::move(child_json));
@@ -194,6 +199,7 @@ auto BuildSemanticTreePayload(const std::vector<ProjectTreeNode>& nodes,
   for (const auto& root : roots) {
     json root_json = {
         {"name", root.name},
+        {"path", root.node->path},
         {"duration_seconds", ResolveNodeDurationSeconds(*root.node)},
         {"children", json::array()},
     };

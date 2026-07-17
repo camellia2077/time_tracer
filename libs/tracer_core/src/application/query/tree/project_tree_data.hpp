@@ -12,6 +12,7 @@ struct ProjectTreeNode {
   std::string name;
   std::string path;
   std::optional<long long> duration_seconds;
+  std::optional<double> parent_duration_percent;
   std::vector<ProjectTreeNode> children;
 };
 

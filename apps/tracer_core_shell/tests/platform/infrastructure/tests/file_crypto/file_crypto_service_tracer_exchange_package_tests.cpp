@@ -13,8 +13,7 @@ using namespace tracer_exchange_tests_internal;
 auto TestTracerExchangePackageRoundTrip(int& failures) -> void {
   const auto payloads = BuildSamplePayloads();
   const auto entries = BuildValidPackageEntries(
-      payloads, "main = true\n", "includes = [\"aliases/default.toml\"]\n",
-      "duration = true\n");
+      payloads, "main = true\n", "includes = [\"aliases/default.toml\"]\n");
   const auto bytes = exchange_pkg::EncodePackageBytes(entries);
   const auto decoded = exchange_pkg::DecodePackageBytes(bytes);
 
@@ -53,8 +52,7 @@ auto TestTracerExchangePackageRoundTrip(int& failures) -> void {
 auto TestTracerExchangeDecodeRejectsShaMismatch(int& failures) -> void {
   auto bytes = exchange_pkg::EncodePackageBytes(
       BuildValidPackageEntries(BuildSamplePayloads(), "main = true\n",
-                               "includes = [\"aliases/default.toml\"]\n",
-                               "duration = true\n"));
+                               "includes = [\"aliases/default.toml\"]\n"));
   if (!bytes.empty()) {
     bytes.back() ^= 0x01U;
   }

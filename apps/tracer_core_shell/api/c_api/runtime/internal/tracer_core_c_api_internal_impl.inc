@@ -157,7 +157,6 @@ void SetLastError(const char* message) {
   payload.features.runtime_query_json = true;
   payload.features.runtime_temporal_report_json = true;
   payload.features.runtime_report_batch_json = true;
-  payload.features.runtime_tree_json = true;
   payload.features.processed_json_io = TT_ENABLE_PROCESSED_JSON_IO != 0;
   payload.features.report_markdown = true;
   payload.features.report_latex = TT_REPORT_ENABLE_LATEX != 0;

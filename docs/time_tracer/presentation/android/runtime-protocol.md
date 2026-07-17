@@ -39,7 +39,7 @@ Important rules:
 Current Android JNI integration uses C ABI entrypoints in these categories:
 
 - runtime create/destroy
-- ingest/query/tree/report
+- ingest/query/report
 - record-atomic pipeline calls (including explicit `time_order_mode` passthrough)
 - TXT runtime day-block calls (`tracer_core_runtime_txt_json`)
 - structure/logic validation
@@ -73,7 +73,7 @@ Some operations may add operation-specific fields, but the envelope shape stays 
 
 Current status:
 
-- JNI request encoding for main ingest/query/tree/report paths is unified through shared transport helpers.
+- JNI request encoding for main ingest/query/report paths is unified through shared transport helpers.
 - Reporting now uses `TemporalReportQueryRequest` on Kotlin side and
   `tracer_core_runtime_temporal_report_json` as the only canonical reporting
   C ABI entrypoint.
@@ -119,6 +119,7 @@ Current Android-facing responsibilities are:
 4. Core owns:
    - default day marker resolution
    - `MMDD` normalization and validation
+   - month-TXT day marker line format (`dMMDD`)
    - day-block extraction and replacement
    - machine-readable fields such as `found`, `can_save`, and
      `day_content_iso_date`

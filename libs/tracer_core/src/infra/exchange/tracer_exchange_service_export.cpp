@@ -174,8 +174,6 @@ auto TracerExchangeService::RunExport(
                                    kConfigPaths.main_config_path));
   entries.push_back(BuildFileEntry(exchange_pkg::kAliasMappingIndexPath,
                                    kConfigPaths.alias_mapping_path));
-  entries.push_back(BuildFileEntry(exchange_pkg::kDurationRulesPath,
-                                   kConfigPaths.duration_rules_path));
   for (std::size_t index = 0;
        index < exchange_pkg::kReportMarkdownPackagePaths.size();
        ++index) {
@@ -192,7 +190,6 @@ auto TracerExchangeService::RunExport(
   for (const auto& payload_file : kPayloadFiles) {
     entries.push_back(BuildPayloadEntry(payload_file));
   }
-
   const std::vector<std::uint8_t> kPackageBytes = EncodePackageBytes(entries);
   const file_crypto::FileCryptoPathContext kPathContext{
       .input_root_path = kHasInputRoot ? kInputPath : fs::path(kSourceRootName),

@@ -46,7 +46,7 @@ auto ResolveGetupTime(const DailyLog& day) -> std::optional<std::string> {
     return std::nullopt;
   }
   if (day.getupTime.empty()) {
-    return "00:00";
+    return "00:00:00";
   }
   return day.getupTime;
 }
@@ -92,7 +92,7 @@ auto MemoryParser::Parse(
       // any sleep_* activity exists in the fact set.
       day_data.wake_anchor =
           (!input_day.isContinuation && !input_day.getupTime.empty() &&
-           input_day.getupTime != "00:00")
+           input_day.getupTime != "00:00:00")
               ? 1
               : 0;
       day_data.remark = ProcessDayRemarks(input_day.generalRemarks);

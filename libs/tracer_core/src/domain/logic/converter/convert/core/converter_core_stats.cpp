@@ -22,16 +22,20 @@ constexpr int kSecondsPerDay =
     kHoursPerDay * kMinutesPerHour * kSecondsPerMinute;
 
 constexpr size_t kDateStringLength = 10;
-constexpr size_t kTimeStringLength = 5;
-constexpr size_t kTimeDigitsLength = 4;
+constexpr size_t kLegacyTimeStringLength = 5;
+constexpr size_t kTimeStringLength = 8;
+constexpr size_t kLegacyTimeDigitsLength = 4;
+constexpr size_t kTimeDigitsLength = 6;
 
 constexpr size_t kTimeHourOffset = 0;
 constexpr size_t kTimeHourLength = 2;
 constexpr size_t kTimeMinuteOffset = 3;
 constexpr size_t kTimeMinuteLength = 2;
+constexpr size_t kTimeSecondOffset = 6;
+constexpr size_t kTimeSecondLength = 2;
 
 constexpr size_t kTimeDigitsMinuteOffset = 2;
-constexpr size_t kDateTimeMinLength = 16;
+constexpr size_t kDateTimeMinLength = 19;
 
 auto StringToTimeT(const std::string& datetime_str) -> std::int64_t {
   if (datetime_str.length() < kDateTimeMinLength) {
@@ -39,7 +43,7 @@ auto StringToTimeT(const std::string& datetime_str) -> std::int64_t {
   }
   std::tm time_info = {};
   std::stringstream time_stream(datetime_str);
-  time_stream >> std::get_time(&time_info, "%Y-%m-%d %H:%M");
+  time_stream >> std::get_time(&time_info, "%Y-%m-%d %H:%M:%S");
   if (time_stream.fail()) {
     return 0;
   }
@@ -48,23 +52,32 @@ auto StringToTimeT(const std::string& datetime_str) -> std::int64_t {
 
 [[nodiscard]] auto ParseHhmmToSeconds(std::string_view time_value)
     -> std::optional<int> {
-  if (time_value.length() != kTimeStringLength) {
+  std::string normalized;
+  if (time_value.length() == kLegacyTimeStringLength) {
+    normalized = std::string(time_value) + ":00";
+  } else if (time_value.length() == kTimeStringLength) {
+    normalized = std::string(time_value);
+  } else {
     return std::nullopt;
   }
-  if (time_value[2] != ':') {
+  if (normalized[2] != ':' || normalized[5] != ':') {
     return std::nullopt;
   }
 
   try {
     const int kHour =
-        std::stoi(std::string(time_value.substr(kTimeHourOffset, 2)));
+        std::stoi(normalized.substr(kTimeHourOffset, kTimeHourLength));
     const int kMinute =
-        std::stoi(std::string(time_value.substr(kTimeMinuteOffset, 2)));
+        std::stoi(normalized.substr(kTimeMinuteOffset, kTimeMinuteLength));
+    const int kSecond =
+        std::stoi(normalized.substr(kTimeSecondOffset, kTimeSecondLength));
     if (kHour < 0 || kHour >= kHoursPerDay || kMinute < 0 ||
-        kMinute >= kMinutesPerHour) {
+        kMinute >= kMinutesPerHour || kSecond < 0 ||
+        kSecond >= kSecondsPerMinute) {
       return std::nullopt;
     }
-    return ((kHour * kMinutesPerHour) + kMinute) * kSecondsPerMinute;
+    return ((kHour * kMinutesPerHour) + kMinute) * kSecondsPerMinute +
+           kSecond;
   } catch (const std::exception&) {
     return std::nullopt;
   }
@@ -73,32 +86,16 @@ auto StringToTimeT(const std::string& datetime_str) -> std::int64_t {
 [[nodiscard]] auto CalculateDurationSeconds(const std::string& start_time_str,
                                             const std::string& end_time_str)
     -> int {
-  if (start_time_str.length() != kTimeStringLength ||
-      end_time_str.length() != kTimeStringLength) {
+  const auto start_seconds = ParseHhmmToSeconds(start_time_str);
+  const auto end_seconds = ParseHhmmToSeconds(end_time_str);
+  if (!start_seconds.has_value() || !end_seconds.has_value()) {
     return 0;
   }
-
-  try {
-    const int kStartHour =
-        std::stoi(start_time_str.substr(kTimeHourOffset, kTimeHourLength));
-    const int kStartMinute =
-        std::stoi(start_time_str.substr(kTimeMinuteOffset, kTimeMinuteLength));
-    const int kEndHour =
-        std::stoi(end_time_str.substr(kTimeHourOffset, kTimeHourLength));
-    const int kEndMinute =
-        std::stoi(end_time_str.substr(kTimeMinuteOffset, kTimeMinuteLength));
-
-    const int kStartSeconds =
-        (kStartHour * kMinutesPerHour + kStartMinute) * kSecondsPerMinute;
-    int end_seconds =
-        (kEndHour * kMinutesPerHour + kEndMinute) * kSecondsPerMinute;
-    if (end_seconds < kStartSeconds) {
-      end_seconds += kSecondsPerDay;
-    }
-    return end_seconds - kStartSeconds;
-  } catch (const std::exception&) {
-    return 0;
+  int wrapped_end_seconds = *end_seconds;
+  if (wrapped_end_seconds < *start_seconds) {
+    wrapped_end_seconds += kSecondsPerDay;
   }
+  return wrapped_end_seconds - *start_seconds;
 }
 
 [[nodiscard]] auto TimeStringToTimestamp(const std::string& date,
@@ -106,12 +103,19 @@ auto StringToTimeT(const std::string& datetime_str) -> std::int64_t {
                                          bool is_end_time,
                                          std::int64_t start_timestamp_for_end)
     -> std::int64_t {
-  if (date.length() != kDateStringLength ||
-      time.length() != kTimeStringLength) {
+  std::string normalized_time;
+  if (time.length() == kLegacyTimeStringLength) {
+    normalized_time = time + ":00";
+  } else if (time.length() == kTimeStringLength) {
+    normalized_time = time;
+  } else {
     return 0;
   }
 
-  std::int64_t timestamp = StringToTimeT(date + " " + time);
+  if (date.length() != kDateStringLength) {
+    return 0;
+  }
+  std::int64_t timestamp = StringToTimeT(date + " " + normalized_time);
   if (is_end_time && timestamp < start_timestamp_for_end) {
     timestamp += static_cast<std::int64_t>(kSecondsPerDay);
   }
@@ -121,11 +125,25 @@ auto StringToTimeT(const std::string& datetime_str) -> std::int64_t {
 }  // namespace
 
 auto NormalizeTime(std::string_view time_str) -> std::string {
+  if (time_str.length() == kLegacyTimeStringLength) {
+    return std::string(time_str) + ":00";
+  }
+  if (time_str.length() == kTimeStringLength) {
+    return std::string(time_str);
+  }
+  if (time_str.length() == kLegacyTimeDigitsLength) {
+    return std::string(time_str.substr(kTimeHourOffset, kTimeHourLength)) +
+           ":" +
+           std::string(
+               time_str.substr(kTimeDigitsMinuteOffset, kTimeMinuteLength)) +
+           ":00";
+  }
   if (time_str.length() == kTimeDigitsLength) {
     return std::string(time_str.substr(kTimeHourOffset, kTimeHourLength)) +
            ":" +
            std::string(
-               time_str.substr(kTimeDigitsMinuteOffset, kTimeMinuteLength));
+               time_str.substr(kTimeDigitsMinuteOffset, kTimeMinuteLength)) +
+           ":" + std::string(time_str.substr(4, 2));
   }
   return std::string(time_str);
 }
@@ -176,7 +194,8 @@ void DayStats::CalculateStats(DailyLog& day) {
   day.hasStudyActivity = false;
   day.hasExerciseActivity = false;
   day.hasWakeAnchor =
-      !day.isContinuation && !day.getupTime.empty() && day.getupTime != "00:00";
+      !day.isContinuation && !day.getupTime.empty() &&
+      NormalizeTime(day.getupTime) != "00:00:00";
 
   std::int64_t activity_sequence = 1;
   std::int64_t date_as_long = 0;

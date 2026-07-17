@@ -324,7 +324,6 @@ void TestEncodeResponses(int& failures) {
   capabilities.features.runtime_query_json = true;
   capabilities.features.runtime_temporal_report_json = true;
   capabilities.features.runtime_report_batch_json = true;
-  capabilities.features.runtime_tree_json = true;
   capabilities.features.processed_json_io = true;
   capabilities.features.report_markdown = true;
   capabilities.features.report_latex = false;
@@ -411,6 +410,7 @@ void TestEncodeTreeResponse(int& failures) {
   child.name = "math";
   child.path = "study_math";
   child.duration_seconds = 1800;
+  child.parent_duration_percent = 50.0;
   node.children.push_back(child);
   payload.nodes.push_back(node);
 

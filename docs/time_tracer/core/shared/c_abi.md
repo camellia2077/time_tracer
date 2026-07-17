@@ -36,7 +36,6 @@
 21. `tracer_core_runtime_query_json`
 22. `tracer_core_runtime_temporal_report_json`
 23. `tracer_core_runtime_report_batch_json`
-24. `tracer_core_runtime_tree_json`
 25. `tracer_core_runtime_crypto_encrypt_json`
 26. `tracer_core_runtime_crypto_decrypt_json`
 27. `tracer_core_runtime_crypto_inspect_json`
@@ -75,7 +74,6 @@
      - `runtime_query_json`
      - `runtime_temporal_report_json`
      - `runtime_report_batch_json`
-     - `runtime_tree_json`
      - `runtime_txt_json`
      - `processed_json_io`
      - `report_markdown`
@@ -140,11 +138,7 @@
      - `error_code`
      - `error_category`
      - `hints`
-11. `tracer_core_runtime_tree_json` request/response contract:
-   - request fields: `list_roots`, `root_pattern`, `max_depth`, `period`,
-     `period_argument`, `root`
-   - response fields: `ok`, `found`, `error_message`, `roots`, `nodes`
-12. `tracer_core_runtime_temporal_report_json` is the single canonical
+11. `tracer_core_runtime_temporal_report_json` is the single canonical
     reporting ABI surface:
    - request fields:
      - `operation_kind` (`query|structured_query|targets|export`)
@@ -182,7 +176,7 @@
      - `error_category`
      - `hints`
    - `export` response follows the standard ack-style envelope
-13. `tracer_core_runtime_report_batch_json` remains a separate helper for
+12. `tracer_core_runtime_report_batch_json` remains a separate helper for
     multi-days recent text rendering:
    - request fields:
      - `days_list`
@@ -190,7 +184,7 @@
    - response fields:
      - standard text envelope fields
      - optional `report_hash_sha256`
-14. `tracer_core_runtime_crypto_*_json` contracts:
+13. `tracer_core_runtime_crypto_*_json` contracts:
    - request/response payloads are UTF-8 JSON objects
    - encrypt request fields:
      - `input_path`
@@ -212,7 +206,7 @@
      - `error_code`
      - `error_category`
      - `hints`
-15. `tracer_core_runtime_txt_json` contract:
+14. `tracer_core_runtime_txt_json` contract:
    - request/response payloads are UTF-8 JSON objects
    - `action` currently supports:
      - `default_day_marker`

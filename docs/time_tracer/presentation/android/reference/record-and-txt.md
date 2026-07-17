@@ -39,7 +39,7 @@ Describe the user-visible behavior of record creation and TXT editing flows.
 ## Core Flow
 
 - Feature-record owns TXT editor presentation plus the editor-session reducer/controller/coordinator split.
-- Runtime day-block semantics stay in shared TXT runtime calls; Android does not re-implement month/day parsing locally.
+- Runtime day-block semantics stay in shared TXT runtime calls; Android keeps `MMDD` as the day input/API marker and uses the shared `dMMDD` month-TXT marker line format when seeding missing blocks.
 - Runtime record delegates own validation and persistence flow.
 - Interval authoring uses the same candidate-TXT save/sync path as TXT editing:
   - Android builds a candidate day-block update

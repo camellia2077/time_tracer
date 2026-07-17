@@ -130,7 +130,6 @@ auto PrepareAndroidConfigFixture(const std::filesystem::path& target_root)
 
   return copy_required_file("converter/interval_processor_config.toml") &&
          copy_required_file("converter/alias_mapping.toml") &&
-         copy_required_file("converter/duration_rules.toml") &&
          CopyDirectoryTree(source_root / "converter" / "aliases",
                            target_root / "converter" / "aliases") &&
          copy_required_file("charts/heatmap.toml") &&

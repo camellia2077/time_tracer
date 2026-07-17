@@ -8,119 +8,162 @@
   <em>Icon designed for camellia2077/time_tracer</em>
 </p>
 
-**Time Tracer** - A personal time tracking and analysis system built with C++23, using plain-text logs as the source of truth and configurable alias mapping to normalize recorded activity tokens into analyzable canonical activity paths.
+下面是你这段内容的**完整英文翻译版本（已保持技术语义一致，并做了轻微产品化润色，适合直接放 GitHub README）**：
 
+---
 
-A powerful personal time management toolset designed using **Clean Architecture** principles to provide maximum efficiency, robust data storage, and multi-dimensional analysis.
-It also functions as a personal time ledger system with plain-text logs as the source of truth. Users may write activity tokens in any language, shorthand, or alias form, and the system converts them through configurable mapping into canonical activity semantics for statistics, queries, and reports.
+**Time Tracer** is an Android-first hierarchical time tracking system. It uses configurable alias mapping to transform user-entered activity tokens into a structured multi-level activity tree, and automatically aggregates durations across parent and child nodes for fine-grained personal time analysis and behavioral review.
 
-### Design Principles (Brief)
+The goal of Time Tracer is not simply to record “how long you studied” or “how long you exercised,” but to help users understand where their time actually goes across detailed sub-activities, without introducing significant input overhead. For example, “study” can be decomposed into “computer science” and “mathematics”; “computer science” can further be decomposed into “algorithms,” “computer architecture,” and “computer networks,” while “mathematics” can be decomposed into “calculus” and “linear algebra.” Similarly, “fitness” can be broken down into “strength training” and “cardio.”
 
-1. **Users own their data**: records are stored in readable text, so users can keep, back up, and migrate data without being locked to one app.  
-2. **Fast data editing**: users can directly edit text logs (rename activities, add remarks), then sync to database and reports.  
-3. **One input format across platforms**: CLI, Android, and other clients use the same text input format to minimize switching cost.  
-4. **Authored activity tokens are separate from analytics semantics**: users may write activity tokens in any language, abbreviation, or alias form, and the system normalizes them through configurable alias mapping before query, aggregation, and reporting.  
+The system is built with an **Android + Core Engine** architecture: Android serves as the primary interface for fast daily input and interaction, while the core engine handles parsing, normalization, aggregation, querying, and report generation. Raw records are stored as plain-text logs, while SQLite is used as a query and analytics layer to improve retrieval, aggregation, and report generation efficiency.
 
-### Text Input And Alias Mapping Examples
+---
 
-The text log is the source of truth. What users write in TXT is an authored activity token; during ingest, query, and reporting, those tokens are resolved into canonical activity paths.
+## Design Principles (Brief)
 
-At the moment, TXT event lines use the `HHMM + activity token` shape:
+1. **Low-friction input**  
+   Users can input activities using Chinese, English, abbreviations, or custom aliases without manually selecting full hierarchical paths each time.
+
+2. **Hierarchical activity structure**  
+   Activities are not flat tags but a tree-like structure similar to a filesystem. Each node can have its own sub-nodes.
+
+3. **Automatic parent-child aggregation**  
+   Time recorded at leaf nodes is automatically accumulated into all parent nodes, enabling both fine-grained and high-level analysis simultaneously.
+
+4. **Text as source of truth**  
+   All raw records are stored as readable TXT files. Users fully own their data and can back it up, edit it, or migrate it freely. SQLite and reports are derived from these logs.
+
+5. **Unified cross-platform data model**  
+   Android, CLI, and reporting tools share the same activity mapping and statistical semantics, reducing format fragmentation across platforms.
+
+---
+
+## Text Input & Alias Mapping Example
+
+Time Tracer uses Android as its primary interface, but underlying data can be represented as simple, readable TXT logs. Each line acts like a “time subtitle,” describing what happened at a specific time or time range.
+
+For example, events can be recorded in the format `HHMM + activity token` or `HHMM-HHMM + activity token`:
 
 ```text
-0813o
-0406r
-0622rda // rank dva academy skins
-```
+0613 wake up
+0634 breakfast
+0640-1038 algorithms
+1038-1224 linear algebra
+1443-1922 multiple integrals // exercises
+1930-2030 strength training
+````
 
-#### Routine Activity Example
+Here, `wake up`, `algorithms`, `linear algebra`, `multiple integrals`, and `strength training` are user-entered activity tokens. They can be written in any language, abbreviation, or custom format. The system uses alias mapping to resolve these tokens into canonical activity paths.
 
-A corresponding alias child file can look like this:
+---
+
+## Daily Activity Example
+
+The corresponding alias child file can be defined as:
 
 ```toml
 parent = "routine"
 
 [aliases]
-"oral-care" = "oral-hygiene"
-"toothbrushing" = "oral-hygiene"
+"wash face" = "oral-hygiene"
+"brush teeth" = "oral-hygiene"
 "o" = "oral-hygiene"
 ```
 
-This means:
+This configuration means:
 
-* `oral-care`, `toothbrushing`, and `o` all resolve to the same canonical activity path `routine_oral-hygiene`
-* the left-hand side is the activity token the user actually writes, so it may be a full word, shorthand, abbreviation, or any other configured form
-* multiple left-hand keys mapping to the same right-hand leaf is valid and is the intended way to unify analytics semantics
+* `wash face`, `brush teeth`, and `o` will all be mapped to the same canonical path `routine_oral-hygiene`
+* The left side represents the user-input token (which can be short for fast entry)
+* The right side is the normalized activity name used for aggregation and statistics
+* Multiple tokens can map to the same activity node for unified analytics
 
-#### Game Activity Example
+---
 
-A deeper hierarchy example:
+## Multi-Level Activity Example
+
+A more complex hierarchical example:
 
 ```toml
-parent = "others"
+parent = "study"
 
 [aliases]
-"r" = "rest"
+"cs" = "computer-science"
+"computer" = "computer-science"
+"math" = "math"
+"mathematics" = "math"
+
+[aliases.computer-science]
+"algorithms" = "algorithm"
+"algo" = "algorithm"
+"architecture" = "computer-architecture"
+"computer architecture" = "computer-architecture"
+"networks" = "computer-network"
+"computer networks" = "computer-network"
+
+[aliases.math]
+"calculus" = "calculus"
+"linear algebra" = "linear-algebra"
+"linalg" = "linear-algebra"
+
+[aliases.math.calculus]
+"multiple integrals" = "multiple-integral"
+"double integrals" = "multiple-integral"
 ```
 
 ```toml
-parent = "games"
+parent = "fitness"
 
 [aliases]
-"ow" = "overwatch"
-"mc" = "minecraft"
-
-[aliases.overwatch]
-"owr" = "rank"
-"owrank" = "rank"
-"owq" = "quickplay"
-
-[aliases.overwatch.rank]
-"dva" = "dva"
-"tr" = "tracer"
-
-[aliases.overwatch.rank.dva]
-"rda" = "academy"
+"strength training" = "strength-training"
+"strength" = "strength-training"
+"cardio" = "cardio"
+"aerobic" = "cardio"
 ```
 
-These rules expand into canonical activity paths such as:
+These configurations expand into canonical activity paths such as:
 
-* `r -> others_rest`
-* `ow -> games_overwatch`
-* `mc -> games_minecraft`
-* `owr` / `owrank -> games_overwatch_rank`
-* `owq -> games_overwatch_quickplay`
-* `dva -> games_overwatch_rank_dva`
-* `tr -> games_overwatch_rank_tracer`
-* `rda -> games_overwatch_rank_dva_academy`
+* `algorithms / algo → study_computer-science_algorithm`
+* `architecture → study_computer-science_computer-architecture`
+* `networks → study_computer-science_computer-network`
+* `linear algebra → study_math_linear-algebra`
+* `multiple integrals → study_math_calculus_multiple-integral`
+* `strength training → fitness_strength-training`
+* `cardio → fitness_cardio`
 
-These paths are not only longer names for activity tokens; they also define where each activity sits in the activity tree.
+These paths not only convert user tokens into canonical names but also define their position in the hierarchical activity tree.
 
-For example, `rda -> games_overwatch_rank_dva_academy` can represent time spent playing Overwatch in ranked mode, on D.Va, using the Academy skin. When a duration is recorded on the leaf node `games_overwatch_rank_dva_academy`, aggregate statistics will also include that same duration in all of its ancestor nodes, including:
+For example, `multiple integrals → study_math_calculus_multiple-integral` represents time spent on exercises in the calculus subdomain under mathematics. When time is recorded at this leaf node, it is automatically aggregated into all parent nodes:
 
-* `games_overwatch_rank_dva`
-* `games_overwatch_rank`
-* `games_overwatch`
-* `games`
+* `study_math_calculus`
+* `study_math`
+* `study`
 
-Because of this, the same source text can support both very fine-grained tracking and higher-level roll-up analysis.
+Similarly, `strength training → fitness_strength-training` is aggregated into:
 
-D.Va and the Academy skin are used here not because Overwatch lacks per-hero tracking, but because the example has enough depth to show how alias mapping can attach an authored activity token to a deep leaf node in the activity tree.
+* `fitness_strength-training`
+* `fitness`
 
-From an analytics and query perspective, you can think of this mapping as a weighted activity tree:
+This allows the same dataset to support both fine-grained analysis and high-level summaries.
 
-* nodes are the activity names along the canonical path
-* weights come from the accumulated duration assigned to each node and its descendants
-* users are free to author convenient tokens, while query/reporting runs on normalized canonical paths
+From a statistical perspective, this mapping can be understood as a weighted tree:
 
-This is an analytics model, not a complete description of the ingest pipeline itself. The main program flow first parses text into normalized activity records and persists them, and only then projects those records into tree-shaped aggregates when a query or report needs that view.
+* Nodes represent canonical activity paths
+* Weights represent accumulated durations from leaf nodes
+* User input is flexible and free-form, but analysis always operates on normalized paths
+* Child node time is recursively aggregated into parent nodes, enabling multi-level inspection of the same dataset
 
-The current alias child-file expansion rule is:
+It is important to note that this is a **statistical semantic model**, not the full ingestion pipeline description. The system first parses logs or Android input into normalized activity records and persists them, and only then projects them into hierarchical views during querying or reporting.
 
-* `parent` provides the top-level canonical segment
-* `[aliases.xxx.yyy]` provides intermediate hierarchy segments
-* the right-hand string provides the leaf segment
-* the final canonical path uses `_` as the separator, for example `games_overwatch_rank_dva_academy`
+The alias resolution rules are:
+
+* `parent` defines the top-level category
+* `[aliases.xxx.yyy]` defines intermediate hierarchy levels
+* The right-hand side defines leaf-level canonical names
+* Final canonical paths are joined using `_`, e.g. `study_math_calculus_multiple-integral`
+
+
+
 
 ### Core Components
 

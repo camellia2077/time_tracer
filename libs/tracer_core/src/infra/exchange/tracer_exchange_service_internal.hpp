@@ -58,7 +58,6 @@ struct ActiveConverterConfigPaths {
   fs::path config_root_path;
   fs::path main_config_path;
   fs::path alias_mapping_path;
-  fs::path duration_rules_path;
   std::vector<fs::path> alias_child_paths;
   std::vector<fs::path> report_markdown_paths;
 };

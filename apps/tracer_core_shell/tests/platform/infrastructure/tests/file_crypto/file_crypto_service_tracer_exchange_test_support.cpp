@@ -36,17 +36,15 @@ auto BuildEntry(std::string_view relative_path, std::string_view text)
 
 auto BuildValidPackageEntries(const std::vector<PayloadFixture>& payloads,
                               const std::string& main_config,
-                              const std::string& alias_index_config,
-                              const std::string& duration_config)
+                              const std::string& alias_index_config)
     -> std::vector<exchange_pkg::TracerExchangePackageEntry> {
   return BuildValidPackageEntries(payloads, main_config, alias_index_config,
-                                  duration_config,
                                   BuildDefaultAliasChildConfigs());
 }
 
 auto BuildValidPackageEntries(
     const std::vector<PayloadFixture>& payloads, const std::string& main_config,
-    const std::string& alias_index_config, const std::string& duration_config,
+    const std::string& alias_index_config,
     const std::vector<PayloadFixture>& alias_child_configs)
     -> std::vector<exchange_pkg::TracerExchangePackageEntry> {
   std::vector<PayloadFixture> sorted_alias_child_configs = alias_child_configs;
@@ -78,8 +76,6 @@ auto BuildValidPackageEntries(
   entries.push_back(BuildEntry(exchange_pkg::kConverterMainPath, main_config));
   entries.push_back(
       BuildEntry(exchange_pkg::kAliasMappingIndexPath, alias_index_config));
-  entries.push_back(
-      BuildEntry(exchange_pkg::kDurationRulesPath, duration_config));
   for (const auto report_path : exchange_pkg::kReportMarkdownPackagePaths) {
     const fs::path asset_relative =
         fs::path("assets/tracer_core") / fs::path(report_path);

@@ -17,13 +17,14 @@
 
 ## Flat Docs Retained For Compatibility
 1. `docs/time_tracer/core/contracts/stats/report_chart_contract_v1.md`
-2. `docs/time_tracer/core/contracts/stats/capability_contract_v1.md`
-3. `docs/time_tracer/core/contracts/stats/json_schema_v1.md`
-4. `docs/time_tracer/core/contracts/stats/capability_matrix_v1.md`
-5. `docs/time_tracer/core/contracts/stats/semantic_json_versioning_policy.md`
-6. `docs/time_tracer/core/contracts/stats/adapter_code_map.md`
-7. `docs/time_tracer/core/contracts/stats/adapter_reviewer_checklist.md`
-8. `docs/time_tracer/core/contracts/stats/code_map.md`
+2. `docs/time_tracer/core/contracts/stats/report_composition_contract_v1.md`
+3. `docs/time_tracer/core/contracts/stats/capability_contract_v1.md`
+4. `docs/time_tracer/core/contracts/stats/json_schema_v1.md`
+5. `docs/time_tracer/core/contracts/stats/capability_matrix_v1.md`
+6. `docs/time_tracer/core/contracts/stats/semantic_json_versioning_policy.md`
+7. `docs/time_tracer/core/contracts/stats/adapter_code_map.md`
+8. `docs/time_tracer/core/contracts/stats/adapter_reviewer_checklist.md`
+9. `docs/time_tracer/core/contracts/stats/code_map.md`
 
 ## 使用建议
 1. 先读 `capability/README.md`，再读 `semantic_json/README.md`，最后看 `adapters/README.md`。

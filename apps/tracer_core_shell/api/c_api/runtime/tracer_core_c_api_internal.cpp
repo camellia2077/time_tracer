@@ -123,6 +123,7 @@ auto ConvertTreeNode(const ProjectTreeNode& node)
     out.path = node.path;
   }
   out.duration_seconds = node.duration_seconds;
+  out.parent_duration_percent = node.parent_duration_percent;
   out.children.reserve(node.children.size());
   for (const auto& child : node.children) {
     out.children.push_back(ConvertTreeNode(child));

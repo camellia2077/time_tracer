@@ -22,7 +22,6 @@ auto ResolveActiveConverterConfigPaths(
       .config_root_path = config_root,
       .main_config_path = main_config_path,
       .alias_mapping_path = alias_mapping_path,
-      .duration_rules_path = converter_dir / "duration_rules.toml",
   };
   paths.alias_child_paths.reserve(alias_definition.child_files.size());
   for (const auto& child_file : alias_definition.child_files) {
@@ -44,8 +43,6 @@ auto EnsureActiveConverterConfigExists(
                           "Active converter main config");
   EnsureRegularFileExists(active_paths.alias_mapping_path,
                           "Active alias mapping config");
-  EnsureRegularFileExists(active_paths.duration_rules_path,
-                          "Active duration rules config");
   for (const auto& child_path : active_paths.alias_child_paths) {
     EnsureRegularFileExists(child_path, "Active alias child config");
   }
@@ -64,9 +61,6 @@ auto BackupActiveConverterConfig(const ActiveConverterConfigPaths& active_paths,
   CopyFileWithOverwrite(
       active_paths.alias_mapping_path,
       BuildBackupPath(backup_root, exchange_pkg::kAliasMappingIndexPath));
-  CopyFileWithOverwrite(
-      active_paths.duration_rules_path,
-      BuildBackupPath(backup_root, exchange_pkg::kDurationRulesPath));
   for (const auto& child_path : active_paths.alias_child_paths) {
     const fs::path relative_path =
         fs::relative(child_path, active_paths.alias_mapping_path.parent_path());

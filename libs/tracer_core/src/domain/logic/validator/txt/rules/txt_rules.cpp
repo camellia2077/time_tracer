@@ -18,22 +18,29 @@ constexpr int kMaxMonth = 12;
   return value >= '0' && value <= '9';
 }
 
-[[nodiscard]] auto IsValidHhmm(std::string_view hhmm) -> bool {
-  constexpr size_t kTimeDigitsLength = 4;
+[[nodiscard]] auto IsValidAuthoredTime(std::string_view time) -> bool {
+  constexpr size_t kLegacyTimeDigitsLength = 4;
+  constexpr size_t kCanonicalTimeDigitsLength = 6;
   constexpr int kMaxHours = 23;
   constexpr int kMaxMinutes = 59;
-  if (hhmm.length() != kTimeDigitsLength ||
-      !std::ranges::all_of(hhmm, [](char value) -> bool {
+  constexpr int kMaxSeconds = 59;
+  if ((time.length() != kLegacyTimeDigitsLength &&
+       time.length() != kCanonicalTimeDigitsLength) ||
+      !std::ranges::all_of(time, [](char value) -> bool {
         return IsAsciiDigit(value);
       })) {
     return false;
   }
 
   try {
-    const int hours = std::stoi(std::string(hhmm.substr(0, 2)));
-    const int minutes = std::stoi(std::string(hhmm.substr(2, 2)));
-    return hours >= 0 && hours <= kMaxHours && minutes >= 0 &&
-           minutes <= kMaxMinutes;
+    const int hours = std::stoi(std::string(time.substr(0, 2)));
+    const int minutes = std::stoi(std::string(time.substr(2, 2)));
+    if (hours < 0 || hours > kMaxHours || minutes < 0 ||
+        minutes > kMaxMinutes) {
+      return false;
+    }
+    return time.length() == kLegacyTimeDigitsLength ||
+           std::stoi(std::string(time.substr(4, 2))) <= kMaxSeconds;
   } catch (const std::exception&) {
     return false;
   }
@@ -64,9 +71,6 @@ LineRules::LineRules(const ConverterConfig& config) : config_(config) {
   for (const auto& entry : config.text_mapping) {
     valid_event_keywords_.insert(entry.first);
     valid_event_keywords_.insert(entry.second);
-  }
-  for (const auto& entry : config.text_duration_mapping) {
-    valid_event_keywords_.insert(entry.first);
   }
   wake_keywords_.insert(config.wake_keywords.begin(),
                         config.wake_keywords.end());
@@ -127,33 +131,37 @@ auto LineRules::IsValidEventLine(const std::string& line, int line_number,
                                  const std::optional<SourceSpan>& span) const
     -> bool {
   constexpr size_t kMinimumEventLineLength = 5;
-  constexpr size_t kTimePrefixLength = 4;
-  constexpr size_t kIntervalSeparatorOffset = 4;
-  constexpr size_t kIntervalEndOffset = 5;
-  constexpr size_t kIntervalMinLength = 10;
+  constexpr size_t kLegacyTimeDigitsLength = 4;
+  constexpr size_t kCanonicalTimeDigitsLength = 6;
 
   if (line.length() < kMinimumEventLineLength ||
-      !std::ranges::all_of(line.substr(0, kTimePrefixLength),
+      !std::ranges::all_of(line.substr(0, kLegacyTimeDigitsLength),
                            [](char value) -> bool {
                              return IsAsciiDigit(value);
                            })) {
     return false;
   }
   std::string_view remaining_line;
-  if (line.length() >= kIntervalMinLength &&
-      line[kIntervalSeparatorOffset] == '-') {
-    if (!IsValidHhmm(std::string_view(line).substr(0, kTimePrefixLength)) ||
-        !IsValidHhmm(std::string_view(line).substr(kIntervalEndOffset,
-                                                   kTimePrefixLength))) {
+  const bool uses_six_digit_time =
+      line.length() >= kCanonicalTimeDigitsLength &&
+      std::ranges::all_of(line.substr(0, kCanonicalTimeDigitsLength),
+                          [](char value) { return IsAsciiDigit(value); });
+  const size_t time_length = uses_six_digit_time ? kCanonicalTimeDigitsLength
+                                                  : kLegacyTimeDigitsLength;
+  if (line.length() > time_length && line[time_length] == '-') {
+    const size_t end_offset = time_length + 1U;
+    if (line.length() < end_offset + time_length ||
+        !IsValidAuthoredTime(std::string_view(line).substr(0, time_length)) ||
+        !IsValidAuthoredTime(
+            std::string_view(line).substr(end_offset, time_length))) {
       return false;
     }
-    remaining_line =
-        std::string_view(line).substr(kIntervalEndOffset + kTimePrefixLength);
+    remaining_line = std::string_view(line).substr(end_offset + time_length);
   } else {
-    if (!IsValidHhmm(std::string_view(line).substr(0, kTimePrefixLength))) {
+    if (!IsValidAuthoredTime(std::string_view(line).substr(0, time_length))) {
       return false;
     }
-    remaining_line = std::string_view(line).substr(kTimePrefixLength);
+    remaining_line = std::string_view(line).substr(time_length);
   }
 
   const ParsedEventLine parsed = ExtractRemarkAndDescription(remaining_line);

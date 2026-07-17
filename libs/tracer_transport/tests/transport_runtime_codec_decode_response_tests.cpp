@@ -87,7 +87,7 @@ void TestDecodeResolveCliContextResponse(int& failures) {
 
 void TestDecodeTreeResponse(int& failures) {
   const auto response = DecodeTreeResponse(
-      R"({"ok":true,"found":false,"error_message":"","roots":["study","sleep"],"nodes":[{"name":"study","path":"study","duration_seconds":3600,"children":[{"name":"math","path":"study_math","duration_seconds":1800,"children":[]}]}]})");
+      R"({"ok":true,"found":false,"error_message":"","roots":["study","sleep"],"nodes":[{"name":"study","path":"study","duration_seconds":3600,"children":[{"name":"math","path":"study_math","duration_seconds":1800,"parent_duration_percent":50.0,"children":[]}]}]})");
   Expect(response.ok, "DecodeTreeResponse ok mismatch.", failures);
   Expect(!response.found, "DecodeTreeResponse found mismatch.", failures);
   Expect(response.roots.size() == 2U, "DecodeTreeResponse roots size mismatch.",
@@ -108,6 +108,9 @@ void TestDecodeTreeResponse(int& failures) {
   Expect(response.nodes[0].children[0].duration_seconds.has_value() &&
              *response.nodes[0].children[0].duration_seconds == 1800LL,
          "DecodeTreeResponse child duration mismatch.", failures);
+  Expect(response.nodes[0].children[0].parent_duration_percent.has_value() &&
+             *response.nodes[0].children[0].parent_duration_percent == 50.0,
+         "DecodeTreeResponse child parent duration percent mismatch.", failures);
 
   const auto missing_contract = DecodeTreeResponse(
       R"({"ok":false,"found":false,"error_message":"missing target","roots":[],"nodes":[]})");
@@ -144,6 +147,13 @@ void TestDecodeTreeResponse(int& failures) {
       },
       "field `duration_seconds` must be an integer.",
       "DecodeTreeResponse invalid duration type", failures);
+  ExpectInvalidArgument(
+      [] {
+        (void)DecodeTreeResponse(
+            R"({"ok":true,"nodes":[{"name":"study","parent_duration_percent":"bad"}]})");
+      },
+      "field `parent_duration_percent` must be a number.",
+      "DecodeTreeResponse invalid parent percent type", failures);
 }
 
 void TestDecodeAckAndTextResponses(int& failures) {

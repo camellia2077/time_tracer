@@ -134,7 +134,7 @@ auto QueryProjectTree(sqlite3* db_conn, const QueryFilters& filters)
   std::vector<query_data_detail::SqlParam> params;
   const std::string kSql =
       query_data_internal::BuildProjectTreeSql(db_conn, filters, params);
-  std::vector<std::pair<std::string, std::int64_t>> records =
+  std::vector<query_data_internal::ProjectTreeRecord> records =
       query_data_internal::ExecuteProjectTreeRecords(db_conn, kSql, params);
 
   reporting::ProjectTree tree;

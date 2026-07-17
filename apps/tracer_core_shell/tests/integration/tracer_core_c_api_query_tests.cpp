@@ -131,40 +131,34 @@ void RunQueryChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime) {
           "baseline query report_composition should return ok=true");
   const json kReportCompositionContent =
       json::parse(kReportCompositionResponse.value("content", "{}"));
-  Require(kReportCompositionContent.contains("slices") &&
-              kReportCompositionContent["slices"].is_array(),
-          "baseline query report_composition content should include slices array");
   Require(kReportCompositionContent.contains("active_root_count") &&
               kReportCompositionContent["active_root_count"].is_number_integer(),
           "baseline query report_composition should include active_root_count");
+  Require(kReportCompositionContent.contains("tree") &&
+              kReportCompositionContent["tree"].is_array(),
+          "baseline query report_composition should include weighted tree array");
 
-  const json kTreeRootsResponse = ParseResponse(
-      api.runtime_tree(runtime, json{{"list_roots", true}}.dump().c_str()),
-      "baseline runtime tree roots");
-  Require(kTreeRootsResponse.value("ok", false),
-          "baseline runtime tree roots should return ok=true");
-  Require(kTreeRootsResponse.contains("roots") &&
-              kTreeRootsResponse["roots"].is_array(),
-          "baseline runtime tree roots response should include roots array");
-
-  const json kTreeResponse =
-      ParseResponse(api.runtime_tree(runtime, json{{"root_pattern", "study"},
-                                                   {"max_depth", 1},
-                                                   {"period", "recent"},
-                                                   {"period_argument", "7"}}
-                                                  .dump()
-                                                  .c_str()),
-                    "baseline runtime tree query");
+  const json kTreeResponse = ParseResponse(
+      api.runtime_query(runtime,
+                        json{{"action", "tree"},
+                             {"output_mode", "semantic_json"},
+                             {"root", "study"},
+                             {"tree_max_depth", 1},
+                             {"tree_period", "recent"},
+                             {"tree_period_argument", "7"}}
+                            .dump()
+                            .c_str()),
+      "baseline semantic tree query");
   Require(kTreeResponse.value("ok", false),
-          "baseline runtime tree query should return ok=true");
-  Require(kTreeResponse.value("found", false),
-          "baseline runtime tree query should return found=true");
-  Require(kTreeResponse.contains("nodes") && kTreeResponse["nodes"].is_array(),
-          "baseline runtime tree query should include nodes array");
-  Require(!kTreeResponse["nodes"].empty(),
-          "baseline runtime tree query should return at least one node");
+          "baseline semantic tree query should return ok=true");
+  const json kTreeContent =
+      json::parse(kTreeResponse.value("content", "{}"));
+  Require(kTreeContent.contains("roots") && kTreeContent["roots"].is_array(),
+          "baseline semantic tree query should include roots array");
+  Require(!kTreeContent["roots"].empty(),
+          "baseline semantic tree query should return at least one node");
 
-  const json kFirstNode = kTreeResponse["nodes"].front();
+  const json kFirstNode = kTreeContent["roots"].front();
   Require(kFirstNode.contains("name") && kFirstNode["name"].is_string(),
           "baseline runtime tree node should include string name");
   Require(kFirstNode.contains("children") && kFirstNode["children"].is_array(),

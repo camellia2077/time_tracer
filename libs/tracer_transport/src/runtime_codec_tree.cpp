@@ -55,6 +55,9 @@ auto SerializeTreeNode(const ProjectTreeNodePayload& node) -> json {
   if (node.duration_seconds.has_value()) {
     out["duration_seconds"] = *node.duration_seconds;
   }
+  if (node.parent_duration_percent.has_value()) {
+    out["parent_duration_percent"] = *node.parent_duration_percent;
+  }
   return out;
 }
 
@@ -84,6 +87,16 @@ auto ParseTreeNode(const json& node_json) -> ProjectTreeNodePayload {
           "field `duration_seconds` must be an integer.");
     }
     out.duration_seconds = kDurationSecondsIt->get<std::int64_t>();
+  }
+
+  const auto kParentDurationPercentIt = node_json.find("parent_duration_percent");
+  if (kParentDurationPercentIt != node_json.end() &&
+      !kParentDurationPercentIt->is_null()) {
+    if (!kParentDurationPercentIt->is_number()) {
+      throw std::invalid_argument(
+          "field `parent_duration_percent` must be a number.");
+    }
+    out.parent_duration_percent = kParentDurationPercentIt->get<double>();
   }
 
   const auto kChildrenIt = node_json.find("children");

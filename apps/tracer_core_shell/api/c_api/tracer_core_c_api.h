@@ -152,9 +152,6 @@ TT_CORE_API const char* tracer_core_runtime_temporal_report_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
 TT_CORE_API const char* tracer_core_runtime_report_batch_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
-TT_CORE_API const char* tracer_core_runtime_tree_json(
-    TtCoreRuntimeHandle* handle, const char* request_json);
-
 // Runs file-crypto operations with JSON request payload and returns JSON
 // text-response payload:
 // {

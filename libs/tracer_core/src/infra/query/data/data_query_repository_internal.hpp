@@ -20,6 +20,12 @@ struct DateRangeBounds {
   std::string_view to_date;
 };
 
+struct ProjectTreeRecord {
+  std::string project_path;
+  std::int64_t duration_seconds = 0;
+  std::int64_t occurrence_count = 0;
+};
+
 [[nodiscard]] auto ClampPositiveOrDefault(int value, int fallback) -> int;
 
 [[nodiscard]] auto BuildRootPrefixLikePattern(std::string_view root)
@@ -94,6 +100,6 @@ auto AppendOptionalLimitClause(std::string& sql,
 [[nodiscard]] auto ExecuteProjectTreeRecords(
     sqlite3* db_conn, const std::string& sql,
     const std::vector<detail::SqlParam>& params)
-    -> std::vector<std::pair<std::string, std::int64_t>>;
+    -> std::vector<ProjectTreeRecord>;
 
 }  // namespace tracer_core::infrastructure::query::data::internal

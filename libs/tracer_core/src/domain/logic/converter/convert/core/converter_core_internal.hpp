@@ -45,10 +45,6 @@ class ActivityMapper {
   [[nodiscard]] auto MapDescription(std::string_view description) const
       -> std::string;
 
-  [[nodiscard]] auto ApplyDurationRules(std::string_view mapped_description,
-                                        int duration_minutes) const
-      -> std::string;
-
   auto ApplyTopParentMapping(std::vector<std::string>& parts) const -> void;
 
   [[nodiscard]] static auto BuildProjectPath(

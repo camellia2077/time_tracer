@@ -7,7 +7,8 @@
 #include <stdexcept>
 
 namespace {
-constexpr int kTimeFormatLength = 5;
+constexpr int kLegacyTimeFormatLength = 5;
+constexpr int kTimeFormatLength = 8;
 constexpr int kHoursInDay = 24;
 constexpr int kMinutesInHour = 60;
 constexpr int kSecondsInHour = 3600;
@@ -20,8 +21,7 @@ constexpr int kMonthFormatLength = 6;
 
 auto TimeStrToSeconds(const std::string& time_str_in) -> int {
   std::string time_str = time_str_in;
-  if (time_str.length() == static_cast<size_t>(kTimeFormatLength - 1) &&
-      time_str.find(':') == std::string::npos) {
+  if (time_str.length() == 4U && time_str.find(':') == std::string::npos) {
     bool all_digits = true;
     for (char digit_char : time_str) {
       if (std::isdigit(static_cast<unsigned char>(digit_char)) == 0) {
@@ -30,22 +30,37 @@ auto TimeStrToSeconds(const std::string& time_str_in) -> int {
       }
     }
     if (all_digits) {
-      time_str = time_str.substr(0, 2) + ":" + time_str.substr(2, 2);
+      time_str = time_str.substr(0, 2) + ":" + time_str.substr(2, 2) +
+                 ":00";
     }
   }
 
+  if (time_str.length() == 6U && time_str.find(':') == std::string::npos &&
+      std::ranges::all_of(time_str, [](unsigned char value) {
+        return std::isdigit(value) != 0;
+      })) {
+    time_str = time_str.substr(0, 2) + ":" + time_str.substr(2, 2) + ":" +
+               time_str.substr(4, 2);
+  }
+
+  if (time_str.length() == static_cast<size_t>(kLegacyTimeFormatLength) &&
+      time_str[2] == ':') {
+    time_str += ":00";
+  }
+
   if (time_str.length() != static_cast<size_t>(kTimeFormatLength) ||
-      time_str[2] != ':') {
+      time_str[2] != ':' || time_str[5] != ':') {
     return 0;
   }
   try {
     int hours = std::stoi(time_str.substr(0, 2));
     int minutes = std::stoi(time_str.substr(3, 2));
+    int seconds = std::stoi(time_str.substr(6, 2));
     if (hours < 0 || hours >= kHoursInDay || minutes < 0 ||
-        minutes >= kMinutesInHour) {
+        minutes >= kMinutesInHour || seconds < 0 || seconds >= kSecondsInMinute) {
       return 0;
     }
-    return (hours * kSecondsInHour) + (minutes * kSecondsInMinute);
+    return (hours * kSecondsInHour) + (minutes * kSecondsInMinute) + seconds;
   } catch (const std::exception&) {
     return 0;
   }

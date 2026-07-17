@@ -135,8 +135,6 @@ auto LoadApi(LibHandle library) -> CoreApiFns {
       library, "tracer_core_runtime_temporal_report_json");
   api.runtime_report_batch = RequireSymbol<RuntimeReportBatchFn>(
       library, "tracer_core_runtime_report_batch_json");
-  api.runtime_tree =
-      RequireSymbol<RuntimeTreeFn>(library, "tracer_core_runtime_tree_json");
   api.runtime_crypto_encrypt = RequireSymbol<RuntimeCryptoEncryptFn>(
       library, "tracer_core_runtime_crypto_encrypt_json");
   api.runtime_crypto_decrypt = RequireSymbol<RuntimeCryptoDecryptFn>(
@@ -224,7 +222,6 @@ void RunCapabilitiesChecks(const CoreApiFns& api) {
   kRequireBool("runtime_query_json");
   kRequireBool("runtime_temporal_report_json");
   kRequireBool("runtime_report_batch_json");
-  kRequireBool("runtime_tree_json");
   kRequireBool("processed_json_io");
   kRequireBool("report_markdown");
   kRequireBool("report_latex");

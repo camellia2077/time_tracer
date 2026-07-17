@@ -53,8 +53,6 @@ auto PrepareCustomConfigFixture(
                        converter_root / "interval_processor_config.toml") ||
       !CopyFixtureFile("test/fixtures/config/custom/alias_mapping.single_include.toml",
                        converter_root / "alias_mapping.toml") ||
-      !CopyFixtureFile("test/fixtures/config/custom/duration_rules.minimal.toml",
-                       converter_root / "duration_rules.toml") ||
       !CopyFixtureFile("test/fixtures/config/custom/aliases/minimal.toml",
                        converter_root / "aliases" / "minimal.toml")) {
     return std::nullopt;

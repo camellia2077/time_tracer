@@ -40,6 +40,7 @@
    - print `day_body` or map runtime errors into CLI output
 3. Core responsibilities:
    - normalize and validate `MMDD`
+   - own the month-TXT day marker line format (`dMMDD`)
    - resolve the target day block from the full month TXT
    - expose machine-readable fields such as `found` and `can_save`
 4. CLI must not re-implement month-TXT day-block business rules locally.

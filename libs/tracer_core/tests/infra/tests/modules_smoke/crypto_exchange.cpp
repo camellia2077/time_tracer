@@ -39,7 +39,7 @@ auto RunInfrastructureModuleCryptoExchangeSmoke() -> int {
   const exchange::TracerExchangeManifest parsed_manifest =
       exchange::ParseManifestText(manifest_text);
   if (parsed_manifest.package_type != "tracer_exchange" ||
-      parsed_manifest.package_version != 5 ||
+      parsed_manifest.package_version != 4 ||
       parsed_manifest.producer_platform != "windows" ||
       parsed_manifest.producer_app != "time_tracer_cli" ||
       parsed_manifest.source_root_name != "data" ||
@@ -54,8 +54,6 @@ auto RunInfrastructureModuleCryptoExchangeSmoke() -> int {
   entries.push_back(
       BuildEntry(exchange::kAliasMappingIndexPath,
                  "includes = [\"aliases/default.toml\"]\n"));
-  entries.push_back(
-      BuildEntry(exchange::kDurationRulesPath, "duration = \"rule\"\n"));
   for (const auto report_path : exchange::kReportMarkdownPackagePaths) {
     entries.push_back(BuildEntry(report_path, "title = \"report\"\n"));
   }

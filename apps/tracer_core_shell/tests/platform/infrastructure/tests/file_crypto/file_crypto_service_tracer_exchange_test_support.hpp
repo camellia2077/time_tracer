@@ -31,12 +31,11 @@ auto BuildEntry(std::string_view relative_path, std::string_view text)
     -> exchange_pkg::TracerExchangePackageEntry;
 auto BuildValidPackageEntries(const std::vector<PayloadFixture>& payloads,
                               const std::string& main_config,
-                              const std::string& alias_index_config,
-                              const std::string& duration_config)
+                              const std::string& alias_index_config)
     -> std::vector<exchange_pkg::TracerExchangePackageEntry>;
 auto BuildValidPackageEntries(
     const std::vector<PayloadFixture>& payloads, const std::string& main_config,
-    const std::string& alias_index_config, const std::string& duration_config,
+    const std::string& alias_index_config,
     const std::vector<PayloadFixture>& alias_child_configs)
     -> std::vector<exchange_pkg::TracerExchangePackageEntry>;
 auto FindEntry(const exchange_pkg::DecodedTracerExchangePackage& package,
@@ -82,8 +81,6 @@ auto BuildTracerExchangeRuntime(const RuntimeTestPaths& paths,
 namespace android_runtime_tests {
 
 auto RunFileCryptoTracerExchangePackageTests(int& failures) -> void;
-auto RunFileCryptoTracerExchangeExportTests(int& failures) -> void;
-auto RunFileCryptoTracerExchangeImportTests(int& failures) -> void;
 
 }  // namespace android_runtime_tests
 

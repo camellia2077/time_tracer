@@ -103,8 +103,8 @@ auto BindActivitySuggestions(sqlite3_stmt* statement,
 
 [[nodiscard]] auto ReadProjectTreeRecords(sqlite3* db_conn,
                                           sqlite3_stmt* statement)
-    -> std::vector<std::pair<std::string, std::int64_t>> {
-  std::vector<std::pair<std::string, std::int64_t>> records;
+    -> std::vector<ProjectTreeRecord> {
+  std::vector<ProjectTreeRecord> records;
 
   int step_result = SQLITE_OK;
   while ((step_result = sqlite3_step(statement)) == SQLITE_ROW) {
@@ -112,9 +112,11 @@ auto BindActivitySuggestions(sqlite3_stmt* statement,
     if (path_text == nullptr) {
       continue;
     }
-    std::string path = reinterpret_cast<const char*>(path_text);
-    const std::int64_t kDurationSeconds = sqlite3_column_int64(statement, 1);
-    records.emplace_back(std::move(path), kDurationSeconds);
+    records.push_back({
+        .project_path = reinterpret_cast<const char*>(path_text),
+        .duration_seconds = sqlite3_column_int64(statement, 1),
+        .occurrence_count = sqlite3_column_int64(statement, 2),
+    });
   }
 
   if (step_result != SQLITE_DONE) {
@@ -146,11 +148,11 @@ auto ExecuteActivitySuggestions(sqlite3* db_conn, const std::string& sql,
 
 auto ExecuteProjectTreeRecords(sqlite3* db_conn, const std::string& sql,
                                const std::vector<detail::SqlParam>& params)
-    -> std::vector<std::pair<std::string, std::int64_t>> {
+    -> std::vector<ProjectTreeRecord> {
   sqlite3_stmt* statement = PrepareStatementOrThrow(db_conn, sql);
   try {
     BindSqlParams(statement, params);
-    std::vector<std::pair<std::string, std::int64_t>> records =
+    std::vector<ProjectTreeRecord> records =
         ReadProjectTreeRecords(db_conn, statement);
     sqlite3_finalize(statement);
     return records;

@@ -112,23 +112,15 @@ auto ConverterConfigLoader::LoadMergedToml(const fs::path& main_config_path)
   }
 
   const fs::path kAliasMappingPath = config_dir / paths.alias_mapping_path;
-  const fs::path kDurationRulesPath =
-      config_dir / paths.duration_rules_config_path;
-
   const toml::table kAliasMappingTbl =
       ReadRequiredToml(kAliasMappingPath, "Alias mapping");
-  const toml::table kDurationTbl =
-      ReadRequiredToml(kDurationRulesPath, "Duration rules");
-  if (!V2Rule::ValidateAliasMapping(kAliasMappingPath, kAliasMappingTbl) ||
-      !DurationRule::Validate(kDurationTbl)) {
+  if (!V2Rule::ValidateAliasMapping(kAliasMappingPath, kAliasMappingTbl)) {
     throw std::runtime_error(
         "Converter config validation failed for converter schema under: " +
         config_dir.string());
   }
 
   BuildTextMappingsFromAlias(main_tbl, kAliasMappingPath, kAliasMappingTbl);
-  MergeSectionIfPresent(main_tbl, kDurationTbl, "text_duration_mappings");
-  MergeSectionIfPresent(main_tbl, kDurationTbl, "duration_mappings");
 
   return main_tbl;
 }
@@ -138,7 +130,6 @@ auto ConverterConfigLoader::ParseTomlToStruct(const toml::table& tbl,
   ParseBasicConfig(tbl, config);
   ParseGeneratedActivities(tbl, config);
   ParseMappings(tbl, config);
-  ParseDurationMappings(tbl, config);
 }
 
 auto ConverterConfigLoader::ParseBasicConfig(const toml::table& tbl,
@@ -245,83 +236,6 @@ auto ConverterConfigLoader::ParseMappings(const toml::table& tbl,
     config.top_parent_mapping.clear();
   }
   load_map("text_mappings", config.text_mapping);
-  load_map("text_duration_mappings", config.text_duration_mapping);
-}
-
-auto ConverterConfigLoader::ParseDurationMappings(const toml::table& tbl,
-                                                  ConverterConfig& config)
-    -> void {
-  const toml::table* duration_tbl = tbl["duration_mappings"].as_table();
-  if (duration_tbl == nullptr) {
-    throw std::runtime_error(
-        "Invalid converter config: 'duration_mappings' must be a table.");
-  }
-
-  config.duration_mappings.clear();
-  for (const auto& [event_key, rules_node] : *duration_tbl) {
-    const std::string kEvent = std::string(event_key.str());
-    if (kEvent.empty()) {
-      throw std::runtime_error(
-          "Invalid converter config: 'duration_mappings' contains an empty "
-          "key.");
-    }
-
-    const toml::array* rules_arr = rules_node.as_array();
-    if (rules_arr == nullptr || rules_arr->empty()) {
-      throw std::runtime_error("Invalid converter config: 'duration_mappings." +
-                               kEvent + "' must be a non-empty array.");
-    }
-
-    std::vector<DurationMappingRule> rules;
-    rules.reserve(rules_arr->size());
-    for (const auto& rule_node : *rules_arr) {
-      const toml::table* rule_tbl = rule_node.as_table();
-      if (rule_tbl == nullptr) {
-        throw std::runtime_error(
-            "Invalid converter config: each rule in 'duration_mappings." +
-            kEvent + "' must be a table.");
-      }
-
-      const auto kLessThanMinutes =
-          rule_tbl->get("less_than_minutes")->value<int>();
-      const auto kValue = rule_tbl->get("value")->value<std::string>();
-      if (!kLessThanMinutes || *kLessThanMinutes <= 0) {
-        throw std::runtime_error(
-            "Invalid converter config: 'less_than_minutes' in "
-            "'duration_mappings." +
-            kEvent + "' must be a positive integer.");
-      }
-      if (!kValue || kValue->empty()) {
-        throw std::runtime_error(
-            "Invalid converter config: 'value' in 'duration_mappings." +
-            kEvent + "' must be a non-empty string.");
-      }
-
-      rules.push_back(DurationMappingRule{
-          .less_than_minutes = *kLessThanMinutes,
-          .value = *kValue,
-      });
-    }
-
-    std::ranges::sort(rules,
-                      [](const DurationMappingRule& rule_a,
-                         const DurationMappingRule& rule_b) -> bool {
-                        return rule_a.less_than_minutes <
-                               rule_b.less_than_minutes;
-                      });
-
-    for (size_t index = 1; index < rules.size(); ++index) {
-      if (rules[index - 1].less_than_minutes >=
-          rules[index].less_than_minutes) {
-        throw std::runtime_error(
-            "Invalid converter config: 'less_than_minutes' in "
-            "'duration_mappings." +
-            kEvent + "' must be strictly increasing.");
-      }
-    }
-
-    config.duration_mappings[kEvent] = std::move(rules);
-  }
 }
 
 auto ConverterConfigLoader::LoadFromFile(const fs::path& main_config_path)

@@ -47,7 +47,7 @@ Use direct Gradle only when the Python entrypoints are not enough:
 
 ```powershell
 cd apps/android
-$env:JAVA_HOME='C:\Application\Android\as\jbr'
+$env:JAVA_HOME='C:\Program Files\Android\Android Studio\jbr'
 .\gradlew.bat :app:assembleDebug
 ```
 
@@ -83,7 +83,7 @@ Common targeted commands:
 - `out/test/artifact_android/result_cases.json`
 - `out/test/artifact_android/logs/output.log`
 - `out/validate/<run_name>/summary.json`
-- `apps/android/app/build/outputs/final-apk/release/Tracer.apk`
+- `apps/android/app/build/outputs/final-apk/release/TimeTracer-release.apk`
 
 ## Related Docs
 

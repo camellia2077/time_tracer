@@ -114,7 +114,6 @@ struct CapabilitiesFeaturesPayload {
   bool runtime_query_json = false;
   bool runtime_temporal_report_json = false;
   bool runtime_report_batch_json = false;
-  bool runtime_tree_json = false;
   bool processed_json_io = false;
   bool report_markdown = false;
   bool report_latex = false;
@@ -165,6 +164,7 @@ struct ProjectTreeNodePayload {
   std::string name;
   std::optional<std::string> path;
   std::optional<long long> duration_seconds;
+  std::optional<double> parent_duration_percent;
   std::vector<ProjectTreeNodePayload> children;
 };
 

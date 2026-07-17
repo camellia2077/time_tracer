@@ -2,6 +2,7 @@
 #include "application/query/tree/project_tree_nodes.hpp"
 
 #include <algorithm>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -45,18 +46,25 @@ struct NamedReportNodeRef {
 
 [[nodiscard]] auto BuildNodeFromReportNode(std::string_view name,
                                            const ::reporting::ProjectNode& node,
-                                           std::string_view parent_path)
+                                           std::string_view parent_path,
+                                           std::optional<long long> parent_duration)
     -> ProjectTreeNode {
   ProjectTreeNode out{};
   out.name = std::string(name);
   out.path = JoinTreePath(parent_path, name);
   out.duration_seconds = node.duration;
+  if (parent_duration.has_value() && *parent_duration > 0) {
+    out.parent_duration_percent =
+        (static_cast<double>(node.duration) * 100.0) /
+        static_cast<double>(*parent_duration);
+  }
 
   const auto kChildren = CollectSortedReportChildren(node);
   out.children.reserve(kChildren.size());
   for (const auto& child : kChildren) {
     out.children.push_back(
-        BuildNodeFromReportNode(child.name, *child.node, out.path));
+        BuildNodeFromReportNode(child.name, *child.node, out.path,
+                                node.duration));
   }
   return out;
 }
@@ -117,7 +125,8 @@ auto BuildProjectTreeNodesFromReportTree(const ::reporting::ProjectTree& tree)
   std::vector<ProjectTreeNode> out;
   out.reserve(roots.size());
   for (const auto& root : roots) {
-    out.push_back(BuildNodeFromReportNode(root.name, *root.node, ""));
+    out.push_back(
+        BuildNodeFromReportNode(root.name, *root.node, "", std::nullopt));
   }
   return out;
 }

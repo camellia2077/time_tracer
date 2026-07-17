@@ -5,8 +5,6 @@ namespace android_runtime_tests {
 
 auto RunFileCryptoTracerExchangeTests(int& failures) -> void {
   RunFileCryptoTracerExchangePackageTests(failures);
-  RunFileCryptoTracerExchangeExportTests(failures);
-  RunFileCryptoTracerExchangeImportTests(failures);
 }
 
 }  // namespace android_runtime_tests

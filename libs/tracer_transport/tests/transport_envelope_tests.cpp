@@ -124,7 +124,7 @@ void TestParseInvalidJson(int& failures) {
 void TestParseNonObjectJson(int& failures) {
   const auto parsed = ParseResponseEnvelope(ResponseEnvelopeParseArgs{
       .response_json = "[]",
-      .context = "nativeTree",
+      .context = "nativeQuery",
   });
   Expect(parsed.HasError(), "Non-object JSON should fail parsing.", failures);
   Expect(parsed.error.code == TransportErrorCode::kParseFailure,

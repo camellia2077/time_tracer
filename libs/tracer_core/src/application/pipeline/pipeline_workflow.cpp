@@ -276,8 +276,6 @@ auto PipelineWorkflow::InstallActiveConverterConfig(
       kSourcePaths.main_config_path, "Converter main config");
   pipeline_detail::EnsureConverterConfigSourceExists(
       kSourcePaths.alias_mapping_path, "Alias mapping config");
-  pipeline_detail::EnsureConverterConfigSourceExists(
-      kSourcePaths.duration_rules_path, "Duration rules config");
 
   pipeline_detail::CopyConverterConfigFile(
       kSourcePaths.main_config_path, kTargetPaths.main_config_path,
@@ -285,9 +283,6 @@ auto PipelineWorkflow::InstallActiveConverterConfig(
   pipeline_detail::CopyConverterConfigFile(
       kSourcePaths.alias_mapping_path, kTargetPaths.alias_mapping_path,
       "alias mapping config");
-  pipeline_detail::CopyConverterConfigFile(
-      kSourcePaths.duration_rules_path, kTargetPaths.duration_rules_path,
-      "duration rules config");
   pipeline_detail::RemoveConverterAliasDirectory(
       kTargetPaths.alias_mapping_path.parent_path());
   pipeline_detail::CopyConverterAliasDirectory(

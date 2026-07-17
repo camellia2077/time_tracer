@@ -203,6 +203,7 @@ auto BuildProjectTreeSql(sqlite3* db_conn, const QueryFilters& filters,
   sql += schema::time_records::db::kDuration;
   sql += ") AS ";
   sql += schema::sql::alias::kTotalDuration;
+  sql += ", COUNT(*) AS occurrence_count";
   sql += " FROM ";
   sql += schema::day::db::kTable;
   sql += " d JOIN ";
