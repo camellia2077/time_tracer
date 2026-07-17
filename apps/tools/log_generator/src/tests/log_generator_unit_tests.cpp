@@ -39,18 +39,30 @@ auto main() -> int {
   all_passed &= ExpectEqual(
       EventLineFormatter::format_point_event_line(8 * 60 + 13, "o",
                                                   std::nullopt),
-      "0813o", "format_point_event_line without remark");
+      "081300o", "default point rendering uses HHMMSS");
 
   all_passed &= ExpectEqual(
       EventLineFormatter::format_point_event_line(6 * 60 + 6, "w",
                                                   std::string(" //wake")),
-      "0606w //wake", "format_point_event_line with wake token remark");
+      "060600w //wake", "default point rendering keeps zero seconds");
 
   all_passed &= ExpectEqual(
       EventLineFormatter::format_interval_event_line(
           0, (2 * 60) + 12, "ow-rank-tracer", std::string(" //remark")),
-      "0000-0212ow-rank-tracer //remark",
-      "format_interval_event_line with remark");
+      "000000-021200ow-rank-tracer //remark",
+      "default interval rendering uses HHMMSS");
+
+  all_passed &= ExpectEqual(
+      EventLineFormatter::format_point_event_line(
+          8 * 60 + 13, "o", std::nullopt, TimeFormat::Hhmmss),
+      "081300o", "HHMMSS point rendering appends zero seconds");
+
+  all_passed &= ExpectEqual(
+      EventLineFormatter::format_interval_event_line(
+          0, (2 * 60) + 12, "ow-rank-tracer", std::nullopt,
+          TimeFormat::Hhmmss),
+      "000000-021200ow-rank-tracer",
+      "HHMMSS interval rendering appends zero seconds");
 
   GeneratedEvent point_event{
       .kind = GeneratedEventKind::Point,
@@ -61,8 +73,8 @@ auto main() -> int {
   };
   std::string point_buffer;
   EventLineFormatter::append_formatted_event(point_buffer, point_event);
-  all_passed &= ExpectEqual(point_buffer, "0813o",
-                            "append_formatted_event dispatches point");
+  all_passed &= ExpectEqual(point_buffer, "081300o",
+                            "append_formatted_event defaults to HHMMSS");
 
   GeneratedEvent interval_event{
       .kind = GeneratedEventKind::Interval,
@@ -73,8 +85,8 @@ auto main() -> int {
   };
   std::string interval_buffer;
   EventLineFormatter::append_formatted_event(interval_buffer, interval_event);
-  all_passed &= ExpectEqual(interval_buffer, "0900-1030study #focus",
-                            "append_formatted_event dispatches interval");
+  all_passed &= ExpectEqual(interval_buffer, "090000-103000study #focus",
+                            "append_formatted_event defaults to HHMMSS");
 
   all_passed &= ExpectTrue(!point_event.remark_suffix.has_value(),
                            "GeneratedEvent supports missing remark_suffix");
@@ -92,8 +104,9 @@ auto main() -> int {
   EventLineFormatter::append_formatted_event(mixed_buffer, wake_then_interval);
   mixed_buffer.push_back('\n');
   EventLineFormatter::append_formatted_event(mixed_buffer, interval_event);
-  all_passed &= ExpectEqual(mixed_buffer, "0606w\n0900-1030study #focus",
-                            "wake point plus non-wake interval rendering");
+  all_passed &= ExpectEqual(mixed_buffer,
+                            "060600w\n090000-103000study #focus",
+                            "default mixed rendering uses HHMMSS");
 
   const std::vector<ActivityTokenVariant> activities = {
       {.alias_token = "study", .canonical_token = "routine_study"},

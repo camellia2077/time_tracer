@@ -21,6 +21,7 @@ enum class OptionType {
   kItems,
   kSeed,
   kEventStyle,
+  kTimeFormat,
   kNoSleep,
   kMonthlyAverage,
   kOutput
@@ -58,6 +59,9 @@ auto ClassifyOption(const std::string& arg) -> OptionType {
   }
   if (arg == "--event-style") {
     return OptionType::kEventStyle;
+  }
+  if (arg == "--time-format") {
+    return OptionType::kTimeFormat;
   }
   if (arg == "-n" || arg == "--nosleep") {
     return OptionType::kNoSleep;
@@ -103,6 +107,16 @@ auto ParseEventStyle(const std::string& value) -> EventStyle {
       "--event-style must be one of: point, interval, mixed.");
 }
 
+auto ParseTimeFormat(const std::string& value) -> TimeFormat {
+  if (value == "HHMM") {
+    return TimeFormat::Hhmm;
+  }
+  if (value == "HHMMSS") {
+    return TimeFormat::Hhmmss;
+  }
+  throw std::invalid_argument("--time-format must be one of: HHMM, HHMMSS.");
+}
+
 auto ParseOptions(const std::vector<std::string>& args) -> ParsedOptions {
   ParsedOptions parsed;
   parsed.config.items_per_day = kDefaultItemsPerDay;
@@ -134,6 +148,10 @@ auto ParseOptions(const std::vector<std::string>& args) -> ParsedOptions {
       case OptionType::kEventStyle:
         parsed.config.event_style =
             ParseEventStyle(ParseNextString(args, i, "--event-style"));
+        break;
+      case OptionType::kTimeFormat:
+        parsed.config.time_format =
+            ParseTimeFormat(ParseNextString(args, i, "--time-format"));
         break;
       case OptionType::kNoSleep:
         parsed.config.enable_nosleep = true;

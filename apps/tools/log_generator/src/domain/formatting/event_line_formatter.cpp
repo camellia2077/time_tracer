@@ -22,12 +22,16 @@ auto ToMinuteOfDay(int logical_minutes) -> int {
   return minute_of_day;
 }
 
-void AppendHhmm(std::string& buffer, int logical_minutes) {
+void AppendTime(std::string& buffer, int logical_minutes,
+                TimeFormat time_format) {
   const int minute_of_day = ToMinuteOfDay(logical_minutes);
   const int hour = minute_of_day / kMinutesPerHour;
   const int minute = minute_of_day % kMinutesPerHour;
   buffer.append(kDigits[hour]);
   buffer.append(kDigits[minute]);
+  if (time_format == TimeFormat::Hhmmss) {
+    buffer.append("00");
+  }
 }
 
 void AppendRemarkSuffix(std::string& buffer,
@@ -41,12 +45,13 @@ void AppendRemarkSuffix(std::string& buffer,
 namespace EventLineFormatter {
 
 auto format_point_event_line(int end_minute, std::string_view activity_token,
-                             const std::optional<std::string>& remark_suffix)
+                             const std::optional<std::string>& remark_suffix,
+                             TimeFormat time_format)
     -> std::string {
   std::string line;
   line.reserve(16 + activity_token.size() +
                (remark_suffix.has_value() ? remark_suffix->size() : 0U));
-  AppendHhmm(line, end_minute);
+  AppendTime(line, end_minute, time_format);
   line.append(activity_token);
   AppendRemarkSuffix(line, remark_suffix);
   return line;
@@ -54,29 +59,31 @@ auto format_point_event_line(int end_minute, std::string_view activity_token,
 
 auto format_interval_event_line(
     int start_minute, int end_minute, std::string_view activity_token,
-    const std::optional<std::string>& remark_suffix) -> std::string {
+    const std::optional<std::string>& remark_suffix, TimeFormat time_format)
+    -> std::string {
   std::string line;
   line.reserve(24 + activity_token.size() +
                (remark_suffix.has_value() ? remark_suffix->size() : 0U));
-  AppendHhmm(line, start_minute);
+  AppendTime(line, start_minute, time_format);
   line.push_back('-');
-  AppendHhmm(line, end_minute);
+  AppendTime(line, end_minute, time_format);
   line.append(activity_token);
   AppendRemarkSuffix(line, remark_suffix);
   return line;
 }
 
-void append_formatted_event(std::string& buffer, const GeneratedEvent& event) {
+void append_formatted_event(std::string& buffer, const GeneratedEvent& event,
+                            TimeFormat time_format) {
   if (event.kind == GeneratedEventKind::Interval) {
     buffer.append(format_interval_event_line(event.start_minute, event.end_minute,
                                              event.activity_token,
-                                             event.remark_suffix));
+                                             event.remark_suffix, time_format));
     return;
   }
 
   buffer.append(
       format_point_event_line(event.end_minute, event.activity_token,
-                              event.remark_suffix));
+                              event.remark_suffix, time_format));
 }
 
 }  // namespace EventLineFormatter

@@ -9,6 +9,7 @@
 // 生成模式枚举
 enum class GenerationMode { YearRange, SingleYear };
 enum class EventStyle { Point, Interval, Mixed };
+enum class TimeFormat { Hhmm, Hhmmss };
 
 // 每日备注配置
 struct DailyRemarkConfig {
@@ -37,6 +38,7 @@ struct Config {
   int items_per_day;
   GenerationMode mode;
   EventStyle event_style = EventStyle::Point;
+  TimeFormat time_format = TimeFormat::Hhmmss;
   std::optional<int> seed;
   bool enable_nosleep = false;
   bool enable_monthly_average_report = false;

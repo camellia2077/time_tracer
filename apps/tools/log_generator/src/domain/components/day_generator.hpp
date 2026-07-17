@@ -17,7 +17,7 @@ class DayGenerator {
       const std::optional<DailyRemarkConfig>& remark_config,
       const std::optional<ActivityRemarkConfig>& activity_remark_config,
       const std::vector<std::string>& wake_keywords, EventStyle event_style,
-      std::mt19937& gen);
+      TimeFormat time_format, std::mt19937& gen);
 
   void reset_for_new_month();
   void generate_for_day(std::string& log_content, int month, int day,
@@ -26,6 +26,7 @@ class DayGenerator {
  private:
   std::unique_ptr<EventGenerator> event_generator_;
   std::unique_ptr<RemarkGenerator> remark_generator_;
+  TimeFormat time_format_;
 };
 
 #endif  // DOMAIN_COMPONENTS_DAY_GENERATOR_H_

@@ -32,6 +32,8 @@ void PrintUsage(std::string_view prog_name) {
                "output.\n";
   std::cerr << "      --event-style <s>   Event line style: point | interval | "
                "mixed. (Default: point)\n";
+  std::cerr << "      --time-format <f>   Event time format: HHMM | HHMMSS. "
+               "(Default: HHMMSS)\n";
   std::cerr << "  -o, --output <dir>      Output directory for generated "
                "files. (Default: dates)\n";
   std::cerr << "  -n, --nosleep           Enable the generation of 'no sleep' "
@@ -50,6 +52,8 @@ void PrintUsage(std::string_view prog_name) {
             << " --year 2025 --nosleep --monthly-average\n";
   std::cerr << "  " << prog_name
             << " --year 2025 --event-style interval\n";
+  std::cerr << "  " << prog_name
+            << " --year 2025 --time-format HHMMSS\n";
   std::cerr << "  " << prog_name
             << " --year 2025 --seed 123 --event-style interval\n";
   std::cerr << "  " << prog_name

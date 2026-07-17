@@ -55,8 +55,22 @@ def is_event_line(line: str) -> bool:
     return len(line) >= 5 and line[:4].isdigit()
 
 
+def event_time_width(line: str) -> int:
+    if len(line) >= 6 and line[:6].isdigit():
+        return 6
+    return 4
+
+
 def is_interval_event_line(line: str) -> bool:
-    return len(line) >= 10 and is_event_line(line) and line[4] == "-" and line[5:9].isdigit()
+    if not is_event_line(line):
+        return False
+    width = event_time_width(line)
+    end_start = width + 1
+    return (
+        len(line) >= end_start + width + 1
+        and line[width] == "-"
+        and line[end_start : end_start + width].isdigit()
+    )
 
 
 def parse_minute_of_day(hhmm: str) -> int:
@@ -113,11 +127,15 @@ def parse_month_file(path: Path, wake_keywords: set[str]) -> list[ParsedDay]:
             continue
 
         is_interval = is_interval_event_line(line)
-        start_minute_of_day = parse_minute_of_day(line[:4])
+        time_width = event_time_width(line)
+        start_minute_of_day = parse_minute_of_day(line[:time_width])
         end_minute_of_day = (
-            parse_minute_of_day(line[5:9]) if is_interval else start_minute_of_day
+            parse_minute_of_day(line[time_width + 1 : time_width * 2 + 1])
+            if is_interval
+            else start_minute_of_day
         )
-        description = extract_description(line[9:] if is_interval else line[4:])
+        description_start = time_width * 2 + 1 if is_interval else time_width
+        description = extract_description(line[description_start:])
         is_wake_event = description in wake_keywords
 
         if is_wake_event:

@@ -11,7 +11,8 @@ DayGenerator::DayGenerator(
     const std::optional<DailyRemarkConfig>& remark_config,
     const std::optional<ActivityRemarkConfig>& activity_remark_config,
     const std::vector<std::string>& wake_keywords, EventStyle event_style,
-    std::mt19937& gen) {
+    TimeFormat time_format, std::mt19937& gen)
+    : time_format_(time_format) {
   // 创建并持有子系统的实例
   remark_generator_ = std::make_unique<RemarkGenerator>(remark_config, gen);
   event_generator_ = std::make_unique<EventGenerator>(
@@ -44,7 +45,7 @@ void DayGenerator::generate_for_day(std::string& log_content, int month,
   // 3. 委托给 EventGenerator，生成当天的所有活动
   const auto events = event_generator_->generate_events_for_day(is_nosleep_day);
   for (const auto& event : events) {
-    EventLineFormatter::append_formatted_event(log_content, event);
+    EventLineFormatter::append_formatted_event(log_content, event, time_format_);
     log_content.push_back('\n');
   }
 }
