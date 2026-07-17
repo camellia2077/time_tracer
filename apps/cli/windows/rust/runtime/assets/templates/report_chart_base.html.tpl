@@ -50,7 +50,9 @@
       }
 
       const rows = Array.isArray(payload.series) ? payload.series.slice() : [];
-      const slices = Array.isArray(payload.slices) ? payload.slices.slice() : [];
+      // report-composition exposes the complete weighted tree. The pie chart
+      // renders the current layer, starting with its root nodes.
+      const compositionTree = Array.isArray(payload.tree) ? payload.tree.slice() : [];
       rows.sort((lhs, rhs) => {
         const lEpoch = Number(lhs?.epoch_day);
         const rEpoch = Number(rhs?.epoch_day);
@@ -69,11 +71,11 @@
       const averageSeconds = Number(payload.average_duration_seconds ?? 0);
       const activeDays = Number(payload.active_days ?? seconds.filter((value) => value > 0).length);
       const rangeDays = Number(payload.range_days ?? rows.length);
-      const activeRoots = Number(payload.active_root_count ?? slices.filter((item) => Number(item?.duration_seconds ?? 0) > 0).length);
+      const activeRoots = Number(payload.active_root_count ?? compositionTree.filter((node) => Number(node?.duration_seconds ?? 0) > 0).length);
 
       const stats = chartKind === 'pie'
         ? [
-            ['Slices', slices.length],
+            ['Roots', compositionTree.length],
             ['Total (h)', (totalSeconds / 3600.0).toFixed(2)],
             ['Active roots', activeRoots],
             ['Range days', rangeDays]

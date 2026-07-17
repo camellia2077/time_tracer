@@ -175,7 +175,7 @@ expect_file_contains = [
   '{output_dir}/report_chart_breakdown_pie.html::Report Chart (Pie)',
   "{output_dir}/report_chart_breakdown_pie.html::const chartKind = 'pie'",
   "{output_dir}/report_chart_breakdown_pie.html::type: 'pie'",
-  '{output_dir}/report_chart_breakdown_pie.html::"slices"',
+  '{output_dir}/report_chart_breakdown_pie.html::"tree"',
 ]
 
 [[commands]]

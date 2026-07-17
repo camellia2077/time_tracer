@@ -36,7 +36,6 @@ expect_stdout_contains = [
   "payload/2026/2026-12.txt: present",
   "config/converter/interval_processor_config.toml: present",
   "config/converter/alias_mapping.toml: present",
-  "config/converter/duration_rules.toml: present",
 ]
 
 [[commands]]
@@ -92,8 +91,6 @@ args = [
   "{exe_dir}",
   "--scenario-root",
   "{output_dir}/exchange_config_refresh",
-  "--source-txt",
-  "{data_path}/2026/2026-03.txt",
 ]
 expect_exit = 0
 expect_stdout_contains = ["[PASS] prepared exchange config refresh fixture"]
@@ -148,7 +145,7 @@ expect_files = [
   "{exe_dir}/output/db/time_data.sqlite3",
 ]
 expect_file_contains = [
-  "{exe_dir}/input/full/2026/2026-03.txt::0329cliimportalias",
+  "{exe_dir}/input/full/2026/2026-03.txt::0610cliimportalias",
   "{exe_dir}/config/converter/aliases/zzdemo.toml::\"cliimportalias\" = \"only\"",
 ]
 

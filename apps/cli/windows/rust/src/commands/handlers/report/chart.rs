@@ -255,7 +255,7 @@ mod tests {
         args.chart_type = ChartType::Pie;
         args.root = None;
         let recorder = RecordedQuerySession::new_success(
-            r#"{"from_date":"20260101","to_date":"20260107","slices":[{"root":"study","duration_seconds":7200,"percent":60.0}],"total_duration_seconds":7200,"active_root_count":1,"range_days":7}"#,
+            r#"{"from_date":"20260101","to_date":"20260107","tree":[{"name":"study","duration_seconds":7200,"occurrence_count":1,"children":[{"name":"math","duration_seconds":3600,"occurrence_count":1,"children":[]}]}],"total_duration_seconds":7200,"active_root_count":1,"range_days":7}"#,
         );
         let port = StubChartQueryPort {
             recorder: &recorder,

@@ -1,6 +1,5 @@
 # converter/interval_processor_config.toml
 
-duration_rules_config_path = "duration_rules.toml"
 alias_mapping_path = "alias_mapping.toml"
 
 header_order = [

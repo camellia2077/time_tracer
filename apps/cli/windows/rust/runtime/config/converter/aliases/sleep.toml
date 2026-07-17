@@ -1,6 +1,7 @@
 parent = "sleep"
 
 [aliases]
+"失眠" = "insomnia"
 "睡觉" = "day"
 "白天睡觉" = "day"
 "wake" = "getup"

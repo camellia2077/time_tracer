@@ -69,6 +69,8 @@ python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle
   - writes the updated month TXT back through shared `replace_day_block`
 - CLI owns file/path handling and terminal presentation only.
 - Shared month-TXT day-block semantics stay in core.
+- CLI `--day` arguments remain normalized `MMDD`; month TXT files store day
+  marker lines as `dMMDD` per the shared runtime TXT contract.
 - Current authored event lines accepted by core include:
   - `HHMMtoken`
   - `HHMM-HHMMtoken`

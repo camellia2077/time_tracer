@@ -294,9 +294,11 @@ mod tests {
     #[test]
     fn view_day_reads_file_and_forwards_selected_month() {
         let temp_path = temp_output_path("txt_view_day", "txt");
-        std::fs::write(&temp_path, "y2025\nm01\n\n0102\nline 1\nline 2\n")
+        std::fs::write(&temp_path, "y2025\nm01\n\nd0102\nline 1\nline 2\n")
             .expect("write temp txt");
-        let month_path = temp_path.with_file_name("2025-01.txt");
+        let month_dir = temp_path.with_extension("");
+        std::fs::create_dir_all(&month_dir).expect("create month temp dir");
+        let month_path = month_dir.join("2025-01.txt");
         std::fs::rename(&temp_path, &month_path).expect("rename temp txt");
 
         let recorded = RecordedTxtSession::new(TxtResolveOutput {
@@ -327,13 +329,13 @@ mod tests {
         assert_eq!(request["action"], "resolve_day_block");
         assert_eq!(request["day_marker"], "0102");
         assert_eq!(request["selected_month"], "2025-01");
-        assert!(request["content"].as_str().unwrap().contains("0102"));
+        assert!(request["content"].as_str().unwrap().contains("d0102"));
     }
 
     #[test]
     fn view_day_returns_invalid_argument_for_bad_marker() {
         let temp_path = temp_output_path("txt_invalid_day", "txt");
-        std::fs::write(&temp_path, "0102\nline 1\n").expect("write temp txt");
+        std::fs::write(&temp_path, "d0102\nline 1\n").expect("write temp txt");
 
         let recorded = RecordedTxtSession::new(TxtResolveOutput {
             normalized_day_marker: "0132".to_string(),
@@ -368,7 +370,7 @@ mod tests {
     #[test]
     fn view_day_returns_logic_error_when_block_is_missing() {
         let temp_path = temp_output_path("txt_missing_day", "txt");
-        std::fs::write(&temp_path, "0102\nline 1\n").expect("write temp txt");
+        std::fs::write(&temp_path, "d0102\nline 1\n").expect("write temp txt");
 
         let recorded = RecordedTxtSession::new(TxtResolveOutput {
             normalized_day_marker: "0103".to_string(),
@@ -404,7 +406,7 @@ mod tests {
     #[test]
     fn view_day_uses_empty_selected_month_when_filename_is_not_month_shaped() {
         let temp_path = temp_output_path("journal", "txt");
-        std::fs::write(&temp_path, "0102\nline 1\n").expect("write temp txt");
+        std::fs::write(&temp_path, "d0102\nline 1\n").expect("write temp txt");
 
         let recorded = RecordedTxtSession::new(TxtResolveOutput {
             normalized_day_marker: "0102".to_string(),
@@ -508,8 +510,10 @@ mod tests {
     #[test]
     fn append_event_updates_existing_day_block_and_writes_file() {
         let temp_path = temp_output_path("txt_append_event", "txt");
-        std::fs::write(&temp_path, "y2025\nm01\n\n0102\n0638醒\n").expect("write temp txt");
-        let month_path = temp_path.with_file_name("2025-01.txt");
+        std::fs::write(&temp_path, "y2025\nm01\n\nd0102\n0638醒\n").expect("write temp txt");
+        let month_dir = temp_path.with_extension("");
+        std::fs::create_dir_all(&month_dir).expect("create month temp dir");
+        let month_path = month_dir.join("2025-01.txt");
         std::fs::rename(&temp_path, &month_path).expect("rename temp txt");
 
         let recorded = RecordedTxtSession::new(TxtResolveOutput {
@@ -524,7 +528,7 @@ mod tests {
             normalized_day_marker: "0102".to_string(),
             found: true,
             is_marker_valid: true,
-            updated_content: "y2025\nm01\n\n0102\n0638醒\n0900-1030study //focus\n".to_string(),
+            updated_content: "y2025\nm01\n\nd0102\n0638醒\n0900-1030study //focus\n".to_string(),
         });
         let port = TestTxtPort {
             recorded: &recorded,

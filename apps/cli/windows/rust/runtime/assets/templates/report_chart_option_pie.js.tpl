@@ -1,7 +1,7 @@
-      const pieData = slices
-        .map((slice) => ({
-          name: String(slice?.root ?? ''),
-          value: Math.max(0, Number(slice?.duration_seconds ?? 0))
+      const pieData = compositionTree
+        .map((node) => ({
+          name: String(node?.name ?? ''),
+          value: Math.max(0, Number(node?.duration_seconds ?? 0))
         }))
         .filter((item) => item.value > 0);
 

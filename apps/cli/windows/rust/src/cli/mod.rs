@@ -236,6 +236,7 @@ mod tests {
                     assert_eq!(args.input, "test/data/2025/2025-01.txt");
                     assert_eq!(args.day, "0102");
                 }
+                _ => panic!("expected txt view-day command"),
             },
             _ => panic!("expected txt command"),
         }

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import re
 import shutil
 from pathlib import Path
 
@@ -10,7 +9,6 @@ CUSTOM_ALIAS = "cliimportalias"
 CUSTOM_PARENT = "zzdemo"
 CUSTOM_LEAF = "only"
 CUSTOM_CHILD_FILE = "zzdemo.toml"
-EVENT_RE = re.compile(r"^(?P<start>\d{4})(?:-(?P<end>\d{4}))?")
 
 # This fixture intentionally creates a small custom package for config-refresh
 # regression tests. When imported via exchange replace-all, runtime DB is
@@ -24,7 +22,6 @@ def _backup_converter_config(workspace_root: Path, scenario_root: Path) -> None:
     for file_name in (
         "interval_processor_config.toml",
         "alias_mapping.toml",
-        "duration_rules.toml",
     ):
         shutil.copy2(converter_root / file_name, backup_root / file_name)
     aliases_root = converter_root / "aliases"
@@ -61,57 +58,16 @@ def _write_custom_alias_child(converter_root: Path) -> None:
     )
 
 
-def _build_custom_txt(source_txt_path: Path, target_txt_path: Path) -> None:
-    # Design intent:
-    # build a deterministic config-refresh fixture by injecting one synthetic line
-    # into 2026-03 data so exchange import can verify both:
-    # 1) replace-all DB rebuild from fixture payload, and
-    # 2) alias mapping refresh (`cliimportalias` -> `zzdemo_only`).
-    #
-    # Concrete mutation:
-    # insert `0210cliimportalias` immediately after the first authored `meal`
-    # line. The generated fixture may be point-based (`0205meal`) or interval-
-    # based (`0055-0155meal`); this helper accepts either authored shape so the
-    # exchange refresh scenario stays coupled to current canonical test data.
-    lines = source_txt_path.read_text(encoding="utf-8").splitlines()
-    if any(CUSTOM_ALIAS in line for line in lines):
-        raise RuntimeError(f"source TXT already contains {CUSTOM_ALIAS}")
-
-    meal_anchor = next(
-        (index for index, line in enumerate(lines) if line.endswith("meal")),
-        None,
-    )
-    if meal_anchor is None:
-        raise RuntimeError("expected an authored `meal` activity line in source TXT")
-
-    day_end = next(
-        (index for index in range(meal_anchor + 1, len(lines)) if lines[index] == ""),
-        len(lines),
-    )
-    activity_lines = [
-        line for line in lines[meal_anchor + 1 : day_end] if EVENT_RE.match(line)
-    ]
-    if not activity_lines:
-        raise RuntimeError("expected additional activity lines after the `meal` anchor")
-
-    last_event_match = EVENT_RE.match(activity_lines[-1])
-    if last_event_match is None:
-        raise RuntimeError("failed to parse the last activity line in meal day block")
-    last_end = last_event_match.group("end") or last_event_match.group("start")
-    if last_end is None:
-        raise RuntimeError("failed to resolve last event end time")
-
-    hours = int(last_end[:2])
-    minutes = int(last_end[2:])
-    custom_minutes = (hours * 60 + minutes + 1) % (24 * 60)
-    custom_time = f"{custom_minutes // 60:02d}{custom_minutes % 60:02d}"
-
-    lines.insert(day_end, f"{custom_time}{CUSTOM_ALIAS}")
+def _build_custom_txt(target_txt_path: Path) -> None:
+    # Keep this regression fixture independent from the full canonical dataset:
+    # the test only needs one valid activity to prove the imported alias config
+    # is applied during the replace-all rebuild.
+    content = "y2026\nm03\n\nd0301\n0600wake\n0610cliimportalias\n"
     target_txt_path.parent.mkdir(parents=True, exist_ok=True)
-    target_txt_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    target_txt_path.write_text(content, encoding="utf-8")
 
 
-def prepare_fixture(workspace_root: Path, scenario_root: Path, source_txt_path: Path) -> None:
+def prepare_fixture(workspace_root: Path, scenario_root: Path) -> None:
     _backup_converter_config(workspace_root, scenario_root)
     converter_root = workspace_root / "config" / "converter"
     _append_custom_alias(converter_root / "alias_mapping.toml")
@@ -119,7 +75,7 @@ def prepare_fixture(workspace_root: Path, scenario_root: Path, source_txt_path: 
 
     custom_data_root = scenario_root / "custom_data"
     target_txt_path = custom_data_root / "2026" / "2026-03.txt"
-    _build_custom_txt(source_txt_path, target_txt_path)
+    _build_custom_txt(target_txt_path)
 
     print(f"[PASS] prepared exchange config refresh fixture at {scenario_root}")
 
@@ -133,7 +89,6 @@ def restore_runtime(workspace_root: Path, scenario_root: Path) -> None:
     for file_name in (
         "interval_processor_config.toml",
         "alias_mapping.toml",
-        "duration_rules.toml",
     ):
         shutil.copy2(backup_root / file_name, converter_root / file_name)
     aliases_root = converter_root / "aliases"
@@ -166,7 +121,6 @@ def main() -> int:
     prepare_parser = subparsers.add_parser("prepare")
     prepare_parser.add_argument("--workspace-root", required=True)
     prepare_parser.add_argument("--scenario-root", required=True)
-    prepare_parser.add_argument("--source-txt", required=True)
 
     restore_parser = subparsers.add_parser("restore")
     restore_parser.add_argument("--workspace-root", required=True)
@@ -180,7 +134,6 @@ def main() -> int:
         prepare_fixture(
             workspace_root=workspace_root,
             scenario_root=scenario_root,
-            source_txt_path=Path(args.source_txt).resolve(),
         )
         return 0
 
