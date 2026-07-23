@@ -1,6 +1,7 @@
 // infra/query/data/orchestrators/tree_orchestrator.cpp
 #include "infra/query/data/orchestrators/tree_orchestrator.hpp"
 
+#include <algorithm>
 #include <stdexcept>
 #include <utility>
 
@@ -25,6 +26,16 @@ auto BuildSuccessOutput(std::string content)
   return {.ok = true, .content = std::move(content), .error_message = ""};
 }
 
+template <typename NodeList>
+auto GetMaxTreeDepth(const NodeList& nodes, int current_depth = 0) -> int {
+  int max_depth = current_depth;
+  for (const auto& node : nodes) {
+    max_depth = std::max(
+        max_depth, GetMaxTreeDepth(node.children, current_depth + 1));
+  }
+  return max_depth;
+}
+
 }  // namespace
 
 auto HandleTreeQuery(sqlite3* db_conn,
@@ -41,10 +52,12 @@ auto HandleTreeQuery(sqlite3* db_conn,
 
   const auto kTree =
       query_data_repository::QueryProjectTree(db_conn, tree_filters);
-  const auto kNodes = app_tree::LimitProjectTreeDepth(
-      app_tree::BuildProjectTreeNodesFromReportTree(kTree), kMaxDepth);
+  const auto kFullNodes = app_tree::BuildProjectTreeNodesFromReportTree(kTree);
+  const int kMaxAvailableDepth = GetMaxTreeDepth(kFullNodes);
+  const auto kNodes =
+      app_tree::LimitProjectTreeDepth(kFullNodes, kMaxDepth);
   return BuildSuccessOutput(data_query_renderers::RenderProjectTreeOutput(
-      kNodes, kMaxDepth, output_mode));
+      kNodes, kMaxDepth, kMaxAvailableDepth, output_mode));
 }
 
 }  // namespace tracer::core::infrastructure::query::data::orchestrators

@@ -1,6 +1,6 @@
 # Clang-Tidy 工作流与状态文件
 
-本文档补充 `docs/toolchain/tidy/architecture.md`，专门描述 clang-tidy Python 工具链的执行流与落盘状态。
+本文档补充 `docs/tools/toolchain/tidy/architecture.md`，专门描述 clang-tidy Python 工具链的执行流与落盘状态。
 
 如果你已经知道“文件大概在哪”，但还不确定“命令之间怎么串”、“失败后看哪个 JSON”，优先看这里。
 
@@ -58,7 +58,7 @@ python tools/run.py tidy --app tracer_core_shell --source-scope core_family --bu
 4. `tools/toolchain/commands/tidy/command_execute.py`
 5. `tools/toolchain/commands/tidy/invoker.py`
 6. `tools/toolchain/commands/tidy/log_splitter.py`
-7. `tools/toolchain/commands/tidy/task_builder.py`
+7. `tools/toolchain/commands/tidy/tasking/task_builder.py`
 
 关键行为：
 
@@ -104,7 +104,7 @@ python tools/run.py tidy-split --app tracer_core_shell --task-view toon
 实现文件：
 
 - `tools/toolchain/commands/tidy/command_split.py`
-- `tools/toolchain/commands/tidy/task_builder.py`
+- `tools/toolchain/commands/tidy/tasking/task_builder.py`
 
 注意：
 
@@ -324,7 +324,7 @@ python tools/run.py tidy-loop --app tracer_core_shell --tidy-build-dir build_tid
 
 规则准入边界见：
 
-- `docs/toolchain/tidy/autofix_policy.md`
+- `docs/tools/toolchain/tidy/autofix_policy.md`
 
 命令：
 
@@ -348,11 +348,11 @@ python tools/run.py tidy-task-fix --task-log out/tidy/tracer_core_shell/build_ti
 
 实现文件：
 
-- `tools/toolchain/commands/tidy/task_log.py`
-- `tools/toolchain/commands/tidy/task_auto_fix.py`
+- `tools/toolchain/commands/tidy/tasking/task_log.py`
+- `tools/toolchain/commands/tidy/tasking/task_auto_fix.py`
 - `tools/toolchain/commands/tidy/autofix/`
-- `tools/toolchain/commands/tidy/task_fix.py`
-- `tools/toolchain/commands/tidy/task_patch.py`
+- `tools/toolchain/commands/tidy/tasking/task_fix.py`
+- `tools/toolchain/commands/tidy/tasking/task_patch.py`
 
 ### 8.2 `tidy-task-suggest`：半自动重构建议
 
@@ -372,8 +372,8 @@ python tools/run.py tidy-task-suggest --task-log out/tidy/tracer_core_shell/buil
 
 实现文件：
 
-- `tools/toolchain/commands/tidy/task_suggest.py`
-- `tools/toolchain/commands/tidy/task_auto_fix.py`
+- `tools/toolchain/commands/tidy/tasking/task_suggest.py`
+- `tools/toolchain/commands/tidy/tasking/task_auto_fix.py`
 
 ### 8.3 `tidy-step`：单步执行器
 

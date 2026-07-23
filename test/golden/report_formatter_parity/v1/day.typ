@@ -28,10 +28,13 @@
 #text(font: "MiSans VF", size: 12pt)[= All Activities])
 
 + 08:00 - 09:10 (1h 10m): Work->Coding
-  + *Activity Remark:* Feature refactor
+  + *Activity Remark:*
+    Feature refactor \
+    Follow-up
 + 09:20 - 10:20 (1h 0m): Work->Review
 + 20:00 - 20:30 (0h 30m): Life->Exercise
-  + *Activity Remark:* Cardio
+  + *Activity Remark:*
+    Cardio
 #text(font: "MiSans VF", size: 12pt)[= Project Breakdown])
 
 #text(font: "MiSans VF", size: 12pt)[== Work: 2h 10m (61.9%)]

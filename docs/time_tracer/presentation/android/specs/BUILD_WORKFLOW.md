@@ -21,15 +21,15 @@ Run from repo root unless a section explicitly says otherwise.
 
 - Edit loop:
   - `python tools/run.py build --app tracer_android --profile android_edit`
-- Style verify:
+- Style verify (only when explicitly requested):
   - `python tools/run.py verify --app tracer_android --profile android_style --concise`
-- CI-like verify:
+- CI/full verify (explicit request or release/merge readiness only):
   - `python tools/run.py verify --app tracer_android --profile android_ci --concise`
 - Release verify:
   - `python tools/run.py verify --app tracer_android --profile android_release_verify --concise`
 - Release device smoke:
   - `python tools/run.py verify --app tracer_android --profile android_release_device --concise`
-- Combined closeout in one Gradle invocation:
+- Combined style + CI/full closeout in one Gradle invocation (only when both are explicitly requested):
   - `python tools/run.py verify --app tracer_android --profile android_style --profile android_ci --concise`
 - Device verify:
   - `python tools/run.py verify --app tracer_android --profile android_device --concise`
@@ -62,27 +62,35 @@ Common targeted commands:
 
 ## Validation Rule
 
-- If a change touches Android UI only:
-  - `android_style` is the minimum closeout.
-- If a change touches runtime, contracts, or build behavior:
-  - run both `android_style` and `android_ci`.
-  - Prefer one merged invocation when practical:
-    `python tools/run.py verify --app tracer_android --profile android_style --profile android_ci --concise`
+- For normal Android changes, do not run `android_style` by default.
+  - For Android UI changes, run the smallest relevant targeted compile or unit
+    test, plus focused state/render coverage when applicable.
+  - For runtime, contracts, or build behavior changes, run the smallest
+    relevant targeted build or unit check and any affected snapshot/config
+    verification.
+  - Run `android_style` only when the user explicitly requests style validation.
+- If the Android host/runtime path is affected, include:
+  - `python tools/run.py build --app tracer_android --profile android_edit`
+- Do not run `android_ci` by default.
+  - Run it only when the user explicitly requests CI/full validation or when
+    release/merge readiness is being checked.
+  - When it is required, prefer one merged invocation:
+    `python tools/run.py verify --app tracer_android --profile android_style --profile android_ci --concise`.
 - If you need release-specific QA or signing validation:
   - run `python tools/run.py verify --app tracer_android --profile android_release_verify --concise`
   - this path requires the existing release signing inputs and is intentionally separate from default CI.
 - If you need a real signed-APK startup smoke on a connected device:
   - run `python tools/run.py verify --app tracer_android --profile android_release_device --concise`
   - this path requires release signing and an attached device or emulator with `adb`.
-- If a change touches core-side code that affects the Android host/runtime path:
-  - include `python tools/run.py build --app tracer_android --profile android_edit`.
+- If a change touches core-side code that affects the Android host/runtime path,
+  rebuild the affected core/runtime artifacts before treating Android validation
+  as representative.
 
 ## Output Locations
 
 - `out/test/artifact_android/result.json`
 - `out/test/artifact_android/result_cases.json`
 - `out/test/artifact_android/logs/output.log`
-- `out/validate/<run_name>/summary.json`
 - `apps/android/app/build/outputs/final-apk/release/TimeTracer-release.apk`
 
 ## Related Docs

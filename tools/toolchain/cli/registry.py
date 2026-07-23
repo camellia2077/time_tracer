@@ -11,7 +11,6 @@ def command_specs() -> list[CommandSpec]:
         config_migrate,
         configure,
         rename,
-        validate,
     )
     from .handlers.quality import (
         artifact_size,
@@ -64,7 +63,6 @@ def command_specs() -> list[CommandSpec]:
         rename.RENAME_PLAN_COMMAND,
         rename.RENAME_APPLY_COMMAND,
         rename.RENAME_AUDIT_COMMAND,
-        validate.COMMAND,
         self_test.COMMAND,
         config_migrate.COMMAND,
     ]

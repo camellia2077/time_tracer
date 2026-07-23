@@ -14,7 +14,7 @@ auto TestAndroidRuntimeRejectsAndroidBundleWithLatexReports(int& failures)
       "time_tracer_android_runtime_factory_android_latex_forbidden_test");
   const std::filesystem::path kConfigRoot = paths.test_root / "config";
   const std::filesystem::path kConverterTomlPath =
-      kConfigRoot / "converter" / "interval_processor_config.toml";
+      kConfigRoot / "aliases" / "_system.toml";
   const std::filesystem::path kBundlePath = BuildBundleTomlPath(kConfigRoot);
 
   RemoveTree(paths.test_root);
@@ -32,7 +32,7 @@ profile = "android"
 
 [file_list]
 required = [
-  "converter/interval_processor_config.toml",
+  "aliases/_system.toml",
   "charts/heatmap.toml",
   "reports/markdown/day.toml",
   "reports/markdown/month.toml",
@@ -43,7 +43,7 @@ required = [
 optional = []
 
 [paths.converter]
-interval_config = "converter/interval_processor_config.toml"
+main_config = "aliases/_system.toml"
 
 [paths.visualization]
 heatmap = "charts/heatmap.toml"
@@ -95,7 +95,7 @@ auto TestAndroidRuntimeRejectsAndroidBundleWithTypstReports(int& failures)
       "time_tracer_android_runtime_factory_android_typst_forbidden_test");
   const std::filesystem::path kConfigRoot = paths.test_root / "config";
   const std::filesystem::path kConverterTomlPath =
-      kConfigRoot / "converter" / "interval_processor_config.toml";
+      kConfigRoot / "aliases" / "_system.toml";
   const std::filesystem::path kBundlePath = BuildBundleTomlPath(kConfigRoot);
 
   RemoveTree(paths.test_root);
@@ -113,7 +113,7 @@ profile = "android"
 
 [file_list]
 required = [
-  "converter/interval_processor_config.toml",
+  "aliases/_system.toml",
   "charts/heatmap.toml",
   "reports/markdown/day.toml",
   "reports/markdown/month.toml",
@@ -124,7 +124,7 @@ required = [
 optional = []
 
 [paths.converter]
-interval_config = "converter/interval_processor_config.toml"
+main_config = "aliases/_system.toml"
 
 [paths.visualization]
 heatmap = "charts/heatmap.toml"
@@ -176,7 +176,7 @@ auto TestAndroidRuntimeRejectsAndroidBundleWithoutMarkdown(int& failures)
       "time_tracer_android_runtime_factory_android_missing_markdown_test");
   const std::filesystem::path kConfigRoot = paths.test_root / "config";
   const std::filesystem::path kConverterTomlPath =
-      kConfigRoot / "converter" / "interval_processor_config.toml";
+      kConfigRoot / "aliases" / "_system.toml";
   const std::filesystem::path kBundlePath = BuildBundleTomlPath(kConfigRoot);
 
   RemoveTree(paths.test_root);
@@ -194,7 +194,7 @@ profile = "android"
 
 [file_list]
 required = [
-  "converter/interval_processor_config.toml",
+  "aliases/_system.toml",
   "charts/heatmap.toml",
   "reports/markdown/day.toml",
   "reports/markdown/month.toml",
@@ -205,7 +205,7 @@ required = [
 optional = []
 
 [paths.converter]
-interval_config = "converter/interval_processor_config.toml"
+main_config = "aliases/_system.toml"
 
 [paths.visualization]
 heatmap = "charts/heatmap.toml"
@@ -244,7 +244,7 @@ auto TestAndroidRuntimeRejectsBundleMissingRequiredFile(int& failures) -> void {
       "time_tracer_android_runtime_factory_bundle_missing_required_file_test");
   const std::filesystem::path kConfigRoot = paths.test_root / "config";
   const std::filesystem::path kConverterTomlPath =
-      kConfigRoot / "converter" / "interval_processor_config.toml";
+      kConfigRoot / "aliases" / "_system.toml";
   const std::filesystem::path kBundlePath = BuildBundleTomlPath(kConfigRoot);
 
   RemoveTree(paths.test_root);
@@ -262,12 +262,12 @@ profile = "android"
 
 [file_list]
 required = [
-  "converter/missing-required.toml",
+  "aliases/missing-required.toml",
 ]
 optional = []
 
 [paths.converter]
-interval_config = "converter/interval_processor_config.toml"
+main_config = "aliases/_system.toml"
 
 [paths.visualization]
 heatmap = "charts/heatmap.toml"

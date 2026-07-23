@@ -1,9 +1,0 @@
-includes = [
-  "aliases/meal.toml",
-  "aliases/recreation.toml",
-  "aliases/routine.toml",
-  "aliases/sleep.toml",
-  "aliases/rest.toml",
-  "aliases/exercise.toml",
-  "aliases/study.toml",
-]

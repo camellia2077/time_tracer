@@ -38,6 +38,8 @@ Navigation hub for active Android documentation.
   - `docs/time_tracer/presentation/android/runtime-protocol.md`
 - Record Input atomic flow:
   - `docs/time_tracer/presentation/android/record_input_atomic_flow.md`
+- Interval attribution semantics:
+  - `docs/time_tracer/core/ingest/interval_event_and_mixed_timeline_semantics.md`
 - Runtime/config lifecycle:
   - `docs/time_tracer/presentation/android/specs/CONFIG_ASSET_LIFECYCLE.md`
 - Preference persistence:

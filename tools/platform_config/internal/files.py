@@ -82,8 +82,7 @@ def _write_plan_tree(root: Path, planned_files: dict[str, bytes]) -> None:
 def apply_plan(
     output_root: Path, planned_files: dict[str, bytes], removed_files: list[str]
 ) -> None:
-    # Keep legacy in-place writer for dry-run utilities that may still depend on
-    # this behavior.
+    # Keep the in-place writer for dry-run utilities that depend on this behavior.
     output_root.mkdir(parents=True, exist_ok=True)
 
     for rel in removed_files:

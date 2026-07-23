@@ -76,7 +76,7 @@ Open:
 
 ## Validation Shortcut
 
-1. Preferred focused entry:
-   - `python tools/run.py validate --plan <plan_name> --paths <touched paths>`
-2. If the change touches shell-facing integration:
+1. Preferred library closeout:
    - `python tools/run.py verify --app tracer_core_shell --profile fast --concise`
+2. For a single clearly owned core capability, use its documented `cap_*`
+   profile when it covers every affected producer and consumer.

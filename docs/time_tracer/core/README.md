@@ -82,7 +82,7 @@ routing. During the transition, both the new and legacy folders remain valid.
    - [capabilities/persistence/runtime_side.md](capabilities/persistence/runtime_side.md)
 9. C ABI or runtime boundary behavior:
    - [shared/c_abi.md](shared/c_abi.md)
-   - [../clients/android_ui/runtime-protocol.md](../clients/android_ui/runtime-protocol.md)
+   - [../presentation/android/runtime-protocol.md](../presentation/android/runtime-protocol.md)
 10. Core use case, workflow, query tree, or config ownership changes:
    - [specs/AGENT_ONBOARDING.md](specs/AGENT_ONBOARDING.md)
    - [../architecture/libraries/tracer_core.md](../architecture/libraries/tracer_core.md)

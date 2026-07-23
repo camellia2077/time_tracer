@@ -90,7 +90,7 @@ auto FindRepoRoot() -> std::filesystem::path {
   while (!current.empty()) {
     const fs::path kConfigProbe = current / "assets" / "tracer_core" /
                                   "config" / "converter" /
-                                  "interval_processor_config.toml";
+                                  "aliases/_system.toml";
     if (fs::exists(kConfigProbe)) {
       return current;
     }
@@ -281,8 +281,8 @@ auto main() -> int {
     }
 
     const std::filesystem::path kConverterConfig =
-        kRepoRoot / "assets" / "tracer_core" / "config" / "converter" /
-        "interval_processor_config.toml";
+        kRepoRoot / "assets" / "tracer_core" / "config" /
+        "aliases/_system.toml";
     const std::filesystem::path kInputRoot = kRepoRoot / "test" / "data";
     if (!std::filesystem::exists(kInputRoot)) {
       std::cerr << "[FAIL] missing test input root: " << kInputRoot << '\n';

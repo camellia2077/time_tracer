@@ -61,8 +61,10 @@ auto TextValidator::Validate(const std::string& filename,
       pimpl_->structural_validator.ProcessDateLine(line_number, trimmed_line,
                                                    errors, span);
     } else if (pimpl_->line_processor.IsRemark(trimmed_line)) {
-      pimpl_->structural_validator.ProcessRemarkLine(line_number, trimmed_line,
-                                                     errors, span);
+      if (!pimpl_->structural_validator.HasSeenEventInDay()) {
+        pimpl_->structural_validator.ProcessRemarkLine(
+            line_number, trimmed_line, errors, span);
+      }
     } else if (pimpl_->line_processor.IsValidEventLine(
                    trimmed_line, line_number, errors, span)) {
       pimpl_->structural_validator.ProcessEventLine(line_number, trimmed_line,

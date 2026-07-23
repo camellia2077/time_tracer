@@ -1,6 +1,6 @@
 # Command Map Index
 
-`docs/toolchain/command_map/` 收录工具链命令与修改路由的导航文档。
+`docs/tools/toolchain/command_map/` 收录工具链命令与修改路由的导航文档。
 
 ## 主文档
 

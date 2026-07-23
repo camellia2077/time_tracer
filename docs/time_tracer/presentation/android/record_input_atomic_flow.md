@@ -159,7 +159,7 @@ Core first validates the raw activity token.
 
 Current rule:
 
-1. token is valid if it is an `alias_mapping.toml` left key, or
+1. token is valid if it is an alias child file key, or
 2. token is valid if it is in `wake_keywords`
 
 Business meaning:
@@ -260,14 +260,14 @@ If ingest fails:
 
 This is why the flow is called atomic in practice.
 
-## 7. What The Single Line Means Business-Wise
+## 7. What A Record Input Action Means Business-Wise
 
 In Android `Record Input`, the user only authors:
 
 1. activity token
 2. optional remark
 
-The runtime supplies:
+For point-event authoring, the runtime supplies:
 
 1. current `HHMM`
 2. target logical day
@@ -288,8 +288,14 @@ Its final duration semantics still depend on:
 3. wake semantics
 4. generated activities such as `sleep_night`
 
-This is intentionally different from the future interval-event flow, where the
-user would explicitly author both start and end time for a recorded segment.
+For interval-event authoring, Android must also supply the absolute
+`attribution_date` captured when the interval starts. The save time is not a
+replacement for that date. A cross-midnight interval remains one interval and
+is written to the day block identified by its fixed start logical day.
+
+For example, an interval started at `2026-07-22 23:00:00` and stopped at
+`2026-07-23 07:00:00` is saved as one 8-hour interval under `2026-07-22`.
+Editing its start/end time does not silently move it to another day.
 
 ## 8. Android Vs Core Responsibility Boundary
 
@@ -300,8 +306,11 @@ Android is responsible for:
 1. collecting author input
 2. loading authorable token sets from core/runtime
 3. lightweight authoring-side validation for Quick Access and suggestions
-4. resolving target logical day and time-order mode
-5. surfacing success, warning, and failure messages
+4. resolving and pinning the interval attribution date at start time
+5. persisting that absolute date with an unfinished interval draft
+6. resolving target logical day and time-order mode for point events and
+   interval drafts that have no pinned date
+7. surfacing success, warning, and failure messages
 
 ### 8.2 Core Responsibilities
 
@@ -313,6 +322,10 @@ Core is responsible for:
 4. official TXT update
 5. month re-import into DB
 6. rollback on failure
+
+Core receives the already selected absolute target date for an interval. It
+continues to own interval validation, cross-midnight duration semantics,
+overlap detection, TXT replacement, and DB synchronization.
 
 When interval-event authoring is added, these responsibilities should remain in
 core as well; Android should not independently invent a local interval-only

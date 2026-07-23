@@ -14,6 +14,7 @@ namespace {
 using nlohmann::json;
 using tracer::transport::modfields::RequireStringField;
 using tracer::transport::modfields::TryReadBoolField;
+using tracer::transport::modfields::TryReadIntField;
 using tracer::transport::modfields::TryReadStringField;
 
 auto ParseRequestObject(std::string_view request_json) -> json {
@@ -214,6 +215,95 @@ auto EncodeRecordActivityAtomicallyRequest(
   }
   if (request.time_order_mode.has_value()) {
     payload["time_order_mode"] = *request.time_order_mode;
+  }
+  return payload.dump();
+}
+
+auto DecodeUpdateActivityRemarkAtomicallyRequest(std::string_view request_json)
+    -> UpdateActivityRemarkAtomicallyRequestPayload {
+  const json kPayload = ParseRequestObject(request_json);
+  const auto kTargetDateIso = RequireStringField(kPayload, "target_date_iso");
+  if (!kPayload.contains("logical_id") ||
+      !kPayload["logical_id"].is_number_integer()) {
+    throw std::invalid_argument("field `logical_id` must be an integer.");
+  }
+  const long long kLogicalId = kPayload["logical_id"].get<long long>();
+  const auto kRemark = RequireStringField(kPayload, "remark");
+  const auto kPreferredTxtPath = TryReadStringField(kPayload, "preferred_txt_path");
+  const auto kDateCheckMode = TryReadStringField(kPayload, "date_check_mode");
+  if (kTargetDateIso.HasError() || kRemark.HasError() ||
+      kPreferredTxtPath.HasError() || kDateCheckMode.HasError()) {
+    const auto first_error = [&]() -> std::string {
+      for (const auto& issue : {kTargetDateIso.error, kRemark.error,
+                                kPreferredTxtPath.error, kDateCheckMode.error}) {
+        if (!issue.message.empty()) return issue.message;
+      }
+      return "invalid update activity remark request.";
+    }();
+    throw std::invalid_argument(first_error);
+  }
+  UpdateActivityRemarkAtomicallyRequestPayload out{};
+  out.target_date_iso = kTargetDateIso.value.value_or("");
+  out.logical_id = kLogicalId;
+  out.remark = kRemark.value.value_or("");
+  out.preferred_txt_path = kPreferredTxtPath.value;
+  out.date_check_mode = kDateCheckMode.value;
+  return out;
+}
+
+auto EncodeUpdateActivityRemarkAtomicallyRequest(
+    const UpdateActivityRemarkAtomicallyRequestPayload& request) -> std::string {
+  json payload = {
+      {"target_date_iso", request.target_date_iso},
+      {"logical_id", request.logical_id},
+      {"remark", request.remark},
+  };
+  if (request.preferred_txt_path.has_value()) {
+    payload["preferred_txt_path"] = *request.preferred_txt_path;
+  }
+  if (request.date_check_mode.has_value()) {
+    payload["date_check_mode"] = *request.date_check_mode;
+  }
+  return payload.dump();
+}
+
+auto DecodeUpdateDayRemarkAtomicallyRequest(std::string_view request_json)
+    -> UpdateDayRemarkAtomicallyRequestPayload {
+  const json kPayload = ParseRequestObject(request_json);
+  const auto kTargetDateIso = RequireStringField(kPayload, "target_date_iso");
+  const auto kRemark = RequireStringField(kPayload, "remark");
+  const auto kPreferredTxtPath = TryReadStringField(kPayload, "preferred_txt_path");
+  const auto kDateCheckMode = TryReadStringField(kPayload, "date_check_mode");
+  if (kTargetDateIso.HasError() || kRemark.HasError() ||
+      kPreferredTxtPath.HasError() || kDateCheckMode.HasError()) {
+    const auto first_error = [&]() -> std::string {
+      for (const auto& issue : {kTargetDateIso.error, kRemark.error,
+                                kPreferredTxtPath.error, kDateCheckMode.error}) {
+        if (!issue.message.empty()) return issue.message;
+      }
+      return "invalid update day remark request.";
+    }();
+    throw std::invalid_argument(first_error);
+  }
+  return {
+      .target_date_iso = kTargetDateIso.value.value_or(""),
+      .remark = kRemark.value.value_or(""),
+      .preferred_txt_path = kPreferredTxtPath.value,
+      .date_check_mode = kDateCheckMode.value,
+  };
+}
+
+auto EncodeUpdateDayRemarkAtomicallyRequest(
+    const UpdateDayRemarkAtomicallyRequestPayload& request) -> std::string {
+  json payload = {
+      {"target_date_iso", request.target_date_iso},
+      {"remark", request.remark},
+  };
+  if (request.preferred_txt_path.has_value()) {
+    payload["preferred_txt_path"] = *request.preferred_txt_path;
+  }
+  if (request.date_check_mode.has_value()) {
+    payload["date_check_mode"] = *request.date_check_mode;
   }
   return payload.dump();
 }

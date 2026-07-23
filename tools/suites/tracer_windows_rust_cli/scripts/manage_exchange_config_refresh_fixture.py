@@ -16,41 +16,17 @@ CUSTOM_CHILD_FILE = "zzdemo.toml"
 
 
 def _backup_converter_config(workspace_root: Path, scenario_root: Path) -> None:
-    converter_root = workspace_root / "config" / "converter"
+    aliases_root = workspace_root / "config" / "aliases"
     backup_root = scenario_root / "backup_config"
     backup_root.mkdir(parents=True, exist_ok=True)
-    for file_name in (
-        "interval_processor_config.toml",
-        "alias_mapping.toml",
-    ):
-        shutil.copy2(converter_root / file_name, backup_root / file_name)
-    aliases_root = converter_root / "aliases"
     backup_aliases_root = backup_root / "aliases"
     if backup_aliases_root.exists():
         shutil.rmtree(backup_aliases_root)
     shutil.copytree(aliases_root, backup_aliases_root)
 
 
-def _append_custom_alias(alias_mapping_path: Path) -> None:
-    content = alias_mapping_path.read_text(encoding="utf-8")
-    custom_include = f'"aliases/{CUSTOM_CHILD_FILE}"'
-    if custom_include in content:
-        return
-
-    suffix = "" if content.endswith("\n") else "\n"
-    alias_mapping_path.write_text(
-        content.replace(
-            "]",
-            f'  "aliases/{CUSTOM_CHILD_FILE}",\n]',
-            1,
-        )
-        + suffix,
-        encoding="utf-8",
-    )
-
-
-def _write_custom_alias_child(converter_root: Path) -> None:
-    custom_child_path = converter_root / "aliases" / CUSTOM_CHILD_FILE
+def _write_custom_alias_child(aliases_root: Path) -> None:
+    custom_child_path = aliases_root / CUSTOM_CHILD_FILE
     custom_child_path.parent.mkdir(parents=True, exist_ok=True)
     custom_child_path.write_text(
         'parent = "zzdemo"\n\n[aliases]\n"cliimportalias" = "only"\n',
@@ -69,9 +45,8 @@ def _build_custom_txt(target_txt_path: Path) -> None:
 
 def prepare_fixture(workspace_root: Path, scenario_root: Path) -> None:
     _backup_converter_config(workspace_root, scenario_root)
-    converter_root = workspace_root / "config" / "converter"
-    _append_custom_alias(converter_root / "alias_mapping.toml")
-    _write_custom_alias_child(converter_root)
+    aliases_root = workspace_root / "config" / "aliases"
+    _write_custom_alias_child(aliases_root)
 
     custom_data_root = scenario_root / "custom_data"
     target_txt_path = custom_data_root / "2026" / "2026-03.txt"
@@ -81,17 +56,11 @@ def prepare_fixture(workspace_root: Path, scenario_root: Path) -> None:
 
 
 def restore_runtime(workspace_root: Path, scenario_root: Path) -> None:
-    converter_root = workspace_root / "config" / "converter"
+    aliases_root = workspace_root / "config" / "aliases"
     backup_root = scenario_root / "backup_config"
     if not backup_root.is_dir():
         raise RuntimeError(f"backup config root is missing: {backup_root}")
 
-    for file_name in (
-        "interval_processor_config.toml",
-        "alias_mapping.toml",
-    ):
-        shutil.copy2(backup_root / file_name, converter_root / file_name)
-    aliases_root = converter_root / "aliases"
     if aliases_root.exists():
         shutil.rmtree(aliases_root)
     shutil.copytree(backup_root / "aliases", aliases_root)

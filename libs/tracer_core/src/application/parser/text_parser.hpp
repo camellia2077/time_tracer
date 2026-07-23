@@ -19,8 +19,6 @@ class TextParser {
              std::string_view source_file) -> void;
 
  private:
-  const ConverterConfig& config_;
-
   std::string year_prefix_;
   const std::vector<std::string>&
       wake_keywords_;  // [优化] 直接引用 vector，避免拷贝 set

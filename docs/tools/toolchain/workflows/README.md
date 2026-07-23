@@ -1,6 +1,6 @@
 # Workflow Docs Index
 
-`docs/toolchain/workflows/` 收录工具链执行流程与节奏约定。
+`docs/tools/toolchain/workflows/` 收录工具链执行流程与节奏约定。
 
 ## 主文档
 

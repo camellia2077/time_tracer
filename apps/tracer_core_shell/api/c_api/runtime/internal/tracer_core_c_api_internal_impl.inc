@@ -153,6 +153,7 @@ void SetLastError(const char* message) {
   payload.features.runtime_validate_structure_json = true;
   payload.features.runtime_validate_logic_json = true;
   payload.features.runtime_record_activity_atomically_json = true;
+  payload.features.runtime_update_activity_remark_atomically_json = true;
   payload.features.runtime_txt_json = true;
   payload.features.runtime_query_json = true;
   payload.features.runtime_temporal_report_json = true;

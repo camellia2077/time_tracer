@@ -9,14 +9,14 @@ namespace tracer::core::infrastructure::config::internal {
 
 }  // namespace tracer::core::infrastructure::config::internal
 
-namespace legacy_config_parser_internal = ConfigParserUtils::internal;
+namespace config_parser_internal = ConfigParserUtils::internal;
 
 namespace tracer::core::infrastructure::config::internal {
 
 namespace {
 
 [[nodiscard]] auto ToAndroidBundleReportConfigPathSet(
-    const legacy_config_parser_internal::AndroidBundleReportConfigPathSet&
+    const config_parser_internal::AndroidBundleReportConfigPathSet&
         paths) -> AndroidBundleReportConfigPathSet {
   return {
       .day = paths.day,
@@ -28,7 +28,7 @@ namespace {
 }
 
 [[nodiscard]] auto ToAndroidBundleConfigPaths(
-    const legacy_config_parser_internal::AndroidBundleConfigPaths& paths)
+    const config_parser_internal::AndroidBundleConfigPaths& paths)
     -> AndroidBundleConfigPaths {
   return {
       .converter_config_toml_path = paths.converter_config_toml_path,
@@ -49,7 +49,7 @@ namespace {
 auto TryResolveAndroidBundleConfigPaths(const std::filesystem::path& config_dir)
     -> std::optional<AndroidBundleConfigPaths> {
   const auto bundle_paths =
-      legacy_config_parser_internal::TryResolveAndroidBundleConfigPathsImpl(
+      config_parser_internal::TryResolveAndroidBundleConfigPathsImpl(
           config_dir);
   if (!bundle_paths.has_value()) {
     return std::nullopt;

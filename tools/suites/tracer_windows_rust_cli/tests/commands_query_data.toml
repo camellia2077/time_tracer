@@ -223,7 +223,7 @@ expect_stdout_contains = ["Saved chart heatmap-month HTML:"]
 expect_files = ["{output_dir}/report_chart_study_heatmap_month_github.html"]
 expect_file_contains = [
   "{output_dir}/report_chart_study_heatmap_month_github.html::const chartTheme = 'github'",
-  "{output_dir}/report_chart_study_heatmap_month_github.html::#9be9a8",
+  "{output_dir}/report_chart_study_heatmap_month_github.html::#aceebb",
   "{output_dir}/report_chart_study_heatmap_month_github.html::type: 'heatmap'",
 ]
 

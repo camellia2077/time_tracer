@@ -15,7 +15,7 @@ auto BuildRuntimeFixture(std::string_view test_name, int& failures)
   const std::filesystem::path repo_root = BuildRepoRoot();
   fixture.input_path = repo_root / "test" / "data";
   fixture.config_toml_path = repo_root / "assets" / "tracer_core" / "config" /
-                             "converter" / "interval_processor_config.toml";
+                             "aliases" / "_system.toml";
 
   RemoveTree(fixture.paths.test_root);
 

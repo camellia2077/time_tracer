@@ -14,7 +14,8 @@
     const std::vector<ActivitySuggestionRow>& rows) -> std::string;
 
 [[nodiscard]] auto BuildSemanticTreePayload(
-    const std::vector<ProjectTreeNode>& nodes, int max_depth) -> std::string;
+    const std::vector<ProjectTreeNode>& nodes, int max_depth,
+    int max_available_depth) -> std::string;
 
 [[nodiscard]] auto BuildSemanticJsonObjectPayload(std::string_view action,
                                                   std::string content)

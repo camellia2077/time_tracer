@@ -169,7 +169,8 @@ auto ValidateRequiredPeriodLabels(const toml::table& tbl, const fs::path& path)
 }
 
 auto ValidateDailyLabels(const toml::table& tbl, const fs::path& path,
-                         std::string_view title_key) -> void {
+                         std::string_view title_key,
+                         bool require_statistics = true) -> void {
   RequireString(tbl, path, title_key);
   RequireString(tbl, path, "date_label");
   RequireString(tbl, path, "total_time_label");
@@ -178,7 +179,9 @@ auto ValidateDailyLabels(const toml::table& tbl, const fs::path& path,
   RequireString(tbl, path, "exercise_label");
   RequireString(tbl, path, "getup_time_label");
   RequireString(tbl, path, "remark_label");
-  RequireString(tbl, path, "statistics_label");
+  if (require_statistics) {
+    RequireString(tbl, path, "statistics_label");
+  }
   RequireString(tbl, path, "all_activities_label");
   RequireString(tbl, path, "activity_remark_label");
   RequireString(tbl, path, "activity_connector");

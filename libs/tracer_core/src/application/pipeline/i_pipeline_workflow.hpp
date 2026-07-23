@@ -48,6 +48,12 @@ class IPipelineWorkflow {
   virtual auto RunRecordActivityAtomically(
       const tracer_core::core::dto::RecordActivityAtomicallyRequest& request)
       -> tracer_core::core::dto::RecordActivityAtomicallyResponse = 0;
+  virtual auto RunUpdateActivityRemarkAtomically(
+      const tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest& request)
+      -> tracer_core::core::dto::UpdateActivityRemarkAtomicallyResponse = 0;
+  virtual auto RunUpdateDayRemarkAtomically(
+      const tracer_core::core::dto::UpdateDayRemarkAtomicallyRequest& request)
+      -> tracer_core::core::dto::UpdateDayRemarkAtomicallyResponse = 0;
   virtual auto RunDefaultTxtDayMarker(
       const tracer_core::core::dto::DefaultTxtDayMarkerRequest& request)
       -> tracer_core::core::dto::DefaultTxtDayMarkerResponse = 0;
@@ -57,6 +63,12 @@ class IPipelineWorkflow {
   virtual auto RunReplaceTxtDayBlock(
       const tracer_core::core::dto::ReplaceTxtDayBlockRequest& request)
       -> tracer_core::core::dto::ReplaceTxtDayBlockResponse = 0;
+  virtual auto RunConvertTxtActivityNames(
+      const tracer_core::core::dto::ConvertTxtActivityNamesRequest& request)
+      -> tracer_core::core::dto::ConvertTxtActivityNamesResponse = 0;
+  virtual auto RunReplaceTxtCanonicalActivityNames(
+      const tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest& request)
+      -> tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse = 0;
   virtual auto InstallActiveConverterConfig(
       const ActiveConverterConfigInstallRequest& request) -> void = 0;
 };

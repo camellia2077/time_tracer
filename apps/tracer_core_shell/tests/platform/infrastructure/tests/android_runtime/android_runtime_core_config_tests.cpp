@@ -31,22 +31,20 @@ auto CopyFixtureFile(const std::filesystem::path& relative_path,
 
 auto PrepareCustomConfigFixture(
     const std::filesystem::path& config_root,
-    const std::filesystem::path& interval_fixture_relative_path)
+    const std::filesystem::path& converter_main_fixture_relative_path)
     -> std::filesystem::path {
   if (!PrepareAndroidConfigFixture(config_root)) {
     return {};
   }
 
-  const std::filesystem::path converter_root = config_root / "converter";
-  if (!CopyFixtureFile(interval_fixture_relative_path,
-                       converter_root / "interval_processor_config.toml") ||
-      !CopyFixtureFile("test/fixtures/config/custom/alias_mapping.single_include.toml",
-                       converter_root / "alias_mapping.toml") ||
+  const std::filesystem::path aliases_root = config_root / "aliases";
+  if (!CopyFixtureFile(converter_main_fixture_relative_path,
+                       aliases_root / "_system.toml") ||
       !CopyFixtureFile("test/fixtures/config/custom/aliases/minimal.toml",
-                       converter_root / "aliases" / "minimal.toml")) {
+                       aliases_root / "minimal.toml")) {
     return {};
   }
-  return converter_root / "interval_processor_config.toml";
+  return aliases_root / "_system.toml";
 }
 
 auto TestAndroidRuntimeBootstrapStaysSideEffectFree(int& failures) -> void {
@@ -54,8 +52,8 @@ auto TestAndroidRuntimeBootstrapStaysSideEffectFree(int& failures) -> void {
       BuildTempTestPaths("time_tracer_android_runtime_side_effect_free_test");
   const std::filesystem::path repo_root = BuildRepoRoot();
   const std::filesystem::path config_toml_path =
-      repo_root / "assets" / "tracer_core" / "config" / "converter" /
-      "interval_processor_config.toml";
+      repo_root / "assets" / "tracer_core" / "config" /
+      "aliases/_system.toml";
 
   RemoveTree(paths.test_root);
 
@@ -102,7 +100,7 @@ auto TestAndroidRuntimeRejectsInvalidConverterConfig(int& failures) -> void {
   const RuntimeTestPaths paths = BuildTempTestPaths(
       "time_tracer_android_runtime_factory_invalid_config_test");
   const std::filesystem::path kInvalidConfigPath =
-      paths.test_root / "config" / "converter" / "invalid.toml";
+      paths.test_root / "config" / "invalid.toml";
 
   RemoveTree(paths.test_root);
   if (!PrepareAndroidConfigFixture(paths.test_root / "config")) {
@@ -115,7 +113,7 @@ auto TestAndroidRuntimeRejectsInvalidConverterConfig(int& failures) -> void {
 
   {
     std::ofstream file(kInvalidConfigPath);
-    file << "remark_prefix = \"r \"\n";
+    file << "header_order = []\n";
   }
 
   bool threw = false;
@@ -140,7 +138,7 @@ auto TestAndroidRuntimeRejectsInvalidUtf8ConverterConfig(int& failures)
   const RuntimeTestPaths paths = BuildTempTestPaths(
       "time_tracer_android_runtime_factory_invalid_utf8_config_test");
   const std::filesystem::path kInvalidConfigPath =
-      paths.test_root / "config" / "converter" / "invalid_utf8.toml";
+      paths.test_root / "config" / "invalid_utf8.toml";
 
   RemoveTree(paths.test_root);
   if (!PrepareAndroidConfigFixture(paths.test_root / "config")) {
@@ -189,7 +187,7 @@ auto TestAndroidRuntimeBootstrapsWithMinimalCustomConfig(int& failures)
 
   const std::filesystem::path config_toml_path = PrepareCustomConfigFixture(
       paths.test_root / "config",
-      "test/fixtures/config/custom/interval_processor.minimal.toml");
+      "test/fixtures/config/custom/converter_system.minimal.toml");
   if (config_toml_path.empty()) {
     ++failures;
     std::cerr << "[FAIL] Minimal custom config test should prepare config "

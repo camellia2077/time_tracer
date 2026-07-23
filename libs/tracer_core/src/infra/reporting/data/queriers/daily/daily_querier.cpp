@@ -122,7 +122,7 @@ void DayQuerier::FetchDetailedRecords(DailyReportData& data,
                                       const IProjectInfoProvider& provider) {
   sqlite3_stmt* stmt = nullptr;
   std::string sql = std::format(
-      "SELECT {0}, {1}, {2}, {3}, {4} "
+      "SELECT {0}, {1}, {2}, {3}, {4}, {7} "
       "FROM {5} "
       "WHERE {6} = ? "
       "ORDER BY {7} ASC;",
@@ -140,6 +140,7 @@ void DayQuerier::FetchDetailedRecords(DailyReportData& data,
           reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
       record.end_time =
           reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+      record.logical_id = sqlite3_column_int64(stmt, 5);
       const std::int64_t kProjectId = sqlite3_column_int64(stmt, 2);
       record.project_path = JoinPathParts(provider.GetPathParts(kProjectId));
       record.duration_seconds = sqlite3_column_int64(stmt, 3);
@@ -255,11 +256,13 @@ void BatchDayDataFetcher::FetchTimeRecords(BatchDataResult& result) {
     constexpr int kColProjectId = 3;
     constexpr int kColDuration = 4;
     constexpr int kColActivityRemark = 5;
+    constexpr int kColLogicalId = 6;
 
     record.start_time =
         reinterpret_cast<const char*>(sqlite3_column_text(stmt, kColStart));
     record.end_time =
         reinterpret_cast<const char*>(sqlite3_column_text(stmt, kColEnd));
+    record.logical_id = sqlite3_column_int64(stmt, kColLogicalId);
     std::int64_t project_id = sqlite3_column_int64(stmt, kColProjectId);
     record.duration_seconds = sqlite3_column_int64(stmt, kColDuration);
     const unsigned char* remark_ptr =

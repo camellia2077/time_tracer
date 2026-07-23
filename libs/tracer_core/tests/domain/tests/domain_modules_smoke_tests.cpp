@@ -116,7 +116,6 @@ void TestDomainModelsAndTypes(int& failures) {
          "AppOptions date_check_mode mismatch.", failures);
 
   ConverterConfig config;
-  config.remark_prefix = "#";
   config.header_order = {"sleep", "study"};
   Expect(config.header_order.size() == 2U,
          "ConverterConfig header_order mismatch.", failures);

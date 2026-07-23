@@ -88,6 +88,21 @@ struct TemporalReportRequestPayload {
   std::optional<std::vector<int>> recent_days_list;
 };
 
+struct UpdateActivityRemarkAtomicallyRequestPayload {
+  std::string target_date_iso;
+  long long logical_id = 0;
+  std::string remark;
+  std::optional<std::string> preferred_txt_path;
+  std::optional<std::string> date_check_mode;
+};
+
+struct UpdateDayRemarkAtomicallyRequestPayload {
+  std::string target_date_iso;
+  std::string remark;
+  std::optional<std::string> preferred_txt_path;
+  std::optional<std::string> date_check_mode;
+};
+
 struct ReportBatchRequestPayload {
   std::vector<int> days_list;
   std::optional<std::string> format;

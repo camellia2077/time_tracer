@@ -121,6 +121,56 @@ void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
               "d0102\n1111new_line\n") != std::string::npos,
           "replace_day_block should strip duplicated marker and update content");
 
+  const std::string kAliasMonthText =
+      "y2026\nm01\n\n0830英语单词 // keep remark\n";
+  const json kCanonicalActivityNames = ParseResponse(
+      api.runtime_txt(runtime,
+                      json{{"action", "convert_activity_names"},
+                           {"content", kAliasMonthText},
+                           {"direction", "alias_to_canonical"}}
+                          .dump()
+                          .c_str()),
+      "txt convert activity names alias to canonical");
+  Require(kCanonicalActivityNames.value("ok", false),
+          "convert_activity_names alias_to_canonical should return ok=true");
+  Require(kCanonicalActivityNames.value("converted_content", std::string{})
+              .find("0830study_english_words // keep remark") !=
+              std::string::npos,
+          "convert_activity_names should convert aliases in month TXT");
+
+  const json kAliasActivityNames = ParseResponse(
+      api.runtime_txt(
+          runtime,
+          json{{"action", "convert_activity_names"},
+               {"content", kCanonicalActivityNames.value(
+                               "converted_content", std::string{})},
+               {"direction", "canonical_to_alias"}}
+              .dump()
+              .c_str()),
+      "txt convert activity names canonical to alias");
+  Require(kAliasActivityNames.value("ok", false),
+          "convert_activity_names canonical_to_alias should return ok=true");
+  Require(kAliasActivityNames.value("converted_content", std::string{})
+              .find("0830英语单词 // keep remark") != std::string::npos,
+          "convert_activity_names should convert canonical names to aliases");
+
+  const json kCanonicalReplacement = ParseResponse(
+      api.runtime_txt(
+          runtime,
+          json{{"action", "replace_canonical_activity_names"},
+               {"content", "y2026\nm01\n\n0830exercise_walk // exercise_walk remark\n"},
+               {"replacements", json::array({
+                   {{"old_canonical", "exercise_walk"},
+                    {"new_canonical", "exercise_cardio_walk"}}})}}
+              .dump()
+              .c_str()),
+      "txt replace canonical activity names");
+  Require(kCanonicalReplacement.value("ok", false),
+          "replace_canonical_activity_names should return ok=true");
+  Require(kCanonicalReplacement.value("updated_content", std::string{}) ==
+              "y2026\nm01\n\n0830exercise_cardio_walk // exercise_walk remark\n",
+          "canonical replacement should preserve remarks and replace only event names");
+
   const json kDefaultMarker = ParseResponse(
       api.runtime_txt(runtime, json{{"action", "default_day_marker"},
                                     {"selected_month", "2025-02"},

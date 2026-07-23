@@ -204,9 +204,8 @@ auto DailyMd::ValidateSpecificKeys(const toml::table& query_config,
       "total_time_label",      "status_label",
       "wake_anchor_label",     "exercise_label",
       "getup_time_label",      "remark_label",
-      "statistics_label",      "all_activities_label",
-      "activity_remark_label", "activity_connector",
-      "statistics_items",      "no_records_message"};
+      "all_activities_label",  "activity_remark_label",
+      "activity_connector",    "no_records_message"};
 
   return ValidateRequiredKeys(query_config, file_name, kDailyMdKeys, "daily");
 }

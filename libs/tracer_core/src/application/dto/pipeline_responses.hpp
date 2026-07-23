@@ -60,6 +60,36 @@ struct ReplaceTxtDayBlockResponse {
   std::string error_message;
 };
 
+struct UpdateActivityRemarkAtomicallyResponse {
+  bool ok = false;
+  std::string message;
+  std::string operation_id;
+  std::vector<std::string> warnings;
+  bool rollback_failed = false;
+  std::optional<std::string> retained_transaction_root;
+};
+
+struct UpdateDayRemarkAtomicallyResponse {
+  bool ok = false;
+  std::string message;
+  std::string operation_id;
+  std::vector<std::string> warnings;
+  bool rollback_failed = false;
+  std::optional<std::string> retained_transaction_root;
+};
+
+struct ConvertTxtActivityNamesResponse {
+  bool ok = false;
+  std::string converted_content;
+  std::string error_message;
+};
+
+struct ReplaceTxtCanonicalActivityNamesResponse {
+  bool ok = false;
+  std::string updated_content;
+  std::string error_message;
+};
+
 }  // namespace tracer_core::core::dto
 
 #endif  // APPLICATION_DTO_PIPELINE_RESPONSES_HPP_

@@ -72,7 +72,7 @@ constexpr size_t kTimeSecondLength = 2;
 }  // namespace
 
 ActivityMapper::ActivityMapper(const ConverterConfig& config)
-    : config_(config), wake_keywords_(config.wake_keywords) {}
+    : config_(config), wake_keywords_(config.sleep_inference.wake_keywords) {}
 
 auto ActivityMapper::MapActivities(DailyLog& day) -> void {
   day.processedActivities.clear();
@@ -135,8 +135,7 @@ auto ActivityMapper::MapActivities(DailyLog& day) -> void {
 
   // Canonical mapping stage:
   // TXT stores alias keys (raw activity tokens). During full-text conversion/ingest we map
-  // alias key -> canonical value expanded from alias_mapping.toml index +
-  // converter/aliases/*.toml child files.
+  // alias key -> canonical value expanded from the fixed aliases directory.
   // Timing semantics are applied later: alias normalization decides only the
   // canonical activity path, while time ranges and durations are derived from
   // neighboring authored event timestamps in subsequent steps.

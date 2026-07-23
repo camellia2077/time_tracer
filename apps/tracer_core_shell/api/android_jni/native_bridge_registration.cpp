@@ -6,13 +6,18 @@
 
 namespace tracer_core::api::android::bridge_internal {
 
-const std::array<JNINativeMethod, 17> kNativeMethods = {
+const std::array<JNINativeMethod, 20> kNativeMethods = {
     JNINativeMethod{
         const_cast<char*>("nativeInit"),
         const_cast<char*>(
             "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)"
             "Ljava/lang/String;"),
         reinterpret_cast<void*>(&NativeInit),
+    },
+    JNINativeMethod{
+        const_cast<char*>("nativeShutdown"),
+        const_cast<char*>("()Ljava/lang/String;"),
+        reinterpret_cast<void*>(&NativeShutdown),
     },
     JNINativeMethod{
         const_cast<char*>("nativeIngest"),
@@ -50,6 +55,20 @@ const std::array<JNINativeMethod, 17> kNativeMethods = {
             "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;"
             "Ljava/lang/String;II)Ljava/lang/String;"),
         reinterpret_cast<void*>(&NativeRecordActivityAtomically),
+    },
+    JNINativeMethod{
+        const_cast<char*>("nativeUpdateActivityRemarkAtomically"),
+        const_cast<char*>(
+            "(Ljava/lang/String;JLjava/lang/String;Ljava/lang/String;I)"
+            "Ljava/lang/String;"),
+        reinterpret_cast<void*>(&NativeUpdateActivityRemarkAtomically),
+    },
+    JNINativeMethod{
+        const_cast<char*>("nativeUpdateDayRemarkAtomically"),
+        const_cast<char*>(
+            "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)"
+            "Ljava/lang/String;"),
+        reinterpret_cast<void*>(&NativeUpdateDayRemarkAtomically),
     },
     JNINativeMethod{
         const_cast<char*>("nativeTxt"),

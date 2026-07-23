@@ -55,13 +55,9 @@ auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int {
   }
 
   ConverterConfig config;
-  config.remark_prefix = "#";
   tracer::core::infrastructure::config::StaticConverterConfigProvider provider(
       config);
   const auto loaded = provider.LoadConverterConfig();
-  if (loaded.remark_prefix.compare("#") != 0) {
-    return 4;
-  }
 
   const auto load_converter_config = &tracer::core::infrastructure::config::
                                          ConverterConfigLoader::LoadFromFile;
@@ -117,26 +113,24 @@ auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int {
 
   const auto kDailyMarkdown = tracer::core::infrastructure::config::
       ReportConfigLoader::LoadDailyMdConfig(kDailyMarkdownConfig);
-  if (kDailyMarkdown.labels.date_label != "Date" ||
-      kDailyMarkdown.statistics_items.empty()) {
+  if (kDailyMarkdown.labels.date_label != "Date") {
     return 401;
   }
 
   tracer::core::infrastructure::config::FileConverterConfigProvider
       file_provider(
-          kCopiedConfigRoot / "converter" / "interval_processor_config.toml",
+          kCopiedConfigRoot / "aliases" / "_system.toml",
           std::unordered_map<std::filesystem::path, std::filesystem::path>{});
   const ConverterConfig kLoadedFileConfig = file_provider.LoadConverterConfig();
-  if (kLoadedFileConfig.remark_prefix != "r " ||
-      !kLoadedFileConfig.text_mapping.contains("wake")) {
+  if (!kLoadedFileConfig.text_mapping.contains("wake")) {
     return 402;
   }
 
   tracer::core::infrastructure::config::ConfigLoader config_loader(
       kFakeExePath.string());
   const AppConfig kLoadedAppConfig = config_loader.LoadConfiguration();
-  if (kLoadedAppConfig.pipeline.interval_processor_config_path.filename() !=
-          "interval_processor_config.toml" ||
+  if (kLoadedAppConfig.pipeline.converter_main_config_path.filename() !=
+          "_system.toml" ||
       kLoadedAppConfig.loaded_reports.markdown.day.labels.date_label !=
           "Date") {
     return 403;

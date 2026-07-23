@@ -22,7 +22,6 @@ from .generated_paths import (
     resolve_test_result_layout,
     resolve_test_result_layout_for_app,
     resolve_tidy_layout,
-    resolve_validation_layout,
 )
 
 
@@ -273,9 +272,6 @@ class Context:
 
     def get_test_result_layout_for_app(self, app_name: str):
         return resolve_test_result_layout_for_app(self.repo_root, app_name)
-
-    def get_validation_layout(self, run_name: str):
-        return resolve_validation_layout(self.repo_root, run_name)
 
     def setup_env(self):
         """Setup specialized environment for toolchain."""

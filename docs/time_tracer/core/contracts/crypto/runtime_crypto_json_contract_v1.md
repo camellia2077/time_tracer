@@ -36,10 +36,10 @@
 6. 若多个输入 TXT 解析到同一 `YYYY-MM`，encrypt 失败。
 7. runtime 会读取当前 active 的 3 个 converter TOML，并与：
    - `manifest.toml`
-   - `config/converter/interval_processor_config.toml`
-   - `config/converter/alias_mapping.toml`
-   - `config/converter/aliases/*.toml`
-   - `config/converter/duration_rules.toml`
+   - `config/aliases/_system.toml`
+   - `config/aliases/*.toml`
+   - `config/aliases/*.toml`
+   - `config/aliases/*.toml`
    - `payload/<year>/YYYY-MM.txt`
    共同组装为 tracer exchange package `v4`，再交给外层 `.tracer` v2 容器压缩加密。
 8. 若 `output_path` 已存在且是目录，则实际输出为：
@@ -66,10 +66,10 @@
 2. decrypt 的当前业务语义是“事务式完整导入 tracer exchange package”，不是“解包到目录”。
 3. 外层 `.tracer` 解密后，runtime 会解析内层 tracer exchange package `v4`。
 4. runtime 必须先成功加载校验包内：
-   - `config/converter/interval_processor_config.toml`
-   - `config/converter/alias_mapping.toml`
-   - `config/converter/aliases/*.toml`
-   - `config/converter/duration_rules.toml`
+   - `config/aliases/_system.toml`
+   - `config/aliases/*.toml`
+   - `config/aliases/*.toml`
+   - `config/aliases/*.toml`
 5. runtime 会备份当前 active converter config 与将被覆盖的本地月份 TXT。
 6. 随后包内 3 个 converter TOML 会覆盖当前 active config。
 7. runtime 会构造“包内月份覆盖 + 包外月份保留”的有效本地 TXT 视图。

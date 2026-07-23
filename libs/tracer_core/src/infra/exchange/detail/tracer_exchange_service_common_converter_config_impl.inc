@@ -7,21 +7,18 @@ auto ResolveActiveConverterConfigPaths(
   }
   const fs::path main_config_path =
       fs::absolute(active_converter_main_config_path);
-  const fs::path converter_dir = main_config_path.parent_path();
-  const fs::path config_root = converter_dir.parent_path();
-  const fs::path alias_mapping_path = converter_dir / "alias_mapping.toml";
-  const auto alias_index_tbl =
-      tracer::core::infrastructure::config::loader::ReadToml(alias_mapping_path);
+  const fs::path alias_directory_path = main_config_path.parent_path();
+  const fs::path config_root = alias_directory_path.parent_path();
   const auto alias_definition =
       tracer::core::infrastructure::config::loader::detail::
           LoadAliasMappingDefinition(
-              alias_mapping_path, alias_index_tbl,
+              alias_directory_path,
               tracer::core::infrastructure::config::loader::ReadToml);
 
   ActiveConverterConfigPaths paths{
       .config_root_path = config_root,
       .main_config_path = main_config_path,
-      .alias_mapping_path = alias_mapping_path,
+      .alias_directory_path = alias_directory_path,
   };
   paths.alias_child_paths.reserve(alias_definition.child_files.size());
   for (const auto& child_file : alias_definition.child_files) {
@@ -41,8 +38,11 @@ auto EnsureActiveConverterConfigExists(
     const ActiveConverterConfigPaths& active_paths) -> void {
   EnsureRegularFileExists(active_paths.main_config_path,
                           "Active converter main config");
-  EnsureRegularFileExists(active_paths.alias_mapping_path,
-                          "Active alias mapping config");
+  if (!fs::exists(active_paths.alias_directory_path) ||
+      !fs::is_directory(active_paths.alias_directory_path)) {
+    throw std::runtime_error("Active alias directory not found: " +
+                             active_paths.alias_directory_path.string());
+  }
   for (const auto& child_path : active_paths.alias_child_paths) {
     EnsureRegularFileExists(child_path, "Active alias child config");
   }
@@ -58,16 +58,12 @@ auto BackupActiveConverterConfig(const ActiveConverterConfigPaths& active_paths,
   CopyFileWithOverwrite(
       active_paths.main_config_path,
       BuildBackupPath(backup_root, exchange_pkg::kConverterMainPath));
-  CopyFileWithOverwrite(
-      active_paths.alias_mapping_path,
-      BuildBackupPath(backup_root, exchange_pkg::kAliasMappingIndexPath));
   for (const auto& child_path : active_paths.alias_child_paths) {
     const fs::path relative_path =
-        fs::relative(child_path, active_paths.alias_mapping_path.parent_path());
+        fs::relative(child_path, active_paths.alias_directory_path.parent_path());
     CopyFileWithOverwrite(child_path,
                           BuildBackupPath(backup_root,
-                                          (fs::path("config") / "converter" /
-                                           relative_path)
+                                          (fs::path("config") / relative_path)
                                               .generic_string()));
   }
   for (std::size_t index = 0; index < active_paths.report_markdown_paths.size();

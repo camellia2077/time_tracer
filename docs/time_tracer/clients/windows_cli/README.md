@@ -77,6 +77,38 @@ Provide the minimal navigation map for the Windows Rust CLI implementation under
 - `txt append-event` appends one authored event line to an existing day block and
   persists it through shared TXT `replace_day_block` semantics.
 
+## Recent Fixed Window
+
+- `report render recent` and `report export recent` accept
+  `--as-of YYYY-MM-DD` only for the `recent` period.
+- The CLI maps `--as-of` directly to the canonical temporal request
+  `anchor_date`; it does not rewrite the request into a local `range`.
+
+Example:
+
+```powershell
+time_tracer_cli report render recent 7 --as-of 2026-03-07 --format md --db <db_path>
+time_tracer_cli report export recent 7 --as-of 2026-03-07 --format md --db <db_path> --output <out_dir>
+```
+
+## Chart Semantics
+
+- `line`, `bar`, and `heatmap-*` chart types use the trend/daily-series report
+  chart contract.
+- `pie` uses report composition and represents the selected period's root
+  breakdown.
+- `pie` does not accept `--root`, because its purpose is to show the whole
+  period's root composition.
+
+## Exchange Import Runtime Refresh
+
+- `exchange import` replaces the active converter config (`main`,
+  `alias_mapping`, and `duration_rules`).
+- Core owns the runtime refresh after the replacement; the CLI must not maintain
+  an independent cache-invalidation patch.
+- Import-path changes require a regression proving that an immediate
+  validate/query operation observes the imported config.
+
 ## Removed Compat Surface
 
 - `blink`

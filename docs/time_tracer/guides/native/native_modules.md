@@ -118,7 +118,7 @@
    - modules-only 主路径
    - 对稳定 contract surface
      的 ABI / JNI / runtime regression
-5. 不再新增 `modules_off` validate 计划、脚本开关或回退说明。
+5. 不再新增 `modules_off` 验证计划、脚本开关或回退说明。
 6. Android 主路径默认按 modules-only 验证；
    不保留模块总开关回归入口。
 7. 构建与验证统一通过 `python tools/run.py ...`，禁止手工 cmake/ninja 流程作为主路径。
@@ -135,8 +135,8 @@
 
 ## 5. 推荐验证命令
 
-1. tracer_core_shell focused validate：
-   - `python tools/run.py validate --plan <plan.toml> --paths <touched paths>`
+1. tracer_core_shell focused verify：
+   - `python tools/run.py verify --app tracer_core_shell --profile <capability_profile> --concise`
 2. Shell full verify：
    - `python tools/run.py verify --app tracer_core_shell --profile fast --concise`
 3. Android edit/build verify：

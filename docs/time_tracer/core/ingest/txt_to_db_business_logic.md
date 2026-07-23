@@ -84,23 +84,19 @@ d0102
 一个日块内部，常见行类型有三类：
 
 1. 日期行：`dMMDD`
-2. 日备注行：以 `remark_prefix` 开头
+2. 备注行：以 `//` 开头
 3. 事件行：点事件或区间事件
 
 ### 3.1 日备注行
 
-日备注前缀来自 `interval_processor_config.toml` 中的：
-
-`remark_prefix = "r "`
-
 因此：
 
 ```text
-r beta
-r alpha
+// beta
+// alpha
 ```
 
-表示这一天存在两条日级备注。
+表示这一天存在两行日级备注，内部保存为一个包含 LF 的文本。
 
 注意：
 
@@ -138,26 +134,22 @@ r alpha
 
 事件行允许带备注。
 
-当前支持的备注分隔符为：
-
-1. `//`
-2. `#`
-3. `;`
-
-程序以最先出现的分隔符作为备注起点。
+唯一支持的备注分隔符为 `//`。活动行之后的物理 `//` 行归入最近活动；
+空行不会终止这种归属。备注内容中的两个字符 `\n` 保持普通文本。
 
 示例：
 
 ```text
-1353睡觉 //remark
-1847概率统计 #备注
-0231吃饭 ;apple
+1353睡觉 // remark
+// 第二行备注
+1847概率统计 // 备注
+0231吃饭 // apple
 ```
 
 语义：
 
 1. 活动名分别是 `睡觉`、`概率统计`、`吃饭`
-2. 备注分别是 `remark`、`备注`、`apple`
+2. 备注分别是 `remark\n第二行备注`、`备注`、`apple`
 
 ## 5. 活动时长的核心规则
 
@@ -220,7 +212,7 @@ r alpha
 
 普通活动名的合法性基于：
 
-`assets/tracer_core/config/converter/alias_mapping.toml`
+`assets/tracer_core/config/aliases/*.toml`
 
 这里的核心语义是：
 
@@ -235,11 +227,12 @@ r alpha
 
 wake 语义只来源于：
 
-`assets/tracer_core/config/converter/interval_processor_config.toml`
+`assets/tracer_core/config/aliases/_system.toml`
 
 中的：
 
 ```toml
+[sleep_inference]
 wake_keywords = ["起床", "醒", "w", "wake", "新的一天开始了"]
 ```
 
@@ -247,13 +240,13 @@ wake_keywords = ["起床", "醒", "w", "wake", "新的一天开始了"]
 
 1. 这些 token 在语义上表示“起床锚点”
 2. wake 判定只依赖 `wake_keywords`
-3. `alias_mapping.toml` 不参与 wake 分类本身
+3. alias child files 不参与 wake 分类本身
 
 ### 7.2 作者态可输入集合
 
 虽然 wake 分类只看 `wake_keywords`，但作者态允许输入的 token 集合定义为：
 
-`authorable_event_tokens = alias_mapping.keys ∪ wake_keywords`
+`authorable_event_tokens = alias_files.keys ∪ wake_keywords`
 
 因此：
 
@@ -274,10 +267,10 @@ wake 相关活动只能是一天中的第一个语义活动。
 
 ## 8. `sleep_night` 的自动生成
 
-在 `interval_processor_config.toml` 中有：
+在 `aliases/_system.toml` 中有：
 
 ```toml
-[generated_activities]
+[sleep_inference]
 sleep_project_path = "sleep_night"
 ```
 
@@ -391,16 +384,17 @@ y2025
 m01
 
 d0101
-r beta
-r alpha
+// beta
+// alpha
 0606w
-1353睡觉 //remark
-1847概率统计 #备注
+1353睡觉 // remark
+// 第二行活动备注
+1847概率统计 // 备注
 0226bilibili
 0227洗漱
 0228线性代数
 0230上厕所
-0231吃饭 ;apple
+0231吃饭 // apple
 0232哔哩哔哩 //banana
 0233守望先锋
 ```
@@ -409,11 +403,11 @@ r alpha
 
 1. 文件属于 `2025-01`
 2. `d0101` 是 `1 月 1 日`
-3. `r beta`、`r alpha` 是日备注
+3. `// beta`、`// alpha` 是日备注
 4. `0606w` 的 `w` 命中 `wake_keywords`
 5. 因为这是当天首个语义活动，所以这一天是 wake-start day
 6. 若存在上一天末事件，则系统可生成一条 `sleep_night`
-7. `1353睡觉 //remark` 表示活动 token `睡觉`，备注 `remark`
+7. `1353睡觉 // remark` 表示活动 token `睡觉`，备注 `remark`
 8. 在只有点事件的模式下，`睡觉` 的持续时间来自 `06:06 -> 13:53`
 
 ## 12. 最终业务流程

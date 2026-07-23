@@ -53,6 +53,7 @@ class StructureRules {
 
   [[nodiscard]] auto HasSeenYear() const -> bool;
   [[nodiscard]] auto HasSeenMonth() const -> bool;
+  [[nodiscard]] auto HasSeenEventInDay() const -> bool;
 
  private:
   bool has_seen_year_ = false;

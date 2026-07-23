@@ -15,6 +15,8 @@ Use it when you need to understand:
    - Write-side persistence responsibilities and ingest relationship.
 3. [runtime_side.md](runtime_side.md)
    - Runtime-side persistence support and read-side boundaries.
+4. [record_mutation_capability_v1.md](record_mutation_capability_v1.md)
+   - Current activity-record mutation behavior and the planned CRUD roadmap.
 
 ## Legacy Pointers
 Persistence topics were previously spread across:

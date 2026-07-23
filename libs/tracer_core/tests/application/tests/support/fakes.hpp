@@ -38,6 +38,7 @@ class FakePipelineWorkflow final
   bool fail_default_txt_day_marker = false;
   bool fail_resolve_txt_day_block = false;
   bool fail_replace_txt_day_block = false;
+  bool fail_convert_txt_activity_names = false;
 
   std::string last_converter_input;
   AppOptions last_converter_options;
@@ -54,12 +55,20 @@ class FakePipelineWorkflow final
   DateCheckMode last_validate_logic_mode = DateCheckMode::kNone;
   tracer_core::core::dto::RecordActivityAtomicallyRequest
       last_record_activity_request;
+  tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest
+      last_update_activity_remark_request;
+  tracer_core::core::dto::UpdateDayRemarkAtomicallyRequest
+      last_update_day_remark_request;
   tracer_core::core::dto::DefaultTxtDayMarkerRequest
       last_default_txt_day_marker_request;
   tracer_core::core::dto::ResolveTxtDayBlockRequest
       last_resolve_txt_day_block_request;
   tracer_core::core::dto::ReplaceTxtDayBlockRequest
       last_replace_txt_day_block_request;
+  tracer_core::core::dto::ConvertTxtActivityNamesRequest
+      last_convert_txt_activity_names_request;
+  tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest
+      last_replace_txt_canonical_activity_names_request;
 
   int convert_call_count = 0;
   int ingest_call_count = 0;
@@ -70,9 +79,13 @@ class FakePipelineWorkflow final
   int ingest_sync_status_query_call_count = 0;
   int clear_ingest_sync_status_call_count = 0;
   int record_activity_atomically_call_count = 0;
+  int update_activity_remark_atomically_call_count = 0;
+  int update_day_remark_atomically_call_count = 0;
   int default_txt_day_marker_call_count = 0;
   int resolve_txt_day_block_call_count = 0;
   int replace_txt_day_block_call_count = 0;
+  int convert_txt_activity_names_call_count = 0;
+  int replace_txt_canonical_activity_names_call_count = 0;
   tracer_core::core::dto::IngestSyncStatusRequest last_ingest_sync_status_request;
   tracer_core::core::dto::IngestSyncStatusOutput ingest_sync_status_output = {
       .ok = true,
@@ -84,6 +97,15 @@ class FakePipelineWorkflow final
           .ok = true,
           .message = "record: ok\nsync: ok",
           .operation_id = "fake-txn",
+          .warnings = {},
+          .rollback_failed = false,
+          .retained_transaction_root = std::nullopt,
+      };
+  tracer_core::core::dto::UpdateActivityRemarkAtomicallyResponse
+      update_activity_remark_atomically_response = {
+          .ok = true,
+          .message = "remark: ok\nsync: ok",
+          .operation_id = "fake-remark-txn",
           .warnings = {},
           .rollback_failed = false,
           .retained_transaction_root = std::nullopt,
@@ -137,6 +159,12 @@ class FakePipelineWorkflow final
   auto RunRecordActivityAtomically(
       const tracer_core::core::dto::RecordActivityAtomicallyRequest& request)
       -> tracer_core::core::dto::RecordActivityAtomicallyResponse override;
+  auto RunUpdateActivityRemarkAtomically(
+      const tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest& request)
+      -> tracer_core::core::dto::UpdateActivityRemarkAtomicallyResponse override;
+  auto RunUpdateDayRemarkAtomically(
+      const tracer_core::core::dto::UpdateDayRemarkAtomicallyRequest& request)
+      -> tracer_core::core::dto::UpdateDayRemarkAtomicallyResponse override;
   auto RunDefaultTxtDayMarker(
       const tracer_core::core::dto::DefaultTxtDayMarkerRequest& request)
       -> tracer_core::core::dto::DefaultTxtDayMarkerResponse override;
@@ -146,6 +174,12 @@ class FakePipelineWorkflow final
   auto RunReplaceTxtDayBlock(
       const tracer_core::core::dto::ReplaceTxtDayBlockRequest& request)
       -> tracer_core::core::dto::ReplaceTxtDayBlockResponse override;
+  auto RunConvertTxtActivityNames(
+      const tracer_core::core::dto::ConvertTxtActivityNamesRequest& request)
+      -> tracer_core::core::dto::ConvertTxtActivityNamesResponse override;
+  auto RunReplaceTxtCanonicalActivityNames(
+      const tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest& request)
+      -> tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse override;
   auto InstallActiveConverterConfig(
       const tracer::core::application::pipeline::ActiveConverterConfigInstallRequest&
           request) -> void override;

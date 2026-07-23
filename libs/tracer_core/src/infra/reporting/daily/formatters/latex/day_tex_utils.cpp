@@ -97,9 +97,11 @@ void DisplayDetailedActivities(std::string& report_stream,
       std::string formatted_activity_remark =
           FormatMultilineForList(safe_activity_remark, 0, "\\\\");
 
+      // Put the label and body on separate lines so a multiline remark remains
+      // visually subordinate to the activity instead of widening the label.
       report_stream += "        \\item \\textbf{";
       report_stream += config->GetActivityRemarkLabel();
-      report_stream += "}: ";
+      report_stream += "}:\\\\\n        ";
       report_stream += formatted_activity_remark;
       report_stream += "\n";
       report_stream += "    \\end{itemize}\n";

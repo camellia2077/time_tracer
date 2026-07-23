@@ -14,13 +14,10 @@ auto ResolveConverterConfigPathSet(const std::filesystem::path& main_config_path
 
   const std::filesystem::path kResolvedMainConfigPath =
       std::filesystem::absolute(main_config_path);
-  const std::filesystem::path kConfigDir = kResolvedMainConfigPath.parent_path();
+  const std::filesystem::path kAliasDir = kResolvedMainConfigPath.parent_path();
   return {
       .main_config_path = kResolvedMainConfigPath,
-      .alias_mapping_path = kConfigDir / "alias_mapping.toml",
-      // Keep application-layer install logic filesystem-only. The index is
-      // copied as-is, and infra config loader owns how that index is parsed.
-      .alias_directory_path = kConfigDir / "aliases",
+      .alias_directory_path = kAliasDir,
   };
 }
 

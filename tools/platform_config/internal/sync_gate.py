@@ -18,8 +18,8 @@ def validate_config_keys(config_data: dict[str, Any], target: str) -> None:
     converter = config_data.get("converter")
     if not isinstance(converter, dict):
         raise ValueError("sync gate failed: config.toml missing [converter] table.")
-    if "interval_config" not in converter:
-        raise ValueError("sync gate failed: config.toml missing converter.interval_config.")
+    if "main_config" not in converter:
+        raise ValueError("sync gate failed: config.toml missing converter.main_config.")
 
     reports = config_data.get("reports")
     if target == "windows":

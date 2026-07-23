@@ -77,11 +77,8 @@ Detailed navigation for the transport implementation library.
    - `libs/tracer_transport/tests/transport_runtime_codec_encode_tests.cpp`
    - downstream shell/runtime integration coverage in
      `apps/tracer_core_shell/tests/integration/**`
-3. Focused validation:
-
-```powershell
-python tools/run.py validate --plan <plan_name> --paths libs/tracer_transport apps/tracer_core_shell
-```
+3. Validation selection and completion requirements are defined by
+   `libs/tracer_transport/AGENTS.md`.
 
 ## Test Intent
 

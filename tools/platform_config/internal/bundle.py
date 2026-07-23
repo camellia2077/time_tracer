@@ -41,8 +41,8 @@ def build_bundle_model(source_bundle: dict[str, Any], target: str) -> BundleMode
 
     paths_table = ensure_dict(source_bundle.get("paths"), "paths")
     converter_table = ensure_dict(paths_table.get("converter"), "paths.converter")
-    interval_config = normalize_rel_path(
-        ensure_str(converter_table.get("interval_config"), "paths.converter.interval_config")
+    main_config = normalize_rel_path(
+        ensure_str(converter_table.get("main_config"), "paths.converter.main_config")
     )
     visualization_table = ensure_dict(paths_table.get("visualization"), "paths.visualization")
     heatmap_config = normalize_rel_path(
@@ -54,14 +54,14 @@ def build_bundle_model(source_bundle: dict[str, Any], target: str) -> BundleMode
 
     if target == "android":
         converter_files = dedupe_keep_order(
-            [path for path in source_required + source_optional if path.startswith("converter/")]
+            [path for path in source_required + source_optional if path.startswith("aliases/")]
         )
         required_files = dedupe_keep_order(
             [
                 "config.toml",
                 heatmap_config,
                 *converter_files,
-                interval_config,
+                main_config,
                 *markdown_paths.values(),
             ]
         )
@@ -71,7 +71,7 @@ def build_bundle_model(source_bundle: dict[str, Any], target: str) -> BundleMode
             bundle_name=bundle_name,
             required_files=required_files,
             optional_files=[],
-            converter_interval_config=interval_config,
+            converter_main_config=main_config,
             visualization_heatmap_config=heatmap_config,
             reports={"markdown": markdown_paths},
         )
@@ -84,7 +84,7 @@ def build_bundle_model(source_bundle: dict[str, Any], target: str) -> BundleMode
         raise ValueError("Windows bundle generation requires paths.reports.markdown.")
 
     required_files = dedupe_keep_order(
-        ["config.toml", heatmap_config, interval_config, *source_required]
+        ["config.toml", heatmap_config, main_config, *source_required]
     )
     optional_files = dedupe_keep_order(source_optional)
     return BundleModel(
@@ -93,7 +93,7 @@ def build_bundle_model(source_bundle: dict[str, Any], target: str) -> BundleMode
         bundle_name=bundle_name,
         required_files=required_files,
         optional_files=optional_files,
-        converter_interval_config=interval_config,
+        converter_main_config=main_config,
         visualization_heatmap_config=heatmap_config,
         reports=windows_reports,
     )
@@ -117,7 +117,7 @@ def render_bundle_toml(model: BundleModel) -> str:
     for path in model.optional_files:
         lines.append(f'  "{path}",')
     lines.extend(["]", "", "[paths.converter]"])
-    lines.append(f'interval_config = "{model.converter_interval_config}"')
+    lines.append(f'main_config = "{model.converter_main_config}"')
     lines.append("")
     lines.append("[paths.visualization]")
     lines.append(f'heatmap = "{model.visualization_heatmap_config}"')

@@ -8,7 +8,7 @@
 
 共享测试数据、fixtures 与 golden 仍留在 `test/`。
 根目录 `test/README.md` 保持薄索引，详细规则统一下沉到
-`docs/toolchain/test/README.md`。
+`docs/tools/toolchain/test/README.md`。
 
 ## 入口
 
@@ -22,7 +22,7 @@
 ## 目录职责
 
 1. `tools/toolchain/`
-   - build / verify / validate / tidy / result contract 的官方实现
+   - build / verify / tidy / result contract 的官方实现
 2. `tools/suites/`
    - suite 定义、command matrix、suite-local 脚本
 3. `tools/test_framework/`
@@ -56,34 +56,32 @@
 3. 改 golden / snapshot：
    - 看 `test/golden/**`
 4. 改运行结果目录契约：
-   - 看 `docs/toolchain/test/README.md`
+   - 看 `docs/tools/toolchain/test/README.md`
 
 ## 先读哪些文档
 
 1. 总索引：
-   - `docs/toolchain/README.md`
+   - `docs/tools/toolchain/README.md`
 2. 工具链主文档：
-   - `docs/toolchain/tools/README.md`
+   - `docs/tools/toolchain/tools/README.md`
 3. 测试与结果契约：
-   - `docs/toolchain/test/README.md`
+   - `docs/tools/toolchain/test/README.md`
 4. 命令改动定位：
-   - `docs/toolchain/command_map/README.md`
-5. validate 计划：
-   - `docs/toolchain/validate/README.md`
-6. workflow 约定：
-   - `docs/toolchain/workflows/README.md`
-7. clang-tidy 专项：
-   - `docs/toolchain/tidy/README.md`
+   - `docs/tools/toolchain/command_map/README.md`
+5. workflow 约定：
+   - `docs/tools/toolchain/workflows/README.md`
+6. clang-tidy 专项：
+   - `docs/tools/toolchain/tidy/README.md`
 8. suite 资产层说明：
    - `tools/suites/README.md`
 9. 工具链历史：
-   - `docs/toolchain/history/README.md`
+   - `docs/tools/toolchain/history/README.md`
 
 ## 维护约束
 
-1. `tools/run.py` 仍是 build / verify / validate 官方入口。
+1. `tools/run.py` 仍是 build / verify 官方入口。
 2. `tools/test.py` 仍是 suite / runtime-guard 官方入口。
 3. `tools/lint_suites.py` 仍是 suite schema lint 官方入口。
 4. 改动影响工具链协议、suite 入口、结果契约、目录职责时，同步更新
-   `docs/toolchain/` 文档。
+   `docs/tools/toolchain/` 文档。
 5. 本文件保持薄索引，不扩写成详细设计文档。

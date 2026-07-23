@@ -168,8 +168,8 @@ parent = "fitness"
 我们提供了全自动的构建脚本，可一键完成核心程序与运行时交付物的编译。
 
 项目统一使用 Python 工具链命令进行构建和测试，不建议直接调用 `cmake`/`ninja` 或自定义 `ps1`。
-➡️ **Python 工具链修改定位图（Agent/开发者）**：[docs/toolchain/python_command_map.md](docs/toolchain/python_command_map.md)
-➡️ **clang-tidy 标准流程 SOP**：[docs/toolchain/clang_tidy_sop.md](docs/toolchain/clang_tidy_sop.md)
+➡️ **Python 工具链修改定位图（Agent/开发者）**：[docs/tools/toolchain/command_map/python.md](docs/tools/toolchain/command_map/python.md)
+➡️ **clang-tidy 标准流程 SOP**：[docs/tools/toolchain/tidy/sop.md](docs/tools/toolchain/tidy/sop.md)
 
 ```bash
 # 构建（time_tracer）

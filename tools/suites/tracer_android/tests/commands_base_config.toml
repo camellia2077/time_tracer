@@ -44,11 +44,11 @@ args = [
 expect_exit = 0
 
 [[commands]]
-name = "Converter Interval Uses alias_mapping_path"
+name = "Converter Interval Uses fixed aliases directory"
 stage = "base-config"
 args = [
   "/c",
-  "findstr /c:alias_mapping_path ..\\..\\..\\..\\assets\\tracer_core\\config\\converter\\interval_processor_config.toml >nul && exit /b 0 || (echo Missing alias_mapping_path in interval_processor_config.toml && exit /b 1)"
+  "if not exist ..\\..\\..\\..\\assets\\tracer_core\\config\\converter\\aliases\\*.toml (echo Missing converter aliases && exit /b 1) else exit /b 0"
 ]
 expect_exit = 0
 
@@ -57,7 +57,7 @@ name = "Converter Interval Rejects mappings_config_path"
 stage = "base-config"
 args = [
   "/c",
-  "findstr /c:mappings_config_path ..\\..\\..\\..\\assets\\tracer_core\\config\\converter\\interval_processor_config.toml >nul && (echo Unexpected legacy mappings_config_path in interval_processor_config.toml && exit /b 1) || exit /b 0"
+  "findstr /c:mappings_config_path ..\\..\\..\\..\\assets\\tracer_core\\config\\converter\\aliases\\_system.toml >nul && (echo Unexpected legacy mappings_config_path in converter aliases _system.toml && exit /b 1) || exit /b 0"
 ]
 expect_exit = 0
 
@@ -66,7 +66,7 @@ name = "Alias Mapping Uses Index Includes"
 stage = "base-config"
 args = [
   "/c",
-  "findstr /c:includes ..\\..\\..\\..\\assets\\tracer_core\\config\\converter\\alias_mapping.toml >nul && if exist ..\\..\\..\\..\\assets\\tracer_core\\config\\converter\\aliases\\*.toml (exit /b 0) else (echo Missing alias_mapping index includes or aliases child files && exit /b 1)"
+  "if exist ..\\..\\..\\..\\assets\\tracer_core\\config\\converter\\aliases\\*.toml (exit /b 0) else (echo Missing aliases child files && exit /b 1)"
 ]
 expect_exit = 0
 

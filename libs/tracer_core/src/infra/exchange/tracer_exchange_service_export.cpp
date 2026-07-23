@@ -143,10 +143,9 @@ auto TracerExchangeService::RunExport(
   for (const auto& payload_file : kPayloadFiles) {
     manifest.payload_files.push_back(payload_file.relative_package_path);
   }
-  const toml::table kAliasIndexTbl = modloader::ReadToml(kConfigPaths.alias_mapping_path);
   auto kAliasDefinition =
-      modalias::LoadAliasMappingDefinition(kConfigPaths.alias_mapping_path,
-                                           kAliasIndexTbl, modloader::ReadToml);
+      modalias::LoadAliasMappingDefinition(kConfigPaths.alias_directory_path,
+                                            modloader::ReadToml);
   // Package layout must be deterministic: manifest validation requires sorted
   // alias child paths, and cross-host exports should produce stable entry order.
   std::ranges::sort(
@@ -161,7 +160,8 @@ auto TracerExchangeService::RunExport(
     // The manifest stores explicit child-file paths so import/inspect can
     // validate the full alias bundle instead of assuming a single alias file.
     manifest.converter_alias_mapping_files.push_back(
-        (fs::path("config") / "converter" / child_file.relative_path)
+        (fs::path("config") / "aliases" /
+         child_file.relative_path)
             .generic_string());
   }
 
@@ -172,8 +172,6 @@ auto TracerExchangeService::RunExport(
   entries.push_back(BuildManifestEntry(manifest));
   entries.push_back(BuildFileEntry(exchange_pkg::kConverterMainPath,
                                    kConfigPaths.main_config_path));
-  entries.push_back(BuildFileEntry(exchange_pkg::kAliasMappingIndexPath,
-                                   kConfigPaths.alias_mapping_path));
   for (std::size_t index = 0;
        index < exchange_pkg::kReportMarkdownPackagePaths.size();
        ++index) {

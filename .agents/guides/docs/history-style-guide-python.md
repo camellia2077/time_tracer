@@ -75,5 +75,5 @@ description: Agent 专用 Python 工程历史模板
 * 重构 `tools/toolchain/commands/cmd_validate/`，把轨道执行、日志记录与汇总输出拆成独立模块。
 
 ### 修复 (Fixed)
-* 更新 `tools/tests/verify/` 与 `tools/tests/validate/` 回归用例，使其与新的 `verify` 执行语义保持一致。
+* 更新 `tools/tests/verify/` 回归用例，使其与新的 `verify` 执行语义保持一致。
 ```

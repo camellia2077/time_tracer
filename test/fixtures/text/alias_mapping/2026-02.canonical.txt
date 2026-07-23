@@ -1,0 +1,8 @@
+y2026
+m02
+
+d0201
+0700wake
+0830study_english_words // canonical event
+1000study_english_writing // another canonical event
+1130-1200study_english_words // canonical interval

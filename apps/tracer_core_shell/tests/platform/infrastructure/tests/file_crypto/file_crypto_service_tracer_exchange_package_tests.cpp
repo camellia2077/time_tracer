@@ -13,7 +13,7 @@ using namespace tracer_exchange_tests_internal;
 auto TestTracerExchangePackageRoundTrip(int& failures) -> void {
   const auto payloads = BuildSamplePayloads();
   const auto entries = BuildValidPackageEntries(
-      payloads, "main = true\n", "includes = [\"aliases/default.toml\"]\n");
+      payloads, "main = true\n");
   const auto bytes = exchange_pkg::EncodePackageBytes(entries);
   const auto decoded = exchange_pkg::DecodePackageBytes(bytes);
 
@@ -51,8 +51,7 @@ auto TestTracerExchangePackageRoundTrip(int& failures) -> void {
 
 auto TestTracerExchangeDecodeRejectsShaMismatch(int& failures) -> void {
   auto bytes = exchange_pkg::EncodePackageBytes(
-      BuildValidPackageEntries(BuildSamplePayloads(), "main = true\n",
-                               "includes = [\"aliases/default.toml\"]\n"));
+      BuildValidPackageEntries(BuildSamplePayloads(), "main = true\n"));
   if (!bytes.empty()) {
     bytes.back() ^= 0x01U;
   }
@@ -79,7 +78,7 @@ auto TestTracerExchangeManifestRejectsPathDrift(int& failures) -> void {
   manifest.created_at_utc = "2026-03-18T12:34:56Z";
   manifest.source_root_name = "data";
   manifest.payload_files = {"payload/2025/2025-01.txt"};
-  manifest.converter_alias_mapping_files = {"config/converter/aliases/default.toml"};
+  manifest.converter_alias_mapping_files = {"config/aliases/default.toml"};
 
   const std::string invalid_manifest =
       ReplaceFirst(exchange_pkg::BuildManifestText(manifest),

@@ -73,11 +73,8 @@ Detailed navigation for the IO adapter library used around the core runtime.
    downstream in:
    - `tools/suites/tracer_windows_rust_cli/tests/commands_txt_view_day.toml`
    - `apps/tracer_core_shell/tests/integration/tracer_core_c_api_pipeline_tests.cpp`
-3. Focused validation:
-
-```powershell
-python tools/run.py validate --plan <plan_name> --paths libs/tracer_adapters_io apps/tracer_core_shell
-```
+3. Validation selection and completion requirements are defined by
+   `libs/tracer_adapters_io/AGENTS.md`.
 
 ## Read-First Docs
 

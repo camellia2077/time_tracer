@@ -12,9 +12,9 @@
 建议阅读顺序：
 
 1. 本文：先建立目录与职责地图
-2. `docs/toolchain/tidy/flow.md`：再看命令流转与状态文件
-3. `docs/toolchain/command_map/python.md`：快速查命令入口
-4. `docs/toolchain/tidy/sop.md`：看标准操作流程
+2. `docs/tools/toolchain/tidy/flow.md`：再看命令流转与状态文件
+3. `docs/tools/toolchain/command_map/python.md`：快速查命令入口
+4. `docs/tools/toolchain/tidy/sop.md`：看标准操作流程
 
 ## 1. 总入口与分层
 
@@ -77,7 +77,7 @@ flowchart TD
 | 改 task 级自动 patch / fix / suggest / step 参数 | `tools/toolchain/cli/handlers/tidy/tidy_task_*.py`、`tools/toolchain/cli/handlers/tidy/tidy_step.py` |
 | 改 `python tools/run.py tidy ...` 的执行主链 | `tools/toolchain/commands/tidy/command.py`、`tools/toolchain/commands/tidy/command_execute.py` |
 | 改 `cmake --build ... --target tidy` 的拼装方式 | `tools/toolchain/commands/tidy/invoker.py` |
-| 改 `build.log` 到 task records / task views 的拆分策略 | `tools/toolchain/commands/tidy/task_builder.py`、`tools/toolchain/commands/tidy/log_splitter.py` |
+| 改 `build.log` 到 task records / task views 的拆分策略 | `tools/toolchain/commands/tidy/tasking/task_builder.py`、`tools/toolchain/commands/tidy/log_splitter.py` |
 | 改 `task_*.toon` / `issue_*.toon` 的编码格式 | `tools/toolchain/formats/toon/*.py` |
 | 改诊断解析规则 | `tools/toolchain/services/log_parser.py` |
 | 改任务优先级排序 | `tools/toolchain/services/task_sorter.py` |
@@ -89,7 +89,7 @@ flowchart TD
 | 改 rename-only / empty task 自动循环清理 | `tools/toolchain/commands/tidy/loop.py`、`tools/toolchain/commands/tidy/flow_internal/loop_tasks.py` |
 | 改状态 JSON / 汇总 JSON 格式 | `tools/toolchain/services/batch_state.py`、`tools/toolchain/commands/tidy/refresh_internal/refresh_state.py`、`tools/toolchain/commands/tidy/flow_internal/flow_state.py`、`tools/toolchain/commands/tidy/tidy_result.py` |
 | 改 fix strategy 分类 | `tools/toolchain/commands/tidy/fix_strategy.py`、`tools/toolchain/core/config.py`、`tools/toolchain/config/workflow.toml` |
-| 改 clang-tidy 命令入口 / task view 参数 | `tools/toolchain/cli/handlers/tidy/tidy.py`、`tools/toolchain/cli/handlers/tidy/tidy_split.py`、`tools/toolchain/commands/tidy/task_builder.py` |
+| 改 clang-tidy 命令入口 / task view 参数 | `tools/toolchain/cli/handlers/tidy/tidy.py`、`tools/toolchain/cli/handlers/tidy/tidy_split.py`、`tools/toolchain/commands/tidy/tasking/task_builder.py` |
 
 ## 3. 目录职责拆解
 
@@ -369,7 +369,7 @@ agent 排查建议：
 
 优先看：
 
-1. `tools/toolchain/commands/tidy/task_builder.py`
+1. `tools/toolchain/commands/tidy/tasking/task_builder.py`
 2. `tools/toolchain/services/log_parser.py`
 3. `tools/toolchain/services/task_sorter.py`
 
@@ -450,7 +450,7 @@ pwsh -Command "python tools/run.py tidy --app tracer_core_shell"
    - 若有状态文件，再补文档
 2. 修改状态 JSON 结构时：
    - 同步检查 `tidy_result.json` 的 `next_action`
-   - 同步更新本文和 `docs/toolchain/tidy/sop.md`
+   - 同步更新本文和 `docs/tools/toolchain/tidy/sop.md`
 3. 修改批次流转时：
    - 同步检查 `tidy-batch`、`tidy-refresh`、`tidy-close`
    - 因为这三者共享同一个 tidy workspace 状态目录

@@ -232,12 +232,8 @@ auto BuildActivityAliasMappingsContent(
 
   const std::filesystem::path config_path = *converter_config_toml_path;
   const std::filesystem::path config_dir = config_path.parent_path();
-  const std::filesystem::path alias_index_path = config_dir / "alias_mapping.toml";
-  const toml::table alias_index_tbl = modloader::ReadToml(alias_index_path);
   const auto definition = modloader::detail::LoadAliasMappingDefinition(
-      alias_index_path,
-      alias_index_tbl,
-      [](const std::filesystem::path& path) {
+      config_dir / "aliases", [](const std::filesystem::path& path) {
         return modloader::ReadToml(path);
       });
   return BuildAliasEntriesPayload(definition.expanded_entries);
@@ -267,7 +263,7 @@ auto BuildWakeKeywordsContent(
       converter_config_toml_path, "wake_keywords");
 
   std::set<std::string> wake_keywords;
-  for (const auto& wake_keyword : kConfig.wake_keywords) {
+  for (const auto& wake_keyword : kConfig.sleep_inference.wake_keywords) {
     const std::string kTrimmedKeyword = TrimCopy(wake_keyword);
     if (!kTrimmedKeyword.empty()) {
       wake_keywords.insert(kTrimmedKeyword);
@@ -293,7 +289,7 @@ auto BuildAuthorableEventTokensContent(
       authorable_tokens.insert(kTrimmedCanonical);
     }
   }
-  for (const auto& wake_keyword : kConfig.wake_keywords) {
+  for (const auto& wake_keyword : kConfig.sleep_inference.wake_keywords) {
     const std::string kTrimmedKeyword = TrimCopy(wake_keyword);
     if (!kTrimmedKeyword.empty()) {
       authorable_tokens.insert(kTrimmedKeyword);

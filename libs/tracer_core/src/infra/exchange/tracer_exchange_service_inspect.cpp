@@ -59,7 +59,6 @@ auto BuildInspectResult(
   }
   result.converter_entries = {
       FindEntrySummary(package, exchange_pkg::kConverterMainPath),
-      FindEntrySummary(package, exchange_pkg::kAliasMappingIndexPath),
   };
   result.converter_entries.reserve(result.converter_entries.size() +
                                    package.manifest.report_markdown_files

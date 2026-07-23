@@ -2,58 +2,58 @@ y2026
 m11
 
 d1101
-r 烤肉自助
+// 烤肉自助
 0646新的一天开始了
 1246数据结构二叉树
-1813meal_dining #cherry
+1813meal_dining //cherry
 1921sleep_day
 0154routine_body-hygiene_bathing
-0211睡觉 ;date
+0211睡觉 //date
 0238sleep_day //remark
-0243study_english_writing #备注
-0245哔哩哔哩 ;apple
+0243study_english_writing //备注
+0245哔哩哔哩 //apple
 0251有氧训练 //banana
 
 d1102
-r 没有背叛小到可以容忍
-r beta
+// 没有背叛小到可以容忍
+// beta
 0628wake
-1524无氧训练 #cherry
-0009zhihu ;date
+1524无氧训练 //cherry
+0009zhihu //date
 0025饭
 0216weibo
 0219英语写作
 0222meal_dining //remark
-0225r #备注
+0225r //备注
 0226weibo
 0229高等数学
 
 d1103
-r alpha
-r 烤肉自助
+// alpha
+// 烤肉自助
 0606w
-2007sleep_day ;apple
+2007sleep_day //apple
 0047meal_dining
 0051exercise_cardio
 0053数据结构
 0316study_math_probability-theory //banana
-0321皇室战争 #cherry
-0322守望先锋 ;date
+0321皇室战争 //cherry
+0322守望先锋 //date
 0323recreation_online-platforms_douyin
 0325概率统计 //remark
 
 d1104
-r 没有背叛小到可以容忍
-r 烤肉自助
-0827线性代数 #备注
-1018上厕所 ;apple
+// 没有背叛小到可以容忍
+// 烤肉自助
+0827线性代数 //备注
+1018上厕所 //apple
 2129routine_express //banana
-0101study_math_linear-algebra #cherry
-0318sleep_day ;date
+0101study_math_linear-algebra //cherry
+0318sleep_day //date
 0321study_computer_data-structure_graphs //remark
 0329recreation_game_clash-royale
-0332routine_toilet #备注
-0333r ;apple
+0332routine_toilet //备注
+0333r //apple
 0334minecraft
 
 d1105
@@ -65,167 +65,167 @@ d1105
 0318recreation_online-platforms_weibo
 0319study_english_article
 0320数据结构
-0321线性代数矩阵 #cherry
+0321线性代数矩阵 //cherry
 0322meal_dining
 
 d1106
-r 没有牺牲大到无法接受
-r 守望先锋真好玩
+// 没有牺牲大到无法接受
+// 守望先锋真好玩
 0630新的一天开始了
-0725快递 ;date
+0725快递 //date
 1634study_computer_data-structure_graphs //remark
-1921study_english_words #备注
+1921study_english_words //备注
 2154rest_rest
 2232洗澡
 2340study_english_article
-0116cr ;apple
+0116cr //apple
 0120routine_body-hygiene_bathing
 0309睡觉 //banana
 
 d1107
-r beta
-r 烤肉自助
+// beta
+// 烤肉自助
 0608醒
 0932routine_toilet
 2123洗澡
-2349routine_personal-hygiene_oral-hygiene #cherry
-0024recreation_game_clash-royale ;date
+2349routine_personal-hygiene_oral-hygiene //cherry
+0024recreation_game_clash-royale //date
 0212守望先锋 //remark
-0213recreation_game_clash-royale #备注
-0218休息 ;apple
+0213recreation_game_clash-royale //备注
+0218休息 //apple
 0219sleep_day //banana
-0222minecraft #cherry
+0222minecraft //cherry
 
 d1108
-r 没有背叛小到可以容忍
-r beta
+// 没有背叛小到可以容忍
+// beta
 0602新的一天开始了
-1541recreation_online-platforms_douyin ;date
+1541recreation_online-platforms_douyin //date
 2309快递 //remark
 0253rest
 0304哔哩哔哩
 0309recreation_online-platforms_zhihu
-0323recreation_game_clash-royale #备注
+0323recreation_game_clash-royale //备注
 0324皇室战争
-0325sleep_day ;apple
+0325sleep_day //apple
 0326rest_rest //banana
 
 d1109
-r 没有背叛小到可以容忍
+// 没有背叛小到可以容忍
 0624起床
 0734白天睡觉
 1728rest_rest
 0202study_english_article
-0301数据结构 #cherry
-0311cr ;date
+0301数据结构 //cherry
+0311cr //date
 0332知乎 //remark
 0336exercise_anaerobic
-0337rest_rest #备注
+0337rest_rest //备注
 0342洗漱
 
 d1110
-r 没有牺牲大到无法接受
-r 守望先锋真好玩
-r beta
+// 没有牺牲大到无法接受
+// 守望先锋真好玩
+// beta
 0641起床
-1526英语文章 ;apple
+1526英语文章 //apple
 2334routine_body-hygiene_bathing
 0221哔哩哔哩
 0224zhihu
 0324meal //banana
 0326routine_body-hygiene_bathing
 0329Clash Royale
-0330有氧训练 #cherry
-0332study_math_linear-algebra ;date
+0330有氧训练 //cherry
+0332study_math_linear-algebra //date
 
 d1111
 0632新的一天开始了
 1951meal_dining //remark
-2216recreation_online-platforms_bilibili #备注
+2216recreation_online-platforms_bilibili //备注
 0138rest_rest
-0148study_math_calculus_double-integral ;apple
+0148study_math_calculus_double-integral //apple
 0204概率统计
 0208英语单词
 0224meal_dining //banana
-0226bilibili #cherry
-0229study_english_article ;date
+0226bilibili //cherry
+0229study_english_article //date
 
 d1112
 0438zhihu
 1859study_english_writing //remark
 2059routine_toilet
 0145英语单词
-0323线性代数矩阵 #备注
+0323线性代数矩阵 //备注
 0327minecraft
-0328minecraft ;apple
+0328minecraft //apple
 0329概率统计
 0330recreation_online-platforms_bilibili
 0331白天睡觉
 
 d1113
-r beta
-r 没有背叛小到可以容忍
+// beta
+// 没有背叛小到可以容忍
 0607醒
 2145overwatch
 0219routine_body-hygiene_bathing //banana
 0244study_math_linear-algebra_matrix
 0259洗澡
-0300recreation_game_clash-royale #cherry
+0300recreation_game_clash-royale //cherry
 0301routine_toilet
-0302线性代数矩阵 ;date
+0302线性代数矩阵 //date
 0303失眠
 0304routine_personal-hygiene_oral-hygiene
 
 d1114
-r 没有牺牲大到无法接受
-r 守望先锋真好玩
+// 没有牺牲大到无法接受
+// 守望先锋真好玩
 0600wake
 0719睡觉
 0936洗澡 //remark
-1003抖音 #备注
-1544睡觉 ;apple
+1003抖音 //备注
+1544睡觉 //apple
 1940recreation_online-platforms_douyin //banana
-0154recreation_game_clash-royale #cherry
-0240recreation_game_clash-royale ;date
+0154recreation_game_clash-royale //cherry
+0240recreation_game_clash-royale //date
 0332cr
 0335Clash Royale
 
 d1115
-r 没有背叛小到可以容忍
-r 没有牺牲大到无法接受
-r 烤肉自助
+// 没有背叛小到可以容忍
+// 没有牺牲大到无法接受
+// 烤肉自助
 0658醒
 1825白天睡觉 //remark
 2159sleep_day
-2342exercise_anaerobic #备注
+2342exercise_anaerobic //备注
 0147sleep_day
 0218英语文章
-0231meal_dining ;apple
+0231meal_dining //apple
 0238recreation_online-platforms_bilibili
 0242routine_body-hygiene_bathing //banana
-0251失眠 #cherry
+0251失眠 //cherry
 
 d1116
 0626w
-2140哔哩哔哩 ;date
+2140哔哩哔哩 //date
 0012meal_dining //remark
-0055recreation_game_clash-royale #备注
-0318有氧训练 ;apple
+0055recreation_game_clash-royale //备注
+0318有氧训练 //apple
 0320洗澡 //banana
 0321饭
 0322bilibili
 0323recreation_game_overwatch
-0324recreation_online-platforms_bilibili #cherry
+0324recreation_online-platforms_bilibili //cherry
 
 d1117
-r alpha
+// alpha
 0629醒
 1531meal_dining
 0318rest_rest
-0326study_english_writing ;date
+0326study_english_writing //date
 0328睡觉
 0330recreation_online-platforms_bilibili //remark
-0331recreation_game_clash-royale #备注
+0331recreation_game_clash-royale //备注
 0336recreation_game_clash-royale
 0337study_computer_data-structure_trees
 0338rest_insomnia
@@ -233,178 +233,178 @@ r alpha
 d1118
 0622w
 1832recreation_online-platforms_zhihu
-2057知乎 ;apple
+2057知乎 //apple
 2134r
 2315study_math_linear-algebra
 0044白天睡觉
 0326数据结构 //banana
 0331routine_toilet
-0332白天睡觉 #cherry
-0333高等数学 ;date
+0332白天睡觉 //cherry
+0333高等数学 //date
 
 d1119
-r 没有背叛小到可以容忍
+// 没有背叛小到可以容忍
 0610起床
 1026睡觉
 1948study_english_listening
 2007抖音 //remark
 2353recreation_online-platforms_bilibili
 0209sleep_day
-0303rest_rest #备注
+0303rest_rest //备注
 0312Clash Royale
 0314study_english_writing
-0316study_math_calculus_double-integral ;apple
+0316study_math_calculus_double-integral //apple
 
 d1120
-r 没有背叛小到可以容忍
+// 没有背叛小到可以容忍
 0642醒
 2107吃饭 //banana
-0234minecraft #cherry
-0240英语写作 ;date
+0234minecraft //cherry
+0240英语写作 //date
 0241上厕所 //remark
-0242睡觉 #备注
-0243recreation_game_overwatch ;apple
+0242睡觉 //备注
+0243recreation_game_overwatch //apple
 0244recreation_online-platforms_bilibili
 0245overwatch //banana
 0246study_math_probability-theory
 
 d1121
-r beta
-r beta
-r beta
+// beta
+// beta
+// beta
 0631醒
-1257study_english_writing #cherry
+1257study_english_writing //cherry
 1440study_computer_data-structure_trees
 2310routine_personal-hygiene_oral-hygiene
 0007study_math_linear-algebra_matrix
-0211recreation_online-platforms_zhihu ;date
+0211recreation_online-platforms_zhihu //date
 0227英语写作 //remark
-0245study_english_article #备注
-0307meal_dining ;apple
+0245study_english_article //备注
+0307meal_dining //apple
 0317study_computer_data-structure_graphs
 
 d1122
-r 没有牺牲大到无法接受
+// 没有牺牲大到无法接受
 0626w
 0757study_computer_data_structure
 0941失眠
 1341study_english_writing //banana
-1810douyin #cherry
-2144高等数学二重积分 ;date
+1810douyin //cherry
+2144高等数学二重积分 //date
 0251recreation_game_clash-royale
 0300上厕所
 0320exercise_cardio //remark
 0326douyin
 
 d1123
-r 守望先锋真好玩
-r 没有牺牲大到无法接受
+// 守望先锋真好玩
+// 没有牺牲大到无法接受
 0651w
 0813study_english_writing
 0903数据结构
-1532哔哩哔哩 #备注
+1532哔哩哔哩 //备注
 1954线性代数
-2123routine_toilet ;apple
+2123routine_toilet //apple
 2348英语写作 //banana
-0125概率统计 #cherry
+0125概率统计 //cherry
 0136meal
-0236线性代数 ;date
+0236线性代数 //date
 
 d1124
-r 没有牺牲大到无法接受
-r alpha
+// 没有牺牲大到无法接受
+// alpha
 0649w
 2246study_english_words
 0145exercise_cardio //remark
-0148recreation_game_minecraft #备注
+0148recreation_game_minecraft //备注
 0206线性代数
-0215英语单词 ;apple
+0215英语单词 //apple
 0221study_math_linear-algebra_matrix
 0222有氧训练 //banana
 0223概率统计
-0224meal_dining #cherry
+0224meal_dining //cherry
 
 d1125
-r 烤肉自助
-r 没有背叛小到可以容忍
-0534高等数学二重积分 ;date
+// 烤肉自助
+// 没有背叛小到可以容忍
+0534高等数学二重积分 //date
 0934recreation_game_overwatch
 1121rest_rest
 0226无氧训练
 0229抖音
 0305recreation_game_overwatch
 0307routine_body-hygiene_bathing //remark
-0308study_english_listening #备注
+0308study_english_listening //备注
 0309bilibili
-0310sleep_day ;apple
+0310sleep_day //apple
 
 d1126
-r beta
-r beta
-r 烤肉自助
+// beta
+// beta
+// 烤肉自助
 0626醒
 1604白天睡觉 //banana
 2013洗澡
 2151study_math_linear-algebra
-0140概率统计 #cherry
+0140概率统计 //cherry
 0334皇室战争
-0335meal ;date
+0335meal //date
 0337rest_rest //remark
 0338rest
 0340cr
 
 d1127
-r beta
-r 守望先锋真好玩
-r alpha
+// beta
+// 守望先锋真好玩
+// alpha
 0640wake
 1716吃饭
-2210zhihu #备注
+2210zhihu //备注
 0204study_computer_data-structure_trees
-0211study_english_writing ;apple
+0211study_english_writing //apple
 0212douyin //banana
 0225overwatch
-0228rest_rest #cherry
+0228rest_rest //cherry
 0229recreation_online-platforms_bilibili
 0231睡觉
 
 d1128
-r alpha
-r alpha
+// alpha
+// alpha
 0614w
-1112休息 ;date
+1112休息 //date
 1538cr //remark
-0227失眠 #备注
+0227失眠 //备注
 0251数据结构
 0253douyin
-0255meal ;apple
+0255meal //apple
 0256英语单词 //banana
 0257数据结构图
-0259recreation_online-platforms_weibo #cherry
+0259recreation_online-platforms_weibo //cherry
 
 d1129
-r 没有牺牲大到无法接受
-0812哔哩哔哩 ;date
+// 没有牺牲大到无法接受
+0812哔哩哔哩 //date
 2214study_math_calculus //remark
 0223皇室战争
-0232meal #备注
-0233睡觉 ;apple
+0232meal //备注
+0233睡觉 //apple
 0237概率统计 //banana
 0238study_computer_data-structure_graphs
-0239meal_dining #cherry
-0240抖音 ;date
+0239meal_dining //cherry
+0240抖音 //date
 0241meal_dining //remark
 
 d1130
-r alpha
-r beta
+// alpha
+// beta
 0609wake
 1420rest_rest
 1859study_english_listening
 2059recreation_game_overwatch
 2111上厕所
-2343routine_personal-hygiene_oral-hygiene #备注
+2343routine_personal-hygiene_oral-hygiene //备注
 0039洗漱
-0229有氧训练 ;apple
+0229有氧训练 //apple
 0259recreation_online-platforms_bilibili //banana
-0304zhihu #cherry
+0304zhihu //cherry

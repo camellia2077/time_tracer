@@ -19,7 +19,7 @@ auto main() -> int {
 
     const fs::path kConverterConfig = kRepoRoot / "assets" / "tracer_core" /
                                       "config" / "converter" /
-                                      "interval_processor_config.toml";
+                                      "aliases/_system.toml";
     const fs::path kInputRoot = kRepoRoot / "test" / "data";
     Require(fs::exists(kInputRoot), "Missing test/data directory");
     const fs::path kTempRoot =

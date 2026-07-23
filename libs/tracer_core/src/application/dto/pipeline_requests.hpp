@@ -2,6 +2,7 @@
 #define APPLICATION_DTO_PIPELINE_REQUESTS_HPP_
 
 #include <string>
+#include <vector>
 
 #include "domain/types/date_check_mode.hpp"
 #include "domain/types/ingest_mode.hpp"
@@ -61,6 +62,41 @@ struct ReplaceTxtDayBlockRequest {
   std::string content;
   std::string day_marker;
   std::string edited_day_body;
+};
+
+// Identifies one persisted activity record. Only its remark is mutable; the
+// activity name and interval remain immutable in this operation.
+struct UpdateActivityRemarkAtomicallyRequest {
+  std::string target_date_iso;
+  long long logical_id = 0;
+  std::string remark;
+  std::string preferred_txt_path;
+  DateCheckMode date_check_mode = DateCheckMode::kNone;
+};
+
+// Updates the authored day remark and re-ingests the affected month as one
+// operation. The database remains a projection of the resulting TXT content.
+struct UpdateDayRemarkAtomicallyRequest {
+  std::string target_date_iso;
+  std::string remark;
+  std::string preferred_txt_path;
+  DateCheckMode date_check_mode = DateCheckMode::kNone;
+};
+
+struct ConvertTxtActivityNamesRequest {
+  std::string content;
+  // alias_to_canonical or canonical_to_alias
+  std::string direction;
+};
+
+struct CanonicalActivityNameReplacement {
+  std::string old_canonical;
+  std::string new_canonical;
+};
+
+struct ReplaceTxtCanonicalActivityNamesRequest {
+  std::string content;
+  std::vector<CanonicalActivityNameReplacement> replacements;
 };
 
 }  // namespace tracer_core::core::dto

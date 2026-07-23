@@ -46,7 +46,7 @@ constexpr std::string_view kMonthContent =
     "\n"
     "d0102\n"
     "0656w\n"
-    "0904无氧训练 #cherry\n"
+    "0904无氧训练 // cherry\n"
     "2207minecraft\n"
     "\n"
     "d0103\n"
@@ -228,6 +228,35 @@ auto TestTxtDayBlockPipelineApiForwarding(TestState& state) -> void {
          pipeline_workflow.last_replace_txt_day_block_request.edited_day_body ==
              "body",
          "RunReplaceTxtDayBlock should forward edited body.");
+
+  const auto convert_response = runtime_api.pipeline().RunConvertTxtActivityNames({
+      .content = "month-content",
+      .direction = "canonical_to_alias",
+  });
+  Expect(state, convert_response.ok,
+         "RunConvertTxtActivityNames should return workflow response.");
+  Expect(state, pipeline_workflow.convert_txt_activity_names_call_count == 1,
+         "RunConvertTxtActivityNames should call workflow once.");
+  Expect(state,
+         pipeline_workflow.last_convert_txt_activity_names_request.direction ==
+             "canonical_to_alias",
+         "RunConvertTxtActivityNames should forward direction.");
+
+  const auto replace_canonical_response =
+      runtime_api.pipeline().RunReplaceTxtCanonicalActivityNames({
+          .content = "month-content",
+          .replacements = {{.old_canonical = "exercise_walk",
+                            .new_canonical = "exercise_cardio_walk"}},
+      });
+  Expect(state, replace_canonical_response.ok,
+         "RunReplaceTxtCanonicalActivityNames should return workflow response.");
+  Expect(state,
+         pipeline_workflow.replace_txt_canonical_activity_names_call_count == 1,
+         "RunReplaceTxtCanonicalActivityNames should call workflow once.");
+  Expect(state,
+         pipeline_workflow.last_replace_txt_canonical_activity_names_request
+                 .replacements.front().new_canonical == "exercise_cardio_walk",
+         "RunReplaceTxtCanonicalActivityNames should forward replacements.");
 
   pipeline_workflow.fail_resolve_txt_day_block = true;
   const auto failure = runtime_api.pipeline().RunResolveTxtDayBlock({

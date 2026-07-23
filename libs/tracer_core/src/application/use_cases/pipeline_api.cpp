@@ -18,12 +18,20 @@ using tracer_core::core::dto::ValidateStructureRequest;
 using tracer_core::core::dto::ValidateLogicRequest;
 using tracer_core::core::dto::RecordActivityAtomicallyRequest;
 using tracer_core::core::dto::RecordActivityAtomicallyResponse;
+using tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest;
+using tracer_core::core::dto::UpdateActivityRemarkAtomicallyResponse;
+using tracer_core::core::dto::UpdateDayRemarkAtomicallyRequest;
+using tracer_core::core::dto::UpdateDayRemarkAtomicallyResponse;
 using tracer_core::core::dto::DefaultTxtDayMarkerRequest;
 using tracer_core::core::dto::DefaultTxtDayMarkerResponse;
 using tracer_core::core::dto::ResolveTxtDayBlockRequest;
 using tracer_core::core::dto::ResolveTxtDayBlockResponse;
 using tracer_core::core::dto::ReplaceTxtDayBlockRequest;
 using tracer_core::core::dto::ReplaceTxtDayBlockResponse;
+using tracer_core::core::dto::ConvertTxtActivityNamesRequest;
+using tracer_core::core::dto::ConvertTxtActivityNamesResponse;
+using tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest;
+using tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse;
 using tracer::core::domain::types::AppOptions;
 namespace core_api_failure = tracer::core::application::use_cases::failure;
 
@@ -218,6 +226,74 @@ auto PipelineApi::RunReplaceTxtDayBlock(
             .updated_content = request.content,
             .error_message = core_api_failure::BuildErrorMessage(
                 "RunReplaceTxtDayBlock", "Unknown error.")};
+  }
+}
+
+auto PipelineApi::RunUpdateActivityRemarkAtomically(
+    const UpdateActivityRemarkAtomicallyRequest& request)
+    -> UpdateActivityRemarkAtomicallyResponse {
+  try {
+    return pipeline_workflow_.RunUpdateActivityRemarkAtomically(request);
+  } catch (const std::exception& exception) {
+    return {.ok = false,
+            .message = core_api_failure::BuildErrorMessage(
+                "RunUpdateActivityRemarkAtomically", exception.what())};
+  } catch (...) {
+    return {.ok = false,
+            .message = core_api_failure::BuildErrorMessage(
+                "RunUpdateActivityRemarkAtomically", "Unknown error.")};
+  }
+}
+
+auto PipelineApi::RunUpdateDayRemarkAtomically(
+    const UpdateDayRemarkAtomicallyRequest& request)
+    -> UpdateDayRemarkAtomicallyResponse {
+  try {
+    return pipeline_workflow_.RunUpdateDayRemarkAtomically(request);
+  } catch (const std::exception& exception) {
+    return {.ok = false,
+            .message = core_api_failure::BuildErrorMessage(
+                "RunUpdateDayRemarkAtomically", exception.what())};
+  } catch (...) {
+    return {.ok = false,
+            .message = core_api_failure::BuildErrorMessage(
+                "RunUpdateDayRemarkAtomically", "Unknown error.")};
+  }
+}
+
+auto PipelineApi::RunConvertTxtActivityNames(
+    const ConvertTxtActivityNamesRequest& request)
+    -> ConvertTxtActivityNamesResponse {
+  try {
+    return pipeline_workflow_.RunConvertTxtActivityNames(request);
+  } catch (const std::exception& exception) {
+    return {.ok = false,
+            .converted_content = request.content,
+            .error_message = core_api_failure::BuildErrorMessage(
+                "RunConvertTxtActivityNames", exception.what())};
+  } catch (...) {
+    return {.ok = false,
+            .converted_content = request.content,
+            .error_message = core_api_failure::BuildErrorMessage(
+                "RunConvertTxtActivityNames", "Unknown error.")};
+  }
+}
+
+auto PipelineApi::RunReplaceTxtCanonicalActivityNames(
+    const ReplaceTxtCanonicalActivityNamesRequest& request)
+    -> ReplaceTxtCanonicalActivityNamesResponse {
+  try {
+    return pipeline_workflow_.RunReplaceTxtCanonicalActivityNames(request);
+  } catch (const std::exception& exception) {
+    return {.ok = false,
+            .updated_content = request.content,
+            .error_message = core_api_failure::BuildErrorMessage(
+                "RunReplaceTxtCanonicalActivityNames", exception.what())};
+  } catch (...) {
+    return {.ok = false,
+            .updated_content = request.content,
+            .error_message = core_api_failure::BuildErrorMessage(
+                "RunReplaceTxtCanonicalActivityNames", "Unknown error.")};
   }
 }
 

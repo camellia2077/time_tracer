@@ -31,7 +31,7 @@ auto BuildTimelineTestConfig() -> ConverterConfig {
   config.text_mapping["sleep"] = "sleep";
   config.text_mapping["study"] = "study";
   config.text_mapping["wake"] = "wake";
-  config.wake_keywords = {"wake"};
+  config.sleep_inference.wake_keywords = {"wake"};
   return config;
 }
 
@@ -235,6 +235,24 @@ auto TestValidateResponses(TestState& state) -> void {
          Contains(kAtomicRecordFailure.message,
                   "RunRecordActivityAtomically failed"),
          "RunRecordActivityAtomically failure should include operation name.");
+
+  const auto kDayRemarkOk = runtime_api.pipeline().RunUpdateDayRemarkAtomically(
+      {.target_date_iso = "2026-03-29",
+       .remark = "day remark first\nday remark second",
+       .preferred_txt_path = "2026/2026-03.txt",
+       .date_check_mode = DateCheckMode::kNone});
+  Expect(state, kDayRemarkOk.ok,
+         "RunUpdateDayRemarkAtomically should return ok on success.");
+  Expect(state, pipeline_workflow.update_day_remark_atomically_call_count == 1,
+         "RunUpdateDayRemarkAtomically should call workflow handler once.");
+  Expect(state,
+         pipeline_workflow.last_update_day_remark_request.target_date_iso ==
+             "2026-03-29",
+         "RunUpdateDayRemarkAtomically should forward target_date_iso.");
+  Expect(state,
+         pipeline_workflow.last_update_day_remark_request.remark ==
+             "day remark first\nday remark second",
+         "RunUpdateDayRemarkAtomically should forward multiline remark.");
 }
 
 auto TestContinuationDayPreservesFirstSegment(TestState& state) -> void {
@@ -260,9 +278,9 @@ auto TestContinuationDayPreservesFirstSegment(TestState& state) -> void {
   }
 
   const auto& first_activity = continuation_day.processedActivities.front();
-  Expect(state, first_activity.start_time_str == "23:30",
+  Expect(state, first_activity.start_time_str == "23:30:00",
          "Continuation day first segment should start from previous day end.");
-  Expect(state, first_activity.end_time_str == "07:00",
+  Expect(state, first_activity.end_time_str == "07:00:00",
          "Continuation day first segment should end at first raw event time.");
   Expect(state, first_activity.duration_seconds > 0,
          "Continuation day first segment duration should be positive.");
@@ -301,10 +319,10 @@ auto TestIntervalDayBuildsExplicitRecords(TestState& state) -> void {
 
   const auto& first = interval_day.processedActivities[0];
   const auto& second = interval_day.processedActivities[1];
-  Expect(state, first.start_time_str == "09:00" && first.end_time_str == "10:30",
+  Expect(state, first.start_time_str == "09:00:00" && first.end_time_str == "10:30:00",
          "First explicit interval should keep its authored start/end.");
-  Expect(state, second.start_time_str == "14:01" &&
-                    second.end_time_str == "19:00",
+  Expect(state, second.start_time_str == "14:01:00" &&
+                    second.end_time_str == "19:00:00",
          "Second explicit interval should keep its authored start/end.");
   Expect(state, first.duration_seconds == 90 * 60,
          "First explicit interval duration should be 90 minutes.");
@@ -317,7 +335,7 @@ auto TestMixedDayUsesIntervalEndAsNextPointBoundary(TestState& state) -> void {
   config.text_mapping["study"] = "study";
   config.text_mapping["sleep"] = "sleep";
   config.text_mapping["wake"] = "wake";
-  config.wake_keywords = {"wake"};
+  config.sleep_inference.wake_keywords = {"wake"};
   DayProcessor processor(config);
 
   DailyLog previous_day;
@@ -349,9 +367,9 @@ auto TestMixedDayUsesIntervalEndAsNextPointBoundary(TestState& state) -> void {
   }
 
   const auto& trailing_sleep = mixed_day.processedActivities.back();
-  Expect(state, trailing_sleep.start_time_str == "10:30",
+  Expect(state, trailing_sleep.start_time_str == "10:30:00",
          "Point event after interval should start from the interval end boundary.");
-  Expect(state, trailing_sleep.end_time_str == "13:53",
+  Expect(state, trailing_sleep.end_time_str == "13:53:00",
          "Point event after interval should end at the point authored time.");
 }
 
@@ -382,8 +400,8 @@ auto TestContinuationDayAllowsGapBeforeFirstInterval(TestState& state) -> void {
   }
 
   const auto& first_activity = continuation_day.processedActivities.front();
-  Expect(state, first_activity.start_time_str == "09:00" &&
-                    first_activity.end_time_str == "10:30",
+  Expect(state, first_activity.start_time_str == "09:00:00" &&
+                    first_activity.end_time_str == "10:30:00",
          "Continuation interval should not be rewritten to the previous-day boundary.");
 }
 
@@ -414,9 +432,9 @@ auto TestWrappedIntervalPreservesCrossMidnightDuration(TestState& state)
   }
 
   const auto& activity = interval_day.processedActivities.front();
-  Expect(state, activity.start_time_str == "21:32",
+  Expect(state, activity.start_time_str == "21:32:00",
          "Wrapped interval should preserve the authored start boundary.");
-  Expect(state, activity.end_time_str == "01:35",
+  Expect(state, activity.end_time_str == "01:35:00",
          "Wrapped interval should preserve the authored end boundary.");
   Expect(state, activity.duration_seconds == ((4 * 60) + 3) * 60,
          "Wrapped interval duration should span across midnight.");
@@ -450,9 +468,9 @@ auto TestCrossMidnightIntervalDoesNotUseWrapThreshold(TestState& state)
   }
 
   const auto& activity = interval_day.processedActivities.front();
-  Expect(state, activity.start_time_str == "10:30",
+  Expect(state, activity.start_time_str == "10:30:00",
          "Cross-midnight interval should preserve the authored start boundary.");
-  Expect(state, activity.end_time_str == "09:00",
+  Expect(state, activity.end_time_str == "09:00:00",
          "Cross-midnight interval should preserve the authored end boundary.");
   Expect(state, activity.duration_seconds == ((22 * 60) + 30) * 60,
          "Cross-midnight interval should be interpreted as ending next day.");
@@ -509,8 +527,8 @@ auto TestPureIntervalTxtParsesSparseDaysWithoutContext(TestState& state)
   }
 
   const auto& first_record = march_fifth.processedActivities.front();
-  Expect(state, first_record.start_time_str == "08:03" &&
-                    first_record.end_time_str == "09:07",
+  Expect(state, first_record.start_time_str == "08:03:00" &&
+                    first_record.end_time_str == "09:07:00",
          "Sparse pure interval day should use its own explicit first range.");
 }
 
@@ -549,18 +567,18 @@ auto TestMixedTxtUsesIntervalEndAndLeavesGapsUnrecorded(TestState& state)
   const auto& sleep = day.processedActivities[1];
   const auto& study = day.processedActivities[2];
   const auto& internet = day.processedActivities[3];
-  Expect(state, game.start_time_str == "08:09" &&
-                    game.end_time_str == "12:00" &&
+  Expect(state, game.start_time_str == "08:09:00" &&
+                    game.end_time_str == "12:00:00" &&
                     game.project_path == "game",
          "Point event should use the previous point boundary.");
-  Expect(state, sleep.start_time_str == "12:30" &&
-                    sleep.end_time_str == "13:04",
+  Expect(state, sleep.start_time_str == "12:30:00" &&
+                    sleep.end_time_str == "13:04:00",
          "Interval event should keep its explicit range after a point gap.");
-  Expect(state, study.start_time_str == "14:04" &&
-                    study.end_time_str == "16:23",
+  Expect(state, study.start_time_str == "14:04:00" &&
+                    study.end_time_str == "16:23:00",
          "Later interval event should keep its explicit range after a gap.");
-  Expect(state, internet.start_time_str == "16:23" &&
-                    internet.end_time_str == "18:09",
+  Expect(state, internet.start_time_str == "16:23:00" &&
+                    internet.end_time_str == "18:09:00",
          "Point event after interval should start at the interval end.");
 }
 
@@ -600,20 +618,20 @@ auto TestMixedTxtContiguousSampleUsesSharedTimeline(TestState& state) -> void {
   const auto& study = day.processedActivities[2];
   const auto& internet = day.processedActivities[3];
   Expect(state, game.project_path == "game" &&
-                    game.start_time_str == "08:09" &&
-                    game.end_time_str == "12:00",
+                    game.start_time_str == "08:09:00" &&
+                    game.end_time_str == "12:00:00",
          "First materialized point activity should use the previous point boundary.");
   Expect(state, sleep.project_path == "sleep" &&
-                    sleep.start_time_str == "12:00" &&
-                    sleep.end_time_str == "13:04",
+                    sleep.start_time_str == "12:00:00" &&
+                    sleep.end_time_str == "13:04:00",
          "Contiguous interval should keep its explicit start and end.");
   Expect(state, study.project_path == "study" &&
-                    study.start_time_str == "13:04" &&
-                    study.end_time_str == "16:23",
+                    study.start_time_str == "13:04:00" &&
+                    study.end_time_str == "16:23:00",
          "Following contiguous interval should keep its explicit start and end.");
   Expect(state, internet.project_path == "internet" &&
-                    internet.start_time_str == "16:23" &&
-                    internet.end_time_str == "18:09",
+                    internet.start_time_str == "16:23:00" &&
+                    internet.end_time_str == "18:09:00",
          "Point event after contiguous intervals should use the last interval end.");
 }
 
@@ -649,15 +667,98 @@ auto TestMixedTxtPointAfterCrossMidnightIntervalUsesExpandedBoundary(
   const auto& study = day.processedActivities[0];
   const auto& game = day.processedActivities[1];
   Expect(state, study.project_path == "study" &&
-                    study.start_time_str == "21:32" &&
-                    study.end_time_str == "01:35" &&
+                    study.start_time_str == "21:32:00" &&
+                    study.end_time_str == "01:35:00" &&
                     study.duration_seconds == ((4 * 60) + 3) * 60,
          "Cross-midnight interval should keep next-day duration.");
   Expect(state, game.project_path == "game" &&
-                    game.start_time_str == "01:35" &&
-                    game.end_time_str == "23:50" &&
+                    game.start_time_str == "01:35:00" &&
+                    game.end_time_str == "23:50:00" &&
                     game.duration_seconds == ((22 * 60) + 15) * 60,
          "Point after cross-midnight interval should use the expanded previous end boundary.");
+}
+
+auto TestMultilineRemarksUsePhysicalContinuationLines(TestState& state)
+    -> void {
+  ConverterConfig config = BuildTimelineTestConfig();
+  LogProcessor processor(config);
+
+  const auto result = processor.ProcessSourceContent(
+      "multiline-remarks-month.txt",
+      "y2026\n"
+      "m03\n"
+      "d0301\n"
+      "// day remark first\n"
+      "// day remark second\n"
+      "0600wake\n"
+      "0800study // activity remark first\n"
+      "// activity remark second\n"
+      "\n"
+      "1000sleep // literal \\n text\n");
+
+  Expect(state, result.success,
+         "Physical // continuation lines should parse successfully.");
+  const auto month_it = result.processed_data.find("2026-03");
+  Expect(state, month_it != result.processed_data.end(),
+         "Multiline remark TXT should produce the March bucket.");
+  if (month_it == result.processed_data.end() || month_it->second.empty()) {
+    return;
+  }
+
+  const auto& day = month_it->second.front();
+  Expect(state, day.generalRemarks.size() == 2 &&
+                    day.generalRemarks[0] == "day remark first" &&
+                    day.generalRemarks[1] == "day remark second",
+         "Day remark lines should remain ordered physical lines before memory merge.");
+  Expect(state, day.processedActivities.size() == 2,
+         "Multiline remark sample should produce two non-wake activities.");
+  if (day.processedActivities.size() != 2) {
+    return;
+  }
+
+  const auto& study = day.processedActivities.front();
+  const auto& sleep = day.processedActivities.back();
+  Expect(state, study.remark.has_value() &&
+                    study.remark.value() ==
+                        "activity remark first\nactivity remark second",
+         "Activity continuation lines should join with a real LF.");
+  Expect(state, sleep.remark.has_value() &&
+                    sleep.remark.value() == "literal \\n text",
+         "Literal backslash-n text should not be decoded.");
+}
+
+auto TestHashAndSemicolonAreNotRemarkDelimiters(TestState& state) -> void {
+  ConverterConfig config = BuildTimelineTestConfig();
+  LogProcessor processor(config);
+  const auto result = processor.ProcessSourceContent(
+      "removed-remark-delimiters.txt",
+      "y2026\n"
+      "m03\n"
+      "d0301\n"
+      "0600wake\n"
+      "0800study # old syntax\n"
+      "1000sleep ; old syntax\n");
+
+  Expect(state, result.success,
+         "Hash and semicolon should remain valid activity text.");
+  const auto month_it = result.processed_data.find("2026-03");
+  Expect(state, month_it != result.processed_data.end() &&
+                    !month_it->second.empty(),
+         "Literal hash and semicolon sample should produce a day.");
+  if (month_it == result.processed_data.end() || month_it->second.empty()) {
+    return;
+  }
+  const auto& activities = month_it->second.front().processedActivities;
+  Expect(state, activities.size() == 2,
+         "Literal hash and semicolon sample should produce two activities.");
+  if (activities.size() != 2) {
+    return;
+  }
+  Expect(state, activities[0].project_path == "study # old syntax" &&
+                    !activities[0].remark.has_value() &&
+                    activities[1].project_path == "sleep ; old syntax" &&
+                    !activities[1].remark.has_value(),
+         "Hash and semicolon must remain in activity text, not split remarks.");
 }
 
 }  // namespace
@@ -676,6 +777,8 @@ auto RunConvertIngestValidateTests(TestState& state) -> void {
   TestMixedTxtUsesIntervalEndAndLeavesGapsUnrecorded(state);
   TestMixedTxtContiguousSampleUsesSharedTimeline(state);
   TestMixedTxtPointAfterCrossMidnightIntervalUsesExpandedBoundary(state);
+  TestMultilineRemarksUsePhysicalContinuationLines(state);
+  TestHashAndSemicolonAreNotRemarkDelimiters(state);
 }
 
 }  // namespace tracer_core::application::tests

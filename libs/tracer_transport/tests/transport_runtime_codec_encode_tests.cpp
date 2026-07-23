@@ -124,6 +124,47 @@ void TestEncodeRequestRoundTrip(int& failures) {
   }
 
   {
+    UpdateActivityRemarkAtomicallyRequestPayload request{};
+    request.target_date_iso = "2026-03-29";
+    request.logical_id = 20260329000042LL;
+    request.remark = "line one\nline two";
+    request.preferred_txt_path = "2026/2026-03.txt";
+    request.date_check_mode = "continuity";
+    const auto encoded = EncodeUpdateActivityRemarkAtomicallyRequest(request);
+    const auto decoded = DecodeUpdateActivityRemarkAtomicallyRequest(encoded);
+    Expect(decoded.target_date_iso == request.target_date_iso,
+           "EncodeUpdateActivityRemarkAtomicallyRequest target_date_iso mismatch.",
+           failures);
+    Expect(decoded.logical_id == request.logical_id,
+           "EncodeUpdateActivityRemarkAtomicallyRequest logical_id mismatch.",
+           failures);
+    Expect(decoded.remark == request.remark,
+           "EncodeUpdateActivityRemarkAtomicallyRequest remark mismatch.",
+           failures);
+    Expect(decoded.preferred_txt_path == request.preferred_txt_path &&
+               decoded.date_check_mode == request.date_check_mode,
+           "EncodeUpdateActivityRemarkAtomicallyRequest optional fields mismatch.",
+           failures);
+  }
+
+  {
+    UpdateDayRemarkAtomicallyRequestPayload request{};
+    request.target_date_iso = "2026-03-29";
+    request.remark = "day line one\nday line two";
+    request.preferred_txt_path = "2026/2026-03.txt";
+    request.date_check_mode = "continuity";
+    const auto encoded = EncodeUpdateDayRemarkAtomicallyRequest(request);
+    const auto decoded = DecodeUpdateDayRemarkAtomicallyRequest(encoded);
+    Expect(decoded.target_date_iso == request.target_date_iso,
+           "EncodeUpdateDayRemarkAtomicallyRequest target_date_iso mismatch.", failures);
+    Expect(decoded.remark == request.remark,
+           "EncodeUpdateDayRemarkAtomicallyRequest remark mismatch.", failures);
+    Expect(decoded.preferred_txt_path == request.preferred_txt_path &&
+               decoded.date_check_mode == request.date_check_mode,
+           "EncodeUpdateDayRemarkAtomicallyRequest optional fields mismatch.", failures);
+  }
+
+  {
     QueryRequestPayload request{};
     request.action = "days";
     request.output_mode = "text";

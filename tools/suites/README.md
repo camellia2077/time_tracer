@@ -30,7 +30,7 @@ suite 执行入口与 schema lint 入口在 `tools/`：
 2. `tracer_android/`
    - Android host-side verification suite
 3. `log_generator/`
-   - `apps/log_generator` 对应 suite
+   - `apps/tools/log_generator` 对应 suite
 
 ## 每个 suite 里通常包含什么
 
@@ -86,12 +86,12 @@ schema 校验会检查：
 2. `tools/suites/` 里的脚本应保持 suite-local；通用逻辑应上移到 `tools/`。
 3. 改 suite 目录职责、命名规则或 command-table 组织方式时，同步更新：
    - `tools/README.md`
-   - `docs/toolchain/test/README.md`
-   - `docs/toolchain/test/suite_toml_organization.md`
-   - 需要时更新 `docs/toolchain/test/test_layering.md`
+   - `docs/tools/toolchain/test/README.md`
+   - `docs/tools/toolchain/test/suite_toml_organization.md`
+   - 需要时更新 `docs/tools/toolchain/test/test_layering.md`
 
 ## 延伸阅读
 
-1. `docs/toolchain/test/README.md`
-2. `docs/toolchain/test/suite_toml_organization.md`
-3. `docs/toolchain/test/test_layering.md`
+1. `docs/tools/toolchain/test/README.md`
+2. `docs/tools/toolchain/test/suite_toml_organization.md`
+3. `docs/tools/toolchain/test/test_layering.md`

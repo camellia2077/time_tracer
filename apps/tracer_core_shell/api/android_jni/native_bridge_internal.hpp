@@ -71,6 +71,8 @@ auto ExecuteJniMethod(JNIEnv* env, Fn&& fn) -> jstring {
 auto NativeInit(JNIEnv* env, jobject thiz, jstring db_path, jstring output_root,
                 jstring converter_config_toml_path) -> jstring;
 
+auto NativeShutdown(JNIEnv* env, jobject thiz) -> jstring;
+
 auto NativeIngest(JNIEnv* env, jobject thiz, jstring input_path,
                   jint date_check_mode, jboolean save_processed_output)
     -> jstring;
@@ -98,6 +100,14 @@ auto NativeRecordActivityAtomically(JNIEnv* env, jobject thiz,
                                     jstring preferred_txt_path,
                                     jint date_check_mode,
                                     jint time_order_mode) -> jstring;
+
+auto NativeUpdateActivityRemarkAtomically(
+    JNIEnv* env, jobject thiz, jstring target_date_iso, jlong logical_id,
+    jstring remark, jstring preferred_txt_path, jint date_check_mode) -> jstring;
+
+auto NativeUpdateDayRemarkAtomically(
+    JNIEnv* env, jobject thiz, jstring target_date_iso, jstring remark,
+    jstring preferred_txt_path, jint date_check_mode) -> jstring;
 
 auto NativeTxt(JNIEnv* env, jobject thiz, jstring request_json) -> jstring;
 
@@ -137,7 +147,7 @@ auto NativeQuery(JNIEnv* env, jobject thiz, jint action, jint year, jint month,
 auto NativeReportJson(JNIEnv* env, jobject thiz, jstring request_json)
     -> jstring;
 
-extern const std::array<JNINativeMethod, 17> kNativeMethods;
+extern const std::array<JNINativeMethod, 20> kNativeMethods;
 
 auto TryRegisterNativeMethods(JNIEnv* env, const char* class_name) -> bool;
 

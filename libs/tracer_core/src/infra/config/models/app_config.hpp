@@ -14,7 +14,7 @@
 namespace fs = std::filesystem;
 
 struct PipelineConfig {
-  fs::path interval_processor_config_path;
+  fs::path converter_main_config_path;
   std::unordered_map<fs::path, fs::path> initial_top_parents;
 };
 

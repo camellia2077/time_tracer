@@ -14,7 +14,7 @@ without broad repository search.
    - [Query Capability](../capabilities/query/README.md)
    - [Reporting Capability](../capabilities/reporting/README.md)
    - [Exchange Capability](../capabilities/exchange/README.md)
-   - [Android runtime protocol](../../clients/android_ui/runtime-protocol.md)
+   - [Android runtime protocol](../../presentation/android/runtime-protocol.md)
    - [Core JSON boundary design](../architecture/core_json_boundary_design.md)
 
 ## Who Owns What
@@ -41,7 +41,7 @@ without broad repository search.
    - pair with [tracer_transport](../../architecture/libraries/tracer_transport.md)
      if JSON payload parsing or envelope behavior changes
 2. Change Android JNI bridge behavior or code/value translation:
-   - read [Android runtime protocol](../../clients/android_ui/runtime-protocol.md)
+   - read [Android runtime protocol](../../presentation/android/runtime-protocol.md)
    - start in `apps/tracer_core_shell/api/android_jni`
    - pair with [tracer_core_bridge_common](../../architecture/libraries/tracer_core_bridge_common.md)
 3. Change core config ownership or shell config bridging:
@@ -58,7 +58,7 @@ without broad repository search.
       [tracer_core Module Boundaries](../overview/module_boundaries.md)
     - then inspect:
       - `libs/tracer_core/src/application/use_cases`
-      - `libs/tracer_core/src/application/workflow`
+      - `libs/tracer_core/src/application/workflow_handler.cpp`
       - `libs/tracer_core/src/application/query/tree`
       - `libs/tracer_core/src/application/reporting`
 5. Change query/report/stat output semantics:
@@ -104,10 +104,10 @@ Default exclusions:
    redesigning the wrapper surface.
 
 ## Validation Shortcuts
-1. Focused change:
+1. Focused pipeline change:
 
 ```powershell
-python tools/run.py validate --plan tools/toolchain/config/validate/tracer_core_capabilities.toml --paths-file tools/toolchain/config/validate/pipeline.paths
+python tools/run.py verify --app tracer_core_shell --profile cap_pipeline --concise
 ```
 
 2. Shell/runtime integration:

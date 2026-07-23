@@ -56,7 +56,6 @@ auto RunCoreConfigValidationTests(int& failures) -> void;
 auto RunBusinessRegressionTests(int& failures) -> void;
 auto RunReportConsistencyTests(int& failures) -> void;
 auto RunAndroidBundlePolicyTests(int& failures) -> void;
-auto RunCompatibilityTests(int& failures) -> void;
 auto RunValidationIssueReporterTests(int& failures) -> void;
 auto RunTxtMonthHeaderTests(int& failures) -> void;
 auto RunPipelineValidationRegressionTests(int& failures) -> void;

@@ -1,5 +1,6 @@
 export module tracer.core.application;
 
+export import tracer.core.application.activity_name_converter;
 export import tracer.core.application.use_cases;
 export import tracer.core.application.query.tree;
 export import tracer.core.application.pipeline.converter.service;

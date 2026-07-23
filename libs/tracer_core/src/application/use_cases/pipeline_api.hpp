@@ -36,6 +36,12 @@ class PipelineApi final : public IPipelineApi {
   auto RunRecordActivityAtomically(
       const tracer_core::core::dto::RecordActivityAtomicallyRequest& request)
       -> tracer_core::core::dto::RecordActivityAtomicallyResponse override;
+  auto RunUpdateActivityRemarkAtomically(
+      const tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest& request)
+      -> tracer_core::core::dto::UpdateActivityRemarkAtomicallyResponse override;
+  auto RunUpdateDayRemarkAtomically(
+      const tracer_core::core::dto::UpdateDayRemarkAtomicallyRequest& request)
+      -> tracer_core::core::dto::UpdateDayRemarkAtomicallyResponse override;
 
   auto RunDefaultTxtDayMarker(
       const tracer_core::core::dto::DefaultTxtDayMarkerRequest& request)
@@ -48,6 +54,13 @@ class PipelineApi final : public IPipelineApi {
   auto RunReplaceTxtDayBlock(
       const tracer_core::core::dto::ReplaceTxtDayBlockRequest& request)
       -> tracer_core::core::dto::ReplaceTxtDayBlockResponse override;
+
+  auto RunConvertTxtActivityNames(
+      const tracer_core::core::dto::ConvertTxtActivityNamesRequest& request)
+      -> tracer_core::core::dto::ConvertTxtActivityNamesResponse override;
+  auto RunReplaceTxtCanonicalActivityNames(
+      const tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest& request)
+      -> tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse override;
 
  private:
   pipeline::IPipelineWorkflow& pipeline_workflow_;

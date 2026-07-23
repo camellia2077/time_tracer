@@ -47,11 +47,10 @@ every downstream parser.
 
 Structure validation is line-oriented and state-machine-driven.
 
-It is not just regex checking, and it is not fully config-free. It already
+It is not just regex checking. Remark syntax is fixed as `//`; it still
 depends on configuration values such as:
-1. `remark_prefix`
-2. `wake_keywords`
-3. alias-derived valid event keywords
+1. `wake_keywords`
+2. alias-derived valid event keywords
 
 ### 4. TXT logic validation
 

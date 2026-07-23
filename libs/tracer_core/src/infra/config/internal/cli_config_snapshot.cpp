@@ -47,7 +47,7 @@ std::optional<CliConfigSnapshotCacheEntry> g_cli_config_snapshot_cache{};
       .exe_dir_path = app_config.exe_dir_path,
       .export_path = app_config.kExportPath,
       .converter_config_toml_path =
-          app_config.pipeline.interval_processor_config_path,
+          app_config.pipeline.converter_main_config_path,
       .default_save_processed_output = app_config.default_save_processed_output,
       .default_date_check_mode = app_config.default_date_check_mode,
       .defaults =

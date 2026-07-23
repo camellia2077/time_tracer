@@ -1,10 +1,7 @@
 // infra/reporting/daily/formatters/markdown/day_md_formatter_core.cpp
-#include <memory>
 #include <string>
 
 #include "infra/reporting/daily/formatters/markdown/day_md_formatter.hpp"
-#include "infra/reporting/daily/formatters/statistics/markdown_stat_strategy.hpp"
-#include "infra/reporting/daily/formatters/statistics/stat_formatter.hpp"
 #include "infra/reporting/shared/utils/format/report_string_utils.hpp"
 #include "infra/reporting/shared/utils/format/time_format.hpp"
 
@@ -45,7 +42,7 @@ auto BuildActivityLine(const TimeRecord& record,
 }  // namespace
 
 DayMdConfig::DayMdConfig(const DailyMdConfig& config)
-    : DayBaseConfig(config.labels, config.statistics_items) {}
+    : DayBaseConfig(config.labels, {}) {}
 
 DayMdFormatter::DayMdFormatter(std::shared_ptr<DayMdConfig> config)
     : BaseMdFormatter(std::move(config)) {}
@@ -89,9 +86,6 @@ void DayMdFormatter::FormatHeaderContent(std::string& report_stream,
 
 void DayMdFormatter::FormatExtraContent(std::string& report_stream,
                                         const DailyReportData& data) const {
-  auto strategy = std::make_unique<MarkdownStatStrategy>();
-  StatFormatter stats_formatter(std::move(strategy));
-  report_stream += stats_formatter.Format(data, config_);
   DisplayDetailedActivities(report_stream, data);
 }
 
@@ -109,10 +103,14 @@ void DayMdFormatter::DisplayDetailedActivities(
         ReplaceAll(record.project_path, "_", config_->GetActivityConnector());
     report_stream += BuildActivityLine(record, project_path);
     if (record.activityRemark.has_value()) {
+      // Keep the label on its own line so the layout stays readable for both
+      // single-line and multiline remarks. <br> is intentional: a raw source
+      // newline is collapsed by many Markdown renderers.
       report_stream += "  - **";
       report_stream += config_->GetActivityRemarkLabel();
-      report_stream += "**: ";
-      report_stream += record.activityRemark.value();
+      report_stream += "**:\n    ";
+      report_stream +=
+          FormatMultilineForList(record.activityRemark.value(), 4, "<br>");
       report_stream += "\n";
     }
   }

@@ -29,9 +29,9 @@ def render_bundle_toml(model: dict) -> str:
     lines.append("]")
     lines.append("")
 
-    interval_path = model["paths"]["converter"]["interval_config"]
+    main_config_path = model["paths"]["converter"]["main_config"]
     lines.append("[paths.converter]")
-    lines.append(f"interval_config = {quote_toml_string(interval_path)}")
+    lines.append(f"main_config = {quote_toml_string(main_config_path)}")
     lines.append("")
 
     reports: dict[str, dict[str, str]] = model["paths"]["reports"]

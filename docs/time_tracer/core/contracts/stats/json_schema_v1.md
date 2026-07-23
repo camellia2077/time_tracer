@@ -118,6 +118,7 @@
   "action": "tree",
   "output_mode": "semantic_json",
   "max_depth": -1,
+  "max_available_depth": 1,
   "root_count": 1,
   "roots": [
     {
@@ -139,6 +140,8 @@
 说明：
 1. 每个节点的 `duration_seconds` 为该节点聚合时长，单位为秒。
 2. 根节点不包含 `parent_duration_percent`；子节点包含时，该字段表示其时长占直接父节点时长的百分比。
+3. `max_available_depth` 表示当前时间范围内完整树结构的最大层级，根节点为第 0 层；
+   它与本次请求的 `max_depth` 独立，供端侧构造层级选择项。
 
 ## `report_composition`
 `report-composition` 的完整约束见

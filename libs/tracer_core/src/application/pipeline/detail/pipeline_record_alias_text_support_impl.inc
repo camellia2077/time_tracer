@@ -118,7 +118,19 @@ constexpr std::string_view kOvernightContinuationWarning =
 
 [[nodiscard]] auto NormalizeRemarkForRecord(std::string_view raw)
     -> std::string {
-  return NormalizeLineInput(raw);
+  std::string cleaned;
+  cleaned.reserve(raw.size());
+  for (std::size_t index = 0; index < raw.size(); ++index) {
+    if (raw[index] == '\r') {
+      if (index + 1U < raw.size() && raw[index + 1U] == '\n') {
+        ++index;
+      }
+      cleaned.push_back('\n');
+    } else {
+      cleaned.push_back(raw[index]);
+    }
+  }
+  return Trim(cleaned);
 }
 
 [[nodiscard]] auto NormalizeForComparison(std::string_view raw)
@@ -313,8 +325,31 @@ constexpr std::string_view kOvernightContinuationWarning =
   if (remark.empty()) {
     return std::string(hhmm) + std::string(activity);
   }
-  return std::string(hhmm) + std::string(activity) + " // " +
-         std::string(remark);
+  std::string event_line = std::string(hhmm) + std::string(activity) + " // ";
+  bool appended_remark_line = false;
+  std::size_t line_start = 0;
+  while (line_start <= remark.size()) {
+    const std::size_t line_end = remark.find('\n', line_start);
+    const std::size_t line_limit =
+        line_end == std::string_view::npos ? remark.size() : line_end;
+    if (line_limit == line_start) {
+      if (line_end == std::string_view::npos) {
+        break;
+      }
+      line_start = line_end + 1U;
+      continue;
+    }
+    if (appended_remark_line) {
+      event_line += "\n// ";
+    }
+    event_line.append(remark.substr(line_start, line_limit - line_start));
+    appended_remark_line = true;
+    if (line_end == std::string_view::npos) {
+      break;
+    }
+    line_start = line_end + 1U;
+  }
+  return event_line;
 }
 
 [[nodiscard]] auto ResolveAuthoredEventCompletenessWarning(
@@ -351,14 +386,11 @@ constexpr std::string_view kOvernightContinuationWarning =
 [[nodiscard]] auto ValidateRecordActivityName(
     std::string_view raw_activity_name, const ConverterConfig& config)
     -> std::string {
-  // Design intent:
-  // 1) Atomic record accepts either authored alias keys or already-canonical
-  //    activity tokens from alias_mapping.toml index + converter/aliases/*.toml,
-  //    plus converter-config wake_keywords.
-  // 2) On success, TXT keeps the user-entered text unchanged; canonical tokens
-  //    are not rewritten back to aliases at record time.
-  // 3) Full TXT parse/ingest still maps aliases forward to canonical, while
-  //    canonical input passes through unchanged.
+  // Atomic record accepts either authored alias keys or already-canonical
+  // activity tokens, plus converter-config wake_keywords. TXT always stores the
+  // canonical representation so records created through this path have the
+  // same activity-name representation as an explicit alias-to-canonical
+  // conversion.
   const std::string normalized = NormalizeActivityNameForRecord(raw_activity_name);
   if (normalized.empty()) {
     throw std::invalid_argument("Activity name is empty.");
@@ -368,8 +400,10 @@ constexpr std::string_view kOvernightContinuationWarning =
         return entry.second == normalized;
       });
   if (config.text_mapping.contains(normalized) || matches_canonical ||
-      IsWakeKeywordActivity(normalized, config.wake_keywords)) {
-    return normalized;
+      IsWakeKeywordActivity(normalized, config.sleep_inference.wake_keywords)) {
+    const ActivityNameTextConverter converter(config);
+    return converter.ConvertName(
+        normalized, ActivityNameMappingDirection::kAliasToCanonical);
   }
   throw std::invalid_argument(
       "Activity name must match configured authorable event token "

@@ -20,8 +20,8 @@ auto TestProjectRenameKeepsHistorySnapshot(int& failures) -> void {
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kInputPath = kRepoRoot / "test" / "data";
   const std::filesystem::path kConfigTomlPath =
-      BuildRepoRoot() / "assets" / "tracer_core" / "config" / "converter" /
-      "interval_processor_config.toml";
+      BuildRepoRoot() / "assets" / "tracer_core" / "config" /
+      "aliases/_system.toml";
 
   RemoveTree(paths.test_root);
 
@@ -192,8 +192,8 @@ auto TestSingleTxtIngestFallsBackToSiblingPreviousMonthTxt(int& failures)
   const RuntimeTestPaths paths = BuildTempTestPaths(
       "time_tracer_single_txt_sibling_previous_month_fallback_test");
   const std::filesystem::path kConfigTomlPath =
-      BuildRepoRoot() / "assets" / "tracer_core" / "config" / "converter" /
-      "interval_processor_config.toml";
+      BuildRepoRoot() / "assets" / "tracer_core" / "config" /
+      "aliases/_system.toml";
 
   RemoveTree(paths.test_root);
 
@@ -269,8 +269,8 @@ auto TestSingleTxtIngestFallsBackToSiblingPreviousMonthTxt(int& failures)
         "SELECT COUNT(*) FROM time_records "
         "WHERE date='2026-02-01' "
         "AND project_path_snapshot='sleep_night' "
-        "AND \"start\"='23:30' "
-        "AND \"end\"='07:00';";
+        "AND \"start\"='23:30:00' "
+        "AND \"end\"='07:00:00';";
     const auto linked_count = QueryCount(database, sleep_link_sql);
     sqlite3_close(database);
 

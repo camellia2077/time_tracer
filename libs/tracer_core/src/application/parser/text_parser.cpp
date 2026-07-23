@@ -3,7 +3,6 @@
 #include "shared/utils/ide_location_formatter.hpp"
 
 #include <algorithm>
-#include <array>
 #include <cctype>
 #include <stdexcept>
 #include <string_view>
@@ -40,10 +39,10 @@ constexpr int kMaxMinute = 59;
 constexpr int kMaxSecond = 59;
 constexpr int kMinMonth = 1;
 constexpr int kMaxMonth = 12;
-constexpr size_t kRemarkDelimiterCount = 3;
-// Inline remark delimiters. Example: "1026math //note" -> remark "note".
-constexpr std::array<std::string_view, kRemarkDelimiterCount>
-    kRemarkDelimiters = {"//", "#", ";"};
+// Inline remark delimiter. A line beginning with this marker is either a day
+// remark or a continuation of the most recent activity remark, depending on
+// whether the current day already has an authored event.
+constexpr std::string_view kRemarkDelimiter = "//";
 
 [[nodiscard]] auto IsAsciiDigit(char value) -> bool {
   return value >= '0' && value <= '9';
@@ -107,7 +106,7 @@ auto FormatTime(const std::string& time_str_hhmmss) -> std::string {
 }  // namespace
 
 TextParser::TextParser(const ConverterConfig& config)
-    : config_(config), wake_keywords_(config.wake_keywords) {}
+    : wake_keywords_(config.sleep_inference.wake_keywords) {}
 
 auto TextParser::Parse(std::istream& input_stream,
                        std::function<void(DailyLog&)> on_new_day,
@@ -218,27 +217,39 @@ auto TextParser::ExtractRemark(std::string_view remaining_line)
   size_t comment_pos = std::string::npos;
   std::string_view chosen_delimiter;
 
-  // Multiple inline remark markers are allowed; pick the earliest one so
-  // "0232foo //a #b" keeps description as "foo" and remark as "a #b".
-  for (std::string_view delimiter : kRemarkDelimiters) {
-    size_t pos = remaining_line.find(delimiter);
-    if (pos != std::string::npos) {
-      if (comment_pos == std::string::npos || pos < comment_pos) {
-        comment_pos = pos;
-        chosen_delimiter = delimiter;
-      }
-    }
+  const size_t delimiter_pos = remaining_line.find(kRemarkDelimiter);
+  if (delimiter_pos != std::string::npos) {
+    comment_pos = delimiter_pos;
+    chosen_delimiter = kRemarkDelimiter;
   }
 
   if (comment_pos != std::string::npos) {
     std::string description =
         Trim(std::string(remaining_line.substr(0, comment_pos)));
+    // A literal backslash-n is ordinary authored text. Physical TXT line
+    // breaks are handled by ParseLine and joined with an actual LF.
     std::string remark = Trim(std::string(
         remaining_line.substr(comment_pos + chosen_delimiter.length())));
     return {.description = description, .remark = remark};
   }
 
   return {.description = Trim(std::string(remaining_line)), .remark = ""};
+}
+
+auto AppendRemarkLine(RawEvent& event, std::string remark_line) -> void {
+  if (!event.remark.empty()) {
+    event.remark.push_back('\n');
+  }
+  event.remark += std::move(remark_line);
+}
+
+auto AppendContinuationSourceSpan(RawEvent& event, int line_number,
+                                  const std::string& line) -> void {
+  if (event.source_span.has_value()) {
+    event.source_span->line_end = line_number;
+    event.source_span->raw_text += "\n";
+    event.source_span->raw_text += line;
+  }
 }
 
 auto TextParser::ProcessEventContext(DailyLog& current_day,
@@ -281,11 +292,25 @@ auto TextParser::ProcessEventContext(DailyLog& current_day,
 auto TextParser::ParseLine(const std::string& line, int line_number,
                            DailyLog& current_day,
                            std::string_view source_file) const -> void {
-  const std::string& remark_prefix = config_.remark_prefix;
+  if (line.starts_with(kRemarkDelimiter)) {
+    if (current_day.date.empty()) {
+      ThrowParseError(source_file, line_number, line,
+                      "Remark line appears before date");
+    }
 
-  if (!remark_prefix.empty() && line.starts_with(remark_prefix)) {
-    if (!current_day.date.empty()) {
-      current_day.generalRemarks.push_back(line.substr(remark_prefix.length()));
+    const std::string remark_line =
+        Trim(line.substr(kRemarkDelimiter.length()));
+    if (remark_line.empty()) {
+      ThrowParseError(source_file, line_number, line,
+                      "Remark line must contain text");
+    }
+
+    if (current_day.rawEvents.empty()) {
+      current_day.generalRemarks.push_back(remark_line);
+    } else {
+      RawEvent& event = current_day.rawEvents.back();
+      AppendRemarkLine(event, remark_line);
+      AppendContinuationSourceSpan(event, line_number, line);
     }
     return;
   }

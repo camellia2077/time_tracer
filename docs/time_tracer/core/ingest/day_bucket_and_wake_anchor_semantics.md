@@ -34,7 +34,7 @@ wake_anchor = !isContinuation && !getupTime.empty() && getupTime != "00:00"
 说明：
 
 - 这是**活动事实补链**
-- 它的项目路径由 `generated_activities.sleep_project_path` 控制
+- 它的项目路径由 `sleep_inference.sleep_project_path` 控制
 - 默认路径是 `sleep_night`
 - 它用于活动树、活动列表、时长统计
 - 它**不是** `wake_anchor` 的来源
@@ -88,7 +88,7 @@ last_activity_end - first_activity_start
 
 ### 3.1 `wake_keywords` 的职责
 
-`wake_keywords` 只负责一件事：
+`sleep_inference.wake_keywords` 只负责一件事：
 
 > 识别“这一天的第一个语义活动是否是起床锚点”
 
@@ -128,7 +128,7 @@ isContinuation = true
 配置：
 
 ```toml
-[generated_activities]
+[sleep_inference]
 sleep_project_path = "sleep_night"
 ```
 
@@ -202,4 +202,3 @@ sleep_project_path = "sleep_overnight"
 最重要的一条是：
 
 > `Wake Anchor` 是 day status；`sleep_night` 是 activity。
-

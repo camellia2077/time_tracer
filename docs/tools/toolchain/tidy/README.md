@@ -1,6 +1,6 @@
 # Clang-Tidy Docs Index
 
-`docs/toolchain/tidy/` 是 clang-tidy 工具链的专题文档目录。
+`docs/tools/toolchain/tidy/` 是 clang-tidy 工具链的专题文档目录。
 
 ## 主文档
 

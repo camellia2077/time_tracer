@@ -36,8 +36,8 @@ class BaseMdFormatter : public IReportFormatter<ReportDataT> {
       report_stream += GetNoRecordsMsg();
       report_stream += "\n";
     } else {
-      FormatExtraContent(report_stream, data);
       FormatProjectTreeSection(report_stream, data);
+      FormatExtraContent(report_stream, data);
     }
 
     return report_stream;

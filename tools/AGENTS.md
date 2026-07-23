@@ -1,71 +1,74 @@
-# AGENTS Guide (tools)
+# Toolchain Local Contract
 
-本文件只保留 `tools/` 范围的阅读顺序、目录边界与工作约束；
-详细规则统一维护在 `docs/toolchain/`。
+## Scope
 
-## 先读哪些文档
+Applies to `tools/**`. This subtree owns repository build/verify orchestration,
+suite execution infrastructure, suite definitions, schema linting, and
+toolchain self-tests.
 
-1. 总索引：
-   - `docs/toolchain/README.md`
-2. 工具链主文档：
-   - `docs/toolchain/tools/README.md`
-3. 测试与结果契约：
-   - `docs/toolchain/test/README.md`
-4. 测试分层约定：
-   - `docs/toolchain/test/test_layering.md`
-5. 命令改动定位：
-   - `docs/toolchain/command_map/README.md`
-6. validate：
-   - `docs/toolchain/validate/README.md`
-7. workflow：
-   - `docs/toolchain/workflows/README.md`
-8. clang-tidy：
-   - `docs/toolchain/tidy/README.md`
-9. suite 资产层：
-   - `tools/suites/README.md`
-10. 工具链历史：
-   - `docs/toolchain/history/README.md`
+## Required Read Set
 
-## 目录边界
+1. `docs/tools/toolchain/README.md`
+2. `docs/tools/toolchain/tools/README.md`
+3. `docs/tools/toolchain/test/README.md`
 
-1. `tools/run.py`
-   - build / verify / validate / tidy 官方入口
-2. `tools/test.py`
-   - suite / runtime-guard 官方入口
-3. `tools/lint_suites.py`
-   - suite schema lint 官方入口
-4. `tools/suites/**`
-   - suite 定义、command matrix、suite-local 脚本
-5. `tools/test_framework/**`
-   - test runner / suite orchestration / runtime guard / suite config loader
-6. `tools/tests/**`
-   - 工具链自身测试，不是产品黑盒 suite
-7. `test/**`
-   - 只保留共享 data、fixtures、golden 等测试资产；不再承载 suite 或 runner 实现
+## Read By Task
 
-## 改动路由
+- Command or handler routing:
+  `docs/tools/toolchain/command_map/README.md`
+- Suite ownership, output contract, or test layering:
+  - `docs/tools/toolchain/test/test_layering.md`
+  - `tools/suites/README.md`
+- Workflow orchestration: `docs/tools/toolchain/workflows/README.md`
+- Clang-tidy flows: `docs/tools/toolchain/tidy/README.md`
+- Developer helper scripts: `tools/scripts/AGENTS.md`
 
-1. 改 `build / verify / validate / tidy` 命令：
-   - 优先看 `tools/toolchain/**`
-2. 改 suite 入口、runtime-guard、suite output contract：
-   - 优先看 `tools/test.py`、`tools/lint_suites.py`、`tools/test_framework/**`
-3. 改 suite TOML、命令矩阵、suite-local 脚本：
-   - 优先看 `tools/suites/**`
-4. 改共享输入/基线：
-   - 优先看 `test/data/**`、`test/golden/**`
-   - 小型专用 fixture 看 `test/fixtures/**`
-5. 改测试目录职责边界：
-   - 先看 `docs/toolchain/test/test_layering.md`
+## Ownership And Routing
 
-## 工作约束
+- `tools/run.py`: build, verify, analyze, tidy, and self-test entry.
+- `tools/test.py`: product suite and runtime-guard entry.
+- `tools/lint_suites.py`: suite-schema lint entry.
+- `tools/toolchain/**`: command implementation and orchestration.
+- `tools/test_framework/**`: suite runner, loader, guard, and result contract.
+- `tools/suites/**`: product suite definitions and suite-local scripts.
+- `tools/tests/**`: toolchain unit/component tests.
+- `test/**`: shared inputs, fixtures, and golden assets only; it does not own
+  suite or runner implementation.
 
-1. 不要把 `tools/suites/**` 或 `tools/test_framework/**` 再放回 `test/`。
-2. 改动影响 suite 入口、result contract、runner 行为时，同步更新：
-   - `docs/toolchain/test/README.md`
-   - `tools/suites/README.md`
-   - 需要时更新 `docs/toolchain/test/test_layering.md`
-3. 改动影响工具链入口或目录职责时，同步更新：
-   - `tools/README.md`
-   - `docs/toolchain/README.md`
-4. 不要把 `tools/README.md`、`tools/AGENTS.md` 扩写回厚文档；新增细节优先写到
-   `docs/toolchain/`。
+## Local Invariants
+
+- Do not move suite definitions or test-framework implementation back under
+  `test/**`.
+- Command/protocol changes update the owning docs under
+  `docs/tools/toolchain/**`.
+- Result-contract or suite-loader changes also update `tools/suites/README.md`
+  and the test-layering document when ownership changes.
+- Keep `tools/README.md` and this file as thin routers; detailed workflow and
+  implementation knowledge belongs under `docs/tools/toolchain/**`.
+
+## Validation
+
+For toolchain command, handler, orchestration, or result-contract changes:
+
+```powershell
+python tools/run.py self-test
+```
+
+For suite TOML, suite discovery, or schema changes:
+
+```powershell
+python tools/lint_suites.py
+```
+
+Also run the affected product's local verification when toolchain behavior
+changes what that product builds, executes, or reports.
+
+## Local Completion Bar
+
+- Changed command/handler behavior has focused coverage under `tools/tests/**`.
+- Changed suite schemas pass suite lint; changed suite behavior is exercised by
+  the owning product suite.
+- Output/result-contract changes have producer and consumer coverage and updated
+  contract documentation.
+- The required self-test, suite lint, and affected product verification pass for
+  every applicable change category.

@@ -65,6 +65,26 @@ class SmokePipelineWorkflow final
             .rollback_failed = false,
             .retained_transaction_root = std::nullopt};
   }
+  auto RunUpdateActivityRemarkAtomically(
+      const tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest&)
+      -> tracer_core::core::dto::UpdateActivityRemarkAtomicallyResponse override {
+    return {.ok = true,
+            .message = "remark: ok\nsync: ok",
+            .operation_id = "smoke-remark-txn",
+            .warnings = {},
+            .rollback_failed = false,
+            .retained_transaction_root = std::nullopt};
+  }
+  auto RunUpdateDayRemarkAtomically(
+      const tracer_core::core::dto::UpdateDayRemarkAtomicallyRequest&)
+      -> tracer_core::core::dto::UpdateDayRemarkAtomicallyResponse override {
+    return {.ok = true,
+            .message = "day remark: ok\nsync: ok",
+            .operation_id = "smoke-day-remark-txn",
+            .warnings = {},
+            .rollback_failed = false,
+            .retained_transaction_root = std::nullopt};
+  }
   auto RunDefaultTxtDayMarker(
       const tracer_core::core::dto::DefaultTxtDayMarkerRequest&)
       -> tracer_core::core::dto::DefaultTxtDayMarkerResponse override {
@@ -91,6 +111,18 @@ class SmokePipelineWorkflow final
             .is_marker_valid = true,
             .updated_content = "updated-content\n",
             .error_message = ""};
+  }
+  auto RunConvertTxtActivityNames(
+      const tracer_core::core::dto::ConvertTxtActivityNamesRequest& request)
+      -> tracer_core::core::dto::ConvertTxtActivityNamesResponse override {
+    return {.ok = true,
+            .converted_content = request.content,
+            .error_message = ""};
+  }
+  auto RunReplaceTxtCanonicalActivityNames(
+      const tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest& request)
+      -> tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse override {
+    return {.ok = true, .updated_content = request.content, .error_message = ""};
   }
   auto InstallActiveConverterConfig(
       const tracer::core::application::pipeline::

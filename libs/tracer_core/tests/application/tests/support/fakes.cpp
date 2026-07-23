@@ -141,6 +141,45 @@ auto FakePipelineWorkflow::RunReplaceTxtDayBlock(
   return replace_txt_day_block_response;
 }
 
+auto FakePipelineWorkflow::RunUpdateActivityRemarkAtomically(
+    const tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest& request)
+    -> tracer_core::core::dto::UpdateActivityRemarkAtomicallyResponse {
+  ++update_activity_remark_atomically_call_count;
+  last_update_activity_remark_request = request;
+  return update_activity_remark_atomically_response;
+}
+
+auto FakePipelineWorkflow::RunUpdateDayRemarkAtomically(
+    const tracer_core::core::dto::UpdateDayRemarkAtomicallyRequest& request)
+    -> tracer_core::core::dto::UpdateDayRemarkAtomicallyResponse {
+  ++update_day_remark_atomically_call_count;
+  last_update_day_remark_request = request;
+  return {.ok = true,
+          .message = "day remark: ok\nsync: ok",
+          .operation_id = "fake-day-remark-txn"};
+}
+
+auto FakePipelineWorkflow::RunConvertTxtActivityNames(
+    const tracer_core::core::dto::ConvertTxtActivityNamesRequest& request)
+    -> tracer_core::core::dto::ConvertTxtActivityNamesResponse {
+  ++convert_txt_activity_names_call_count;
+  last_convert_txt_activity_names_request = request;
+  if (fail_convert_txt_activity_names) {
+    throw std::runtime_error("convert txt activity names failed");
+  }
+  return {.ok = true,
+          .converted_content = request.content,
+          .error_message = ""};
+}
+
+auto FakePipelineWorkflow::RunReplaceTxtCanonicalActivityNames(
+    const tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest& request)
+    -> tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse {
+  ++replace_txt_canonical_activity_names_call_count;
+  last_replace_txt_canonical_activity_names_request = request;
+  return {.ok = true, .updated_content = request.content, .error_message = ""};
+}
+
 auto FakePipelineWorkflow::InstallActiveConverterConfig(
     const tracer::core::application::pipeline::
         ActiveConverterConfigInstallRequest& /*request*/) -> void {}

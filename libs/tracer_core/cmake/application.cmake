@@ -5,6 +5,7 @@ include("${TRACER_CORE_LIB_CMAKE_SOURCES_ROOT}/application_workflow_sources.cmak
 include("${TRACER_CORE_LIB_CMAKE_SOURCES_ROOT}/application_pipeline_sources.cmake")
 
 set(TRACER_CORE_APPLICATION_SOURCES
+    "activity_name_converter.cpp"
     ${TIME_TRACKER_APPLICATION_BOOTSTRAP_SOURCES}
     ${TIME_TRACKER_APPLICATION_QUERY_TREE_SOURCES}
     ${TIME_TRACKER_APPLICATION_USE_CASE_SOURCES}
@@ -25,6 +26,7 @@ target_sources(tc_app_lib PUBLIC
     BASE_DIRS
         "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules"
     FILES
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.activity_name_converter.cppm"
         "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.use_cases.cppm"
         "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.use_cases.interface.cppm"
         "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.use_cases.api.cppm"

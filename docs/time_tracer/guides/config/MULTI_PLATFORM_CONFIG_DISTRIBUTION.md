@@ -54,7 +54,7 @@
 3. 强校验门禁
    - 校验所有计划文件存在且字节一致
    - 校验 `meta/bundle.toml` 的 `schema_version/profile/bundle_name`
-   - 校验 `config.toml` 关键键（如 `defaults.*`、`converter.interval_config`、`reports.markdown`）
+   - 校验 `config.toml` 关键键（如 `defaults.*`、`converter.main_config`、`reports.markdown`）
 4. 结构化观测日志
    - 每次同步输出：`sync_report=<json>`
    - 字段包含：`target/source/output/planned_files/added/changed/removed/cache_hit/applied/duration_ms`

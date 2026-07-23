@@ -19,13 +19,8 @@ namespace fs = std::filesystem;
 
 namespace {
 
-constexpr std::string_view kKeyAliasMappingPath = "alias_mapping_path";
-
-auto ValidateMainStrictAlias(const toml::table& main_tbl,
-                             MainConfigPaths& out_paths) -> bool {
-  const std::set<std::string> kRequiredKeys = {
-      "alias_mapping_path", "header_order",
-      "remark_prefix", "wake_keywords"};
+auto ValidateMainStrictAlias(const toml::table& main_tbl) -> bool {
+  const std::set<std::string> kRequiredKeys = {"sleep_inference"};
 
   for (const auto& key : kRequiredKeys) {
     if (!main_tbl.contains(key)) {
@@ -36,26 +31,17 @@ auto ValidateMainStrictAlias(const toml::table& main_tbl,
     }
   }
 
-  if (main_tbl.contains("mappings_config_path")) {
+  const toml::table* sleep_inference_tbl =
+      main_tbl["sleep_inference"].as_table();
+  if (sleep_inference_tbl == nullptr ||
+      !sleep_inference_tbl->get_as<toml::array>("wake_keywords") ||
+      !sleep_inference_tbl->get("sleep_project_path") ||
+      !sleep_inference_tbl->get("sleep_project_path")
+           ->value<std::string>()
+           .has_value()) {
     modports::EmitError(
-        "[Validator] Error: 'mappings_config_path' is no longer supported. "
-        "Use 'alias_mapping_path' and alias mapping index files.");
-    return false;
-  }
-
-  if (!main_tbl[kKeyAliasMappingPath].is_string()) {
-    modports::EmitError("[Validator] Error: 'alias_mapping_path' must be a string.");
-    return false;
-  }
-  if (!main_tbl["header_order"].is_array() ||
-      !main_tbl["wake_keywords"].is_array()) {
-    modports::EmitError(
-        "[Validator] Error: 'header_order' and 'wake_keywords' must be "
-        "arrays.");
-    return false;
-  }
-  if (!main_tbl["remark_prefix"].is_string()) {
-    modports::EmitError("[Validator] Error: 'remark_prefix' must be a string.");
+        "[Validator] Error: 'sleep_inference' must contain 'wake_keywords' and a string "
+        "'sleep_project_path'.");
     return false;
   }
   if (main_tbl.contains("top_parent_mapping") &&
@@ -66,22 +52,13 @@ auto ValidateMainStrictAlias(const toml::table& main_tbl,
     return false;
   }
 
-  const auto kAliasMappingPath =
-      main_tbl[kKeyAliasMappingPath].value<std::string>();
-  if (!kAliasMappingPath.has_value()) {
-    modports::EmitError("[Validator] Error: 'alias_mapping_path' must be a string.");
-    return false;
-  }
-
-  out_paths.alias_mapping_path = *kAliasMappingPath;
   return true;
 }
 
 }  // namespace
 
-auto MainRule::Validate(const toml::table& main_tbl, MainConfigPaths& out_paths)
-    -> bool {
-  return ValidateMainStrictAlias(main_tbl, out_paths);
+auto MainRule::Validate(const toml::table& main_tbl) -> bool {
+  return ValidateMainStrictAlias(main_tbl);
 }
 
 auto MappingRule::Validate(const toml::table& mappings_tbl) -> bool {
@@ -95,11 +72,10 @@ auto MappingRule::Validate(const toml::table& mappings_tbl) -> bool {
   return true;
 }
 
-auto V2Rule::ValidateAliasMapping(const fs::path& alias_index_path,
-                                  const toml::table& alias_tbl) -> bool {
+auto V2Rule::ValidateAliasMapping(const fs::path& alias_directory) -> bool {
   try {
-    static_cast<void>(modalias::LoadAliasMappingDefinition(
-        alias_index_path, alias_tbl, modloader::ReadToml));
+    static_cast<void>(modalias::LoadAliasMappingDefinition(alias_directory,
+                                                           modloader::ReadToml));
     return true;
   } catch (const std::exception& error) {
     modports::EmitError("[Validator] Error: alias mapping validation failed: " +

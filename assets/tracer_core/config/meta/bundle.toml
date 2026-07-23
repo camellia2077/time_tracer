@@ -9,15 +9,14 @@ bundle_name = "tracer_core_config"
 required = [
   "config.toml",
   "charts/heatmap.toml",
-  "converter/interval_processor_config.toml",
-  "converter/alias_mapping.toml",
-  "converter/aliases/meal.toml",
-  "converter/aliases/recreation.toml",
-  "converter/aliases/routine.toml",
-  "converter/aliases/sleep.toml",
-  "converter/aliases/rest.toml",
-  "converter/aliases/exercise.toml",
-  "converter/aliases/study.toml",
+  "aliases/_system.toml",
+  "aliases/meal.toml",
+  "aliases/recreation.toml",
+  "aliases/routine.toml",
+  "aliases/sleep.toml",
+  "aliases/rest.toml",
+  "aliases/exercise.toml",
+  "aliases/study.toml",
   "reports/markdown/day.toml",
   "reports/markdown/month.toml",
   "reports/markdown/period.toml",
@@ -40,7 +39,7 @@ optional = [
 ]
 
 [paths.converter]
-interval_config = "converter/interval_processor_config.toml"
+main_config = "aliases/_system.toml"
 
 [paths.visualization]
 heatmap = "charts/heatmap.toml"

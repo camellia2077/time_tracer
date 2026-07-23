@@ -12,23 +12,23 @@ namespace {
 
 constexpr int kMaxLinkedSleepDurationSeconds = 16 * 60 * 60;
 
-auto ResolveGeneratedSleepProjectPath(const ConverterConfig& config)
+auto ResolveSleepInferenceProjectPath(const ConverterConfig& config)
     -> std::string {
   // This only controls the generated overnight sleep activity path. It must
   // not be treated as the source of the day-level wake-anchor status.
-  return config.generated_sleep_project_path.empty()
+  return config.sleep_inference.sleep_project_path.empty()
              ? "sleep_night"
-             : config.generated_sleep_project_path;
+             : config.sleep_inference.sleep_project_path;
 }
 
-auto HasGeneratedOvernightSleep(const DailyLog& day,
-                                const ConverterConfig& config) -> bool {
+auto HasInferredOvernightSleep(const DailyLog& day,
+                               const ConverterConfig& config) -> bool {
   // This guard exists only to avoid inserting the same generated overnight
   // sleep activity twice during linking. It is intentionally separate from
   // wake-anchor semantics.
   return !day.processedActivities.empty() &&
          (day.processedActivities.front().project_path ==
-          ResolveGeneratedSleepProjectPath(config));
+          ResolveSleepInferenceProjectPath(config));
 }
 
 auto ShouldUsePreviousBoundaryForLeadingPoint(const DailyLog& day) -> bool {
@@ -65,7 +65,7 @@ void DayProcessor::Process(DailyLog& previous_day, DailyLog& day_to_process) {
     sleep_activity.start_time_str = converter_core_internal::NormalizeTime(
         previous_day.rawEvents.back().endTimeStr);
     sleep_activity.end_time_str = day_to_process.getupTime;
-    sleep_activity.project_path = ResolveGeneratedSleepProjectPath(config_);
+    sleep_activity.project_path = ResolveSleepInferenceProjectPath(config_);
 
     day_to_process.processedActivities.insert(
         day_to_process.processedActivities.begin(), sleep_activity);
@@ -93,12 +93,12 @@ void LogLinker::LinkLogs(
                                   converter_core_internal::NormalizeTime(
                                       current_first_day.getupTime) !=
                                       "00:00:00";
-      const bool kMissingGeneratedSleep =
-          !HasGeneratedOvernightSleep(current_first_day, config_);
+      const bool kMissingInferredSleep =
+          !HasInferredOvernightSleep(current_first_day, config_);
       // Linking depends on "do we have a valid wake anchor?" and "have we
       // already synthesized the overnight sleep activity?", not on any
       // generic sleep_* activity presence.
-      if (kHasValidGetup && kMissingGeneratedSleep) {
+      if (kHasValidGetup && kMissingInferredSleep) {
         ProcessCrossDay(current_first_day, *prev_month_last_day);
         linked_count++;
       }
@@ -130,9 +130,9 @@ void LogLinker::LinkFirstDayWithExternalPreviousEvent(
                               converter_core_internal::NormalizeTime(
                                   current_first_day.getupTime) !=
                                   "00:00:00";
-  const bool kMissingGeneratedSleep =
-      !HasGeneratedOvernightSleep(current_first_day, config_);
-  if (!kHasValidGetup || !kMissingGeneratedSleep) {
+  const bool kMissingInferredSleep =
+      !HasInferredOvernightSleep(current_first_day, config_);
+  if (!kHasValidGetup || !kMissingInferredSleep) {
     return;
   }
 
@@ -169,7 +169,7 @@ void LogLinker::ProcessCrossDay(DailyLog& current_day,
   BaseActivityRecord sleep_activity;
   sleep_activity.start_time_str = kStartTime;
   sleep_activity.end_time_str = kEndTime;
-  sleep_activity.project_path = ResolveGeneratedSleepProjectPath(config_);
+  sleep_activity.project_path = ResolveSleepInferenceProjectPath(config_);
 
   // This inserts the generated overnight sleep activity into the fact set.
   // Wake-anchor status is still derived from getupTime/isContinuation.

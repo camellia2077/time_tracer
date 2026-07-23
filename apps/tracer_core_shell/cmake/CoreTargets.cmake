@@ -549,6 +549,7 @@ if(BUILD_TESTING)
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/modules/import_service_tests.cpp"
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/modules/record_time_order_mode_tests.cpp"
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/modules/txt_day_block_tests.cpp"
+        "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/modules/activity_name_converter_tests.cpp"
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/test_main_pipeline.cpp"
     )
     setup_app_target(tt_pipeline_api_tests)
@@ -651,7 +652,6 @@ if(BUILD_TESTING)
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_test_common.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_core_config_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_bundle_policy_tests.cpp"
-        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_compat_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_config_test_main.cpp"
     )
     add_executable(tt_android_runtime_reporting_tests

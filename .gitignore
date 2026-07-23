@@ -54,6 +54,7 @@ local.properties
 # 忽略构建产物和缓存
 build/
 .gradle/
+.gradle-user/
 .kotlin/
 captures/
 
@@ -66,5 +67,3 @@ apps/android/keystore.properties
 # 忽略 Code Runner 产生的任何临时 Python 文件
 tempCodeRunnerFile.py
 tempCodeRunnerFile
-
-

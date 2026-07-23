@@ -22,11 +22,14 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
+#include <unordered_map>
 #include <vector>
 
 #include "application/pipeline/importer/import_service.hpp"
 #include "application/pipeline/txt_day_block_support.hpp"
+#include "application/activity_name_converter.hpp"
 #include "application/pipeline/detail/pipeline_converter_config_install.hpp"
 #include "application/pipeline/detail/pipeline_sha256.hpp"
 #include "application/pipeline/detail/pipeline_record_time_order_support.hpp"
@@ -59,12 +62,20 @@ using tracer_core::core::dto::IngestSyncStatusOutput;
 using tracer_core::core::dto::IngestSyncStatusRequest;
 using tracer_core::core::dto::RecordActivityAtomicallyRequest;
 using tracer_core::core::dto::RecordActivityAtomicallyResponse;
+using tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest;
+using tracer_core::core::dto::UpdateActivityRemarkAtomicallyResponse;
+using tracer_core::core::dto::UpdateDayRemarkAtomicallyRequest;
+using tracer_core::core::dto::UpdateDayRemarkAtomicallyResponse;
 using tracer_core::core::dto::DefaultTxtDayMarkerRequest;
 using tracer_core::core::dto::DefaultTxtDayMarkerResponse;
 using tracer_core::core::dto::ResolveTxtDayBlockRequest;
 using tracer_core::core::dto::ResolveTxtDayBlockResponse;
 using tracer_core::core::dto::ReplaceTxtDayBlockRequest;
 using tracer_core::core::dto::ReplaceTxtDayBlockResponse;
+using tracer_core::core::dto::ConvertTxtActivityNamesRequest;
+using tracer_core::core::dto::ConvertTxtActivityNamesResponse;
+using tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest;
+using tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse;
 
 namespace {
 
@@ -72,6 +83,8 @@ namespace {
 #include "application/pipeline/detail/pipeline_replace_month_support_impl.inc"
 #include "application/pipeline/detail/pipeline_record_alias_text_support_impl.inc"
 #include "application/pipeline/detail/pipeline_record_atomic_support_impl.inc"
+#include "application/pipeline/detail/pipeline_update_remark_support_impl.inc"
+#include "application/pipeline/detail/pipeline_update_day_remark_support_impl.inc"
 
 [[nodiscard]] auto BuildCanonicalMonthRelativePath(
     const SingleTxtTargetMonth& month) -> std::string {
@@ -79,6 +92,7 @@ namespace {
 }
 
 [[nodiscard]] auto TryBuildIngestSyncEntry(const IngestInputModel& input,
+                                           const ConverterConfig& converter_config,
                                            const std::int64_t kIngestedAtMs)
     -> std::optional<IngestSyncStatusEntry> {
   const auto kCanonical = modtext::Canonicalize(
@@ -99,11 +113,15 @@ namespace {
     return std::nullopt;
   }
 
+  const ActivityNameTextConverter activity_name_converter(converter_config);
+  const std::string semantic_text = activity_name_converter.ConvertText(
+      kCanonical.text, ActivityNameMappingDirection::kAliasToCanonical);
+
   return IngestSyncStatusEntry{
       .month_key = kTargetMonth->month_key,
       .txt_relative_path = BuildCanonicalMonthRelativePath(*kTargetMonth),
-      .txt_content_hash_sha256 = pipeline_detail::ComputeSha256Hex(
-          kCanonical.text),
+      .txt_content_hash_sha256 =
+          pipeline_detail::ComputeSha256Hex(semantic_text),
       .ingested_at_unix_ms = kIngestedAtMs,
   };
 }
@@ -115,7 +133,8 @@ namespace {
   const std::int64_t kIngestedAtMs = pipeline_detail::CurrentUnixMillis();
 
   for (const auto& input : context.state.ingest_inputs) {
-    const auto kEntry = TryBuildIngestSyncEntry(input, kIngestedAtMs);
+    const auto kEntry = TryBuildIngestSyncEntry(
+        input, context.state.converter_config, kIngestedAtMs);
     if (!kEntry.has_value()) {
       continue;
     }
@@ -161,6 +180,7 @@ auto PersistSingleIngestSyncEntry(const PipelineSession& context,
 
   const auto kEntry =
       TryBuildIngestSyncEntry(context.state.ingest_inputs.front(),
+                              context.state.converter_config,
                               pipeline_detail::CurrentUnixMillis());
   if (!kEntry.has_value()) {
     throw std::runtime_error(
@@ -263,6 +283,78 @@ auto PipelineWorkflow::RunReplaceTxtDayBlock(
   return txt_day_block::ReplaceDayBlock(request);
 }
 
+auto PipelineWorkflow::RunUpdateActivityRemarkAtomically(
+    const UpdateActivityRemarkAtomicallyRequest& request)
+    -> UpdateActivityRemarkAtomicallyResponse {
+  return RunUpdateActivityRemarkAtomicallySupport(
+      request, output_root_path_, converter_config_provider_,
+      validation_issue_reporter_,
+      [this](const std::string& source_path,
+             const DateCheckMode date_check_mode) -> void {
+        RunIngest(source_path, date_check_mode, false,
+                  IngestMode::kSingleTxtReplaceMonth);
+      });
+}
+
+auto PipelineWorkflow::RunUpdateDayRemarkAtomically(
+    const UpdateDayRemarkAtomicallyRequest& request)
+    -> UpdateDayRemarkAtomicallyResponse {
+  return RunUpdateDayRemarkAtomicallySupport(
+      request, output_root_path_, converter_config_provider_,
+      validation_issue_reporter_,
+      [this](const std::string& source_path,
+             const DateCheckMode date_check_mode) -> void {
+        RunIngest(source_path, date_check_mode, false,
+                  IngestMode::kSingleTxtReplaceMonth);
+      });
+}
+
+auto PipelineWorkflow::RunConvertTxtActivityNames(
+    const ConvertTxtActivityNamesRequest& request)
+    -> ConvertTxtActivityNamesResponse {
+  ActivityNameMappingDirection direction;
+  if (request.direction == "alias_to_canonical") {
+    direction = ActivityNameMappingDirection::kAliasToCanonical;
+  } else if (request.direction == "canonical_to_alias") {
+    direction = ActivityNameMappingDirection::kCanonicalToAlias;
+  } else {
+    throw std::invalid_argument(
+        "direction must be alias_to_canonical or canonical_to_alias.");
+  }
+
+  const ActivityNameTextConverter converter(
+      converter_config_provider_->LoadConverterConfig());
+  return {.ok = true,
+          .converted_content = converter.ConvertText(request.content, direction),
+          .error_message = ""};
+}
+
+auto PipelineWorkflow::RunReplaceTxtCanonicalActivityNames(
+    const ReplaceTxtCanonicalActivityNamesRequest& request)
+    -> ReplaceTxtCanonicalActivityNamesResponse {
+  std::unordered_map<std::string, std::string> replacements;
+  replacements.reserve(request.replacements.size());
+  for (const auto& replacement : request.replacements) {
+    if (replacement.old_canonical.empty() || replacement.new_canonical.empty()) {
+      throw std::invalid_argument(
+          "canonical replacement names must not be empty.");
+    }
+    const auto [_, inserted] = replacements.emplace(
+        replacement.old_canonical, replacement.new_canonical);
+    if (!inserted) {
+      throw std::invalid_argument(
+          "canonical replacement source must be unique: " +
+          replacement.old_canonical);
+    }
+  }
+  const ActivityNameTextConverter converter(
+      converter_config_provider_->LoadConverterConfig());
+  return {.ok = true,
+          .updated_content = converter.ReplaceCanonicalNames(request.content,
+                                                               replacements),
+          .error_message = ""};
+}
+
 auto PipelineWorkflow::InstallActiveConverterConfig(
     const ActiveConverterConfigInstallRequest& request) -> void {
   const auto kSourcePaths =
@@ -274,17 +366,12 @@ auto PipelineWorkflow::InstallActiveConverterConfig(
 
   pipeline_detail::EnsureConverterConfigSourceExists(
       kSourcePaths.main_config_path, "Converter main config");
-  pipeline_detail::EnsureConverterConfigSourceExists(
-      kSourcePaths.alias_mapping_path, "Alias mapping config");
 
   pipeline_detail::CopyConverterConfigFile(
       kSourcePaths.main_config_path, kTargetPaths.main_config_path,
       "converter main config");
-  pipeline_detail::CopyConverterConfigFile(
-      kSourcePaths.alias_mapping_path, kTargetPaths.alias_mapping_path,
-      "alias mapping config");
   pipeline_detail::RemoveConverterAliasDirectory(
-      kTargetPaths.alias_mapping_path.parent_path());
+      kTargetPaths.main_config_path.parent_path().parent_path());
   pipeline_detail::CopyConverterAliasDirectory(
       kSourcePaths.alias_directory_path, kTargetPaths.alias_directory_path);
   converter_config_provider_->InvalidateCache();

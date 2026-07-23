@@ -1,0 +1,8 @@
+y2026
+m01
+
+d0103
+0700wake
+0830英语单词 // alias event
+1000英语写作 // another alias
+1130-1200英语单词 // interval alias

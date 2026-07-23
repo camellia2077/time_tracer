@@ -48,37 +48,19 @@ constexpr std::string_view kDatabaseFilename = "time_data.sqlite3";
 
 [[nodiscard]] auto ResolveReportConfigRoot(
     const fs::path& converter_config_toml_path) -> fs::path {
-  const fs::path converter_dir = converter_config_toml_path.parent_path();
-  if (converter_dir.filename() != "converter") {
+  const fs::path aliases_dir = converter_config_toml_path.parent_path();
+  if (aliases_dir.filename() != "aliases") {
     throw std::runtime_error(
-        "Converter config path must be under 'config/"
-        "converter': " +
+        "Converter main config path must be under 'config/aliases': " +
         converter_config_toml_path.string());
   }
 
-  const fs::path config_root = converter_dir.parent_path();
+  const fs::path config_root = aliases_dir.parent_path();
   if (config_root.empty() || !fs::exists(config_root)) {
     throw std::runtime_error("Config root not found for Android runtime: " +
                              config_root.string());
   }
   return config_root;
-}
-
-[[nodiscard]] auto BuildLegacyMarkdownConfigPaths(const fs::path& config_root)
-    -> AndroidReportConfigPathSet {
-  const fs::path markdown_dir = config_root / "reports" / "markdown";
-  return {
-      .day = ResolveRequiredReportTomlPath(markdown_dir / "day.toml",
-                                           "paths.reports.markdown.day"),
-      .month = ResolveRequiredReportTomlPath(markdown_dir / "month.toml",
-                                             "paths.reports.markdown.month"),
-      .period = ResolveRequiredReportTomlPath(markdown_dir / "period.toml",
-                                              "paths.reports.markdown.period"),
-      .week = ResolveRequiredReportTomlPath(markdown_dir / "week.toml",
-                                            "paths.reports.markdown.week"),
-      .year = ResolveRequiredReportTomlPath(markdown_dir / "year.toml",
-                                            "paths.reports.markdown.year"),
-  };
 }
 
 [[nodiscard]] auto ToAndroidReportConfigPathSet(

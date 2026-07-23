@@ -80,13 +80,9 @@ Open only when needed:
   - `**/.cxx/**`
   - `**/.externalNativeBuild/**`
 
-## Minimal Validation
+## Validation Routing
 
-Run from repo root:
-
-```powershell
-python tools/run.py verify --app tracer_android --profile android_style --concise
-python tools/run.py verify --app tracer_android --profile android_ci --concise
-```
-
-Always serialize Gradle-backed commands for `apps/android`.
+Use `BUILD_WORKFLOW.md` as the sole source for Android validation commands and
+their trigger conditions. Serialize all Gradle-backed commands for
+`apps/android`; do not infer that a CI or release profile is part of the default
+edit loop.

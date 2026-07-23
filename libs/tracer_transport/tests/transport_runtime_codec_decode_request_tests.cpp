@@ -35,6 +35,23 @@ void TestDecodeIngestRequest(int& failures) {
   Expect(!empty_status_request.months.has_value(),
          "DecodeIngestSyncStatusRequest empty payload mismatch.", failures);
 
+  const auto day_remark = DecodeUpdateDayRemarkAtomicallyRequest(
+      R"({"target_date_iso":"2026-03-29","remark":"day line one\nday line two","preferred_txt_path":"2026/2026-03.txt","date_check_mode":"continuity"})");
+  Expect(day_remark.target_date_iso == "2026-03-29",
+         "DecodeUpdateDayRemarkAtomicallyRequest target_date_iso mismatch.", failures);
+  Expect(day_remark.remark == "day line one\nday line two",
+         "DecodeUpdateDayRemarkAtomicallyRequest remark mismatch.", failures);
+  Expect(day_remark.preferred_txt_path.has_value() &&
+             *day_remark.preferred_txt_path == "2026/2026-03.txt" &&
+             day_remark.date_check_mode.has_value() &&
+             *day_remark.date_check_mode == "continuity",
+         "DecodeUpdateDayRemarkAtomicallyRequest optional fields mismatch.", failures);
+  ExpectInvalidArgument(
+      [] { (void)DecodeUpdateDayRemarkAtomicallyRequest(
+          R"({"target_date_iso":"2026-03-29"})"); },
+      "field `remark` must be a string.",
+      "DecodeUpdateDayRemarkAtomicallyRequest missing remark", failures);
+
   ExpectInvalidArgument(
       [] { (void)DecodeIngestSyncStatusRequest(R"({"months":[1]})"); },
       "field `months` must be a string array.",
@@ -229,6 +246,19 @@ void TestDecodeTemporalReportRequest(int& failures) {
   Expect(export_request.operation_kind == "export",
          "DecodeTemporalReportRequest export operation_kind mismatch.",
          failures);
+
+  const auto atomic_remark = DecodeUpdateActivityRemarkAtomicallyRequest(
+      R"({"target_date_iso":"2026-03-29","logical_id":20260329000042,"remark":"updated","preferred_txt_path":"2026/2026-03.txt","date_check_mode":"continuity"})");
+  Expect(atomic_remark.logical_id == 20260329000042LL,
+         "DecodeUpdateActivityRemarkAtomicallyRequest logical_id mismatch.", failures);
+  Expect(atomic_remark.remark == "updated",
+         "DecodeUpdateActivityRemarkAtomicallyRequest remark mismatch.", failures);
+  ExpectInvalidArgument(
+      [] { (void)DecodeUpdateActivityRemarkAtomicallyRequest(
+          R"({"target_date_iso":"2026-03-29","logical_id":"42","remark":"x"})"); },
+      "field `logical_id` must be an integer.",
+      "DecodeUpdateActivityRemarkAtomicallyRequest bad logical_id type",
+      failures);
   Expect(export_request.export_scope.has_value() &&
              *export_request.export_scope == "batch_recent_list",
          "DecodeTemporalReportRequest export_scope mismatch.", failures);

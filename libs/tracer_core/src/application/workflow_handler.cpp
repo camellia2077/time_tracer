@@ -92,6 +92,30 @@ auto WorkflowHandler::RunReplaceTxtDayBlock(
   return impl_.RunReplaceTxtDayBlock(request);
 }
 
+auto WorkflowHandler::RunUpdateActivityRemarkAtomically(
+    const tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest& request)
+    -> tracer_core::core::dto::UpdateActivityRemarkAtomicallyResponse {
+  return impl_.RunUpdateActivityRemarkAtomically(request);
+}
+
+auto WorkflowHandler::RunUpdateDayRemarkAtomically(
+    const tracer_core::core::dto::UpdateDayRemarkAtomicallyRequest& request)
+    -> tracer_core::core::dto::UpdateDayRemarkAtomicallyResponse {
+  return impl_.RunUpdateDayRemarkAtomically(request);
+}
+
+auto WorkflowHandler::RunConvertTxtActivityNames(
+    const tracer_core::core::dto::ConvertTxtActivityNamesRequest& request)
+    -> tracer_core::core::dto::ConvertTxtActivityNamesResponse {
+  return impl_.RunConvertTxtActivityNames(request);
+}
+
+auto WorkflowHandler::RunReplaceTxtCanonicalActivityNames(
+    const tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest& request)
+    -> tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse {
+  return impl_.RunReplaceTxtCanonicalActivityNames(request);
+}
+
 auto WorkflowHandler::InstallActiveConverterConfig(
     const pipeline::ActiveConverterConfigInstallRequest& request) -> void {
   impl_.InstallActiveConverterConfig(request);

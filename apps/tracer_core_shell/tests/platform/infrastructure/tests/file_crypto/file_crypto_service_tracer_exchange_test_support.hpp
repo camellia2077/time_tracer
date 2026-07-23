@@ -30,12 +30,10 @@ auto ToBytes(std::string_view text) -> std::vector<std::uint8_t>;
 auto BuildEntry(std::string_view relative_path, std::string_view text)
     -> exchange_pkg::TracerExchangePackageEntry;
 auto BuildValidPackageEntries(const std::vector<PayloadFixture>& payloads,
-                              const std::string& main_config,
-                              const std::string& alias_index_config)
+                              const std::string& main_config)
     -> std::vector<exchange_pkg::TracerExchangePackageEntry>;
 auto BuildValidPackageEntries(
     const std::vector<PayloadFixture>& payloads, const std::string& main_config,
-    const std::string& alias_index_config,
     const std::vector<PayloadFixture>& alias_child_configs)
     -> std::vector<exchange_pkg::TracerExchangePackageEntry>;
 auto FindEntry(const exchange_pkg::DecodedTracerExchangePackage& package,

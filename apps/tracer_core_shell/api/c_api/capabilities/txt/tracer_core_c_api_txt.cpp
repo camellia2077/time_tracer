@@ -4,8 +4,11 @@ import tracer.core.application.use_cases.interface;
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <utility>
+#include <vector>
 
 #include "nlohmann/json.hpp"
+#include "application/dto/pipeline_requests.hpp"
 #include "api/c_api/tracer_core_c_api.h"
 #include "api/c_api/runtime/tracer_core_c_api_internal.hpp"
 
@@ -120,9 +123,49 @@ extern "C" TT_CORE_API auto tracer_core_runtime_txt_json(
       });
     }
 
+    if (action == "convert_activity_names") {
+      const auto response = runtime.pipeline().RunConvertTxtActivityNames(
+          {.content = RequireStringField(payload, "content"),
+           .direction = RequireStringField(payload, "direction")});
+      if (!response.ok) {
+        return BuildFailureResponse(response.error_message);
+      }
+      return BuildTxtSuccessResponse([&]() -> json {
+        return json{{"converted_content", response.converted_content}};
+      });
+    }
+
+    if (action == "replace_canonical_activity_names") {
+      const auto replacements_it = payload.find("replacements");
+      if (replacements_it == payload.end() || !replacements_it->is_array()) {
+        throw std::invalid_argument("field `replacements` must be an array.");
+      }
+      std::vector<tracer_core::core::dto::CanonicalActivityNameReplacement>
+          replacements;
+      replacements.reserve(replacements_it->size());
+      for (const auto& replacement : *replacements_it) {
+        if (!replacement.is_object()) {
+          throw std::invalid_argument(
+              "each `replacements` item must be an object.");
+        }
+        replacements.push_back(
+            {.old_canonical = RequireStringField(replacement, "old_canonical"),
+             .new_canonical = RequireStringField(replacement, "new_canonical")});
+      }
+      const auto response = runtime.pipeline().RunReplaceTxtCanonicalActivityNames(
+          {.content = RequireStringField(payload, "content"),
+           .replacements = std::move(replacements)});
+      if (!response.ok) {
+        return BuildFailureResponse(response.error_message);
+      }
+      return BuildTxtSuccessResponse([&]() -> json {
+        return json{{"updated_content", response.updated_content}};
+      });
+    }
+
     return BuildFailureResponse(
         "Unsupported txt action: " + action, "runtime.invalid_request",
-        "runtime", {"Use action=default_day_marker|resolve_day_block|replace_day_block."});
+        "runtime", {"Use action=default_day_marker|resolve_day_block|replace_day_block|convert_activity_names|replace_canonical_activity_names."});
   } catch (const std::exception& error) {
     return BuildFailureResponse(error.what());
   } catch (...) {

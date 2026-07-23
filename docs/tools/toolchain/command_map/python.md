@@ -32,7 +32,7 @@
 
 4. 调整 verify 流程（build + test 转发规则）
    - 主入口：`tools/run.py verify`
-   - 参数层：`tools/toolchain/cli/handlers/verify.py`
+   - 参数层：`tools/toolchain/cli/handlers/quality/verify.py`
    - 执行层：`tools/toolchain/commands/cmd_quality/verify.py`
 
 5. 调整 Windows CLI Python 构建入口参数（release/runtime sync/icon 覆盖）
@@ -46,7 +46,7 @@
 
 7. 执行 clang-tidy 批次收口（统一入口）
    - 命令（C++ 轨）：`python tools/run.py tidy-batch --app tracer_core_shell --batch-id <BATCH_ID> --strict-clean --run-verify --concise --full-every 3 --keep-going`
-   - 参数层：`tools/toolchain/cli/handlers/tidy_batch.py`
+   - 参数层：`tools/toolchain/cli/handlers/tidy/tidy_batch.py`
    - 执行层：`tools/toolchain/commands/tidy/batch.py`
 
 8. 针对单个 clang-tidy task 做自动 patch / fix / suggest / step
@@ -63,11 +63,11 @@
      - `tools/toolchain/cli/handlers/tidy/tidy_task_suggest.py`
      - `tools/toolchain/cli/handlers/tidy/tidy_step.py`
    - 执行层：
-     - `tools/toolchain/commands/tidy/task_log.py`
-     - `tools/toolchain/commands/tidy/task_auto_fix.py`
-     - `tools/toolchain/commands/tidy/task_fix.py`
-     - `tools/toolchain/commands/tidy/task_patch.py`
-     - `tools/toolchain/commands/tidy/task_suggest.py`
+     - `tools/toolchain/commands/tidy/tasking/task_log.py`
+     - `tools/toolchain/commands/tidy/tasking/task_auto_fix.py`
+     - `tools/toolchain/commands/tidy/tasking/task_fix.py`
+     - `tools/toolchain/commands/tidy/tasking/task_patch.py`
+     - `tools/toolchain/commands/tidy/tasking/task_suggest.py`
      - `tools/toolchain/commands/tidy/step.py`
 
 ## 3. 最小回归命令
@@ -92,10 +92,10 @@ python tools/run.py tidy-step --task-log <resolved_task_json> --dry-run
 
 1. `tools/AGENTS.md`
 2. `tools/README.md`
-3. `docs/toolchain/README.md`
-4. `docs/toolchain/tidy/README.md`
-5. `docs/toolchain/tidy/architecture.md`
-6. `docs/toolchain/tidy/flow.md`
-7. `docs/toolchain/tools/README.md`
-8. `docs/toolchain/test/README.md`
-9. `docs/toolchain/workflows/README.md`
+3. `docs/tools/toolchain/README.md`
+4. `docs/tools/toolchain/tidy/README.md`
+5. `docs/tools/toolchain/tidy/architecture.md`
+6. `docs/tools/toolchain/tidy/flow.md`
+7. `docs/tools/toolchain/tools/README.md`
+8. `docs/tools/toolchain/test/README.md`
+9. `docs/tools/toolchain/workflows/README.md`

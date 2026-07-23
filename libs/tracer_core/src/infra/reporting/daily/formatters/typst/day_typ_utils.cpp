@@ -56,11 +56,15 @@ auto BuildActivityLine(const TimeRecord& record,
   }
 
   if (record.activityRemark.has_value()) {
-    std::string formatted_activity_remark =
-        FormatMultilineForList(record.activityRemark.value(), 4, " \\");
+    // Keep the label separate from the remark body. This makes multiline
+    // remarks a continuation of the activity detail instead of a long label
+    // line, while the trailing Typst slash preserves each user-entered break.
     output += "\n  ";
-    output += BuildBulletLine(config->GetActivityRemarkLabel(),
-                              formatted_activity_remark);
+    output += "+ *";
+    output += config->GetActivityRemarkLabel();
+    output += ":*\n    ";
+    output +=
+        FormatMultilineForList(record.activityRemark.value(), 4, " \\");
   }
 
   return output;

@@ -19,11 +19,11 @@
 2. `tools/toolchain/cli/`
    - 参数注册、CLI handler、入参组装
 3. `tools/toolchain/commands/`
-   - 真实执行逻辑，如 `build` / `verify` / `tidy` / `validate`
+   - 真实执行逻辑，如 `build` / `verify` / `tidy`
 4. `tools/toolchain/core/`
    - 配置、上下文、进程执行等基础设施
 5. `tools/toolchain/config/`
-   - profile、workflow、validate 路径等配置源
+   - profile、workflow 等配置源
 6. `tools/toolchain/services/`
    - 纯逻辑层与辅助状态服务
 7. `tools/toolchain/formats/`
@@ -125,7 +125,6 @@ python tools/run.py verify --app tracer_android --profile android_style --profil
 1. [../README.md](../README.md)
 2. [../command_map/README.md](../command_map/README.md)
 3. [../tidy/README.md](../tidy/README.md)
-4. [../validate/README.md](../validate/README.md)
-5. [../workflows/README.md](../workflows/README.md)
-6. [../notes/README.md](../notes/README.md)
-7. [../history/README.md](../history/README.md)
+4. [../workflows/README.md](../workflows/README.md)
+5. [notes/README.md](../../../notes/README.md)
+6. [../history/README.md](../history/README.md)

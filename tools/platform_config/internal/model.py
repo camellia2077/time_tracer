@@ -10,6 +10,6 @@ class BundleModel:
     bundle_name: str
     required_files: list[str]
     optional_files: list[str]
-    converter_interval_config: str
+    converter_main_config: str
     visualization_heatmap_config: str
     reports: dict[str, dict[str, str]]

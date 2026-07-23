@@ -56,6 +56,14 @@ auto NativeInit(JNIEnv* env, jobject /*thiz*/, jstring db_path,
   });
 }
 
+auto NativeShutdown(JNIEnv* env, jobject /*thiz*/) -> jstring {
+  return ExecuteJniMethod(env, [&]() -> std::string {
+    std::scoped_lock lock(g_runtime_mutex);
+    DestroyRuntimeLocked();
+    return BuildResponseJson(true, std::string{}, "runtime shutdown");
+  });
+}
+
 auto NativeIngest(JNIEnv* env, jobject /*thiz*/, jstring input_path,
                   jint date_check_mode, jboolean save_processed_output)
     -> jstring {
@@ -288,6 +296,69 @@ auto NativeRecordActivityAtomically(JNIEnv* env, jobject /*thiz*/,
               "nativeRecordActivityAtomically");
     }
 
+    return tt_transport::SerializeResponseEnvelope(response_payload);
+  });
+}
+
+auto NativeUpdateActivityRemarkAtomically(
+    JNIEnv* env, jobject /*thiz*/, jstring target_date_iso, jlong logical_id,
+    jstring remark, jstring preferred_txt_path, jint date_check_mode) -> jstring {
+  return ExecuteJniMethod(env, [&]() -> std::string {
+    tt_transport::UpdateActivityRemarkAtomicallyRequestPayload request_payload{};
+    request_payload.target_date_iso = ToUtf8(env, target_date_iso);
+    request_payload.logical_id = logical_id;
+    request_payload.remark = ToUtf8(env, remark);
+    const std::string preferred_path = ToUtf8(env, preferred_txt_path);
+    if (!preferred_path.empty()) {
+      request_payload.preferred_txt_path = preferred_path;
+    }
+    request_payload.date_check_mode = ParseDateCheckMode(date_check_mode);
+    const std::string request_json =
+        tt_transport::EncodeUpdateActivityRemarkAtomicallyRequest(request_payload);
+
+    tt_transport::ResponseEnvelope response_payload{};
+    {
+      std::scoped_lock lock(g_runtime_mutex);
+      if (g_runtime.core_runtime == nullptr) {
+        return BuildResponseJson(false, "nativeInit must be called first.",
+                                 std::string{});
+      }
+      response_payload = ParseCoreResponse(
+          tracer_core_runtime_update_activity_remark_atomically_json(
+              g_runtime.core_runtime, request_json.c_str()),
+          "nativeUpdateActivityRemarkAtomically");
+    }
+    return tt_transport::SerializeResponseEnvelope(response_payload);
+  });
+}
+
+auto NativeUpdateDayRemarkAtomically(
+    JNIEnv* env, jobject /*thiz*/, jstring target_date_iso, jstring remark,
+    jstring preferred_txt_path, jint date_check_mode) -> jstring {
+  return ExecuteJniMethod(env, [&]() -> std::string {
+    tt_transport::UpdateDayRemarkAtomicallyRequestPayload request_payload{};
+    request_payload.target_date_iso = ToUtf8(env, target_date_iso);
+    request_payload.remark = ToUtf8(env, remark);
+    const std::string preferred_path = ToUtf8(env, preferred_txt_path);
+    if (!preferred_path.empty()) {
+      request_payload.preferred_txt_path = preferred_path;
+    }
+    request_payload.date_check_mode = ParseDateCheckMode(date_check_mode);
+    const std::string request_json =
+        tt_transport::EncodeUpdateDayRemarkAtomicallyRequest(request_payload);
+
+    tt_transport::ResponseEnvelope response_payload{};
+    {
+      std::scoped_lock lock(g_runtime_mutex);
+      if (g_runtime.core_runtime == nullptr) {
+        return BuildResponseJson(false, "nativeInit must be called first.",
+                                 std::string{});
+      }
+      response_payload = ParseCoreResponse(
+          tracer_core_runtime_update_day_remark_atomically_json(
+              g_runtime.core_runtime, request_json.c_str()),
+          "nativeUpdateDayRemarkAtomically");
+    }
     return tt_transport::SerializeResponseEnvelope(response_payload);
   });
 }

@@ -42,22 +42,20 @@ auto CopyFixtureFile(const std::filesystem::path& relative_path,
 
 auto PrepareCustomConfigFixture(
     const std::filesystem::path& config_root,
-    const std::filesystem::path& interval_fixture_relative_path)
+    const std::filesystem::path& converter_main_fixture_relative_path)
     -> std::optional<std::filesystem::path> {
   if (!PrepareAndroidConfigFixture(config_root)) {
     return std::nullopt;
   }
 
-  const std::filesystem::path converter_root = config_root / "converter";
-  if (!CopyFixtureFile(interval_fixture_relative_path,
-                       converter_root / "interval_processor_config.toml") ||
-      !CopyFixtureFile("test/fixtures/config/custom/alias_mapping.single_include.toml",
-                       converter_root / "alias_mapping.toml") ||
+  const std::filesystem::path aliases_root = config_root / "aliases";
+  if (!CopyFixtureFile(converter_main_fixture_relative_path,
+                       aliases_root / "_system.toml") ||
       !CopyFixtureFile("test/fixtures/config/custom/aliases/minimal.toml",
-                       converter_root / "aliases" / "minimal.toml")) {
+                       aliases_root / "minimal.toml")) {
     return std::nullopt;
   }
-  return converter_root / "interval_processor_config.toml";
+  return aliases_root / "_system.toml";
 }
 
 auto BuildRecentWakeEventLine() -> std::string {
@@ -81,7 +79,7 @@ auto BuildRecentWakeEventLine() -> std::string {
 auto PrepareCustomWakeConfig(const std::filesystem::path& config_root)
     -> std::optional<std::filesystem::path> {
   return PrepareCustomConfigFixture(
-      config_root, "test/fixtures/config/custom/wake_keywords.riseup.toml");
+      config_root, "test/fixtures/config/custom/sleep_inference.riseup.toml");
 }
 
 class CapturingLogger final : public applog::ILogger {
@@ -148,8 +146,8 @@ auto TestValidateLogicRejectsWakeKeywordAfterFirstEvent(int& failures) -> void {
 
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
-      kRepoRoot / "assets" / "tracer_core" / "config" / "converter" /
-      "interval_processor_config.toml";
+      kRepoRoot / "assets" / "tracer_core" / "config" /
+      "aliases/_system.toml";
 
   auto logger = std::make_shared<CapturingLogger>();
   auto diagnostics_sink = std::make_shared<CapturingDiagnosticsSink>();
@@ -226,8 +224,8 @@ auto TestValidateLogicAllowsSingleAuthoredEventDay(int& failures) -> void {
 
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
-      kRepoRoot / "assets" / "tracer_core" / "config" / "converter" /
-      "interval_processor_config.toml";
+      kRepoRoot / "assets" / "tracer_core" / "config" /
+      "aliases/_system.toml";
 
   auto logger = std::make_shared<CapturingLogger>();
   auto diagnostics_sink = std::make_shared<CapturingDiagnosticsSink>();
@@ -293,8 +291,8 @@ auto TestValidateLogicRejectsBadTimeRangeFixture(int& failures) -> void {
 
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
-      kRepoRoot / "assets" / "tracer_core" / "config" / "converter" /
-      "interval_processor_config.toml";
+      kRepoRoot / "assets" / "tracer_core" / "config" /
+      "aliases/_system.toml";
 
   auto diagnostics_sink = std::make_shared<CapturingDiagnosticsSink>();
   auto error_report_writer = std::make_shared<CapturingErrorReportWriter>();
@@ -366,8 +364,8 @@ auto TestRecordActivityAtomicallyWarnsForWakeOnlyDay(int& failures) -> void {
 
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
-      kRepoRoot / "assets" / "tracer_core" / "config" / "converter" /
-      "interval_processor_config.toml";
+      kRepoRoot / "assets" / "tracer_core" / "config" /
+      "aliases/_system.toml";
 
   infrastructure::bootstrap::AndroidRuntime runtime;
   try {
@@ -479,8 +477,8 @@ auto TestRecordActivityAtomicallyAcceptsCanonicalActivityToken(
 
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
-      kRepoRoot / "assets" / "tracer_core" / "config" / "converter" /
-      "interval_processor_config.toml";
+      kRepoRoot / "assets" / "tracer_core" / "config" /
+      "aliases/_system.toml";
 
   infrastructure::bootstrap::AndroidRuntime runtime;
   try {
@@ -536,8 +534,8 @@ auto TestRecordActivityAtomicallyWarnsForOvernightContinuationDay(
 
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
-      kRepoRoot / "assets" / "tracer_core" / "config" / "converter" /
-      "interval_processor_config.toml";
+      kRepoRoot / "assets" / "tracer_core" / "config" /
+      "aliases/_system.toml";
 
   infrastructure::bootstrap::AndroidRuntime runtime;
   try {
@@ -554,7 +552,7 @@ auto TestRecordActivityAtomicallyWarnsForOvernightContinuationDay(
 
   const auto kAck = runtime.runtime_api->pipeline().RunRecordActivityAtomically(
       {.target_date_iso = "2026-03-01",
-       .raw_activity_name = "bilibili",
+       .raw_activity_name = "哔哩哔哩",
        .remark = "",
        .preferred_txt_path = "",
        .date_check_mode = DateCheckMode::kNone,
@@ -577,6 +575,75 @@ auto TestRecordActivityAtomicallyWarnsForOvernightContinuationDay(
                  "overnight warning for an incomplete continuation day.\n";
   }
 
+  const std::filesystem::path kMonthFile =
+      kPaths.test_root / "input" / "2026" / "2026-03.txt";
+  std::ifstream month_input(kMonthFile);
+  std::stringstream month_buffer;
+  month_buffer << month_input.rdbuf();
+  if (!month_input.good() || !Contains(month_buffer.str(), "bilibili") ||
+      Contains(month_buffer.str(), "哔哩哔哩")) {
+    ++failures;
+    std::cerr << "[FAIL] Record should write the canonical activity name to "
+                 "the target TXT file when given an alias.\n";
+  }
+
+  cleanup();
+}
+
+auto TestRecordActivityAtomicallyPreservesMultilineRemark(
+    int& failures) -> void {
+  const RuntimeTestPaths kPaths = BuildTempTestPaths(
+      "time_tracer_android_runtime_record_multiline_remark_test");
+  RemoveTree(kPaths.test_root);
+
+  const auto cleanup = [&]() -> void { RemoveTree(kPaths.test_root); };
+  const std::filesystem::path kRepoRoot = BuildRepoRoot();
+  const std::filesystem::path kConfigTomlPath =
+      kRepoRoot / "assets" / "tracer_core" / "config" /
+      "aliases/_system.toml";
+
+  infrastructure::bootstrap::AndroidRuntime runtime;
+  try {
+    runtime = infrastructure::bootstrap::BuildAndroidRuntime(
+        BuildRuntimeRequest(kPaths, kConfigTomlPath));
+  } catch (const std::exception& exception) {
+    ++failures;
+    std::cerr << "[FAIL] BuildAndroidRuntime should succeed for multiline "
+                 "remark test: "
+              << exception.what() << '\n';
+    cleanup();
+    return;
+  }
+
+  const auto kAck = runtime.runtime_api->pipeline().RunRecordActivityAtomically(
+      {.target_date_iso = "2026-03-01",
+       .raw_activity_name = "bilibili",
+       .remark = "first line\nsecond line\\path",
+       .preferred_txt_path = "",
+       .date_check_mode = DateCheckMode::kNone,
+       .time_order_mode = TimeOrderMode::kStrictCalendar});
+  if (!kAck.ok) {
+    ++failures;
+    std::cerr << "[FAIL] RunRecordActivityAtomically should preserve a "
+                 "multiline remark: "
+              << kAck.message << '\n';
+    cleanup();
+    return;
+  }
+
+  const std::filesystem::path kMonthFile =
+      kPaths.test_root / "input" / "2026" / "2026-03.txt";
+  std::ifstream month_input(kMonthFile);
+  std::stringstream month_buffer;
+  month_buffer << month_input.rdbuf();
+  const std::string month_text = month_buffer.str();
+  if (!month_input.good() ||
+      !Contains(month_text, "// first line\n// second line\\path")) {
+    ++failures;
+    std::cerr << "[FAIL] Atomic record should write multiline remarks as "
+                 "physical // continuation lines.\n";
+  }
+
   cleanup();
 }
 
@@ -590,8 +657,8 @@ auto TestRecordActivityAtomicallySkipsCompletenessWarningForCompleteDay(
 
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
-      kRepoRoot / "assets" / "tracer_core" / "config" / "converter" /
-      "interval_processor_config.toml";
+      kRepoRoot / "assets" / "tracer_core" / "config" /
+      "aliases/_system.toml";
 
   const std::filesystem::path kMonthFile =
       kPaths.test_root / "input" / "2026" / "2026-03.txt";
@@ -655,8 +722,8 @@ auto TestConvertLogsActualConversionFailure(int& failures) -> void {
 
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
-      kRepoRoot / "assets" / "tracer_core" / "config" / "converter" /
-      "interval_processor_config.toml";
+      kRepoRoot / "assets" / "tracer_core" / "config" /
+      "aliases/_system.toml";
 
   auto logger = std::make_shared<CapturingLogger>();
   auto diagnostics_sink = std::make_shared<CapturingDiagnosticsSink>();
@@ -755,8 +822,8 @@ auto TestValidateStructureReportsInvalidUtf8(int& failures) -> void {
 
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
-      kRepoRoot / "assets" / "tracer_core" / "config" / "converter" /
-      "interval_processor_config.toml";
+      kRepoRoot / "assets" / "tracer_core" / "config" /
+      "aliases/_system.toml";
 
   infrastructure::bootstrap::AndroidRuntime runtime;
   try {
@@ -830,6 +897,7 @@ auto RunPipelineValidationRegressionTests(int& failures) -> void {
   TestRecordActivityAtomicallyWarnsForWakeOnlyDay(failures);
   TestRecordActivityAtomicallyAcceptsWakeKeywordFromConfigOnly(failures);
   TestRecordActivityAtomicallyAcceptsCanonicalActivityToken(failures);
+  TestRecordActivityAtomicallyPreservesMultilineRemark(failures);
   TestRecordActivityAtomicallyWarnsForOvernightContinuationDay(failures);
   TestRecordActivityAtomicallySkipsCompletenessWarningForCompleteDay(failures);
   TestConvertLogsActualConversionFailure(failures);

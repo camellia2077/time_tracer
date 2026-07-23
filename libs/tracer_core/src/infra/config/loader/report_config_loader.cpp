@@ -67,13 +67,10 @@ auto ReportConfigLoader::LoadDailyTypConfig(const fs::path& path)
 auto ReportConfigLoader::LoadDailyMdConfig(const fs::path& path)
     -> DailyMdConfig {
   toml::table tbl = modloader::ReadToml(path);
-  ValidateDailyLabels(tbl, path, "title_prefix");
-  ValidateDailyStatistics(tbl, path);
+  ValidateDailyLabels(tbl, path, "title_prefix", false);
 
   DailyMdConfig config;
   modloader::FillDailyLabels(tbl, config.labels);
-  modloader::ParseStatisticsItems(tbl["statistics_items"].as_array(),
-                                  config.statistics_items);
   return config;
 }
 

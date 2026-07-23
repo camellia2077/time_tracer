@@ -32,7 +32,7 @@ auto RunInfrastructureModuleCryptoExchangeSmoke() -> int {
       "payload/2026/2026-12.txt",
   };
   manifest.converter_alias_mapping_files = {
-      "config/converter/aliases/default.toml",
+      "config/aliases/default.toml",
   };
 
   const std::string manifest_text = exchange::BuildManifestText(manifest);
@@ -51,19 +51,16 @@ auto RunInfrastructureModuleCryptoExchangeSmoke() -> int {
   entries.reserve(exchange::kRequiredPackagePaths.size() + 1U + 2U);
   entries.push_back(BuildEntry(exchange::kManifestPath, manifest_text));
   entries.push_back(BuildEntry(exchange::kConverterMainPath, "main = true\n"));
-  entries.push_back(
-      BuildEntry(exchange::kAliasMappingIndexPath,
-                 "includes = [\"aliases/default.toml\"]\n"));
   for (const auto report_path : exchange::kReportMarkdownPackagePaths) {
     entries.push_back(BuildEntry(report_path, "title = \"report\"\n"));
   }
-  entries.push_back(BuildEntry("config/converter/aliases/default.toml",
+  entries.push_back(BuildEntry("config/aliases/default.toml",
                                "parent = \"study\"\n\n[aliases]\n\"study\" = "
                                "\"math\"\n"));
   entries.push_back(BuildEntry("payload/2025/2025-01.txt",
-                               "y2025\nm01\nd0101\n0600 study_math r alpha\n"));
+                               "y2025\nm01\nd0101\n0600 study_math // alpha\n"));
   entries.push_back(BuildEntry("payload/2026/2026-12.txt",
-                               "y2026\nm12\nd1201\n0600 study_math r alpha\n"));
+                               "y2026\nm12\nd1201\n0600 study_math // alpha\n"));
 
   const auto package_bytes = exchange::EncodePackageBytes(entries);
   const exchange::DecodedTracerExchangePackage decoded =

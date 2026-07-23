@@ -11,7 +11,7 @@
 ### 核心逻辑 (tools/toolchain/commands/cmd_build/cmake.py)
 *   **状态感知 (State-Aware)**：解析 `CMakeCache.txt` 确定配置状态，根据标志位（如 `ENABLE_CLANG_TIDY`）或路径变化自动触发重新配置。
 *   **并发编译**：根据系统核心数自动配置并行任务数 (`-j`)。
-*   **AI Agent 协作**：Agent 通过单一指令（如 `python tools/run.py verify ...` 或 `python tools/run.py validate ...`）触发配置、编译、产物同步及测试全流程。
+*   **AI Agent 协作**：Agent 通过单一 `python tools/run.py verify ...` 指令触发配置、编译、产物同步及测试全流程。
 
 ---
 
@@ -50,7 +50,7 @@
 
 测试框架采用“二层模型”覆盖核心算法与交付产物。
 
-### 二层测试模型 (docs/toolchain/test/README.md)
+### 二层测试模型 (`docs/tools/toolchain/test/README.md`)
 1.  **逻辑测试层**：`tracer_core` 的 C++ 单元与组件测试。
 2.  **产物测试层**：针对二进制交付件（如 `time_tracer_cli.exe`）的集成测试。
 

@@ -40,6 +40,8 @@
 26. `tracer_core_runtime_crypto_decrypt_json`
 27. `tracer_core_runtime_crypto_inspect_json`
 28. `tracer_core_runtime_txt_json`
+29. `tracer_core_runtime_update_activity_remark_atomically_json`
+30. `tracer_core_runtime_update_day_remark_atomically_json`
 
 ## JSON Boundary Policy
 1. JSON-returning runtime operations keep UTF-8 JSON object responses as the ABI
@@ -74,6 +76,9 @@
      - `runtime_query_json`
      - `runtime_temporal_report_json`
      - `runtime_report_batch_json`
+     - `runtime_record_activity_atomically_json`
+     - `runtime_update_activity_remark_atomically_json`
+     - `runtime_update_day_remark_atomically_json`
      - `runtime_txt_json`
      - `processed_json_io`
      - `report_markdown`
@@ -212,6 +217,8 @@
      - `default_day_marker`
      - `resolve_day_block`
      - `replace_day_block`
+     - `convert_activity_names`
+     - `replace_canonical_activity_names`
    - detailed DTO fields and semantics live in
      `docs/time_tracer/core/contracts/text/runtime_txt_day_block_json_contract_v1.md`
 
@@ -255,7 +262,7 @@
 ## Detailed Related Contracts
 1. `docs/time_tracer/core/contracts/crypto/runtime_crypto_json_contract_v1.md`
 2. `docs/time_tracer/core/contracts/crypto/file_format_v2.md`
-3. `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v3.md`
+3. `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v4.md`
 4. `docs/time_tracer/presentation/android/runtime-protocol.md`
 5. `docs/time_tracer/core/contracts/text/runtime_txt_day_block_json_contract_v1.md`
 

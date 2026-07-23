@@ -10,6 +10,7 @@ auto RunConvertIngestValidateTests(TestState& state) -> void;
 auto RunImportServiceTests(TestState& state) -> void;
 auto RunRecordTimeOrderModeTests(TestState& state) -> void;
 auto RunTxtDayBlockTests(TestState& state) -> void;
+auto RunActivityNameConverterTests(TestState& state) -> void;
 
 }  // namespace tracer_core::application::tests
 

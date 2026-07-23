@@ -68,12 +68,8 @@ Detailed navigation for the shared bridge-helper library.
 3. TXT runtime coverage routes through:
    - `apps/tracer_core_shell/tests/integration/tracer_core_c_api_pipeline_tests.cpp`
    - Android runtime/client tests under `apps/android/runtime/src/test/java/com/example/tracer`
-4. Focused validation:
-
-```powershell
-python tools/run.py validate --plan <plan_name> --paths libs/tracer_core_bridge_common apps/tracer_core_shell libs/tracer_transport
-python tools/run.py verify --app tracer_core_shell --profile fast --concise
-```
+4. Validation selection and completion requirements are defined by
+   `libs/tracer_core_bridge_common/AGENTS.md`.
 
 ## Read-First Docs
 

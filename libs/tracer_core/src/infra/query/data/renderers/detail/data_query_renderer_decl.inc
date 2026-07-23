@@ -17,6 +17,7 @@
 
 [[nodiscard]] auto RenderProjectTreeOutput(
     const std::vector<ProjectTreeNode>& nodes, int max_depth,
+    int max_available_depth,
     tracer_core::core::dto::DataQueryOutputMode output_mode) -> std::string;
 
 [[nodiscard]] auto RenderJsonObjectOutput(

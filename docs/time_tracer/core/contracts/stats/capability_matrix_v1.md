@@ -16,7 +16,7 @@
 | `days-stats` | `period/period_arg/root/top_n/...` | `stats/day_duration_stats_calculator.*` | `stats.*`, `rows`, `total_count`, `top_*` | `stats.count=0`，其余统计值为 0 |
 | `report-chart` | `lookback_days` 或 `from/to` + 可选 `root` | `stats/report_chart_stats_calculator.*` | `series`, `total_duration_seconds`, `average_duration_seconds`, `active_days`, `range_days` | 缺 root/无数据时 `series=[]` 且统计值为 0 |
 | `report-composition` | `lookback_days` 或 `from/to` | 项目树聚合 | `slices`, `total_duration_seconds`, `active_root_count`, `range_days`, `tree` | `slices=[]`、`tree=[]` 且统计值为 0 |
-| `tree` | `period/period_arg/level/root/...` | 树聚合与节点父级占比计算 | `roots[].duration_seconds`, `roots[].children[].parent_duration_percent`, `root_count`, `max_depth` | `roots=[]`, `root_count=0` |
+| `tree` | `period/period_arg/level/root/...` | 树聚合与节点父级占比计算 | `roots[].duration_seconds`, `roots[].children[].parent_duration_percent`, `root_count`, `max_depth`, `max_available_depth` | `roots=[]`, `root_count=0`, `max_available_depth=0` |
 | `search` | `remark/day_remark/project/root/...` | 无统计计算 | `items`, `total_count` | `items=[]`, `total_count=0` |
 | `activity-suggest` | `lookback_days/top/prefix/score_mode` | 评分聚合（核心查询层） | `items[].score`, `total_count` | `items=[]`, `total_count=0` |
 

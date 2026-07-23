@@ -156,18 +156,12 @@ auto TryResolveAndroidBundleConfigPathsImpl(const fs::path& config_dir)
                           "is required and must be a table.");
   }
 
-  EnsureFieldAbsent(*converter_tbl, "interval_processor_config", kBundlePath,
-                    "paths.converter", "paths.converter.interval_config");
-  EnsureFieldAbsent(*converter_tbl, "interval_processor_config_path",
-                    kBundlePath, "paths.converter",
-                    "paths.converter.interval_config");
-
   AndroidBundleConfigPaths out{};
-  const std::string kIntervalConfig = RequireNonEmptyStringField(
-      *converter_tbl, "interval_config", kBundlePath, "paths.converter");
+  const std::string kMainConfig = RequireNonEmptyStringField(
+      *converter_tbl, "main_config", kBundlePath, "paths.converter");
   out.converter_config_toml_path =
-      NormalizeConfigRelativePath(config_dir, kIntervalConfig);
-  EnsureFileExists(kBundlePath, "paths.converter.interval_config",
+      NormalizeConfigRelativePath(config_dir, kMainConfig);
+  EnsureFileExists(kBundlePath, "paths.converter.main_config",
                    out.converter_config_toml_path);
 
   const toml::table* visualization_tbl =
@@ -190,13 +184,6 @@ auto TryResolveAndroidBundleConfigPathsImpl(const fs::path& config_dir)
     ThrowConfigFieldError(kBundlePath, "paths.reports",
                           "is required and must be a table.");
   }
-
-  EnsureFieldAbsent(*reports_tbl, "md", kBundlePath, "paths.reports",
-                    "paths.reports.markdown");
-  EnsureFieldAbsent(*reports_tbl, "tex", kBundlePath, "paths.reports",
-                    "paths.reports.latex");
-  EnsureFieldAbsent(*reports_tbl, "typ", kBundlePath, "paths.reports",
-                    "paths.reports.typst");
 
   const ReportPathSource kReportPathSource{
       .config_dir = config_dir,
@@ -283,17 +270,12 @@ auto TryParseBundlePathsImpl(const fs::path& config_dir, AppConfig& config)
                           "is required and must be a table.");
   }
 
-  EnsureFieldAbsent(*converter_tbl, "interval_processor_config", kBundlePath,
-                    "paths.converter", "paths.converter.interval_config");
-  EnsureFieldAbsent(*converter_tbl, "interval_processor_config_path",
-                    kBundlePath, "paths.converter",
-                    "paths.converter.interval_config");
-  const std::string kIntervalConfig = RequireNonEmptyStringField(
-      *converter_tbl, "interval_config", kBundlePath, "paths.converter");
-  config.pipeline.interval_processor_config_path =
-      NormalizeConfigRelativePath(config_dir, kIntervalConfig);
-  EnsureFileExists(kBundlePath, "paths.converter.interval_config",
-                   config.pipeline.interval_processor_config_path);
+  const std::string kMainConfig = RequireNonEmptyStringField(
+      *converter_tbl, "main_config", kBundlePath, "paths.converter");
+  config.pipeline.converter_main_config_path =
+      NormalizeConfigRelativePath(config_dir, kMainConfig);
+  EnsureFileExists(kBundlePath, "paths.converter.main_config",
+                   config.pipeline.converter_main_config_path);
 
   const toml::table* visualization_tbl =
       TryReadTableField(*paths_tbl, "visualization", kBundlePath, "paths");
@@ -315,13 +297,6 @@ auto TryParseBundlePathsImpl(const fs::path& config_dir, AppConfig& config)
     ThrowConfigFieldError(kBundlePath, "paths.reports",
                           "is required and must be a table.");
   }
-
-  EnsureFieldAbsent(*reports_tbl, "md", kBundlePath, "paths.reports",
-                    "paths.reports.markdown");
-  EnsureFieldAbsent(*reports_tbl, "tex", kBundlePath, "paths.reports",
-                    "paths.reports.latex");
-  EnsureFieldAbsent(*reports_tbl, "typ", kBundlePath, "paths.reports",
-                    "paths.reports.typst");
 
   const ReportPathSource kReportPathSource{
       .config_dir = config_dir,

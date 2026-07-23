@@ -189,7 +189,7 @@ auto BuildDailyFixture() -> DailyReportData {
       .end_time = "09:10",
       .project_path = "Work_Coding",
       .duration_seconds = 4200,
-      .activityRemark = std::optional<std::string>{"Feature refactor"},
+      .activityRemark = std::optional<std::string>{"Feature refactor\nFollow-up"},
   });
   report.detailed_records.push_back(TimeRecord{
       .start_time = "09:20",
@@ -294,6 +294,32 @@ auto CheckWakeAnchorMetadataLabels(const ParityOutputs& outputs,
                     "recorded_coverage_ratio", failures);
 }
 
+auto CheckMarkdownActivityRemarkLineBreaks(const ParityOutputs& outputs,
+                                           int& failures) -> void {
+  constexpr std::string_view kExpected =
+      "  - **Activity Remark**:\n    Feature refactor<br>\n    Follow-up";
+  ExpectContains("daily markdown multiline activity remark",
+                 outputs.cli_by_format[0].day, kExpected, failures);
+  ExpectContains("daily Android markdown multiline activity remark",
+                 outputs.android_by_format[0].day, kExpected, failures);
+
+  constexpr std::string_view kLatexExpected =
+      "        \\item \\textbf{Activity Remark}:\\\\\n"
+      "        Feature refactor\\\\\nFollow-up";
+  ExpectContains("daily latex multiline activity remark",
+                 outputs.cli_by_format[1].day, kLatexExpected, failures);
+  ExpectContains("daily Android latex multiline activity remark",
+                 outputs.android_by_format[1].day, kLatexExpected, failures);
+
+  constexpr std::string_view kTypstExpected =
+      "  + *Activity Remark:*\n    Feature refactor \\\n"
+      "    Follow-up";
+  ExpectContains("daily typst multiline activity remark",
+                 outputs.cli_by_format[2].day, kTypstExpected, failures);
+  ExpectContains("daily Android typst multiline activity remark",
+                 outputs.android_by_format[2].day, kTypstExpected, failures);
+}
+
 // NOLINTEND(readability-magic-numbers,readability-identifier-naming,bugprone-easily-swappable-parameters,modernize-use-auto,modernize-use-designated-initializers)
 
 }  // namespace
@@ -363,6 +389,7 @@ auto RunFormatterParityTests() -> int {
   RunLatexSnapshotCases(snapshot_root, outputs, update_snapshots, failures);
   RunTypstSnapshotCases(snapshot_root, outputs, update_snapshots, failures);
   CheckWakeAnchorMetadataLabels(outputs, failures);
+  CheckMarkdownActivityRemarkLineBreaks(outputs, failures);
 
   if (failures == 0) {
     std::cout << "[PASS] time_tracker_formatter_parity_tests\n";

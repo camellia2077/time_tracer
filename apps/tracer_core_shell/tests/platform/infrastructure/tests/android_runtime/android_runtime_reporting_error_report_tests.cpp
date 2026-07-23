@@ -77,8 +77,8 @@ auto TestValidateLogicReusesStructureReporter(int& failures) -> void {
 
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
-      kRepoRoot / "assets" / "tracer_core" / "config" / "converter" /
-      "interval_processor_config.toml";
+      kRepoRoot / "assets" / "tracer_core" / "config" /
+      "aliases/_system.toml";
 
   auto logger = std::make_shared<CapturingLogger>();
   auto diagnostics_sink = std::make_shared<CapturingDiagnosticsSink>();
@@ -187,8 +187,8 @@ auto TestValidateStructureSkipsErrorReportFiles(int& failures) -> void {
 
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
-      kRepoRoot / "assets" / "tracer_core" / "config" / "converter" /
-      "interval_processor_config.toml";
+      kRepoRoot / "assets" / "tracer_core" / "config" /
+      "aliases/_system.toml";
 
   auto logger = std::make_shared<CapturingLogger>();
   auto diagnostics_sink = std::make_shared<CapturingDiagnosticsSink>();
@@ -271,8 +271,8 @@ auto TestAndroidDefaultRuntimeSkipsErrorReportFiles(int& failures) -> void {
 
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
-      kRepoRoot / "assets" / "tracer_core" / "config" / "converter" /
-      "interval_processor_config.toml";
+      kRepoRoot / "assets" / "tracer_core" / "config" /
+      "aliases/_system.toml";
 
   auto logger = std::make_shared<CapturingLogger>();
   auto diagnostics_sink = std::make_shared<CapturingDiagnosticsSink>();

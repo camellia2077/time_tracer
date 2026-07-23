@@ -39,7 +39,6 @@ struct DailyTypConfig {
 
 struct DailyMdConfig {
   DailyReportLabels labels;
-  std::vector<ReportStatisticsItem> statistics_items;
 };
 
 // --- Monthly Configs ---

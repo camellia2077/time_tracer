@@ -91,15 +91,9 @@ auto ResolveAndroidRuntimeConfigPathsBridge(
     };
   }
 
-  return {
-      .converter_config_toml_path =
-          ResolveConverterConfigTomlPath(requested_converter_config_path),
-      .markdown = BuildLegacyMarkdownConfigPaths(config_root),
-      .latex = std::nullopt,
-      .typst = std::nullopt,
-      .formatter_policy = ::infrastructure::reports::
-          AndroidStaticReportFormatterPolicy::MarkdownOnly(),
-  };
+  throw std::runtime_error(
+      "Android runtime config bundle not found under: " +
+      config_root.string());
 }
 
 auto BuildAndroidReportCatalogBridge(

@@ -57,6 +57,16 @@ namespace tracer::transport {
     std::string_view request_json) -> RecordActivityAtomicallyRequestPayload;
 [[nodiscard]] auto EncodeRecordActivityAtomicallyRequest(
     const RecordActivityAtomicallyRequestPayload& request) -> std::string;
+[[nodiscard]] auto DecodeUpdateActivityRemarkAtomicallyRequest(
+    std::string_view request_json)
+    -> UpdateActivityRemarkAtomicallyRequestPayload;
+[[nodiscard]] auto EncodeUpdateActivityRemarkAtomicallyRequest(
+    const UpdateActivityRemarkAtomicallyRequestPayload& request) -> std::string;
+[[nodiscard]] auto DecodeUpdateDayRemarkAtomicallyRequest(
+    std::string_view request_json)
+    -> UpdateDayRemarkAtomicallyRequestPayload;
+[[nodiscard]] auto EncodeUpdateDayRemarkAtomicallyRequest(
+    const UpdateDayRemarkAtomicallyRequestPayload& request) -> std::string;
 
 [[nodiscard]] auto DecodeQueryRequest(std::string_view request_json)
     -> QueryRequestPayload;

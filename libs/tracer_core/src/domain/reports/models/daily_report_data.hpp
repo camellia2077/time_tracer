@@ -11,6 +11,7 @@
 #include "domain/reports/models/project_tree.hpp"
 
 struct TimeRecord {
+  std::int64_t logical_id = 0;
   std::string start_time;
   std::string end_time;
   std::string project_path;

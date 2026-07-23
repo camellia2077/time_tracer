@@ -1,5 +1,6 @@
 from collections.abc import Callable
 import shutil
+import subprocess
 from pathlib import Path
 
 from ...core.context import Context
@@ -45,6 +46,47 @@ def _clear_android_built_in_kotlinc_dirs(app_dir: Path) -> int:
             continue
         cleared += 1
     return cleared
+
+
+def _android_install_requires_device(gradle_tasks: list[str]) -> bool:
+    return any("install" in str(task).lower() for task in gradle_tasks)
+
+
+def _ensure_android_device_connected(env: dict[str, str]) -> bool:
+    adb_path = shutil.which("adb", path=env.get("PATH"))
+    if adb_path is None:
+        print(
+            "--- build: ADB command not found; cannot install the Android APK. "
+            "Please configure Android SDK platform-tools."
+        )
+        return False
+
+    try:
+        result = subprocess.run(
+            [adb_path, "devices"],
+            check=False,
+            capture_output=True,
+            text=True,
+            env=env,
+        )
+    except OSError as error:
+        print(f"--- build: failed to query ADB devices: {error}")
+        return False
+
+    connected_devices = [
+        line
+        for line in result.stdout.splitlines()
+        if line.strip() and not line.startswith("List of devices")
+        and len(line.split()) >= 2
+        and line.split()[1] == "device"
+    ]
+    if result.returncode != 0 or not connected_devices:
+        print(
+            "--- build: ADB 没有任何连接设备（no connected devices）。"
+            "请连接 Android 真机或启动模拟器后重试。"
+        )
+        return False
+    return True
 
 
 def configure_gradle(
@@ -121,6 +163,10 @@ def build_gradle(
         *gradle_extra_args,
     ]
     app_dir = ctx.get_app_dir(app_name)
+    command_env = ctx.setup_env()
+    if app_name == "tracer_android" and _android_install_requires_device(gradle_tasks):
+        if not _ensure_android_device_connected(command_env):
+            return 1
     lock_path = ctx.get_out_root() / "locks" / app_name / "android_gradle.lock"
     lock_metadata = {
         "command": " ".join(str(token) for token in gradle_cmd),
@@ -135,7 +181,7 @@ def build_gradle(
             build_ret = effective_run_command(
                 gradle_cmd,
                 cwd=app_dir,
-                env=ctx.setup_env(),
+                env=command_env,
                 log_file=log_file,
                 output_mode=output_mode,
             )
@@ -154,7 +200,7 @@ def build_gradle(
             return effective_run_command(
                 gradle_cmd,
                 cwd=app_dir,
-                env=ctx.setup_env(),
+                env=command_env,
                 log_file=log_file,
                 output_mode=output_mode,
             )

@@ -195,6 +195,12 @@ gradle_tasks = [
     ":app:assembleDebug",
 ]
 
+[build.profiles.android_edit_device]
+description = "Android edit-loop debug build and install on a connected device or emulator."
+gradle_tasks = [
+    ":app:installDebug",
+]
+
 [build.profiles.android_ci]
 description = "Android CI checks (snapshot verify + debug/local QA, signing-free)."
 gradle_tasks = [

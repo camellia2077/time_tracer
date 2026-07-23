@@ -10,8 +10,8 @@ time-tracer text document before semantic rules are evaluated.
 This phase is not just regex validation.
 
 The implementation is line-classification plus parser/state-machine logic.
-It also is not fully config-free, because some line interpretation depends on
-validated config.
+Remark syntax is fixed by the TXT contract; wake keywords and alias-derived
+allowed event names still come from validated config.
 
 ## Typical Responsibilities
 
@@ -23,10 +23,13 @@ validated config.
 
 ## Config Coupling
 
-Structure validation already depends on config-backed semantics such as:
-1. `remark_prefix`
-2. `wake_keywords`
-3. alias-derived allowed event names
+Structure validation still depends on config-backed semantics such as:
+1. `wake_keywords`
+2. alias-derived allowed event names
+
+The only remark marker is `//`. A marker before the first event is a day
+remark; a marker after an event is an activity continuation within the same
+day block. Physical continuation lines are merged with an LF.
 
 That is why config validation must already have passed before this phase runs.
 

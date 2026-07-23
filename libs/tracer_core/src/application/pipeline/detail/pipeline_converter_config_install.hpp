@@ -8,7 +8,6 @@ namespace tracer::core::application::pipeline::detail {
 
 struct ConverterConfigPathSet {
   std::filesystem::path main_config_path;
-  std::filesystem::path alias_mapping_path;
   std::filesystem::path alias_directory_path;
 };
 

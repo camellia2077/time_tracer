@@ -7,7 +7,7 @@ args = ["txt", "view-day", "--in", "{data_path}/2025/2025-01.txt", "--day", "010
 expect_exit = 0
 expect_stdout_contains = [
   "0603wake",
-  "0914洗漱 #cherry",
+  "0914洗漱 //cherry",
   "0300meal_dining",
 ]
 expect_stderr_contains = []
@@ -52,7 +52,7 @@ args = ["txt", "view-day", "--in", "{output_dir}/txt/journal.txt", "--day", "010
 expect_exit = 0
 expect_stdout_contains = [
   "0603wake",
-  "0914洗漱 #cherry",
+  "0914洗漱 //cherry",
   "0300meal_dining",
 ]
 expect_stderr_contains = []

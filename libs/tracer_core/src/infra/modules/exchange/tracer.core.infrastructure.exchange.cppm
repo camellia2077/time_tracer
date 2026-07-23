@@ -25,9 +25,7 @@ export namespace tracer::core::infrastructure::crypto::exchange {
 
 inline constexpr std::string_view kManifestPath = "manifest.toml";
 inline constexpr std::string_view kConverterMainPath =
-    "config/converter/interval_processor_config.toml";
-inline constexpr std::string_view kAliasMappingIndexPath =
-    "config/converter/alias_mapping.toml";
+    "config/aliases/_system.toml";
 inline constexpr std::string_view kReportMarkdownDayPath =
     "config/reports/markdown/day.toml";
 inline constexpr std::string_view kReportMarkdownMonthPath =
@@ -40,10 +38,9 @@ inline constexpr std::string_view kReportMarkdownYearPath =
     "config/reports/markdown/year.toml";
 inline constexpr std::string_view kPayloadRoot = "payload";
 
-inline constexpr std::array<std::string_view, 8> kRequiredPackagePaths = {
+inline constexpr std::array<std::string_view, 7> kRequiredPackagePaths = {
     kManifestPath,
     kConverterMainPath,
-    kAliasMappingIndexPath,
     kReportMarkdownDayPath,
     kReportMarkdownMonthPath,
     kReportMarkdownPeriodPath,
@@ -76,8 +73,6 @@ struct TracerExchangeManifest {
   std::string payload_root = std::string(kPayloadRoot);
   std::vector<std::string> payload_files;
   std::string converter_main_config = std::string(kConverterMainPath);
-  std::string converter_alias_mapping_index =
-      std::string(kAliasMappingIndexPath);
   std::vector<std::string> converter_alias_mapping_files;
   std::vector<std::string> report_markdown_files = {
       std::string(kReportMarkdownDayPath),
@@ -310,11 +305,11 @@ auto ValidateAliasMappingFiles(
 
   std::string previous_path;
   for (const auto& alias_path : alias_mapping_files) {
-    if (!alias_path.starts_with("config/converter/aliases/") ||
+    if (!alias_path.starts_with("config/aliases/") ||
         !alias_path.ends_with(".toml")) {
       ThrowMalformedPackage(
           "manifest alias mapping files must live under "
-          "`config/converter/aliases/` and end with `.toml`.");
+          "`config/aliases/` and end with `.toml`.");
     }
     if (!previous_path.empty() && alias_path <= previous_path) {
       ThrowMalformedPackage(
@@ -516,7 +511,6 @@ auto BuildManifestText(const TracerExchangeManifest& manifest) -> std::string {
 
   toml::table converter;
   converter.insert("main_config", manifest.converter_main_config);
-  converter.insert("alias_mapping_index", manifest.converter_alias_mapping_index);
   toml::array alias_mapping_files{};
   for (const auto& path : manifest.converter_alias_mapping_files) {
     alias_mapping_files.push_back(path);
@@ -575,8 +569,6 @@ auto ParseManifestText(std::string_view manifest_text)
   }
   manifest.converter_main_config =
       ParseExpectedString(*converter_table, "main_config");
-  manifest.converter_alias_mapping_index =
-      ParseExpectedString(*converter_table, "alias_mapping_index");
   manifest.converter_alias_mapping_files =
       ParseStringArray(*converter_table, "alias_mapping_files");
 
@@ -604,8 +596,7 @@ auto ParseManifestText(std::string_view manifest_text)
   ValidateManifestPayloadFiles(manifest.payload_files);
   ValidateAliasMappingFiles(manifest.converter_alias_mapping_files);
   ValidateReportMarkdownFiles(manifest.report_markdown_files);
-  if (manifest.converter_main_config != kConverterMainPath ||
-      manifest.converter_alias_mapping_index != kAliasMappingIndexPath) {
+  if (manifest.converter_main_config != kConverterMainPath) {
     ThrowMalformedPackage(
         "manifest converter paths must match fixed package "
         "layout.");

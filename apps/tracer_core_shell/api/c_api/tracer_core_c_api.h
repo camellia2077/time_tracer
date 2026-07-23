@@ -144,6 +144,10 @@ TT_CORE_API const char* tracer_core_runtime_validate_logic_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
 TT_CORE_API const char* tracer_core_runtime_record_activity_atomically_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
+TT_CORE_API const char* tracer_core_runtime_update_activity_remark_atomically_json(
+    TtCoreRuntimeHandle* handle, const char* request_json);
+TT_CORE_API const char* tracer_core_runtime_update_day_remark_atomically_json(
+    TtCoreRuntimeHandle* handle, const char* request_json);
 TT_CORE_API const char* tracer_core_runtime_txt_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
 TT_CORE_API const char* tracer_core_runtime_query_json(

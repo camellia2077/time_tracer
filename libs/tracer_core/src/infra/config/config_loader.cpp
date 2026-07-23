@@ -67,9 +67,7 @@ auto ConfigLoader::LoadConfiguration() -> AppConfig {
         infra_config_internal::ResolveBundlePath(config_dir_path_);
     throw std::runtime_error(
         "Bundle path config not found: " + kBundlePath.string() +
-        ". Legacy [converter]/[reports] fallback was removed. "
-        "Run `python tools/run.py config-migrate --app tracer_windows "
-        "--apply` first.");
+        ". The current config layout requires meta/bundle.toml.");
   }
 
   // 2. 加载报表配置

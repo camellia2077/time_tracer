@@ -72,8 +72,8 @@ LineRules::LineRules(const ConverterConfig& config) : config_(config) {
     valid_event_keywords_.insert(entry.first);
     valid_event_keywords_.insert(entry.second);
   }
-  wake_keywords_.insert(config.wake_keywords.begin(),
-                        config.wake_keywords.end());
+  wake_keywords_.insert(config.sleep_inference.wake_keywords.begin(),
+                        config.sleep_inference.wake_keywords.end());
   for (const auto& entry : config.top_parent_mapping) {
     valid_event_keywords_.insert(entry.first);
   }
@@ -119,11 +119,7 @@ auto LineRules::IsDate(const std::string& line) -> bool {
 }
 
 auto LineRules::IsRemark(const std::string& line) const -> bool {
-  const std::string& prefix = config_.remark_prefix;
-  if (prefix.empty() || !line.starts_with(prefix)) {
-    return false;
-  }
-  return !Trim(line.substr(prefix.length())).empty();
+  return line.starts_with("//") && !Trim(line.substr(2)).empty();
 }
 
 auto LineRules::IsValidEventLine(const std::string& line, int line_number,
@@ -351,6 +347,10 @@ auto StructureRules::HasSeenYear() const -> bool {
 
 auto StructureRules::HasSeenMonth() const -> bool {
   return has_seen_month_;
+}
+
+auto StructureRules::HasSeenEventInDay() const -> bool {
+  return has_seen_event_in_day_;
 }
 
 }  // namespace validator::txt

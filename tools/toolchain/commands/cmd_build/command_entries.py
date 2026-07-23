@@ -37,6 +37,14 @@ def _print_build_output_dir(
     else:
         build_root = command.ctx.get_build_dir(app_name, build_dir_name).as_posix()
     print(f"Build files have been written to: {build_root}")
+    if backend == "gradle" and profile_name:
+        gradle_tasks = build_common.resolve_gradle_tasks(
+            ctx=command.ctx,
+            app_name=app_name,
+            profile_name=profile_name,
+        )
+        if any("install" in str(task).lower() for task in gradle_tasks):
+            print("Android app installed successfully.")
 
 
 def configure_entry(

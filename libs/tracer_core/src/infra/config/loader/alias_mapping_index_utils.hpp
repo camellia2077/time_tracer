@@ -7,7 +7,6 @@
 #include <cctype>
 #include <filesystem>
 #include <functional>
-#include <set>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -32,7 +31,7 @@ struct ExpandedAliasMappingEntry {
 };
 
 struct AliasMappingDefinition {
-  fs::path index_path;
+  fs::path alias_directory_path;
   std::vector<AliasMappingChildFile> child_files;
   std::vector<ExpandedAliasMappingEntry> expanded_entries;
 };
@@ -49,6 +48,10 @@ inline auto IsTomlPath(const fs::path& path) -> bool {
                    return static_cast<char>(std::tolower(value));
                  });
   return extension == ".toml";
+}
+
+inline auto IsAliasChildTomlPath(const fs::path& path) -> bool {
+  return IsTomlPath(path) && path.filename() != "_system.toml";
 }
 
 inline auto BuildAliasFieldPath(std::string_view relative_child_path,
@@ -81,6 +84,17 @@ inline auto BuildCanonicalValue(std::string_view parent,
   return canonical;
 }
 
+inline auto BuildCanonicalGroupValue(
+    std::string_view parent, const std::vector<std::string>& groups)
+    -> std::string {
+  std::string canonical(parent);
+  for (const auto& group : groups) {
+    canonical += "_";
+    canonical += group;
+  }
+  return canonical;
+}
+
 inline auto BuildAliasChildParseHint(const fs::path& relative_path,
                                      std::string_view error_message)
     -> std::string {
@@ -100,59 +114,8 @@ inline auto BuildAliasChildParseHint(const fs::path& relative_path,
          relative_path.generic_string();
 }
 
-inline auto ParseAliasIndexIncludes(const toml::table& alias_index_tbl,
-                                    const fs::path& index_path)
-    -> std::vector<fs::path> {
-  const toml::array* includes = alias_index_tbl["includes"].as_array();
-  if (includes == nullptr || includes->empty()) {
-    throw std::runtime_error(
-        "Alias mapping index must contain a non-empty `includes` array: " +
-        index_path.string());
-  }
-
-  std::vector<fs::path> relative_paths;
-  relative_paths.reserve(includes->size());
-  std::set<std::string> unique_paths;
-  for (std::size_t index = 0; index < includes->size(); ++index) {
-    const auto include_text = (*includes)[index].value<std::string>();
-    if (!include_text.has_value() || include_text->empty()) {
-      throw std::runtime_error(
-          "Alias mapping index `includes` entries must be non-empty strings: " +
-          index_path.string());
-    }
-
-    const fs::path relative_path = NormalizeRelativeTomlPath(*include_text);
-    if (relative_path.empty() || relative_path.is_absolute() ||
-        !IsTomlPath(relative_path)) {
-      throw std::runtime_error(
-          "Alias mapping index `includes` entries must be relative .toml paths: " +
-          index_path.string() + " -> " + *include_text);
-    }
-
-    const std::string normalized_text = relative_path.generic_string();
-    if (normalized_text == "." || normalized_text.starts_with("../") ||
-        normalized_text.find("/../") != std::string::npos) {
-      throw std::runtime_error(
-          "Alias mapping index `includes` entries must stay within the index "
-          "directory: " +
-          index_path.string() + " -> " + *include_text);
-    }
-    if (!unique_paths.insert(normalized_text).second) {
-      throw std::runtime_error(
-          "Alias mapping index contains duplicate include path: " +
-          index_path.string() + " -> " + normalized_text);
-    }
-    // Keep the author-facing include order here. Includes express file
-    // organization only; they do not define alias precedence or override
-    // semantics.
-    relative_paths.push_back(relative_path);
-  }
-  return relative_paths;
-}
-
 template <typename ReadTomlFunc>
-inline auto LoadAliasMappingDefinition(const fs::path& index_path,
-                                       const toml::table& alias_index_tbl,
+inline auto LoadAliasMappingDefinition(const fs::path& alias_directory_path,
                                        ReadTomlFunc&& read_toml)
     -> AliasMappingDefinition {
   // Alias mapping only normalizes user-authored activity-name tokens.
@@ -175,17 +138,31 @@ inline auto LoadAliasMappingDefinition(const fs::path& index_path,
   // later inserted into or queried from the database.
   // Those concerns belong to later conversion, persistence, and query stages.
   //
-  // alias_mapping.toml is now only an index. Runtime-facing code still expects a
-  // flat alias -> canonical_path map, so this helper is the single place that
-  // expands:
-  //   index file -> parent-owned child files -> flat canonical mappings.
-  const fs::path normalized_index_path = fs::absolute(index_path);
-  const fs::path index_dir = normalized_index_path.parent_path();
-  const std::vector<fs::path> relative_paths =
-      ParseAliasIndexIncludes(alias_index_tbl, normalized_index_path);
+  const fs::path normalized_alias_directory = fs::absolute(alias_directory_path);
+  if (!fs::exists(normalized_alias_directory) ||
+      !fs::is_directory(normalized_alias_directory)) {
+    throw std::runtime_error("Alias directory not found: " +
+                             normalized_alias_directory.string());
+  }
+
+  std::vector<fs::path> relative_paths;
+  for (const auto& entry : fs::recursive_directory_iterator(
+           normalized_alias_directory)) {
+    if (entry.is_regular_file() && IsAliasChildTomlPath(entry.path())) {
+      relative_paths.push_back(
+          fs::relative(entry.path(), normalized_alias_directory));
+    }
+  }
+  std::ranges::sort(relative_paths, [](const fs::path& left, const fs::path& right) {
+    return left.generic_string() < right.generic_string();
+  });
+  if (relative_paths.empty()) {
+    throw std::runtime_error("Alias directory contains no TOML files: " +
+                             normalized_alias_directory.string());
+  }
 
   AliasMappingDefinition definition{
-      .index_path = normalized_index_path,
+      .alias_directory_path = normalized_alias_directory,
   };
   definition.child_files.reserve(relative_paths.size());
 
@@ -213,6 +190,50 @@ inline auto LoadAliasMappingDefinition(const fs::path& index_path,
         continue;
       }
 
+      // A group can be recorded directly as well as contain child aliases.
+      // Its aliases resolve to the parent + current group path, while normal
+      // string leaves retain the historical parent + groups + leaf form.
+      if (alias_key == "group_aliases") {
+        if (groups.empty()) {
+          throw std::runtime_error(BuildAliasFieldPath(
+                                   child_file.relative_path.generic_string(),
+                                   groups, alias_key) +
+                               " is only valid inside an alias group.");
+        }
+        const toml::array* group_aliases = alias_value_node.as_array();
+        if (group_aliases == nullptr || group_aliases->empty()) {
+          throw std::runtime_error(BuildAliasFieldPath(
+                                   child_file.relative_path.generic_string(),
+                                   groups, alias_key) +
+                               " must be a non-empty string array.");
+        }
+        for (const auto& group_alias_node : *group_aliases) {
+          const auto group_alias = group_alias_node.value<std::string>();
+          if (!group_alias.has_value() || group_alias->empty()) {
+            throw std::runtime_error(BuildAliasFieldPath(
+                                     child_file.relative_path.generic_string(),
+                                     groups, alias_key) +
+                                 " must contain only non-empty strings.");
+          }
+          const auto [existing_it, inserted] =
+              alias_sources.emplace(*group_alias, child_file.relative_path);
+          if (!inserted) {
+            throw std::runtime_error(
+                "Duplicate alias key `" + *group_alias +
+                "` across alias child files: " +
+                existing_it->second.generic_string() + " and " +
+                child_file.relative_path.generic_string());
+          }
+          definition.expanded_entries.push_back({
+              .alias_key = *group_alias,
+              .canonical_value =
+                  BuildCanonicalGroupValue(child_file.parent, groups),
+              .source_path = child_file.relative_path,
+          });
+        }
+        continue;
+      }
+
       const auto leaf_value = alias_value_node.value<std::string>();
       if (!leaf_value.has_value() || leaf_value->empty()) {
         throw std::runtime_error(BuildAliasFieldPath(
@@ -232,8 +253,7 @@ inline auto LoadAliasMappingDefinition(const fs::path& index_path,
 
       definition.expanded_entries.push_back({
           .alias_key = alias_key,
-          // Canonical paths stay underscore-joined because downstream
-          // converter/query flows already consume the historical flat form.
+          // Canonical paths stay underscore-joined for converter/query flows.
           .canonical_value =
               BuildCanonicalValue(child_file.parent, groups, *leaf_value),
           .source_path = child_file.relative_path,
@@ -242,7 +262,7 @@ inline auto LoadAliasMappingDefinition(const fs::path& index_path,
           };
 
   for (const fs::path& relative_path : relative_paths) {
-    const fs::path absolute_path = index_dir / relative_path;
+    const fs::path absolute_path = normalized_alias_directory / relative_path;
     if (!fs::exists(absolute_path) || !fs::is_regular_file(absolute_path)) {
       throw std::runtime_error("Alias child file not found: " +
                                absolute_path.string());

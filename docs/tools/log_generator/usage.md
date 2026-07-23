@@ -51,14 +51,16 @@ canonical TXT 契约的月日志文件。
 程序启动后，会从可执行文件所在目录下读取两份配置：
 
 - `config/activities_config.toml`
-- `config/converter/alias_mapping.toml`
-- `config/converter/aliases/*.toml`
+- `config/aliases/*.toml`
 
 它们的作用大致是：
 
 - `activities_config.toml`
-  - 控制 wake keywords、daily remarks、activity remarks、nosleep 概率等
-- `converter/alias_mapping.toml` + `converter/aliases/*.toml`
+  - 控制 wake keywords、daily remarks、activity remark 内容池、nosleep 概率等
+
+生成器输出统一使用 `//` 备注语法。活动备注以固定 50% 概率生成，行数随机为
+1–4 行，每一行独立从活动备注内容池选择；续行直接写成新的物理 `//` 行。
+- `aliases/*.toml`
   - 提供可用于生成的活动 token 来源
 
 当前实现中，生成器使用 canonical converter alias bundle 中收集到的活动
@@ -154,7 +156,8 @@ m01
 
 d0101
 0606w
-1353睡觉
+1353睡觉 // 备注第一行
+// 备注第二行
 ```
 
 这里的重点是：
@@ -273,5 +276,5 @@ python tools/run.py verify --app log_generator --build-dir build_fast --concise
 - `apps/tools/log_generator/AGENTS.md`
 - `apps/tools/log_generator/README.md`
 - `test/README.md`
-- `docs/toolchain/test/README.md`
-- `docs/toolchain/test/test_layering.md`
+- `docs/tools/toolchain/test/README.md`
+- `docs/tools/toolchain/test/test_layering.md`

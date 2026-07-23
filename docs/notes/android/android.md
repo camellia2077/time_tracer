@@ -10,6 +10,13 @@ python tools/run.py build --app tracer_android --profile android_release
 
 python tools/run.py build --app tracer_android --profile android_release_no_opt
 
+
+## 编译debug并安装到手机
+
+```bash
+python tools/run.py build --app tracer_android --profile android_edit_device
+```
+
 ## debug版本
 
 python tools/run.py build --app tracer_android --profile android_edit

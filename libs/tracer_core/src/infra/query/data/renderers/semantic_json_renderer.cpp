@@ -181,9 +181,11 @@ auto BuildSemanticActivitySuggestionsPayload(
 }
 
 auto BuildSemanticTreePayload(const std::vector<ProjectTreeNode>& nodes,
-                              int max_depth) -> std::string {
+                              int max_depth, int max_available_depth)
+    -> std::string {
   json payload = BuildSemanticBase("tree");
   payload["max_depth"] = max_depth;
+  payload["max_available_depth"] = max_available_depth;
   payload["roots"] = json::array();
 
   std::vector<NamedNodeRef> roots;

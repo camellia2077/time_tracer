@@ -128,10 +128,8 @@ auto PrepareAndroidConfigFixture(const std::filesystem::path& target_root)
         target_root / std::filesystem::path(relative_path));
   };
 
-  return copy_required_file("converter/interval_processor_config.toml") &&
-         copy_required_file("converter/alias_mapping.toml") &&
-         CopyDirectoryTree(source_root / "converter" / "aliases",
-                           target_root / "converter" / "aliases") &&
+  return copy_required_file("aliases/_system.toml") &&
+         CopyDirectoryTree(source_root / "aliases", target_root / "aliases") &&
          copy_required_file("charts/heatmap.toml") &&
          copy_required_file("reports/markdown/day.toml") &&
          copy_required_file("reports/markdown/month.toml") &&

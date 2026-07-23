@@ -7,7 +7,7 @@ capabilities. Use it when the change is already confirmed to belong to
 `libs/tracer_core` and you need to know:
 1. which capability owns the work
 2. which direct capability dependencies are allowed
-3. which validate entry should run first
+3. which focused verify profile should run first
 
 ## First-Class Capabilities
 
@@ -48,22 +48,22 @@ flowchart LR
     PWrite -. "shared sqlite support" .-> PRuntime
 ```
 
-## Validate First
+## Verify First
 
 1. `pipeline`
-   - `python tools/run.py validate --plan tools/toolchain/config/validate/tracer_core/pipeline.toml`
+   - `python tools/run.py verify --app tracer_core_shell --profile cap_pipeline --concise`
 2. `query`
-   - `python tools/run.py validate --plan tools/toolchain/config/validate/tracer_core/query.toml`
+   - `python tools/run.py verify --app tracer_core_shell --profile cap_query --concise`
 3. `reporting`
-   - `python tools/run.py validate --plan tools/toolchain/config/validate/tracer_core/reporting.toml`
+   - `python tools/run.py verify --app tracer_core_shell --profile cap_reporting --concise`
 4. `exchange`
-   - `python tools/run.py validate --plan tools/toolchain/config/validate/tracer_core/exchange.toml`
+   - `python tools/run.py verify --app tracer_core_shell --profile cap_exchange --concise`
 5. `config`
-   - `python tools/run.py validate --plan tools/toolchain/config/validate/tracer_core/config.toml`
+   - `python tools/run.py verify --app tracer_core_shell --profile cap_config --concise`
 6. `persistence_write`
-   - `python tools/run.py validate --plan tools/toolchain/config/validate/tracer_core/persistence_write.toml`
+   - `python tools/run.py verify --app tracer_core_shell --profile cap_persistence_write --concise`
 7. `persistence_runtime`
-   - `python tools/run.py validate --plan tools/toolchain/config/validate/tracer_core/persistence_runtime.toml`
+   - `python tools/run.py verify --app tracer_core_shell --profile cap_persistence_runtime --concise`
 
 ## Read Next
 1. [module_boundaries.md](module_boundaries.md)

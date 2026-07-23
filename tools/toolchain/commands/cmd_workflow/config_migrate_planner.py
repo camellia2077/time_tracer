@@ -71,19 +71,15 @@ def parse_toml_file(path: Path) -> dict[str, Any]:
     return data
 
 
-def extract_converter_interval_path(config_toml: dict[str, Any], source_path: Path) -> str:
+def extract_converter_main_config_path(config_toml: dict[str, Any], source_path: Path) -> str:
     converter_tbl = require_table(config_toml, "converter", source_path, "")
-    _, interval_path = find_non_empty_string_alias(
+    _, main_config_path = find_non_empty_string_alias(
         converter_tbl,
-        (
-            "interval_config",
-            "interval_processor_config",
-            "interval_processor_config_path",
-        ),
+        ("main_config",),
         source_path,
         "converter",
     )
-    return normalize_path_value(interval_path)
+    return normalize_path_value(main_config_path)
 
 
 def extract_report_paths(
@@ -149,31 +145,6 @@ def extract_report_paths(
     return result
 
 
-def extract_converter_companion_files(config_root: Path, interval_rel_path: str) -> list[str]:
-    interval_abs = config_migrate_paths.to_absolute_path(config_root, interval_rel_path)
-    if not interval_abs.exists():
-        return []
-
-    interval_toml = parse_toml_file(interval_abs)
-    companions: list[str] = []
-
-    if "mappings_config_path" in interval_toml:
-        raise RuntimeError(
-            f"Invalid config [{interval_abs}] field 'mappings_config_path': "
-            "legacy key is no longer supported; use 'alias_mapping_path'."
-        )
-
-    for key in ("alias_mapping_path", "duration_rules_config_path"):
-        raw_value = interval_toml.get(key)
-        if not isinstance(raw_value, str) or not raw_value.strip():
-            continue
-        normalized = normalize_path_value(raw_value)
-        absolute_path = config_migrate_paths.to_absolute_path(interval_abs.parent, normalized)
-        companions.append(config_migrate_paths.to_bundle_relative_path(config_root, absolute_path))
-
-    return companions
-
-
 def collect_optional_files(config_root: Path) -> list[str]:
     candidates = [
         config_root / "reports" / "latex" / "common_style.toml",
@@ -192,13 +163,12 @@ def build_bundle_model(
     profile: str,
 ) -> dict[str, Any]:
     config_toml = parse_toml_file(source_config_path)
-    interval_rel_path = extract_converter_interval_path(config_toml, source_config_path)
+    main_config_rel_path = extract_converter_main_config_path(config_toml, source_config_path)
     report_paths = extract_report_paths(config_toml, source_config_path)
 
-    required: set[str] = {"config.toml", interval_rel_path}
+    required: set[str] = {"config.toml", main_config_rel_path}
     for report in report_paths.values():
         required.update(report.values())
-    required.update(extract_converter_companion_files(config_root, interval_rel_path))
 
     return {
         "schema_version": 1,
@@ -209,7 +179,7 @@ def build_bundle_model(
             "optional": collect_optional_files(config_root),
         },
         "paths": {
-            "converter": {"interval_config": interval_rel_path},
+            "converter": {"main_config": main_config_rel_path},
             "reports": report_paths,
         },
     }

@@ -151,12 +151,6 @@ void ParseSystemSettingsImpl(const toml::table& tbl, const fs::path& exe_path,
     return;
   }
 
-  if (const toml::table* general_tbl =
-          TryReadTableField(tbl, "general", source_config_path, "")) {
-    fill_from_section(*general_tbl, "general");
-    return;
-  }
-
   config.error_log_path = exe_path / "error.log";
 }
 

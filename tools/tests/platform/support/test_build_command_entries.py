@@ -52,3 +52,20 @@ class TestBuildCommandEntries(TestCase):
             "apps/android/app/build/outputs/final-apk/release",
             stdout.getvalue(),
         )
+
+    def test_tracer_android_device_profile_reports_install_success(self) -> None:
+        repo_root = Path(__file__).resolve().parents[4]
+        command = _FakeBuildCommand(repo_root)
+        stdout = io.StringIO()
+
+        with redirect_stdout(stdout):
+            _print_build_output_dir(
+                command=command,
+                app_name="tracer_android",
+                backend="gradle",
+                build_dir_name="build",
+                tidy=False,
+                profile_name="android_edit_device",
+            )
+
+        self.assertIn("Android app installed successfully.", stdout.getvalue())

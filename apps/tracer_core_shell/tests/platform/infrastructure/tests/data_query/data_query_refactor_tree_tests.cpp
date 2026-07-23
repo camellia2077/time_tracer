@@ -74,7 +74,7 @@ auto TestTreeRendererWithStructuredNodes(int& failures) -> void {
   };
 
   const std::string kText = data_query_renderers::RenderProjectTreeOutput(
-      nodes, 1, DataQueryOutputMode::kText);
+      nodes, 1, 2, DataQueryOutputMode::kText);
   Expect(Contains(kText, "study\n"), "tree text renderer should output root.",
          failures);
   Expect(Contains(kText, "math"), "tree text renderer should output children.",
@@ -83,12 +83,14 @@ auto TestTreeRendererWithStructuredNodes(int& failures) -> void {
          "tree text renderer should respect max_depth trimming.", failures);
 
   const std::string kSemantic = data_query_renderers::RenderProjectTreeOutput(
-      nodes, 1, DataQueryOutputMode::kSemanticJson);
+      nodes, 1, 2, DataQueryOutputMode::kSemanticJson);
   const auto kPayload = json::parse(kSemantic);
   Expect(kPayload.value("action", std::string{}) == "tree",
          "semantic tree payload should include action=tree.", failures);
   Expect(kPayload.value("max_depth", kMissingMaxDepthSentinel) == 1,
          "semantic tree payload should include max_depth.", failures);
+  Expect(kPayload.value("max_available_depth", kMissingMaxDepthSentinel) == 2,
+         "semantic tree payload should include max_available_depth.", failures);
   Expect(kPayload.value("root_count", 0) == 1,
          "semantic tree payload should include root_count.", failures);
   Expect(kPayload["roots"][0].value("duration_seconds", -1LL) ==

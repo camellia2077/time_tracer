@@ -51,7 +51,7 @@ txt 行文本
 关键字段：
 - `endTimeStr`: 行首时间（`HHMM` 原始格式）
 - `description`: 活动描述（尚未做 mapping）
-- `remark`: 行内备注（分隔符 `//` / `#` / `;`）
+- `remark`: 行内备注（分隔符 `//`；多行在内存中保存为包含真实 LF 的字符串）
 - `source_span`: 对应输入行位置
 
 ## 3. 领域转换层（Normalized Domain）

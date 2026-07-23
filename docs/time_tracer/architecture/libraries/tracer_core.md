@@ -129,63 +129,19 @@ Detailed navigation for the core business-logic library.
    - `apps/tracer_core_shell/tests/integration/tracer_core_c_api_pipeline_tests.cpp`
    - `tools/suites/tracer_windows_rust_cli/tests/commands_txt_view_day.toml`
    - stage/log group `txt-view-day`
-4. Focused validation:
+4. Validation selection and completion requirements are defined by
+   `libs/tracer_core/AGENTS.md`.
 
-```powershell
-python tools/run.py validate --plan tools/toolchain/config/validate/tracer_core/query.toml
-python tools/run.py verify --app tracer_core_shell --profile cap_query --concise
-```
+## Canonical TXT Semantics
 
-## Current Authored TXT Event Semantics
+The canonical point, interval, mixed-timeline, cross-midnight, and persistence
+semantics live in:
 
-1. Current ingest accepts two authored event forms:
-   - point event: `HHMMtoken`
-   - interval event: `HHMM-HHMMtoken`
-2. The authored event model is represented as `RawEvent`, which keeps authored
-   facts before canonical activity mapping and processed-record materialization:
-   - point event stores only the authored end boundary
-   - interval event stores explicit authored start/end boundaries
-3. Current semantic meaning:
-   - point event means "this activity ends at `HHMM`"
-   - interval event means "this activity explicitly happened from `start` to `end`"
-   - authored activity token parsing and canonical mapping stay separate from
-     timeline semantics
-4. Current mixed-timeline rules:
-   - conversion advances by the last known boundary
-   - point event materializes `last_known_boundary -> point.end`
-   - interval event materializes `interval.start -> interval.end`
-   - after either event, the next boundary becomes the current event end
-5. Current validation rules:
-   - gaps are allowed and remain unrecorded
-   - overlap is invalid
-   - interval must satisfy `start < end` after relative-boundary expansion
-   - wrapped cross-midnight interval chains are allowed when they remain
-     monotonic after expansion
-   - short backward interval ranges are rejected
-   - wake keyword remains point-event-only and must be the first semantic event
-6. This is a current ingest/validation semantic model, not a claim that the
-   entire ingest main flow is itself a weighted tree. Tree-style accumulation
-   belongs to downstream query/report/statistics semantics after records have
-   already been materialized.
+- `docs/time_tracer/core/ingest/interval_event_and_mixed_timeline_semantics.md`
+- `docs/time_tracer/core/contracts/text/runtime_txt_day_block_json_contract_v1.md`
 
-## Interval Support Implementation Notes
-
-1. Parser stage:
-   - `TextParser` recognizes both `HHMMtoken` and `HHMM-HHMMtoken`
-   - inline remark extraction stays shared across both forms
-2. Validation stage:
-   - TXT line validation accepts both point and interval syntax
-   - structure/logic validation owns overlap, invalid-range, wake-position, and
-     mixed-timeline checks
-3. Converter stage:
-   - point events still derive duration from the last known boundary
-   - interval events use authored start/end directly
-   - continuation-day behavior remains supported; an explicit first interval may
-     leave a gap from the previous-day boundary
-4. Persistence stage:
-   - processed records remain standard `start/end/duration/project_path/remark`
-     records
-   - current interval support does not require a DB schema change
+This architecture page owns layer boundaries and call chains, not a second copy
+of those behavioral rules.
 
 ## Test Intent
 
@@ -202,13 +158,8 @@ python tools/run.py verify --app tracer_core_shell --profile cap_query --concise
 4. 当测试覆盖 capability-owned DTO、structured output 或 error contract
    传播时，文档应强调这是 `tracer_core` 语义边界，而不是 `tracer_transport`
    的 envelope 归一化职责。
-5. Interval-related tests should cover:
-   - point and interval line syntax
-   - mixed point/interval boundary advancement
-   - legal gaps vs illegal overlaps
-   - wake keyword as first point event only
-   - explicit invalid backward intervals
-   - wrapped cross-midnight interval chains and wrapped duration preservation
+5. TXT semantic coverage should trace back to the canonical semantics and
+   runtime contract above instead of restating their case matrix here.
 
 ## Read-First Docs
 

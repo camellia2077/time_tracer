@@ -184,6 +184,7 @@ auto EncodeDailyReport(const DailyReportData& report) -> json {
   json records = json::array();
   for (const auto& record : report.detailed_records) {
     records.push_back(json{
+        {"logical_id", record.logical_id},
         {"start_time", record.start_time},
         {"end_time", record.end_time},
         {"project_path", record.project_path},

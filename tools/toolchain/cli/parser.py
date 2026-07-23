@@ -23,14 +23,12 @@ class ToolchainArgumentParser(argparse.ArgumentParser):
             )
             if cmake_flag_requested:
                 hint_lines.append(
-                    "Hint: for CMake argument passthrough, use `build`/`verify` "
-                    "or `validate` tracks with `cmake_args = [...]`."
+                    "Hint: for CMake argument passthrough, use `build` or `verify`."
                 )
             else:
                 hint_lines.append(
                     "Hint: if you are trying a build validation flow, consider "
-                    "`python tools/run.py build ...`, `python tools/run.py verify ...`, "
-                    "or `python tools/run.py validate ...`."
+                    "`python tools/run.py build ...` or `python tools/run.py verify ...`."
                 )
 
             message = f"{message}\n" + "\n".join(hint_lines)

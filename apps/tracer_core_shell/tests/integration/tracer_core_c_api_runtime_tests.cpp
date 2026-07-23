@@ -28,7 +28,7 @@ auto main() -> int {
 
     const fs::path kConverterConfig = kRepoRoot / "assets" / "tracer_core" /
                                       "config" / "converter" /
-                                      "interval_processor_config.toml";
+                                      "aliases/_system.toml";
     fs::path cli_executable = kRepoRoot / "apps" / "tracer_cli" / "windows" /
                               "build_fast" / "bin" / "time_tracer_cli.exe";
     if (!fs::exists(cli_executable)) {

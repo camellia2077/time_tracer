@@ -42,12 +42,11 @@ auto Expect(bool condition, std::string_view message, int& failures) -> void {
 
 auto BuildTestConfig() -> ConverterConfig {
   ConverterConfig config;
-  config.remark_prefix = "#";
   config.text_mapping["Clash Royale"] = "recreation_game_clash-royale";
   config.text_mapping["study"] = "study";
   config.text_mapping["sleep"] = "sleep";
   config.text_mapping["wake"] = "wake";
-  config.wake_keywords = {"wake"};
+  config.sleep_inference.wake_keywords = {"wake"};
   return config;
 }
 
@@ -143,7 +142,7 @@ void TestValidatorBridge(int& failures) {
 
   std::set<Error> interval_errors;
   const bool interval_event = line_rules.IsValidEventLine(
-      "0900-1030study # focus", 7, interval_errors, span);
+      "0900-1030study // focus", 7, interval_errors, span);
   Expect(interval_event && interval_errors.empty(),
          "Interval activity should pass structural line validation.",
          failures);
@@ -579,7 +578,7 @@ void TestStructureValidatorBridge(int& failures) {
                                          .column_start = 1,
                                          .column_end = 34,
                                          .raw_text =
-                                             "0030-0200study # @allow-long"}});
+                                             "0030-0200study // @allow-long"}});
   std::vector<DailyLog> cross_midnight_interval_overlap_days{
       cross_midnight_interval_overlap_day};
   std::vector<Diagnostic> cross_midnight_interval_overlap_diagnostics;
@@ -734,7 +733,7 @@ void TestStructureValidatorBridge(int& failures) {
                                          .column_start = 1,
                                          .column_end = 34,
                                          .raw_text =
-                                             "1030-0900study # @allow-long"}});
+                                             "1030-0900study // @allow-long"}});
   DailyLog previous_for_boundary_overlap;
   previous_for_boundary_overlap.date = "2026-03-09";
   processor.Process(previous_for_boundary_overlap, boundary_overlap_interval_day);
@@ -772,7 +771,7 @@ void TestStructureValidatorBridge(int& failures) {
                                          .column_start = 1,
                                          .column_end = 34,
                                          .raw_text =
-                                             "1030-0900study # @allow-long"}});
+                                             "1030-0900study // @allow-long"}});
   DailyLog previous_for_allowed_long;
   previous_for_allowed_long.date = "2026-03-08";
   processor.Process(previous_for_allowed_long, allowed_long_interval_day);

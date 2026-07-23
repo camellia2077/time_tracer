@@ -9,7 +9,6 @@ BUILD_DIR_NAME = "build"
 TIDY_DIR_NAME = "tidy"
 ANALYZE_DIR_NAME = "analyze"
 TEST_DIR_NAME = "test"
-VALIDATE_DIR_NAME = "validate"
 FULL_OUTPUT_LOG_NAME = "output.full.log"
 
 _OUTPUT_APP_ALIASES = {
@@ -73,17 +72,6 @@ class TestResultLayout:
     runtime_guard_root: Path
 
 
-@dataclass(frozen=True, slots=True)
-class ValidationLayout:
-    run_name: str
-    root: Path
-    logs_dir: Path
-    tracks_dir: Path
-    summary_json_path: Path
-    output_log_path: Path
-    output_full_log_path: Path
-
-
 def normalize_output_app_name(app_name: str) -> str:
     normalized = (app_name or "").strip()
     if not normalized:
@@ -109,10 +97,6 @@ def resolve_analyze_root(repo_root: Path) -> Path:
 
 def resolve_test_root(repo_root: Path) -> Path:
     return resolve_out_root(repo_root) / TEST_DIR_NAME
-
-
-def resolve_validate_root(repo_root: Path) -> Path:
-    return resolve_out_root(repo_root) / VALIDATE_DIR_NAME
 
 
 def resolve_build_layout(
@@ -209,23 +193,6 @@ def resolve_test_result_layout(
         output_log_path=(logs_dir / "output.log").resolve(),
         output_full_log_path=(logs_dir / FULL_OUTPUT_LOG_NAME).resolve(),
         runtime_guard_root=(root / "runtime_guard").resolve(),
-    )
-
-
-def resolve_validation_layout(repo_root: Path, run_name: str) -> ValidationLayout:
-    normalized_run_name = (run_name or "").strip()
-    if not normalized_run_name:
-        raise ValueError("empty run_name")
-    root = (resolve_validate_root(repo_root) / normalized_run_name).resolve()
-    logs_dir = (root / "logs").resolve()
-    return ValidationLayout(
-        run_name=normalized_run_name,
-        root=root,
-        logs_dir=logs_dir,
-        tracks_dir=(root / "tracks").resolve(),
-        summary_json_path=(root / "summary.json").resolve(),
-        output_log_path=(logs_dir / "output.log").resolve(),
-        output_full_log_path=(logs_dir / FULL_OUTPUT_LOG_NAME).resolve(),
     )
 
 

@@ -3,7 +3,7 @@
 ## Purpose
 
 This document defines the business rules for converter alias mapping under
-`assets/tracer_core/config/converter/`.
+`assets/tracer_core/config/aliases/`.
 
 It answers:
 
@@ -108,19 +108,6 @@ This rule exists because repeated declarations are treated as accidental
 redundancy rather than useful configuration.
 
 ## TOML Shape
-
-## Index file
-
-`alias_mapping.toml` is an index file, not the runtime mapping body.
-
-Example:
-
-```toml
-includes = [
-  "aliases/meal.toml",
-  "aliases/recreation.toml",
-]
-```
 
 ## Child files
 
@@ -261,6 +248,9 @@ Examples:
 1. `parent = "meal"` and `"饭" = "dining"` -> `meal_dining`
 2. `parent = "recreation"` and `[aliases.game] "overwatch" = "overwatch"`
    -> `recreation_game_overwatch`
+
+For the category promotion, alias move, TXT replacement, and database rebuild
+rules built on this expansion, see [Activity Alias Hierarchy Migration](activity_alias_hierarchy_migration.md).
 
 ## TOML-Safe Path Segments
 

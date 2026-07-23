@@ -41,7 +41,9 @@ Current Android JNI integration uses C ABI entrypoints in these categories:
 - runtime create/destroy
 - ingest/query/report
 - record-atomic pipeline calls (including explicit `time_order_mode` passthrough)
-- TXT runtime day-block calls (`tracer_core_runtime_txt_json`)
+- activity and day remark atomic update calls
+- TXT runtime calls (`tracer_core_runtime_txt_json`) for day-block operations
+  and current-month activity-name conversion
 - structure/logic validation
 - last-error access
 
@@ -80,7 +82,8 @@ Current status:
 - Android reporting JNI keeps `nativeReportJson(requestJson)` as the single raw
   reporting native method; legacy `nativeReport(...)` no longer exists.
 - Atomic record requests carry explicit `time_order_mode` (`strict_calendar` / `logical_day_0600`) from Kotlin -> JNI -> C ABI.
-- TXT day-block requests use the dedicated `tracer_core_runtime_txt_json` family and keep month-TXT business semantics in core rather than Kotlin UI helpers.
+- TXT requests use the dedicated `tracer_core_runtime_txt_json` family and keep
+  month-TXT business semantics in core rather than Kotlin UI helpers.
 - Validation requests still have JNI-local request assembly.
 - Android tracer exchange export supports an in-memory payload JSON request plus fd sink output.
 - Tree responses are normalized before returning to Kotlin.
@@ -108,7 +111,8 @@ Notes:
 
 ## TXT Runtime Family
 
-Android uses the TXT runtime family for shared month-TXT day-block semantics.
+Android uses the TXT runtime family for shared month-TXT day-block semantics
+and current-month activity-name representation conversion.
 
 Current Android-facing responsibilities are:
 
@@ -123,7 +127,14 @@ Current Android-facing responsibilities are:
    - day-block extraction and replacement
    - machine-readable fields such as `found`, `can_save`, and
      `day_content_iso_date`
-5. Android does not re-implement these month-TXT semantics locally.
+   - activity-name alias/canonical conversion for the full month content
+5. In ALL mode, the UI sends only the currently selected month draft to
+   `convert_activity_names`; DAY mode does not expose or invoke this action.
+6. Android does not re-implement these month-TXT semantics locally.
+7. Config hierarchy migration uses `replace_canonical_activity_names` with
+   explicit old/new canonical pairs. Runtime stages modified TOML/TXT sources,
+   ingests a temporary database, and swaps databases only after candidate
+   success; JNI `nativeShutdown()` closes the candidate handle before the swap.
 
 ## Crypto Progress Note
 

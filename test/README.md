@@ -80,6 +80,6 @@
 
 ## 进一步阅读
 
-1. `docs/toolchain/test/README.md`
-2. `docs/toolchain/test/test_layering.md`
+1. `docs/tools/toolchain/test/README.md`
+2. `docs/tools/toolchain/test/test_layering.md`
 3. `tools/suites/README.md`

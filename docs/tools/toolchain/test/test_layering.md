@@ -94,7 +94,7 @@
 适用对象：
 
 1. 工具链、suite 资产、测试编排器、结果写出器、质量门禁本身。
-2. 平台配置同步、suite launcher、suite 定义、verify/validate orchestration 等基础设施。
+2. 平台配置同步、suite launcher、suite 定义、verify orchestration 等基础设施。
 
 典型内容：
 
@@ -109,8 +109,7 @@
 
 1. `tools/suites/tracer_windows_rust_cli/**`
 2. `tools/tests/verify/**`
-3. `tools/tests/validate/**`
-4. `tools/tests/run_cli/**`
+3. `tools/tests/run_cli/**`
 
 ## 7. 决策表
 
@@ -144,7 +143,7 @@
    - 构建/验证编排已经明显和现目录不匹配
 4. 迁移时不要只移动文件路径；同时同步：
    - CMake / build target
-   - `verify` / `validate` 路由
+   - `verify` 路由
    - suite / result contract
    - 相关 `README.md` / 架构文档
 
@@ -153,5 +152,5 @@
 1. [README.md](README.md)
 2. [suite_toml_organization.md](suite_toml_organization.md)
 3. [../tools/README.md](../tools/README.md)
-4. [../../time_tracer/architecture/libraries/tracer_core.md](../../time_tracer/architecture/libraries/tracer_core.md)
-5. [../../time_tracer/architecture/libraries/tracer_transport.md](../../time_tracer/architecture/libraries/tracer_transport.md)
+4. [tracer_core](../../../time_tracer/architecture/libraries/tracer_core.md)
+5. [tracer_transport](../../../time_tracer/architecture/libraries/tracer_transport.md)

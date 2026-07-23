@@ -25,8 +25,7 @@ using tracer::core::domain::modlogic::validator_txt::TextValidator;
 
 auto BuildTestConverterConfig() -> ConverterConfig {
   ConverterConfig config;
-  config.remark_prefix = "r ";
-  config.wake_keywords = {"wake"};
+  config.sleep_inference.wake_keywords = {"wake"};
   config.text_mapping = {{"study", "study"},
                          {"sleep", "sleep"},
                          {"wake", "wake"}};
@@ -108,9 +107,9 @@ auto TestParserSupportsIntervalEventLines(int& failures) -> void {
          "Parser should classify HHMM-HHMMtoken as interval event.",
          failures);
   Expect(interval_event.startTimeStr.has_value() &&
-             *interval_event.startTimeStr == "0900" &&
-             interval_event.endTimeStr == "1030",
-         "Interval parser should preserve authored start/end times.",
+             *interval_event.startTimeStr == "090000" &&
+             interval_event.endTimeStr == "103000",
+         "Interval parser should normalize authored start/end times to HHMMSS.",
          failures);
   Expect(interval_event.remark == "focus",
          "Interval parser should preserve inline remarks.", failures);
@@ -118,6 +117,30 @@ auto TestParserSupportsIntervalEventLines(int& failures) -> void {
   const RawEvent& point_event = parsed_days.front().rawEvents[2];
   Expect(point_event.kind == RawEventKindType::Point,
          "Parser should keep HHMMtoken as point event.", failures);
+}
+
+auto TestParserPreservesMultilineActivityRemarks(int& failures) -> void {
+  const ConverterConfig kConfig = BuildTestConverterConfig();
+  TextParser parser(kConfig);
+
+  std::istringstream input(
+      "y2026\nm02\nd0201\n0641wake\n0900study // first line\n"
+      "// second line\\path\n");
+  std::vector<DailyLog> parsed_days;
+  parser.Parse(
+      input,
+      [&parsed_days](DailyLog& day) -> void { parsed_days.push_back(day); },
+      "multiline_remark.txt");
+
+  Expect(parsed_days.size() == 1 && parsed_days.front().rawEvents.size() == 2,
+         "TextParser should parse an activity with physical multiline remarks.",
+         failures);
+  if (parsed_days.empty() || parsed_days.front().rawEvents.size() < 2) {
+    return;
+  }
+  Expect(parsed_days.front().rawEvents[1].remark == "first line\nsecond line\\path",
+         "TextParser should preserve physical newlines and literal backslashes.",
+         failures);
 }
 
 auto TestParserRejectsDateMonthMismatch(int& failures) -> void {
@@ -365,6 +388,7 @@ auto TestValidatorReadsIntervalFixture(int& failures) -> void {
 auto RunTxtMonthHeaderTests(int& failures) -> void {
   TestParserPrefersMonthHeader(failures);
   TestParserSupportsIntervalEventLines(failures);
+  TestParserPreservesMultilineActivityRemarks(failures);
   TestParserRejectsDateMonthMismatch(failures);
   TestParserRejectsMissingMonthHeader(failures);
   TestParserRejectsMissingMonthHeaderFixture(failures);

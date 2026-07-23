@@ -337,7 +337,7 @@ auto RunRecordActivityAtomicallySupport(
     CandidateRecordBuildResult candidate_build = BuildCandidateRecordContent(
         official_content, logical_date, record_activity_name,
         normalized_remark, request.time_order_mode,
-        converter_config.wake_keywords);
+        converter_config.sleep_inference.wake_keywords);
     candidate_build.month_file_created = !target_previously_existed;
 
     AtomicTransactionWorkspace workspace =

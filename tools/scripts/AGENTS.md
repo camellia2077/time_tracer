@@ -1,18 +1,31 @@
-# AGENTS Guide (tools/scripts/devtools)
+# Developer Scripts Local Contract
 
-当任务涉及 `scripts/` 时，仅将其视为 `tools/scripts/devtools/` 的作用域。
+## Scope
 
-## 改动路由规则
+Applies to `tools/scripts/**`. This subtree contains developer helpers; it does
+not own repository build, verify, tidy, or platform-config orchestration.
 
-1. 开发辅助脚本：
-   - `tools/scripts/devtools/**`
-2. 开发辅助脚本文档：
-   - `tools/scripts/devtools/**/*.md`
-3. Python 构建 / 编译 / clang-tidy 工具链：
-   - 改 `tools/`，不要改回 `scripts/`
+## Routing And Invariants
 
-## 最小修改原则
+- Helper implementations and docs belong under `tools/scripts/devtools/**`.
+- Requests for build, verify, validate, tidy, or platform-config behavior belong
+  under `tools/toolchain/**` instead.
+- Do not add a new root-level script entry unless the user explicitly requests
+  one and the toolchain entry model cannot represent the workflow.
+- Keep secrets, signing inputs, and machine-specific paths out of checked-in
+  helper defaults and examples.
 
-1. `scripts/` 仅承载开发辅助脚本，不再承载构建主入口。
-2. 若需求属于 build / verify / tidy / platform config，统一改 `tools/`。
-3. 未明确要求时，不新增新的 `scripts/` 根级入口。
+## Validation
+
+Use the smallest safe check for the changed helper: a focused unit test when one
+exists, otherwise its non-destructive `--help`, dry-run, parser, or fixture path.
+If the helper mutates external or machine-local state, do not execute that path
+without the authorization required by the repository contract.
+
+## Local Completion Bar
+
+- The helper remains under `devtools/**` and does not duplicate a toolchain
+  command.
+- Changed argument/error behavior is covered by a focused test or safe smoke.
+- The adjacent helper README reflects changed usage, prerequisites, and side
+  effects.

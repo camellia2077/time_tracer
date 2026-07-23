@@ -19,7 +19,7 @@ auto TestExportDelegatesToExchangeService(TestState& state) -> void {
       .input_text_root_path = "input",
       .requested_output_path = "out/export.tracer",
       .active_converter_main_config_path =
-          "config/converter/interval_processor_config.toml",
+          "config/aliases/_system.toml",
       .passphrase = "secret",
       .producer_platform = "windows",
       .producer_app = "time_tracer_cli",
@@ -51,7 +51,7 @@ auto TestImportFailureIsWrapped(TestState& state) -> void {
       {.input_tracer_path = "sample.tracer",
        .active_text_root_path = "runtime/input",
        .active_converter_main_config_path =
-           "config/converter/interval_processor_config.toml",
+           "config/aliases/_system.toml",
        .runtime_work_root = "runtime/work",
        .passphrase = "secret"});
   Expect(state, !result.ok,

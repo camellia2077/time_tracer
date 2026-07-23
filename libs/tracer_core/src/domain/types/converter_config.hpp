@@ -6,12 +6,13 @@
 #include <unordered_map>
 #include <vector>
 
-struct ConverterConfig {
-  std::string remark_prefix;
-  std::vector<std::string> header_order;
+struct SleepInferenceConfig {
   std::vector<std::string> wake_keywords;
+  std::string sleep_project_path = "sleep_night";
+};
 
-  std::string generated_sleep_project_path = "sleep_night";
+struct ConverterConfig {
+  SleepInferenceConfig sleep_inference;
 
   std::unordered_map<std::string, std::string> top_parent_mapping;
   std::unordered_map<std::string, std::string> text_mapping;

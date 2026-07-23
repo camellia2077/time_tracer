@@ -9,7 +9,7 @@ library, client, and workflow documents before you search the repository.
      `tracer_core_bridge_common`, `tracer_transport`, and `tracer_adapters_io`.
 2. [Core Docs](core/README.md)
    - Core contracts, architecture rules, and onboarding guidance.
-3. [Android Client Docs](clients/android_ui/README.md)
+3. [Android Client Docs](presentation/android/README.md)
    - Android UI/runtime behavior and platform-specific client docs.
 4. [Windows CLI Docs](clients/windows_cli/README.md)
    - Windows CLI behavior and command-surface guidance.
@@ -22,7 +22,7 @@ library, client, and workflow documents before you search the repository.
    - then use [Core Docs](core/README.md)
    - for current TXT authored-event semantics (`HHMMtoken` point events,
      `HHMM-HHMMtoken` interval events, mixed timeline validation, gap/overlap
-     rules), also open [libs/tracer_core/README.md](../../libs/tracer_core/README.md)
+     rules), also open [libs/tracer_core/AGENTS.md](../../libs/tracer_core/AGENTS.md)
 2. Change runtime envelope, field readers, or request/response codecs:
    - start with [architecture/libraries/tracer_transport.md](architecture/libraries/tracer_transport.md)
 3. Change C API / JNI shared bridge helpers:
@@ -33,8 +33,8 @@ library, client, and workflow documents before you search the repository.
    - start with [Core Agent Onboarding](core/specs/AGENT_ONBOARDING.md)
 
 ## Read-First Contract Docs
-1. [C ABI Contract](core/contracts/c_abi.md)
-2. [Android Runtime Protocol](clients/android_ui/runtime-protocol.md)
+1. [C ABI Contract](core/shared/c_abi.md)
+2. [Android Runtime Protocol](presentation/android/runtime-protocol.md)
 3. [Stats Contracts](core/contracts/stats/README.md)
 4. [Core JSON Boundary Design](core/architecture/core_json_boundary_design.md)
 5. [Reporting Data Consistency Spec](core/contracts/reporting/report_data_consistency_spec_v1.md)
@@ -58,5 +58,5 @@ library, client, and workflow documents before you search the repository.
    - gaps are allowed and remain unrecorded
    - overlaps and invalid interval ranges are rejected during validation
    - wake keywords remain point-event-only semantics
-4. Read [libs/tracer_core/README.md](../../libs/tracer_core/README.md) first
+4. Read [libs/tracer_core/AGENTS.md](../../libs/tracer_core/AGENTS.md) first
    when the task changes these rules or their tests.

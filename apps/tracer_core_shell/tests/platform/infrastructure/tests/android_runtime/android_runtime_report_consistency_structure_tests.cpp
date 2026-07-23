@@ -44,7 +44,6 @@ auto TestStructureLayerMdSectionIntegrity(
       {"Project Breakdown section", "## Project Breakdown"},
       {"Date label", "- **Date**:"},
       {"Total Time Recorded label", "- **Total Time Recorded**:"},
-      {"Statistics section", "## Statistics"},
   };
 
   for (const auto& check : day_checks) {

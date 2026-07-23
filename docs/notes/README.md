@@ -1,6 +1,6 @@
 # Toolchain Notes Index
 
-`docs/toolchain/notes/` 收录不直接属于主契约文档的补充说明、命令备忘与迁移笔记。
+`docs/notes/` 收录不直接属于主契约文档的补充说明、命令备忘与迁移笔记。
 
 ## 分类
 
@@ -8,7 +8,7 @@
    - `analyze`、`clang-tidy`、`format` 等分析/格式化相关笔记
 2. [android/](android/)
    - Android 构建与发布补充说明
-3. [build_notes/](build_notes/)
+3. [compile/](compile/)
    - 构建命令、编译参数与发布模式备忘
 4. [config/](config/)
    - TOML 与配置生成/传递补充说明

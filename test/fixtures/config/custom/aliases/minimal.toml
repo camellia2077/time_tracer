@@ -1,5 +1,4 @@
-parent = "study"
+parent = "meal"
 
 [aliases]
-"study" = "misc"
-"riseup" = "morning"
+"meal" = "meal"
