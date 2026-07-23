@@ -81,12 +81,26 @@ auto main() -> int {
       .start_minute = 9 * 60,
       .end_minute = (10 * 60) + 30,
       .activity_token = "study",
-      .remark_suffix = std::string(" #focus"),
+      .remark_suffix = std::string(" // focus"),
   };
   std::string interval_buffer;
   EventLineFormatter::append_formatted_event(interval_buffer, interval_event);
-  all_passed &= ExpectEqual(interval_buffer, "090000-103000study #focus",
+  all_passed &= ExpectEqual(interval_buffer, "090000-103000study // focus",
                             "append_formatted_event defaults to HHMMSS");
+
+  GeneratedEvent multiline_event{
+      .kind = GeneratedEventKind::Point,
+      .start_minute = 9 * 60,
+      .end_minute = 9 * 60,
+      .activity_token = "study",
+      .remark_suffix = std::string(" // first\n// second"),
+  };
+  std::string multiline_buffer;
+  EventLineFormatter::append_formatted_event(multiline_buffer,
+                                             multiline_event);
+  all_passed &= ExpectEqual(
+      multiline_buffer, "090000study // first\n// second",
+      "event rendering keeps physical // continuation lines");
 
   all_passed &= ExpectTrue(!point_event.remark_suffix.has_value(),
                            "GeneratedEvent supports missing remark_suffix");
@@ -105,7 +119,7 @@ auto main() -> int {
   mixed_buffer.push_back('\n');
   EventLineFormatter::append_formatted_event(mixed_buffer, interval_event);
   all_passed &= ExpectEqual(mixed_buffer,
-                            "060600w\n090000-103000study #focus",
+                            "060600w\n090000-103000study // focus",
                             "default mixed rendering uses HHMMSS");
 
   const std::vector<ActivityTokenVariant> activities = {
@@ -116,7 +130,7 @@ auto main() -> int {
   const std::vector<std::string> wake_keywords = {"w"};
   const ActivityRemarkConfig remark_config{
       .contents = {"remark-a", "remark-b"},
-      .generation_chance = 0.7,
+      .max_lines = 4,
   };
 
   std::mt19937 gen_a(123);
@@ -178,6 +192,45 @@ auto main() -> int {
                            "mixed generation keeps wake as point event");
   all_passed &= ExpectTrue(mixed_point_count > 1 && mixed_interval_count > 0,
                            "mixed generation emits point and interval events");
+
+  std::mt19937 remark_gen(789);
+  EventGenerator remark_generator(4, activities, remark_config, wake_keywords,
+                                  EventStyle::Point, remark_gen);
+  bool saw_remark = false;
+  bool saw_missing_remark = false;
+  int generated_remark_count = 0;
+  int missing_remark_count = 0;
+  for (int day = 0; day < 32; ++day) {
+    for (const auto& event : remark_generator.generate_events_for_day(false)) {
+      if (!event.remark_suffix.has_value()) {
+        saw_missing_remark = true;
+        ++missing_remark_count;
+        continue;
+      }
+      saw_remark = true;
+      ++generated_remark_count;
+      const std::string& suffix = *event.remark_suffix;
+      size_t line_count = 1;
+      for (size_t position = 0; position < suffix.size(); ++position) {
+        if (suffix[position] == '\n') {
+          ++line_count;
+        }
+      }
+      all_passed &= ExpectTrue(line_count >= 1 && line_count <= 4,
+                               "activity remarks contain 1 to 4 physical lines");
+      all_passed &= ExpectTrue(suffix.starts_with(" // "),
+                               "activity remarks start with //");
+      all_passed &= ExpectTrue(suffix.find("\n// ") != std::string::npos ||
+                                   line_count == 1,
+                               "activity remark continuation lines use //");
+    }
+  }
+  if (!(saw_remark && saw_missing_remark)) {
+    std::cerr << "[INFO] generated remarks=" << generated_remark_count
+              << ", missing remarks=" << missing_remark_count << "\n";
+  }
+  all_passed &= ExpectTrue(saw_remark && saw_missing_remark,
+                           "activity remark generation uses a 50 percent decision");
 
   if (!all_passed) {
     return 1;

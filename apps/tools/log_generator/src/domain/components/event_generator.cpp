@@ -36,12 +36,18 @@ EventGenerator::EventGenerator(
       gen_(gen),
       dis_minute_(kMinMinute, kMaxMinute),
       dis_activity_selector_(0, 0),
+      dis_remark_content_selector_(
+          0, remark_config.has_value()
+                 ? std::max(0, static_cast<int>(remark_config->contents.size()) - 1)
+                 : 0),
+      dis_remark_lines_(1, remark_config.has_value()
+                               ? std::max(1, remark_config->max_lines)
+                               : 1),
       dis_wake_keyword_selector_(0, static_cast<int>(wake_keywords.size()) - 1),
       dis_budget_jitter_minutes_(-kBudgetJitterMinutes, kBudgetJitterMinutes),
       should_generate_mixed_point_(0.5),
       should_use_canonical_token_(0.5),
-      should_generate_remark_(
-          remark_config.has_value() ? remark_config->generation_chance : 0.0) {
+      should_generate_remark_(remark_config.has_value() ? 0.5 : 0.0) {
   activity_candidates_.reserve(activities.size());
   for (int index = 0; index < static_cast<int>(activities.size()); ++index) {
     const auto& candidate = activities[static_cast<size_t>(index)];
@@ -172,17 +178,20 @@ auto EventGenerator::build_interval_event(
 }
 
 auto EventGenerator::maybe_build_remark_suffix() -> std::optional<std::string> {
-  if (!remark_config_ || !should_generate_remark_(gen_)) {
+  if (!remark_config_ || remark_config_->contents.empty() ||
+      !should_generate_remark_(gen_)) {
     return std::nullopt;
   }
 
-  std::string suffix = " ";
-  suffix.append(remark_delimiters_[remark_delimiter_idx_]);
-  suffix.append(remark_config_->contents[remark_content_idx_]);
-
-  remark_delimiter_idx_ = (remark_delimiter_idx_ + 1) % remark_delimiters_.size();
-  remark_content_idx_ =
-      (remark_content_idx_ + 1) % remark_config_->contents.size();
+  const int line_count = dis_remark_lines_(gen_);
+  std::string suffix = " // ";
+  for (int line_index = 0; line_index < line_count; ++line_index) {
+    if (line_index > 0) {
+      suffix += "\n// ";
+    }
+    suffix += remark_config_->contents[
+        static_cast<size_t>(dis_remark_content_selector_(gen_))];
+  }
   return suffix;
 }
 

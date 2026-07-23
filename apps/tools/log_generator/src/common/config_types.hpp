@@ -13,17 +13,15 @@ enum class TimeFormat { Hhmm, Hhmmss };
 
 // 每日备注配置
 struct DailyRemarkConfig {
-  std::string prefix;
   std::vector<std::string> contents;
   double generation_chance = 0.5;
-  // [新增] 最大行数，默认为 1
   int max_lines = 1;
 };
 
 // 活动备注配置
 struct ActivityRemarkConfig {
   std::vector<std::string> contents;
-  double generation_chance = 0.5;
+  int max_lines = 4;
 };
 
 struct ActivityTokenVariant {

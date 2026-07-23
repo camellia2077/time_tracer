@@ -4,8 +4,8 @@
 
 set(APP_BIN_DIR "${CMAKE_BINARY_DIR}/bin")
 set(CONFIG_DEST_DIR "${APP_BIN_DIR}/config")
-set(CONVERTER_DEST_DIR "${CONFIG_DEST_DIR}/converter")
-set(CONVERTER_ALIASES_DEST_DIR "${CONVERTER_DEST_DIR}/aliases")
+set(CONVERTER_DEST_DIR "${CONFIG_DEST_DIR}")
+set(CONVERTER_ALIASES_DEST_DIR "${CONFIG_DEST_DIR}/aliases")
 
 set_target_properties(log_generator PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${APP_BIN_DIR}"
@@ -32,12 +32,10 @@ foreach(FILENAME ${APP_CONFIG_FILES})
     list(APPEND CONFIG_DEST_FILES "${DEST}")
 endforeach()
 
-set(CONVERTER_CONFIG_FILES
-    "alias_mapping.toml"
-)
+set(CONVERTER_CONFIG_FILES)
 
 foreach(FILENAME ${CONVERTER_CONFIG_FILES})
-    set(SRC "${CMAKE_CURRENT_SOURCE_DIR}/../../../assets/tracer_core/config/converter/${FILENAME}")
+    set(SRC "${CMAKE_CURRENT_SOURCE_DIR}/../../../assets/tracer_core/config/${FILENAME}")
     set(DEST "${CONVERTER_DEST_DIR}/${FILENAME}")
 
     add_custom_command(
@@ -62,7 +60,7 @@ set(CONVERTER_ALIAS_FILES
 )
 
 foreach(FILENAME ${CONVERTER_ALIAS_FILES})
-    set(SRC "${CMAKE_CURRENT_SOURCE_DIR}/../../../assets/tracer_core/config/converter/aliases/${FILENAME}")
+    set(SRC "${CMAKE_CURRENT_SOURCE_DIR}/../../../assets/tracer_core/config/aliases/${FILENAME}")
     set(DEST "${CONVERTER_ALIASES_DEST_DIR}/${FILENAME}")
 
     add_custom_command(

@@ -19,12 +19,11 @@ auto ConfigHandler::load(const Config& config,
 
   std::filesystem::path settings_path =
       exe_dir / "config" / "activities_config.toml";
-  std::filesystem::path alias_mapping_index_path =
-      exe_dir / "config" / "converter" / "alias_mapping.toml";
+  std::filesystem::path alias_directory_path = exe_dir / "config" / "aliases";
 
-  if (!std::filesystem::exists(alias_mapping_index_path)) {
+  if (!std::filesystem::exists(alias_directory_path)) {
     std::cerr << RED_COLOR
-              << "Critical: Failed to locate converter alias mapping index."
+              << "Critical: Failed to locate converter aliases directory."
               << RESET_COLOR << std::endl;
     return std::nullopt;
   }
@@ -38,7 +37,7 @@ auto ConfigHandler::load(const Config& config,
 
   auto toml_configs_opt =
       ConfigLoader::load_from_sources(*settings_content_opt,
-                                      alias_mapping_index_path);
+                                      alias_directory_path);
   if (!toml_configs_opt) {
     std::cerr << RED_COLOR << "Config parse failed. Exiting." << RESET_COLOR
               << std::endl;

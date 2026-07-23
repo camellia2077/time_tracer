@@ -1,140 +1,66 @@
----
-description: Navigation entry for coding agents working in apps/tools/log_generator
----
+# log_generator Local Contract
 
-# log_generator
+## Scope
 
-## Purpose
+Applies to `apps/tools/log_generator/**`. This tool app generates canonical TXT
+datasets consumed by repository validation, ingest, query, report, and golden
+comparison flows.
 
-Local navigation entry for coding agents working in `apps/tools/log_generator`.
-
-`log_generator` is a tool app that generates TXT test inputs used by the
-repository's validation, ingest, query, report, and golden-comparison flows.
-Current prework semantics allow generated activity tokens to mix alias and
-canonical forms.
-
-## When To Open
-
-- Open this first when the task touches `apps/tools/log_generator`.
-- Use it to find the next 2 to 4 documents to read.
-
-## What This Doc Does Not Cover
-
-- Exact generation algorithms
-- File-by-file implementation details
-- Detailed data format contracts already documented elsewhere
-- Step-by-step refactor plans
-
-## 5-Minute Path
+## Required Read Set
 
 1. `apps/tools/log_generator/README.md`
-2. `test/README.md`
-3. `docs/toolchain/test/README.md`
-4. `docs/log_generator/usage.md`
+2. `docs/tools/log_generator/usage.md`
+3. `test/README.md`
+4. `docs/tools/toolchain/test/README.md`
 
-Open additional docs only when needed:
+## Read By Task
 
-- Test layering and asset boundaries:
-  - `docs/toolchain/test/test_layering.md`
-- Time tracer ingest and TXT semantics:
+- Test layering or asset ownership:
+  `docs/tools/toolchain/test/test_layering.md`
+- TXT ingest semantics:
   - `docs/time_tracer/core/ingest/README.md`
   - `docs/time_tracer/core/ingest/txt_to_db_business_logic.md`
-- Future interval/mixed timeline target semantics:
-  - `docs/time_tracer/core/ingest/interval_event_and_mixed_timeline_semantics.md`
+- Interval or mixed-timeline behavior:
+  `docs/time_tracer/core/ingest/interval_event_and_mixed_timeline_semantics.md`
 
-## Current Role In The Repo
+## Ownership And Routing
 
-- `apps/tools/log_generator` generates canonical TXT datasets.
-  Activity tokens now intentionally mix alias/canonical forms for prework
-  coverage; canonical selection is per generated activity at a fixed 50%
-  probability.
-- `test/data/**` stores shared TXT input assets used across CLI, shell, and
-  Android.
-- Main program pipelines consume those TXT files and produce downstream query /
-  report / export outputs.
-- Stable comparison baselines live under `test/golden/**`.
+- CLI parsing: `src/main.cpp` and `src/cli/**`.
+- Workflow/config wiring: `src/application/**` and `src/infrastructure/config/**`.
+- Generation semantics: `src/domain/**`.
+- Suite definitions: `tools/suites/log_generator/**`.
+- The generator owns dataset generation policy and self-checks; it does not own
+  the downstream core TXT contract.
 
-`log_generator` is therefore not an isolated utility. Changes here can affect:
+## Local Invariants
 
-- generated TXT shape and semantics
-- downstream ingest expectations
-- report/query/export golden outputs
-- tool-app self-checks and suite guards
-
-## Code Areas
-
-- CLI entry and argument parsing:
-  - `apps/tools/log_generator/src/main.cpp`
-  - `apps/tools/log_generator/src/cli/framework/command_line_parser.cpp`
-- Application wiring and workflow orchestration:
-  - `apps/tools/log_generator/src/application/application.cpp`
-  - `apps/tools/log_generator/src/application/workflow/workflow_handler.cpp`
-- Config loading and runtime context:
-  - `apps/tools/log_generator/src/application/config/config_handler.cpp`
-  - `apps/tools/log_generator/src/infrastructure/config/config.cpp`
-- Generation domain:
-  - `apps/tools/log_generator/src/domain/impl/log_generator.cpp`
-  - `apps/tools/log_generator/src/domain/components/day_generator.cpp`
-  - `apps/tools/log_generator/src/domain/components/event_generator.cpp`
-  - `apps/tools/log_generator/src/domain/strategies/sleep_scheduler.cpp`
-- Reporting/self-check helpers:
-  - `apps/tools/log_generator/src/application/workflow/workflow_monthly_average_stats.cpp`
-  - `apps/tools/log_generator/src/application/reporting/report_handler.cpp`
-
-## Suite And Guard Entry Points
-
-- Suite root:
-  - `tools/suites/log_generator/tests.toml`
-- Command generation cases:
-  - `tools/suites/log_generator/tests/commands_generate.toml`
-- Duration/average guard cases:
-  - `tools/suites/log_generator/tests/commands_average_guard.toml`
-- Python guard logic:
-  - `tools/suites/log_generator/scripts/check_daily_average.py`
-  - `tools/suites/log_generator/scripts/check_daily_average_lib.py`
-
-## Hard Rules
-
-- `log_generator` is the tool app for generating canonical TXT data; it does
-  not move into `test/**`.
-- Prefer Python entry commands from repository root.
+- Keep the tool under `apps/tools/log_generator`; do not move it into `test/**`.
+- Do not write ad-hoc output into `test/data/**` or `test/golden/**` unless the
+  task explicitly refreshes canonical assets.
+- A generated-TXT shape or timeline change requires review of generator
+  self-checks, suite guards, downstream consumers, and golden expectations.
 - Reuse `out/build/log_generator/build_fast` for incremental verification unless
-  explicitly instructed otherwise.
-- Do not write runtime outputs, temporary databases, or ad-hoc generated
-  artifacts back into `test/data/**` or `test/golden/**` unless the task
-  explicitly asks to refresh canonical assets.
-- If you change generated TXT shape or timeline semantics, also inspect:
-  - tool-app self-check logic
-  - suite guards
-  - downstream consumers and golden expectations
-- If you refresh `test/data/**` for canonical-token prework, do not assume the
-  rest of the repo can already ingest those files. Only run downstream parsing /
-  ingest validation when the task explicitly asks for it.
-- Store temporary files under repository `temp/`.
+  the task requires a different build directory.
 
-## Canonical Verify Flow
+## Validation
 
-Run from repository root:
+Required for generator code, config, suite, or behavior changes:
 
 ```powershell
 python tools/run.py verify --app log_generator --build-dir build_fast --concise
 ```
 
-Optional split flow for debugging only:
-
-```powershell
-python tools/run.py configure --app log_generator --build-dir build_fast
-python tools/run.py build --app log_generator --build-dir build_fast
-python tools/run.py verify --app log_generator --build-dir build_fast --concise
-```
-
-Result files:
+Evidence:
 
 - `out/test/artifact_log_generator/result.json`
 - `out/test/artifact_log_generator/result_cases.json`
 - `out/test/artifact_log_generator/logs/output.log`
 
-Expected completion state:
+## Local Completion Bar
 
-- verify command exits with code `0`
-- `out/test/artifact_log_generator/result.json` reports `"success": true`
+- Generator behavior, self-checks, and suite guards agree on the TXT shape and
+  the required verify flow passes.
+- Canonical asset refreshes occur only when explicitly in scope and include a
+  reviewable downstream-impact report.
+- A generation-policy change has deterministic seeded coverage for its new or
+  changed branches.

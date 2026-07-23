@@ -1,8 +1,0 @@
-# Deprecated local mirror.
-#
-# log_generator now reads the canonical converter alias bundle copied to:
-#   config/converter/alias_mapping.toml
-#   config/converter/aliases/*.toml
-#
-# The source of truth is:
-#   assets/tracer_core/config/converter/

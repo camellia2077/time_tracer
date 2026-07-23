@@ -15,7 +15,7 @@
 #endif
 
 namespace AppVersion {
-inline constexpr std::string_view APP_VERSION = "0.2.2";
+inline constexpr std::string_view APP_VERSION = "0.2.3";
 inline constexpr std::string_view LAST_UPDATE = LOG_GENERATOR_BUILD_TIMESTAMP;
 }  // namespace AppVersion
 

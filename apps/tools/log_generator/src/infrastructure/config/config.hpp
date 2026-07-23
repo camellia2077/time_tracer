@@ -13,11 +13,11 @@ class ConfigLoader {
  public:
   static std::optional<TomlConfigData> load_from_sources(
       const std::string& settings_content,
-      const std::filesystem::path& alias_mapping_index_path);
+      const std::filesystem::path& alias_directory_path);
 
  private:
   static bool _parse_mapping_keys(
-      const std::filesystem::path& alias_mapping_index_path,
+      const std::filesystem::path& alias_directory_path,
                                   TomlConfigData& config_data);
   static bool _parse_settings(const std::string& content,
                               TomlConfigData& config_data);

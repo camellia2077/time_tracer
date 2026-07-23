@@ -39,12 +39,12 @@ auto RemarkGenerator::try_generate() -> std::optional<std::string> {
   const DailyRemarkConfig& remark_config = *remark_config_;
 
   for (int i = 0; i < count; ++i) {
-    // 如果不是第一行，先追加换行符
+    // 日备注和活动备注共享同一条 TXT 续行语法。
     if (i > 0) {
-      result.push_back('\n');
+      result += "\n// ";
+    } else {
+      result += "// ";
     }
-    // 拼接 "prefix" + "随机内容"
-    result += remark_config.prefix;
     result += remark_config.contents[(*selector_)(gen_)];
   }
   return result;
