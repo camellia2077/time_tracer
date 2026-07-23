@@ -44,12 +44,9 @@ impl CommandHandler<DoctorArgs> for DoctorHandler {
                 exe_dir.join(libraries.reports_shared_dll),
             ),
             required_check("config_toml", exe_dir.join("config").join("config.toml")),
-            required_check(
-                "converter_alias_mapping",
-                exe_dir
-                    .join("config")
-                    .join("converter")
-                    .join("alias_mapping.toml"),
+            required_dir_check(
+                "converter_aliases",
+                exe_dir.join("config").join("converter").join("aliases"),
             ),
             optional_dir_check(
                 "db_parent_dir",
@@ -112,6 +109,17 @@ struct Check {
 
 fn required_check(id: &'static str, path: PathBuf) -> Check {
     let ok = path.exists();
+    Check {
+        id,
+        required: true,
+        ok,
+        path,
+        detail: if ok { "present" } else { "missing" }.to_string(),
+    }
+}
+
+fn required_dir_check(id: &'static str, path: PathBuf) -> Check {
+    let ok = path.is_dir();
     Check {
         id,
         required: true,

@@ -15,7 +15,7 @@ light_palette = "GITHUB_GREEN_LIGHT"
 dark_palette = "GITHUB_GREEN_DARK"
 
 [palettes]
-GITHUB_GREEN_LIGHT = ["#ebedf0", "#9be9a8", "#40c463", "#30a14e", "#216e39"]
+GITHUB_GREEN_LIGHT = ["#eff2f5", "#aceebb", "#4ac26b", "#2da44e", "#116329"]
 GITHUB_GREEN_DARK = ["#151b23", "#033a16", "#196c2e", "#2ea043", "#56d364"]
 BLUE_LIGHT = ["#f7fbff", "#c6dbef", "#6baed6", "#2171b5", "#08306b"]
 BROWN_LIGHT = ["#efebe9", "#d7ccc8", "#bcaaa4", "#8d6e63", "#6d4c41"]
