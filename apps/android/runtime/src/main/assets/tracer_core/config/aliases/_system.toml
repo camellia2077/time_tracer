@@ -1,0 +1,4 @@
+[sleep_inference]
+# 起床事件用于根据当天起床时间和前一天最后一个活动的结束时间推算睡眠区间。
+wake_keywords = ["起床", "醒", "w", "wake", "新的一天开始了"]
+sleep_project_path = "sleep_night"

@@ -35,6 +35,7 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         ensureTextStorage = runtimeSession::ensureTextStorage,
         executeAfterInit = coreAdapter::executeAfterInit,
         nativeListTxtIngestSyncStatus = runtimeBridge::nativeListTxtIngestSyncStatus,
+        nativeTxt = runtimeBridge::nativeTxt,
         responseCodec = responseCodec,
         statusCodec = ingestSyncStatusCodec
     )
@@ -49,6 +50,21 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         initializeRuntimeInternal = coreAdapter::initializeRuntimeInternal,
         nativeTxt = runtimeBridge::nativeTxt,
         codec = txtRuntimeCodec
+    )
+    private val txtActivityNameService = RuntimeTxtActivityNameService(
+        initializeRuntimeInternal = coreAdapter::initializeRuntimeInternal,
+        nativeTxt = runtimeBridge::nativeTxt,
+        codec = txtRuntimeCodec
+    )
+    private val aliasMoveMigrationService = RuntimeAliasMoveMigrationService(
+        ensureRuntimePaths = runtimeSession::ensureRuntimePaths,
+        ensureTextStorage = runtimeSession::ensureTextStorage,
+        ensureConfigTomlStorage = runtimeSession::ensureConfigTomlStorage,
+        nativeInit = runtimeBridge::nativeInit,
+        nativeShutdown = runtimeBridge::nativeShutdown,
+        nativeIngest = runtimeBridge::nativeIngest,
+        nativeTxt = runtimeBridge::nativeTxt,
+        responseCodec = responseCodec
     )
     private val recordDelegate = RuntimeRecordDelegate(
         ensureRuntimePaths = runtimeSession::ensureRuntimePaths,
@@ -66,6 +82,8 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         nativeValidateStructure = runtimeBridge::nativeValidateStructure,
         nativeValidateLogic = runtimeBridge::nativeValidateLogic,
         nativeRecordActivityAtomically = runtimeBridge::nativeRecordActivityAtomically,
+        nativeUpdateActivityRemarkAtomically = runtimeBridge::nativeUpdateActivityRemarkAtomically,
+        nativeUpdateDayRemarkAtomically = runtimeBridge::nativeUpdateDayRemarkAtomically,
         nativeIngestSingleTxtReplaceMonth = runtimeBridge::nativeIngestSingleTxtReplaceMonth,
         nativeClearTxtIngestSyncStatus = runtimeBridge::nativeClearTxtIngestSyncStatus
     )
@@ -181,6 +199,28 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         preferredTxtPath = preferredTxtPath
     )
 
+    override suspend fun updateActivityRemark(
+        targetDateIso: String,
+        logicalId: Long,
+        remark: String,
+        preferredTxtPath: String?
+    ): RecordActionResult = recordService.updateActivityRemark(
+        targetDateIso = targetDateIso,
+        logicalId = logicalId,
+        remark = remark,
+        preferredTxtPath = preferredTxtPath
+    )
+
+    override suspend fun updateDayRemark(
+        targetDateIso: String,
+        remark: String,
+        preferredTxtPath: String?
+    ): RecordActionResult = recordService.updateDayRemark(
+        targetDateIso = targetDateIso,
+        remark = remark,
+        preferredTxtPath = preferredTxtPath
+    )
+
     override suspend fun syncLiveToDatabase(): NativeCallResult =
         recordService.syncLiveToDatabase()
 
@@ -227,8 +267,26 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         editedDayBody = editedDayBody
     )
 
+    override suspend fun convertTxtActivityNames(
+        content: String,
+        direction: TxtActivityNameMappingDirection
+    ): TxtActivityNameConversionResult = txtActivityNameService.convertTxtActivityNames(
+        content = content,
+        direction = direction
+    )
+
+    override suspend fun replaceTxtCanonicalActivityNames(
+        content: String,
+        replacements: List<CanonicalActivityNameReplacement>
+    ): TxtCanonicalActivityReplacementResult =
+        txtActivityNameService.replaceTxtCanonicalActivityNames(content, replacements)
+
     override suspend fun clearTxt(): ClearTxtResult =
         recordService.clearTxt()
+
+    override suspend fun applyAliasEntryMoveMigration(
+        request: AliasEntryMoveMigrationRequest
+    ): AliasEntryMoveMigrationResult = aliasMoveMigrationService.apply(request)
 
     // storage
     override suspend fun listConfigTomlFiles(): ConfigTomlListResult =
@@ -337,6 +395,10 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     // report
     override suspend fun reportMarkdown(request: TemporalReportQueryRequest): ReportCallResult =
         reportService.reportMarkdown(request)
+
+    override suspend fun reportStructured(
+        request: TemporalReportQueryRequest
+    ): StructuredReportCallResult = reportService.reportStructured(request)
 
     // query
     override suspend fun queryActivitySuggestions(

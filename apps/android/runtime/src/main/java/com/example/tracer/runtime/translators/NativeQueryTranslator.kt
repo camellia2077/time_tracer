@@ -42,6 +42,7 @@ internal class NativeQueryTranslator(
                         found = parsedPayload.found,
                         roots = parsedPayload.roots,
                         nodes = parsedPayload.nodes,
+                        maxAvailableDepth = parsedPayload.maxAvailableDepth,
                         message = parsedPayload.errorMessage.ifBlank { "tree query failed." },
                         operationId = queryResult.operationId
                     )
@@ -51,6 +52,7 @@ internal class NativeQueryTranslator(
                         found = parsedPayload.found,
                         roots = parsedPayload.roots,
                         nodes = parsedPayload.nodes,
+                        maxAvailableDepth = parsedPayload.maxAvailableDepth,
                         message = buildTreeResultMessage(
                             found = parsedPayload.found,
                             roots = parsedPayload.roots,

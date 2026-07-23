@@ -27,13 +27,10 @@ import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
 @Composable
 internal fun ConfigCategorySwitchCard(
     selectedCategory: ConfigCategory,
-    selectedConverterSubcategory: ConverterSubcategory,
     onSelectConverter: () -> Unit,
     onSelectCharts: () -> Unit,
     onSelectMeta: () -> Unit,
     onSelectReports: () -> Unit,
-    onSelectConverterAliases: () -> Unit,
-    onSelectConverterRules: () -> Unit,
     onRefreshFiles: () -> Unit
 ) {
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
@@ -89,43 +86,6 @@ internal fun ConfigCategorySwitchCard(
                             )
                         }
                     )
-                }
-            }
-
-            if (selectedCategory == ConfigCategory.CONVERTER) {
-                val converterSections = listOf(
-                    ConverterSubcategory.ALIASES to stringResource(R.string.config_converter_section_aliases),
-                    ConverterSubcategory.RULES to stringResource(R.string.config_converter_section_rules)
-                )
-                SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                    converterSections.forEachIndexed { index, (subcategory, label) ->
-                        val selected = selectedConverterSubcategory == subcategory
-                        SegmentedButton(
-                            shape = SegmentedButtonDefaults.itemShape(
-                                index = index,
-                                count = converterSections.size
-                            ),
-                            onClick = {
-                                when (subcategory) {
-                                    ConverterSubcategory.ALIASES -> onSelectConverterAliases()
-                                    ConverterSubcategory.RULES -> onSelectConverterRules()
-                                }
-                            },
-                            selected = selected,
-                            modifier = Modifier.weight(1f),
-                            colors = TracerSegmentedButtonDefaults.colors(),
-                            label = {
-                                Text(
-                                    text = label,
-                                    fontWeight = if (selected) {
-                                        TracerSegmentedButtonDefaults.activeLabelFontWeight
-                                    } else {
-                                        TracerSegmentedButtonDefaults.inactiveLabelFontWeight
-                                    }
-                                )
-                            }
-                        )
-                    }
                 }
             }
 

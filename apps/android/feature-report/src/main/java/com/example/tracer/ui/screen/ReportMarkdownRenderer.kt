@@ -170,10 +170,16 @@ private fun ReportMarkdownBlock(
         }
 
         is MarkdownBlock.ListBlock -> {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                block.items.forEach { item ->
+            Column {
+                block.items.forEachIndexed { index, item ->
                     Row(
-                        modifier = Modifier.padding(start = (item.level * 16).dp)
+                        modifier = Modifier.padding(
+                            start = (item.level * 16).dp,
+                            // Indented rows are formatter-generated remark continuations.
+                            // Keep them directly attached to the activity row; only separate
+                            // sibling top-level activities with vertical spacing.
+                            top = if (index > 0 && item.level == 0) 4.dp else 0.dp
+                        )
                     ) {
                         Text(
                             text = "• ",

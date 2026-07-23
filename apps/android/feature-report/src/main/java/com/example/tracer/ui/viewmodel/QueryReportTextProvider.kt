@@ -4,17 +4,15 @@ import android.content.Context
 import com.example.tracer.feature.report.R
 
 interface QueryReportTextProvider {
-    fun statsSubjectLabel(): String
     fun treeSubjectLabel(): String
 
     fun nativeReportRunning(mode: String): String
     fun nativeReportResult(mode: String, ok: Boolean): String
     fun nativeReportTargetMissing(mode: String): String
+    fun nativeReportNoData(mode: String): String
     fun nativeReportEmptyWindow(mode: String): String
     fun rangeStartDateInvalid(detail: String): String
     fun rangeEndDateInvalid(detail: String): String
-    fun queryStatsRunning(period: String): String
-    fun queryStatsResult(period: String, ok: Boolean): String
     fun queryTreeRunning(): String
     fun queryTreeResult(ok: Boolean): String
     fun queryChartRunning(): String
@@ -54,7 +52,6 @@ interface QueryReportTextProvider {
 }
 
 object DefaultQueryReportTextProvider : QueryReportTextProvider {
-    override fun statsSubjectLabel(): String = "Stats"
     override fun treeSubjectLabel(): String = "Tree"
 
     override fun nativeReportRunning(mode: String): String =
@@ -66,6 +63,9 @@ object DefaultQueryReportTextProvider : QueryReportTextProvider {
     override fun nativeReportTargetMissing(mode: String): String =
         "nativeReportJson($mode, md) -> target not found"
 
+    override fun nativeReportNoData(mode: String): String =
+        "No records for this $mode."
+
     override fun nativeReportEmptyWindow(mode: String): String =
         "nativeReportJson($mode, md) -> empty window"
 
@@ -74,12 +74,6 @@ object DefaultQueryReportTextProvider : QueryReportTextProvider {
 
     override fun rangeEndDateInvalid(detail: String): String =
         "Range end date invalid. $detail"
-
-    override fun queryStatsRunning(period: String): String =
-        "query data days-stats running... period=$period"
-
-    override fun queryStatsResult(period: String, ok: Boolean): String =
-        "query data days-stats($period) -> OK=$ok"
 
     override fun queryTreeRunning(): String = "query data tree running..."
     override fun queryTreeResult(ok: Boolean): String = "query data tree -> OK=$ok"
@@ -173,9 +167,6 @@ object DefaultQueryReportTextProvider : QueryReportTextProvider {
 class AndroidQueryReportTextProvider(
     private val context: Context
 ) : QueryReportTextProvider {
-    override fun statsSubjectLabel(): String =
-        context.getString(R.string.report_subject_stats)
-
     override fun treeSubjectLabel(): String =
         context.getString(R.string.report_subject_tree)
 
@@ -188,6 +179,9 @@ class AndroidQueryReportTextProvider(
     override fun nativeReportTargetMissing(mode: String): String =
         context.getString(R.string.report_status_native_report_target_missing, mode)
 
+    override fun nativeReportNoData(mode: String): String =
+        context.getString(R.string.report_status_no_records, mode)
+
     override fun nativeReportEmptyWindow(mode: String): String =
         context.getString(R.string.report_status_native_report_empty_window, mode)
 
@@ -196,12 +190,6 @@ class AndroidQueryReportTextProvider(
 
     override fun rangeEndDateInvalid(detail: String): String =
         context.getString(R.string.report_status_range_end_date_invalid, detail)
-
-    override fun queryStatsRunning(period: String): String =
-        context.getString(R.string.report_status_query_stats_running, period)
-
-    override fun queryStatsResult(period: String, ok: Boolean): String =
-        context.getString(R.string.report_status_query_stats_result, period, ok.toString())
 
     override fun queryTreeRunning(): String =
         context.getString(R.string.report_status_query_tree_running)

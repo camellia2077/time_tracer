@@ -8,8 +8,7 @@ bundle_name = "tracer_core_config"
 [file_list]
 required = [
   "config.toml",
-  "converter/interval_processor_config.toml",
-  "converter/alias_mapping.toml",
+  "aliases/_system.toml",
   "reports/markdown/day.toml",
   "reports/markdown/month.toml",
   "reports/markdown/period.toml",
@@ -20,7 +19,7 @@ optional = [
 ]
 
 [paths.converter]
-interval_config = "converter/interval_processor_config.toml"
+main_config = "aliases/_system.toml"
 
 [paths.reports.markdown]
 day = "reports/markdown/day.toml"

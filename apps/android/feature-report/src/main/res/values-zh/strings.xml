@@ -12,7 +12,8 @@
     <string name="report_title_mode_parameters">%1$s 参数</string>
     <string name="report_parameter_section_day">日报</string>
     <string name="report_parameter_section_tree">树</string>
-    <string name="report_parameter_section_stats">统计</string>
+    <string name="report_parameter_section_timeline">时间线</string>
+    <string name="report_parameter_section_markdown">md</string>
     <string name="report_title_report_date">报表日期</string>
     <string name="report_title_report_day">报表日</string>
     <string name="report_title_report_month">报表月份</string>
@@ -22,19 +23,17 @@
     <string name="report_title_start_date">开始日期</string>
     <string name="report_title_end_date">结束日期</string>
     <string name="report_label_recent_days">最近天数 (N)</string>
-    <string name="report_action_generate_report_md">生成报表 MD</string>
 
-    <string name="report_title_stats_parameters">统计参数</string>
-    <string name="report_section_stats">统计</string>
     <string name="report_action_loading">加载中...</string>
-    <string name="report_action_generate_stats">生成%1$s统计</string>
 
     <string name="report_title_project_tree_parameters">项目树参数</string>
     <string name="report_section_tree">树</string>
-    <string name="report_label_tree_level">树层级（-1 表示不限）</string>
-    <string name="report_action_load_project_tree">加载%1$s项目树</string>
+    <string name="report_label_tree_level">显示层级</string>
+    <string name="report_tree_level_all">全部层级</string>
+    <string name="report_tree_level_number">第 %1$d 层</string>
+    <string name="report_tree_sort_duration_desc">时长：从高到低</string>
+    <string name="report_tree_sort_duration_asc">时长：从低到高</string>
 
-    <string name="report_label_chart_semantic">图表关注点</string>
     <string name="report_chart_semantic_trend">趋势</string>
     <string name="report_chart_semantic_composition">分布</string>
     <string name="report_label_chart_root">根节点</string>
@@ -114,18 +113,26 @@
     <string name="report_cd_collapse">收起</string>
     <string name="report_cd_expand">展开</string>
     <string name="report_cd_copy_markdown">复制 Markdown</string>
+    <string name="report_result_title_activity_timeline">活动时间线</string>
+    <string name="report_day_remark_label">日备注</string>
+    <string name="report_edit_day_remark">编辑日备注</string>
+    <string name="report_save_day_remark">保存</string>
+    <string name="report_cancel_day_remark">取消</string>
+    <string name="report_activity_timeline_empty">这一天没有记录活动。</string>
+    <string name="report_edit_activity_remark">编辑备注</string>
+    <string name="report_activity_remark_label">活动备注</string>
+    <string name="report_save_activity_remark">保存</string>
+    <string name="report_cancel_activity_remark">取消</string>
 
-    <string name="report_subject_stats">统计</string>
     <string name="report_subject_tree">树</string>
 
     <string name="report_status_native_report_running">nativeReportJson(%1$s, md) 运行中...</string>
     <string name="report_status_native_report_result">nativeReportJson(%1$s, md) -&gt; OK=%2$s</string>
     <string name="report_status_native_report_target_missing">nativeReportJson(%1$s, md) -&gt; 目标不存在</string>
+    <string name="report_status_no_records">%1$s没有记录。</string>
     <string name="report_status_native_report_empty_window">nativeReportJson(%1$s, md) -&gt; 窗口为空</string>
     <string name="report_status_range_start_date_invalid">区间开始日期无效。%1$s</string>
     <string name="report_status_range_end_date_invalid">区间结束日期无效。%1$s</string>
-    <string name="report_status_query_stats_running">query data days-stats 运行中... period=%1$s</string>
-    <string name="report_status_query_stats_result">query data days-stats(%1$s) -&gt; OK=%2$s</string>
     <string name="report_status_query_tree_running">query data tree 运行中...</string>
     <string name="report_status_query_tree_result">query data tree -&gt; OK=%1$s</string>
     <string name="report_status_query_chart_running">query data report-chart 运行中...</string>
@@ -136,12 +143,13 @@
     <string name="report_result_title_report">报表结果</string>
     <string name="report_result_title_report_error">报表错误</string>
     <string name="report_result_title_report_missing_target">%1$s目标不存在</string>
+    <string name="report_result_title_report_no_data">%1$s没有记录</string>
     <string name="report_result_title_report_window_summary">%1$s窗口摘要</string>
     <string name="report_result_title_chart">图表结果</string>
     <string name="report_result_title_analysis_error">分析错误</string>
-    <string name="report_result_title_stats">%1$s统计结果</string>
     <string name="report_result_title_tree">%1$s树结果</string>
     <string name="report_summary_missing_target_body">所选%1$s目标没有对应的报表数据。</string>
+    <string name="report_summary_no_data_body">这一天没有记录活动。</string>
     <string name="report_summary_error_code">错误码：%1$s</string>
     <string name="report_summary_error_category">分类：%1$s</string>
     <string name="report_summary_hints">提示：%1$s</string>

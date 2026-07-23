@@ -2,7 +2,7 @@ package com.example.tracer
 
 import com.example.tracer.feature.report.R
 
-internal enum class ReportChartVisualMode {
+enum class ReportChartVisualMode {
     LINE,
     BAR,
     HEATMAP_MONTH,

@@ -26,11 +26,11 @@ fun defaultReportHeatmapTomlConfig(): ReportHeatmapTomlConfig =
         defaultDarkPalette = "GITHUB_GREEN_DARK",
         palettes = linkedMapOf(
             "GITHUB_GREEN_LIGHT" to listOf(
-                "#ebedf0",
-                "#9be9a8",
-                "#40c463",
-                "#30a14e",
-                "#216e39"
+                "#eff2f5",
+                "#aceebb",
+                "#4ac26b",
+                "#2da44e",
+                "#116329"
             ),
             "GITHUB_GREEN_DARK" to listOf(
                 "#151b23",

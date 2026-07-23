@@ -8,15 +8,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -34,55 +37,60 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 
 @Composable
 internal fun AliasPathBar(
     breadcrumbs: List<AliasBreadcrumbSegment>,
-    onNavigateBack: () -> Unit
+    onNavigateToBreadcrumb: (String?) -> Unit
 ) {
-    val pathText = remember(breadcrumbs) {
-        if (breadcrumbs.isEmpty()) {
-            "Current path: aliases"
-        } else {
-            "Current path: aliases / " + breadcrumbs.joinToString(" / ") { it.name }
-        }
-    }
-
     OutlinedCard(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 6.dp)
+                .horizontalScroll(rememberScrollState())
+                .padding(horizontal = 12.dp, vertical = 4.dp)
                 .heightIn(min = 48.dp),
-            verticalAlignment = Alignment.Top
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            if (breadcrumbs.isNotEmpty()) {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back to parent group"
+            TextButton(
+                onClick = { onNavigateToBreadcrumb(null) },
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.config_alias_path_root),
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+
+            breadcrumbs.forEach { breadcrumb ->
+                Icon(
+                    imageVector = Icons.Filled.ChevronRight,
+                    contentDescription = stringResource(R.string.config_alias_path_separator),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                TextButton(
+                    onClick = { onNavigateToBreadcrumb(breadcrumb.groupId) },
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp)
+                ) {
+                    Text(
+                        text = breadcrumb.name,
+                        style = if (breadcrumb == breadcrumbs.last()) {
+                            MaterialTheme.typography.labelLarge
+                        } else {
+                            MaterialTheme.typography.bodyMedium
+                        },
+                        color = if (breadcrumb == breadcrumbs.last()) {
+                            MaterialTheme.colorScheme.onSurface
+                        } else {
+                            MaterialTheme.colorScheme.primary
+                        },
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
-            } else {
-                Spacer(modifier = Modifier.width(48.dp))
             }
-            Text(
-                text = pathText,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier
-                    .weight(1f)
-                    .semantics { heading() },
-                maxLines = 3,
-                overflow = TextOverflow.Clip
-            )
         }
     }
 }
@@ -123,7 +131,7 @@ internal fun AliasParentSelector(
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier
                 .fillMaxWidth()
-                .menuAnchor(),
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
         )
         DropdownMenu(
             expanded = expanded,
@@ -148,73 +156,65 @@ internal fun AliasParentSelector(
 internal fun AliasGroupRowCard(
     group: AliasTomlGroup,
     onEnterGroup: () -> Unit,
-    onDeleteGroup: (String) -> Unit,
-    onRequestAddChildGroup: (String) -> Unit,
-    onRequestAddChildEntry: (String) -> Unit
+    onEdit: () -> Unit
 ) {
-    var showAddMenu by remember(group.id) { mutableStateOf(false) }
-
-    OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+    OutlinedCard(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        )
+    ) {
         Column(
-            modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.padding(start = 16.dp, top = 8.dp, end = 8.dp, bottom = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                Icon(
+                    imageVector = Icons.Filled.Folder,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = group.name,
                     style = MaterialTheme.typography.titleSmall,
                     modifier = Modifier.weight(1f),
-                    maxLines = 2,
+                    maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+                IconButton(onClick = onEdit) {
+                    Icon(
+                        Icons.Filled.Edit,
+                        contentDescription = stringResource(R.string.config_alias_action_edit_record_name)
+                    )
+                }
                 IconButton(onClick = onEnterGroup) {
                     Icon(
                         Icons.Filled.ChevronRight,
-                        contentDescription = "Open child group"
+                        contentDescription = stringResource(R.string.config_alias_action_open_category)
                     )
                 }
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = { onDeleteGroup(group.id) }) {
-                    Icon(
-                        Icons.Filled.Delete,
-                        contentDescription = stringResource(R.string.config_alias_action_delete),
-                        tint = MaterialTheme.colorScheme.error
-                    )
-                }
-                IconButton(onClick = { showAddMenu = true }) {
-                    Icon(
-                        Icons.Filled.Add,
-                        contentDescription = stringResource(R.string.config_alias_action_add_group)
-                    )
-                }
-                DropdownMenu(
-                    expanded = showAddMenu,
-                    onDismissRequest = { showAddMenu = false }
-                ) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.config_alias_action_add_group)) },
-                        onClick = {
-                            showAddMenu = false
-                            onRequestAddChildGroup(group.id)
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.config_alias_action_add_alias)) },
-                        onClick = {
-                            showAddMenu = false
-                            onRequestAddChildEntry(group.id)
-                        }
-                    )
-                }
+            Text(
+                text = stringResource(R.string.config_alias_category_child_count, group.nodes.size),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            if (group.groupAliases.isNotEmpty()) {
+                Text(
+                    text = stringResource(
+                        R.string.config_alias_group_recordable_aliases,
+                        group.groupAliases.joinToString()
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
         }
     }
@@ -224,52 +224,70 @@ internal fun AliasGroupRowCard(
 internal fun AliasEntryRow(
     entry: AliasTomlEntry,
     modifier: Modifier = Modifier,
-    onEdit: () -> Unit,
-    onDelete: () -> Unit
+    onEdit: () -> Unit
 ) {
     OutlinedCard(modifier = modifier) {
         Column(
-            modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            modifier = Modifier.padding(start = 16.dp, top = 8.dp, end = 8.dp, bottom = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
-            Text(
-                text = entry.aliasKey,
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.fillMaxWidth(),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = buildAnnotatedString {
-                    withStyle(SpanStyle(fontSize = 24.sp)) {
-                        append("\u2192 ")
-                    }
-                    append(entry.canonicalLeaf)
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.fillMaxWidth(),
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                TextButton(onClick = onEdit) {
-                    Icon(Icons.Filled.Edit, contentDescription = null)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(stringResource(R.string.config_alias_action_rename))
-                }
-                TextButton(onClick = onDelete) {
-                    Icon(Icons.Filled.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = stringResource(R.string.config_alias_action_delete),
-                        color = MaterialTheme.colorScheme.error
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = entry.aliasKey,
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                IconButton(onClick = onEdit) {
+                    Icon(
+                        Icons.Filled.Edit,
+                        contentDescription = stringResource(R.string.config_alias_action_rename)
                     )
                 }
             }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = entry.canonicalLeaf,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+    }
+}
+
+@Composable
+internal fun AliasEmptyState() {
+    OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.config_alias_empty_title),
+                style = MaterialTheme.typography.titleSmall
+            )
+            Text(
+                text = stringResource(R.string.config_alias_empty_message),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

@@ -67,4 +67,42 @@ internal class NativeTxtRuntimeCodec {
                 message = "Invalid native TXT response."
             )
         }
+
+    fun parseActivityNameConversion(
+        response: String,
+        fallbackContent: String
+    ): TxtActivityNameConversionResult =
+        try {
+            val json = JSONObject(response)
+            TxtActivityNameConversionResult(
+                ok = json.optBoolean("ok", false),
+                convertedContent = json.optString("converted_content", fallbackContent),
+                message = json.optString("error_message", "")
+            )
+        } catch (_: Exception) {
+            TxtActivityNameConversionResult(
+                ok = false,
+                convertedContent = fallbackContent,
+                message = "Invalid native TXT response."
+            )
+        }
+
+    fun parseCanonicalActivityReplacement(
+        response: String,
+        fallbackContent: String
+    ): TxtCanonicalActivityReplacementResult =
+        try {
+            val json = JSONObject(response)
+            TxtCanonicalActivityReplacementResult(
+                ok = json.optBoolean("ok", false),
+                updatedContent = json.optString("updated_content", fallbackContent),
+                message = json.optString("error_message", "")
+            )
+        } catch (_: Exception) {
+            TxtCanonicalActivityReplacementResult(
+                ok = false,
+                updatedContent = fallbackContent,
+                message = "Invalid native TXT response."
+            )
+        }
 }

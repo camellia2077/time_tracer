@@ -178,12 +178,15 @@ class RecordUseCasesTest {
                 recordRemark = "focused block",
                 intervalStart = "0900",
                 intervalEnd = "1030",
+                attributionDateIso = "2026-03-28",
+                logicalDayTarget = RecordLogicalDayTarget.TODAY,
                 selectedMonth = "2026-03"
             )
         )
 
         assertEquals("0900", gateway.lastIntervalStart)
         assertEquals("1030", gateway.lastIntervalEnd)
+        assertEquals("2026-03-28", gateway.lastTargetDateIso)
         assertEquals("", result.recordContent)
         assertEquals("", result.recordRemark)
         assertEquals("", result.intervalStart)
@@ -253,7 +256,7 @@ class RecordUseCasesTest {
             )
         )
 
-        assertEquals("Record blocked: start/end must use HHMM.", result.statusText)
+        assertEquals("Record blocked: start/end must use HH MM SS.", result.statusText)
     }
 
     @Test

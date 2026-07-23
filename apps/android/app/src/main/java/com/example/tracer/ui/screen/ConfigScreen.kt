@@ -46,7 +46,6 @@ private data class LibrariesLoadState(
 @Composable
 internal fun ConfigSection(
     selectedCategory: ConfigCategory,
-    selectedConverterSubcategory: ConverterSubcategory,
     converterFiles: List<ConfigTomlFileEntry>,
     chartFiles: List<ConfigTomlFileEntry>,
     metaFiles: List<ConfigTomlFileEntry>,
@@ -57,6 +56,7 @@ internal fun ConfigSection(
     editableContent: String,
     aliasEditorMode: AliasEditorMode,
     aliasDocumentDraft: AliasTomlDocument?,
+    aliasEntryMovePlan: AliasEntryMovePlan?,
     aliasParentOptions: List<String>,
     aliasAdvancedTomlDraft: String,
     aliasEditorErrorMessage: String,
@@ -66,8 +66,6 @@ internal fun ConfigSection(
     onSelectCharts: () -> Unit,
     onSelectMeta: () -> Unit,
     onSelectReports: () -> Unit,
-    onSelectConverterAliases: () -> Unit,
-    onSelectConverterRules: () -> Unit,
     onRefreshFiles: () -> Unit,
     onOpenFile: (String) -> Unit,
     onCreateAliasTomlFile: (String) -> Unit,
@@ -82,7 +80,13 @@ internal fun ConfigSection(
     onDeleteAliasGroup: (String) -> Unit,
     onAddAliasEntry: (String?, String, String) -> Unit,
     onUpdateAliasEntry: (String, String, String) -> Unit,
+    onPromoteAliasEntry: (String) -> Unit,
+    onRenameGroupAlias: (String, String, String) -> Unit,
+    onAddGroupAlias: (String, String) -> Unit,
     onDeleteAliasEntry: (String) -> Unit,
+    onPreviewAliasEntryMove: (String, String) -> Unit,
+    onConfirmAliasEntryMovePlan: () -> Unit,
+    onDiscardAliasEntryMovePlan: () -> Unit,
     onSaveCurrentFile: () -> Unit,
     onSetThemeColor: (com.example.tracer.data.ThemeColor) -> Unit,
     onSetThemeMode: (com.example.tracer.data.ThemeMode) -> Unit,
@@ -94,24 +98,20 @@ internal fun ConfigSection(
     onSetAppLanguage: (com.example.tracer.data.AppLanguage) -> Unit
 ) {
     var showAboutPage by rememberSaveable { mutableStateOf(false) }
+    // Converter keeps Aliases as the default editor scope; the category itself
+    // still shows both alias and rule files now that the secondary selector is gone.
+    val converterScope = ConverterSubcategory.ALIASES
     val visibleFiles = when (selectedCategory) {
-        ConfigCategory.CONVERTER -> converterFiles.filter { entry ->
-            // Converter exposes an extra in-category level because alias files are
-            // edited far more often than the converter rule/config bundle.
-            when (selectedConverterSubcategory) {
-                ConverterSubcategory.ALIASES -> entry.relativePath.startsWith("converter/aliases/")
-                ConverterSubcategory.RULES -> !entry.relativePath.startsWith("converter/aliases/")
-            }
-        }
+        ConfigCategory.CONVERTER -> converterFiles
         ConfigCategory.CHARTS -> chartFiles
         ConfigCategory.META -> metaFiles
         ConfigCategory.REPORTS -> reportFiles
     }.map { entry ->
-        entry.copy(displayName = displayNameForCurrentScope(entry, selectedCategory, selectedConverterSubcategory))
+        entry.copy(displayName = displayNameForCurrentScope(entry, selectedCategory, converterScope))
     }
     val scopedSelectedFileDisplayName = selectedFileDisplayName.removeCurrentScopePrefix(
         selectedCategory = selectedCategory,
-        selectedConverterSubcategory = selectedConverterSubcategory
+        selectedConverterSubcategory = converterScope
     )
     val usesAliasStructuredEditor = selectedFilePath.isAliasFilePathForConfigScreen()
 
@@ -141,13 +141,10 @@ internal fun ConfigSection(
 
         ConfigCategorySwitchCard(
             selectedCategory = selectedCategory,
-            selectedConverterSubcategory = selectedConverterSubcategory,
             onSelectConverter = onSelectConverter,
             onSelectCharts = onSelectCharts,
             onSelectMeta = onSelectMeta,
             onSelectReports = onSelectReports,
-            onSelectConverterAliases = onSelectConverterAliases,
-            onSelectConverterRules = onSelectConverterRules,
             onRefreshFiles = onRefreshFiles
         )
 
@@ -158,10 +155,10 @@ internal fun ConfigSection(
                     selectedFileContent = selectedFileContent,
                     mode = aliasEditorMode,
                     document = aliasDocumentDraft,
+                    movePlan = aliasEntryMovePlan,
                     parentOptions = aliasParentOptions,
                     advancedTomlDraft = aliasAdvancedTomlDraft,
                     errorMessage = aliasEditorErrorMessage,
-                    autoSaveStatus = autoSaveStatus,
                     onCreateAliasTomlFile = onCreateAliasTomlFile,
                     onDeleteAliasTomlFile = onDeleteAliasTomlFile,
                     onSelectStructuredMode = onSelectAliasStructuredMode,
@@ -172,7 +169,13 @@ internal fun ConfigSection(
                     onDeleteGroup = onDeleteAliasGroup,
                     onAddEntry = onAddAliasEntry,
                     onUpdateEntry = onUpdateAliasEntry,
+                    onPromoteEntry = onPromoteAliasEntry,
+                    onRenameGroupAlias = onRenameGroupAlias,
+                    onAddGroupAlias = onAddGroupAlias,
                     onDeleteEntry = onDeleteAliasEntry,
+                    onPreviewEntryMove = onPreviewAliasEntryMove,
+                    onConfirmMovePlan = onConfirmAliasEntryMovePlan,
+                    onDiscardMovePlan = onDiscardAliasEntryMovePlan,
                     onSave = onSaveCurrentFile
                 )
             } else {
@@ -223,7 +226,9 @@ private fun String.removeCurrentScopePrefix(
 }
 
 private fun String.isAliasFilePathForConfigScreen(): Boolean =
-    startsWith("converter/aliases/") && endsWith(".toml", ignoreCase = true)
+        startsWith("aliases/") &&
+        !endsWith("/_system.toml", ignoreCase = true) &&
+        endsWith(".toml", ignoreCase = true)
 
 @Composable
 private fun ConfigAboutCard(

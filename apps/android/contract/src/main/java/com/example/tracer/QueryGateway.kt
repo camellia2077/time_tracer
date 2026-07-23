@@ -45,7 +45,7 @@ interface QueryGateway {
             message = "Wake keywords query not implemented."
         )
 
-    // Authorable event tokens are alias_mapping keys union wake_keywords.
+    // Authorable event tokens are alias child-file keys union wake_keywords.
     suspend fun listAuthorableEventTokens(): ActivityMappingNamesResult =
         listActivityAliasKeys()
 }

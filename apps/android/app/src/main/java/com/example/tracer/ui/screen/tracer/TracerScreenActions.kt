@@ -1,9 +1,10 @@
 package com.example.tracer
 
+import android.content.ClipData
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -89,7 +90,7 @@ private fun rememberTracerScreenDiagnosticsActions(
     configGateway: ConfigGateway,
     configViewModel: ConfigViewModel
 ): TracerScreenDiagnosticsActions {
-    val clipboardManager = LocalClipboardManager.current
+    val clipboard = LocalClipboard.current
     val diagnosticsPrepareText = stringResource(R.string.tracer_diagnostics_prepare)
     return TracerScreenDiagnosticsActions(
         onCopyDiagnosticsPayload = {
@@ -103,7 +104,14 @@ private fun rememberTracerScreenDiagnosticsActions(
                     return@launch
                 }
 
-                clipboardManager.setText(AnnotatedString(payloadResult.payload))
+                clipboard.setClipEntry(
+                    ClipEntry(
+                        ClipData.newPlainText(
+                            "Time Tracer diagnostics",
+                            payloadResult.payload
+                        )
+                    )
+                )
                 configViewModel.setStatusText(payloadResult.message)
             }
         }

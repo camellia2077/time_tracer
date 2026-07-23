@@ -23,29 +23,6 @@ class QueryReportResultDisplayRobolectricTest {
     private val context: Context = ApplicationProvider.getApplicationContext()
 
     @Test
-    fun reportResult_stats_rendersMarkdownContent() {
-        val dayLabel = context.getString(R.string.report_mode_day)
-        val dayStatsResultLabel = context.getString(
-            R.string.report_result_title_stats,
-            dayLabel
-        )
-
-        renderReportResultDisplay(
-            activeResult = QueryResult.Stats(
-                text = "## Day Duration Stats\n\nstats-md-marker",
-                period = DataTreePeriod.DAY
-            ),
-            reportMode = ReportMode.DAY
-        )
-
-        composeRule.onNodeWithText(dayStatsResultLabel).assertIsDisplayed()
-        composeRule.onNodeWithText("stats-md-marker").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription(
-            context.getString(R.string.report_cd_copy_markdown)
-        ).assertIsDisplayed()
-    }
-
-    @Test
     fun reportResult_recentWindow_rendersSummaryAndMarkdown() {
         val recentLabel = context.getString(R.string.report_mode_recent)
         val emptyWindowTitle = context.getString(
@@ -86,38 +63,74 @@ class QueryReportResultDisplayRobolectricTest {
     }
 
     @Test
-    fun reportResult_dayMissingTarget_rendersSummaryWithoutMarkdown() {
-        val missingSummary = ReportSummary.MissingTarget(
-            period = DataTreePeriod.DAY,
-            errorCode = "reporting.target.not_found",
-            errorCategory = "reporting",
-            hints = listOf("Try another date.")
-        )
+    fun reportResult_dayWithoutRecords_rendersNormalNoDataSummary() {
+        val noDataSummary = ReportSummary.NoData(period = DataTreePeriod.DAY)
         val dayLabel = context.getString(R.string.report_mode_day)
-        val missingTitle = context.getString(
-            R.string.report_result_title_report_missing_target,
+        val noDataTitle = context.getString(
+            R.string.report_result_title_report_no_data,
             dayLabel
         )
-        val missingBody = context.getString(
-            R.string.report_summary_missing_target_body,
+        val noDataBody = context.getString(
+            R.string.report_summary_no_data_body,
             dayLabel
         )
 
         renderReportResultDisplay(
             activeResult = null,
-            reportSummary = missingSummary,
+            reportSummary = noDataSummary,
             reportMode = ReportMode.DAY
         )
 
-        composeRule.onNodeWithText(missingTitle).assertIsDisplayed()
-        composeRule.onNodeWithText(missingBody).assertIsDisplayed()
-        composeRule.onAllNodesWithText("runtime report failed. [op=missing-day]")
+        composeRule.onNodeWithText(noDataTitle).assertIsDisplayed()
+        composeRule.onNodeWithText(noDataBody).assertIsDisplayed()
+        composeRule.onAllNodesWithText("reporting.target.not_found")
             .assertCountEquals(0)
+        composeRule.onAllNodesWithText("Try another date.")
+            .assertCountEquals(0)
+    }
+
+    @Test
+    fun reportResult_day_rendersComposeActivityTimeline() {
+        renderReportResultDisplay(
+            activeResult = QueryResult.Report(
+                text = "## Day Report\n\nmd-marker"
+            ),
+            dayTimeline = StructuredDailyReport(
+                date = "2026-02-14",
+                totalDurationSeconds = 3_600,
+                dayRemark = "今天状态不错\n完成了主要计划",
+                activities = listOf(
+                    ActivityTimelineItem(
+                        startTime = "09:00",
+                        endTime = "10:00",
+                        activityName = "study_math_is_this",
+                        durationSeconds = 3_600,
+                        remark = "整理错题"
+                    )
+                )
+            ),
+            parameterSection = ReportParameterSection.TIMELINE,
+            reportMode = ReportMode.DAY
+        )
+
+        composeRule.onNodeWithText(
+            context.getString(R.string.report_result_title_activity_timeline)
+        ).assertIsDisplayed()
+        composeRule.onNodeWithText(
+            context.getString(R.string.report_day_remark_label)
+        ).assertIsDisplayed()
+        composeRule.onNodeWithText("今天状态不错\n完成了主要计划").assertIsDisplayed()
+        composeRule.onNodeWithText("study").assertIsDisplayed()
+        composeRule.onNodeWithText("math > is > this").assertIsDisplayed()
+        composeRule.onNodeWithText("1h 0m").assertIsDisplayed()
+        composeRule.onAllNodesWithText("整理错题").assertCountEquals(1)
     }
 
     private fun renderReportResultDisplay(
         activeResult: QueryResult?,
         reportSummary: ReportSummary? = null,
+        dayTimeline: StructuredDailyReport? = null,
+        parameterSection: ReportParameterSection = ReportParameterSection.DAY,
         reportMode: ReportMode
     ) {
         composeRule.setContent {
@@ -126,9 +139,12 @@ class QueryReportResultDisplayRobolectricTest {
                     resultDisplayMode = ReportResultDisplayMode.TEXT,
                     activeResult = activeResult,
                     reportSummary = reportSummary,
+                    dayTimeline = dayTimeline,
+                    parameterSection = parameterSection,
                     reportError = "",
                     analysisError = "",
                     chartSemanticMode = ReportChartSemanticMode.COMPOSITION,
+                    chartVisualMode = ReportChartVisualMode.LINE,
                     compositionVisualMode = ReportCompositionVisualMode.HORIZONTAL_BAR,
                     trendChartRoots = emptyList(),
                     trendChartSelectedRoot = "",
@@ -152,6 +168,7 @@ class QueryReportResultDisplayRobolectricTest {
                     onCompositionVisualModeChange = {},
                     onChartRootChange = {},
                     onChartShowAverageLineChange = {},
+                    onChartVisualModeChange = {},
                     onLoadChart = {}
                 )
             }

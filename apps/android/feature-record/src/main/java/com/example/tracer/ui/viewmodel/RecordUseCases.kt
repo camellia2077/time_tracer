@@ -11,6 +11,11 @@ class RecordUseCases(
     private val textProvider: RecordTextProvider = DefaultRecordTextProvider,
     private val clock: Clock = Clock.systemDefaultZone()
 ) {
+    data class TxtRepresentationSaveOutcome(
+        val state: RecordUiState,
+        val result: TxtFileContentResult
+    )
+
     private val datePolicy = RecordUseCaseDatePolicy(clock)
     private val historyNavigator = RecordTxtHistoryNavigator(
         txtStorageGateway = txtStorageGateway,
@@ -76,11 +81,13 @@ class RecordUseCases(
         if (normalizedStart.isEmpty() || normalizedEnd.isEmpty()) {
             return state.copy(statusText = "Record blocked: start/end are required for interval mode.")
         }
-        if (!isValidHhmm(normalizedStart) || !isValidHhmm(normalizedEnd)) {
-            return state.copy(statusText = "Record blocked: start/end must use HHMM.")
+        if (!isValidTime(normalizedStart) || !isValidTime(normalizedEnd)) {
+            return state.copy(statusText = "Record blocked: start/end must use HH MM SS.")
         }
 
-        val targetDateIso = datePolicy.resolveTargetDateIso(state.logicalDayTarget)
+        val targetDateIso = state.attributionDateIso.ifBlank {
+            datePolicy.resolveTargetDateIso(state.logicalDayTarget)
+        }
         val result = recordGateway.recordInterval(
             activityName = state.recordContent,
             startTime = normalizedStart,
@@ -95,10 +102,10 @@ class RecordUseCases(
         if (!result.ok) {
             return state.copy(statusText = result.message)
         }
-        val durationMinutes = calculateHhmmDurationMinutes(normalizedStart, normalizedEnd)
+        val durationSeconds = calculateTimeDurationSeconds(normalizedStart, normalizedEnd)
         val successSummary = buildRecordSuccessSummary(
             rawActivityToken = state.recordContent,
-            durationClockText = durationMinutes?.let(::formatDurationClock)
+            durationClockText = durationSeconds?.let(::formatDurationClock)
                 ?: textProvider.unavailableDuration()
         )
         val preferredMonth = datePolicy.resolvePreferredMonthForRecord(targetDateIso)
@@ -107,6 +114,8 @@ class RecordUseCases(
             recordRemark = "",
             intervalStart = "",
             intervalEnd = "",
+            intervalStartedAtEpochMs = 0L,
+            attributionDateIso = "",
             lastRecordedActivityAlias = successSummary.aliasToken,
             lastRecordedDuration = successSummary.inputDurationText
         )
@@ -170,6 +179,45 @@ class RecordUseCases(
 
     suspend fun saveHistoryFileAndSync(state: RecordUiState): RecordUiState =
         historyNavigator.saveHistoryFileAndSync(state)
+
+    suspend fun saveHistoryFileRepresentationOnly(
+        state: RecordUiState,
+        content: String
+    ): TxtRepresentationSaveOutcome {
+        val selectedFile = state.selectedHistoryFile
+        if (selectedFile.isBlank()) {
+            return TxtRepresentationSaveOutcome(
+                state = state,
+                result = TxtFileContentResult(
+                    ok = false,
+                    filePath = selectedFile,
+                    content = content,
+                    message = "No TXT file selected."
+                )
+            )
+        }
+
+        val result = txtStorageGateway.saveTxtFile(
+            relativePath = selectedFile,
+            content = content
+        )
+        if (!result.ok) {
+            return TxtRepresentationSaveOutcome(state = state, result = result)
+        }
+
+        val persistedContent = result.content.ifBlank { content }
+        val nextDrafts = state.historyDraftsByFile.toMutableMap()
+        nextDrafts.remove(selectedFile)
+        return TxtRepresentationSaveOutcome(
+            state = state.copy(
+                selectedHistoryContent = persistedContent,
+                editableHistoryContent = persistedContent,
+                historyDraftsByFile = nextDrafts,
+                statusText = result.message
+            ),
+            result = result.copy(content = persistedContent)
+        )
+    }
 
     suspend fun createCurrentMonthTxt(state: RecordUiState): RecordUiState {
         val result = recordGateway.createCurrentMonthTxt()
@@ -356,6 +404,8 @@ class RecordUseCases(
             recordRemark = "",
             intervalStart = "",
             intervalEnd = "",
+            intervalStartedAtEpochMs = 0L,
+            attributionDateIso = "",
             logicalDayTarget = datePolicy.defaultLogicalDayTarget(),
             logicalDayIsUserOverride = false,
             historyFiles = emptyList(),
@@ -379,13 +429,18 @@ class RecordUseCases(
         )
     }
 
-    private fun isValidHhmm(hhmm: String): Boolean {
-        if (hhmm.length != 4 || !hhmm.all { it.isDigit() }) {
+    private fun isValidTime(value: String): Boolean {
+        if ((value.length != 4 && value.length != 6) || !value.all { it.isDigit() }) {
             return false
         }
-        val hours = hhmm.substring(0, 2).toIntOrNull() ?: return false
-        val minutes = hhmm.substring(2, 4).toIntOrNull() ?: return false
-        return hours in 0..23 && minutes in 0..59
+        val hours = value.substring(0, 2).toIntOrNull() ?: return false
+        val minutes = value.substring(2, 4).toIntOrNull() ?: return false
+        val seconds = if (value.length == 6) {
+            value.substring(4, 6).toIntOrNull() ?: return false
+        } else {
+            0
+        }
+        return hours in 0..23 && minutes in 0..59 && seconds in 0..59
     }
 
     private suspend fun openOrCreateMonth(
@@ -512,51 +567,58 @@ class RecordUseCases(
         }
     }
 
-    private fun calculateHhmmDurationMinutes(startHhmm: String, endHhmm: String): Int? {
-        val startMinutes = hhmmToMinutes(startHhmm) ?: return null
-        val endMinutes = hhmmToMinutes(endHhmm) ?: return null
-        return if (endMinutes >= startMinutes) {
-            endMinutes - startMinutes
+    private fun calculateTimeDurationSeconds(startTime: String, endTime: String): Int? {
+        val startSeconds = timeToSeconds(startTime) ?: return null
+        val endSeconds = timeToSeconds(endTime) ?: return null
+        return if (endSeconds >= startSeconds) {
+            endSeconds - startSeconds
         } else {
-            endMinutes + MINUTES_PER_DAY - startMinutes
+            endSeconds + SECONDS_PER_DAY - startSeconds
         }
     }
 
-    private fun hhmmToMinutes(hhmm: String): Int? {
-        if (!isValidHhmm(hhmm)) {
+    private fun timeToSeconds(value: String): Int? {
+        if (!isValidTime(value)) {
             return null
         }
-        val hours = hhmm.substring(0, 2).toInt()
-        val minutes = hhmm.substring(2, 4).toInt()
-        return hours * 60 + minutes
+        val hours = value.substring(0, 2).toInt()
+        val minutes = value.substring(2, 4).toInt()
+        val seconds = if (value.length == 6) value.substring(4, 6).toInt() else 0
+        return hours * SECONDS_PER_HOUR + minutes * SECONDS_PER_MINUTE + seconds
     }
 
     private fun formatClockDuration(value: String): String? {
-        val minutes = clockDurationToMinutes(value) ?: return null
-        return formatDurationHoursMinutes(minutes)
+        val seconds = clockDurationToSeconds(value) ?: return null
+        return formatDurationHoursMinutes(seconds / SECONDS_PER_MINUTE)
     }
 
     private fun isValidClockDuration(value: String): Boolean =
-        clockDurationToMinutes(value) != null
+        clockDurationToSeconds(value) != null
 
-    private fun clockDurationToMinutes(value: String): Int? {
+    private fun clockDurationToSeconds(value: String): Int? {
         val parts = value.split(":")
-        if (parts.size != 2) {
+        if (parts.size !in 2..3) {
             return null
         }
         val hours = parts[0].toIntOrNull() ?: return null
         val minutes = parts[1].toIntOrNull() ?: return null
-        if (hours < 0 || minutes !in 0..59) {
+        val seconds = if (parts.size == 3) parts[2].toIntOrNull() ?: return null else 0
+        if (hours < 0 || minutes !in 0..59 || seconds !in 0..59) {
             return null
         }
-        return hours * MINUTES_PER_HOUR + minutes
+        return hours * SECONDS_PER_HOUR + minutes * SECONDS_PER_MINUTE + seconds
     }
 
-    private fun formatDurationClock(minutes: Int): String {
-        val boundedMinutes = minutes.coerceAtLeast(0)
-        val hours = boundedMinutes / MINUTES_PER_HOUR
-        val remainingMinutes = boundedMinutes % MINUTES_PER_HOUR
-        return "%02d:%02d".format(hours, remainingMinutes)
+    private fun formatDurationClock(seconds: Int): String {
+        val boundedSeconds = seconds.coerceAtLeast(0)
+        val hours = boundedSeconds / SECONDS_PER_HOUR
+        val minutes = (boundedSeconds % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE
+        val remainingSeconds = boundedSeconds % SECONDS_PER_MINUTE
+        return if (remainingSeconds == 0) {
+            "%02d:%02d".format(hours, minutes)
+        } else {
+            "%02d:%02d:%02d".format(hours, minutes, remainingSeconds)
+        }
     }
 
     private fun formatDurationHoursMinutes(minutes: Int): String {
@@ -690,7 +752,9 @@ class RecordUseCases(
     private companion object {
         private val MONTH_KEY_REGEX = Regex("""\d{4}-\d{2}""")
         private const val SUGGESTION_LOG_TAG = "TimeTracerSuggestions"
-        private const val MINUTES_PER_DAY = 24 * 60
         private const val MINUTES_PER_HOUR = 60
+        private const val SECONDS_PER_MINUTE = 60
+        private const val SECONDS_PER_HOUR = 60 * SECONDS_PER_MINUTE
+        private const val SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR
     }
 }

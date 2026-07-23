@@ -34,6 +34,31 @@ data class ReportCallResult(
     val reportWindowMetadata: ReportWindowMetadata? = null
 )
 
+data class ActivityTimelineItem(
+    val logicalId: Long = 0L,
+    val startTime: String,
+    val endTime: String,
+    val activityName: String,
+    val durationSeconds: Long,
+    val remark: String? = null
+)
+
+data class StructuredDailyReport(
+    val date: String,
+    val totalDurationSeconds: Long,
+    val dayRemark: String = "",
+    val activities: List<ActivityTimelineItem> = emptyList()
+)
+
+data class StructuredReportCallResult(
+    val initialized: Boolean,
+    val operationOk: Boolean,
+    val report: StructuredDailyReport?,
+    val rawResponse: String,
+    val errorMessage: String = "",
+    val operationId: String = ""
+)
+
 data class ClearAndInitResult(
     val initialized: Boolean,
     val operationOk: Boolean,
@@ -166,6 +191,40 @@ data class TxtDayBlockReplaceResult(
     val message: String
 )
 
+enum class TxtActivityNameMappingDirection(val wireValue: String) {
+    ALIAS_TO_CANONICAL("alias_to_canonical"),
+    CANONICAL_TO_ALIAS("canonical_to_alias")
+}
+
+data class TxtActivityNameConversionResult(
+    val ok: Boolean,
+    val convertedContent: String,
+    val message: String
+)
+
+data class CanonicalActivityNameReplacement(
+    val oldCanonical: String,
+    val newCanonical: String
+)
+
+data class TxtCanonicalActivityReplacementResult(
+    val ok: Boolean,
+    val updatedContent: String,
+    val message: String
+)
+
+data class AliasEntryMoveMigrationRequest(
+    val configRelativePath: String,
+    val updatedTomlContent: String,
+    val replacements: List<CanonicalActivityNameReplacement>
+)
+
+data class AliasEntryMoveMigrationResult(
+    val ok: Boolean,
+    val message: String,
+    val updatedTxtFileCount: Int = 0
+)
+
 data class ConfigTomlFileEntry(
     val relativePath: String,
     val displayName: String
@@ -269,7 +328,8 @@ data class TreeQueryResult(
     val roots: List<String> = emptyList(),
     val nodes: List<TreeNode> = emptyList(),
     val message: String,
-    val operationId: String = ""
+    val operationId: String = "",
+    val maxAvailableDepth: Int = 0
 )
 
 data class DataQueryTextResult(

@@ -37,12 +37,31 @@ class RuntimeCanonicalCatalogTest {
     }
 
     @Test
+    fun canonicalCatalogParser_supportsRecordableGroupAliases() {
+        val parseResult = RuntimeCanonicalCatalogParser.parse(
+            """
+                parent = "recreation"
+
+                [aliases.online]
+                group_aliases = ["上网"]
+                "哔哩哔哩" = "bilibili"
+            """.trimIndent()
+        )
+
+        val online = requireNotNull(parseResult.document).nodes.single() as CanonicalAliasGroup
+        assertEquals(listOf("上网"), online.groupAliases)
+        val catalog = RuntimeCanonicalCatalogBuilder.build(listOf("online.toml" to requireNotNull(parseResult.document)))
+        assertEquals(listOf("recreation_online", "recreation_online_bilibili"), catalog.entries.map { it.canonicalPath })
+        assertEquals(listOf("上网"), catalog.entries.first().aliases)
+    }
+
+    @Test
     fun listCanonicalCatalog_buildsPathTreeAndDeduplicatesAliases() = runBlocking {
         val root = Files.createTempDirectory("runtime-canonical-catalog").toFile()
         try {
             writeAliasToml(
                 root = root,
-                relativePath = "converter/aliases/meal.toml",
+                relativePath = "aliases/meal.toml",
                 content = """
                     parent = "meal"
 
@@ -54,7 +73,7 @@ class RuntimeCanonicalCatalogTest {
             )
             writeAliasToml(
                 root = root,
-                relativePath = "converter/aliases/study.toml",
+                relativePath = "aliases/study.toml",
                 content = """
                     parent = "study"
 
@@ -79,24 +98,58 @@ class RuntimeCanonicalCatalogTest {
 
             val mealRoot = result.roots.first { it.path == "meal" }
             assertEquals(
-                listOf("meal/breakfast", "meal/dining"),
+                listOf("meal_breakfast", "meal_dining"),
                 mealRoot.entries.map { it.canonicalPath }
             )
             assertEquals(
                 listOf("meal", "吃饭"),
-                mealRoot.entries.first { it.canonicalPath == "meal/dining" }.aliases
+                mealRoot.entries.first { it.canonicalPath == "meal_dining" }.aliases
             )
 
             val studyRoot = result.roots.first { it.path == "study" }
-            assertEquals(listOf("study/math"), studyRoot.children.map { it.path })
+            assertEquals(listOf("study_math"), studyRoot.children.map { it.path })
             val mathNode = studyRoot.children.single()
-            assertEquals(listOf("study/math/calculus"), mathNode.entries.map { it.canonicalPath })
+            assertEquals(listOf("study_math_calculus"), mathNode.entries.map { it.canonicalPath })
             val calculusNode = mathNode.children.single()
-            assertEquals("study/math/calculus", calculusNode.path)
+            assertEquals("study_math_calculus", calculusNode.path)
             assertEquals(
-                listOf("study/math/calculus/double-integral"),
+                listOf("study_math_calculus_double-integral"),
                 calculusNode.entries.map { it.canonicalPath }
             )
+        } finally {
+            root.deleteRecursively()
+        }
+    }
+
+    @Test
+    fun listCanonicalCatalog_skipsTheFixedSystemAliasConfig() = runBlocking {
+        val root = Files.createTempDirectory("runtime-canonical-catalog-system").toFile()
+        try {
+            writeAliasToml(
+                root = root,
+                relativePath = "aliases/_system.toml",
+                content = """
+                    [sleep_inference]
+                    wake_keywords = ["起床"]
+                """.trimIndent()
+            )
+            writeAliasToml(
+                root = root,
+                relativePath = "aliases/other.toml",
+                content = """
+                    parent = "other"
+
+                    [aliases]
+                    "找东西" = "looking-for"
+                """.trimIndent()
+            )
+
+            val result = RuntimeCanonicalCatalogQueryDelegate(
+                ensureConfigTomlStorage = { ConfigTomlStorage(root.absolutePath) }
+            ).listCanonicalCatalog()
+
+            assertTrue(result.ok)
+            assertEquals(listOf("other_looking-for"), result.entries.map { it.canonicalPath })
         } finally {
             root.deleteRecursively()
         }
@@ -108,7 +161,7 @@ class RuntimeCanonicalCatalogTest {
         try {
             writeAliasToml(
                 root = root,
-                relativePath = "converter/aliases/broken.toml",
+                relativePath = "aliases/broken.toml",
                 content = """
                     [aliases]
                     "meal" = "dining"

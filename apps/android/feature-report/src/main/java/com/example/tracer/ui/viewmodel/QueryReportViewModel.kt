@@ -8,9 +8,12 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import java.time.Clock
 
+
+
 class QueryReportViewModel(
     reportGateway: ReportGateway,
     queryGateway: QueryGateway,
+    private val recordGateway: RecordGateway? = null,
     textProvider: QueryReportTextProvider = DefaultQueryReportTextProvider,
     private val clock: Clock = Clock.systemDefaultZone()
 ) : ViewModel() {
@@ -21,6 +24,7 @@ class QueryReportViewModel(
         queryGateway = queryGateway,
         textProvider = textProvider
     )
+    private val inputValidator = QueryInputValidator(textProvider)
 
     private sealed interface QueryReportIntent {
         data object ReportDay : QueryReportIntent
@@ -29,7 +33,6 @@ class QueryReportViewModel(
         data object ReportWeek : QueryReportIntent
         data object ReportRecent : QueryReportIntent
         data object ReportRange : QueryReportIntent
-        data class LoadStats(val period: DataTreePeriod) : QueryReportIntent
         data class LoadTree(val period: DataTreePeriod, val level: Int) : QueryReportIntent
         data object LoadChart : QueryReportIntent
     }
@@ -38,49 +41,66 @@ class QueryReportViewModel(
         value.filter { it.isDigit() }.take(maxLength)
 
     fun onReportDateChange(value: String) {
-        updateReportParams {
+        updateReportParams({
             copy(reportDate = digitsOnly(value, 8))
-        }
+        }, autoReport = true)
     }
 
     fun onReportModeChange(mode: ReportMode) {
-        updateReportParams {
+        updateReportParams({
             val hidesStaleAnalysis = activeResult.isAnalysisResultForDifferentPeriod(
                 mode.toDataTreePeriod()
             )
             copy(
                 reportMode = mode,
-                // Stats and Project Tree cards are scoped to the period used to query them.
+                parameterSection = if (
+                    mode != ReportMode.DAY && parameterSection == ReportParameterSection.TIMELINE
+                ) {
+                    ReportParameterSection.DAY
+                } else {
+                    parameterSection
+                },
+                // Project Tree cards are scoped to the period used to query them.
                 // Do not retain an analysis card after changing to a different report window.
                 activeResult = if (hidesStaleAnalysis) null else activeResult,
                 analysisError = if (hidesStaleAnalysis) "" else analysisError,
                 chartSemanticMode = preferredChartSemanticMode.normalizeForReportMode(mode)
             )
+        })
+        if (uiState.parameterSection == ReportParameterSection.TREE) {
+            loadTree(mode.toDataTreePeriod(), uiState.treeLevel)
         }
+    }
+
+    fun onPersistedReportModeChange(mode: ReportMode) {
+        if (uiState.reportMode == mode) {
+            return
+        }
+        onReportModeChange(mode)
     }
 
     fun onReportMonthChange(value: String) {
-        updateReportParams {
+        updateReportParams({
             copy(reportMonth = digitsOnly(value, 6))
-        }
+        }, autoReport = true)
     }
 
     fun onReportYearChange(value: String) {
-        updateReportParams {
+        updateReportParams({
             copy(reportYear = digitsOnly(value, 4))
-        }
+        }, autoReport = true)
     }
 
     fun onReportWeekChange(value: String) {
-        updateReportParams {
+        updateReportParams({
             copy(reportWeek = digitsOnly(value, 6))
-        }
+        }, autoReport = true)
     }
 
     fun onReportRecentDaysChange(value: String) {
-        updateReportParams {
+        updateReportParams({
             copy(reportRecentDays = value.filter { it.isDigit() })
-        }
+        }, autoReport = true)
     }
 
     fun refreshReportDayDefault() {
@@ -88,10 +108,14 @@ class QueryReportViewModel(
         // Report tab, the day field should reflect the current logical log day instead of
         // preserving a previously inspected date from an earlier tab visit.
         val currentLogicalDayDigits = currentDateDigits(clock)
-        if (uiState.reportDate == currentLogicalDayDigits) {
-            return
+        if (uiState.reportDate != currentLogicalDayDigits) {
+            uiState = uiState.copy(reportDate = currentLogicalDayDigits)
         }
-        uiState = uiState.copy(reportDate = currentLogicalDayDigits)
+        // The underlying TXT may have changed while the user was on Record. The date often
+        // remains the same, so changing only the parameter leaves the cached timeline stale.
+        // Re-query the currently selected report on every Report-tab entry, including same-day
+        // entries.
+        reportCurrentSelection()
     }
 
     fun onResultDisplayModeChange(mode: ReportResultDisplayMode) {
@@ -143,10 +167,31 @@ class QueryReportViewModel(
     }
 
     fun onParameterSectionChange(section: ReportParameterSection) {
-        if (uiState.parameterSection == section) {
+        if (uiState.reportMode != ReportMode.DAY && section == ReportParameterSection.TIMELINE) {
             return
         }
+        val sectionChanged = uiState.parameterSection != section
         uiState = uiState.copy(parameterSection = section)
+        if (section == ReportParameterSection.TREE) {
+            if (sectionChanged) {
+                loadTree(uiState.reportMode.toDataTreePeriod(), uiState.treeLevel)
+            }
+        } else {
+            // DAY, Markdown, and Timeline all consume the same cached day report. Two flicker
+            // bugs were caused by treating a presentation-only section change as a new query:
+            // returning to Timeline recreated the tab and re-ran the persisted-section effect,
+            // while Timeline -> Markdown changed the section value from TIMELINE to DAY. Both
+            // paths cleared dayTimeline before reloading the unchanged report. Re-query only
+            // when the current period has no report yet, so switching or recreating these views
+            // preserves the existing data and avoids the empty-state frame.
+            val currentPeriod = uiState.reportMode.toDataTreePeriod()
+            val hasCurrentReport = uiState.reportResultsByPeriod[currentPeriod] != null
+            val needsReportRefresh = uiState.dayReportNeedsRefresh &&
+                section != ReportParameterSection.TREE
+            if (!hasCurrentReport || needsReportRefresh) {
+                reportCurrentSelection()
+            }
+        }
     }
 
     fun onPersistedChartSemanticModeChange(mode: ReportChartSemanticMode) {
@@ -170,20 +215,87 @@ class QueryReportViewModel(
     }
 
     fun onReportRangeStartDateChange(value: String) {
-        updateReportParams {
+        updateReportParams({
             copy(reportRangeStartDate = digitsOnly(value, 8))
-        }
+        }, autoReport = true)
     }
 
     fun onReportRangeEndDateChange(value: String) {
-        updateReportParams {
+        updateReportParams({
             copy(reportRangeEndDate = digitsOnly(value, 8))
-        }
+        }, autoReport = true)
     }
 
     fun reportDay() {
         dispatchIntent(QueryReportIntent.ReportDay)
     }
+
+    suspend fun updateActivityRemark(
+        activity: ActivityTimelineItem,
+        remark: String
+    ): RecordActionResult {
+        val gateway = recordGateway ?: return RecordActionResult(
+            ok = false,
+            message = "Report Timeline remark editing is not wired."
+        )
+        val dayDigits = uiState.reportDate.trim()
+        val validationError = inputValidator.validateDateDigits(dayDigits)
+        if (validationError != null) {
+            return RecordActionResult(ok = false, message = validationError)
+        }
+        val result = gateway.updateActivityRemark(
+            targetDateIso = inputValidator.toIsoDate(dayDigits),
+            logicalId = activity.logicalId,
+            remark = remark,
+            preferredTxtPath = null
+        )
+        if (result.ok) {
+            uiState = uiState.updateLocalActivityRemark(activity.logicalId, remark)
+        }
+        return result
+    }
+
+    suspend fun updateDayRemark(remark: String): RecordActionResult {
+        val gateway = recordGateway ?: return RecordActionResult(
+            ok = false,
+            message = "Report Timeline day remark editing is not wired."
+        )
+        val dayDigits = uiState.reportDate.trim()
+        val validationError = inputValidator.validateDateDigits(dayDigits)
+        if (validationError != null) {
+            return RecordActionResult(ok = false, message = validationError)
+        }
+        val result = gateway.updateDayRemark(
+            targetDateIso = inputValidator.toIsoDate(dayDigits),
+            remark = remark,
+            preferredTxtPath = null
+        )
+        if (result.ok) {
+            uiState = uiState.updateLocalDayRemark(remark)
+        }
+        return result
+    }
+
+    private fun QueryReportUiState.updateLocalActivityRemark(
+        logicalId: Long,
+        remark: String
+    ): QueryReportUiState {
+        val timeline = dayTimeline ?: return copy(dayReportNeedsRefresh = true)
+        val updatedActivities = timeline.activities.map { activity ->
+            if (activity.logicalId == logicalId) activity.copy(remark = remark) else activity
+        }
+        return copy(
+            dayTimeline = timeline.copy(activities = updatedActivities),
+            dayReportNeedsRefresh = true
+        )
+    }
+
+    private fun QueryReportUiState.updateLocalDayRemark(
+        remark: String
+    ): QueryReportUiState = copy(
+        dayTimeline = dayTimeline?.copy(dayRemark = remark),
+        dayReportNeedsRefresh = true
+    )
 
     fun reportMonth() {
         dispatchIntent(QueryReportIntent.ReportMonth)
@@ -205,15 +317,37 @@ class QueryReportViewModel(
         dispatchIntent(QueryReportIntent.ReportRange)
     }
 
-    fun loadDayStats(period: DataTreePeriod) {
-        dispatchIntent(QueryReportIntent.LoadStats(period))
+    fun reportCurrentSelection() {
+        if (uiState.resultDisplayMode != ReportResultDisplayMode.TEXT ||
+            uiState.parameterSection == ReportParameterSection.TREE
+        ) {
+            return
+        }
+        dispatchIntent(
+            when (uiState.reportMode) {
+                ReportMode.DAY -> QueryReportIntent.ReportDay
+                ReportMode.MONTH -> QueryReportIntent.ReportMonth
+                ReportMode.YEAR -> QueryReportIntent.ReportYear
+                ReportMode.WEEK -> QueryReportIntent.ReportWeek
+                ReportMode.RANGE -> QueryReportIntent.ReportRange
+                ReportMode.RECENT -> QueryReportIntent.ReportRecent
+            }
+        )
     }
 
     fun loadTree(
         period: DataTreePeriod,
-        level: Int = -1
+        level: Int = uiState.treeLevel
     ) {
+        uiState = uiState.copy(treeLevel = level.coerceAtLeast(-1))
         dispatchIntent(QueryReportIntent.LoadTree(period, level))
+    }
+
+    fun onTreeLevelChange(level: Int) {
+        loadTree(
+            period = uiState.reportMode.toDataTreePeriod(),
+            level = level
+        )
     }
 
     fun loadChart() {
@@ -221,7 +355,8 @@ class QueryReportViewModel(
     }
 
     private fun updateReportParams(
-        transform: QueryReportUiState.() -> QueryReportUiState
+        transform: QueryReportUiState.() -> QueryReportUiState,
+        autoReport: Boolean = false
     ) {
         val nextState = uiState.transform().invalidateChartState()
         val shouldReloadChart = nextState.resultDisplayMode == ReportResultDisplayMode.CHART &&
@@ -231,6 +366,34 @@ class QueryReportViewModel(
         // invalidate the current chart instead of leaving a stale series on screen.
         if (shouldReloadChart) {
             loadChart()
+        }
+        if (autoReport && shouldAutoReport(nextState)) {
+            if (nextState.parameterSection == ReportParameterSection.TREE) {
+                loadTree(nextState.reportMode.toDataTreePeriod(), nextState.treeLevel)
+            } else {
+                reportCurrentSelection()
+            }
+        }
+    }
+
+    private fun shouldAutoReport(state: QueryReportUiState): Boolean {
+        if (state.resultDisplayMode != ReportResultDisplayMode.TEXT) {
+            return false
+        }
+        return when (state.reportMode) {
+            ReportMode.DAY -> inputValidator.validateDateDigits(state.reportDate).isNullOrBlank()
+            ReportMode.MONTH -> inputValidator.validateMonthDigits(state.reportMonth).isNullOrBlank()
+            ReportMode.YEAR -> inputValidator.validateIsoYear(state.reportYear).isNullOrBlank()
+            ReportMode.WEEK -> inputValidator.validateWeekDigits(state.reportWeek).isNullOrBlank()
+            ReportMode.RANGE ->
+                inputValidator.validateDateDigits(state.reportRangeStartDate).isNullOrBlank() &&
+                    inputValidator.validateDateDigits(state.reportRangeEndDate).isNullOrBlank() &&
+                    inputValidator.validateRangeOrder(
+                        state.reportRangeStartDate,
+                        state.reportRangeEndDate
+                    ).isNullOrBlank()
+            ReportMode.RECENT -> inputValidator.validateRecentDays(state.reportRecentDays)
+                .isNullOrBlank()
         }
     }
 
@@ -255,8 +418,7 @@ class QueryReportViewModel(
     private fun QueryResult?.isAnalysisResultForDifferentPeriod(
         selectedPeriod: DataTreePeriod
     ): Boolean = when (this) {
-        is QueryResult.Stats -> period != selectedPeriod
-        is QueryResult.Tree -> period != selectedPeriod
+                is QueryResult.Tree -> period != selectedPeriod
         else -> false
     }
 
@@ -315,14 +477,6 @@ class QueryReportViewModel(
                     useCases.reportRange(
                         currentState = uiState,
                         emit = { state -> uiState = state }
-                    )
-                }
-
-                is QueryReportIntent.LoadStats -> {
-                    useCases.loadStats(
-                        currentState = uiState,
-                        period = intent.period,
-                        source = currentPeriodSource()
                     )
                 }
 

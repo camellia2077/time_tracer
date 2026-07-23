@@ -70,6 +70,19 @@ class LiveRawRecordPersistenceTest {
     }
 
     @Test
+    fun buildRawEventLine_escapesMultilineRemarkAndBackslash() {
+        val persistence = createPersistence()
+
+        val line = persistence.buildRawEventLine(
+            hhmm = "0900",
+            activity = "study",
+            remark = "first line\npath C:\\work"
+        )
+
+        assertEquals("0900study // first line\\npath C:\\\\work", line)
+    }
+
+    @Test
     fun parsing_extractsActivityAndEndBoundaryFromIntervalLine() {
         val normalization = LiveRawRecordNormalization()
         val parsing = LiveRawRecordParsing(normalization)

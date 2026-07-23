@@ -75,10 +75,10 @@ class ConfigTomlStorageTest {
     fun writeTomlFile_createsMissingTomlFileUnderConfigRoot() {
         val root = Files.createTempDirectory("config-toml-storage-create").toFile()
         try {
-            val target = File(root, "converter/aliases/custom.toml")
+            val target = File(root, "aliases/custom.toml")
 
             val result = ConfigTomlStorage(root.absolutePath).writeTomlFile(
-                relativePath = "converter/aliases/custom.toml",
+                relativePath = "aliases/custom.toml",
                 content = "name = \"custom\"\r\n"
             )
 
@@ -115,10 +115,15 @@ class ConfigTomlStorageTest {
                 parentFile?.mkdirs()
                 writeText("meta = true\n")
             }
-            File(root, "converter/interval_processor_config.toml").apply {
+            File(root, "aliases/_system.toml").apply {
                 parentFile?.mkdirs()
                 writeText("converter = true\n")
             }
+            File(root, "aliases/study.toml").apply {
+                parentFile?.mkdirs()
+                writeText("legacy_alias = true\n")
+            }
+            File(root, "break.toml").writeText("legacy_converter = true\n")
             File(root, "charts/heatmap.toml").apply {
                 parentFile?.mkdirs()
                 writeText("chart = true\n")
@@ -134,8 +139,12 @@ class ConfigTomlStorageTest {
             assertEquals(
                 listOf(
                     ConfigTomlFileEntry(
-                        relativePath = "converter/interval_processor_config.toml",
-                        displayName = "interval_processor_config.toml"
+                        relativePath = "aliases/_system.toml",
+                        displayName = "_system.toml"
+                    ),
+                    ConfigTomlFileEntry(
+                        relativePath = "aliases/study.toml",
+                        displayName = "study.toml"
                     )
                 ),
                 result.converterFiles

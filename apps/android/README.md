@@ -14,9 +14,7 @@ Run standard flows from the repository root:
 
 ```bash
 python tools/run.py build --app tracer_android --profile android_edit
-python tools/run.py verify --app tracer_android --profile android_style --concise
 python tools/run.py verify --app tracer_android --profile android_ci --concise
-python tools/run.py verify --app tracer_android --profile android_style --profile android_ci --concise
 python tools/run.py verify --app tracer_android --profile android_release_verify --concise
 python tools/run.py verify --app tracer_android --profile android_release_device --concise
 ```
@@ -26,6 +24,8 @@ Notes:
 - Do not run Gradle commands for `apps/android` in parallel.
 - Prefer `python tools/run.py` for standard workflows.
 - Direct Gradle is fine for targeted debugging or narrower module validation.
+- `android_style` is an explicit opt-in style check, not part of the default
+  Android change validation.
 - `android_ci` is signing-free; release QA is `android_release_verify`.
 - `android_release_device` is the connected-device release smoke path: it installs the signed release APK and verifies `MainActivity` can launch without an immediate crash.
 

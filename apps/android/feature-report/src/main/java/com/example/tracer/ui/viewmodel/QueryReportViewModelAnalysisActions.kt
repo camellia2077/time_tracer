@@ -1,57 +1,5 @@
 package com.example.tracer
 
-internal suspend fun runStatsAnalysisAction(
-    currentState: QueryReportUiState,
-    period: DataTreePeriod,
-    source: QueryPeriodSource,
-    periodArgumentResolver: QueryPeriodArgumentResolver,
-    textProvider: QueryReportTextProvider,
-    queryGateway: QueryGateway
-): QueryReportUiState {
-    val resolved = periodArgumentResolver.resolveAndValidate(
-        period = period,
-        source = source,
-        subjectLabel = textProvider.statsSubjectLabel()
-    )
-    if (resolved is QueryPeriodResolveResult.Failure) {
-        return currentState.copy(
-            analysisLoading = false,
-            analysisError = resolved.message,
-            activeResult = null,
-            statsPeriod = period
-        )
-    }
-    val normalizedArgument = (resolved as QueryPeriodResolveResult.Success).argument
-
-    val runningState = currentState.copy(
-        analysisLoading = true,
-        analysisError = "",
-        statsPeriod = period,
-        statusText = textProvider.queryStatsRunning(textProvider.periodLabel(period))
-    )
-
-    val result = queryGateway.queryDayDurationStats(
-        DataDurationQueryParams(
-            period = period,
-            periodArgument = normalizedArgument
-        )
-    )
-
-    return runningState.copy(
-        analysisLoading = false,
-        analysisError = if (result.ok) "" else result.message,
-        activeResult = if (result.ok) QueryResult.Stats(
-            result.outputText,
-            period
-        ) else null,
-        statsPeriod = period,
-        statusText = textProvider.queryStatsResult(
-            period = textProvider.periodLabel(period),
-            ok = result.ok
-        )
-    )
-}
-
 internal suspend fun runTreeAnalysisAction(
     currentState: QueryReportUiState,
     period: DataTreePeriod,
@@ -106,6 +54,7 @@ internal suspend fun runTreeAnalysisAction(
                 nodes = result.nodes,
                 found = result.found,
                 roots = result.roots,
+                maxAvailableDepth = result.maxAvailableDepth,
                 message = result.message
             )
         } else {

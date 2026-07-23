@@ -33,9 +33,10 @@ internal class ConfigTomlStorage(private val configRootPath: String) {
                 chartFiles += path.toConfigTomlFileEntry(prefixToTrim = "charts/")
             } else if (path == "config.toml" || path.startsWith("meta/")) {
                 metaFiles += path.toConfigTomlFileEntry(prefixToTrim = null)
-            } else {
-                converterFiles += path.toConfigTomlFileEntry(prefixToTrim = "converter/")
+            } else if (path.startsWith("aliases/")) {
+                converterFiles += path.toConfigTomlFileEntry(prefixToTrim = "aliases/")
             }
+            // Other root-level TOML files are outside the canonical config layout.
         }
 
         return ConfigTomlListResult(

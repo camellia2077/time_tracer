@@ -43,5 +43,6 @@ internal data class ParsedTreeQueryPayload(
     val found: Boolean,
     val roots: List<String>,
     val nodes: List<TreeNode>,
-    val errorMessage: String
+    val errorMessage: String,
+    val maxAvailableDepth: Int = 0
 )

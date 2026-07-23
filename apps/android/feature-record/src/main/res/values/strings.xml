@@ -3,6 +3,8 @@
     <string name="txt_label_editor_file">Editor: %1$s</string>
     <string name="txt_mode_all">ALL</string>
     <string name="txt_mode_day">DAY</string>
+    <string name="txt_mode_alias">Alias</string>
+    <string name="txt_mode_canonical">Canonical</string>
     <string name="txt_label_target_day">Target Day</string>
     <string name="txt_label_target_day_with_year">Target Day (%1$s)</string>
     <string name="txt_action_hide_content">Hide Content</string>
@@ -61,11 +63,31 @@
 %1$s
 %2$s</string>
     <string name="record_label_activity_name">Activity Name</string>
-    <string name="record_label_interval_start">Start (HHMM)</string>
-    <string name="record_label_interval_end">End (HHMM)</string>
+    <string name="record_label_interval_start">Start</string>
+    <string name="record_label_interval_end">End</string>
+    <string name="record_time_hour">Hour</string>
+    <string name="record_time_minute">Minute</string>
+    <string name="record_time_second">Second</string>
     <string name="record_label_remark_optional">Remark (Optional)</string>
     <string name="record_action_record_activity">Record Activity</string>
-    <string name="record_action_record_interval">Record Interval</string>
+    <string name="record_action_save_interval">Save interval</string>
+    <string name="record_action_start_interval">Start timer</string>
+    <string name="record_action_stop_interval">Stop timer</string>
+    <string name="record_action_discard_interval">Discard</string>
+    <string name="record_interval_active_title">Timer running</string>
+    <string name="record_interval_draft_title">Review interval</string>
+    <string name="record_interval_started_at">Started at %1$s</string>
+    <string name="record_interval_attribution_date">Record date: %1$s</string>
+    <string name="record_interval_duration">Duration: %1$s</string>
+    <string name="record_interval_elapsed">Elapsed %1$s</string>
+    <string name="record_interval_summary">%1$s – %2$s · %3$s</string>
+    <string name="record_interval_edit_title">Edit interval time</string>
+    <string name="record_interval_current_time">Current time: %1$s</string>
+    <string name="record_cd_edit_interval_time">Edit interval time</string>
+    <string name="record_action_cancel">Cancel</string>
+    <string name="record_action_apply">Apply</string>
+    <string name="record_interval_discard_title">Discard this interval?</string>
+    <string name="record_interval_discard_description">The recorded time will be lost.</string>
     <string name="record_title_quick_access">Quick Access</string>
     <string name="record_hint_long_press_drag_sort">Long press and drag to reorder quick activities.</string>
     <string name="record_cd_collapse">Collapse</string>

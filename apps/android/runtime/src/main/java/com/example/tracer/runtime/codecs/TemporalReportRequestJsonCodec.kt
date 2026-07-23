@@ -13,6 +13,14 @@ internal class TemporalReportRequestJsonCodec {
         return payload.toString()
     }
 
+    fun encodeStructuredQuery(request: TemporalReportQueryRequest): String {
+        val payload = JSONObject()
+            .put("operation_kind", ReportOperationKind.STRUCTURED_QUERY.wireValue)
+            .put("display_mode", request.displayMode.wireValue)
+        appendSelection(payload, request.selection)
+        return payload.toString()
+    }
+
     fun encodeTargets(request: TemporalReportTargetsRequest): String {
         return JSONObject()
             .put("operation_kind", ReportOperationKind.TARGETS.wireValue)

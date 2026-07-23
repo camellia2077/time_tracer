@@ -14,13 +14,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import android.util.Log
 import com.example.tracer.feature.record.R
 import com.example.tracer.ui.components.CalendarAvailability
 import java.time.Clock
@@ -29,10 +33,12 @@ import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import kotlinx.coroutines.launch
 
-internal enum class TxtOutputMode {
+enum class TxtOutputMode {
     ALL,
     DAY
 }
+
+private const val TXT_TAB_LOG_TAG = "TxtTab"
 
 @Composable
 fun TxtEditorSection(
@@ -41,6 +47,8 @@ fun TxtEditorSection(
     availableMonths: List<String>,
     selectedMonth: String,
     logicalDayTarget: RecordLogicalDayTarget,
+    txtHistoryLoaded: Boolean = false,
+    initialDayMarker: String = "",
     logicalDayClock: Clock,
     onOpenPreviousMonth: () -> Unit,
     onOpenNextMonth: () -> Unit,
@@ -50,12 +58,41 @@ fun TxtEditorSection(
     onRefreshHistory: () -> Unit,
     editableHistoryContent: String,
     onEditableHistoryContentChange: (String) -> Unit,
+    onDayMarkerPersist: (String) -> Unit = {},
     onDiscardUnsavedHistoryDraft: () -> Unit,
     onSaveHistoryFile: () -> Unit,
+    onSaveHistoryRepresentationOnly: suspend (String) -> TxtFileContentResult,
+    initialOutputMode: TxtOutputMode = TxtOutputMode.DAY,
+    onOutputModePersist: (TxtOutputMode) -> Unit = {},
+    bottomContentPadding: Dp = 0.dp,
     inlineStatusText: String,
     onCreateCurrentMonthTxt: () -> Unit
 ) {
-    val sessionController = remember(selectedHistoryFile) { TxtEditorSessionController() }
+    LaunchedEffect(Unit) {
+        Log.d(
+            TXT_TAB_LOG_TAG,
+            "compose enter selectedFile=$selectedHistoryFile selectedMonth=$selectedMonth " +
+                "inspectionCount=${inspectionEntries.size} historyLoaded=$txtHistoryLoaded " +
+                "outputMode=$initialOutputMode initialMarker=$initialDayMarker"
+        )
+    }
+    val sessionController = remember(selectedHistoryFile, selectedMonth) {
+        val normalizedInitialDayMarker = initialDayMarker.filter { it.isDigit() }.take(4)
+        TxtEditorSessionController(
+            initialState = TxtEditorSessionState(
+                outputMode = initialOutputMode,
+                // Keep the first frame empty when no marker has been restored yet. The runtime
+                // loads the logical-day marker asynchronously; using 0101 here makes the UI
+                // visibly jump from Jan 1 to the resolved target date on every tab re-entry.
+                dayMarkerInput = normalizedInitialDayMarker,
+                autoDayMarkerLoadedKey = if (normalizedInitialDayMarker.isBlank()) {
+                    ""
+                } else {
+                    "$selectedHistoryFile@$selectedMonth@$logicalDayTarget"
+                }
+            )
+        )
+    }
     val runtimeCoordinator = remember(txtStorageGateway, logicalDayClock) {
         TxtEditorRuntimeCoordinator(
             txtStorageGateway = txtStorageGateway,
@@ -64,6 +101,14 @@ fun TxtEditorSection(
     }
     val sessionState = sessionController.state
     val coroutineScope = rememberCoroutineScope()
+    fun updateDayMarkerInput(value: String) {
+        sessionController.updateDayMarkerInput(value)
+        Log.d(TXT_TAB_LOG_TAG, "day marker input changed value=${sessionController.state.dayMarkerInput}")
+        onDayMarkerPersist(sessionController.state.dayMarkerInput)
+    }
+    var activityNameConversionStatus by remember(selectedHistoryFile, selectedMonth) {
+        mutableStateOf("")
+    }
     val parsedAvailableMonths = remember(inspectionEntries) {
         inspectionEntries
             .mapNotNull { it.headerMonth }
@@ -93,11 +138,12 @@ fun TxtEditorSection(
         ?.takeIf { availableMonthValues.contains(it) }
         ?: availableMonthValues.lastOrNull().orEmpty()
 
-    LaunchedEffect(selectedHistoryFile, selectedMonth) {
+    LaunchedEffect(selectedHistoryFile, selectedMonth, initialOutputMode) {
         sessionController.syncSelectionContext(
             selectedHistoryFile = selectedHistoryFile,
             selectedMonth = selectedMonth
         )
+        sessionController.updateOutputMode(initialOutputMode)
     }
 
     LaunchedEffect(selectedHistoryFile, selectedHistoryContent, editableHistoryContent) {
@@ -110,17 +156,32 @@ fun TxtEditorSection(
     }
 
     LaunchedEffect(selectedHistoryFile, selectedMonth, logicalDayTarget) {
+        Log.d(
+            TXT_TAB_LOG_TAG,
+            "auto marker load start selectedFile=$selectedHistoryFile selectedMonth=$selectedMonth " +
+                "logicalDayTarget=$logicalDayTarget currentMarker=${sessionController.state.dayMarkerInput} " +
+                "loadedKey=${sessionController.state.autoDayMarkerLoadedKey}"
+        )
         runtimeCoordinator.syncAutoDayMarkerIfNeeded(
             selectedHistoryFile = selectedHistoryFile,
             selectedMonth = selectedMonth,
             logicalDayTarget = logicalDayTarget,
             sessionController = sessionController
         )
+        if (selectedHistoryFile.isNotBlank()) {
+            onDayMarkerPersist(sessionController.state.dayMarkerInput)
+        }
+        Log.d(
+            TXT_TAB_LOG_TAG,
+            "auto marker load complete selectedFile=$selectedHistoryFile selectedMonth=$selectedMonth " +
+                "marker=${sessionController.state.dayMarkerInput} loadedKey=${sessionController.state.autoDayMarkerLoadedKey}"
+        )
     }
 
     // Auto-load TXT list when entering the tab to avoid requiring manual refresh.
     LaunchedEffect(selectedHistoryFile, inspectionEntries) {
         if (selectedHistoryFile.isBlank() && inspectionEntries.isEmpty()) {
+            Log.d(TXT_TAB_LOG_TAG, "history load requested from empty initial state")
             onRefreshHistory()
         }
     }
@@ -207,7 +268,19 @@ fun TxtEditorSection(
 
     // Empty-state: no TXT files exist yet (typical for fresh release installs).
     // Show a guidance card so users can bootstrap their first month TXT file.
-    val showEmptyState = inspectionEntries.isEmpty()
+    // Do not show the final empty state while the cold-start history inspection is still in
+    // flight. Otherwise the first frame briefly renders "No TXT files yet" before the editor
+    // appears for an existing file.
+    val showEmptyState = txtHistoryLoaded && inspectionEntries.isEmpty()
+    LaunchedEffect(txtHistoryLoaded, inspectionEntries.size, selectedHistoryFile, sessionState.outputMode, sessionState.dayMarkerInput) {
+        Log.d(
+            TXT_TAB_LOG_TAG,
+            "render state historyLoaded=$txtHistoryLoaded inspectionCount=${inspectionEntries.size} " +
+                "selectedFile=$selectedHistoryFile selectedMonth=$selectedMonth showEmpty=$showEmptyState " +
+                "outputMode=${sessionState.outputMode} marker=${sessionState.dayMarkerInput} " +
+                "markerReady=${sessionState.autoDayMarkerLoadedKey.isNotBlank()}"
+        )
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -222,7 +295,7 @@ fun TxtEditorSection(
                         dayOffset = -1,
                         selectedMonth = selectedMonth,
                         onPendingDayChange = sessionController::updatePendingOpenedDay,
-                        onDayMarkerInputChange = sessionController::updateDayMarkerInput,
+                        onDayMarkerInputChange = ::updateDayMarkerInput,
                         onOpenMonth = onOpenMonth
                     )
                 },
@@ -232,7 +305,7 @@ fun TxtEditorSection(
                         dayOffset = 1,
                         selectedMonth = selectedMonth,
                         onPendingDayChange = sessionController::updatePendingOpenedDay,
-                        onDayMarkerInputChange = sessionController::updateDayMarkerInput,
+                        onDayMarkerInputChange = ::updateDayMarkerInput,
                         onOpenMonth = onOpenMonth
                     )
                 },
@@ -241,7 +314,7 @@ fun TxtEditorSection(
                         targetDay = day,
                         selectedMonth = selectedMonth,
                         onPendingDayChange = sessionController::updatePendingOpenedDay,
-                        onDayMarkerInputChange = sessionController::updateDayMarkerInput,
+                        onDayMarkerInputChange = ::updateDayMarkerInput,
                         onOpenMonth = onOpenMonth
                     )
                 },
@@ -258,7 +331,8 @@ fun TxtEditorSection(
                     .fillMaxWidth()
                     .weight(1f)
                     .padding(top = 16.dp)
-                    .verticalScroll(rememberScrollState()),
+                    .verticalScroll(rememberScrollState())
+                    .padding(bottom = bottomContentPadding),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 if (showEmptyState) {
@@ -270,6 +344,10 @@ fun TxtEditorSection(
                         currentDay = currentDay,
                         outputMode = sessionState.outputMode,
                         onOutputModeChange = { nextMode ->
+                            Log.d(
+                                TXT_TAB_LOG_TAG,
+                                "output mode changed from=${sessionState.outputMode} to=$nextMode"
+                            )
                             if (nextMode == TxtOutputMode.DAY && sessionState.outputMode != TxtOutputMode.DAY) {
                                 coroutineScope.launch {
                                     val normalizedDayMarker = runtimeCoordinator.loadDefaultDayMarker(
@@ -285,20 +363,64 @@ fun TxtEditorSection(
                                 }
                             }
                             sessionController.updateOutputMode(nextMode)
+                            onOutputModePersist(nextMode)
+                        },
+                        activityNameTargetMode = sessionState.activityNameTargetMode,
+                        onActivityNameTargetModeChange = { targetMode ->
+                            sessionController.updateActivityNameTargetMode(targetMode)
+                            if (sessionState.outputMode == TxtOutputMode.ALL) {
+                                coroutineScope.launch {
+                                    val conversion = runtimeCoordinator.convertActivityNames(
+                                        content = sessionController.currentMonthContent(
+                                            editableHistoryContent
+                                        ),
+                                        targetMode = targetMode
+                                    )
+                                    if (!sessionController.isCurrentSelection(
+                                            selectedHistoryFile = selectedHistoryFile,
+                                            selectedMonth = selectedMonth
+                                        )
+                                    ) {
+                                        return@launch
+                                    }
+                                    if (conversion.ok) {
+                                        val saveResult = onSaveHistoryRepresentationOnly(
+                                            conversion.convertedContent
+                                        )
+                                        if (saveResult.ok) {
+                                            val persistedContent = saveResult.content.ifBlank {
+                                                conversion.convertedContent
+                                            }
+                                            sessionController.updateAllDraft(persistedContent)
+                                            sessionController.syncExternalMonthDraft(
+                                                selectedHistoryContent = persistedContent,
+                                                editableHistoryContent = persistedContent
+                                            )
+                                            activityNameConversionStatus = ""
+                                        } else {
+                                            activityNameConversionStatus = saveResult.message
+                                        }
+                                    } else {
+                                        activityNameConversionStatus = conversion.message
+                                    }
+                                }
+                            }
                         },
                         dayBlockEditorState = resolvedDayBlockState,
                         dayMarkerInput = sessionState.dayMarkerInput,
-                        onDayMarkerInputChange = sessionController::updateDayMarkerInput,
+                        onDayMarkerInputChange = ::updateDayMarkerInput,
                         onOpenDay = { day ->
                             navigateToDay(
                                 targetDay = day,
                                 selectedMonth = selectedMonth,
                                 onPendingDayChange = sessionController::updatePendingOpenedDay,
-                                onDayMarkerInputChange = sessionController::updateDayMarkerInput,
+                                onDayMarkerInputChange = ::updateDayMarkerInput,
                                 onOpenMonth = onOpenMonth
                             )
                         },
-                        inlineStatusText = filteredInlineStatusText,
+                        inlineStatusText = activityNameConversionStatus.ifBlank {
+                            filteredInlineStatusText
+                        },
                         isEditorContentVisible = sessionState.isEditorContentVisible,
                         onToggleEditorContentVisibility = {
                             if (sessionState.isEditorContentVisible) {
@@ -351,7 +473,9 @@ fun TxtEditorSection(
                                     onSaveHistoryFile = onSaveHistoryFile
                                 )
                             }
-                        }
+                        },
+                        dayMarkerReady = sessionState.autoDayMarkerLoadedKey.isNotBlank() ||
+                            normalizedDayMarkerInput.length == 4
                     )
                 } else {
                     TxtSelectionHintCard()

@@ -2,6 +2,7 @@ package com.example.tracer
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -85,6 +86,47 @@ class RecordViewModelTxtEditorLifecycleTest {
             assertFalse(viewModel.uiState.suggestionsVisible)
             assertEquals("routine_express", viewModel.uiState.recordContent)
         }
+
+    @Test
+    fun queuedMonthNavigation_usesTheLatestSelectedStateForEachRequest() =
+        runTest(dispatcher) {
+            val filePaths = listOf(
+                "2026/2026-01.txt",
+                "2026/2026-02.txt",
+                "2026/2026-03.txt"
+            )
+            val runtime = TxtEditorLifecycleFakeRuntime(
+                inspectionEntries = filePaths.mapIndexed { index, path ->
+                    TxtInspectionEntry(
+                        relativePath = path,
+                        headerMonth = "2026-0${index + 1}",
+                        expectedCanonicalRelativePath = path,
+                        syncState = TxtSyncState.SYNCED,
+                        canOpen = true,
+                        message = "ok"
+                    )
+                },
+                fileContents = filePaths.associateWith { path -> path },
+                readDelayByPathMs = mapOf("2026/2026-02.txt" to 100L)
+            )
+            val viewModel = RecordViewModel(
+                RecordUseCases(
+                    recordGateway = runtime,
+                    txtStorageGateway = runtime,
+                    queryGateway = runtime
+                )
+            )
+
+            viewModel.openHistoryFile("2026/2026-01.txt")
+            advanceUntilIdle()
+
+            viewModel.openNextMonth()
+            viewModel.openNextMonth()
+            advanceUntilIdle()
+
+            assertEquals("2026-03", viewModel.uiState.selectedMonth)
+            assertEquals("2026/2026-03.txt", viewModel.uiState.selectedHistoryFile)
+        }
 }
 
 private fun buildViewModelWithTxt(
@@ -117,7 +159,8 @@ private fun buildViewModelWithTxt(
 private class TxtEditorLifecycleFakeRuntime(
     private val inspectionEntries: List<TxtInspectionEntry>,
     private val fileContents: Map<String, String>,
-    private val aliasMappings: List<ActivityAliasMappingEntry> = emptyList()
+    private val aliasMappings: List<ActivityAliasMappingEntry> = emptyList(),
+    private val readDelayByPathMs: Map<String, Long> = emptyMap()
 ) : RecordGateway, TxtStorageGateway, QueryGateway {
     override suspend fun inspectTxtFiles(): TxtInspectionResult = TxtInspectionResult(
         ok = true,
@@ -131,12 +174,15 @@ private class TxtEditorLifecycleFakeRuntime(
         message = "ok"
     )
 
-    override suspend fun readTxtFile(relativePath: String): TxtFileContentResult = TxtFileContentResult(
-        ok = true,
-        filePath = relativePath,
-        content = fileContents.getValue(relativePath),
-        message = "ok"
-    )
+    override suspend fun readTxtFile(relativePath: String): TxtFileContentResult {
+        readDelayByPathMs[relativePath]?.let { delay(it) }
+        return TxtFileContentResult(
+            ok = true,
+            filePath = relativePath,
+            content = fileContents.getValue(relativePath),
+            message = "ok"
+        )
+    }
 
     override suspend fun saveTxtFileAndSync(
         relativePath: String,

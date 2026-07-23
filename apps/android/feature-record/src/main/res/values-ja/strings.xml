@@ -3,6 +3,8 @@
     <string name="txt_label_editor_file">エディタ: %1$s</string>
     <string name="txt_mode_all">ALL</string>
     <string name="txt_mode_day">DAY</string>
+    <string name="txt_mode_alias">Alias</string>
+    <string name="txt_mode_canonical">Canonical</string>
     <string name="txt_label_target_day">対象日</string>
     <string name="txt_label_target_day_with_year">対象日 (%1$s)</string>
     <string name="txt_action_hide_content">内容を隠す</string>
@@ -61,11 +63,30 @@
 %1$s
 %2$s</string>
     <string name="record_label_activity_name">アクティビティ名</string>
-    <string name="record_label_interval_start">開始 (HHMM)</string>
-    <string name="record_label_interval_end">終了 (HHMM)</string>
+    <string name="record_label_interval_start">開始</string>
+    <string name="record_label_interval_end">終了</string>
+    <string name="record_time_hour">時</string>
+    <string name="record_time_minute">分</string>
+    <string name="record_time_second">秒</string>
     <string name="record_label_remark_optional">備考（任意）</string>
     <string name="record_action_record_activity">アクティビティを記録</string>
-    <string name="record_action_record_interval">区間を記録</string>
+    <string name="record_action_save_interval">区間を保存</string>
+    <string name="record_action_start_interval">タイマーを開始</string>
+    <string name="record_action_stop_interval">タイマーを停止</string>
+    <string name="record_action_discard_interval">破棄</string>
+    <string name="record_interval_active_title">タイマー実行中</string>
+    <string name="record_interval_draft_title">区間を確認</string>
+    <string name="record_interval_started_at">開始 %1$s</string>
+    <string name="record_interval_elapsed">経過 %1$s</string>
+    <string name="record_interval_summary">%1$s – %2$s · %3$s</string>
+    <string name="record_interval_edit_title">区間時間を編集</string>
+    <string name="record_interval_current_time">現在時刻：%1$s</string>
+    <string name="record_interval_duration">時間：%1$s</string>
+    <string name="record_cd_edit_interval_time">区間時間を編集</string>
+    <string name="record_action_cancel">キャンセル</string>
+    <string name="record_action_apply">適用</string>
+    <string name="record_interval_discard_title">この区間を破棄しますか？</string>
+    <string name="record_interval_discard_description">記録した時間は失われます。</string>
     <string name="record_title_quick_access">クイックアクセス</string>
     <string name="record_hint_long_press_drag_sort">長押ししてドラッグするとクイック活動の順序を並べ替えられます。</string>
     <string name="record_cd_collapse">折りたたむ</string>

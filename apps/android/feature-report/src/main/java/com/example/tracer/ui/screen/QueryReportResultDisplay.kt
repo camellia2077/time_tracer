@@ -1,5 +1,6 @@
 package com.example.tracer
 
+import android.content.ClipData
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,21 +15,27 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import com.example.tracer.feature.report.R
+import kotlinx.coroutines.launch
+
 
 @Composable
 internal fun QueryReportResultDisplay(
     resultDisplayMode: ReportResultDisplayMode,
     activeResult: QueryResult?,
     reportSummary: ReportSummary?,
+    dayTimeline: StructuredDailyReport?,
+    parameterSection: ReportParameterSection,
     reportError: String,
     analysisError: String,
     chartSemanticMode: ReportChartSemanticMode,
+    chartVisualMode: ReportChartVisualMode,
     compositionVisualMode: ReportCompositionVisualMode,
     trendChartRoots: List<String>,
     trendChartSelectedRoot: String,
@@ -52,9 +59,18 @@ internal fun QueryReportResultDisplay(
     onCompositionVisualModeChange: (ReportCompositionVisualMode) -> Unit,
     onChartRootChange: (String) -> Unit,
     onChartShowAverageLineChange: (Boolean) -> Unit,
-    onLoadChart: () -> Unit
+    onChartVisualModeChange: (ReportChartVisualMode) -> Unit,
+    onLoadChart: () -> Unit,
+    onUpdateActivityRemark: suspend (ActivityTimelineItem, String) -> RecordActionResult = { _, _ ->
+        RecordActionResult(ok = false, message = "Activity remark editing is unavailable.")
+    },
+    onUpdateDayRemark: suspend (String) -> RecordActionResult = {
+        RecordActionResult(ok = false, message = "Day remark editing is unavailable.")
+    }
 ) {
-    val clipboardManager = LocalClipboardManager.current
+    val clipboard = LocalClipboard.current
+    val clipboardScope = rememberCoroutineScope()
+
 
     if (resultDisplayMode == ReportResultDisplayMode.CHART) {
         ElevatedCard(
@@ -69,6 +85,7 @@ internal fun QueryReportResultDisplay(
                 Spacer(modifier = Modifier.height(8.dp))
                 ReportChartResultContent(
                     chartSemanticMode = chartSemanticMode,
+                    chartVisualMode = chartVisualMode,
                     compositionVisualMode = compositionVisualMode,
                     trendChartRoots = trendChartRoots,
                     trendChartSelectedRoot = trendChartSelectedRoot,
@@ -92,6 +109,7 @@ internal fun QueryReportResultDisplay(
                     onCompositionVisualModeChange = onCompositionVisualModeChange,
                     onChartRootChange = onChartRootChange,
                     onChartShowAverageLineChange = onChartShowAverageLineChange,
+                    onChartVisualModeChange = onChartVisualModeChange,
                     onLoadChart = onLoadChart
                 )
             }
@@ -113,37 +131,40 @@ internal fun QueryReportResultDisplay(
             Column(modifier = Modifier.padding(16.dp)) {
                 when (activeResult) {
                     is QueryResult.Report -> {
-                        MarkdownResultHeader(
-                            title = stringResource(R.string.report_result_title_report),
-                            markdown = activeResult.text,
-                            onCopyMarkdown = {
-                                clipboardManager.setText(AnnotatedString(activeResult.text))
-                            }
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        ReportMarkdownText(
-                            markdown = activeResult.text,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-
-                    is QueryResult.Stats -> {
-                        val periodLabel = stringResource(activeResult.period.reportModeResId())
-                        MarkdownResultHeader(
-                            title = stringResource(
-                                R.string.report_result_title_stats,
-                                periodLabel
-                            ),
-                            markdown = activeResult.text,
-                            onCopyMarkdown = {
-                                clipboardManager.setText(AnnotatedString(activeResult.text))
-                            }
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        ReportMarkdownText(
-                            markdown = activeResult.text,
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                        if (parameterSection == ReportParameterSection.TIMELINE &&
+                            reportMode == ReportMode.DAY
+                        ) {
+                            ReportActivityTimeline(
+                                report = dayTimeline ?: StructuredDailyReport(
+                                    date = "",
+                                    totalDurationSeconds = 0L
+                                ),
+                                onUpdateActivityRemark = onUpdateActivityRemark,
+                                onUpdateDayRemark = onUpdateDayRemark
+                            )
+                        } else {
+                            MarkdownResultHeader(
+                                title = stringResource(R.string.report_result_title_report),
+                                markdown = activeResult.text,
+                                onCopyMarkdown = {
+                                    clipboardScope.launch {
+                                        clipboard.setClipEntry(
+                                            ClipEntry(
+                                                ClipData.newPlainText(
+                                                    "Time Tracer report",
+                                                    activeResult.text
+                                                )
+                                            )
+                                        )
+                                    }
+                                }
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            ReportMarkdownText(
+                                markdown = activeResult.text,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
                     }
 
                     is QueryResult.Tree -> {
@@ -241,6 +262,26 @@ private fun ReportSummaryCard(
     ElevatedCard(modifier = modifier) {
         Column(modifier = Modifier.padding(16.dp)) {
             when (summary) {
+                is ReportSummary.NoData -> {
+                    val periodLabel = stringResource(summary.period.reportModeResId())
+                    Text(
+                        text = stringResource(
+                            R.string.report_result_title_report_no_data,
+                            periodLabel
+                        ),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(
+                            R.string.report_summary_no_data_body,
+                            periodLabel
+                        ),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+
                 is ReportSummary.MissingTarget -> {
                     val periodLabel = stringResource(summary.period.reportModeResId())
                     Text(

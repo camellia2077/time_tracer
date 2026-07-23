@@ -1,24 +1,13 @@
 package com.example.tracer
 
 import org.tomlj.Toml
+import org.tomlj.TomlArray
 import org.tomlj.TomlTable
 
-internal data class CanonicalAliasDocument(
-    val parent: String,
-    val nodes: List<CanonicalAliasNode>
-)
-
-internal sealed interface CanonicalAliasNode
-
-internal data class CanonicalAliasGroup(
-    val name: String,
-    val nodes: List<CanonicalAliasNode> = emptyList()
-) : CanonicalAliasNode
-
-internal data class CanonicalAliasEntry(
-    val aliasKey: String,
-    val canonicalLeaf: String
-) : CanonicalAliasNode
+internal typealias CanonicalAliasDocument = ActivityAliasDocument
+internal typealias CanonicalAliasNode = ActivityAliasNode
+internal typealias CanonicalAliasGroup = ActivityCategory
+internal typealias CanonicalAliasEntry = ActivityAlias
 
 internal data class CanonicalAliasParseResult(
     val document: CanonicalAliasDocument? = null,
@@ -26,6 +15,7 @@ internal data class CanonicalAliasParseResult(
 )
 
 internal object RuntimeCanonicalCatalogParser {
+    private const val GROUP_ALIASES_KEY = "group_aliases"
     fun parse(rawToml: String): CanonicalAliasParseResult {
         val parsed = Toml.parse(rawToml)
         if (parsed.hasErrors()) {
@@ -60,8 +50,14 @@ internal object RuntimeCanonicalCatalogParser {
         }
     }
 
-    private fun parseNodes(table: TomlTable): List<CanonicalAliasNode> = buildList {
+    private fun parseNodes(table: TomlTable, isGroupTable: Boolean = false): List<CanonicalAliasNode> = buildList {
         for ((key, node) in table.entrySet()) {
+            if (key == GROUP_ALIASES_KEY) {
+                if (!isGroupTable) {
+                    throw IllegalArgumentException("`group_aliases` is only valid inside an activity category.")
+                }
+                continue
+            }
             when (node) {
                 is String -> add(
                     CanonicalAliasEntry(
@@ -73,7 +69,8 @@ internal object RuntimeCanonicalCatalogParser {
                 is TomlTable -> add(
                     CanonicalAliasGroup(
                         name = key,
-                        nodes = parseNodes(node)
+                        groupAliases = parseGroupAliases(node),
+                        nodes = parseNodes(node, isGroupTable = true)
                     )
                 )
 
@@ -81,6 +78,20 @@ internal object RuntimeCanonicalCatalogParser {
                     "Alias field `$key` must be a string or nested table."
                 )
             }
+        }
+    }
+
+    private fun parseGroupAliases(table: TomlTable): List<String> {
+        val aliases = table.getArray(GROUP_ALIASES_KEY) ?: return emptyList()
+        return aliases.toStringList(GROUP_ALIASES_KEY)
+    }
+
+    private fun TomlArray.toStringList(fieldName: String): List<String> = buildList {
+        for (index in 0 until size()) {
+            val value = getString(index)?.trim()
+                ?: throw IllegalArgumentException("`$fieldName` must be a string array.")
+            if (value.isEmpty()) throw IllegalArgumentException("`$fieldName` must not contain empty names.")
+            add(value)
         }
     }
 }
@@ -167,6 +178,17 @@ internal object RuntimeCanonicalCatalogBuilder {
                             name = normalizedGroupName,
                             path = childPath
                         )
+                    }
+                    if (node.groupAliases.isNotEmpty()) {
+                        val aggregate = canonicalEntries.getOrPut(childPath) {
+                            MutableCanonicalCatalogEntry(
+                                canonicalLeaf = normalizedGroupName,
+                                canonicalPath = childPath,
+                                sourceFilePath = sourceFilePath
+                            )
+                        }
+                        aggregate.aliases += node.groupAliases
+                        childNode.entryPaths += childPath
                     }
                     appendNodes(
                         currentNode = childNode,

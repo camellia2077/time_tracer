@@ -5,12 +5,7 @@ internal fun configFilesForCategory(
     category: ConfigCategory
 ): List<ConfigTomlFileEntry> {
     return when (category) {
-        ConfigCategory.CONVERTER -> state.converterFiles.filter { entry ->
-            when (state.selectedConverterSubcategory) {
-                ConverterSubcategory.ALIASES -> entry.relativePath.startsWith("converter/aliases/")
-                ConverterSubcategory.RULES -> !entry.relativePath.startsWith("converter/aliases/")
-            }
-        }
+        ConfigCategory.CONVERTER -> state.converterFiles
 
         ConfigCategory.CHARTS -> state.chartFiles
         ConfigCategory.META -> state.metaFiles
@@ -24,6 +19,10 @@ internal fun preferredConfigFilePath(
 ): String {
     return when {
         files.any { it.relativePath == state.selectedFilePath } -> state.selectedFilePath
+        state.selectedCategory == ConfigCategory.CONVERTER ->
+            files.firstOrNull { isAliasConfigFilePath(it.relativePath) }
+                ?.relativePath
+                ?: files.firstOrNull()?.relativePath.orEmpty()
         files.isNotEmpty() -> files.first().relativePath
         else -> ""
     }
@@ -42,20 +41,10 @@ internal fun clearSelectedConfigFile(
         aliasBaselineDocument = null,
         aliasParentOptions = emptyList(),
         aliasAdvancedTomlDraft = "",
+        aliasEntryMovePlan = null,
         aliasEditorErrorMessage = "",
         statusText = statusText
     )
-}
-
-internal fun nextConverterSubcategoryForOpenedFile(
-    filePath: String,
-    currentSubcategory: ConverterSubcategory
-): ConverterSubcategory {
-    return when {
-        filePath.startsWith("converter/aliases/") -> ConverterSubcategory.ALIASES
-        filePath.startsWith("converter/") -> ConverterSubcategory.RULES
-        else -> currentSubcategory
-    }
 }
 
 internal fun applyLoadedConfigFile(
@@ -70,6 +59,7 @@ internal fun applyLoadedConfigFile(
         selectedFilePath = filePath,
         selectedFileDisplayName = selectedEntry?.displayName ?: filePath,
         selectedFileContent = content,
+        aliasEntryMovePlan = null,
         statusText = statusText
     )
     if (!isAliasConfigFilePath(filePath)) {
@@ -158,7 +148,10 @@ internal fun findConfigFileEntry(
 }
 
 internal fun isAliasConfigFilePath(path: String): Boolean =
-    path.startsWith("converter/aliases/") && path.endsWith(".toml", ignoreCase = true)
+    // `_system.toml` is a converter system config, not a structured alias file.
+    path.startsWith("aliases/") &&
+        !path.endsWith("/_system.toml", ignoreCase = true) &&
+        path.endsWith(".toml", ignoreCase = true)
 
 internal fun newAliasTomlPath(
     fileName: String
@@ -177,5 +170,5 @@ internal fun newAliasTomlPath(
     } else {
         "$requestedName.toml"
     }
-    return "converter/aliases/$normalizedFileName"
+    return "aliases/$normalizedFileName"
 }

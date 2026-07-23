@@ -112,6 +112,31 @@ class TxtEditorRuntimeCoordinatorTest {
     }
 
     @Test
+    fun convertActivityNames_usesCurrentMonthDraftAndReturnsConvertedText() = runBlocking {
+        val gateway = FakeTxtEditorRuntimeGateway(
+            conversionResult = TxtActivityNameConversionResult(
+                ok = true,
+                convertedContent = "canonical-month",
+                message = "ok"
+            )
+        )
+        val coordinator = TxtEditorRuntimeCoordinator(gateway, testClock())
+
+        val result = coordinator.convertActivityNames(
+            content = "alias-month",
+            targetMode = TxtActivityNameTargetMode.CANONICAL
+        )
+
+        assertTrue(result.ok)
+        assertEquals("alias-month", gateway.lastConversionContent)
+        assertEquals(
+            TxtActivityNameMappingDirection.ALIAS_TO_CANONICAL,
+            gateway.lastConversionDirection
+        )
+        assertEquals("canonical-month", result.convertedContent)
+    }
+
+    @Test
     fun prepareEditableDayBlock_whenDayIsMissing_seedsEmptyDayBlock() = runBlocking {
         val gateway = FakeTxtEditorRuntimeGateway(
             resolveResult = TxtDayBlockResolveResult(
@@ -392,7 +417,12 @@ private class FakeTxtEditorRuntimeGateway(
         dayContentIsoDate = null,
         message = "ok"
     ),
-    private val resolveTxtDayBlockOverride: (suspend (String, String, String) -> TxtDayBlockResolveResult)? = null
+    private val resolveTxtDayBlockOverride: (suspend (String, String, String) -> TxtDayBlockResolveResult)? = null,
+    private val conversionResult: TxtActivityNameConversionResult = TxtActivityNameConversionResult(
+        ok = true,
+        convertedContent = "",
+        message = "ok"
+    )
 ) : TxtStorageGateway {
     var lastDefaultMarkerMonth: String = ""
         private set
@@ -403,6 +433,10 @@ private class FakeTxtEditorRuntimeGateway(
     var lastReplaceDayMarker: String = ""
         private set
     var lastReplaceDayBody: String = ""
+        private set
+    var lastConversionContent: String = ""
+        private set
+    var lastConversionDirection: TxtActivityNameMappingDirection? = null
         private set
 
     override suspend fun inspectTxtFiles(): TxtInspectionResult = TxtInspectionResult(
@@ -454,5 +488,14 @@ private class FakeTxtEditorRuntimeGateway(
         lastReplaceDayMarker = dayMarker
         lastReplaceDayBody = editedDayBody
         return replaceResult
+    }
+
+    override suspend fun convertTxtActivityNames(
+        content: String,
+        direction: TxtActivityNameMappingDirection
+    ): TxtActivityNameConversionResult {
+        lastConversionContent = content
+        lastConversionDirection = direction
+        return conversionResult
     }
 }

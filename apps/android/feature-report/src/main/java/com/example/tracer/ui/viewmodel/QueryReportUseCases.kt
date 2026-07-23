@@ -84,19 +84,6 @@ internal class QueryReportUseCases(
         emit = emit
     )
 
-    suspend fun loadStats(
-        currentState: QueryReportUiState,
-        period: DataTreePeriod,
-        source: QueryPeriodSource
-    ): QueryReportUiState = runStatsAnalysisAction(
-        currentState = currentState,
-        period = period,
-        source = source,
-        periodArgumentResolver = periodArgumentResolver,
-        textProvider = textProvider,
-        queryGateway = queryGateway
-    )
-
     suspend fun loadTree(
         currentState: QueryReportUiState,
         period: DataTreePeriod,

@@ -12,7 +12,8 @@
     <string name="report_title_mode_parameters">%1$s パラメータ</string>
     <string name="report_parameter_section_day">日</string>
     <string name="report_parameter_section_tree">ツリー</string>
-    <string name="report_parameter_section_stats">統計</string>
+    <string name="report_parameter_section_timeline">タイムライン</string>
+    <string name="report_parameter_section_markdown">md</string>
     <string name="report_title_report_date">レポート日付</string>
     <string name="report_title_report_day">レポート日</string>
     <string name="report_title_report_month">レポート月</string>
@@ -22,19 +23,17 @@
     <string name="report_title_start_date">開始日</string>
     <string name="report_title_end_date">終了日</string>
     <string name="report_label_recent_days">最近日数 (N)</string>
-    <string name="report_action_generate_report_md">レポート MD を生成</string>
 
-    <string name="report_title_stats_parameters">統計パラメータ</string>
-    <string name="report_section_stats">統計</string>
     <string name="report_action_loading">読み込み中...</string>
-    <string name="report_action_generate_stats">%1$s 統計を生成</string>
 
     <string name="report_title_project_tree_parameters">プロジェクトツリーパラメータ</string>
     <string name="report_section_tree">ツリー</string>
-    <string name="report_label_tree_level">ツリーレベル（-1 は無制限）</string>
-    <string name="report_action_load_project_tree">%1$s プロジェクトツリーを読み込む</string>
+    <string name="report_label_tree_level">表示レベル</string>
+    <string name="report_tree_level_all">すべてのレベル</string>
+    <string name="report_tree_level_number">レベル %1$d</string>
+    <string name="report_tree_sort_duration_desc">時間：高い順</string>
+    <string name="report_tree_sort_duration_asc">時間：低い順</string>
 
-    <string name="report_label_chart_semantic">チャートの焦点</string>
     <string name="report_chart_semantic_trend">推移</string>
     <string name="report_chart_semantic_composition">内訳</string>
     <string name="report_label_chart_root">ルートノード</string>
@@ -114,18 +113,26 @@
     <string name="report_cd_collapse">折りたたむ</string>
     <string name="report_cd_expand">展開</string>
     <string name="report_cd_copy_markdown">Markdown をコピー</string>
+    <string name="report_result_title_activity_timeline">アクティビティタイムライン</string>
+    <string name="report_day_remark_label">日次メモ</string>
+    <string name="report_edit_day_remark">日次メモを編集</string>
+    <string name="report_save_day_remark">保存</string>
+    <string name="report_cancel_day_remark">キャンセル</string>
+    <string name="report_activity_timeline_empty">この日の活動記録はありません。</string>
+    <string name="report_edit_activity_remark">備考を編集</string>
+    <string name="report_activity_remark_label">活動の備考</string>
+    <string name="report_save_activity_remark">保存</string>
+    <string name="report_cancel_activity_remark">キャンセル</string>
 
-    <string name="report_subject_stats">統計</string>
     <string name="report_subject_tree">ツリー</string>
 
     <string name="report_status_native_report_running">nativeReportJson(%1$s, md) 実行中...</string>
     <string name="report_status_native_report_result">nativeReportJson(%1$s, md) -&gt; OK=%2$s</string>
     <string name="report_status_native_report_target_missing">nativeReportJson(%1$s, md) -&gt; 対象なし</string>
+    <string name="report_status_no_records">この%1$sには記録がありません。</string>
     <string name="report_status_native_report_empty_window">nativeReportJson(%1$s, md) -&gt; 空のウィンドウ</string>
     <string name="report_status_range_start_date_invalid">期間の開始日が無効です。%1$s</string>
     <string name="report_status_range_end_date_invalid">期間の終了日が無効です。%1$s</string>
-    <string name="report_status_query_stats_running">query data days-stats 実行中... period=%1$s</string>
-    <string name="report_status_query_stats_result">query data days-stats(%1$s) -&gt; OK=%2$s</string>
     <string name="report_status_query_tree_running">query data tree 実行中...</string>
     <string name="report_status_query_tree_result">query data tree -&gt; OK=%1$s</string>
     <string name="report_status_query_chart_running">query data report-chart 実行中...</string>
@@ -136,12 +143,13 @@
     <string name="report_result_title_report">レポート結果</string>
     <string name="report_result_title_report_error">レポートエラー</string>
     <string name="report_result_title_report_missing_target">%1$s レポート対象なし</string>
+    <string name="report_result_title_report_no_data">この%1$sには記録がありません</string>
     <string name="report_result_title_report_window_summary">%1$s ウィンドウ概要</string>
     <string name="report_result_title_chart">グラフ結果</string>
     <string name="report_result_title_analysis_error">解析エラー</string>
-    <string name="report_result_title_stats">%1$s 統計結果</string>
     <string name="report_result_title_tree">%1$s ツリー結果</string>
     <string name="report_summary_missing_target_body">選択した %1$s 対象に対応するレポートデータはありません。</string>
+    <string name="report_summary_no_data_body">この日には活動が記録されていません。</string>
     <string name="report_summary_error_code">コード: %1$s</string>
     <string name="report_summary_error_category">カテゴリ: %1$s</string>
     <string name="report_summary_hints">ヒント: %1$s</string>

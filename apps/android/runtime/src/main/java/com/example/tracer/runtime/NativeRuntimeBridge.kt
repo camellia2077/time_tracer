@@ -14,6 +14,8 @@ internal class NativeRuntimeBridge {
             converterConfigTomlPath = paths.configTomlPath
         )
 
+    fun nativeShutdown(): String = NativeBridge.nativeShutdown()
+
     fun nativeIngest(
         inputPath: String,
         dateCheckMode: Int,
@@ -134,6 +136,32 @@ internal class NativeRuntimeBridge {
             RecordTimeOrderMode.LOGICAL_DAY_0600 ->
                 NativeBridge.RECORD_TIME_ORDER_LOGICAL_DAY_0600
         }
+    )
+
+    fun nativeUpdateActivityRemarkAtomically(
+        targetDateIso: String,
+        logicalId: Long,
+        remark: String,
+        preferredTxtPath: String?,
+        dateCheckMode: Int
+    ): String = NativeBridge.nativeUpdateActivityRemarkAtomically(
+        targetDateIso = targetDateIso,
+        logicalId = logicalId,
+        remark = remark,
+        preferredTxtPath = preferredTxtPath.orEmpty(),
+        dateCheckMode = dateCheckMode
+    )
+
+    fun nativeUpdateDayRemarkAtomically(
+        targetDateIso: String,
+        remark: String,
+        preferredTxtPath: String?,
+        dateCheckMode: Int
+    ): String = NativeBridge.nativeUpdateDayRemarkAtomically(
+        targetDateIso = targetDateIso,
+        remark = remark,
+        preferredTxtPath = preferredTxtPath.orEmpty(),
+        dateCheckMode = dateCheckMode
     )
 
     fun nativeTxt(requestJson: String): String = NativeBridge.nativeTxt(requestJson)

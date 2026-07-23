@@ -1,5 +1,7 @@
 package com.example.tracer
 
+import org.json.JSONObject
+
 internal class TxtInspectionService(
     private val ensureTextStorage: () -> TextStorage,
     private val executeAfterInit: (
@@ -7,6 +9,7 @@ internal class TxtInspectionService(
         action: (RuntimePaths) -> String
     ) -> NativeCallResult,
     private val nativeListTxtIngestSyncStatus: (String) -> String,
+    private val nativeTxt: (String) -> String,
     private val responseCodec: NativeResponseCodec,
     private val statusCodec: NativeIngestSyncStatusCodec
 ) {
@@ -33,12 +36,20 @@ internal class TxtInspectionService(
             }
 
             val header = parseTxtMonthHeader(readResult.content)
+            val semanticHash = if (header == null) {
+                null
+            } else {
+                computeSemanticContentHash(readResult.content)
+                    ?: return TxtInspectionResult(
+                        ok = false,
+                        entries = emptyList(),
+                        message = "inspect txt failed: unable to compute semantic TXT hash."
+                    )
+            }
             draftEntries += DraftTxtInspectionEntry(
                 relativePath = readResult.filePath.replace('\\', '/'),
                 header = header,
-                contentHashSha256 = header?.let {
-                    computeCanonicalTxtSha256Hex(readResult.content)
-                }
+                contentHashSha256 = header?.let { semanticHash }
             )
         }
 
@@ -76,6 +87,30 @@ internal class TxtInspectionService(
             entries = entries,
             message = "Inspected ${entries.size} TXT file(s)."
         )
+    }
+
+    private fun computeSemanticContentHash(content: String): String? {
+        val result = executeAfterInit("native_canonicalize_txt_activity_names") {
+            nativeTxt(
+                JSONObject()
+                    .put("action", "convert_activity_names")
+                    .put("content", content)
+                    .put("direction", TxtActivityNameMappingDirection.ALIAS_TO_CANONICAL.wireValue)
+                    .toString()
+            )
+        }
+        if (!result.initialized || !result.operationOk) {
+            return null
+        }
+        return runCatching {
+            val payload = JSONObject(result.rawResponse)
+            if (!payload.optBoolean("ok", false)) {
+                return null
+            }
+            computeCanonicalTxtSha256Hex(
+                payload.getString("converted_content")
+            )
+        }.getOrNull()
     }
 
     private fun queryNativeSyncStatuses(months: List<String>): NativeTxtIngestSyncStatusResult {
@@ -186,7 +221,7 @@ internal class TxtInspectionService(
             expectedCanonicalRelativePath = expectedPath,
             syncState = TxtSyncState.SYNCED,
             canOpen = true,
-            message = "TXT header/path/hash match the current DB sync state."
+            message = "TXT header/path/semantic hash match the current DB sync state."
         )
     }
 

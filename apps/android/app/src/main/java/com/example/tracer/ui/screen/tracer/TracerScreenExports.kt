@@ -23,6 +23,7 @@ internal fun rememberTracerExportActions(
     context: android.content.Context,
     coroutineScope: kotlinx.coroutines.CoroutineScope,
     recordUiState: RecordUiState,
+    dataViewModel: DataViewModel,
     txtStorageGateway: TxtStorageGateway,
     configGateway: ConfigGateway,
     tracerExchangeGateway: TracerExchangeGateway,
@@ -36,7 +37,7 @@ internal fun rememberTracerExportActions(
     )
     val transferUiCallbacks = remember(recordViewModel) {
         TracerTransferUiCallbacks(
-            setStatusText = recordViewModel::setStatusText,
+            setStatusText = dataViewModel::setStatusText,
             clearCryptoProgress = recordViewModel::clearCryptoProgress,
             startCryptoProgress = recordViewModel::startCryptoProgress,
             finishCryptoProgress = { statusText, detailsText ->

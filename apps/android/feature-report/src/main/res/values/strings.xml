@@ -12,7 +12,8 @@
     <string name="report_title_mode_parameters">%1$s Parameters</string>
     <string name="report_parameter_section_day">Day</string>
     <string name="report_parameter_section_tree">Tree</string>
-    <string name="report_parameter_section_stats">Stats</string>
+    <string name="report_parameter_section_timeline">Timeline</string>
+    <string name="report_parameter_section_markdown">md</string>
     <string name="report_title_report_date">Report Date</string>
     <string name="report_title_report_day">Report Day</string>
     <string name="report_title_report_month">Report Month</string>
@@ -22,19 +23,17 @@
     <string name="report_title_start_date">Start Date</string>
     <string name="report_title_end_date">End Date</string>
     <string name="report_label_recent_days">Recent Days (N)</string>
-    <string name="report_action_generate_report_md">Generate Report MD</string>
 
-    <string name="report_title_stats_parameters">Stats Parameters</string>
-    <string name="report_section_stats">Stats</string>
     <string name="report_action_loading">Loading...</string>
-    <string name="report_action_generate_stats">Generate %1$s Stats</string>
 
     <string name="report_title_project_tree_parameters">Project Tree Parameters</string>
     <string name="report_section_tree">Tree</string>
-    <string name="report_label_tree_level">Tree Level (-1 means unlimited)</string>
-    <string name="report_action_load_project_tree">Load %1$s Project Tree</string>
+    <string name="report_label_tree_level">Display Level</string>
+    <string name="report_tree_level_all">All Levels</string>
+    <string name="report_tree_level_number">Level %1$d</string>
+    <string name="report_tree_sort_duration_desc">Duration: high to low</string>
+    <string name="report_tree_sort_duration_asc">Duration: low to high</string>
 
-    <string name="report_label_chart_semantic">Chart Focus</string>
     <string name="report_chart_semantic_trend">Trend</string>
     <string name="report_chart_semantic_composition">Breakdown</string>
     <string name="report_label_chart_root">Root Node</string>
@@ -114,18 +113,26 @@
     <string name="report_cd_collapse">Collapse</string>
     <string name="report_cd_expand">Expand</string>
     <string name="report_cd_copy_markdown">Copy Markdown</string>
+    <string name="report_result_title_activity_timeline">Activity Timeline</string>
+    <string name="report_day_remark_label">Day remark</string>
+    <string name="report_edit_day_remark">Edit day remark</string>
+    <string name="report_save_day_remark">Save</string>
+    <string name="report_cancel_day_remark">Cancel</string>
+    <string name="report_activity_timeline_empty">No activities recorded for this day.</string>
+    <string name="report_edit_activity_remark">Edit remark</string>
+    <string name="report_activity_remark_label">Activity remark</string>
+    <string name="report_save_activity_remark">Save</string>
+    <string name="report_cancel_activity_remark">Cancel</string>
 
-    <string name="report_subject_stats">Stats</string>
     <string name="report_subject_tree">Tree</string>
 
     <string name="report_status_native_report_running">nativeReportJson(%1$s, md) running...</string>
     <string name="report_status_native_report_result">nativeReportJson(%1$s, md) -&gt; OK=%2$s</string>
     <string name="report_status_native_report_target_missing">nativeReportJson(%1$s, md) -&gt; target not found</string>
+    <string name="report_status_no_records">No records for this %1$s.</string>
     <string name="report_status_native_report_empty_window">nativeReportJson(%1$s, md) -&gt; empty window</string>
     <string name="report_status_range_start_date_invalid">Range start date invalid. %1$s</string>
     <string name="report_status_range_end_date_invalid">Range end date invalid. %1$s</string>
-    <string name="report_status_query_stats_running">query data days-stats running... period=%1$s</string>
-    <string name="report_status_query_stats_result">query data days-stats(%1$s) -&gt; OK=%2$s</string>
     <string name="report_status_query_tree_running">query data tree running...</string>
     <string name="report_status_query_tree_result">query data tree -&gt; OK=%1$s</string>
     <string name="report_status_query_chart_running">query data report-chart running...</string>
@@ -136,12 +143,13 @@
     <string name="report_result_title_report">Report Result</string>
     <string name="report_result_title_report_error">Report Error</string>
     <string name="report_result_title_report_missing_target">%1$s Report Target Missing</string>
+    <string name="report_result_title_report_no_data">No records for this %1$s</string>
     <string name="report_result_title_report_window_summary">%1$s Window Summary</string>
     <string name="report_result_title_chart">Chart Result</string>
     <string name="report_result_title_analysis_error">Analysis Error</string>
-    <string name="report_result_title_stats">%1$s Stats Result</string>
     <string name="report_result_title_tree">%1$s Tree Result</string>
     <string name="report_summary_missing_target_body">No report data was found for the selected %1$s target.</string>
+    <string name="report_summary_no_data_body">No activity was recorded on this %1$s.</string>
     <string name="report_summary_error_code">Code: %1$s</string>
     <string name="report_summary_error_category">Category: %1$s</string>
     <string name="report_summary_hints">Hints: %1$s</string>

@@ -49,4 +49,22 @@ interface TxtStorageGateway {
         updatedContent = content,
         message = "TXT day-block runtime is unavailable."
     )
+
+    suspend fun convertTxtActivityNames(
+        content: String,
+        direction: TxtActivityNameMappingDirection
+    ): TxtActivityNameConversionResult = TxtActivityNameConversionResult(
+        ok = false,
+        convertedContent = content,
+        message = "TXT activity-name conversion runtime is unavailable."
+    )
+
+    suspend fun replaceTxtCanonicalActivityNames(
+        content: String,
+        replacements: List<CanonicalActivityNameReplacement>
+    ): TxtCanonicalActivityReplacementResult = TxtCanonicalActivityReplacementResult(
+        ok = false,
+        updatedContent = content,
+        message = "TXT canonical replacement runtime is unavailable."
+    )
 }

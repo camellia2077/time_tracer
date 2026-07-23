@@ -20,6 +20,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalDensity
 import java.time.LocalDate
 import kotlin.math.min
 
@@ -60,6 +62,10 @@ internal fun ReportHeatmapChart(
         anchorDateOverride ?: resolveAnchorDate(parsedPoints = parsedPoints, selectedIndex = selectedIndex)
     }
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
+    val density = LocalDensity.current
+    val cellSpacing = with(density) { 3.dp.toPx() }
+    val cellCornerRadius = with(density) { 2.dp.toPx() }
+    val cellBorderWidth = with(density) { 1.dp.toPx() }
 
     val isSystemDark = isSystemInDarkTheme()
     val resolvedThresholds = remember(heatmapTomlConfig.thresholdsHours) {
@@ -84,6 +90,11 @@ internal fun ReportHeatmapChart(
         )
     }
     val selectedOutlineColor = MaterialTheme.colorScheme.tertiary
+    val cellBorderColor = MaterialTheme.colorScheme.outlineVariant
+    // The TOML palette defines colors[0] as the no-time bucket. Keep this
+    // separate from positive-duration buckets so the base color remains
+    // theme/palette driven even when the thresholds change.
+    val noTimeColor = resolvedPaletteColors.firstOrNull() ?: fallbackEmptyColor
 
     Canvas(
         modifier = modifier
@@ -99,6 +110,7 @@ internal fun ReportHeatmapChart(
                         points = parsedPoints,
                         anchorDate = anchorDate,
                         mode = mode,
+                        spacing = cellSpacing,
                         size = Size(
                             canvasSize.width.toFloat(),
                             canvasSize.height.toFloat()
@@ -118,6 +130,7 @@ internal fun ReportHeatmapChart(
             points = parsedPoints,
             anchorDate = anchorDate,
             mode = mode,
+            spacing = cellSpacing,
             size = size
         )
         if (plot.cells.isEmpty()) {
@@ -130,14 +143,22 @@ internal fun ReportHeatmapChart(
             val color = resolveHeatmapColor(
                 durationSeconds = cell.durationSeconds,
                 thresholdsHours = resolvedThresholds,
-                paletteColors = resolvedPaletteColors
+                paletteColors = resolvedPaletteColors,
+                noTimeColor = noTimeColor
             )
-            val cornerRadius = resolveCellCornerRadius(cell = cell, mode = mode)
+            val cornerRadius = CornerRadius(cellCornerRadius, cellCornerRadius)
             drawRoundRect(
                 color = color,
                 topLeft = cell.rect.topLeft,
                 size = cell.rect.size,
                 cornerRadius = cornerRadius
+            )
+            drawRoundRect(
+                color = cellBorderColor,
+                topLeft = cell.rect.topLeft,
+                size = cell.rect.size,
+                cornerRadius = cornerRadius,
+                style = Stroke(width = cellBorderWidth)
             )
             if (cell.pointIndex == selectedIndex && cell.pointIndex >= 0) {
                 drawRoundRect(
@@ -178,6 +199,7 @@ private fun buildHeatmapPlot(
     points: List<ParsedHeatmapPoint>,
     anchorDate: LocalDate,
     mode: ReportHeatmapMode,
+    spacing: Float,
     size: Size
 ): HeatmapPlot {
     if (size.width <= 0f || size.height <= 0f) {
@@ -185,7 +207,12 @@ private fun buildHeatmapPlot(
     }
     return when (mode) {
         ReportHeatmapMode.MONTH -> HeatmapPlot(
-            cells = buildMonthHeatmapCells(points = points, anchorDate = anchorDate, size = size)
+            cells = buildMonthHeatmapCells(
+                points = points,
+                anchorDate = anchorDate,
+                spacing = spacing,
+                size = size
+            )
         )
     }
 }
@@ -193,23 +220,28 @@ private fun buildHeatmapPlot(
 private fun buildMonthHeatmapCells(
     points: List<ParsedHeatmapPoint>,
     anchorDate: LocalDate,
+    spacing: Float,
     size: Size
 ): List<HeatmapCell> {
     val columns = 7
     val rows = 6
-    val spacing = 4f
     val horizontalPadding = 12f
     val verticalPadding = 12f
     val usableWidth = (size.width - horizontalPadding * 2f - spacing * (columns - 1))
         .coerceAtLeast(1f)
     val usableHeight = (size.height - verticalPadding * 2f - spacing * (rows - 1))
         .coerceAtLeast(1f)
-    val slotWidth = usableWidth / columns.toFloat()
-    val slotHeight = usableHeight / rows.toFloat()
-    // Month heatmap uses square cells for better visual consistency.
-    val cellSide = min(slotWidth, slotHeight)
-    val cellOffsetX = (slotWidth - cellSide) / 2f
-    val cellOffsetY = (slotHeight - cellSide) / 2f
+    // Size the complete square grid first, then center the grid as a whole.
+    // Centering each cell inside independently sized row/column slots makes
+    // the unused height look like a larger vertical gap.
+    val cellSide = min(
+        usableWidth / columns.toFloat(),
+        usableHeight / rows.toFloat()
+    )
+    val gridWidth = columns * cellSide + spacing * (columns - 1)
+    val gridHeight = rows * cellSide + spacing * (rows - 1)
+    val gridOffsetX = (size.width - gridWidth) / 2f
+    val gridOffsetY = (size.height - gridHeight) / 2f
 
     val firstDay = anchorDate.withDayOfMonth(1)
     val firstColumn = firstDay.dayOfWeek.value - 1
@@ -226,8 +258,8 @@ private fun buildMonthHeatmapCells(
             continue
         }
         val topLeft = Offset(
-            x = horizontalPadding + column * (slotWidth + spacing) + cellOffsetX,
-            y = verticalPadding + row * (slotHeight + spacing) + cellOffsetY
+            x = gridOffsetX + column * (cellSide + spacing),
+            y = gridOffsetY + row * (cellSide + spacing)
         )
         val point = pointsByDate[date]
         cells += HeatmapCell(
@@ -242,7 +274,8 @@ private fun buildMonthHeatmapCells(
 private fun resolveHeatmapColor(
     durationSeconds: Long,
     thresholdsHours: List<Double>,
-    paletteColors: List<Color>
+    paletteColors: List<Color>,
+    noTimeColor: Color
 ): Color {
     if (paletteColors.isEmpty()) {
         return Color.Transparent
@@ -253,7 +286,7 @@ private fun resolveHeatmapColor(
 
     val safeDurationHours = durationSeconds.coerceAtLeast(0L).toDouble() / 3600.0
     if (safeDurationHours <= 0.0) {
-        return paletteColors.first()
+        return noTimeColor
     }
 
     var bucketIndex = 1
@@ -338,16 +371,4 @@ private fun parseHexColor(raw: String): Color? {
     return runCatching {
         Color(AndroidColor.parseColor(normalized))
     }.getOrNull()
-}
-
-private fun resolveCellCornerRadius(
-    cell: HeatmapCell,
-    mode: ReportHeatmapMode
-): CornerRadius {
-    val base = min(cell.rect.width, cell.rect.height)
-    val ratio = 0.22f
-    val minRadius = 2f
-    val maxRadius = 8f
-    val radius = (base * ratio).coerceIn(minRadius, maxRadius)
-    return CornerRadius(radius, radius)
 }

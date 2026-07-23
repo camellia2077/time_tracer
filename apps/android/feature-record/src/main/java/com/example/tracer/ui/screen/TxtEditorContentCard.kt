@@ -39,6 +39,7 @@ import com.example.tracer.ui.components.NativeMultilineTextEditorController
 import com.example.tracer.ui.components.SegmentedMonthDayInput
 import com.example.tracer.ui.components.filterDigits
 import com.example.tracer.ui.components.splitYearMonthDigits
+import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -50,6 +51,8 @@ internal fun TxtEditorContentCard(
     currentDay: LocalDate?,
     outputMode: TxtOutputMode,
     onOutputModeChange: (TxtOutputMode) -> Unit,
+    activityNameTargetMode: TxtActivityNameTargetMode,
+    onActivityNameTargetModeChange: (TxtActivityNameTargetMode) -> Unit,
     dayBlockEditorState: TxtDayBlockResolveResult,
     dayMarkerInput: String,
     onDayMarkerInputChange: (String) -> Unit,
@@ -62,16 +65,21 @@ internal fun TxtEditorContentCard(
     canEditDay: Boolean,
     canIngest: Boolean,
     onEditorTextChange: (String) -> Unit,
-    onIngest: () -> Unit
+    onIngest: () -> Unit,
+    dayMarkerReady: Boolean = false
 ) {
     val (selectedYear, selectedMonthDigits) = splitYearMonthDigits(selectedMonth)
     val (markerMonthDigits, markerDayDigits) = splitDayMarkerDigits(dayBlockEditorState.normalizedDayMarker)
-    val monthForInput = if (markerMonthDigits.isNotBlank()) markerMonthDigits else selectedMonthDigits
-    val dayForInput = markerDayDigits
     val dayContentIsoDate = dayBlockEditorState.dayContentIsoDate
     val currentDayText = currentDay?.let { formatEditorCurrentDayText(it) }
     val dayMarkerText = dayBlockEditorState.normalizedDayMarker.ifBlank { dayMarkerInput }
-
+    val markerIsReady = dayMarkerReady || dayMarkerText.length == 4
+    val monthForInput = if (markerIsReady) {
+        if (markerMonthDigits.isNotBlank()) markerMonthDigits else selectedMonthDigits
+    } else {
+        ""
+    }
+    val dayForInput = if (markerIsReady) markerDayDigits else ""
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -90,6 +98,7 @@ internal fun TxtEditorContentCard(
                         shape = SegmentedButtonDefaults.itemShape(index = index, count = outputModes.size),
                         onClick = { onOutputModeChange(mode) },
                         selected = outputMode == mode,
+                        colors = TracerSegmentedButtonDefaults.colors(),
                         modifier = Modifier.weight(1f),
                         label = {
                             Text(
@@ -129,6 +138,34 @@ internal fun TxtEditorContentCard(
                     dayPickerSelectedDate = currentDay,
                     onDayPicked = onOpenDay
                 )
+            }
+
+            if (outputMode == TxtOutputMode.ALL) {
+                val activityNameModes = TxtActivityNameTargetMode.entries
+                SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                    activityNameModes.forEachIndexed { index, mode ->
+                        SegmentedButton(
+                            shape = SegmentedButtonDefaults.itemShape(
+                                index = index,
+                                count = activityNameModes.size
+                            ),
+                            onClick = { onActivityNameTargetModeChange(mode) },
+                            selected = activityNameTargetMode == mode,
+                            colors = TracerSegmentedButtonDefaults.colors(),
+                            modifier = Modifier.weight(1f),
+                            label = {
+                                Text(
+                                    text = when (mode) {
+                                        TxtActivityNameTargetMode.ALIAS ->
+                                            stringResource(R.string.txt_mode_alias)
+                                        TxtActivityNameTargetMode.CANONICAL ->
+                                            stringResource(R.string.txt_mode_canonical)
+                                    }
+                                )
+                            }
+                        )
+                    }
+                }
             }
 
             if (inlineStatusText.isNotBlank()) {

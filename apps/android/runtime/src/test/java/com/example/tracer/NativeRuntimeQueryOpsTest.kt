@@ -64,6 +64,7 @@ class NativeRuntimeQueryOpsTest {
               "schema_version": 1,
               "action": "tree",
               "output_mode": "semantic_json",
+              "max_available_depth": 2,
               "roots": [
                 {
                   "name": "study",
@@ -85,6 +86,7 @@ class NativeRuntimeQueryOpsTest {
 
         assertEquals(true, payload.ok)
         assertEquals(true, payload.found)
+        assertEquals(2, payload.maxAvailableDepth)
         assertEquals(listOf("study"), payload.roots)
         assertEquals("study", payload.nodes[0].path)
         assertEquals(7200L, payload.nodes[0].durationSeconds)

@@ -30,6 +30,25 @@ class TemporalReportRequestJsonCodecTest {
     }
 
     @Test
+    fun encodeStructuredQuery_writesDaySelectionWithoutMarkdownFormat() {
+        val json = codec.encodeStructuredQuery(
+            TemporalReportQueryRequest(
+                displayMode = ReportDisplayMode.DAY,
+                selection = TemporalSelectionPayload(
+                    kind = TemporalSelectionKind.SINGLE_DAY,
+                    date = "2026-03-08"
+                )
+            )
+        )
+
+        val payload = JSONObject(json)
+        assertEquals("structured_query", payload.getString("operation_kind"))
+        assertEquals("day", payload.getString("display_mode"))
+        assertEquals("single_day", payload.getString("selection_kind"))
+        assertEquals("2026-03-08", payload.getString("date"))
+    }
+
+    @Test
     fun encodeExport_writesScopeAndRecentDaysList() {
         val json = codec.encodeExport(
             TemporalReportExportRequest(

@@ -21,6 +21,7 @@ class QueryReportViewModelChartTest {
             reportGateway = FakeChartReportGateway(),
             queryGateway = fakeQueryGateway
         )
+        viewModel.selectTrendChart()
 
         viewModel.onChartRootChange("study")
         viewModel.onReportModeChange(ReportMode.RECENT)
@@ -58,6 +59,7 @@ class QueryReportViewModelChartTest {
             reportGateway = FakeChartReportGateway(),
             queryGateway = fakeQueryGateway
         )
+        viewModel.selectTrendChart()
 
         viewModel.onReportModeChange(ReportMode.RECENT)
         viewModel.onReportRecentDaysChange("0")
@@ -75,6 +77,7 @@ class QueryReportViewModelChartTest {
             reportGateway = FakeChartReportGateway(),
             queryGateway = fakeQueryGateway
         )
+        viewModel.selectTrendChart()
 
         viewModel.onReportModeChange(ReportMode.RANGE)
         viewModel.onReportRangeStartDateChange("20260210")
@@ -97,6 +100,7 @@ class QueryReportViewModelChartTest {
             reportGateway = FakeChartReportGateway(),
             queryGateway = fakeQueryGateway
         )
+        viewModel.selectTrendChart()
 
         viewModel.onReportModeChange(ReportMode.WEEK)
         viewModel.onReportWeekChange("202615")
@@ -116,6 +120,7 @@ class QueryReportViewModelChartTest {
             reportGateway = FakeChartReportGateway(),
             queryGateway = fakeQueryGateway
         )
+        viewModel.selectTrendChart()
 
         viewModel.onReportMonthChange("202602")
         viewModel.onReportModeChange(ReportMode.WEEK)
@@ -144,6 +149,7 @@ class QueryReportViewModelChartTest {
             reportGateway = FakeChartReportGateway(),
             queryGateway = fakeQueryGateway
         )
+        viewModel.selectTrendChart()
 
         viewModel.onReportModeChange(ReportMode.WEEK)
         viewModel.onReportWeekChange("202615")
@@ -180,6 +186,7 @@ class QueryReportViewModelChartTest {
             reportGateway = FakeChartReportGateway(),
             queryGateway = fakeQueryGateway
         )
+        viewModel.selectTrendChart()
 
         viewModel.onReportModeChange(ReportMode.RECENT)
         viewModel.onResultDisplayModeChange(ReportResultDisplayMode.CHART)
@@ -201,6 +208,7 @@ class QueryReportViewModelChartTest {
             reportGateway = FakeChartReportGateway(),
             queryGateway = fakeQueryGateway
         )
+        viewModel.selectTrendChart()
 
         viewModel.onReportModeChange(ReportMode.RECENT)
         viewModel.onResultDisplayModeChange(ReportResultDisplayMode.CHART)
@@ -249,6 +257,7 @@ class QueryReportViewModelChartTest {
             reportGateway = FakeChartReportGateway(),
             queryGateway = fakeQueryGateway
         )
+        viewModel.selectTrendChart()
 
         viewModel.onReportModeChange(ReportMode.WEEK)
         viewModel.onReportWeekChange("202615")
@@ -338,6 +347,7 @@ class QueryReportViewModelChartTest {
             reportGateway = FakeChartReportGateway(),
             queryGateway = fakeQueryGateway
         )
+        viewModel.selectTrendChart()
 
         viewModel.onReportModeChange(ReportMode.WEEK)
         viewModel.onReportWeekChange("202615")
@@ -384,6 +394,10 @@ class QueryReportViewModelChartTest {
             assertEquals(ReportCompositionVisualMode.TREEMAP, viewModel.uiState.compositionVisualMode)
         }
     }
+}
+
+private fun QueryReportViewModel.selectTrendChart() {
+    onPersistedChartSemanticModeChange(ReportChartSemanticMode.TREND)
 }
 
 private class FakeChartReportGateway : ReportGateway {

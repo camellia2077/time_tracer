@@ -13,17 +13,21 @@ sealed class QueryResult {
         val text: String,
         val summary: ReportSummary? = null
     ) : QueryResult()
-    data class Stats(val text: String, val period: DataTreePeriod) : QueryResult()
     data class Tree(
         val period: DataTreePeriod,
         val nodes: List<TreeNode>,
         val found: Boolean,
         val roots: List<String> = emptyList(),
-        val message: String = ""
+        val message: String = "",
+        val maxAvailableDepth: Int = 0
     ) : QueryResult()
 }
 
 sealed interface ReportSummary {
+    data class NoData(
+        val period: DataTreePeriod
+    ) : ReportSummary
+
     data class MissingTarget(
         val period: DataTreePeriod,
         val errorCode: String,
@@ -54,9 +58,13 @@ data class QueryReportUiState(
     val reportResultsByPeriod: Map<DataTreePeriod, QueryResult.Report> = emptyMap(),
     val reportSummariesByPeriod: Map<DataTreePeriod, ReportSummary> = emptyMap(),
     val reportErrorsByPeriod: Map<DataTreePeriod, String> = emptyMap(),
+    val dayTimeline: StructuredDailyReport? = null,
+    // Timeline remark edits are applied locally first to preserve scroll position. The next
+    // Markdown/report load clears this flag after Core has supplied a fresh projection.
+    val dayReportNeedsRefresh: Boolean = false,
     val activeResult: QueryResult? = null,
-    val statsPeriod: DataTreePeriod = DataTreePeriod.RECENT,
     val treePeriod: DataTreePeriod = DataTreePeriod.RECENT,
+    val treeLevel: Int = -1,
     val resultDisplayMode: ReportResultDisplayMode = ReportResultDisplayMode.TEXT,
     val parameterSection: ReportParameterSection = ReportParameterSection.DAY,
     val chartSemanticMode: ReportChartSemanticMode = ReportChartSemanticMode.COMPOSITION,

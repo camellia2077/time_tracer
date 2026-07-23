@@ -6,8 +6,11 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import android.util.Log
 import kotlinx.coroutines.launch
 import java.time.Clock
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 enum class RecordLogicalDayTarget {
     YESTERDAY,
@@ -51,15 +54,20 @@ data class CryptoProgressUiState(
 )
 
 data class RecordUiState(
-    val authoringMode: RecordAuthoringMode = RecordAuthoringMode.POINT,
+    val authoringMode: RecordAuthoringMode = RecordAuthoringMode.INTERVAL,
+    val txtOutputMode: TxtOutputMode = TxtOutputMode.DAY,
     val recordContent: String = "",
     val recordRemark: String = "",
     val intervalStart: String = "",
     val intervalEnd: String = "",
+    val intervalStartedAtEpochMs: Long = 0L,
+    val attributionDateIso: String = "",
     // Keep the state object deterministic. The owning ViewModel seeds this from an injected
     // logical-day clock so tests do not inherit the host machine's default time-zone implicitly.
     val logicalDayTarget: RecordLogicalDayTarget = RecordLogicalDayTarget.TODAY,
     val logicalDayIsUserOverride: Boolean = false,
+    val txtDayMarker: String = "",
+    val txtHistoryLoaded: Boolean = false,
     val historyFiles: List<String> = emptyList(),
     val txtInspectionEntries: List<TxtInspectionEntry> = emptyList(),
     val availableMonths: List<String> = emptyList(),
@@ -108,8 +116,34 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
     private var txtPreviewRequestVersion: Long = 0L
     private var hasAppliedInitialPersistedRecordInput: Boolean = false
 
+    val hasAppliedInitialPersistedRecordInputForUi: Boolean
+        get() = hasAppliedInitialPersistedRecordInput
+
     var uiState by mutableStateOf(recordUseCases.initialUiState())
         private set
+
+    private val txtNavigationCoordinator = TxtNavigationCoordinator(
+        scope = viewModelScope,
+        stateProvider = { uiState },
+        stateConsumer = { nextState ->
+            uiState = nextState.copy(txtHistoryLoaded = true)
+            Log.d(
+                TXT_TAB_LOG_TAG,
+                "history load complete inspectionCount=${uiState.txtInspectionEntries.size} " +
+                    "selectedFile=${uiState.selectedHistoryFile} selectedMonth=${uiState.selectedMonth} " +
+                    "historyLoaded=${uiState.txtHistoryLoaded}"
+            )
+        },
+        navigate = { state, request ->
+            when (request) {
+                TxtNavigationRequest.Refresh -> intentHandler.refreshHistory(state)
+                is TxtNavigationRequest.OpenFile -> intentHandler.openHistoryFile(state, request.path)
+                is TxtNavigationRequest.OpenMonth -> intentHandler.openMonth(state, request.month)
+                TxtNavigationRequest.PreviousMonth -> intentHandler.openPreviousMonth(state)
+                TxtNavigationRequest.NextMonth -> intentHandler.openNextMonth(state)
+            }
+        }
+    )
 
     fun onRecordContentChange(value: String) {
         uiState = intentHandler.onRecordContentChange(uiState, value)
@@ -136,6 +170,43 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
         persistRecordInputState()
     }
 
+    fun onTxtOutputModeChange(value: TxtOutputMode) {
+        uiState = uiState.copy(txtOutputMode = value)
+        persistRecordInputState()
+    }
+
+    fun onTxtDayMarkerChange(value: String) {
+        uiState = uiState.copy(txtDayMarker = value.filter { it.isDigit() }.take(4))
+    }
+
+    fun startIntervalRecording() {
+        uiState = uiState.copy(
+            intervalStart = currentHhmmss(),
+            intervalEnd = "",
+            intervalStartedAtEpochMs = logicalDayClock.millis(),
+            attributionDateIso = resolveLogicalDayTargetDate(
+                uiState.logicalDayTarget,
+                logicalDayClock
+            ).toString()
+        )
+        persistRecordInputState()
+    }
+
+    fun stopIntervalRecording() {
+        uiState = uiState.copy(intervalEnd = currentHhmmss())
+        persistRecordInputState()
+    }
+
+    fun discardIntervalDraft() {
+        uiState = uiState.copy(
+            intervalStart = "",
+            intervalEnd = "",
+            intervalStartedAtEpochMs = 0L,
+            attributionDateIso = ""
+        )
+        persistRecordInputState()
+    }
+
     fun hydratePersistedRecordInput(persistedInput: PersistedRecordInputSnapshot) {
         if (hasAppliedInitialPersistedRecordInput) {
             return
@@ -144,8 +215,25 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
             hasAppliedInitialPersistedRecordInput = true
             return
         }
-        uiState = intentHandler.hydratePersistedRecordInput(uiState, persistedInput)
+        uiState = intentHandler.hydratePersistedRecordInput(uiState, persistedInput).let { hydrated ->
+            val draft = persistedInput.draft
+            if (
+                hydrated.attributionDateIso.isBlank() &&
+                draft != null &&
+                draft.intervalStartedAtEpochMs > 0L
+            ) {
+                hydrated.copy(
+                    attributionDateIso = resolveLogicalDayDateForInstant(
+                        draft.intervalStartedAtEpochMs,
+                        logicalDayClock.zone
+                    ).toString()
+                )
+            } else {
+                hydrated
+            }
+        }
         hasAppliedInitialPersistedRecordInput = true
+        persistRecordInputState()
     }
 
     fun selectLogicalDayYesterday() {
@@ -167,6 +255,12 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
 
     fun updateEditableHistoryContent(value: String) {
         uiState = intentHandler.updateEditableHistoryContent(uiState, value)
+    }
+
+    suspend fun saveHistoryFileRepresentationOnly(content: String): TxtFileContentResult {
+        val outcome = recordUseCases.saveHistoryFileRepresentationOnly(uiState, content)
+        uiState = outcome.state
+        return outcome.result
     }
 
     fun updateSuggestionPreferences(lookbackDays: Int, topN: Int) {
@@ -354,34 +448,38 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
         }
     }
 
+    private fun currentHhmmss(): String =
+        ZonedDateTime.now(logicalDayClock).format(HHMMSS_FORMATTER)
+
+    private companion object {
+        private const val TXT_TAB_LOG_TAG = "TxtTab"
+        private val HHMMSS_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("HHmmss")
+    }
+
     fun refreshHistory() {
-        viewModelScope.launch {
-            uiState = intentHandler.refreshHistory(uiState)
-        }
+        Log.d(
+            TXT_TAB_LOG_TAG,
+            "history load start inspectionCount=${uiState.txtInspectionEntries.size} " +
+                "selectedFile=${uiState.selectedHistoryFile} selectedMonth=${uiState.selectedMonth}"
+        )
+        uiState = uiState.copy(txtHistoryLoaded = false)
+        txtNavigationCoordinator.launch(TxtNavigationRequest.Refresh)
     }
 
     fun openHistoryFile(path: String) {
-        viewModelScope.launch {
-            uiState = intentHandler.openHistoryFile(uiState, path)
-        }
+        txtNavigationCoordinator.launch(TxtNavigationRequest.OpenFile(path))
     }
 
     fun openMonth(month: String) {
-        viewModelScope.launch {
-            uiState = intentHandler.openMonth(uiState, month)
-        }
+        txtNavigationCoordinator.launch(TxtNavigationRequest.OpenMonth(month))
     }
 
     fun openPreviousMonth() {
-        viewModelScope.launch {
-            uiState = intentHandler.openPreviousMonth(uiState)
-        }
+        txtNavigationCoordinator.launch(TxtNavigationRequest.PreviousMonth)
     }
 
     fun openNextMonth() {
-        viewModelScope.launch {
-            uiState = intentHandler.openNextMonth(uiState)
-        }
+        txtNavigationCoordinator.launch(TxtNavigationRequest.NextMonth)
     }
 
     fun saveHistoryFileAndSync() {
@@ -406,7 +504,10 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
     }
 
     private fun hasLocalRecordInputEdits(state: RecordUiState): Boolean {
-        return state.authoringMode != RecordAuthoringMode.POINT ||
+        return state.authoringMode != RecordAuthoringMode.INTERVAL ||
+            // DAY is the first-open default. Do not treat that default as a local edit,
+            // otherwise cold-start hydration is skipped and a persisted ALL selection is lost.
+            state.txtOutputMode != TxtOutputMode.DAY ||
             RecordStateReducer.hasPersistableRecordDraft(state) ||
             state.logicalDayIsUserOverride
     }
@@ -418,12 +519,15 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
         val snapshot = uiState
         viewModelScope.launch {
             recordUseCases.recordInputPersistence.persistLastAuthoringMode(snapshot.authoringMode)
+            recordUseCases.recordInputPersistence.persistLastTxtOutputMode(snapshot.txtOutputMode)
             val draft = if (RecordStateReducer.hasPersistableRecordDraft(snapshot)) {
                 PersistedRecordInputDraft(
                     recordContent = snapshot.recordContent,
                     recordRemark = snapshot.recordRemark,
                     intervalStart = snapshot.intervalStart,
                     intervalEnd = snapshot.intervalEnd,
+                    intervalStartedAtEpochMs = snapshot.intervalStartedAtEpochMs,
+                    attributionDateIso = snapshot.attributionDateIso,
                     logicalDayTarget = snapshot.logicalDayTarget
                 )
             } else {

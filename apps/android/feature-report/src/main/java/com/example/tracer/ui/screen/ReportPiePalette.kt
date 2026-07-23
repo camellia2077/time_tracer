@@ -97,5 +97,11 @@ internal fun resolvePiePalettePreviewColors(
     palettePreset: ReportPiePalettePreset
 ): List<Color> = resolveReportBreakdownPaletteColors(palettePreset)
 
-private fun parsePiePaletteHexColor(raw: String): Color? =
-    runCatching { Color(AndroidColor.parseColor(raw.trim())) }.getOrNull()
+private fun parsePiePaletteHexColor(raw: String): Color? = runCatching {
+    val normalized = raw.trim().removePrefix("#")
+    when (normalized.length) {
+        6 -> Color(0xFF000000L or normalized.toLong(16))
+        8 -> Color(normalized.toLong(16))
+        else -> error("Unsupported color format")
+    }
+}.getOrNull()

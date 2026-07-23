@@ -13,9 +13,9 @@ import com.example.tracer.feature.report.R
 import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
 
 enum class ReportParameterSection {
+    TIMELINE,
     DAY,
-    TREE,
-    STATS
+    TREE
 }
 
 @Composable
@@ -24,6 +24,7 @@ internal fun QueryReportParameterCards(
     resultDisplayMode: ReportResultDisplayMode,
     analysisPeriod: DataTreePeriod,
     selectedSection: ReportParameterSection,
+    treeMaxAvailableDepth: Int,
     treeLevel: String,
     keyboardOptions: KeyboardOptions,
     reportDate: String,
@@ -41,29 +42,37 @@ internal fun QueryReportParameterCards(
     onReportRangeEndDateChange: (String) -> Unit,
     reportRecentDays: String,
     onReportRecentDaysChange: (String) -> Unit,
-    analysisLoading: Boolean,
+    timeParametersExpanded: Boolean,
+    onTimeParametersExpandedChange: (Boolean) -> Unit,
     onSelectedSectionChange: (ReportParameterSection) -> Unit,
-    onTreeLevelChange: (String) -> Unit,
-    onRunReport: () -> Unit,
-    onLoadStats: () -> Unit,
-    onLoadTree: () -> Unit
+    onTreeLevelChange: (String) -> Unit
 ) {
+    val availableSections = if (reportMode == ReportMode.DAY) {
+        ReportParameterSection.entries
+    } else {
+        ReportParameterSection.entries.filter { it != ReportParameterSection.TIMELINE }
+    }
+    val effectiveSelectedSection = if (selectedSection in availableSections) {
+        selectedSection
+    } else {
+        ReportParameterSection.DAY
+    }
+
     if (resultDisplayMode == ReportResultDisplayMode.TEXT) {
         ReportParameterSectionSelector(
-            reportMode = reportMode,
-            selectedSection = selectedSection,
+            selectedSection = effectiveSelectedSection,
+            sections = availableSections,
             onSelectedSectionChange = onSelectedSectionChange
         )
     }
 
     when (if (resultDisplayMode == ReportResultDisplayMode.TEXT) {
-        selectedSection
+        effectiveSelectedSection
     } else {
         ReportParameterSection.DAY
     }) {
         ReportParameterSection.DAY -> ReportParametersCard(
             reportMode = reportMode,
-            resultDisplayMode = resultDisplayMode,
             keyboardOptions = keyboardOptions,
             reportDate = reportDate,
             onReportDateChange = onReportDateChange,
@@ -80,11 +89,12 @@ internal fun QueryReportParameterCards(
             onReportRangeEndDateChange = onReportRangeEndDateChange,
             reportRecentDays = reportRecentDays,
             onReportRecentDaysChange = onReportRecentDaysChange,
-            onRunReport = onRunReport
+            expanded = timeParametersExpanded,
+            onExpandedChange = onTimeParametersExpandedChange
         )
 
-        ReportParameterSection.STATS -> StatsParametersCard(
-            analysisPeriod = analysisPeriod,
+        ReportParameterSection.TIMELINE -> ReportParametersCard(
+            reportMode = reportMode,
             keyboardOptions = keyboardOptions,
             reportDate = reportDate,
             onReportDateChange = onReportDateChange,
@@ -101,12 +111,13 @@ internal fun QueryReportParameterCards(
             onReportRangeEndDateChange = onReportRangeEndDateChange,
             reportRecentDays = reportRecentDays,
             onReportRecentDaysChange = onReportRecentDaysChange,
-            analysisLoading = analysisLoading,
-            onLoadStats = onLoadStats
+            expanded = timeParametersExpanded,
+            onExpandedChange = onTimeParametersExpandedChange
         )
 
         ReportParameterSection.TREE -> TreeParametersCard(
             analysisPeriod = analysisPeriod,
+            maxAvailableDepth = treeMaxAvailableDepth,
             treeLevel = treeLevel,
             keyboardOptions = keyboardOptions,
             reportDate = reportDate,
@@ -124,20 +135,19 @@ internal fun QueryReportParameterCards(
             onReportRangeEndDateChange = onReportRangeEndDateChange,
             reportRecentDays = reportRecentDays,
             onReportRecentDaysChange = onReportRecentDaysChange,
-            analysisLoading = analysisLoading,
             onTreeLevelChange = onTreeLevelChange,
-            onLoadTree = onLoadTree
+            expanded = timeParametersExpanded,
+            onExpandedChange = onTimeParametersExpandedChange
         )
     }
 }
 
 @Composable
 private fun ReportParameterSectionSelector(
-    reportMode: ReportMode,
     selectedSection: ReportParameterSection,
+    sections: List<ReportParameterSection>,
     onSelectedSectionChange: (ReportParameterSection) -> Unit
 ) {
-    val sections = ReportParameterSection.entries
     SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
         sections.forEachIndexed { index, section ->
             SegmentedButton(
@@ -151,7 +161,7 @@ private fun ReportParameterSectionSelector(
                 label = {
                     Text(
                         if (section == ReportParameterSection.DAY) {
-                            stringResource(reportMode.labelRes())
+                            stringResource(R.string.report_parameter_section_markdown)
                         } else {
                             stringResource(section.labelRes())
                         }
@@ -163,7 +173,7 @@ private fun ReportParameterSectionSelector(
 }
 
 private fun ReportParameterSection.labelRes(): Int = when (this) {
-    ReportParameterSection.DAY -> R.string.report_mode_day
+    ReportParameterSection.DAY -> R.string.report_parameter_section_markdown
     ReportParameterSection.TREE -> R.string.report_parameter_section_tree
-    ReportParameterSection.STATS -> R.string.report_parameter_section_stats
+    ReportParameterSection.TIMELINE -> R.string.report_parameter_section_timeline
 }

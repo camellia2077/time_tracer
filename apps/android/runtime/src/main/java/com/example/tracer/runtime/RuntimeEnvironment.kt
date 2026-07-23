@@ -44,7 +44,7 @@ internal class RuntimeEnvironment(private val context: Context) {
             outputRoot.mkdirs()
         }
 
-        val configToml = File(configRootDir, "converter/interval_processor_config.toml")
+        val configToml = File(configRootDir, "aliases/_system.toml")
         if (!configToml.exists()) {
             throw IllegalStateException("Missing config TOML: ${configToml.absolutePath}")
         }
@@ -81,4 +81,3 @@ internal class RuntimeEnvironment(private val context: Context) {
         return RuntimeDataCleanupTargets.clearTxtData(rootResolver.candidateRuntimeRoots())
     }
 }
-

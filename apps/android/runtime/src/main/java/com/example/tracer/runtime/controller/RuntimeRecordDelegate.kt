@@ -1,7 +1,10 @@
 package com.example.tracer
 
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+
+private const val REMARK_UPDATE_LOG_TAG = "TimeTracerRemarkUpdate"
 
 internal class RuntimeRecordDelegate(
     private val ensureRuntimePaths: () -> RuntimePaths,
@@ -37,6 +40,23 @@ internal class RuntimeRecordDelegate(
         dateCheckMode: Int,
         timeOrderMode: RecordTimeOrderMode
     ) -> String,
+    private val nativeUpdateActivityRemarkAtomically: (
+        targetDateIso: String,
+        logicalId: Long,
+        remark: String,
+        preferredTxtPath: String?,
+        dateCheckMode: Int
+    ) -> String = { _, _, _, _, _ ->
+        """{"ok":false,"error_message":"activity remark update is not wired."}"""
+    },
+    private val nativeUpdateDayRemarkAtomically: (
+        targetDateIso: String,
+        remark: String,
+        preferredTxtPath: String?,
+        dateCheckMode: Int
+    ) -> String = { _, _, _, _ ->
+        """{"ok":false,"error_message":"day remark update is not wired."}"""
+    },
     private val nativeIngestSingleTxtReplaceMonth: (
         inputPath: String,
         dateCheckMode: Int,
@@ -129,6 +149,79 @@ internal class RuntimeRecordDelegate(
             )
         } catch (error: Exception) {
             buildRecordActionFailure(prefix = "Record failed", error = error)
+        }
+    }
+
+    suspend fun updateActivityRemark(
+        targetDateIso: String,
+        logicalId: Long,
+        remark: String,
+        preferredTxtPath: String?
+    ): RecordActionResult = withContext(Dispatchers.IO) {
+        try {
+            Log.i(
+                REMARK_UPDATE_LOG_TAG,
+                "submit targetDate=$targetDateIso logicalId=$logicalId " +
+                    "remarkLength=${remark.length} preferredTxtPath=$preferredTxtPath"
+            )
+            val response = executeAfterInit("native_update_activity_remark_atomically") {
+                nativeUpdateActivityRemarkAtomically(
+                    targetDateIso,
+                    logicalId,
+                    remark,
+                    preferredTxtPath,
+                    NativeBridge.DATE_CHECK_CONTINUITY
+                )
+            }
+            val payload = responseCodec.parse(response.rawResponse)
+            val detail = atomicRecordCodec.parse(payload.content)
+            Log.i(
+                REMARK_UPDATE_LOG_TAG,
+                "response logicalId=$logicalId initialized=${response.initialized} " +
+                    "operationOk=${response.operationOk} payloadOk=${payload.ok} " +
+                    "detailOk=${detail?.ok} error=${payload.errorMessage}"
+            )
+            if (response.initialized && response.operationOk && payload.ok && detail?.ok == true) {
+                RecordActionResult(ok = true, message = detail.message, operationId = detail.operationId)
+            } else {
+                RecordActionResult(
+                    ok = false,
+                    message = payload.errorMessage.ifBlank { detail?.message ?: "Activity remark update failed." },
+                    operationId = detail?.operationId.orEmpty()
+                )
+            }
+        } catch (error: Exception) {
+            buildRecordActionFailure(prefix = "Update activity remark failed", error = error)
+        }
+    }
+
+    suspend fun updateDayRemark(
+        targetDateIso: String,
+        remark: String,
+        preferredTxtPath: String?
+    ): RecordActionResult = withContext(Dispatchers.IO) {
+        try {
+            val response = executeAfterInit("native_update_day_remark_atomically") {
+                nativeUpdateDayRemarkAtomically(
+                    targetDateIso,
+                    remark,
+                    preferredTxtPath,
+                    NativeBridge.DATE_CHECK_CONTINUITY
+                )
+            }
+            val payload = responseCodec.parse(response.rawResponse)
+            val detail = atomicRecordCodec.parse(payload.content)
+            if (response.initialized && response.operationOk && payload.ok && detail?.ok == true) {
+                RecordActionResult(ok = true, message = detail.message, operationId = detail.operationId)
+            } else {
+                RecordActionResult(
+                    ok = false,
+                    message = payload.errorMessage.ifBlank { detail?.message ?: "Day remark update failed." },
+                    operationId = detail?.operationId.orEmpty()
+                )
+            }
+        } catch (error: Exception) {
+            buildRecordActionFailure(prefix = "Update day remark failed", error = error)
         }
     }
 

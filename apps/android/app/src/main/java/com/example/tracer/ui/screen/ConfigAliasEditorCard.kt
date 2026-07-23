@@ -7,10 +7,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -18,6 +22,7 @@ import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -37,10 +42,10 @@ internal fun ConfigAliasEditorCard(
     selectedFileContent: String,
     mode: AliasEditorMode,
     document: AliasTomlDocument?,
+    movePlan: AliasEntryMovePlan?,
     parentOptions: List<String>,
     advancedTomlDraft: String,
     errorMessage: String,
-    autoSaveStatus: ConfigAutoSaveStatus,
     onCreateAliasTomlFile: (String) -> Unit,
     onDeleteAliasTomlFile: () -> Unit,
     onSelectStructuredMode: () -> Unit,
@@ -51,7 +56,13 @@ internal fun ConfigAliasEditorCard(
     onDeleteGroup: (groupId: String) -> Unit,
     onAddEntry: (parentGroupId: String?, aliasKey: String, canonicalLeaf: String) -> Unit,
     onUpdateEntry: (entryId: String, aliasKey: String, canonicalLeaf: String) -> Unit,
+    onPromoteEntry: (entryId: String) -> Unit,
+    onRenameGroupAlias: (groupId: String, oldAlias: String, newAlias: String) -> Unit,
+    onAddGroupAlias: (groupId: String, alias: String) -> Unit,
     onDeleteEntry: (entryId: String) -> Unit,
+    onPreviewEntryMove: (entryId: String, targetGroupId: String) -> Unit,
+    onConfirmMovePlan: () -> Unit,
+    onDiscardMovePlan: () -> Unit,
     onSave: () -> Unit
 ) {
     var dialogState by remember { mutableStateOf<AliasEditorDialogState?>(null) }
@@ -88,12 +99,8 @@ internal fun ConfigAliasEditorCard(
         ) {
             Text(
                 text = stringResource(R.string.config_title_editor_file, selectedFileDisplayName),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            ConfigEditorFileControls(
-                onCreateAliasTomlFile = onCreateAliasTomlFile
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             if (mode == AliasEditorMode.STRUCTURED && document != null) {
@@ -104,9 +111,16 @@ internal fun ConfigAliasEditorCard(
                 )
             }
 
+            ConfigEditorFileControls(
+                onCreateAliasTomlFile = onCreateAliasTomlFile
+            )
+
             OutlinedButton(
                 onClick = { showDeleteAliasTomlDialog = true },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error
+                )
             ) {
                 Icon(Icons.Filled.Delete, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
@@ -144,10 +158,13 @@ internal fun ConfigAliasEditorCard(
                 )
             }
 
-            ConfigAutoSaveStatusText(
-                autoSaveStatus = autoSaveStatus,
-                modifier = Modifier.fillMaxWidth()
-            )
+            if (movePlan != null) {
+                AliasEntryMovePlanPreview(
+                    plan = movePlan,
+                    onConfirm = onConfirmMovePlan,
+                    onDiscard = onDiscardMovePlan
+                )
+            }
 
             when (mode) {
                 AliasEditorMode.STRUCTURED -> {
@@ -172,8 +189,17 @@ internal fun ConfigAliasEditorCard(
                         AliasStructuredEditorContent(
                             document = document,
                             layer = layer,
-                            onNavigateBack = {
-                                currentPathGroupIds = layer.normalizedPathGroupIds.dropLast(1)
+                            onNavigateToBreadcrumb = { groupId ->
+                                currentPathGroupIds = if (groupId == null) {
+                                    emptyList()
+                                } else {
+                                    val index = layer.breadcrumbs.indexOfFirst { it.groupId == groupId }
+                                    if (index >= 0) {
+                                        layer.normalizedPathGroupIds.take(index + 1)
+                                    } else {
+                                        currentPathGroupIds
+                                    }
+                                }
                             },
                             onNavigateToGroup = { groupId ->
                                 currentPathGroupIds = layer.normalizedPathGroupIds + groupId
@@ -188,21 +214,12 @@ internal fun ConfigAliasEditorCard(
                                     parentGroupId = layer.currentParentGroupId
                                 )
                             },
-                            onDeleteGroup = onDeleteGroup,
-                            onRequestAddChildGroup = { groupId ->
-                                dialogState = AliasEditorDialogState.AddGroup(parentGroupId = groupId)
-                            },
-                            onRequestAddChildEntry = { groupId ->
-                                dialogState = AliasEditorDialogState.AddEntry(parentGroupId = groupId)
+                            onRequestEditGroup = { group ->
+                                dialogState = AliasEditorDialogState.GroupActions(group)
                             },
                             onRequestEditEntry = { entry ->
-                                dialogState = AliasEditorDialogState.EditEntry(
-                                    entryId = entry.id,
-                                    initialAliasKey = entry.aliasKey,
-                                    initialCanonicalLeaf = entry.canonicalLeaf
-                                )
-                            },
-                            onDeleteEntry = onDeleteEntry
+                                dialogState = AliasEditorDialogState.EntryActions(entry)
+                            }
                         )
                     }
                 }
@@ -266,6 +283,104 @@ internal fun ConfigAliasEditorCard(
             )
         }
 
+        is AliasEditorDialogState.GroupActions -> {
+            AliasGroupActionsDialog(
+                group = activeDialog.group,
+                onDismiss = { dialogState = null },
+                onEditAlias = { alias -> dialogState = AliasEditorDialogState.EditGroupAlias(activeDialog.group.id, alias) },
+                onAddAlias = { dialogState = AliasEditorDialogState.AddGroupAlias(activeDialog.group.id) },
+                onDelete = { dialogState = AliasEditorDialogState.ConfirmDeleteGroup(activeDialog.group) }
+            )
+        }
+
+        is AliasEditorDialogState.EntryActions -> {
+            AliasEntryActionsDialog(
+                entry = activeDialog.entry,
+                onDismiss = { dialogState = null },
+                onEdit = {
+                    dialogState = AliasEditorDialogState.EditEntry(
+                        entryId = activeDialog.entry.id,
+                        initialAliasKey = activeDialog.entry.aliasKey,
+                        initialCanonicalLeaf = activeDialog.entry.canonicalLeaf
+                    )
+                },
+                onPromote = { dialogState = AliasEditorDialogState.ConfirmPromote(activeDialog.entry) },
+                onMove = { dialogState = AliasEditorDialogState.PlanEntryMove(activeDialog.entry) },
+                onDelete = { dialogState = AliasEditorDialogState.ConfirmDeleteEntry(activeDialog.entry) }
+            )
+        }
+
+        is AliasEditorDialogState.ConfirmDeleteGroup -> {
+            AliasDeleteConfirmDialog(
+                title = stringResource(R.string.config_alias_delete_group_title),
+                message = stringResource(R.string.config_alias_delete_group_message, activeDialog.group.name),
+                onDismiss = { dialogState = null },
+                onConfirm = {
+                    dialogState = null
+                    onDeleteGroup(activeDialog.group.id)
+                }
+            )
+        }
+
+        is AliasEditorDialogState.ConfirmDeleteEntry -> {
+            AliasDeleteConfirmDialog(
+                title = stringResource(R.string.config_alias_delete_entry_title),
+                message = stringResource(R.string.config_alias_delete_entry_message, activeDialog.entry.aliasKey),
+                onDismiss = { dialogState = null },
+                onConfirm = {
+                    dialogState = null
+                    onDeleteEntry(activeDialog.entry.id)
+                }
+            )
+        }
+
+        is AliasEditorDialogState.PlanEntryMove -> {
+            AliasEntryMoveTargetDialog(
+                entry = activeDialog.entry,
+                destinations = document?.moveDestinationsForEntry(activeDialog.entry.id).orEmpty(),
+                onDismiss = { dialogState = null },
+                onConfirm = { targetGroupId ->
+                    dialogState = null
+                    onPreviewEntryMove(activeDialog.entry.id, targetGroupId)
+                }
+            )
+        }
+
+        is AliasEditorDialogState.ConfirmPromote -> {
+            AliasPromoteConfirmDialog(
+                entry = activeDialog.entry,
+                onDismiss = { dialogState = null },
+                onConfirm = {
+                    dialogState = null
+                    onPromoteEntry(activeDialog.entry.id)
+                }
+            )
+        }
+
+        is AliasEditorDialogState.EditGroupAlias -> {
+            AliasGroupAliasDialog(
+                title = stringResource(R.string.config_alias_edit_record_name_title),
+                initialAlias = activeDialog.oldAlias,
+                onDismiss = { dialogState = null },
+                onConfirm = { newAlias ->
+                    dialogState = null
+                    onRenameGroupAlias(activeDialog.groupId, activeDialog.oldAlias, newAlias)
+                }
+            )
+        }
+
+        is AliasEditorDialogState.AddGroupAlias -> {
+            AliasGroupAliasDialog(
+                title = stringResource(R.string.config_alias_add_record_name_title),
+                initialAlias = "",
+                onDismiss = { dialogState = null },
+                onConfirm = { alias ->
+                    dialogState = null
+                    onAddGroupAlias(activeDialog.groupId, alias)
+                }
+            )
+        }
+
         null -> Unit
     }
 
@@ -284,39 +399,89 @@ internal fun ConfigAliasEditorCard(
 private const val CONFIG_ALIAS_EDITOR_AUTO_SAVE_DELAY_MS = 600L
 
 @Composable
+private fun AliasEntryMovePlanPreview(
+    plan: AliasEntryMovePlan,
+    onConfirm: () -> Unit,
+    onDiscard: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDiscard,
+        title = {
+            Text(
+                text = stringResource(R.string.config_alias_move_plan_title),
+                style = MaterialTheme.typography.titleSmall
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = stringResource(
+                        R.string.config_alias_move_plan_canonical,
+                        plan.oldCanonical,
+                        plan.newCanonical
+                    )
+                )
+                Text(
+                    text = stringResource(R.string.config_alias_move_plan_impact),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(stringResource(R.string.config_alias_action_confirm_move_plan))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDiscard) {
+                Text(stringResource(R.string.config_alias_action_discard_move_plan))
+            }
+        }
+    )
+}
+
+@Composable
 private fun AliasStructuredEditorContent(
     document: AliasTomlDocument,
     layer: AliasStructuredLayer,
-    onNavigateBack: () -> Unit,
+    onNavigateToBreadcrumb: (String?) -> Unit,
     onNavigateToGroup: (String) -> Unit,
     onRequestAddCurrentGroup: () -> Unit,
     onRequestAddCurrentEntry: () -> Unit,
-    onDeleteGroup: (String) -> Unit,
-    onRequestAddChildGroup: (String) -> Unit,
-    onRequestAddChildEntry: (String) -> Unit,
-    onRequestEditEntry: (AliasTomlEntry) -> Unit,
-    onDeleteEntry: (String) -> Unit
+    onRequestEditGroup: (AliasTomlGroup) -> Unit,
+    onRequestEditEntry: (AliasTomlEntry) -> Unit
 ) {
     AliasPathBar(
         breadcrumbs = layer.breadcrumbs,
-        onNavigateBack = onNavigateBack
+        onNavigateToBreadcrumb = onNavigateToBreadcrumb
     )
 
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        OutlinedButton(
+        FilledTonalButton(
             onClick = onRequestAddCurrentGroup,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            colors = ButtonDefaults.filledTonalButtonColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            ),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
         ) {
             Icon(Icons.Filled.Add, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
             Text(stringResource(R.string.config_alias_action_add_group))
         }
-        OutlinedButton(
+        FilledTonalButton(
             onClick = onRequestAddCurrentEntry,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            colors = ButtonDefaults.filledTonalButtonColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            ),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
         ) {
             Icon(Icons.Filled.Add, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
@@ -324,13 +489,15 @@ private fun AliasStructuredEditorContent(
         }
     }
 
+    if (layer.currentGroups.isEmpty() && layer.currentEntries.isEmpty()) {
+        AliasEmptyState()
+    }
+
     for (group in layer.currentGroups) {
         AliasGroupRowCard(
             group = group,
             onEnterGroup = { onNavigateToGroup(group.id) },
-            onDeleteGroup = onDeleteGroup,
-            onRequestAddChildGroup = onRequestAddChildGroup,
-            onRequestAddChildEntry = onRequestAddChildEntry
+            onEdit = { onRequestEditGroup(group) }
         )
     }
 
@@ -338,8 +505,7 @@ private fun AliasStructuredEditorContent(
         AliasEntryRow(
             entry = entry,
             modifier = Modifier.fillMaxWidth(),
-            onEdit = { onRequestEditEntry(entry) },
-            onDelete = { onDeleteEntry(entry.id) }
+            onEdit = { onRequestEditEntry(entry) }
         )
     }
 }
@@ -401,4 +567,12 @@ internal sealed interface AliasEditorDialogState {
         val initialAliasKey: String,
         val initialCanonicalLeaf: String
     ) : AliasEditorDialogState
+    data class GroupActions(val group: AliasTomlGroup) : AliasEditorDialogState
+    data class EntryActions(val entry: AliasTomlEntry) : AliasEditorDialogState
+    data class PlanEntryMove(val entry: AliasTomlEntry) : AliasEditorDialogState
+    data class ConfirmPromote(val entry: AliasTomlEntry) : AliasEditorDialogState
+    data class EditGroupAlias(val groupId: String, val oldAlias: String) : AliasEditorDialogState
+    data class AddGroupAlias(val groupId: String) : AliasEditorDialogState
+    data class ConfirmDeleteGroup(val group: AliasTomlGroup) : AliasEditorDialogState
+    data class ConfirmDeleteEntry(val entry: AliasTomlEntry) : AliasEditorDialogState
 }

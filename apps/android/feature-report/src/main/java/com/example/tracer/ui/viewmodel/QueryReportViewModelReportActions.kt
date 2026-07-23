@@ -12,28 +12,39 @@ internal suspend fun runDayReportAction(
     val dayDigits = currentState.reportDate.trim()
     val validationError = inputValidator.validateDateDigits(dayDigits)
     if (validationError != null) {
-        return currentState.copy(statusText = validationError, activeResult = null)
+        return currentState.copy(
+            statusText = validationError,
+            activeResult = null,
+            dayTimeline = null
+        )
     }
 
     val dayIso = inputValidator.toIsoDate(dayDigits)
+    val request = TemporalReportQueryRequest(
+        displayMode = ReportDisplayMode.DAY,
+        selection = TemporalSelectionPayload(
+            kind = TemporalSelectionKind.SINGLE_DAY,
+            date = dayIso
+        )
+    )
     val runningState = currentState.copy(
+        dayTimeline = null,
         statusText = textProvider.nativeReportRunning(textProvider.periodLabel(DataTreePeriod.DAY))
     )
     emit(runningState)
-    val result = reportGateway.reportMarkdown(
-        TemporalReportQueryRequest(
-            displayMode = ReportDisplayMode.DAY,
-            selection = TemporalSelectionPayload(
-                kind = TemporalSelectionKind.SINGLE_DAY,
-                date = dayIso
-            )
-        )
-    )
-    return runningState.copyWithReportOutcome(
+    val result = reportGateway.reportMarkdown(request)
+    val structuredResult = if (result.operationOk) {
+        reportGateway.reportStructured(request)
+    } else {
+        null
+    }
+    val nextState = runningState.copyWithReportOutcome(
         period = DataTreePeriod.DAY,
         result = result,
-        textProvider = textProvider
+        textProvider = textProvider,
+        dayTimeline = structuredResult?.report
     )
+    return nextState
 }
 
 internal suspend fun runMonthReportAction(
@@ -231,7 +242,8 @@ internal suspend fun runRangeReportAction(
 private fun QueryReportUiState.copyWithReportOutcome(
     period: DataTreePeriod,
     result: ReportCallResult,
-    textProvider: QueryReportTextProvider
+    textProvider: QueryReportTextProvider,
+    dayTimeline: StructuredDailyReport? = this.dayTimeline
 ): QueryReportUiState {
     val summary = buildReportSummary(period, result)
     val report = if (result.operationOk) {
@@ -254,13 +266,16 @@ private fun QueryReportUiState.copyWithReportOutcome(
     }
     val nextReportErrors = when {
         result.operationOk -> reportErrorsByPeriod - period
-        summary is ReportSummary.MissingTarget -> reportErrorsByPeriod - period
+        summary is ReportSummary.MissingTarget || summary is ReportSummary.NoData ->
+            reportErrorsByPeriod - period
         else -> reportErrorsByPeriod + (period to result.outputText)
     }
     return copy(
         reportResultsByPeriod = nextReportResults,
         reportSummariesByPeriod = nextReportSummaries,
         reportErrorsByPeriod = nextReportErrors,
+        dayTimeline = if (period == DataTreePeriod.DAY) dayTimeline else this.dayTimeline,
+        dayReportNeedsRefresh = if (period == DataTreePeriod.DAY) false else dayReportNeedsRefresh,
         activeResult = report,
         analysisError = "",
         statusText = resolveReportStatusText(
@@ -276,6 +291,12 @@ private fun buildReportSummary(
     result: ReportCallResult
 ): ReportSummary? {
     val errorContract = result.errorContract
+    if (!result.operationOk &&
+        errorContract?.errorCode == REPORTING_TARGET_NOT_FOUND &&
+        period == DataTreePeriod.DAY
+    ) {
+        return ReportSummary.NoData(period = period)
+    }
     if (!result.operationOk &&
         errorContract?.errorCode == REPORTING_TARGET_NOT_FOUND &&
         period.isNamedTargetPeriod()
@@ -306,6 +327,8 @@ private fun resolveReportStatusText(
 ): String {
     val mode = textProvider.periodLabel(period)
     return when {
+        buildReportSummary(period, result) is ReportSummary.NoData ->
+            textProvider.nativeReportNoData(mode)
         buildReportSummary(period, result) is ReportSummary.MissingTarget ->
             textProvider.nativeReportTargetMissing(mode)
         buildReportSummary(period, result) is ReportSummary.WindowMetadata &&

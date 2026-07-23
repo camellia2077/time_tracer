@@ -148,4 +148,115 @@ class AliasTomlEditorCodecTest {
         requireNotNull(message)
         assertTrue(message.contains("duplicate child group") || message.contains("non-empty canonical leaf"))
     }
+
+    @Test
+    fun plan_leaf_move_previews_changed_canonical_without_mutating_document() {
+        val walking = AliasTomlEntry(id = "entry-walking", aliasKey = "散步", canonicalLeaf = "walking")
+        val cardio = AliasTomlGroup(id = "group-cardio", name = "cardio")
+        val document = AliasTomlDocument(
+            parent = "exercise",
+            nodes = listOf(cardio, walking)
+        )
+
+        val result = document.planEntryMove(
+            entryId = walking.id,
+            targetGroupId = cardio.id
+        )
+
+        val plan = (result as? AliasEntryMovePlanResult.Ready)?.plan
+        assertNotNull(plan)
+        requireNotNull(plan)
+        assertEquals("exercise_walking", plan.oldCanonical)
+        assertEquals("exercise_cardio_walking", plan.newCanonical)
+        assertEquals(listOf("cardio"), plan.targetGroupPath)
+        // Planning must leave the original structured TOML draft intact.
+        assertEquals(listOf(cardio, walking), document.nodes)
+    }
+
+    @Test
+    fun apply_entry_move_plan_reparents_only_the_leaf_in_memory() {
+        val climbing = AliasTomlEntry(id = "entry-climbing", aliasKey = "爬坡", canonicalLeaf = "climb")
+        val cardio = AliasTomlGroup(id = "group-cardio", name = "cardio")
+        val document = AliasTomlDocument(
+            parent = "exercise",
+            nodes = listOf(cardio, climbing)
+        )
+        val plan = (document.planEntryMove(climbing.id, cardio.id) as AliasEntryMovePlanResult.Ready).plan
+
+        val moved = document.applyEntryMovePlan(plan)
+
+        assertTrue(moved.nodes.none { node -> node is AliasTomlEntry && node.id == climbing.id })
+        val movedCardio = moved.nodes.filterIsInstance<AliasTomlGroup>().single()
+        assertEquals(listOf(climbing), movedCardio.nodes)
+    }
+
+    @Test
+    fun plan_entry_move_rejects_same_parent_and_canonical_collisions() {
+        val walking = AliasTomlEntry(id = "entry-walking", aliasKey = "散步", canonicalLeaf = "walking")
+        val cardioWalking = AliasTomlEntry(id = "entry-cardio-walking", aliasKey = "快走", canonicalLeaf = "walking")
+        val cardio = AliasTomlGroup(
+            id = "group-cardio",
+            name = "cardio",
+            nodes = listOf(cardioWalking)
+        )
+        val document = AliasTomlDocument(
+            parent = "exercise",
+            nodes = listOf(cardio, walking)
+        )
+
+        val collision = document.planEntryMove(walking.id, cardio.id)
+        val sameParent = document.planEntryMove(cardioWalking.id, cardio.id)
+
+        assertTrue((collision as AliasEntryMovePlanResult.Invalid).message.contains("collide"))
+        assertTrue((sameParent as AliasEntryMovePlanResult.Invalid).message.contains("already"))
+    }
+
+    @Test
+    fun promote_leaf_to_recordable_group_preserves_its_canonical_path() {
+        val online = AliasTomlEntry(id = "entry-online", aliasKey = "上网", canonicalLeaf = "online")
+        val document = AliasTomlDocument(parent = "recreation", nodes = listOf(online))
+
+        val plan = (document.planEntryPromotion(online.id) as AliasEntryPromotePlanResult.Ready).plan
+        val promoted = document.applyEntryPromotePlan(plan)
+        val group = promoted.nodes.filterIsInstance<AliasTomlGroup>().single()
+
+        assertEquals("recreation_online", plan.preservedCanonical)
+        assertEquals("online", group.name)
+        assertEquals(listOf("上网"), group.groupAliases)
+        val serialized = AliasTomlEditorCodec.serialize(promoted)
+        assertTrue(serialized.contains("group_aliases = [\"上网\"]"))
+        assertEquals(listOf("上网"), AliasTomlEditorCodec.collectAliasKeys(
+            requireNotNull(AliasTomlEditorCodec.parse(serialized).document)
+        ))
+    }
+
+    @Test
+    fun rename_group_alias_updates_only_the_existing_recordable_name() {
+        val group = AliasTomlGroup(
+            id = "group-online",
+            name = "online",
+            groupAliases = listOf("上网"),
+            nodes = listOf(AliasTomlEntry(aliasKey = "哔哩哔哩", canonicalLeaf = "bilibili"))
+        )
+        val document = AliasTomlDocument(parent = "recreation", nodes = listOf(group))
+
+        val updated = document.renameGroupAlias(group.id, "上网", "网上活动")
+        val updatedGroup = updated.nodes.filterIsInstance<AliasTomlGroup>().single()
+
+        assertEquals(listOf("网上活动"), updatedGroup.groupAliases)
+        assertEquals("哔哩哔哩", updatedGroup.nodes.filterIsInstance<AliasTomlEntry>().single().aliasKey)
+        assertTrue(AliasTomlEditorCodec.serialize(updated).contains("group_aliases = [\"网上活动\"]"))
+    }
+
+    @Test
+    fun add_group_alias_keeps_existing_record_names() {
+        val group = AliasTomlGroup(id = "group-online", name = "online", groupAliases = listOf("上网"))
+        val updated = AliasTomlDocument(parent = "recreation", nodes = listOf(group))
+            .addGroupAlias(group.id, "浏览网页")
+
+        assertEquals(
+            listOf("上网", "浏览网页"),
+            updated.nodes.filterIsInstance<AliasTomlGroup>().single().groupAliases
+        )
+    }
 }

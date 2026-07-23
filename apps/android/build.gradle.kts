@@ -14,6 +14,6 @@ subprojects {
 
     extensions.configure<io.gitlab.arturbosch.detekt.extensions.DetektExtension> {
         buildUponDefaultConfig = true
-        config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
+        config.setFrom(rootProject.layout.projectDirectory.file("config/detekt/detekt.yml"))
     }
 }

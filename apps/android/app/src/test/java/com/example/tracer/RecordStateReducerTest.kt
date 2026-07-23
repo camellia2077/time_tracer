@@ -10,6 +10,22 @@ import java.time.ZoneId
 
 class RecordStateReducerTest {
     @Test
+    fun recordInput_defaultsToIntervalMode() {
+        assertEquals(RecordAuthoringMode.INTERVAL, RecordUiState().authoringMode)
+    }
+
+    @Test
+    fun persistedAllTxtOutputMode_overridesFirstOpenDayDefault() {
+        val viewModel = buildRecordViewModel()
+
+        viewModel.hydratePersistedRecordInput(
+            PersistedRecordInputSnapshot(lastTxtOutputMode = TxtOutputMode.ALL)
+        )
+
+        assertEquals(TxtOutputMode.ALL, viewModel.uiState.txtOutputMode)
+    }
+
+    @Test
     fun updateQuickActivities_allowsEmptyList() {
         val viewModel = RecordViewModel(
             recordUseCases = RecordUseCases(

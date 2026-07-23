@@ -20,8 +20,6 @@ internal class RuntimeAssetBootstrapper(
             targetPath = File(rootDir, "config"),
             overwriteExistingFiles = false
         )
-        removeLegacyReportConfigDirs(rootDir)
-        refreshLegacyBundleTomlIfNeeded(rootDir)
     }
 
     private fun copyAssetTree(
@@ -70,45 +68,4 @@ internal class RuntimeAssetBootstrapper(
         }
     }
 
-    private fun removeLegacyReportConfigDirs(rootDir: File) {
-        val legacyDirs = listOf(
-            File(rootDir, "config/reports/latex"),
-            File(rootDir, "config/reports/typst")
-        )
-
-        for (dir in legacyDirs) {
-            if (dir.exists()) {
-                dir.deleteRecursively()
-            }
-        }
-    }
-
-    private fun refreshLegacyBundleTomlIfNeeded(rootDir: File) {
-        val bundleFile = File(rootDir, "config/meta/bundle.toml")
-        if (!bundleFile.exists()) {
-            return
-        }
-
-        val requiresRefresh = try {
-            val content = CanonicalTextCodec.readFile(bundleFile)
-            val hasVisualizationTable =
-                content.contains(Regex("""(?m)^\s*\[paths\.visualization\]\s*$"""))
-            val hasHeatmapPath =
-                content.contains(Regex("""(?m)^\s*heatmap\s*=\s*".+"\s*$"""))
-            !(hasVisualizationTable && hasHeatmapPath)
-        } catch (_: IOException) {
-            true
-        }
-
-        if (!requiresRefresh) {
-            return
-        }
-
-        copyAssetFile(
-            assetPath = "$runtimeAssetRoot/config/meta/bundle.toml",
-            targetFile = bundleFile,
-            overwriteExistingFile = true
-        )
-    }
 }
-

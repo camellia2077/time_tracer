@@ -14,18 +14,25 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.tracer.ui.components.CalendarAvailability
 
+
 @Composable
 fun QueryReportTabContent(
     modifier: Modifier = Modifier,
     queryUiState: QueryReportUiState,
     queryReportViewModel: QueryReportViewModel,
     availableTxtMonths: List<String>,
+    preferredReportMode: ReportMode,
+    onPreferredReportModeChange: (ReportMode) -> Unit,
     preferredResultDisplayMode: ReportResultDisplayMode,
     onPreferredResultDisplayModeChange: (ReportResultDisplayMode) -> Unit,
     preferredParameterSection: ReportParameterSection,
     onPreferredParameterSectionChange: (ReportParameterSection) -> Unit,
+    timeParametersExpanded: Boolean,
+    onTimeParametersExpandedChange: (Boolean) -> Unit,
     preferredChartSemanticMode: ReportChartSemanticMode,
     onPreferredChartSemanticModeChange: (ReportChartSemanticMode) -> Unit,
+    preferredChartVisualMode: ReportChartVisualMode,
+    onPreferredChartVisualModeChange: (ReportChartVisualMode) -> Unit,
     chartShowAverageLine: Boolean,
     piePalettePreset: ReportPiePalettePreset,
     onChartShowAverageLineChange: (Boolean) -> Unit,
@@ -37,6 +44,9 @@ fun QueryReportTabContent(
     isAppDarkThemeActive: Boolean,
     bottomContentPadding: Dp = 0.dp
 ) {
+    LaunchedEffect(preferredReportMode) {
+        queryReportViewModel.onPersistedReportModeChange(preferredReportMode)
+    }
     LaunchedEffect(preferredChartSemanticMode) {
         queryReportViewModel.onPersistedChartSemanticModeChange(preferredChartSemanticMode)
     }
@@ -46,29 +56,53 @@ fun QueryReportTabContent(
     LaunchedEffect(preferredParameterSection) {
         queryReportViewModel.onParameterSectionChange(preferredParameterSection)
     }
+    val displayedReportMode = preferredReportMode
+    val displayedResultDisplayMode = preferredResultDisplayMode
+    val displayedParameterSection = if (
+        displayedReportMode != ReportMode.DAY &&
+        preferredParameterSection == ReportParameterSection.TIMELINE
+    ) {
+        ReportParameterSection.DAY
+    } else {
+        preferredParameterSection
+    }
+    val displayedChartSemanticMode = preferredChartSemanticMode
+        .normalizeForReportMode(displayedReportMode)
+
     // Report year menus intentionally follow existing TXT year directories so
     // users only pick years that actually back YYYY/YYYY-MM.txt storage.
     val calendarAvailability = CalendarAvailability.fromMonthKeys(availableTxtMonths)
-    val selectedPeriod = queryUiState.reportMode.toPeriod()
+    val selectedPeriod = displayedReportMode.toPeriod()
+    val treeMaxAvailableDepth = (queryUiState.activeResult as? QueryResult.Tree)
+        ?.maxAvailableDepth
+        ?: 0
     val displayResult = resolveDisplayResult(
         uiState = queryUiState,
-        selectedPeriod = selectedPeriod
+        selectedPeriod = selectedPeriod,
+        selectedSection = displayedParameterSection
     )
     val displayReportSummary = resolveDisplayReportSummary(
         uiState = queryUiState,
-        selectedPeriod = selectedPeriod
+        selectedPeriod = selectedPeriod,
+        selectedSection = displayedParameterSection
     )
     val displayReportError = resolveDisplayReportError(
         uiState = queryUiState,
-        selectedPeriod = selectedPeriod
+        selectedPeriod = selectedPeriod,
+        selectedSection = displayedParameterSection
     )
+    val onReportModeChange: (ReportMode) -> Unit = { mode ->
+        queryReportViewModel.onReportModeChange(mode)
+        onPreferredReportModeChange(mode)
+        queryReportViewModel.reportCurrentSelection()
+    }
 
     Column(modifier = modifier.fillMaxSize()) {
         ReportModeTabs(
-            selectedIndex = ReportMode.entries.indexOf(queryUiState.reportMode),
+            selectedIndex = ReportMode.entries.indexOf(displayedReportMode),
             reportModes = ReportMode.entries,
-            reportMode = queryUiState.reportMode,
-            onReportModeChange = queryReportViewModel::onReportModeChange
+            reportMode = displayedReportMode,
+            onReportModeChange = onReportModeChange
         )
 
         Column(
@@ -84,8 +118,8 @@ fun QueryReportTabContent(
         ) {
             QueryReportSection(
                 showModeTabs = false,
-                reportMode = queryUiState.reportMode,
-                onReportModeChange = queryReportViewModel::onReportModeChange,
+                reportMode = displayedReportMode,
+                onReportModeChange = onReportModeChange,
                 reportDate = queryUiState.reportDate,
                 onReportDateChange = queryReportViewModel::onReportDateChange,
                 reportMonth = queryUiState.reportMonth,
@@ -101,43 +135,48 @@ fun QueryReportTabContent(
                 onReportRangeEndDateChange = queryReportViewModel::onReportRangeEndDateChange,
                 reportRecentDays = queryUiState.reportRecentDays,
                 onReportRecentDaysChange = queryReportViewModel::onReportRecentDaysChange,
-                onReportDay = queryReportViewModel::reportDay,
-                onReportMonth = queryReportViewModel::reportMonth,
-                onReportYear = queryReportViewModel::reportYear,
-                onReportWeek = queryReportViewModel::reportWeek,
-                onReportRange = queryReportViewModel::reportRange,
-                onReportRecent = queryReportViewModel::reportRecent,
-                resultDisplayMode = queryUiState.resultDisplayMode,
+                resultDisplayMode = displayedResultDisplayMode,
                 onResultDisplayModeChange = { mode ->
                     queryReportViewModel.onResultDisplayModeChange(mode)
                     onPreferredResultDisplayModeChange(mode)
                 },
-                chartSemanticMode = queryUiState.chartSemanticMode,
+                chartSemanticMode = displayedChartSemanticMode,
                 onChartSemanticModeChange = { mode ->
                     queryReportViewModel.onChartSemanticModeChange(mode)
                     onPreferredChartSemanticModeChange(mode)
                 },
-                selectedParameterSection = queryUiState.parameterSection,
+                selectedParameterSection = displayedParameterSection,
+                treeLevel = queryUiState.treeLevel,
+                treeMaxAvailableDepth = treeMaxAvailableDepth,
                 onSelectedParameterSectionChange = { section ->
                     queryReportViewModel.onParameterSectionChange(section)
                     onPreferredParameterSectionChange(section)
                 },
-                analysisLoading = queryUiState.analysisLoading,
-                onLoadDayStats = queryReportViewModel::loadDayStats,
-                onLoadTree = queryReportViewModel::loadTree
+                onTreeLevelChange = { level ->
+                    queryReportViewModel.onTreeLevelChange(level)
+                },
+                timeParametersExpanded = timeParametersExpanded,
+                onTimeParametersExpandedChange = onTimeParametersExpandedChange,
             )
 
             QueryReportResultDisplay(
-                resultDisplayMode = queryUiState.resultDisplayMode,
+                resultDisplayMode = displayedResultDisplayMode,
                 activeResult = displayResult,
                 reportSummary = displayReportSummary,
+                dayTimeline = if (displayedReportMode == ReportMode.DAY) {
+                    queryUiState.dayTimeline
+                } else {
+                    null
+                },
+                parameterSection = displayedParameterSection,
                 reportError = displayReportError,
                 analysisError = queryUiState.analysisError,
-                chartSemanticMode = queryUiState.chartSemanticMode,
+                chartSemanticMode = displayedChartSemanticMode,
+                chartVisualMode = preferredChartVisualMode,
                 compositionVisualMode = queryUiState.compositionVisualMode,
                 trendChartRoots = queryUiState.trendChartRoots,
                 trendChartSelectedRoot = queryUiState.trendChartSelectedRoot,
-                reportMode = queryUiState.reportMode,
+                reportMode = displayedReportMode,
                 trendChartLoading = queryUiState.trendChartLoading,
                 trendChartError = queryUiState.trendChartError,
                 trendChartRenderModel = queryUiState.trendChartRenderModel,
@@ -157,47 +196,48 @@ fun QueryReportTabContent(
                 onCompositionVisualModeChange = queryReportViewModel::onCompositionVisualModeChange,
                 onChartRootChange = queryReportViewModel::onChartRootChange,
                 onChartShowAverageLineChange = onChartShowAverageLineChange,
-                onLoadChart = queryReportViewModel::loadChart
+                onChartVisualModeChange = onPreferredChartVisualModeChange,
+                onLoadChart = queryReportViewModel::loadChart,
+                onUpdateActivityRemark = queryReportViewModel::updateActivityRemark,
+                onUpdateDayRemark = queryReportViewModel::updateDayRemark
             )
         }
     }
 }
 
-private fun resolveDisplayResult(
+internal fun resolveDisplayResult(
     uiState: QueryReportUiState,
-    selectedPeriod: DataTreePeriod
+    selectedPeriod: DataTreePeriod,
+    selectedSection: ReportParameterSection
 ): QueryResult? {
-    return when (uiState.activeResult) {
-        is QueryResult.Report,
-        null -> uiState.reportResultsByPeriod[selectedPeriod]
-        else -> uiState.activeResult
+    return when (selectedSection) {
+        ReportParameterSection.TREE -> uiState.activeResult as? QueryResult.Tree
+        ReportParameterSection.DAY,
+        ReportParameterSection.TIMELINE -> uiState.reportResultsByPeriod[selectedPeriod]
     }
 }
 
 private fun resolveDisplayReportSummary(
     uiState: QueryReportUiState,
-    selectedPeriod: DataTreePeriod
+    selectedPeriod: DataTreePeriod,
+    selectedSection: ReportParameterSection
 ): ReportSummary? {
-    val activeResult = uiState.activeResult
-    return if (activeResult is QueryResult.Report) {
-        activeResult.summary
-    } else if (activeResult == null) {
-        uiState.reportResultsByPeriod[selectedPeriod]?.summary
-            ?: uiState.reportSummariesByPeriod[selectedPeriod]
-    } else {
-        null
+    if (selectedSection == ReportParameterSection.TREE) {
+        return null
     }
+    return uiState.reportResultsByPeriod[selectedPeriod]?.summary
+        ?: uiState.reportSummariesByPeriod[selectedPeriod]
 }
 
 private fun resolveDisplayReportError(
     uiState: QueryReportUiState,
-    selectedPeriod: DataTreePeriod
+    selectedPeriod: DataTreePeriod,
+    selectedSection: ReportParameterSection
 ): String {
-    val activeResult = uiState.activeResult
-    return if (activeResult == null) {
-        uiState.reportErrorsByPeriod[selectedPeriod].orEmpty()
-    } else {
+    return if (selectedSection == ReportParameterSection.TREE) {
         ""
+    } else {
+        uiState.reportErrorsByPeriod[selectedPeriod].orEmpty()
     }
 }
 

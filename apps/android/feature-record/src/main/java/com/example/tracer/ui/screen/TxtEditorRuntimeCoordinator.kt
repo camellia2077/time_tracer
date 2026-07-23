@@ -67,6 +67,19 @@ internal class TxtEditorRuntimeCoordinator(
         selectedMonth = selectedMonth
     )
 
+    suspend fun convertActivityNames(
+        content: String,
+        targetMode: TxtActivityNameTargetMode
+    ): TxtActivityNameConversionResult = txtStorageGateway.convertTxtActivityNames(
+        content = content,
+        direction = when (targetMode) {
+            TxtActivityNameTargetMode.ALIAS ->
+                TxtActivityNameMappingDirection.CANONICAL_TO_ALIAS
+            TxtActivityNameTargetMode.CANONICAL ->
+                TxtActivityNameMappingDirection.ALIAS_TO_CANONICAL
+        }
+    )
+
     suspend fun prepareEditableDayBlock(
         monthContent: String,
         dayMarker: String,

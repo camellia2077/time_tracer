@@ -152,7 +152,8 @@ internal fun parseTreeQueryContent(content: String): ParsedTreeQueryPayload? {
             found = if (isSemanticTree) nodes.isNotEmpty() else payload.optBoolean("found", true),
             roots = roots,
             nodes = nodes,
-            errorMessage = payload.optString("error_message", "")
+            errorMessage = payload.optString("error_message", ""),
+            maxAvailableDepth = payload.optInt("max_available_depth", 0).coerceAtLeast(0)
         )
     } catch (_: Exception) {
         null

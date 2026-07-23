@@ -5,8 +5,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,7 +23,7 @@ internal fun ConfigEditorFileControls(
 ) {
     var showCreateTomlDialog by remember { mutableStateOf(false) }
 
-    OutlinedButton(
+    Button(
         onClick = { showCreateTomlDialog = true },
         modifier = Modifier.fillMaxWidth()
     ) {

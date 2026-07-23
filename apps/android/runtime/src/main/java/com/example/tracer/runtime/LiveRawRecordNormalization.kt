@@ -14,7 +14,7 @@ internal class LiveRawRecordNormalization {
     }
 
     fun normalizeRemark(raw: String): String {
-        return raw.replace("\n", " ").replace("\r", " ").trim()
+        return raw.replace("\r\n", "\n").replace('\r', '\n').trim()
     }
 
     fun normalizeForComparison(value: String): String {

@@ -26,6 +26,11 @@ internal data class TxtEditorSessionUiState(
     val canIngest: Boolean = false
 )
 
+internal enum class TxtActivityNameTargetMode {
+    CANONICAL,
+    ALIAS
+}
+
 internal data class TxtEditorSessionState(
     val outputMode: TxtOutputMode = TxtOutputMode.DAY,
     val dayMarkerInput: String = "0101",
@@ -34,25 +39,32 @@ internal data class TxtEditorSessionState(
     val isEditorContentVisible: Boolean = false,
     val allDraftState: TxtDraftSessionState = TxtDraftSessionState(),
     val dayDraftState: TxtDraftSessionState = TxtDraftSessionState(),
-    val lastSyncedAllDraftState: TxtDraftSessionState = TxtDraftSessionState()
+    val lastSyncedAllDraftState: TxtDraftSessionState = TxtDraftSessionState(),
+    // TXT representation switching is intentionally session-only. Canonical is the
+    // safe default and should be restored whenever the selected file/month changes.
+    val activityNameTargetMode: TxtActivityNameTargetMode = TxtActivityNameTargetMode.CANONICAL,
+    val selectionContextKey: String = ""
 )
 
 internal object TxtEditorSessionReducer {
     fun normalizedDayMarkerInput(state: TxtEditorSessionState): String =
         state.dayMarkerInput.filter { it.isDigit() }.take(4)
 
-    fun defaultOutputMode(selectedMonth: String): TxtOutputMode = if (selectedMonth.isBlank()) {
-        TxtOutputMode.ALL
-    } else {
-        TxtOutputMode.DAY
-    }
-
     fun syncSelectionContext(
         state: TxtEditorSessionState,
         selectedHistoryFile: String,
         selectedMonth: String
     ): TxtEditorSessionState {
-        val nextState = state.copy(outputMode = defaultOutputMode(selectedMonth))
+        val contextKey = "$selectedHistoryFile@$selectedMonth"
+        val contextChanged = state.selectionContextKey != contextKey
+        val nextState = state.copy(
+            activityNameTargetMode = if (contextChanged) {
+                TxtActivityNameTargetMode.CANONICAL
+            } else {
+                state.activityNameTargetMode
+            },
+            selectionContextKey = contextKey
+        )
         if (selectedHistoryFile.isBlank()) {
             return nextState.copy(
                 autoDayMarkerLoadedKey = "",
@@ -60,7 +72,8 @@ internal object TxtEditorSessionReducer {
                 isEditorContentVisible = false,
                 allDraftState = TxtDraftSessionState(),
                 dayDraftState = TxtDraftSessionState(),
-                lastSyncedAllDraftState = TxtDraftSessionState()
+                lastSyncedAllDraftState = TxtDraftSessionState(),
+                activityNameTargetMode = TxtActivityNameTargetMode.CANONICAL
             )
         }
         return nextState
@@ -144,6 +157,17 @@ internal object TxtEditorSessionReducer {
         state: TxtEditorSessionState,
         value: TxtOutputMode
     ): TxtEditorSessionState = state.copy(outputMode = value)
+
+    fun updateActivityNameTargetMode(
+        state: TxtEditorSessionState,
+        value: TxtActivityNameTargetMode
+    ): TxtEditorSessionState = state.copy(activityNameTargetMode = value)
+
+    fun isCurrentSelection(
+        state: TxtEditorSessionState,
+        selectedHistoryFile: String,
+        selectedMonth: String
+    ): Boolean = state.selectionContextKey == "$selectedHistoryFile@$selectedMonth"
 
     fun openEditor(
         state: TxtEditorSessionState,
@@ -360,6 +384,13 @@ internal class TxtEditorSessionController(
         state = TxtEditorSessionReducer.updateOutputMode(state, value)
     }
 
+    fun updateActivityNameTargetMode(value: TxtActivityNameTargetMode) {
+        state = TxtEditorSessionReducer.updateActivityNameTargetMode(state, value)
+    }
+
+    fun isCurrentSelection(selectedHistoryFile: String, selectedMonth: String): Boolean =
+        TxtEditorSessionReducer.isCurrentSelection(state, selectedHistoryFile, selectedMonth)
+
     fun openEditor(resolvedDayBody: String) {
         state = TxtEditorSessionReducer.openEditor(state, resolvedDayBody)
     }
@@ -372,6 +403,10 @@ internal class TxtEditorSessionController(
 
     fun syncResolvedDayBody(value: String) {
         state = TxtEditorSessionReducer.syncResolvedDayBody(state, value)
+    }
+
+    fun updateAllDraft(value: String) {
+        state = TxtEditorSessionReducer.updateAllDraft(state, value)
     }
 
     fun currentMonthContent(fallbackEditableHistoryContent: String): String =

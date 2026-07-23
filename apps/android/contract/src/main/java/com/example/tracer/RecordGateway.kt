@@ -23,6 +23,23 @@ interface RecordGateway {
         targetDateIso: String?,
         preferredTxtPath: String?
     ): RecordActionResult
+    suspend fun updateActivityRemark(
+        targetDateIso: String,
+        logicalId: Long,
+        remark: String,
+        preferredTxtPath: String?
+    ): RecordActionResult = RecordActionResult(
+        ok = false,
+        message = "Activity remark update is not implemented by this gateway."
+    )
+    suspend fun updateDayRemark(
+        targetDateIso: String,
+        remark: String,
+        preferredTxtPath: String?
+    ): RecordActionResult = RecordActionResult(
+        ok = false,
+        message = "Day remark update is not implemented by this gateway."
+    )
     suspend fun syncLiveToDatabase(): NativeCallResult
     suspend fun clearTxt(): ClearTxtResult
 }

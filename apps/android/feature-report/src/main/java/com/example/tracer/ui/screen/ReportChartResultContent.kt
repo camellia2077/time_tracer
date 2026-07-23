@@ -14,7 +14,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -60,6 +59,7 @@ fun ReportResultModeSwitcher(
 @Composable
 internal fun ReportChartResultContent(
     chartSemanticMode: ReportChartSemanticMode,
+    chartVisualMode: ReportChartVisualMode,
     compositionVisualMode: ReportCompositionVisualMode,
     trendChartRoots: List<String>,
     trendChartSelectedRoot: String,
@@ -83,6 +83,7 @@ internal fun ReportChartResultContent(
     onCompositionVisualModeChange: (ReportCompositionVisualMode) -> Unit,
     onChartRootChange: (String) -> Unit,
     onChartShowAverageLineChange: (Boolean) -> Unit,
+    onChartVisualModeChange: (ReportChartVisualMode) -> Unit,
     onLoadChart: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -120,7 +121,6 @@ internal fun ReportChartResultContent(
             }
         )
     }
-    var chartVisualMode by rememberSaveable { mutableStateOf(ReportChartVisualMode.LINE) }
     val effectiveCompositionVisualMode = compositionVisualMode
 
     Column(
@@ -150,7 +150,7 @@ internal fun ReportChartResultContent(
                 chartFromDateIso = trendChartRenderModel?.fromDateIso,
                 chartToDateIso = trendChartRenderModel?.toDateIso,
                 chartVisualMode = chartVisualMode,
-                onChartVisualModeChange = { chartVisualMode = it },
+                onChartVisualModeChange = onChartVisualModeChange,
                 selectedPointIndex = selectedPointIndex,
                 onPointSelected = { selectedPointIndex = it },
                 chartAverageDurationSeconds = chartAverageDurationSeconds,
@@ -184,11 +184,6 @@ internal fun ReportChartSemanticModeSelector(
     chartSemanticMode: ReportChartSemanticMode,
     onChartSemanticModeChange: (ReportChartSemanticMode) -> Unit
 ) {
-    Text(
-        text = stringResource(R.string.report_label_chart_semantic),
-        style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant
-    )
     val modes = ReportChartSemanticMode.entries
     SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
         modes.forEachIndexed { index, item ->

@@ -167,7 +167,7 @@ class RuntimeCoreAdapterTest {
             parentFile?.mkdirs()
             writeText("")
         }
-        val configToml = File(configRoot, "converter/interval_processor_config.toml").apply {
+        val configToml = File(configRoot, "aliases/_system.toml").apply {
             parentFile?.mkdirs()
             writeText("dummy=true")
         }

@@ -5,6 +5,7 @@ import com.example.tracer.PersistedRecordInputDraft
 import com.example.tracer.RecordAuthoringMode
 import com.example.tracer.RecordLogicalDayTarget
 import com.example.tracer.RecordSuggestionOutputMode
+import com.example.tracer.TxtOutputMode
 import com.example.tracer.ReportChartSemanticMode
 import com.example.tracer.ReportParameterSection
 import com.example.tracer.ReportPiePalettePreset
@@ -111,6 +112,38 @@ class UserPreferencesRepositoryTest {
     }
 
     @Test
+    fun setRecordLastTxtOutputMode_persistsSelection() = runTest {
+        val repository = buildRepository(
+            testName = "persist_record_txt_output_mode",
+            scope = backgroundScope
+        )
+
+        repository.setRecordLastTxtOutputMode(TxtOutputMode.DAY)
+
+        assertEquals(
+            TxtOutputMode.DAY,
+            repository.recordPersistedInput.first().lastTxtOutputMode
+        )
+    }
+
+    @Test
+    fun recordPersistedInput_defaultsToInterval_whenModeHasNotBeenSelected() = runTest {
+        val repository = buildRepository(
+            testName = "default_record_authoring_mode",
+            scope = backgroundScope
+        )
+
+        assertEquals(
+            RecordAuthoringMode.INTERVAL,
+            repository.recordPersistedInput.first().lastAuthoringMode
+        )
+        assertEquals(
+            TxtOutputMode.DAY,
+            repository.recordPersistedInput.first().lastTxtOutputMode
+        )
+    }
+
+    @Test
     fun setRecordSuggestOutputMode_persistsSelection() = runTest {
         val repository = buildRepository(
             testName = "persist_record_suggest_output_mode",
@@ -168,9 +201,23 @@ class UserPreferencesRepositoryTest {
 
         assertEquals(ReportParameterSection.DAY, repository.reportParameterSection.first())
 
-        repository.setReportParameterSection(ReportParameterSection.STATS)
+        repository.setReportParameterSection(ReportParameterSection.TIMELINE)
 
-        assertEquals(ReportParameterSection.STATS, repository.reportParameterSection.first())
+        assertEquals(ReportParameterSection.TIMELINE, repository.reportParameterSection.first())
+    }
+
+    @Test
+    fun reportTimeParametersExpanded_defaultsExpanded_andPersistsCollapsedState() = runTest {
+        val repository = buildRepository(
+            testName = "persist_report_time_parameters_expanded",
+            scope = backgroundScope
+        )
+
+        assertEquals(true, repository.reportTimeParametersExpanded.first())
+
+        repository.setReportTimeParametersExpanded(false)
+
+        assertEquals(false, repository.reportTimeParametersExpanded.first())
     }
 
     @Test
@@ -261,6 +308,7 @@ class UserPreferencesRepositoryTest {
                 recordRemark = "focused block",
                 intervalStart = "0900",
                 intervalEnd = "1030",
+                attributionDateIso = "2026-03-28",
                 logicalDayTarget = RecordLogicalDayTarget.YESTERDAY
             )
         )
@@ -270,6 +318,7 @@ class UserPreferencesRepositoryTest {
         assertEquals("focused block", persisted.draft?.recordRemark)
         assertEquals("0900", persisted.draft?.intervalStart)
         assertEquals("1030", persisted.draft?.intervalEnd)
+        assertEquals("2026-03-28", persisted.draft?.attributionDateIso)
         assertEquals(RecordLogicalDayTarget.YESTERDAY, persisted.draft?.logicalDayTarget)
     }
 

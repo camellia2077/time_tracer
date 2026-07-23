@@ -89,8 +89,7 @@ class RuntimeConfigBundleValidatorTest {
             [file_list]
             required = [
               "config.toml",
-              "converter/interval_processor_config.toml",
-              "converter/alias_mapping.toml",
+              "aliases/_system.toml",
               "reports/markdown/day.toml",
               "reports/markdown/month.toml",
               "reports/markdown/period.toml",
@@ -104,8 +103,7 @@ class RuntimeConfigBundleValidatorTest {
     private fun writeRequiredFiles(configRoot: File) {
         val requiredFiles = listOf(
             "config.toml",
-            "converter/interval_processor_config.toml",
-            "converter/alias_mapping.toml",
+            "aliases/_system.toml",
             "reports/markdown/day.toml",
             "reports/markdown/month.toml",
             "reports/markdown/period.toml",

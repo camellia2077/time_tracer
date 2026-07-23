@@ -40,3 +40,15 @@ internal fun resolveLogicalDayTargetDate(
         RecordLogicalDayTarget.TODAY -> today
     }
 }
+
+internal fun resolveLogicalDayDateForInstant(
+    epochMillis: Long,
+    zoneId: ZoneId
+): LocalDate {
+    val localDateTime = Instant.ofEpochMilli(epochMillis).atZone(zoneId)
+    return if (localDateTime.toLocalTime().isBefore(RECORD_LOGICAL_DAY_CUTOFF)) {
+        localDateTime.toLocalDate().minusDays(1)
+    } else {
+        localDateTime.toLocalDate()
+    }
+}

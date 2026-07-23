@@ -54,6 +54,8 @@ fun RecordTabContent(
         onIntervalStartChange = recordViewModel::onIntervalStartChange,
         intervalEnd = recordUiState.intervalEnd,
         onIntervalEndChange = recordViewModel::onIntervalEndChange,
+        intervalStartedAtEpochMs = recordUiState.intervalStartedAtEpochMs,
+        attributionDateIso = recordUiState.attributionDateIso,
         quickActivities = recordUiState.quickActivities,
         availableActivityNames = remember(validAuthorableEventTokens) {
             validAuthorableEventTokens.toList().sorted()
@@ -190,6 +192,9 @@ fun RecordTabContent(
             recordViewModel.applyCanonicalCatalogEntry(token)
         },
         onOpenTxtPreview = recordViewModel::openTxtPreview,
+        onStartIntervalRecording = recordViewModel::startIntervalRecording,
+        onStopIntervalRecording = recordViewModel::stopIntervalRecording,
+        onDiscardIntervalDraft = recordViewModel::discardIntervalDraft,
         onDismissTxtPreview = recordViewModel::dismissTxtPreview,
         onRecordNow = recordViewModel::recordNow,
         onRecordInterval = recordViewModel::recordInterval

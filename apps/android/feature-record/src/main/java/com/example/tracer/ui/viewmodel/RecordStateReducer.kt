@@ -12,14 +12,20 @@ internal object RecordStateReducer {
         return if (draft != null) {
             state.copy(
                 authoringMode = persistedInput.lastAuthoringMode,
+                txtOutputMode = persistedInput.lastTxtOutputMode,
                 recordContent = draft.recordContent,
                 recordRemark = draft.recordRemark,
                 intervalStart = draft.intervalStart,
                 intervalEnd = draft.intervalEnd,
+                intervalStartedAtEpochMs = draft.intervalStartedAtEpochMs,
+                attributionDateIso = draft.attributionDateIso,
                 logicalDayTarget = draft.logicalDayTarget
             )
         } else {
-            state.copy(authoringMode = persistedInput.lastAuthoringMode)
+            state.copy(
+                authoringMode = persistedInput.lastAuthoringMode,
+                txtOutputMode = persistedInput.lastTxtOutputMode
+            )
         }
     }
 

@@ -3,6 +3,8 @@
     <string name="txt_label_editor_file">编辑器：%1$s</string>
     <string name="txt_mode_all">全部</string>
     <string name="txt_mode_day">单日</string>
+    <string name="txt_mode_alias">Alias</string>
+    <string name="txt_mode_canonical">Canonical</string>
     <string name="txt_label_target_day">目标日期</string>
     <string name="txt_label_target_day_with_year">目标日期 (%1$s)</string>
     <string name="txt_action_hide_content">隐藏内容</string>
@@ -61,11 +63,30 @@
 %1$s
 %2$s</string>
     <string name="record_label_activity_name">活动名称</string>
-    <string name="record_label_interval_start">开始时间（HHMM）</string>
-    <string name="record_label_interval_end">结束时间（HHMM）</string>
+    <string name="record_label_interval_start">开始时间</string>
+    <string name="record_label_interval_end">结束时间</string>
+    <string name="record_time_hour">时</string>
+    <string name="record_time_minute">分</string>
+    <string name="record_time_second">秒</string>
     <string name="record_label_remark_optional">备注（可选）</string>
     <string name="record_action_record_activity">记录活动</string>
-    <string name="record_action_record_interval">记录区间</string>
+    <string name="record_action_save_interval">保存区间</string>
+    <string name="record_action_start_interval">开始计时</string>
+    <string name="record_action_stop_interval">结束计时</string>
+    <string name="record_action_discard_interval">放弃</string>
+    <string name="record_interval_active_title">计时进行中</string>
+    <string name="record_interval_draft_title">确认区间</string>
+    <string name="record_interval_started_at">开始于 %1$s</string>
+    <string name="record_interval_elapsed">已持续 %1$s</string>
+    <string name="record_interval_summary">%1$s – %2$s · %3$s</string>
+    <string name="record_interval_edit_title">编辑区间时间</string>
+    <string name="record_interval_current_time">当前时间：%1$s</string>
+    <string name="record_interval_duration">时长：%1$s</string>
+    <string name="record_cd_edit_interval_time">编辑区间时间</string>
+    <string name="record_action_cancel">取消</string>
+    <string name="record_action_apply">应用</string>
+    <string name="record_interval_discard_title">放弃这个区间？</string>
+    <string name="record_interval_discard_description">已记录的时间将会丢失。</string>
     <string name="record_title_quick_access">快捷入口</string>
     <string name="record_hint_long_press_drag_sort">长按并拖动即可调整快捷活动顺序。</string>
     <string name="record_cd_collapse">收起</string>

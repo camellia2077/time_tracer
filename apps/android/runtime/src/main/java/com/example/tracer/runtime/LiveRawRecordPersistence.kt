@@ -10,7 +10,7 @@ internal class LiveRawRecordPersistence(
         if (remark.isEmpty()) {
             return "$hhmm$activity"
         }
-        return "$hhmm$activity // $remark"
+        return "$hhmm$activity // ${encodeRemark(remark)}"
     }
 
     fun buildRawIntervalEventLine(
@@ -22,7 +22,7 @@ internal class LiveRawRecordPersistence(
         if (remark.isEmpty()) {
             return "$startHhmm-$endHhmm$activity"
         }
-        return "$startHhmm-$endHhmm$activity // $remark"
+        return "$startHhmm-$endHhmm$activity // ${encodeRemark(remark)}"
     }
 
     fun ensureRawMonthFile(monthFile: File, year: Int, month: Int) {
@@ -111,6 +111,17 @@ internal class LiveRawRecordPersistence(
         }
         lines += dayMarkerLine
         lines += eventLine
+    }
+
+    private fun encodeRemark(remark: String): String = buildString(remark.length) {
+        remark.forEach { character ->
+            when (character) {
+                '\\' -> append("\\\\")
+                '\n' -> append("\\n")
+                '\r' -> append("\\n")
+                else -> append(character)
+            }
+        }
     }
 
     // dayMarker is the Android/API day identity (MMDD); month TXT stores the

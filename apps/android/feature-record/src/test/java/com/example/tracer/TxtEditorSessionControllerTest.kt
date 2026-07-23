@@ -9,6 +9,19 @@ import java.time.LocalDate
 
 class TxtEditorSessionControllerTest {
     @Test
+    fun initialState_restoresOutputModeAndDayMarker() {
+        val controller = TxtEditorSessionController(
+            initialState = TxtEditorSessionState(
+                outputMode = TxtOutputMode.DAY,
+                dayMarkerInput = "0417"
+            )
+        )
+
+        assertEquals(TxtOutputMode.DAY, controller.state.outputMode)
+        assertEquals("0417", controller.state.dayMarkerInput)
+    }
+
+    @Test
     fun syncSelectionContext_blankFile_clearsSessionState() {
         val controller = TxtEditorSessionController()
         controller.updateOutputMode(TxtOutputMode.ALL)
@@ -32,6 +45,41 @@ class TxtEditorSessionControllerTest {
         assertFalse(controller.state.isEditorContentVisible)
         assertEquals(TxtDraftSessionState(), controller.state.allDraftState)
         assertEquals(TxtDraftSessionState(), controller.state.dayDraftState)
+    }
+
+    @Test
+    fun activityNameTargetMode_isMutuallyExclusiveAndResetsForAnotherMonth() {
+        val controller = TxtEditorSessionController()
+        assertEquals(
+            TxtActivityNameTargetMode.CANONICAL,
+            controller.state.activityNameTargetMode
+        )
+        controller.syncSelectionContext("2026/2026-01.txt", "2026-01")
+        controller.updateActivityNameTargetMode(TxtActivityNameTargetMode.CANONICAL)
+
+        assertEquals(
+            TxtActivityNameTargetMode.CANONICAL,
+            controller.state.activityNameTargetMode
+        )
+
+        controller.syncSelectionContext("2026/2026-02.txt", "2026-02")
+        assertEquals(
+            TxtActivityNameTargetMode.CANONICAL,
+            controller.state.activityNameTargetMode
+        )
+        assertTrue(controller.isCurrentSelection("2026/2026-02.txt", "2026-02"))
+        assertFalse(controller.isCurrentSelection("2026/2026-01.txt", "2026-01"))
+    }
+
+    @Test
+    fun outputMode_isPreservedWhenSelectionChanges() {
+        val controller = TxtEditorSessionController()
+        controller.syncSelectionContext("2026/2026-01.txt", "2026-01")
+        controller.updateOutputMode(TxtOutputMode.DAY)
+
+        controller.syncSelectionContext("2026/2026-02.txt", "2026-02")
+
+        assertEquals(TxtOutputMode.DAY, controller.state.outputMode)
     }
 
     @Test
@@ -73,6 +121,7 @@ class TxtEditorSessionControllerTest {
     @Test
     fun closeEditor_inDayMode_discardsLocalDraft_andReopenStartsFromResolvedBody() {
         val controller = TxtEditorSessionController()
+        controller.updateOutputMode(TxtOutputMode.DAY)
         controller.syncResolvedDayBody("0900study\n")
         controller.openEditor(resolvedDayBody = "0900study\n")
         controller.onEditorTextChange(nextValue = "0900study\n1000break\n")

@@ -41,6 +41,28 @@ internal class RuntimeRecordService(
             preferredTxtPath = preferredTxtPath
         )
 
+    suspend fun updateActivityRemark(
+        targetDateIso: String,
+        logicalId: Long,
+        remark: String,
+        preferredTxtPath: String?
+    ): RecordActionResult = recordDelegate.updateActivityRemark(
+        targetDateIso = targetDateIso,
+        logicalId = logicalId,
+        remark = remark,
+        preferredTxtPath = preferredTxtPath
+    )
+
+    suspend fun updateDayRemark(
+        targetDateIso: String,
+        remark: String,
+        preferredTxtPath: String?
+    ): RecordActionResult = recordDelegate.updateDayRemark(
+        targetDateIso = targetDateIso,
+        remark = remark,
+        preferredTxtPath = preferredTxtPath
+    )
+
     suspend fun syncLiveToDatabase(): NativeCallResult =
         recordDelegate.syncLiveToDatabase()
 

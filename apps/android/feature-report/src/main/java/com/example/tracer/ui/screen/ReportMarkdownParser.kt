@@ -64,6 +64,18 @@ internal fun parseReportMarkdown(text: String): List<MarkdownBlock> {
             blocks.add(MarkdownBlock.Header(headerText, level))
         } else if (isMarkdownListLine(line)) {
             parseMarkdownListItem(line)?.let { listBuffer.add(it) }
+        } else if (line.isNotBlank() && line.firstOrNull()?.isWhitespace() == true &&
+            listBuffer.isNotEmpty()
+        ) {
+            // Formatter-generated indented lines are hard-break continuations
+            // of the preceding list item, not separate paragraphs. Keeping
+            // them in one item prevents the list renderer's paragraph spacing
+            // from adding an extra blank line around each <br>.
+            val continuation = line.trim()
+            val lastIndex = listBuffer.lastIndex
+            listBuffer[lastIndex] = listBuffer[lastIndex].copy(
+                text = listBuffer[lastIndex].text + "\n" + continuation
+            )
         } else if (trimmed.isBlank()) {
             flushList()
         } else {
@@ -133,7 +145,17 @@ internal fun parseInlineMarkdown(
     text: String,
     builder: androidx.compose.ui.text.AnnotatedString.Builder
 ) {
-    val parts = text.split("**")
+    // The shared Markdown formatter uses <br> for intentional hard breaks.
+    // The in-app renderer is deliberately lightweight, so normalize the tag
+    // here instead of showing it as literal text in the preview.
+    // Core's Markdown formatter emits `<br>` at the end of each activity-remark line,
+    // followed by the physical newline separating the next Markdown source line. The
+    // Android preview must treat that pair as one visual line break; converting both
+    // independently would turn one remark continuation into an unintended blank line.
+    val normalizedText = text
+        .replace(Regex("(?i)<br\\s*/?>[ \\t]*\\n"), "\n")
+        .replace(Regex("(?i)<br\\s*/?>"), "\n")
+    val parts = normalizedText.split("**")
     parts.forEachIndexed { index, part ->
         if (index % 2 == 1) {
             builder.withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {

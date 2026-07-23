@@ -35,6 +35,8 @@ fun RecordSection(
     onIntervalStartChange: (String) -> Unit,
     intervalEnd: String,
     onIntervalEndChange: (String) -> Unit,
+    intervalStartedAtEpochMs: Long,
+    attributionDateIso: String,
     quickActivities: List<String>,
     availableActivityNames: List<String>,
     onQuickActivitiesUpdate: (List<String>) -> Boolean,
@@ -79,11 +81,15 @@ fun RecordSection(
     onOrderedCanonicalRootPathsChange: (List<String>) -> Unit,
     onCanonicalCatalogEntryClick: (String) -> Unit,
     onOpenTxtPreview: () -> Unit,
+    onStartIntervalRecording: () -> Unit,
+    onStopIntervalRecording: () -> Unit,
+    onDiscardIntervalDraft: () -> Unit,
     onDismissTxtPreview: () -> Unit,
     onRecordNow: () -> Unit,
     onRecordInterval: () -> Unit
 ) {
-    var currentTimeText by remember { mutableStateOf(formatCurrentTime(System.currentTimeMillis())) }
+    var currentTimeMillis by remember { mutableStateOf(System.currentTimeMillis()) }
+    val currentTimeText = formatCurrentTime(currentTimeMillis)
     var quickActivitySearch by remember { mutableStateOf("") }
     val haptic = LocalHapticFeedback.current
 
@@ -92,7 +98,7 @@ fun RecordSection(
     LaunchedEffect(Unit) {
         while (true) {
             val now = System.currentTimeMillis()
-            currentTimeText = formatCurrentTime(now)
+            currentTimeMillis = now
             onRefreshLogicalDayDefault(now)
             delay(1000)
         }
@@ -134,19 +140,32 @@ fun RecordSection(
             onIntervalStartChange = onIntervalStartChange,
             intervalEnd = intervalEnd,
             onIntervalEndChange = onIntervalEndChange,
+            intervalStartedAtEpochMs = intervalStartedAtEpochMs,
+            attributionDateIso = attributionDateIso,
+            currentTimeMillis = currentTimeMillis,
             lastRecordedActivityAlias = lastRecordedActivityAlias,
             lastRecordedDuration = lastRecordedDuration,
             suggestionsVisible = suggestionsVisible,
             onToggleSuggestions = onToggleSuggestions,
-            onOpenTxtPreview = onOpenTxtPreview
-        ) {
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            if (authoringMode == RecordAuthoringMode.INTERVAL) {
-                onRecordInterval()
-            } else {
-                onRecordNow()
+            onOpenTxtPreview = onOpenTxtPreview,
+            onStartIntervalRecording = {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onStartIntervalRecording()
+            },
+            onStopIntervalRecording = {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onStopIntervalRecording()
+            },
+            onDiscardIntervalDraft = onDiscardIntervalDraft,
+            onRecordNow = {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                if (authoringMode == RecordAuthoringMode.INTERVAL) {
+                    onRecordInterval()
+                } else {
+                    onRecordNow()
+                }
             }
-        }
+        )
     }
 
     if (suggestionsVisible) {

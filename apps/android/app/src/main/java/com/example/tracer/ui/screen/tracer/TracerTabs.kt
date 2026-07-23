@@ -61,10 +61,16 @@ internal data class TracerTabRouteArgs(
     val onReportChartShowAverageLineChange: (Boolean) -> Unit,
     val reportChartSemanticMode: ReportChartSemanticMode,
     val onReportChartSemanticModeChange: (ReportChartSemanticMode) -> Unit,
+    val reportChartVisualMode: ReportChartVisualMode,
+    val onReportChartVisualModeChange: (ReportChartVisualMode) -> Unit,
+    val reportMode: ReportMode,
+    val onReportModeChange: (ReportMode) -> Unit,
     val reportResultDisplayMode: ReportResultDisplayMode,
     val onReportResultDisplayModeChange: (ReportResultDisplayMode) -> Unit,
     val reportParameterSection: ReportParameterSection,
     val onReportParameterSectionChange: (ReportParameterSection) -> Unit,
+    val reportTimeParametersExpanded: Boolean,
+    val onReportTimeParametersExpandedChange: (Boolean) -> Unit,
     val reportHeatmapTomlConfig: ReportHeatmapTomlConfig,
     val reportHeatmapStylePreference: ReportHeatmapStylePreference,
     val onReportHeatmapThemePolicyChange: (ReportHeatmapThemePolicy) -> Unit,
@@ -216,12 +222,18 @@ internal object TracerTabRegistry {
                     queryUiState = args.queryUiState,
                     queryReportViewModel = args.queryReportViewModel,
                     availableTxtMonths = args.recordUiState.availableMonths,
+                    preferredReportMode = args.reportMode,
+                    onPreferredReportModeChange = args.onReportModeChange,
                     preferredResultDisplayMode = args.reportResultDisplayMode,
                     onPreferredResultDisplayModeChange = args.onReportResultDisplayModeChange,
                     preferredParameterSection = args.reportParameterSection,
                     onPreferredParameterSectionChange = args.onReportParameterSectionChange,
+                    timeParametersExpanded = args.reportTimeParametersExpanded,
+                    onTimeParametersExpandedChange = args.onReportTimeParametersExpandedChange,
                     preferredChartSemanticMode = args.reportChartSemanticMode,
                     onPreferredChartSemanticModeChange = args.onReportChartSemanticModeChange,
+                    preferredChartVisualMode = args.reportChartVisualMode,
+                    onPreferredChartVisualModeChange = args.onReportChartVisualModeChange,
                     chartShowAverageLine = args.reportChartShowAverageLine,
                     piePalettePreset = args.reportPiePalettePreset,
                     onChartShowAverageLineChange = args.onReportChartShowAverageLineChange,
@@ -283,8 +295,6 @@ internal object TracerTabRegistry {
             scrollBehavior = TracerTabScrollBehavior.NONE,
             onEnter = { args ->
                 refreshRecordMappingValidation(args)
-                // Keep TXT aligned with Record's auto default when users have not overridden.
-                args.recordViewModel.refreshLogicalDayDefault()
             },
             // TXT remains a file-backed editor surface: if users leave the tab without ingesting,
             // return to the last saved month content instead of preserving a hidden in-memory
@@ -299,6 +309,8 @@ internal object TracerTabRegistry {
                     availableMonths = args.recordUiState.availableMonths,
                     selectedMonth = args.recordUiState.selectedMonth,
                     logicalDayTarget = args.recordUiState.logicalDayTarget,
+                    txtHistoryLoaded = args.recordUiState.txtHistoryLoaded,
+                    initialDayMarker = args.recordUiState.txtDayMarker,
                     logicalDayClock = args.recordViewModel.logicalDayClock,
                     onOpenPreviousMonth = args.recordViewModel::openPreviousMonth,
                     onOpenNextMonth = args.recordViewModel::openNextMonth,
@@ -308,8 +320,13 @@ internal object TracerTabRegistry {
                     onRefreshHistory = args.recordViewModel::refreshHistory,
                     editableHistoryContent = args.recordUiState.editableHistoryContent,
                     onEditableHistoryContentChange = args.recordViewModel::updateEditableHistoryContent,
+                    onDayMarkerPersist = args.recordViewModel::onTxtDayMarkerChange,
                     onDiscardUnsavedHistoryDraft = args.recordViewModel::discardUnsavedHistoryDraft,
                     onSaveHistoryFile = args.recordViewModel::saveHistoryFileAndSync,
+                    onSaveHistoryRepresentationOnly = args.recordViewModel::saveHistoryFileRepresentationOnly,
+                    initialOutputMode = args.recordUiState.txtOutputMode,
+                    onOutputModePersist = args.recordViewModel::onTxtOutputModeChange,
+                    bottomContentPadding = floatingBottomNavScrollPadding(),
                     inlineStatusText = args.recordUiState.statusText,
                     onCreateCurrentMonthTxt = args.recordViewModel::createCurrentMonthTxt
                 )
@@ -329,7 +346,6 @@ internal object TracerTabRegistry {
             content = { _, args ->
                 ConfigSection(
                     selectedCategory = args.configUiState.selectedCategory,
-                    selectedConverterSubcategory = args.configUiState.selectedConverterSubcategory,
                     converterFiles = args.configUiState.converterFiles,
                     chartFiles = args.configUiState.chartFiles,
                     metaFiles = args.configUiState.metaFiles,
@@ -340,6 +356,7 @@ internal object TracerTabRegistry {
                     editableContent = args.configUiState.editableContent,
                     aliasEditorMode = args.configUiState.aliasEditorMode,
                     aliasDocumentDraft = args.configUiState.aliasDocumentDraft,
+                    aliasEntryMovePlan = args.configUiState.aliasEntryMovePlan,
                     aliasParentOptions = args.configUiState.aliasParentOptions,
                     aliasAdvancedTomlDraft = args.configUiState.aliasAdvancedTomlDraft,
                     aliasEditorErrorMessage = args.configUiState.aliasEditorErrorMessage,
@@ -349,12 +366,6 @@ internal object TracerTabRegistry {
                     onSelectCharts = { args.configViewModel.selectCategory(ConfigCategory.CHARTS) },
                     onSelectMeta = { args.configViewModel.selectCategory(ConfigCategory.META) },
                     onSelectReports = { args.configViewModel.selectCategory(ConfigCategory.REPORTS) },
-                    onSelectConverterAliases = {
-                        args.configViewModel.selectConverterSubcategory(ConverterSubcategory.ALIASES)
-                    },
-                    onSelectConverterRules = {
-                        args.configViewModel.selectConverterSubcategory(ConverterSubcategory.RULES)
-                    },
                     onRefreshFiles = args.configViewModel::refreshConfigFiles,
                     onOpenFile = args.configViewModel::openFile,
                     onCreateAliasTomlFile = args.configViewModel::createAliasTomlFile,
@@ -373,7 +384,13 @@ internal object TracerTabRegistry {
                     onDeleteAliasGroup = args.configViewModel::deleteAliasGroup,
                     onAddAliasEntry = args.configViewModel::addAliasEntry,
                     onUpdateAliasEntry = args.configViewModel::updateAliasEntry,
+                    onPromoteAliasEntry = args.configViewModel::promoteAliasEntryToGroup,
+                    onRenameGroupAlias = args.configViewModel::renameGroupAlias,
+                    onAddGroupAlias = args.configViewModel::addGroupAlias,
                     onDeleteAliasEntry = args.configViewModel::deleteAliasEntry,
+                    onPreviewAliasEntryMove = args.configViewModel::previewAliasEntryMove,
+                    onConfirmAliasEntryMovePlan = args.configViewModel::confirmAliasEntryMovePlan,
+                    onDiscardAliasEntryMovePlan = args.configViewModel::discardAliasEntryMovePlan,
                     onSaveCurrentFile = args.configViewModel::saveCurrentFile,
                     onSetThemeColor = args.onSetThemeColor,
                     onSetThemeMode = args.onSetThemeMode,

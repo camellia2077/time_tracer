@@ -54,6 +54,8 @@ object NativeBridge {
         converterConfigTomlPath: String
     ): String
 
+    external fun nativeShutdown(): String
+
     external fun nativeIngest(
         inputPath: String,
         dateCheckMode: Int,
@@ -88,6 +90,21 @@ object NativeBridge {
         preferredTxtPath: String,
         dateCheckMode: Int,
         timeOrderMode: Int
+    ): String
+
+    external fun nativeUpdateActivityRemarkAtomically(
+        targetDateIso: String,
+        logicalId: Long,
+        remark: String,
+        preferredTxtPath: String,
+        dateCheckMode: Int
+    ): String
+
+    external fun nativeUpdateDayRemarkAtomically(
+        targetDateIso: String,
+        remark: String,
+        preferredTxtPath: String,
+        dateCheckMode: Int
     ): String
 
     external fun nativeTxt(

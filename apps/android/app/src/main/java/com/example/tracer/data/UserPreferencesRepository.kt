@@ -6,17 +6,21 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.tracer.PersistedRecordInputDraft
 import com.example.tracer.PersistedRecordInputSnapshot
 import com.example.tracer.RecordAuthoringMode
+import com.example.tracer.TxtOutputMode
 import com.example.tracer.RecordLogicalDayTarget
 import com.example.tracer.RecordSuggestionOutputMode
 import com.example.tracer.ReportChartSemanticMode
+import com.example.tracer.ReportChartVisualMode
 import com.example.tracer.ReportParameterSection
 import com.example.tracer.ReportPiePalettePreset
 import com.example.tracer.ReportResultDisplayMode
+import com.example.tracer.ReportMode
 import com.example.tracer.defaultReportPiePalettePreset
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -95,10 +99,14 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         const val DEFAULT_REPORT_CHART_SHOW_AVERAGE_LINE: Boolean = false
         val DEFAULT_REPORT_CHART_SEMANTIC_MODE: ReportChartSemanticMode =
             ReportChartSemanticMode.COMPOSITION
+        val DEFAULT_REPORT_CHART_VISUAL_MODE: ReportChartVisualMode =
+            ReportChartVisualMode.LINE
+        val DEFAULT_REPORT_MODE: ReportMode = ReportMode.DAY
         val DEFAULT_REPORT_RESULT_DISPLAY_MODE: ReportResultDisplayMode =
             ReportResultDisplayMode.TEXT
         val DEFAULT_REPORT_PARAMETER_SECTION: ReportParameterSection =
             ReportParameterSection.DAY
+        const val DEFAULT_REPORT_TIME_PARAMETERS_EXPANDED: Boolean = true
         val DEFAULT_REPORT_PIE_PALETTE_PRESET: ReportPiePalettePreset =
             defaultReportPiePalettePreset()
         private const val MIN_RECORD_SUGGEST_LOOKBACK_DAYS: Int = 0
@@ -134,16 +142,22 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         val RECORD_ORDERED_CANONICAL_ROOT_PATHS =
             stringPreferencesKey("record_ordered_canonical_root_paths")
         val RECORD_LAST_AUTHORING_MODE = stringPreferencesKey("record_last_authoring_mode")
+        val RECORD_LAST_TXT_OUTPUT_MODE = stringPreferencesKey("record_last_txt_output_mode")
         val RECORD_DRAFT_PRESENT = booleanPreferencesKey("record_draft_present")
         val RECORD_DRAFT_CONTENT = stringPreferencesKey("record_draft_content")
         val RECORD_DRAFT_REMARK = stringPreferencesKey("record_draft_remark")
         val RECORD_DRAFT_INTERVAL_START = stringPreferencesKey("record_draft_interval_start")
         val RECORD_DRAFT_INTERVAL_END = stringPreferencesKey("record_draft_interval_end")
+        val RECORD_DRAFT_INTERVAL_STARTED_AT = longPreferencesKey("record_draft_interval_started_at")
+        val RECORD_DRAFT_ATTRIBUTION_DATE = stringPreferencesKey("record_draft_attribution_date")
         val RECORD_DRAFT_LOGICAL_DAY_TARGET = stringPreferencesKey("record_draft_logical_day_target")
         val REPORT_CHART_SHOW_AVERAGE_LINE = booleanPreferencesKey("report_chart_show_average_line")
         val REPORT_CHART_SEMANTIC_MODE = stringPreferencesKey("report_chart_semantic_mode")
+        val REPORT_CHART_VISUAL_MODE = stringPreferencesKey("report_chart_visual_mode")
+        val REPORT_MODE = stringPreferencesKey("report_mode")
         val REPORT_RESULT_DISPLAY_MODE = stringPreferencesKey("report_result_display_mode")
         val REPORT_PARAMETER_SECTION = stringPreferencesKey("report_parameter_section")
+        val REPORT_TIME_PARAMETERS_EXPANDED = booleanPreferencesKey("report_time_parameters_expanded")
         val REPORT_PIE_PALETTE_PRESET = stringPreferencesKey("report_pie_palette_preset")
     }
 
@@ -208,9 +222,15 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
 
     val recordPersistedInput: Flow<PersistedRecordInputSnapshot> = dataStore.data.map { preferences ->
         val modeName = preferences[PreferencesKeys.RECORD_LAST_AUTHORING_MODE]
-            ?: RecordAuthoringMode.POINT.name
+            ?: RecordAuthoringMode.INTERVAL.name
         val lastAuthoringMode = runCatching { RecordAuthoringMode.valueOf(modeName) }
-            .getOrDefault(RecordAuthoringMode.POINT)
+            .getOrDefault(RecordAuthoringMode.INTERVAL)
+        val txtOutputModeName = preferences[PreferencesKeys.RECORD_LAST_TXT_OUTPUT_MODE]
+            // DAY is the first-open default. Once the user changes the capsule, the selected
+            // value is stored under RECORD_LAST_TXT_OUTPUT_MODE and takes precedence here.
+            ?: TxtOutputMode.DAY.name
+        val lastTxtOutputMode = runCatching { TxtOutputMode.valueOf(txtOutputModeName) }
+            .getOrDefault(TxtOutputMode.DAY)
         val hasDraft = preferences[PreferencesKeys.RECORD_DRAFT_PRESENT] ?: false
         val draftLogicalDayName = preferences[PreferencesKeys.RECORD_DRAFT_LOGICAL_DAY_TARGET]
             ?: RecordLogicalDayTarget.TODAY.name
@@ -219,12 +239,19 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
 
         PersistedRecordInputSnapshot(
             lastAuthoringMode = lastAuthoringMode,
+            lastTxtOutputMode = lastTxtOutputMode,
             draft = if (hasDraft) {
                 PersistedRecordInputDraft(
                     recordContent = preferences[PreferencesKeys.RECORD_DRAFT_CONTENT].orEmpty(),
                     recordRemark = preferences[PreferencesKeys.RECORD_DRAFT_REMARK].orEmpty(),
                     intervalStart = preferences[PreferencesKeys.RECORD_DRAFT_INTERVAL_START].orEmpty(),
                     intervalEnd = preferences[PreferencesKeys.RECORD_DRAFT_INTERVAL_END].orEmpty(),
+                    intervalStartedAtEpochMs = preferences[
+                        PreferencesKeys.RECORD_DRAFT_INTERVAL_STARTED_AT
+                    ] ?: 0L,
+                    attributionDateIso = preferences[
+                        PreferencesKeys.RECORD_DRAFT_ATTRIBUTION_DATE
+                    ].orEmpty(),
                     logicalDayTarget = draftLogicalDayTarget
                 )
             } else {
@@ -354,6 +381,29 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         }
     }
 
+    val reportTimeParametersExpanded: Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.REPORT_TIME_PARAMETERS_EXPANDED]
+            ?: DEFAULT_REPORT_TIME_PARAMETERS_EXPANDED
+    }
+
+    val reportChartVisualMode: Flow<ReportChartVisualMode> = dataStore.data.map { preferences ->
+        val rawValue = preferences[PreferencesKeys.REPORT_CHART_VISUAL_MODE]
+            ?: DEFAULT_REPORT_CHART_VISUAL_MODE.name
+        runCatching { ReportChartVisualMode.valueOf(rawValue) }
+            .getOrDefault(DEFAULT_REPORT_CHART_VISUAL_MODE)
+    }
+
+    val reportMode: Flow<ReportMode> = dataStore.data.map { preferences ->
+        val rawValue = preferences[PreferencesKeys.REPORT_MODE] ?: DEFAULT_REPORT_MODE.name
+        runCatching { ReportMode.valueOf(rawValue) }.getOrDefault(DEFAULT_REPORT_MODE)
+    }
+
+    suspend fun setRecordLastTxtOutputMode(value: TxtOutputMode) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.RECORD_LAST_TXT_OUTPUT_MODE] = value.name
+        }
+    }
+
     suspend fun saveRecordDraft(draft: PersistedRecordInputDraft) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.RECORD_DRAFT_PRESENT] = true
@@ -361,6 +411,9 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             preferences[PreferencesKeys.RECORD_DRAFT_REMARK] = draft.recordRemark
             preferences[PreferencesKeys.RECORD_DRAFT_INTERVAL_START] = draft.intervalStart
             preferences[PreferencesKeys.RECORD_DRAFT_INTERVAL_END] = draft.intervalEnd
+            preferences[PreferencesKeys.RECORD_DRAFT_INTERVAL_STARTED_AT] =
+                draft.intervalStartedAtEpochMs
+            preferences[PreferencesKeys.RECORD_DRAFT_ATTRIBUTION_DATE] = draft.attributionDateIso
             preferences[PreferencesKeys.RECORD_DRAFT_LOGICAL_DAY_TARGET] =
                 draft.logicalDayTarget.name
         }
@@ -373,6 +426,8 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             preferences.remove(PreferencesKeys.RECORD_DRAFT_REMARK)
             preferences.remove(PreferencesKeys.RECORD_DRAFT_INTERVAL_START)
             preferences.remove(PreferencesKeys.RECORD_DRAFT_INTERVAL_END)
+            preferences.remove(PreferencesKeys.RECORD_DRAFT_INTERVAL_STARTED_AT)
+            preferences.remove(PreferencesKeys.RECORD_DRAFT_ATTRIBUTION_DATE)
             preferences.remove(PreferencesKeys.RECORD_DRAFT_LOGICAL_DAY_TARGET)
         }
     }
@@ -440,6 +495,12 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         }
     }
 
+    suspend fun setReportChartVisualMode(value: ReportChartVisualMode) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.REPORT_CHART_VISUAL_MODE] = value.name
+        }
+    }
+
     suspend fun setReportResultDisplayMode(value: ReportResultDisplayMode) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.REPORT_RESULT_DISPLAY_MODE] = value.name
@@ -449,6 +510,18 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
     suspend fun setReportParameterSection(value: ReportParameterSection) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.REPORT_PARAMETER_SECTION] = value.name
+        }
+    }
+
+    suspend fun setReportTimeParametersExpanded(value: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.REPORT_TIME_PARAMETERS_EXPANDED] = value
+        }
+    }
+
+    suspend fun setReportMode(value: ReportMode) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.REPORT_MODE] = value.name
         }
     }
 

@@ -11,6 +11,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
@@ -39,7 +41,9 @@ fun TracerScreen(
     appLanguage: com.example.tracer.data.AppLanguage,
     onSetAppLanguage: (com.example.tracer.data.AppLanguage) -> Unit
 ) {
-    var selectedTab by remember { mutableStateOf(DefaultTracerTab) }
+    var selectedTab by rememberSaveable(stateSaver = tracerTabSaver) {
+        mutableStateOf(DefaultTracerTab)
+    }
     var validAuthorableEventTokens by remember { mutableStateOf<Set<String>>(emptySet()) }
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -49,10 +53,11 @@ fun TracerScreen(
         }
     )
     val queryReportViewModel: QueryReportViewModel = viewModel(
-        factory = remember(reportGateway, queryGateway, context) {
+        factory = remember(reportGateway, queryGateway, recordGateway, context) {
             QueryReportViewModelFactory(
                 reportGateway = reportGateway,
                 queryGateway = queryGateway,
+                recordGateway = recordGateway,
                 textProvider = AndroidQueryReportTextProvider(context)
             )
         }
@@ -105,14 +110,20 @@ fun TracerScreen(
         initial = com.example.tracer.data.UserPreferencesRepository.DEFAULT_REPORT_CHART_SHOW_AVERAGE_LINE
     )
     val reportChartSemanticMode by userPreferencesRepository.reportChartSemanticMode.collectAsState(
-        initial = com.example.tracer.data.UserPreferencesRepository.DEFAULT_REPORT_CHART_SEMANTIC_MODE
+        initial = null
     )
+    val reportChartVisualMode by userPreferencesRepository.reportChartVisualMode.collectAsState(
+        initial = null
+    )
+    val reportMode by userPreferencesRepository.reportMode.collectAsState(initial = null)
     val reportResultDisplayMode by userPreferencesRepository.reportResultDisplayMode.collectAsState(
-        initial = com.example.tracer.data.UserPreferencesRepository.DEFAULT_REPORT_RESULT_DISPLAY_MODE
+        initial = null
     )
     val reportParameterSection by userPreferencesRepository.reportParameterSection.collectAsState(
-        initial = com.example.tracer.data.UserPreferencesRepository.DEFAULT_REPORT_PARAMETER_SECTION
+        initial = null
     )
+    val reportTimeParametersExpanded by userPreferencesRepository.reportTimeParametersExpanded
+        .collectAsState(initial = null)
     val persistedRecordInput by userPreferencesRepository.recordPersistedInput.collectAsState(
         initial = null as PersistedRecordInputSnapshot?
     )
@@ -129,6 +140,37 @@ fun TracerScreen(
         com.example.tracer.data.ThemeMode.Dark -> true
         com.example.tracer.data.ThemeMode.Light -> false
         com.example.tracer.data.ThemeMode.System -> isSystemDark
+    }
+
+    // Do not render preference-backed segmented controls with their defaults and then
+    // hydrate them in a later frame. That state change is rendered by Material as a short
+    // selection animation during cold start.
+    if (persistedRecordInput == null ||
+        reportChartSemanticMode == null ||
+        reportChartVisualMode == null ||
+        reportMode == null ||
+        reportResultDisplayMode == null ||
+        reportParameterSection == null ||
+        reportTimeParametersExpanded == null
+    ) {
+        return
+    }
+
+    val loadedPersistedRecordInput = requireNotNull(persistedRecordInput)
+    val loadedReportChartSemanticMode = requireNotNull(reportChartSemanticMode)
+    val loadedReportChartVisualMode = requireNotNull(reportChartVisualMode)
+    val loadedReportMode = requireNotNull(reportMode)
+    val loadedReportResultDisplayMode = requireNotNull(reportResultDisplayMode)
+    val loadedReportParameterSection = requireNotNull(reportParameterSection)
+    val loadedReportTimeParametersExpanded = requireNotNull(reportTimeParametersExpanded)
+
+    val displayedRecordUiState = if (!recordViewModel.hasAppliedInitialPersistedRecordInputForUi) {
+        recordUiState.copy(
+            authoringMode = loadedPersistedRecordInput.lastAuthoringMode,
+            txtOutputMode = loadedPersistedRecordInput.lastTxtOutputMode
+        )
+    } else {
+        recordUiState
     }
 
     SyncTracerScreenRecordPreferences(
@@ -164,7 +206,8 @@ fun TracerScreen(
     val exportActions = rememberTracerExportActions(
         context = context,
         coroutineScope = coroutineScope,
-        recordUiState = recordUiState,
+        recordUiState = displayedRecordUiState,
+        dataViewModel = dataViewModel,
         txtStorageGateway = txtStorageGateway,
         configGateway = configGateway,
         tracerExchangeGateway = tracerExchangeGateway,
@@ -241,7 +284,7 @@ fun TracerScreen(
         queryUiState = queryUiState,
         queryReportViewModel = queryReportViewModel,
         txtStorageGateway = txtStorageGateway,
-        recordUiState = recordUiState,
+        recordUiState = displayedRecordUiState,
         recordViewModel = recordViewModel,
         configUiState = configUiState,
         configViewModel = configViewModel,
@@ -262,22 +305,40 @@ fun TracerScreen(
                 userPreferencesRepository.setReportChartShowAverageLine(value)
             }
         },
-        reportChartSemanticMode = reportChartSemanticMode,
+        reportChartSemanticMode = loadedReportChartSemanticMode,
         onReportChartSemanticModeChange = { value ->
             coroutineScope.launch {
                 userPreferencesRepository.setReportChartSemanticMode(value)
             }
         },
-        reportResultDisplayMode = reportResultDisplayMode,
+        reportChartVisualMode = loadedReportChartVisualMode,
+        onReportChartVisualModeChange = { value ->
+            coroutineScope.launch {
+                userPreferencesRepository.setReportChartVisualMode(value)
+            }
+        },
+        reportMode = loadedReportMode,
+        onReportModeChange = { value ->
+            coroutineScope.launch {
+                userPreferencesRepository.setReportMode(value)
+            }
+        },
+        reportResultDisplayMode = loadedReportResultDisplayMode,
         onReportResultDisplayModeChange = { value ->
             coroutineScope.launch {
                 userPreferencesRepository.setReportResultDisplayMode(value)
             }
         },
-        reportParameterSection = reportParameterSection,
+        reportParameterSection = loadedReportParameterSection,
         onReportParameterSectionChange = { value ->
             coroutineScope.launch {
                 userPreferencesRepository.setReportParameterSection(value)
+            }
+        },
+        reportTimeParametersExpanded = loadedReportTimeParametersExpanded,
+        onReportTimeParametersExpandedChange = { value ->
+            coroutineScope.launch {
+                userPreferencesRepository.setReportTimeParametersExpanded(value)
             }
         },
         reportHeatmapTomlConfig = reportHeatmapState.config,
@@ -311,3 +372,10 @@ fun TracerScreen(
         onCopyDiagnosticsPayload = actions.onCopyDiagnosticsPayload
     )
 }
+
+private val tracerTabSaver = Saver<TracerTab, String>(
+    save = { tab -> tab.name },
+    restore = { name ->
+        runCatching { TracerTab.valueOf(name) }.getOrDefault(DefaultTracerTab)
+    }
+)

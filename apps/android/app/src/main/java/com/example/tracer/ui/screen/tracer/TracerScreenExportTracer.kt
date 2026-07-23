@@ -12,6 +12,41 @@ internal data class TracerBatchCryptoExportResult(
     val progressStatusText: String
 )
 
+internal data class ConfigTomlExportEntry(
+    val sourcePath: String,
+    val exportPath: String
+)
+
+/** ConfigTomlStorage returns canonical paths under the flattened config layout. */
+internal fun buildConfigTomlExportEntries(relativePaths: Iterable<String>): List<ConfigTomlExportEntry> {
+    return relativePaths
+        .map { it.replace('\\', '/').trim('/') }
+        .filter { it.isNotBlank() }
+        .mapNotNull { sourcePath ->
+            if (
+                sourcePath == "config.toml" ||
+                sourcePath.startsWith("aliases/") ||
+                sourcePath.startsWith("charts/") ||
+                sourcePath.startsWith("meta/") ||
+                sourcePath.startsWith("reports/")
+            ) {
+                ConfigTomlExportEntry(sourcePath = sourcePath, exportPath = sourcePath)
+            } else {
+                null
+            }
+        }
+        .groupBy { it.exportPath }
+        .values
+        .map { entries ->
+            entries.sortedWith(
+                compareBy<ConfigTomlExportEntry> {
+                    !it.sourcePath.startsWith("aliases/")
+                }.thenBy { it.sourcePath }
+            ).first()
+        }
+        .sortedBy { it.exportPath }
+}
+
 private const val TRACER_EXCHANGE_EXPORT_ROOT_NAME = "data"
 private const val TRACER_EXCHANGE_EXPORT_FILE_NAME = "data.tracer"
 private const val TRACER_EXCHANGE_STAGE_COUNT = 2
@@ -221,16 +256,15 @@ internal suspend fun exportCurrentTxtZipToTree(
     configGateway: ConfigGateway
 ): String {
     return runCatching {
-        val txtInspection = txtStorageGateway.inspectTxtFiles()
-        if (!txtInspection.ok) {
+        val txtListResult = txtStorageGateway.listTxtFiles()
+        if (!txtListResult.ok) {
             return@runCatching context.getString(
                 R.string.tracer_export_current_txt_failed,
-                txtInspection.message
+                txtListResult.message
             )
         }
-        val txtPaths = txtInspection.entries
-            .filter { it.canOpen }
-            .map { it.relativePath.replace('\\', '/') }
+        val txtPaths = txtListResult.files
+            .map { it.replace('\\', '/') }
             .distinct()
             .sorted()
 
@@ -241,15 +275,14 @@ internal suspend fun exportCurrentTxtZipToTree(
                 configListResult.message
             )
         }
-        val configPaths = (
-            configListResult.converterFiles +
+        val configPaths = buildConfigTomlExportEntries(
+            (
+                configListResult.converterFiles +
                 configListResult.chartFiles +
                 configListResult.metaFiles +
                 configListResult.reportFiles
-            )
-            .map { it.relativePath.replace('\\', '/') }
-            .distinct()
-            .sorted()
+            ).map { it.relativePath }
+        )
 
         if (txtPaths.isEmpty() && configPaths.isEmpty()) {
             return@runCatching context.getString(R.string.tracer_export_current_txt_failed_no_selection)
@@ -285,13 +318,13 @@ internal suspend fun exportCurrentTxtZipToTree(
             )
         }
 
-        configPaths.forEach { relativePath ->
-            val readResult = configGateway.readConfigTomlFile(relativePath)
+        configPaths.forEach { configEntry ->
+            val readResult = configGateway.readConfigTomlFile(configEntry.sourcePath)
             if (!readResult.ok) {
                 error(
                     context.getString(
                         R.string.tracer_export_error_read_failed,
-                        relativePath,
+                        configEntry.sourcePath,
                         readResult.message
                     )
                 )
@@ -300,8 +333,11 @@ internal suspend fun exportCurrentTxtZipToTree(
                 context = context,
                 treeUri = treeUri,
                 rootDocumentUri = rootDocumentUri,
-                relativePath = "config/$relativePath",
-                content = readResult.content
+                relativePath = "config/${configEntry.exportPath}",
+                content = readResult.content,
+                // text/plain makes some SAF providers append .txt to .toml.
+                // Keep the TOML MIME so the exported filename remains .toml.
+                mimeType = "application/toml"
             )
         }
 
@@ -323,7 +359,8 @@ private fun writeTextDocumentToTree(
     treeUri: Uri,
     rootDocumentUri: Uri,
     relativePath: String,
-    content: String
+    content: String,
+    mimeType: String = "text/plain"
 ) {
     val normalizedPath = relativePath.replace('\\', '/').trim('/')
     val parentRelativePath = normalizedPath.substringBeforeLast('/', "")
@@ -341,7 +378,7 @@ private fun writeTextDocumentToTree(
         treeUri = treeUri,
         parentDocumentUri = parentDocumentUri,
         fileName = fileName,
-        mimeType = "text/plain"
+        mimeType = mimeType
     ) ?: error(context.getString(R.string.tracer_export_error_create_target_file, fileName))
     context.contentResolver.openOutputStream(outputUri, "wt")?.use { output ->
         OutputStreamWriter(output, Charsets.UTF_8).use { writer ->
