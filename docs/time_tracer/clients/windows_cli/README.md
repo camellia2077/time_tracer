@@ -62,6 +62,11 @@ Provide the minimal navigation map for the Windows Rust CLI implementation under
 - `pipeline validate`
 - `txt view-day`
 - `txt append-event`
+- `alias promote`
+- `alias add`
+- `alias move`
+- `alias rename-group-alias`
+- `alias add-group-alias`
 - `system doctor`
 - `about licenses`
 - `about tracer`
@@ -108,6 +113,18 @@ time_tracer_cli report export recent 7 --as-of 2026-03-07 --format md --db <db_p
   an independent cache-invalidation patch.
 - Import-path changes require a regression proving that an immediate
   validate/query operation observes the imported config.
+
+## Alias Hierarchy Editing
+
+- `alias promote` rewrites one alias leaf as a group with `group_aliases`; its
+  canonical path is unchanged.
+- `alias move` rewrites the alias TOML, asks Core to replace old canonical
+  activity names in every TXT file, builds a candidate database through Core
+  ingest, and swaps the database only after candidate success.
+- `alias rename-group-alias` and `alias add-group-alias` update only the alias
+  TOML because the group canonical path does not change.
+- The CLI owns TOML file serialization and source-file transaction/rollback;
+  Core owns canonical replacement, config validation, and database ingest.
 
 ## Removed Compat Surface
 

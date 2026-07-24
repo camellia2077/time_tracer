@@ -36,20 +36,22 @@ auto Statement::GetInsertProjectStmt() const -> sqlite3_stmt* {
 auto Statement::PrepareStatements() -> void {
   const std::string kInsertDaySql = std::format(
       "INSERT INTO {0} ("
-      "{1}, {2}, {3}, {4}, {5}, {6}"
+      "{1}, {2}, {3}, {4}, {5}, {6}, {7}"
       ") "
       "VALUES ("
-      "?, ?, ?, ?, ?, ?"
+      "?, ?, ?, ?, ?, ?, ?"
       ") "
       "ON CONFLICT({1}) DO UPDATE SET "
       "{2}=excluded.{2}, "
       "{3}=excluded.{3}, "
       "{4}=excluded.{4}, "
       "{5}=excluded.{5}, "
-      "{6}=excluded.{6};",
+      "{6}=excluded.{6}, "
+      "{7}=excluded.{7};",
       schema::day::db::kTable, schema::day::db::kDate, schema::day::db::kYear,
       schema::day::db::kMonth, schema::day::db::kWakeAnchor,
-      schema::day::db::kRemark, schema::day::db::kGetupTime);
+      schema::day::db::kRemark, schema::day::db::kGetupTime,
+      schema::day::db::kActivityCount);
   if (sqlite3_prepare_v2(db_, kInsertDaySql.c_str(), -1, &stmt_insert_day_,
                          nullptr) != SQLITE_OK) {
     throw std::runtime_error("Failed to prepare day insert statement.");

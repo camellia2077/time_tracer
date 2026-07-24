@@ -4,6 +4,7 @@
 
 + *Date:* 2021-01-03
 + *Total Time Recorded:* 3h 30m
++ *Activity Count:* 3
 + *Status:* true
 + *Wake Anchor:* false
 + *Exercise:* true

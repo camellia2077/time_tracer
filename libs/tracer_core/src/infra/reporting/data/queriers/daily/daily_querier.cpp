@@ -73,6 +73,7 @@ auto DayQuerier::FetchData() -> DailyReportData {
     ProjectNameCache name_cache;
     name_cache.EnsureLoaded(db_);
     FetchDetailedRecords(data, name_cache);
+    data.activity_count = static_cast<int>(data.detailed_records.size());
     data.stats = BuildDailyStats(data.project_stats, name_cache);
     const auto [status, exercise] =
         BuildDailyFlags(data.project_stats, name_cache);
@@ -97,8 +98,9 @@ void DayQuerier::PrepareData(DailyReportData& data) const {
 void DayQuerier::FetchMetadata(DailyReportData& data) {
   sqlite3_stmt* stmt;
   std::string sql = std::format(
-      "SELECT {}, {}, {} FROM {} WHERE {} = ?;", schema::day::db::kWakeAnchor,
-      schema::day::db::kRemark, schema::day::db::kGetupTime,
+      "SELECT {}, {}, {}, {} FROM {} WHERE {} = ?;",
+      schema::day::db::kWakeAnchor, schema::day::db::kRemark,
+      schema::day::db::kGetupTime, schema::day::db::kActivityCount,
       schema::day::db::kTable, schema::day::db::kDate);
   if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
     sqlite3_bind_text(stmt, 1, param_.data(), static_cast<int>(param_.size()),
@@ -113,6 +115,7 @@ void DayQuerier::FetchMetadata(DailyReportData& data) {
       if (getup_ptr != nullptr) {
         data.metadata.getup_time = reinterpret_cast<const char*>(getup_ptr);
       }
+      data.activity_count = sqlite3_column_int(stmt, 3);
     }
   }
   sqlite3_finalize(stmt);
@@ -176,11 +179,12 @@ void BatchDayDataFetcher::FetchDaysMetadata(BatchDataResult& result) {
   sqlite3_stmt* stmt;
   const std::string kSql = std::format(
       "SELECT {1}, {2}, {3}, "
-      "{4}, {5}, {6} "
+      "{4}, {5}, {6}, {7} "
       "FROM {0} ORDER BY {1} ASC;",
       schema::day::db::kTable, schema::day::db::kDate, schema::day::db::kYear,
       schema::day::db::kMonth, schema::day::db::kWakeAnchor,
-      schema::day::db::kRemark, schema::day::db::kGetupTime);
+      schema::day::db::kRemark, schema::day::db::kGetupTime,
+      schema::day::db::kActivityCount);
 
   if (sqlite3_prepare_v2(db_, kSql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
     throw std::runtime_error("Failed to prepare statement for days metadata.");
@@ -201,6 +205,7 @@ void BatchDayDataFetcher::FetchDaysMetadata(BatchDataResult& result) {
     constexpr int kColWakeAnchor = 3;
     constexpr int kColRemark = 4;
     constexpr int kColGetup = 5;
+    constexpr int kColActivityCount = 6;
 
     data.metadata.status = "0";
     data.metadata.exercise = "0";
@@ -214,6 +219,7 @@ void BatchDayDataFetcher::FetchDaysMetadata(BatchDataResult& result) {
     data.metadata.getup_time = (getup_ptr != nullptr)
                                    ? reinterpret_cast<const char*>(getup_ptr)
                                    : "N/A";
+    data.activity_count = sqlite3_column_int(stmt, kColActivityCount);
   }
   sqlite3_finalize(stmt);
 }
@@ -280,6 +286,10 @@ void BatchDayDataFetcher::FetchTimeRecords(BatchDataResult& result) {
     temp_aggregation[date][project_id] += record.duration_seconds;
   }
   sqlite3_finalize(stmt);
+
+  for (auto& [date, data] : result.data_map) {
+    data.activity_count = static_cast<int>(data.detailed_records.size());
+  }
 
   for (auto& [date, proj_map] : temp_aggregation) {
     auto& data = result.data_map[date];

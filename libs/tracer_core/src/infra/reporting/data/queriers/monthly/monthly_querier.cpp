@@ -23,6 +23,18 @@ using tracer::core::infrastructure::reports::data::stats::IsCardioProjectPath;
 using tracer::core::infrastructure::reports::data::stats::IsExerciseProjectPath;
 using tracer::core::infrastructure::reports::data::stats::IsStudyProjectPath;
 
+auto DaysInMonth(std::string_view year_month) -> int {
+  const int year = std::stoi(std::string(year_month.substr(0, 4)));
+  const int month = std::stoi(std::string(year_month.substr(5, 2)));
+  constexpr int kDaysPerMonth[] = {
+      31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+  if (month == 2 &&
+      ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0))) {
+    return 29;
+  }
+  return kDaysPerMonth[month - 1];
+}
+
 auto JoinPathParts(const std::vector<std::string>& parts) -> std::string {
   if (parts.empty()) {
     return "";
@@ -74,7 +86,7 @@ void MonthQuerier::PrepareData(MonthlyReportData& data) const {
   data.range_label = std::string(param_);
   data.start_date = std::string(param_) + "-01";
   data.end_date = std::string(param_) + "-31";
-  data.requested_days = 0;
+  data.requested_days = DaysInMonth(param_);
 }
 
 auto MonthQuerier::GetDateConditionSql() const -> std::string {
@@ -152,7 +164,7 @@ void BatchMonthDataFetcher::FetchProjectStats(
     const IProjectInfoProvider& provider) {
   sqlite3_stmt* stmt = nullptr;
   const std::string kSql = std::format(
-      "SELECT strftime('%Y-%m', {0}) as ym, {0}, {1}, SUM({2}) "
+      "SELECT strftime('%Y-%m', {0}) as ym, {0}, {1}, SUM({2}), COUNT(*) "
       "FROM {3} "
       "GROUP BY ym, {0}, {1} "
       "ORDER BY ym;",
@@ -179,17 +191,19 @@ void BatchMonthDataFetcher::FetchProjectStats(
     std::string date = reinterpret_cast<const char*>(date_ptr);
     std::int64_t project_id = sqlite3_column_int64(stmt, 2);
     std::int64_t duration = sqlite3_column_int64(stmt, 3);
+    const int activity_count = sqlite3_column_int(stmt, 4);
 
     MonthlyReportData& data = all_months_data[year_month];
     if (data.range_label.empty()) {
       data.range_label = year_month;
       data.start_date = year_month + "-01";
       data.end_date = year_month + "-31";
-      data.requested_days = 0;
+      data.requested_days = DaysInMonth(year_month);
     }
 
     project_agg[year_month][project_id] += duration;
     data.total_duration += duration;
+    data.matched_record_count += activity_count;
 
     const std::string project_path =
         JoinPathParts(provider.GetPathParts(project_id));

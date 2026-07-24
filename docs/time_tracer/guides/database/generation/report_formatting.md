@@ -43,6 +43,11 @@ void DayMdFormatter::FormatHeaderContent(...) const {
 代码中所有的硬编码文案（如 `总时长`、`是否按时睡觉` 等标签），全部从 `DayMdConfig` 中动态读取。
 由于引擎支持跨平台，在 Android 平台调用时，它可以下发属于自己的本地化 Config 实例，使得同一套 C++ 拼接引擎能吐出原生对应语言（中/英）的 Markdown。
 
+Markdown 的本地化配置按 BCP-47 语言代码分目录保存，例如
+`reports/markdown/en/`、`reports/markdown/zh/` 和 `reports/markdown/ja/`。
+报告请求中的 `locale` 决定 Core 使用哪一套配置；缺少或不支持的语言回退到
+英文。LaTeX 和 Typst 目前继续使用根目录下的单语言配置。
+
 ### 2.3 树节点递归渲染
 最引人瞩目的多层级项目时长明细树，是如何画进 Markdown 的？
 - `DayMdFormatter` 在末尾会调用 `MarkdownFormatter::FormatProjectTree`。

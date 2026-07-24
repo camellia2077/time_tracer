@@ -3,6 +3,7 @@
 #define APPLICATION_PORTS_I_REPORT_DTO_FORMATTER_H_
 
 #include <string>
+#include <string_view>
 
 #include "domain/reports/models/daily_report_data.hpp"
 #include "domain/reports/models/period_report_models.hpp"
@@ -24,6 +25,32 @@ class IReportDtoFormatter {
       -> std::string = 0;
   virtual auto FormatYearly(const YearlyReportData& report, ReportFormat format)
       -> std::string = 0;
+
+  virtual auto FormatDailyLocalized(const DailyReportData& report,
+                                    ReportFormat format,
+                                    std::string_view locale) -> std::string {
+    return FormatDaily(report, format);
+  }
+  virtual auto FormatMonthlyLocalized(const MonthlyReportData& report,
+                                      ReportFormat format,
+                                      std::string_view locale) -> std::string {
+    return FormatMonthly(report, format);
+  }
+  virtual auto FormatPeriodLocalized(const PeriodReportData& report,
+                                     ReportFormat format,
+                                     std::string_view locale) -> std::string {
+    return FormatPeriod(report, format);
+  }
+  virtual auto FormatWeeklyLocalized(const WeeklyReportData& report,
+                                     ReportFormat format,
+                                     std::string_view locale) -> std::string {
+    return FormatWeekly(report, format);
+  }
+  virtual auto FormatYearlyLocalized(const YearlyReportData& report,
+                                     ReportFormat format,
+                                     std::string_view locale) -> std::string {
+    return FormatYearly(report, format);
+  }
 };
 
 }  // namespace tracer_core::application::ports

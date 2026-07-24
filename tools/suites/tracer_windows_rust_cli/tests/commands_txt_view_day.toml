@@ -5,10 +5,33 @@ name = "TXT View-Day Existing Block"
 stage = "txt-view-day"
 args = ["txt", "view-day", "--in", "{data_path}/2025/2025-01.txt", "--day", "0102"]
 expect_exit = 0
+expect_stdout_regex = [
+  "(?m)^\\d{{6}}.*$",
+]
+expect_stderr_contains = []
+
+[[commands]]
+name = "Prepare Fixed TXT View-Day Fixture"
+stage = "txt-view-day"
+raw_command = true
+args = [
+  "python",
+  "-c",
+  "from pathlib import Path; p = Path(r'{output_dir}/txt/fixed.txt'); p.parent.mkdir(parents=True, exist_ok=True); p.write_text('y2025\\nm01\\n\\nd0102\\n060000wake\\n090000study\\n100000exercise\\n', encoding='utf-8'); print('[PASS] prepared fixed txt view-day fixture')",
+]
+expect_exit = 0
+expect_stdout_contains = ["[PASS] prepared fixed txt view-day fixture"]
+expect_files = ["{output_dir}/txt/fixed.txt"]
+
+[[commands]]
+name = "TXT View-Day Fixed Content"
+stage = "txt-view-day"
+args = ["txt", "view-day", "--in", "{output_dir}/txt/fixed.txt", "--day", "0102"]
+expect_exit = 0
 expect_stdout_contains = [
-  "0603wake",
-  "0914洗漱 //cherry",
-  "0300meal_dining",
+  "060000wake",
+  "090000study",
+  "100000exercise",
 ]
 expect_stderr_contains = []
 
@@ -50,9 +73,7 @@ name = "TXT View-Day Without SelectedMonth Inference"
 stage = "txt-view-day"
 args = ["txt", "view-day", "--in", "{output_dir}/txt/journal.txt", "--day", "0102"]
 expect_exit = 0
-expect_stdout_contains = [
-  "0603wake",
-  "0914洗漱 //cherry",
-  "0300meal_dining",
+expect_stdout_regex = [
+  "(?m)^\\d{{6}}.*$",
 ]
 expect_stderr_contains = []

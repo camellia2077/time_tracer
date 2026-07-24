@@ -15,6 +15,7 @@ void MonthBaseConfig::LoadBaseConfig(const MonthlyReportLabels& labels) {
   cardio_days_label_ = labels.cardio_days_label;
   anaerobic_days_label_ = labels.anaerobic_days_label;
   total_time_label_ = labels.total_time_label;
+  activity_count_label_ = labels.activity_count_label;
   no_records_message_ = labels.no_records_message;
   invalid_format_message_ = labels.invalid_format_message;
   project_breakdown_label_ = labels.project_breakdown_label;
@@ -46,6 +47,9 @@ auto MonthBaseConfig::GetAnaerobicDaysLabel() const -> const std::string& {
 }
 auto MonthBaseConfig::GetTotalTimeLabel() const -> const std::string& {
   return total_time_label_;
+}
+auto MonthBaseConfig::GetActivityCountLabel() const -> const std::string& {
+  return activity_count_label_;
 }
 auto MonthBaseConfig::GetNoRecordsMessage() const -> const std::string& {
   return no_records_message_;

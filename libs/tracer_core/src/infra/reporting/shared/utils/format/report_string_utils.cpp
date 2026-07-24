@@ -1,5 +1,6 @@
 // infra/reporting/shared/utils/format/report_string_utils.cpp
 #include <cstdint>
+#include <format>
 #include "infra/reporting/shared/utils/format/report_string_utils.hpp"
 
 namespace {
@@ -94,4 +95,26 @@ auto FormatCountWithPercentage(int count, int total_count,
   result += percentage;
   result.push_back(')');
   return result;
+}
+
+auto FormatCountWithAverage(int count, int total_days) -> std::string {
+  if (total_days <= 0) {
+    return std::to_string(count);
+  }
+  return std::format("{} (average: {:.2f}/day)", count,
+                     static_cast<double>(count) / total_days);
+}
+
+auto FormatBooleanCountLabel(std::string label, int count) -> std::string {
+  constexpr std::string_view kTrueSuffix = " (True)";
+  constexpr std::string_view kFalseSuffix = " (False)";
+  if (label.ends_with(kTrueSuffix)) {
+    label.erase(label.size() - kTrueSuffix.size());
+    if (count == 0) {
+      label += kFalseSuffix;
+    }
+  } else if (count == 0) {
+    label += kFalseSuffix;
+  }
+  return label;
 }

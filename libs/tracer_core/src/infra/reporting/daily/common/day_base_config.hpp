@@ -26,6 +26,7 @@ class REPORTS_SHARED_API DayBaseConfig {
   [[nodiscard]] auto GetTitlePrefix() const -> const std::string&;
   [[nodiscard]] auto GetDateLabel() const -> const std::string&;
   [[nodiscard]] auto GetTotalTimeLabel() const -> const std::string&;
+  [[nodiscard]] auto GetActivityCountLabel() const -> const std::string&;
   [[nodiscard]] auto GetStatusLabel() const -> const std::string&;
   [[nodiscard]] auto GetWakeAnchorLabel() const -> const std::string&;
   [[nodiscard]] auto GetGetupTimeLabel() const -> const std::string&;
@@ -51,6 +52,7 @@ class REPORTS_SHARED_API DayBaseConfig {
   std::string title_prefix_;
   std::string date_label_;
   std::string total_time_label_;
+  std::string activity_count_label_;
   std::string status_label_;
   std::string wake_anchor_label_;
   std::string getup_time_label_;

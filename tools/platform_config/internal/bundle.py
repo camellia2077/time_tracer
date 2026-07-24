@@ -51,6 +51,12 @@ def build_bundle_model(source_bundle: dict[str, Any], target: str) -> BundleMode
 
     reports_table = ensure_dict(paths_table.get("reports"), "paths.reports")
     markdown_paths = parse_report_paths(reports_table, "markdown")
+    localized_markdown_files = [
+        path
+        for path in source_required
+        if path.startswith("reports/markdown/")
+        and path.count("/") == 3
+    ]
 
     if target == "android":
         converter_files = dedupe_keep_order(
@@ -63,6 +69,7 @@ def build_bundle_model(source_bundle: dict[str, Any], target: str) -> BundleMode
                 *converter_files,
                 main_config,
                 *markdown_paths.values(),
+                *localized_markdown_files,
             ]
         )
         return BundleModel(

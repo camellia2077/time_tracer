@@ -20,6 +20,7 @@ struct DayData {
   int year;
   int month;
   int wake_anchor;
+  int activity_count = 0;
 };
 
 struct TimeRecordInternal {

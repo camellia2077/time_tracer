@@ -145,6 +145,8 @@ void FillDailyLabels(const toml::table& tbl, DailyReportLabels& labels) {
 
   labels.date_label = GetRequired<std::string>(tbl, "date_label");
   labels.total_time_label = GetRequired<std::string>(tbl, "total_time_label");
+  labels.activity_count_label =
+      tbl["activity_count_label"].value_or("Activity Count");
 
   labels.status_label = tbl["status_label"].value_or("Status");
   labels.wake_anchor_label = tbl["wake_anchor_label"].value_or("Wake Anchor");
@@ -167,6 +169,8 @@ void FillRangeLabels(const toml::table& tbl, RangeReportLabels& labels) {
   labels.report_title = tbl["report_title"].value_or("Monthly Report");
   labels.title_template = GetRequired<std::string>(tbl, "title_template");
   labels.total_time_label = GetRequired<std::string>(tbl, "total_time_label");
+  labels.activity_count_label =
+      tbl["activity_count_label"].value_or("Activity Count");
   labels.actual_days_label = GetRequired<std::string>(tbl, "actual_days_label");
   labels.status_days_label = tbl["status_days_label"].value_or("Status Days");
   labels.wake_anchor_days_label =

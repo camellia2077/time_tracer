@@ -39,9 +39,7 @@ auto PrepareCustomConfigFixture(
 
   const std::filesystem::path aliases_root = config_root / "aliases";
   if (!CopyFixtureFile(converter_main_fixture_relative_path,
-                       aliases_root / "_system.toml") ||
-      !CopyFixtureFile("test/fixtures/config/custom/aliases/minimal.toml",
-                       aliases_root / "minimal.toml")) {
+                       aliases_root / "_system.toml")) {
     return {};
   }
   return aliases_root / "_system.toml";
@@ -138,7 +136,7 @@ auto TestAndroidRuntimeRejectsInvalidUtf8ConverterConfig(int& failures)
   const RuntimeTestPaths paths = BuildTempTestPaths(
       "time_tracer_android_runtime_factory_invalid_utf8_config_test");
   const std::filesystem::path kInvalidConfigPath =
-      paths.test_root / "config" / "invalid_utf8.toml";
+      paths.test_root / "config" / "aliases" / "_system.toml";
 
   RemoveTree(paths.test_root);
   if (!PrepareAndroidConfigFixture(paths.test_root / "config")) {

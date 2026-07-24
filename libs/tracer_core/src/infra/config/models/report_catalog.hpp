@@ -2,7 +2,18 @@
 #ifndef INFRASTRUCTURE_CONFIG_MODELS_REPORT_CATALOG_H_
 #define INFRASTRUCTURE_CONFIG_MODELS_REPORT_CATALOG_H_
 
+#include <string>
+#include <unordered_map>
+
 #include "infra/config/models/report_config_models.hpp"
+
+struct MarkdownReportConfigs {
+  DailyMdConfig day;
+  MonthlyMdConfig month;
+  PeriodMdConfig period;
+  WeeklyMdConfig week;
+  YearlyMdConfig year;
+};
 
 struct LoadedReportConfigs {
   struct {
@@ -21,13 +32,8 @@ struct LoadedReportConfigs {
     YearlyTypConfig year;
   } typst;
 
-  struct {
-    DailyMdConfig day;
-    MonthlyMdConfig month;
-    PeriodMdConfig period;
-    WeeklyMdConfig week;
-    YearlyMdConfig year;
-  } markdown;
+  MarkdownReportConfigs markdown;
+  std::unordered_map<std::string, MarkdownReportConfigs> markdown_locales;
 };
 
 struct ReportCatalog {

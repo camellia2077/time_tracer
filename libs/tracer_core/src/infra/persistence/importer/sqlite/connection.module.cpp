@@ -60,11 +60,40 @@ Connection::Connection(const std::string& db_path) {
         "{3} INTEGER, "
         "{4} INTEGER, "
         "{5} TEXT, "
-        "{6} TEXT);",
+        "{6} TEXT, "
+        "{7} INTEGER NOT NULL DEFAULT 0);",
         schema::day::db::kTable, schema::day::db::kDate, schema::day::db::kYear,
         schema::day::db::kMonth, schema::day::db::kWakeAnchor,
-        schema::day::db::kRemark, schema::day::db::kGetupTime);
+        schema::day::db::kRemark, schema::day::db::kGetupTime,
+        schema::day::db::kActivityCount);
     ExecuteSql(db_, kCreateDaysSql, "Create days table");
+
+    // Upgrade databases created before activity_count became a persisted day
+    // field. SQLite has no IF NOT EXISTS form for ADD COLUMN, so inspect the
+    // existing schema before applying the one-time additive migration.
+    sqlite3_stmt* columns_stmt = nullptr;
+    const std::string kColumnsSql =
+        std::format("PRAGMA table_info({});", schema::day::db::kTable);
+    bool has_activity_count = false;
+    if (sqlite3_prepare_v2(db_, kColumnsSql.c_str(), -1, &columns_stmt,
+                           nullptr) == SQLITE_OK) {
+      while (sqlite3_step(columns_stmt) == SQLITE_ROW) {
+        const auto* name = sqlite3_column_text(columns_stmt, 1);
+        if (name != nullptr &&
+            std::string_view(reinterpret_cast<const char*>(name)) ==
+                schema::day::db::kActivityCount) {
+          has_activity_count = true;
+          break;
+        }
+      }
+    }
+    sqlite3_finalize(columns_stmt);
+    if (!has_activity_count) {
+      const std::string kAddActivityCountSql = std::format(
+          "ALTER TABLE {0} ADD COLUMN {1} INTEGER NOT NULL DEFAULT 0;",
+          schema::day::db::kTable, schema::day::db::kActivityCount);
+      ExecuteSql(db_, kAddActivityCountSql, "Add days.activity_count column");
+    }
 
     const std::string kCreateIndexSql =
         std::format("CREATE INDEX IF NOT EXISTS {0} ON {1} ({2}, {3});",
@@ -125,6 +154,17 @@ Connection::Connection(const std::string& db_path) {
         schema::day::db::kDate, schema::projects::db::kTable,
         schema::projects::db::kId);
     ExecuteSql(db_, kCreateRecordsSql, "Create time_records table");
+
+    // Backfill the persisted per-day count for databases upgraded from the
+    // schema that did not have days.activity_count.
+    const std::string kBackfillActivityCountSql = std::format(
+        "UPDATE {0} SET {1} = (SELECT COUNT(*) FROM {2} WHERE {2}.{3} = "
+        "{0}.{4});",
+        schema::day::db::kTable, schema::day::db::kActivityCount,
+        schema::time_records::db::kTable, schema::time_records::db::kDate,
+        schema::day::db::kDate);
+    ExecuteSql(db_, kBackfillActivityCountSql,
+               "Backfill days.activity_count column");
 
     const std::string kCreateRecordsDateProjectIndexSql = std::format(
         "CREATE INDEX IF NOT EXISTS idx_time_records_date_project ON {0} "

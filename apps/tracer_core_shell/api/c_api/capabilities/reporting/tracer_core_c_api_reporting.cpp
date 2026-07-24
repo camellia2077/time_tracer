@@ -78,6 +78,9 @@ auto BuildTemporalQueryRequest(
   if (payload.format.has_value()) {
     request.format = ParseReportFormat(*payload.format);
   }
+  if (payload.locale.has_value()) {
+    request.locale = *payload.locale;
+  }
   return request;
 }
 
@@ -112,6 +115,9 @@ auto BuildTemporalExportRequest(
       ParseReportExportScope(payload.export_scope.value_or("single"));
   if (payload.format.has_value()) {
     request.format = ParseReportFormat(*payload.format);
+  }
+  if (payload.locale.has_value()) {
+    request.locale = *payload.locale;
   }
   request.selection = BuildSelectionFromPayload(payload);
   request.output_root_path = output_root.string();

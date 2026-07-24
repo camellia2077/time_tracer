@@ -44,6 +44,21 @@ auto VerifyReportOutputs(const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
     }
   }
 
+  const auto localized_day_report_result = RunAndCheckReportQuery(
+      runtime_api,
+      {.display_mode = ReportDisplayMode::kDay,
+       .selection = {.kind = TemporalSelectionKind::kSingleDay,
+                     .date = "2026-02-01"},
+       .format = ReportFormat::kMarkdown,
+       .locale = "zh"},
+      "day markdown zh", failures);
+  if (localized_day_report_result &&
+      !Contains(localized_day_report_result->content, "- **日期**: ")) {
+    ++failures;
+    std::cerr << "[FAIL] Android localized day markdown report should use "
+                 "the Chinese Date label.\n";
+  }
+
   const auto structured_result =
       runtime_api->report().RunTemporalStructuredReportQuery(
           {.display_mode = ReportDisplayMode::kRecent,

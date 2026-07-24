@@ -30,6 +30,8 @@ Describe the stable responsibility split for the Windows Rust CLI.
   - report render/export/chart orchestration and shared report request helpers
 - `src/commands/handlers/exchange/*`
   - passphrase/input/output handling for tracer exchange flows
+- `src/commands/handlers/alias.rs`
+  - alias hierarchy TOML edits and Core-backed canonical migration orchestration
 - `src/commands/handlers/report/chart*.rs`
   - `report chart` presenter logic
 - `src/core/runtime.rs`

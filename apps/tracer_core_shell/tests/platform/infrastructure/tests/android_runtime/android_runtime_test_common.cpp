@@ -121,6 +121,9 @@ auto PrepareAndroidConfigFixture(const std::filesystem::path& target_root)
     -> bool {
   const std::filesystem::path source_root =
       BuildRepoRoot() / "assets" / "tracer_core" / "config";
+  const std::filesystem::path android_bundle_path =
+      BuildRepoRoot() / "apps" / "android" / "runtime" / "src" / "main" /
+      "assets" / "tracer_core" / "config" / "meta" / "bundle.toml";
 
   const auto copy_required_file = [&](std::string_view relative_path) -> bool {
     return CopyFileWithParents(
@@ -128,14 +131,14 @@ auto PrepareAndroidConfigFixture(const std::filesystem::path& target_root)
         target_root / std::filesystem::path(relative_path));
   };
 
-  return copy_required_file("aliases/_system.toml") &&
+  return CopyFileWithParents(android_bundle_path,
+                             target_root / "meta" / "bundle.toml") &&
+         copy_required_file("config.toml") &&
+         copy_required_file("aliases/_system.toml") &&
          CopyDirectoryTree(source_root / "aliases", target_root / "aliases") &&
          copy_required_file("charts/heatmap.toml") &&
-         copy_required_file("reports/markdown/day.toml") &&
-         copy_required_file("reports/markdown/month.toml") &&
-         copy_required_file("reports/markdown/period.toml") &&
-         copy_required_file("reports/markdown/week.toml") &&
-         copy_required_file("reports/markdown/year.toml");
+         CopyDirectoryTree(source_root / "reports" / "markdown",
+                           target_root / "reports" / "markdown");
 }
 
 auto ExpectBuildRuntimeThrows(

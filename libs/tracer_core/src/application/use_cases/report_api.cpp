@@ -158,6 +158,7 @@ auto ToPeriodReport(const RangeReportData& source) -> PeriodReportData {
 
 auto FormatTemporalStructuredReport(
     const TemporalStructuredReportOutput& output, ReportFormat format,
+    std::string_view locale,
     tracer_core::application::ports::IReportDtoFormatter& formatter)
     -> TextOutput {
   switch (output.display_mode) {
@@ -169,7 +170,7 @@ auto FormatTemporalStructuredReport(
             "Temporal structured report kind/data mismatch: day.");
       }
       return {.ok = true,
-              .content = formatter.FormatDaily(*report, format),
+              .content = formatter.FormatDailyLocalized(*report, format, locale),
               .error_message = ""};
     }
     case ReportDisplayMode::kMonth: {
@@ -180,8 +181,8 @@ auto FormatTemporalStructuredReport(
             "Temporal structured report kind/data mismatch: month.");
       }
       return {.ok = true,
-              .content = formatter.FormatMonthly(WrapMonthlyReport(*report),
-                                                 format),
+              .content = formatter.FormatMonthlyLocalized(
+                  WrapMonthlyReport(*report), format, locale),
               .error_message = ""};
     }
     case ReportDisplayMode::kWeek: {
@@ -192,8 +193,8 @@ auto FormatTemporalStructuredReport(
             "Temporal structured report kind/data mismatch: week.");
       }
       return {.ok = true,
-              .content = formatter.FormatWeekly(WrapWeeklyReport(*report),
-                                                format),
+              .content = formatter.FormatWeeklyLocalized(
+                  WrapWeeklyReport(*report), format, locale),
               .error_message = ""};
     }
     case ReportDisplayMode::kYear: {
@@ -204,8 +205,8 @@ auto FormatTemporalStructuredReport(
             "Temporal structured report kind/data mismatch: year.");
       }
       return {.ok = true,
-              .content = formatter.FormatYearly(WrapYearlyReport(*report),
-                                                format),
+              .content = formatter.FormatYearlyLocalized(
+                  WrapYearlyReport(*report), format, locale),
               .error_message = ""};
     }
     case ReportDisplayMode::kRecent:
@@ -217,7 +218,7 @@ auto FormatTemporalStructuredReport(
             "Temporal structured report kind/data mismatch: period.");
       }
       return {.ok = true,
-              .content = formatter.FormatPeriod(*report, format),
+              .content = formatter.FormatPeriodLocalized(*report, format, locale),
               .error_message = "",
               .report_window_metadata = BuildWindowMetadata(*report)};
     }
@@ -541,7 +542,8 @@ auto RenderTemporalReportForExport(ReportApi& api,
   return api.RunTemporalReportQuery(
       {.display_mode = request.display_mode,
        .selection = selection,
-       .format = request.format});
+       .format = request.format,
+       .locale = request.locale});
 }
 
 void RequireExportScopeRules(const TemporalReportExportRequest& request) {
@@ -644,6 +646,7 @@ auto ReportApi::RunTemporalReportQuery(const TemporalReportQueryRequest& request
       return failure;
     }
     return FormatTemporalStructuredReport(structured, request.format,
+                                          request.locale,
                                           *report_dto_formatter_);
   } catch (const tracer_core::common::ReportingContractError& error) {
     auto failure =

@@ -50,9 +50,7 @@ auto PrepareCustomConfigFixture(
 
   const std::filesystem::path aliases_root = config_root / "aliases";
   if (!CopyFixtureFile(converter_main_fixture_relative_path,
-                       aliases_root / "_system.toml") ||
-      !CopyFixtureFile("test/fixtures/config/custom/aliases/minimal.toml",
-                       aliases_root / "minimal.toml")) {
+                       aliases_root / "_system.toml")) {
     return std::nullopt;
   }
   return aliases_root / "_system.toml";

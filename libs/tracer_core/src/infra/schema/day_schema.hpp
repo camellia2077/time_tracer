@@ -63,6 +63,7 @@ inline constexpr std::string_view kMonth = "month";
 inline constexpr std::string_view kWakeAnchor = "wake_anchor";
 inline constexpr std::string_view kRemark = "remark";
 inline constexpr std::string_view kGetupTime = "getup_time";
+inline constexpr std::string_view kActivityCount = "activity_count";
 }  // namespace db
 
 struct FieldMapping {
@@ -78,9 +79,9 @@ struct JsonOnlyKeySet {
   std::span<const std::string_view> values;
 };
 
-inline constexpr std::array<std::string_view, 6> kDaysTableColumns = {
+inline constexpr std::array<std::string_view, 7> kDaysTableColumns = {
     db::kDate,       db::kYear,   db::kMonth,
-    db::kWakeAnchor, db::kRemark, db::kGetupTime,
+    db::kWakeAnchor, db::kRemark, db::kGetupTime, db::kActivityCount,
 };
 
 inline constexpr std::array<std::string_view, 7> kHeaderJsonKeys = {
@@ -88,9 +89,8 @@ inline constexpr std::array<std::string_view, 7> kHeaderJsonKeys = {
     json::kGetup, json::kActivityCount, json::kRemark,
 };
 
-inline constexpr std::array<std::string_view, 5> kHeaderJsonOnlyKeys = {
-    json::kStatus,    json::kExercise,      json::kCardio,
-    json::kAnaerobic, json::kActivityCount,
+inline constexpr std::array<std::string_view, 4> kHeaderJsonOnlyKeys = {
+    json::kStatus, json::kExercise, json::kCardio, json::kAnaerobic,
 };
 
 inline constexpr std::array<FieldMapping, 9> kHeaderFieldMappings = {{
@@ -102,7 +102,7 @@ inline constexpr std::array<FieldMapping, 9> kHeaderFieldMappings = {{
     {.json_key_ = json::kAnaerobic, .db_column_ = ""},
     {.json_key_ = json::kGetup, .db_column_ = db::kGetupTime},
     {.json_key_ = json::kRemark, .db_column_ = db::kRemark},
-    {.json_key_ = json::kActivityCount, .db_column_ = ""},
+    {.json_key_ = json::kActivityCount, .db_column_ = db::kActivityCount},
 }};
 
 constexpr auto ContainsValue(std::span<const std::string_view> items,

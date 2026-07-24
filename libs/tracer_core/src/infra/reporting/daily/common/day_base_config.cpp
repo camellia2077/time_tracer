@@ -49,6 +49,7 @@ void DayBaseConfig::LoadBaseConfig(const DailyReportLabels& labels) {
   title_prefix_ = labels.report_title_prefix;
   date_label_ = labels.date_label;
   total_time_label_ = labels.total_time_label;
+  activity_count_label_ = labels.activity_count_label;
   status_label_ = labels.status_label;
   wake_anchor_label_ = labels.wake_anchor_label;
   getup_time_label_ = labels.getup_time_label;
@@ -70,6 +71,9 @@ auto DayBaseConfig::GetDateLabel() const -> const std::string& {
 }
 auto DayBaseConfig::GetTotalTimeLabel() const -> const std::string& {
   return total_time_label_;
+}
+auto DayBaseConfig::GetActivityCountLabel() const -> const std::string& {
+  return activity_count_label_;
 }
 auto DayBaseConfig::GetStatusLabel() const -> const std::string& {
   return status_label_;

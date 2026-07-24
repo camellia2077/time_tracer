@@ -155,6 +155,8 @@
      - optional `days`
      - optional `anchor_date` (`recent_days` only)
      - optional `format`
+     - optional `locale` (`en|zh|ja`; unknown values fall back to English for
+       Markdown text)
      - optional `export_scope` (`single|all_matching|batch_recent_list`)
      - optional `recent_days_list`
    - `query` response fields:

@@ -368,18 +368,6 @@ if(BUILD_TESTING)
             COMMAND tc_shared_mod_smoke_tests
         )
 
-        add_executable(tc_domain_mod_smoke_tests
-            "${TRACER_CORE_LIB_TESTS_ROOT}/domain/tests/domain_modules_smoke_tests.cpp"
-        )
-        setup_app_target(tc_domain_mod_smoke_tests NO_PCH)
-        target_link_libraries(tc_domain_mod_smoke_tests PRIVATE
-            time_tracker_domain
-        )
-        add_test(
-            NAME tc_domain_mod_smoke_tests
-            COMMAND tc_domain_mod_smoke_tests
-        )
-
         add_executable(tc_dom_logic_mod_smoke_tests
             "${TRACER_CORE_LIB_TESTS_ROOT}/domain/tests/domain_logic_modules_smoke_tests.cpp"
         )

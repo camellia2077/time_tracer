@@ -4,12 +4,13 @@
 #text(font: "MiSans VF", size: 14pt)[= Period Report: Last 10 days (2026-01-01 to 2026-01-10)])
 
 + *Total Time Recorded:* 15h 0m (average: 3h 0m/day)
++ *Activity Count:* 10 (average: 1.00/day)
 + *Actual Days with Records:* 5
-+ *Status Days (True):* 4 (80.00%)
-+ *Wake Anchor Days (True):* 3 (60.00%)
-+ *Exercise Days (True):* 2 (40.00%)
-+ *Cardio Days (True):* 1 (20.00%)
-+ *Anaerobic Days (True):* 2 (40.00%)
++ *Status Days:* 4 (80.00%)
++ *Wake Anchor Days:* 3 (60.00%)
++ *Exercise Days:* 2 (40.00%)
++ *Cardio Days:* 1 (20.00%)
++ *Anaerobic Days:* 2 (40.00%)
 #text(font: "MiSans VF", size: 12pt)[= Project Breakdown])
 
 #text(font: "MiSans VF", size: 12pt)[== Work: 8h 0m (average: 1h 36m/day) (53.3%)]

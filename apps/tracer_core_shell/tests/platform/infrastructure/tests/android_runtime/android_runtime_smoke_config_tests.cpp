@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "application/dto/pipeline_requests.hpp"
+#include "host/bootstrap/android_runtime_config_bridge.hpp"
 #include "infrastructure/tests/android_runtime/android_runtime_smoke_internal.hpp"
 
 namespace android_runtime_tests::smoke {
@@ -19,6 +20,29 @@ auto RunConfigSmokeSection(int& failures) -> void {
 
   RuntimeFixture fixture = std::move(*fixture_opt);
   try {
+    const auto runtime_config_paths =
+        tracer_core::shell::config_bridge::
+            ResolveAndroidRuntimeConfigPathsBridge(fixture.config_toml_path);
+    const auto report_catalog =
+        tracer_core::shell::config_bridge::BuildAndroidReportCatalogBridge(
+            runtime_config_paths);
+    for (const std::string_view locale : {"en", "zh", "ja"}) {
+      if (!report_catalog.loaded_reports.markdown_locales.contains(
+              std::string(locale))) {
+        ++failures;
+        std::cerr << "[FAIL] Android report catalog should load Markdown "
+                     "locale: "
+                  << locale << '\n';
+      }
+    }
+    const auto zh_it = report_catalog.loaded_reports.markdown_locales.find("zh");
+    if (zh_it == report_catalog.loaded_reports.markdown_locales.end() ||
+        zh_it->second.day.labels.date_label != "日期") {
+      ++failures;
+      std::cerr << "[FAIL] Android report catalog should load Chinese Markdown "
+                   "labels.\n";
+    }
+
     tracer_core::core::dto::DataQueryRequest chart_empty_request;
     chart_empty_request.action =
         tracer_core::core::dto::DataQueryAction::kReportChart;

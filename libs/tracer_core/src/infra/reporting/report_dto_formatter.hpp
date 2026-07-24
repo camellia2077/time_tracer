@@ -4,6 +4,7 @@
 
 #include <map>
 #include <memory>
+#include <string_view>
 
 #include "application/ports/reporting/i_report_dto_formatter.hpp"
 #include "infra/config/models/report_catalog.hpp"
@@ -25,6 +26,17 @@ class ReportDtoFormatter final
       -> std::string override;
   auto FormatYearly(const YearlyReportData& report, ReportFormat format)
       -> std::string override;
+  auto FormatDailyLocalized(const DailyReportData& report, ReportFormat format,
+                            std::string_view locale) -> std::string override;
+  auto FormatMonthlyLocalized(const MonthlyReportData& report,
+                              ReportFormat format, std::string_view locale)
+      -> std::string override;
+  auto FormatPeriodLocalized(const PeriodReportData& report, ReportFormat format,
+                             std::string_view locale) -> std::string override;
+  auto FormatWeeklyLocalized(const WeeklyReportData& report, ReportFormat format,
+                             std::string_view locale) -> std::string override;
+  auto FormatYearlyLocalized(const YearlyReportData& report, ReportFormat format,
+                             std::string_view locale) -> std::string override;
 
  private:
   template <typename ReportDataType>

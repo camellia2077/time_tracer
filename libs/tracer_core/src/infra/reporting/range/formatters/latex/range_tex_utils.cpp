@@ -29,19 +29,26 @@ void DisplaySummary(std::string& report_stream,
 
   if (data.actual_days > 0) {
     std::vector<TexCommonUtils::SummaryItem> items = {
-        {config->GetTotalTimeLabel(),
-         TexUtils::EscapeLatex(
-             TimeFormatDuration(data.total_duration, data.actual_days))},
+      {config->GetTotalTimeLabel(),
+       TexUtils::EscapeLatex(
+           TimeFormatDuration(data.total_duration, data.actual_days))},
+      {config->GetActivityCountLabel(),
+       FormatCountWithAverage(data.matched_record_count, data.requested_days)},
         {config->GetActualDaysLabel(), std::to_string(data.actual_days)},
-        {config->GetStatusDaysLabel(),
+        {FormatBooleanCountLabel(config->GetStatusDaysLabel(),
+                                 data.status_true_days),
          FormatRatio(data.status_true_days, data.actual_days)},
-        {config->GetWakeAnchorDaysLabel(),
+        {FormatBooleanCountLabel(config->GetWakeAnchorDaysLabel(),
+                                 data.wake_anchor_days),
          FormatRatio(data.wake_anchor_days, data.actual_days)},
-        {config->GetExerciseDaysLabel(),
+        {FormatBooleanCountLabel(config->GetExerciseDaysLabel(),
+                                 data.exercise_true_days),
          FormatRatio(data.exercise_true_days, data.actual_days)},
-        {config->GetCardioDaysLabel(),
+        {FormatBooleanCountLabel(config->GetCardioDaysLabel(),
+                                 data.cardio_true_days),
          FormatRatio(data.cardio_true_days, data.actual_days)},
-        {config->GetAnaerobicDaysLabel(),
+        {FormatBooleanCountLabel(config->GetAnaerobicDaysLabel(),
+                                 data.anaerobic_true_days),
          FormatRatio(data.anaerobic_true_days, data.actual_days)}};
 
     TexCommonUtils::RenderSummaryList(report_stream, items,

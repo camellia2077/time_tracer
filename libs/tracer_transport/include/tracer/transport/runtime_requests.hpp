@@ -84,6 +84,7 @@ struct TemporalReportRequestPayload {
   std::optional<int> days;
   std::optional<std::string> anchor_date;
   std::optional<std::string> format;
+  std::optional<std::string> locale;
   std::optional<std::string> export_scope;
   std::optional<std::vector<int>> recent_days_list;
 };

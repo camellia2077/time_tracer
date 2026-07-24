@@ -59,6 +59,7 @@ struct TemporalReportQueryRequest {
   ReportDisplayMode display_mode = ReportDisplayMode::kDay;
   TemporalSelectionPayload selection;
   ReportFormat format = ReportFormat::kMarkdown;
+  std::string locale = "en";
 };
 
 struct TemporalStructuredReportQueryRequest {
@@ -77,6 +78,7 @@ struct TemporalReportExportRequest {
   std::optional<TemporalSelectionPayload> selection;
   std::vector<int> recent_days_list;
   std::string output_root_path;
+  std::string locale = "en";
 };
 
 }  // namespace tracer_core::core::dto

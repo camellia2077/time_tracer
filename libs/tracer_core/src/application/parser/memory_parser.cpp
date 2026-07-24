@@ -97,6 +97,8 @@ auto MemoryParser::Parse(
               : 0;
       day_data.remark = ProcessDayRemarks(input_day.generalRemarks);
       day_data.getup_time = ResolveGetupTime(input_day);
+      day_data.activity_count =
+          static_cast<int>(input_day.processedActivities.size());
 
       all_data.days.push_back(std::move(day_data));
 

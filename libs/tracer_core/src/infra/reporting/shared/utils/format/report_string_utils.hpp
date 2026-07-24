@@ -64,4 +64,10 @@ REPORTS_SHARED_API auto FormatCountWithPercentage(
     int count, int total_count, const std::string& percent_suffix = "%")
     -> std::string;
 
+REPORTS_SHARED_API auto FormatCountWithAverage(int count, int total_days)
+    -> std::string;
+
+REPORTS_SHARED_API auto FormatBooleanCountLabel(std::string label, int count)
+    -> std::string;
+
 #endif  // INFRASTRUCTURE_REPORTS_SHARED_UTILS_FORMAT_REPORT_STRING_UTILS_H_

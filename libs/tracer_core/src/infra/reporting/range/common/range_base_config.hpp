@@ -16,6 +16,7 @@ class REPORTS_SHARED_API RangeBaseConfig {
 
   [[nodiscard]] auto GetTitleTemplate() const -> const std::string&;
   [[nodiscard]] auto GetTotalTimeLabel() const -> const std::string&;
+  [[nodiscard]] auto GetActivityCountLabel() const -> const std::string&;
   [[nodiscard]] auto GetActualDaysLabel() const -> const std::string&;
   [[nodiscard]] auto GetStatusDaysLabel() const -> const std::string&;
   [[nodiscard]] auto GetWakeAnchorDaysLabel() const -> const std::string&;
@@ -31,6 +32,7 @@ class REPORTS_SHARED_API RangeBaseConfig {
 
   std::string title_template_;
   std::string total_time_label_;
+  std::string activity_count_label_;
   std::string actual_days_label_;
   std::string status_days_label_;
   std::string wake_anchor_days_label_;

@@ -108,6 +108,8 @@ Notes:
 - Android UI in this refactor does not expose a recent anchor picker.
 - The Android contract already supports optional `anchorDate` so future product
   work can send anchored recent requests without another ABI change.
+- Markdown report requests carry the current Android UI language as `locale`;
+  Core selects `reports/markdown/<locale>/` and falls back to English.
 
 ## TXT Runtime Family
 

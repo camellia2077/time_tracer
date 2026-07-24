@@ -22,6 +22,7 @@ constexpr int kDayIdxMonth = 3;
 constexpr int kDayIdxWakeAnchor = 4;
 constexpr int kDayIdxRemark = 5;
 constexpr int kDayIdxGetupTime = 6;
+constexpr int kDayIdxActivityCount = 7;
 
 // Record Table Bind Indices
 constexpr int kRecordIdxLogicalId = 1;
@@ -68,6 +69,8 @@ auto Writer::InsertDays(const std::vector<DayData>& days) -> void {
       sqlite3_bind_text(stmt_insert_day_, kDayIdxGetupTime,
                         day_data.getup_time->c_str(), -1, SQLITE_TRANSIENT);
     }
+    sqlite3_bind_int(stmt_insert_day_, kDayIdxActivityCount,
+                     day_data.activity_count);
 
     if (sqlite3_step(stmt_insert_day_) != SQLITE_DONE) {
       throw std::runtime_error("Error inserting day row.");

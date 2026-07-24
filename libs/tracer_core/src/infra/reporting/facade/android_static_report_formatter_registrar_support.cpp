@@ -52,12 +52,6 @@ auto BuildDayMarkdownCoreFormatter(const ReportCatalog& catalog)
       catalog.loaded_reports.markdown.day);
 }
 
-auto BuildMonthMarkdownCoreFormatter(const ReportCatalog& catalog)
-    -> std::unique_ptr<IReportFormatter<MonthlyReportData>> {
-  return BuildCoreFormatter<MonthMdConfig, MonthMdFormatter, MonthlyReportData>(
-      catalog.loaded_reports.markdown.month);
-}
-
 #if TT_REPORT_ENABLE_LATEX
 auto BuildDayLatexCoreFormatter(const ReportCatalog& catalog)
     -> std::unique_ptr<IReportFormatter<DailyReportData>> {
@@ -65,12 +59,6 @@ auto BuildDayLatexCoreFormatter(const ReportCatalog& catalog)
       catalog.loaded_reports.latex.day);
 }
 
-auto BuildMonthLatexCoreFormatter(const ReportCatalog& catalog)
-    -> std::unique_ptr<IReportFormatter<MonthlyReportData>> {
-  return BuildCoreFormatter<MonthTexConfig, MonthTexFormatter,
-                            MonthlyReportData>(
-      catalog.loaded_reports.latex.month);
-}
 #endif
 
 #if TT_REPORT_ENABLE_TYPST
@@ -80,12 +68,6 @@ auto BuildDayTypstCoreFormatter(const ReportCatalog& catalog)
       catalog.loaded_reports.typst.day);
 }
 
-auto BuildMonthTypstCoreFormatter(const ReportCatalog& catalog)
-    -> std::unique_ptr<IReportFormatter<MonthlyReportData>> {
-  return BuildCoreFormatter<MonthTypConfig, MonthTypFormatter,
-                            MonthlyReportData>(
-      catalog.loaded_reports.typst.month);
-}
 #endif
 
 auto BuildRangeMarkdownCoreFormatter(const RangeReportLabels& labels)
@@ -130,6 +112,33 @@ class RangeReportFormatterAdapter final
  private:
   std::unique_ptr<IReportFormatter<RangeReportData>> delegate_;
 };
+
+auto BuildMonthMarkdownCoreFormatter(const ReportCatalog& catalog)
+    -> std::unique_ptr<IReportFormatter<MonthlyReportData>> {
+  return std::make_unique<RangeReportFormatterAdapter<MonthlyReportData>>(
+      BuildRangeMarkdownCoreFormatter(
+          catalog.loaded_reports.markdown.month.labels));
+}
+
+#if TT_REPORT_ENABLE_LATEX
+auto BuildMonthLatexCoreFormatter(const ReportCatalog& catalog)
+    -> std::unique_ptr<IReportFormatter<MonthlyReportData>> {
+  return std::make_unique<RangeReportFormatterAdapter<MonthlyReportData>>(
+      BuildRangeLatexCoreFormatter(catalog.loaded_reports.latex.month.labels,
+                                   catalog.loaded_reports.latex.month.fonts,
+                                   catalog.loaded_reports.latex.month.layout));
+}
+#endif
+
+#if TT_REPORT_ENABLE_TYPST
+auto BuildMonthTypstCoreFormatter(const ReportCatalog& catalog)
+    -> std::unique_ptr<IReportFormatter<MonthlyReportData>> {
+  return std::make_unique<RangeReportFormatterAdapter<MonthlyReportData>>(
+      BuildRangeTypstCoreFormatter(catalog.loaded_reports.typst.month.labels,
+                                   catalog.loaded_reports.typst.month.fonts,
+                                   catalog.loaded_reports.typst.month.layout));
+}
+#endif
 
 auto BuildPeriodMarkdownCoreFormatter(const ReportCatalog& catalog)
     -> std::unique_ptr<IReportFormatter<PeriodReportData>> {

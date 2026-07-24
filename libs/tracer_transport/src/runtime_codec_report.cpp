@@ -56,6 +56,7 @@ auto DecodeTemporalReportRequest(std::string_view request_json)
   const auto kDays = TryReadIntField(kPayload, "days");
   const auto kAnchorDate = TryReadStringField(kPayload, "anchor_date");
   const auto kFormat = TryReadStringField(kPayload, "format");
+  const auto kLocale = TryReadStringField(kPayload, "locale");
   const auto kExportScope = TryReadStringField(kPayload, "export_scope");
   const auto kRecentDays = TryReadIntListField(kPayload, "recent_days_list");
   if (kOperationKind.HasError()) {
@@ -85,6 +86,9 @@ auto DecodeTemporalReportRequest(std::string_view request_json)
   if (kFormat.HasError()) {
     throw std::invalid_argument(kFormat.error.message);
   }
+  if (kLocale.HasError()) {
+    throw std::invalid_argument(kLocale.error.message);
+  }
   if (kExportScope.HasError()) {
     throw std::invalid_argument(kExportScope.error.message);
   }
@@ -102,6 +106,7 @@ auto DecodeTemporalReportRequest(std::string_view request_json)
   out.days = kDays.value;
   out.anchor_date = kAnchorDate.value;
   out.format = kFormat.value;
+  out.locale = kLocale.value;
   out.export_scope = kExportScope.value;
   out.recent_days_list = kRecentDays.value;
   return out;
@@ -133,6 +138,9 @@ auto EncodeTemporalReportRequest(const TemporalReportRequestPayload& request)
   }
   if (request.format.has_value()) {
     payload["format"] = *request.format;
+  }
+  if (request.locale.has_value()) {
+    payload["locale"] = *request.locale;
   }
   if (request.export_scope.has_value()) {
     payload["export_scope"] = *request.export_scope;

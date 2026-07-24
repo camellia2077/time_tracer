@@ -31,6 +31,29 @@ auto HasInferredOvernightSleep(const DailyLog& day,
           ResolveSleepInferenceProjectPath(config));
 }
 
+auto ResolveMappedDescription(const RawEvent& raw_event,
+                              const ConverterConfig& config) -> std::string {
+  const auto mapping = config.text_mapping.find(raw_event.description);
+  return mapping == config.text_mapping.end() ? raw_event.description
+                                               : mapping->second;
+}
+
+auto HasExplicitSleepInterval(const DailyLog& day,
+                              const ConverterConfig& config) -> bool {
+  for (const auto& raw_event : day.rawEvents) {
+    if (raw_event.kind != RawEventKind::Interval) {
+      continue;
+    }
+
+    const std::string mapped = ResolveMappedDescription(raw_event, config);
+    if (mapped == config.sleep_inference.sleep_project_path ||
+        mapped.starts_with("sleep_") || mapped.starts_with("sleep/")) {
+      return true;
+    }
+  }
+  return false;
+}
+
 auto ShouldUsePreviousBoundaryForLeadingPoint(const DailyLog& day) -> bool {
   return day.isContinuation && !day.rawEvents.empty() &&
          day.rawEvents.front().kind == RawEventKind::Point;
@@ -60,7 +83,8 @@ void DayProcessor::Process(DailyLog& previous_day, DailyLog& day_to_process) {
   // wake-anchor status. The prerequisite "wake must be the first semantic
   // event of the day" belongs to earlier parse + logic-validation semantics.
   if (!previous_day.date.empty() && !previous_day.rawEvents.empty() &&
-      !day_to_process.getupTime.empty() && !day_to_process.isContinuation) {
+      !day_to_process.getupTime.empty() && !day_to_process.isContinuation &&
+      !HasExplicitSleepInterval(previous_day, config_)) {
     BaseActivityRecord sleep_activity;
     sleep_activity.start_time_str = converter_core_internal::NormalizeTime(
         previous_day.rawEvents.back().endTimeStr);

@@ -39,128 +39,71 @@ The system is built with an **Android + Core Engine** architecture: Android serv
 
 ---
 
-## Text Input & Alias Mapping Example
+## What Is Recorded
 
-Time Tracer uses Android as its primary interface, but underlying data can be represented as simple, readable TXT logs. Each line acts like a “time subtitle,” describing what happened at a specific time or time range.
-
-For example, events can be recorded in the format `HHMM + activity token` or `HHMM-HHMM + activity token`:
+Each record contains a point in time or a time range, together with the activity name entered by the user. For example:
 
 ```text
 0613 wake up
-0634 breakfast
 0640-1038 algorithms
-1038-1224 linear algebra
-1443-1922 multiple integrals // exercises
 1930-2030 strength training
-````
-
-Here, `wake up`, `algorithms`, `linear algebra`, `multiple integrals`, and `strength training` are user-entered activity tokens. They can be written in any language, abbreviation, or custom format. The system uses alias mapping to resolve these tokens into canonical activity paths.
-
----
-
-## Daily Activity Example
-
-The corresponding alias child file can be defined as:
-
-```toml
-parent = "routine"
-
-[aliases]
-"wash face" = "oral-hygiene"
-"brush teeth" = "oral-hygiene"
-"o" = "oral-hygiene"
 ```
 
-This configuration means:
+Activity names may be written in any language, abbreviation, or custom alias. The system resolves them to canonical activity paths, records the duration, and keeps the readable TXT log as the source record. SQLite is derived query and analytics data, not a second source that must be maintained manually.
 
-* `wash face`, `brush teeth`, and `o` will all be mapped to the same canonical path `routine_oral-hygiene`
-* The left side represents the user-input token (which can be short for fast entry)
-* The right side is the normalized activity name used for aggregation and statistics
-* Multiple tokens can map to the same activity node for unified analytics
+## Activity Hierarchy and Recording
 
----
-
-## Multi-Level Activity Example
-
-A more complex hierarchical example:
+The activity directory behaves like a folder tree. A normal alias maps input to a leaf activity. A group can also become directly recordable through `group_aliases` while still containing child activities:
 
 ```toml
-parent = "study"
+parent = "exercise"
 
-[aliases]
-"cs" = "computer-science"
-"computer" = "computer-science"
-"math" = "math"
-"mathematics" = "math"
+[aliases.strength-training]
+group_aliases = ["strength training"]
 
-[aliases.computer-science]
-"algorithms" = "algorithm"
-"algo" = "algorithm"
-"architecture" = "computer-architecture"
-"computer architecture" = "computer-architecture"
-"networks" = "computer-network"
-"computer networks" = "computer-network"
-
-[aliases.math]
-"calculus" = "calculus"
-"linear algebra" = "linear-algebra"
-"linalg" = "linear-algebra"
-
-[aliases.math.calculus]
-"multiple integrals" = "multiple-integral"
-"double integrals" = "multiple-integral"
+[aliases.strength-training.squat]
+group_aliases = ["squat"]
+"front squat" = "front-squat"
 ```
 
-```toml
-parent = "fitness"
+These inputs record to different canonical paths:
 
-[aliases]
-"strength training" = "strength-training"
-"strength" = "strength-training"
-"cardio" = "cardio"
-"aerobic" = "cardio"
-```
+* `strength training` → `exercise_strength-training`
+* `squat` → `exercise_strength-training_squat`
+* `front squat` → `exercise_strength-training_squat_front-squat`
 
-These configurations expand into canonical activity paths such as:
+Time recorded at a child is automatically aggregated into every parent. A record under `exercise_strength-training_squat` is therefore included when querying `exercise_strength-training` or `exercise`. The same data can be inspected at action, category, and top-level summary granularity.
 
-* `algorithms / algo → study_computer-science_algorithm`
-* `architecture → study_computer-science_computer-architecture`
-* `networks → study_computer-science_computer-network`
-* `linear algebra → study_math_linear-algebra`
-* `multiple integrals → study_math_calculus_multiple-integral`
-* `strength training → fitness_strength-training`
-* `cardio → fitness_cardio`
+## Can Activities Be Moved or Renamed?
 
-These paths not only convert user tokens into canonical names but also define their position in the hierarchical activity tree.
+Yes. The CLI and Android configuration flows support structural edits:
 
-For example, `multiple integrals → study_math_calculus_multiple-integral` represents time spent on exercises in the calculus subdomain under mathematics. When time is recorded at this leaf node, it is automatically aggregated into all parent nodes:
+* A leaf alias can be promoted to a directly recordable group; promotion itself preserves the existing canonical paths.
+* A leaf alias can be moved into an existing category. Its canonical path then changes, for example from `exercise_running` to `exercise_cardio_running`.
+* A group record name can be renamed, or an additional record name can be added.
 
-* `study_math_calculus`
-* `study_math`
-* `study`
+Moving a leaf or renaming a group record name affects historical data. The system updates the alias TOML, replaces the corresponding canonical activity tokens in TXT, and rebuilds the database; the active data is replaced only after all steps succeed. Adding a group record name affects future input only, so historical TXT and the database do not need to change. Moving a group together with all of its descendants is not currently supported as one operation.
 
-Similarly, `strength training → fitness_strength-training` is aggregated into:
+## How Data Is Displayed
 
-* `fitness_strength-training`
-* `fitness`
+Queries and reports aggregate by canonical activity path rather than treating different input aliases as separate activities. Reports provide:
 
-This allows the same dataset to support both fine-grained analysis and high-level summaries.
+* total recorded time, recorded days, and activity counts for the selected period;
+* a hierarchical activity breakdown in which parent durations include child durations;
+* daily, weekly, monthly, yearly, and custom-range summaries;
+* Markdown, LaTeX, and Typst exports. Markdown supports English, Chinese, and Japanese text.
 
-From a statistical perspective, this mapping can be understood as a weighted tree:
+Thus, `strength training`, `strength`, and any other aliases that resolve to the same canonical path appear as one activity node in queries and reports. TOML defines aliases and hierarchy; detailed configuration and migration constraints are documented under `docs/time_tracer/core/capabilities/config/`.
 
-* Nodes represent canonical activity paths
-* Weights represent accumulated durations from leaf nodes
-* User input is flexible and free-form, but analysis always operates on normalized paths
-* Child node time is recursively aggregated into parent nodes, enabling multi-level inspection of the same dataset
+## Android Query Displays
 
-It is important to note that this is a **statistical semantic model**, not the full ingestion pipeline description. The system first parses logs or Android input into normalized activity records and persists them, and only then projects them into hierarchical views during querying or reporting.
+Android is currently the primary development entry point. Query results are presented in the following user-facing forms:
 
-The alias resolution rules are:
+* **Timeline**: A day query can show that day's activities in chronological order. Each item shows its start time, end time, activity path, duration, and remark. The path is rendered as a top-level category followed by nested activities. The Timeline also supports editing the day remark and activity remarks.
+* **Tree**: A selected day, week, month, year, recent-period, or custom-range query can return an activity tree. Nodes are expanded by default, and a node with children can be expanded or collapsed by tapping it. Each node shows its canonical name, relative path, aggregated duration, and a progress bar for its share of the current tree result; child percentages are calculated relative to their parent. Results can be sorted by duration in ascending or descending order.
+* **Activity composition charts**: The same activity tree can be rendered as a Pie chart, Horizontal Bar chart, or Treemap. The chart can measure either duration or activity frequency.
 
-* `parent` defines the top-level category
-* `[aliases.xxx.yyy]` defines intermediate hierarchy levels
-* The right-hand side defines leaf-level canonical names
-* Final canonical paths are joined using `_`, e.g. `study_math_calculus_multiple-integral`
+Activity composition charts support path-by-path drill-down. Tapping an activity that has children enters the next level for that activity, in the same way as opening a folder; the current path is shown and a control is provided to return to the previous level. At each level, the chart outputs only the selected node's direct children and calculates their duration or frequency shares within that level. The percentage is therefore the composition of the current node, not a fixed global percentage. The legend and selected item show the corresponding value and percentage.
 
 
 

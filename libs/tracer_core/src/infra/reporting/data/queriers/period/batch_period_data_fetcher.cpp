@@ -136,6 +136,7 @@ auto BatchPeriodDataFetcher::FetchAllData(const std::vector<int>& days_list)
       if (record.date >= data.start_date) {
         project_agg[record.project_id] += record.duration;
         data.total_duration += record.duration;
+        ++data.matched_record_count;
         distinct_dates.insert(record.date);
 
         const auto kPathParts = name_cache.GetPathParts(record.project_id);

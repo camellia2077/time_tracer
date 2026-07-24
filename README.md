@@ -22,126 +22,71 @@ Time Tracer 的目标不是简单记录“今天学习了多久”或“今天�
 4. **文本作为事实来源**：原始记录以可读 TXT 保存，用户可长期持有、备份、迁移；SQLite 与报告均由文本记录派生。  
 5. **跨平台同一数据模型**：Android、CLI 与后续报表使用同一套活动映射和统计语义，减少格式与平台切换成本。  
 
-### 文本输入与别名映射示例
+### 记录什么
 
-Time Tracer 的日常使用入口是 Android，但底层记录可以落到简单、可读的 TXT 文本中。TXT 更像“时间字幕”：每一行描述某个时间点或时间区间发生了什么。
-
-例如，事件行可以采用 `HHMM + 活动 token` 或 `HHMM-HHMM + 活动 token` 的形式：
+每条记录包含一个时间点或时间区间，以及用户输入的活动名称。例如：
 
 ```text
 0613起床
-0634吃早饭
 0640-1038算法
-1038-1224线性代数
-1443-1922重积分 // 习题训练
 1930-2030力量训练
 ```
 
-这里的 `起床`、`算法`、`线性代数`、`重积分`、`力量训练` 都是用户实际输入的活动 token。它们可以是中文、英文、缩写或任意自定义写法。系统会通过 alias mapping 将这些 token 解析到规范活动路径中。
+活动名称可以是中文、英文、缩写或自定义 alias。系统会把它解析为规范活动路径，记录实际持续时间，并保留可读的 TXT 原始日志。SQLite 是由 TXT 派生的查询与统计数据，不是另一套需要手工维护的记录来源。
 
-#### 日常活动示例
+### 活动层级与记录方式
 
-对应的 alias child file 可以写成：
-
-```toml
-parent = "routine"
-
-[aliases]
-"洗漱" = "oral-hygiene"
-"刷牙" = "oral-hygiene"
-"o" = "oral-hygiene"
-```
-
-上面的配置表示：
-
-* `洗漱`、`刷牙`、`o` 都会被解析为同一个规范活动路径 `routine_oral-hygiene`
-* 左键是用户实际输入的活动 token，可以尽量短，方便快速记录
-* 右键是系统用于统计和归类的规范活动名
-* 多个输入 token 可以映射到同一个活动节点，用于统一统计口径
-
-#### 多层级活动示例
-
-更复杂的层级示例如下：
+活动目录类似文件夹树。普通 alias 用于把输入名称映射到叶子活动；一个 group 也可以通过 `group_aliases` 直接成为可记录活动，同时继续拥有子活动：
 
 ```toml
-parent = "study"
+parent = "exercise"
 
-[aliases]
-"cs" = "computer-science"
-"计算机" = "computer-science"
-"math" = "math"
-"数学" = "math"
+[aliases.strength-training]
+group_aliases = ["无氧训练"]
 
-[aliases.computer-science]
-"算法" = "algorithm"
-"algo" = "algorithm"
-"计组" = "computer-organization"
-"计算机组成" = "computer-organization"
-"网络" = "computer-network"
-"计算机网络" = "computer-network"
-
-[aliases.math]
-"微积分" = "calculus"
-"线代" = "linear-algebra"
-"线性代数" = "linear-algebra"
-
-[aliases.math.calculus]
-"重积分" = "multiple-integral"
-"二重积分" = "multiple-integral"
+[aliases.strength-training.squat]
+group_aliases = ["蹲"]
+"深蹲" = "squat"
 ```
 
-```toml
-parent = "fitness"
+因此可以分别记录到：
 
-[aliases]
-"力量训练" = "strength-training"
-"力量" = "strength-training"
-"有氧训练" = "cardio"
-"有氧" = "cardio"
-```
+* `无氧训练` → `exercise_strength-training`
+* `蹲` → `exercise_strength-training_squat`
+* `深蹲` → `exercise_strength-training_squat_squat`
 
-这些配置会展开成类似下面的规范活动路径：
+子活动的时间会自动向上聚合到所有父节点。例如记录到 `exercise_strength-training_squat`，查询 `exercise_strength-training` 和 `exercise` 时也会包含这段时间。这样同一份数据既能看具体动作，也能看分类和总览。
 
-* `算法` / `algo -> study_computer-science_algorithm`
-* `计组` / `计算机组成 -> study_computer-science_computer-organization`
-* `网络` / `计算机网络 -> study_computer-science_computer-network`
-* `线代` / `线性代数 -> study_math_linear-algebra`
-* `重积分` / `二重积分 -> study_math_calculus_multiple-integral`
-* `力量训练` / `力量 -> fitness_strength-training`
-* `有氧训练` / `有氧 -> fitness_cardio`
+### 活动是否可以移动或改名
 
-这些路径不仅用于“把活动 token 变成长名字”，更重要的是定义了该活动在层级目录中的位置。
+可以通过 CLI 或 Android 的配置能力修改活动结构：
 
-例如，`重积分 -> study_math_calculus_multiple-integral` 可以表示“学习中，数学分类下，微积分方向的重积分训练”。当一段时长被记到叶子节点 `study_math_calculus_multiple-integral` 时，聚合统计会同时把这段时间计入它的所有父节点，包括：
+* 可以把原本的叶子 alias 提升为可记录 group；提升本身不改变已有规范路径。
+* 可以把叶子 alias 移入已有层级。移动会改变规范路径，例如从 `exercise_running` 变为 `exercise_cardio_running`。
+* 可以为已有 group 重命名记录别名或增加新的记录别名。
 
-* `study_math_calculus`
-* `study_math`
-* `study`
+移动叶子或重命名 group 记录别名会影响历史数据。系统会同步更新 alias TOML、TXT 中的规范活动 token，并重建数据库；所有步骤成功后才替换正式数据。增加 group 记录别名只影响今后的输入，不需要修改历史 TXT 或重建数据库。当前不能把一个 group 及其全部子孙作为整体一次移动。
 
-同理，`力量训练 -> fitness_strength-training` 会被计入：
+### 数据如何展示
 
-* `fitness_strength-training`
-* `fitness`
+查询和报告使用规范活动路径进行统计，而不是按用户输入的原始写法分别统计。报告会展示：
 
-因此，同一份记录既可以支持非常细粒度的统计，也可以支持更高层级的汇总。
+* 时间范围内的总记录时长、记录天数和活动数量；
+* 按活动树展开的时长明细，父节点包含子节点的聚合时长；
+* 日、周、月、年和自定义范围等不同时间尺度的汇总；
+* Markdown、LaTeX 和 Typst 格式的导出结果，其中 Markdown 支持中文、英文和日文文本。
 
-这里用学习和健身举例，是因为它们能直观展示 Time Tracer 的核心能力：用户只需要输入一个短 token，系统就能把它归入完整的多层级活动目录，并自动完成向上聚合。
+因此，输入 `力量训练`、`力量` 或其他映射到同一规范路径的 alias，最终会在查询和报告中作为同一个活动节点展示。TOML 主要用于定义 alias 与层级结构；具体配置规则和迁移约束见 `docs/time_tracer/core/capabilities/config/`。
 
-从统计与查询语义上，可以把这套映射理解为一棵带权活动树：
+### Android 中的查询展示
 
-* 节点是规范活动路径中的各级活动名
-* 权重来自最终归属于该节点及其子节点的持续时间
-* 用户输入可以很短、很自由，但统计、查询和报表都基于归一后的规范路径进行
-* 子节点时间会自动累加到父节点，因此可以在不同层级查看同一份时间数据
+Android 目前是主要开发入口，查询结果有以下几种面向用户的展示方式：
 
-需要注意的是，这是一种统计语义模型，而不是 ingest 主流程本体的完整描述。程序的主流程是先把文本或 Android 输入解析为标准化活动记录并持久化，再在查询或报表阶段按需要将这些记录投影为树状聚合结果。
+* **Timeline**：日查询可以按时间顺序查看当天的活动。每项显示开始时间、结束时间、活动路径、持续时长和备注；路径会按“顶层分类 > 下级活动”的形式展示。Timeline 还支持修改当天备注和活动备注。
+* **Tree**：按选定的日、周、月、年、最近或自定义范围查询活动树。节点默认展开，点击有子节点的节点可以展开或收起；节点显示规范名称、相对路径、聚合时长，并用进度条显示占整个当前树结果的比例（子节点比例按其父节点计算）。结果可以按时长升序或降序排列。
+* **活动构成图表**：从同一棵活动树生成 Pie、Horizontal Bar 和 Treemap 三种图表。图表支持按时长或活动次数统计。
 
-当前 alias child file 的展开规则是：
-
-* `parent` 是顶层路径段
-* `[aliases.xxx.yyy]` 是中间层级
-* 右值字符串是叶子路径段
-* 最终规范活动路径采用 `_` 连接，例如 `study_math_calculus_multiple-integral`
+活动构成图表支持沿路径逐层查看：点击一个有子节点的活动后，会进入该活动对应的下一级，交互方式类似打开文件夹；界面会显示当前路径，并提供返回上一级操作。进入某个层级后，图表只输出该节点的直接子节点，并计算它们在当前层级中的时长或次数比例，因此显示的是“当前节点内部的构成比例”，不是固定的全局比例。图例和选中项同时显示对应数值与百分比。
 
 
 ### 核心组件

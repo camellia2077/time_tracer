@@ -17,6 +17,7 @@ import tracer.core.infrastructure.reporting.dto;
 #include "application/ports/reporting/i_report_formatter_registry.hpp"
 #include "infra/config/models/report_catalog.hpp"
 #include "infra/reporting/facade/android_static_report_formatter_registrar.hpp"
+#include "infra/reporting/shared/utils/format/report_string_utils.hpp"
 #include "infra/tests/report_formatter/report_formatter_parity_internal.hpp"
 
 namespace {
@@ -75,6 +76,23 @@ auto BuildReportCatalog(const fs::path& repo_root) -> ReportCatalog {
   catalog.loaded_reports.markdown.year =
       infra_config::ReportConfigLoader::LoadYearlyMdConfig(markdown_config_dir /
                                                            "year.toml");
+
+  for (const std::string_view locale : {"en", "zh", "ja"}) {
+    const fs::path locale_dir = markdown_config_dir / std::string(locale);
+    MarkdownReportConfigs localized;
+    localized.day = infra_config::ReportConfigLoader::LoadDailyMdConfig(
+        locale_dir / "day.toml");
+    localized.month = infra_config::ReportConfigLoader::LoadMonthlyMdConfig(
+        locale_dir / "month.toml");
+    localized.period = infra_config::ReportConfigLoader::LoadPeriodMdConfig(
+        locale_dir / "period.toml");
+    localized.week = infra_config::ReportConfigLoader::LoadWeeklyMdConfig(
+        locale_dir / "week.toml");
+    localized.year = infra_config::ReportConfigLoader::LoadYearlyMdConfig(
+        locale_dir / "year.toml");
+    catalog.loaded_reports.markdown_locales.emplace(std::string(locale),
+                                                    std::move(localized));
+  }
 
   catalog.loaded_reports.latex.day =
       infra_config::ReportConfigLoader::LoadDailyTexConfig(latex_config_dir /
@@ -174,6 +192,7 @@ auto BuildDailyFixture() -> DailyReportData {
   report.metadata.getup_time = "07:30";
   report.metadata.remark = "Deep work\nEvening workout";
   report.total_duration = 12600;
+  report.activity_count = 3;
   report.stats["sleep_total_time"] = 25200;
   report.stats["study_time"] = 3600;
   report.stats["total_exercise_time"] = 1800;
@@ -224,6 +243,7 @@ auto BuildRangeFixture(const std::string& range_label,
   report.requested_days = requested_days;
   report.total_duration = 54000;
   report.actual_days = actual_days;
+  report.matched_record_count = actual_days * 2;
   report.status_true_days = status_days;
   report.wake_anchor_days = wake_anchor_days;
   report.exercise_true_days = exercise_days;
@@ -272,17 +292,27 @@ auto ExpectNotContains(std::string_view case_name, std::string_view content,
 
 auto CheckWakeAnchorMetadataLabels(const ParityOutputs& outputs,
                                    int& failures) -> void {
+  ExpectContains("positive boolean summary label",
+                 FormatBooleanCountLabel("Cardio Days (True)", 16),
+                 "Cardio Days", failures);
+  ExpectNotContains("positive boolean summary label",
+                    FormatBooleanCountLabel("Cardio Days (True)", 16),
+                    "Cardio Days (True)", failures);
+  ExpectContains("zero boolean summary label",
+                 FormatBooleanCountLabel("Cardio Days (True)", 0),
+                 "Cardio Days (False)", failures);
+
   const auto& markdown = outputs.cli_by_format[0];
   ExpectContains("daily markdown wake-anchor metadata label", markdown.day,
                  "Wake Anchor", failures);
   ExpectContains("monthly markdown wake-anchor metadata count", markdown.month,
-                 "Wake Anchor Days (True)", failures);
+                 "Wake Anchor Days", failures);
   ExpectContains("weekly markdown wake-anchor metadata count", markdown.week,
-                 "Wake Anchor Days (True)", failures);
+                 "Wake Anchor Days", failures);
   ExpectContains("yearly markdown wake-anchor metadata count", markdown.year,
-                 "Wake Anchor Days (True)", failures);
+                 "Wake Anchor Days", failures);
   ExpectContains("range markdown wake-anchor metadata count", markdown.range,
-                 "Wake Anchor Days (True)", failures);
+                 "Wake Anchor Days", failures);
 
   ExpectNotContains("monthly markdown wake-anchor metadata count",
                     markdown.month, "recorded_coverage_ratio", failures);
@@ -292,6 +322,26 @@ auto CheckWakeAnchorMetadataLabels(const ParityOutputs& outputs,
                     "recorded_coverage_ratio", failures);
   ExpectNotContains("range markdown wake-anchor metadata count", markdown.range,
                     "recorded_coverage_ratio", failures);
+}
+
+auto CheckDailyActivityCountLabels(const ParityOutputs& outputs,
+                                   int& failures) -> void {
+  constexpr std::string_view kMarkdownExpected = "- **Activity Count**: 3";
+  constexpr std::string_view kLatexExpected =
+      "\\textbf{Activity Count}: 3";
+  constexpr std::string_view kTypstExpected = "+ *Activity Count:* 3";
+  ExpectContains("daily markdown activity count", outputs.cli_by_format[0].day,
+                 kMarkdownExpected, failures);
+  ExpectContains("daily Android markdown activity count",
+                 outputs.android_by_format[0].day, kMarkdownExpected, failures);
+  ExpectContains("daily latex activity count", outputs.cli_by_format[1].day,
+                 kLatexExpected, failures);
+  ExpectContains("daily Android latex activity count",
+                 outputs.android_by_format[1].day, kLatexExpected, failures);
+  ExpectContains("daily typst activity count", outputs.cli_by_format[2].day,
+                 kTypstExpected, failures);
+  ExpectContains("daily Android typst activity count",
+                 outputs.android_by_format[2].day, kTypstExpected, failures);
 }
 
 auto CheckMarkdownActivityRemarkLineBreaks(const ParityOutputs& outputs,
@@ -379,6 +429,19 @@ auto RunFormatterParityTests() -> int {
     outputs.android_by_format[2] = CollectOutputs(
         *android_formatter, daily_report, monthly_report, weekly_report,
         yearly_report, range_report, ReportFormat::kTyp);
+
+    ExpectContains("Chinese localized daily report",
+                   cli_formatter->FormatDailyLocalized(
+                       daily_report, ReportFormat::kMarkdown, "zh"),
+                   "每日报告", failures);
+    ExpectContains("Japanese localized daily report",
+                   cli_formatter->FormatDailyLocalized(
+                       daily_report, ReportFormat::kMarkdown, "ja"),
+                   "日次レポート", failures);
+    ExpectContains("Unknown locale falls back to English",
+                   cli_formatter->FormatDailyLocalized(
+                       daily_report, ReportFormat::kMarkdown, "fr"),
+                   "Daily Report for", failures);
   } catch (const std::exception& exception) {
     std::cerr << "[FAIL] formatter setup threw exception: " << exception.what()
               << '\n';
@@ -389,6 +452,7 @@ auto RunFormatterParityTests() -> int {
   RunLatexSnapshotCases(snapshot_root, outputs, update_snapshots, failures);
   RunTypstSnapshotCases(snapshot_root, outputs, update_snapshots, failures);
   CheckWakeAnchorMetadataLabels(outputs, failures);
+  CheckDailyActivityCountLabels(outputs, failures);
   CheckMarkdownActivityRemarkLineBreaks(outputs, failures);
 
   if (failures == 0) {

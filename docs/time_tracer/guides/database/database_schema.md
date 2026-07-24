@@ -41,11 +41,13 @@
 | `wake_anchor` | INTEGER |  | 起床锚点标记（0/1） |
 | `remark` | TEXT |  | 当天备注 |
 | `getup_time` | TEXT |  | 起床时间（`HH:MM`） |
+| `activity_count` | INTEGER | NOT NULL DEFAULT 0 | 当天写入的活动记录数量 |
 
 说明：
 - `days` 表不再持久化 `study_time`、`sleep_total_time`、`grooming_time` 等派生时长列。
 - `status` / `exercise` 也不再持久化，改为在查询/报表阶段基于 `time_records` 与项目路径事实即时派生。
 - `wake_anchor` 代表 `hasWakeAnchor`，其语义为 `!isContinuation && getupTime 有效`。
+- `activity_count` 在导入时按当天 `processedActivities` 数量持久化；旧数据库升级时会从 `time_records` 回填。
 
 ### 3.2 `projects`
 

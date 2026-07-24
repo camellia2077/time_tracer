@@ -69,6 +69,8 @@ void DayMdFormatter::FormatHeaderContent(std::string& report_stream,
   report_stream += BuildMarkdownItemLine(config_->GetDateLabel(), data.date);
   report_stream += BuildMarkdownItemLine(
       config_->GetTotalTimeLabel(), TimeFormatDuration(data.total_duration));
+  report_stream += BuildMarkdownItemLine(
+      config_->GetActivityCountLabel(), std::to_string(data.activity_count));
   report_stream += BuildMarkdownItemLine(config_->GetStatusLabel(),
                                          BoolToString(data.metadata.status));
   report_stream += BuildMarkdownItemLine(

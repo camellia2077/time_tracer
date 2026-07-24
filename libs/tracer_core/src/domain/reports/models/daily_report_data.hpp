@@ -31,6 +31,7 @@ struct DailyReportData {
   std::string date;
   DayMetadata metadata;
   std::int64_t total_duration = 0;
+  int activity_count = 0;
 
   std::vector<std::pair<std::int64_t, std::int64_t>> project_stats;
   std::vector<TimeRecord> detailed_records;

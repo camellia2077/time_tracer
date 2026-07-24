@@ -162,7 +162,7 @@ auto BatchWeekDataFetcher::FetchAllData()
 
   sqlite3_stmt* stmt = nullptr;
   const std::string kSql = std::format(
-      "SELECT {0}, {1}, SUM({2}) "
+      "SELECT {0}, {1}, SUM({2}), COUNT(*) "
       "FROM {3} "
       "GROUP BY {0}, {1} "
       "ORDER BY {0};",
@@ -188,6 +188,7 @@ auto BatchWeekDataFetcher::FetchAllData()
 
     std::int64_t project_id = sqlite3_column_int64(stmt, kProjectIdColumn);
     std::int64_t duration = sqlite3_column_int64(stmt, kDurationColumn);
+    const int activity_count = sqlite3_column_int(stmt, 3);
 
     WeeklyReportData& data = results[week_row->week_label];
     if (data.range_label.empty()) {
@@ -200,6 +201,7 @@ auto BatchWeekDataFetcher::FetchAllData()
 
     project_agg[week_row->week_label][project_id] += duration;
     data.total_duration += duration;
+    data.matched_record_count += activity_count;
     distinct_dates[week_row->week_label].insert(week_row->date);
 
     const auto kPathParts = name_cache.GetPathParts(project_id);

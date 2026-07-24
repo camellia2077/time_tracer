@@ -89,31 +89,40 @@ void RangeTypFormatter::FormatHeaderContent(std::string& report_stream,
   report_stream += "\n\n";
 
   if (data.actual_days > 0) {
-    report_stream += BuildBulletLine(
-        config_->GetTotalTimeLabel(),
-        TimeFormatDuration(data.total_duration, data.actual_days));
+  report_stream += BuildBulletLine(
+      config_->GetTotalTimeLabel(),
+      TimeFormatDuration(data.total_duration, data.actual_days));
+  report_stream += "\n";
+  report_stream += BuildBulletLine(
+      config_->GetActivityCountLabel(),
+      FormatCountWithAverage(data.matched_record_count, data.requested_days));
     report_stream += "\n";
     report_stream += BuildBulletLine(config_->GetActualDaysLabel(),
                                      std::to_string(data.actual_days));
     report_stream += "\n";
     report_stream +=
-        BuildBulletLine(config_->GetStatusDaysLabel(),
+        BuildBulletLine(FormatBooleanCountLabel(config_->GetStatusDaysLabel(),
+                                                data.status_true_days),
                         FormatRatio(data.status_true_days, data.actual_days));
     report_stream += "\n";
     report_stream += BuildBulletLine(
-        config_->GetWakeAnchorDaysLabel(),
+        FormatBooleanCountLabel(config_->GetWakeAnchorDaysLabel(),
+                                data.wake_anchor_days),
         FormatRatio(data.wake_anchor_days, data.actual_days));
     report_stream += "\n";
     report_stream +=
-        BuildBulletLine(config_->GetExerciseDaysLabel(),
+        BuildBulletLine(FormatBooleanCountLabel(config_->GetExerciseDaysLabel(),
+                                                data.exercise_true_days),
                         FormatRatio(data.exercise_true_days, data.actual_days));
     report_stream += "\n";
     report_stream +=
-        BuildBulletLine(config_->GetCardioDaysLabel(),
+        BuildBulletLine(FormatBooleanCountLabel(config_->GetCardioDaysLabel(),
+                                                data.cardio_true_days),
                         FormatRatio(data.cardio_true_days, data.actual_days));
     report_stream += "\n";
     report_stream += BuildBulletLine(
-        config_->GetAnaerobicDaysLabel(),
+        FormatBooleanCountLabel(config_->GetAnaerobicDaysLabel(),
+                                data.anaerobic_true_days),
         FormatRatio(data.anaerobic_true_days, data.actual_days));
     report_stream += "\n";
   }

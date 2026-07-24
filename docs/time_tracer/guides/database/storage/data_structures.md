@@ -27,7 +27,7 @@ ProjectNode(1) ---- (N) ProjectNode.children
 | 字段组 | 代表字段 |
 | --- | --- |
 | 主键/时间 | `date`, `year`, `month` |
-| 日元数据 | `wake_anchor`, `remark`, `getup_time` |
+| 日元数据 | `wake_anchor`, `remark`, `getup_time`, `activity_count` |
 | 文本信息 | `remark`, `getup_time` |
 | 派生统计（查询期计算） | `study_time`, `total_exercise_time`, `cardio_time`, `anaerobic_time`, `recreation_time`, `sleep_total_time` 等 |
 

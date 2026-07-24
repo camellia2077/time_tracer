@@ -23,6 +23,7 @@ class REPORTS_SHARED_API MonthBaseConfig {
   [[nodiscard]] auto GetCardioDaysLabel() const -> const std::string&;
   [[nodiscard]] auto GetAnaerobicDaysLabel() const -> const std::string&;
   [[nodiscard]] auto GetTotalTimeLabel() const -> const std::string&;
+  [[nodiscard]] auto GetActivityCountLabel() const -> const std::string&;
   [[nodiscard]] auto GetNoRecordsMessage() const -> const std::string&;
   [[nodiscard]] auto GetInvalidFormatMessage() const -> const std::string&;
   [[nodiscard]] auto GetProjectBreakdownLabel() const -> const std::string&;
@@ -39,6 +40,7 @@ class REPORTS_SHARED_API MonthBaseConfig {
   std::string cardio_days_label_;
   std::string anaerobic_days_label_;
   std::string total_time_label_;
+  std::string activity_count_label_;
   std::string no_records_message_;
   std::string invalid_format_message_;
   std::string project_breakdown_label_;

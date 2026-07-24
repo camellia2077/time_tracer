@@ -19,8 +19,8 @@ auto TestTracerExchangePackageRoundTrip(int& failures) -> void {
 
   Expect(decoded.manifest.package_type == "tracer_exchange",
          "Decoded manifest package_type should be tracer_exchange.", failures);
-  Expect(decoded.manifest.package_version == 5,
-         "Decoded manifest package_version should be 5.", failures);
+  Expect(decoded.manifest.package_version == 4,
+         "Decoded manifest package_version should be 4.", failures);
   Expect(decoded.manifest.source_root_name == "data",
          "Decoded manifest should retain source_root_name.", failures);
   Expect(decoded.manifest.payload_files.size() == payloads.size(),

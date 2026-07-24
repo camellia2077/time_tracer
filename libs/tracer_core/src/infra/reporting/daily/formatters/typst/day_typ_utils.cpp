@@ -88,6 +88,9 @@ void DisplayHeader(std::string& report_stream, const DailyReportData& data,
   report_stream += BuildBulletLine(config->GetTotalTimeLabel(),
                                    TimeFormatDuration(data.total_duration));
   report_stream += "\n";
+  report_stream += BuildBulletLine(config->GetActivityCountLabel(),
+                                   std::to_string(data.activity_count));
+  report_stream += "\n";
   report_stream += BuildBulletLine(config->GetStatusLabel(),
                                    BoolToString(data.metadata.status));
   report_stream += "\n";

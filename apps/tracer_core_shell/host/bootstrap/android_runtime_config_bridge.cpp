@@ -4,10 +4,12 @@ import tracer.core.infrastructure.config.internal.android_bundle_config_paths;
 import tracer.core.infrastructure.config.loader.report_config_loader;
 
 #include <filesystem>
+#include <array>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <utility>
 
 #ifndef TT_REPORT_ENABLE_LATEX
 #define TT_REPORT_ENABLE_LATEX 1
@@ -32,6 +34,43 @@ namespace {
 
 namespace fs = std::filesystem;
 namespace infra_config_internal = modconfig_internal;
+
+auto LoadLocalizedMarkdownReports(const fs::path& markdown_dir,
+                                  ReportCatalog& catalog) -> void {
+  constexpr std::array<std::string_view, 5> kReportNames = {
+      "day", "month", "period", "week", "year"};
+  if (!fs::exists(markdown_dir) || !fs::is_directory(markdown_dir)) {
+    return;
+  }
+
+  for (const auto& entry : fs::directory_iterator(markdown_dir)) {
+    if (!entry.is_directory()) {
+      continue;
+    }
+    const auto path = [&entry](std::string_view name) {
+      return entry.path() / (std::string(name) + ".toml");
+    };
+    const auto day_path = path(kReportNames[0]);
+    const auto month_path = path(kReportNames[1]);
+    const auto period_path = path(kReportNames[2]);
+    const auto week_path = path(kReportNames[3]);
+    const auto year_path = path(kReportNames[4]);
+    if (!fs::exists(day_path) || !fs::exists(month_path) ||
+        !fs::exists(period_path) || !fs::exists(week_path) ||
+        !fs::exists(year_path)) {
+      continue;
+    }
+
+    MarkdownReportConfigs localized;
+    localized.day = ReportConfigLoader::LoadDailyMdConfig(day_path);
+    localized.month = ReportConfigLoader::LoadMonthlyMdConfig(month_path);
+    localized.period = ReportConfigLoader::LoadPeriodMdConfig(period_path);
+    localized.week = ReportConfigLoader::LoadWeeklyMdConfig(week_path);
+    localized.year = ReportConfigLoader::LoadYearlyMdConfig(year_path);
+    catalog.loaded_reports.markdown_locales.emplace(
+        entry.path().filename().string(), std::move(localized));
+  }
+}
 
 #include "host/bootstrap/internal/android_runtime_factory_resolver_namespace.inc"
 
@@ -112,6 +151,8 @@ auto BuildAndroidReportCatalogBridge(
       runtime_config_paths.markdown.week);
   catalog.loaded_reports.markdown.year = ReportConfigLoader::LoadYearlyMdConfig(
       runtime_config_paths.markdown.year);
+  LoadLocalizedMarkdownReports(
+      runtime_config_paths.markdown.day.parent_path(), catalog);
 
 #if TT_REPORT_ENABLE_LATEX
   if (runtime_config_paths.latex.has_value()) {

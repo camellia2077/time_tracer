@@ -8,6 +8,7 @@ RangeBaseConfig::RangeBaseConfig(const RangeReportLabels& labels) {
 void RangeBaseConfig::LoadBaseConfig(const RangeReportLabels& labels) {
   title_template_ = labels.title_template;
   total_time_label_ = labels.total_time_label;
+  activity_count_label_ = labels.activity_count_label;
   actual_days_label_ = labels.actual_days_label;
   status_days_label_ = labels.status_days_label;
   wake_anchor_days_label_ = labels.wake_anchor_days_label;
@@ -25,6 +26,9 @@ auto RangeBaseConfig::GetTitleTemplate() const -> const std::string& {
 
 auto RangeBaseConfig::GetTotalTimeLabel() const -> const std::string& {
   return total_time_label_;
+}
+auto RangeBaseConfig::GetActivityCountLabel() const -> const std::string& {
+  return activity_count_label_;
 }
 
 auto RangeBaseConfig::GetActualDaysLabel() const -> const std::string& {

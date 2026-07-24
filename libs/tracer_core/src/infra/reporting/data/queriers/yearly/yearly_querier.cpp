@@ -22,6 +22,12 @@ using tracer::core::infrastructure::reports::data::stats::
 using tracer::core::infrastructure::reports::data::stats::IsCardioProjectPath;
 using tracer::core::infrastructure::reports::data::stats::IsExerciseProjectPath;
 using tracer::core::infrastructure::reports::data::stats::IsStudyProjectPath;
+
+auto DaysInYear(int year) -> int {
+  const bool leap = (year % 400 == 0) ||
+                    ((year % 4 == 0) && (year % 100 != 0));
+  return leap ? 366 : 365;
+}
 }  // namespace
 
 YearQuerier::YearQuerier(sqlite3* sqlite_db, std::string_view year_str)
@@ -61,7 +67,7 @@ void YearQuerier::PrepareData(YearlyReportData& data) const {
   std::string year_str = FormatGregorianYear(gregorian_year);
 
   data.range_label = year_str;
-  data.requested_days = 0;
+  data.requested_days = DaysInYear(gregorian_year);
   data.start_date = year_str + "-01-01";
   data.end_date = year_str + "-12-31";
   data.is_valid = true;
@@ -96,7 +102,7 @@ auto BatchYearDataFetcher::FetchAllData()
 
   sqlite3_stmt* stmt = nullptr;
   const std::string kSql = std::format(
-      "SELECT strftime('%Y', {0}) as yy, {0}, {1}, SUM({2}) "
+      "SELECT strftime('%Y', {0}) as yy, {0}, {1}, SUM({2}), COUNT(*) "
       "FROM {3} "
       "GROUP BY yy, {0}, {1} "
       "ORDER BY yy;",
@@ -130,12 +136,13 @@ auto BatchYearDataFetcher::FetchAllData()
 
     std::int64_t project_id = sqlite3_column_int64(stmt, 2);
     std::int64_t duration = sqlite3_column_int64(stmt, 3);
+    const int activity_count = sqlite3_column_int(stmt, 4);
 
     YearlyReportData& data = results[year_str];
     if (data.range_label.empty()) {
       std::string label = FormatGregorianYear(gregorian_year);
       data.range_label = label;
-      data.requested_days = 0;
+      data.requested_days = DaysInYear(gregorian_year);
       data.start_date = label + "-01-01";
       data.end_date = label + "-12-31";
       data.is_valid = true;
@@ -143,6 +150,7 @@ auto BatchYearDataFetcher::FetchAllData()
 
     project_agg[year_str][project_id] += duration;
     data.total_duration += duration;
+    data.matched_record_count += activity_count;
     distinct_dates[year_str].insert(date);
 
     const auto kPathParts = name_cache.GetPathParts(project_id);
