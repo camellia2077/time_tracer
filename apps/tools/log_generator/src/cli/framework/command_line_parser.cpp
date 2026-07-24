@@ -23,6 +23,7 @@ enum class OptionType {
   kEventStyle,
   kTimeFormat,
   kNoSleep,
+  kSleepIntervals,
   kMonthlyAverage,
   kOutput
 };
@@ -65,6 +66,9 @@ auto ClassifyOption(const std::string& arg) -> OptionType {
   }
   if (arg == "-n" || arg == "--nosleep") {
     return OptionType::kNoSleep;
+  }
+  if (arg == "--sleep-interval") {
+    return OptionType::kSleepIntervals;
   }
   if (arg == "--monthly-average") {
     return OptionType::kMonthlyAverage;
@@ -155,6 +159,9 @@ auto ParseOptions(const std::vector<std::string>& args) -> ParsedOptions {
         break;
       case OptionType::kNoSleep:
         parsed.config.enable_nosleep = true;
+        break;
+      case OptionType::kSleepIntervals:
+        parsed.config.enable_sleep_intervals = true;
         break;
       case OptionType::kMonthlyAverage:
         parsed.config.enable_monthly_average_report = true;

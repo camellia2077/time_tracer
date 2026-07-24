@@ -37,6 +37,8 @@ void PrintUsage(std::string_view prog_name) {
                "files. (Default: dates)\n";
   std::cerr << "  -n, --nosleep           Enable the generation of 'no sleep' "
                "(all-nighter) days.\n";
+  std::cerr << "      --sleep-interval   Generate explicit cross-midnight sleep "
+               "intervals on about half of sleeping days.\n";
   std::cerr << "      --monthly-average   Print monthly average tracked-time "
                "statistics.\n";
   std::cerr

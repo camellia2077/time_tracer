@@ -14,11 +14,22 @@ namespace EventLineFormatter {
 // EventGenerator and related scheduling components.
 auto format_point_event_line(int end_minute, std::string_view activity_token,
                              const std::optional<std::string>& remark_suffix,
-                             TimeFormat time_format = TimeFormat::Hhmmss)
+    TimeFormat time_format = TimeFormat::Hhmmss)
     -> std::string;
+
+auto format_point_event_line_seconds(
+    int end_second_of_day, std::string_view activity_token,
+    const std::optional<std::string>& remark_suffix,
+    TimeFormat time_format = TimeFormat::Hhmmss) -> std::string;
 
 auto format_interval_event_line(
     int start_minute, int end_minute, std::string_view activity_token,
+    const std::optional<std::string>& remark_suffix,
+    TimeFormat time_format = TimeFormat::Hhmmss) -> std::string;
+
+auto format_interval_event_line_seconds(
+    int start_second_of_day, int end_second_of_day,
+    std::string_view activity_token,
     const std::optional<std::string>& remark_suffix,
     TimeFormat time_format = TimeFormat::Hhmmss) -> std::string;
 

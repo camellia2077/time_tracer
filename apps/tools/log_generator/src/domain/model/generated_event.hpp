@@ -13,6 +13,8 @@ struct GeneratedEvent {
   GeneratedEventKind kind = GeneratedEventKind::Point;
   int start_minute = 0;
   int end_minute = 0;
+  int start_second_of_day = -1;
+  int end_second_of_day = -1;
   std::string activity_token;
   std::optional<std::string> remark_suffix;
 };

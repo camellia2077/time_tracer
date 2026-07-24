@@ -20,7 +20,8 @@ LogGenerator::LogGenerator(
   // 初始化 DayGenerator
   day_generator_ = std::make_unique<DayGenerator>(
       config.items_per_day, activities, remark_config, activity_remark_config,
-      wake_keywords, config.event_style, config.time_format, gen_);
+      wake_keywords, config.event_style, config.time_format,
+      config.enable_sleep_intervals && !config.enable_nosleep, gen_);
 
   // [新增] 初始化 SleepScheduler，将策略逻辑委托给它
   // 注意：gen_ 的引用传递给了 scheduler，共享同一个随机源

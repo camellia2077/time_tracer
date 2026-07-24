@@ -11,13 +11,13 @@ DayGenerator::DayGenerator(
     const std::optional<DailyRemarkConfig>& remark_config,
     const std::optional<ActivityRemarkConfig>& activity_remark_config,
     const std::vector<std::string>& wake_keywords, EventStyle event_style,
-    TimeFormat time_format, std::mt19937& gen)
+    TimeFormat time_format, bool enable_explicit_sleep, std::mt19937& gen)
     : time_format_(time_format) {
   // 创建并持有子系统的实例
   remark_generator_ = std::make_unique<RemarkGenerator>(remark_config, gen);
   event_generator_ = std::make_unique<EventGenerator>(
       items_per_day, activities, activity_remark_config, wake_keywords,
-      event_style, gen);
+      event_style, enable_explicit_sleep, gen);
 }
 
 void DayGenerator::reset_for_new_month() {

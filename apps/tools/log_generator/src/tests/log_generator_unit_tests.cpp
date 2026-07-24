@@ -1,3 +1,5 @@
+#include <array>
+#include <algorithm>
 #include <iostream>
 #include <random>
 #include <string>
@@ -31,6 +33,50 @@ auto ExpectTrue(bool condition, const char* case_name) -> bool {
   return false;
 }
 
+auto MinuteOfDay(const GeneratedEvent& event) -> int {
+  return event.start_minute;
+}
+
+auto HasStrictlyIncreasingLogicalStarts(
+    const std::vector<GeneratedEvent>& events) -> bool {
+  int previous_second = -1;
+  bool crossed_midnight = false;
+  for (const auto& event : events) {
+    if (event.start_second_of_day < 0) {
+      return false;
+    }
+    const int current_second = event.start_second_of_day;
+    if (previous_second >= 0 && current_second <= previous_second) {
+      if (crossed_midnight) {
+        return false;
+      }
+      crossed_midnight = true;
+    }
+    previous_second = current_second;
+  }
+  return true;
+}
+
+auto CountNonWakeEventsByPeriod(const std::vector<GeneratedEvent>& events,
+                                const std::vector<std::string>& wake_keywords)
+    -> std::array<int, 4> {
+  std::array<int, 4> counts{};
+  for (const auto& event : events) {
+    bool is_wake = false;
+    for (const auto& wake_keyword : wake_keywords) {
+      if (event.activity_token == wake_keyword) {
+        is_wake = true;
+        break;
+      }
+    }
+    if (is_wake) {
+      continue;
+    }
+    ++counts[static_cast<size_t>(MinuteOfDay(event) / (6 * 60))];
+  }
+  return counts;
+}
+
 }  // namespace
 
 auto main() -> int {
@@ -56,6 +102,11 @@ auto main() -> int {
       EventLineFormatter::format_point_event_line(
           8 * 60 + 13, "o", std::nullopt, TimeFormat::Hhmmss),
       "081300o", "HHMMSS point rendering appends zero seconds");
+
+  all_passed &= ExpectEqual(
+      EventLineFormatter::format_point_event_line_seconds(
+          (8 * 60 + 13) * 60 + 27, "o", std::nullopt, TimeFormat::Hhmmss),
+      "081327o", "HHMMSS rendering keeps generated seconds");
 
   all_passed &= ExpectEqual(
       EventLineFormatter::format_interval_event_line(
@@ -138,11 +189,11 @@ auto main() -> int {
   std::mt19937 gen_c(456);
 
   EventGenerator seeded_a(4, activities, remark_config, wake_keywords,
-                          EventStyle::Interval, gen_a);
+                          EventStyle::Interval, true, gen_a);
   EventGenerator seeded_b(4, activities, remark_config, wake_keywords,
-                          EventStyle::Interval, gen_b);
+                          EventStyle::Interval, true, gen_b);
   EventGenerator seeded_c(4, activities, remark_config, wake_keywords,
-                          EventStyle::Interval, gen_c);
+                          EventStyle::Interval, true, gen_c);
 
   const auto events_a = seeded_a.generate_events_for_day(false);
   const auto events_b = seeded_b.generate_events_for_day(false);
@@ -171,7 +222,7 @@ auto main() -> int {
 
   std::mt19937 mixed_gen(123);
   EventGenerator mixed_generator(24, activities, remark_config, wake_keywords,
-                                 EventStyle::Mixed, mixed_gen);
+                                 EventStyle::Mixed, true, mixed_gen);
   const auto mixed_events = mixed_generator.generate_events_for_day(false);
   int mixed_point_count = 0;
   int mixed_interval_count = 0;
@@ -193,9 +244,65 @@ auto main() -> int {
   all_passed &= ExpectTrue(mixed_point_count > 1 && mixed_interval_count > 0,
                            "mixed generation emits point and interval events");
 
+  std::mt19937 distribution_gen(321);
+  EventGenerator distribution_generator(16, activities, remark_config,
+                                        wake_keywords, EventStyle::Point,
+                                        true, distribution_gen);
+  const auto distributed_events =
+      distribution_generator.generate_events_for_day(false);
+  const auto period_counts =
+      CountNonWakeEventsByPeriod(distributed_events, wake_keywords);
+  const int min_period_count =
+      *std::min_element(period_counts.begin(), period_counts.end());
+  const int max_period_count =
+      *std::max_element(period_counts.begin(), period_counts.end());
+  all_passed &= ExpectTrue(distributed_events.size() == 16U,
+                           "uniform distribution preserves daily item count");
+  all_passed &= ExpectTrue(max_period_count - min_period_count <= 1,
+                           "uniform distribution balances four time periods");
+  all_passed &= ExpectTrue(
+      HasStrictlyIncreasingLogicalStarts(distributed_events),
+      "point generation keeps strictly increasing second-level starts");
+  bool saw_non_zero_second = false;
+  for (const auto& event : distributed_events) {
+    saw_non_zero_second |= event.start_second_of_day % 60 != 0;
+  }
+  all_passed &= ExpectTrue(saw_non_zero_second,
+                           "generated HHMMSS starts include random seconds");
+
+  std::mt19937 interval_distribution_gen(654);
+  EventGenerator interval_distribution_generator(
+      16, activities, remark_config, wake_keywords, EventStyle::Interval,
+      true, interval_distribution_gen);
+  const auto distributed_intervals =
+      interval_distribution_generator.generate_events_for_day(false);
+  all_passed &= ExpectTrue(distributed_intervals.size() == 16U,
+                           "uniform interval distribution preserves item count");
+  for (const auto& event : distributed_intervals) {
+    if (event.kind != GeneratedEventKind::Interval) {
+      continue;
+    }
+    const int duration = (event.end_minute - event.start_minute + (24 * 60)) %
+                         (24 * 60);
+    all_passed &= ExpectTrue(duration > 0,
+                             "uniform interval events remain non-empty");
+  }
+  all_passed &= ExpectTrue(
+      HasStrictlyIncreasingLogicalStarts(distributed_intervals),
+      "interval generation keeps strictly increasing second-level starts");
+
+  std::mt19937 mixed_order_gen(987);
+  EventGenerator mixed_order_generator(16, activities, remark_config,
+                                       wake_keywords, EventStyle::Mixed,
+                                       true, mixed_order_gen);
+  all_passed &= ExpectTrue(
+      HasStrictlyIncreasingLogicalStarts(
+          mixed_order_generator.generate_events_for_day(false)),
+      "mixed generation keeps strictly increasing second-level starts");
+
   std::mt19937 remark_gen(789);
   EventGenerator remark_generator(4, activities, remark_config, wake_keywords,
-                                  EventStyle::Point, remark_gen);
+                                  EventStyle::Point, true, remark_gen);
   bool saw_remark = false;
   bool saw_missing_remark = false;
   int generated_remark_count = 0;

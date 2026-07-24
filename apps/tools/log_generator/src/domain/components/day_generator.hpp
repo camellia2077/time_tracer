@@ -17,7 +17,7 @@ class DayGenerator {
       const std::optional<DailyRemarkConfig>& remark_config,
       const std::optional<ActivityRemarkConfig>& activity_remark_config,
       const std::vector<std::string>& wake_keywords, EventStyle event_style,
-      TimeFormat time_format, std::mt19937& gen);
+      TimeFormat time_format, bool enable_explicit_sleep, std::mt19937& gen);
 
   void reset_for_new_month();
   void generate_for_day(std::string& log_content, int month, int day,

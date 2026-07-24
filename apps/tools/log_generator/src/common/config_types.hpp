@@ -39,6 +39,7 @@ struct Config {
   TimeFormat time_format = TimeFormat::Hhmmss;
   std::optional<int> seed;
   bool enable_nosleep = false;
+  bool enable_sleep_intervals = false;
   bool enable_monthly_average_report = false;
   double nosleep_probability = 1.0;
   std::string output_directory = "dates";
