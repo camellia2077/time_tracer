@@ -1,5 +1,6 @@
 title_template = "Yearly Summary for {range_label}"
 total_time_label = "Total Time Recorded"
+activity_count_label = "Activity Count"
 actual_days_label = "Actual Days with Records"
 
 status_days_label = "Status Days (True)"

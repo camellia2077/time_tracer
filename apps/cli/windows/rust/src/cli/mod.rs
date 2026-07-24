@@ -1,6 +1,7 @@
 use clap::{ArgAction, Parser, Subcommand};
 
 mod about;
+mod alias;
 mod chart;
 mod doctor;
 mod exchange;
@@ -12,6 +13,9 @@ mod system;
 mod txt;
 
 pub use about::{AboutArgs, AboutCommand};
+pub use alias::{
+    AliasAddArgs, AliasArgs, AliasCommand, AliasFileArgs, AliasGroupArgs, AliasMoveArgs,
+};
 pub use chart::{ChartArgs, ChartTheme, ChartType};
 pub use doctor::DoctorArgs;
 pub use exchange::{
@@ -75,6 +79,8 @@ pub struct Cli {
 
 #[derive(Debug, Subcommand)]
 pub enum Command {
+    #[command(about = "Edit alias hierarchy TOML and migrate canonical activity paths")]
+    Alias(AliasArgs),
     #[command(about = "Run semantic data and tree queries")]
     Query(QueryArgs),
     #[command(about = "Run pipeline operations against source and processed data")]
@@ -552,8 +558,7 @@ mod tests {
 
     #[test]
     fn about_licenses_full_parses_under_about_family() {
-        let cli =
-            Cli::try_parse_from(["time_tracer_cli", "about", "licenses", "--full"]).unwrap();
+        let cli = Cli::try_parse_from(["time_tracer_cli", "about", "licenses", "--full"]).unwrap();
 
         match cli.command {
             Command::About(args) => match args.command {

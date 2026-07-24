@@ -38,4 +38,16 @@ impl<'runtime> TxtClient<'runtime> {
     pub fn replace_day_block(&self, request: &Value) -> Result<TxtReplaceOutput, AppError> {
         invoke::run_txt_replace_day_block(self.runtime, request)
     }
+
+    pub fn replace_canonical_activity_names(
+        &self,
+        request: &Value,
+    ) -> Result<TxtCanonicalReplaceOutput, AppError> {
+        invoke::run_txt_replace_canonical_activity_names(self.runtime, request)
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct TxtCanonicalReplaceOutput {
+    pub updated_content: String,
 }

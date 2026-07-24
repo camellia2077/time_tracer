@@ -26,7 +26,9 @@ pub use self::pipeline_client::PipelineClient;
 pub use self::query_client::QueryClient;
 pub use self::report_client::ReportClient;
 pub use self::tracer_exchange_client::TracerExchangeClient;
-pub use self::txt_client::{TxtClient, TxtReplaceOutput, TxtResolveOutput};
+pub use self::txt_client::{
+    TxtCanonicalReplaceOutput, TxtClient, TxtReplaceOutput, TxtResolveOutput,
+};
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct ResolvedCliPaths {

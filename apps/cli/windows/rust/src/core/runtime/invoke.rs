@@ -9,7 +9,9 @@ use super::codec::{read_c_json, to_request_json};
 use super::env_flags::log_timing;
 use super::errors::{ErrorContract, format_error_detail, format_tree_error_detail};
 use super::ffi::RuntimeJsonFn;
-use super::{CoreRuntime, TreeResponse, TxtReplaceOutput, TxtResolveOutput};
+use super::{
+    CoreRuntime, TreeResponse, TxtCanonicalReplaceOutput, TxtReplaceOutput, TxtResolveOutput,
+};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) struct ReportWindowMetadata {
@@ -154,7 +156,8 @@ pub(crate) fn run_report_targets(
         "operation_kind": "targets",
         "display_mode": display_mode,
     }))?;
-    let raw = unsafe { (runtime.api.symbols.runtime_report)(runtime.handle, request_json.as_ptr()) };
+    let raw =
+        unsafe { (runtime.api.symbols.runtime_report)(runtime.handle, request_json.as_ptr()) };
     let payload = read_c_json::<ReportTargetsResponse>(raw, "report_targets")?;
     log_timing("runtime.report_targets", run_start.elapsed());
     if payload.ok {
@@ -255,7 +258,11 @@ pub(crate) fn run_tree_query(
     )?;
     let semantic: SemanticTreeResponse = serde_json::from_str(&text_payload.content)
         .map_err(|error| AppError::Logic(format!("tree response decode failed: {error}")))?;
-    let roots = semantic.roots.iter().map(|node| node.name.clone()).collect();
+    let roots = semantic
+        .roots
+        .iter()
+        .map(|node| node.name.clone())
+        .collect();
     let payload = TreeResponse {
         ok: true,
         found: !semantic.roots.is_empty(),
@@ -317,6 +324,26 @@ pub(crate) fn run_txt_replace_day_block(
         normalized_day_marker: payload.normalized_day_marker,
         found: payload.found,
         is_marker_valid: payload.is_marker_valid,
+        updated_content: payload.updated_content,
+    })
+}
+
+pub(crate) fn run_txt_replace_canonical_activity_names(
+    runtime: &CoreRuntime,
+    request: &Value,
+) -> Result<TxtCanonicalReplaceOutput, AppError> {
+    let run_start = Instant::now();
+    let request_json = to_request_json(request)?;
+    let raw = unsafe { (runtime.api.symbols.runtime_txt)(runtime.handle, request_json.as_ptr()) };
+    let payload = read_c_json::<TxtReplaceResponse>(raw, "txt")?;
+    log_timing("runtime.txt", run_start.elapsed());
+    if !payload.ok {
+        return Err(map_runtime_text_error(
+            payload.error_message,
+            &payload.error_contract,
+        ));
+    }
+    Ok(TxtCanonicalReplaceOutput {
         updated_content: payload.updated_content,
     })
 }

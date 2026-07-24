@@ -76,6 +76,7 @@ fn is_unknown_top_level_command(raw_args: &[String]) -> bool {
             | "txt"
             | "system"
             | "about"
+            | "alias"
     )
 }
 

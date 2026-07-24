@@ -1,3 +1,4 @@
+pub mod alias;
 pub mod doctor;
 pub mod exchange;
 pub mod licenses;
