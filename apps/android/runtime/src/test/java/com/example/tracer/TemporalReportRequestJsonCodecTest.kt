@@ -16,7 +16,8 @@ class TemporalReportRequestJsonCodecTest {
                     kind = TemporalSelectionKind.DATE_RANGE,
                     startDate = "2026-03-02",
                     endDate = "2026-03-08"
-                )
+                ),
+                locale = "zh"
             )
         )
 
@@ -27,6 +28,7 @@ class TemporalReportRequestJsonCodecTest {
         assertEquals("2026-03-02", payload.getString("start_date"))
         assertEquals("2026-03-08", payload.getString("end_date"))
         assertEquals("markdown", payload.getString("format"))
+        assertEquals("zh", payload.getString("locale"))
     }
 
     @Test

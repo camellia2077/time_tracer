@@ -7,6 +7,7 @@ internal suspend fun runDayReportAction(
     inputValidator: QueryInputValidator,
     textProvider: QueryReportTextProvider,
     reportGateway: ReportGateway,
+    locale: String = "en",
     emit: (QueryReportUiState) -> Unit
 ): QueryReportUiState {
     val dayDigits = currentState.reportDate.trim()
@@ -25,7 +26,8 @@ internal suspend fun runDayReportAction(
         selection = TemporalSelectionPayload(
             kind = TemporalSelectionKind.SINGLE_DAY,
             date = dayIso
-        )
+        ),
+        locale = locale
     )
     val runningState = currentState.copy(
         dayTimeline = null,
@@ -52,6 +54,7 @@ internal suspend fun runMonthReportAction(
     inputValidator: QueryInputValidator,
     textProvider: QueryReportTextProvider,
     reportGateway: ReportGateway,
+    locale: String = "en",
     emit: (QueryReportUiState) -> Unit
 ): QueryReportUiState {
     val monthDigits = currentState.reportMonth.trim()
@@ -72,7 +75,8 @@ internal suspend fun runMonthReportAction(
                 kind = TemporalSelectionKind.DATE_RANGE,
                 startDate = "$monthIso-01",
                 endDate = java.time.YearMonth.parse(monthIso).atEndOfMonth().toString()
-            )
+            ),
+            locale = locale
         )
     )
     return runningState.copyWithReportOutcome(
@@ -87,6 +91,7 @@ internal suspend fun runYearReportAction(
     inputValidator: QueryInputValidator,
     textProvider: QueryReportTextProvider,
     reportGateway: ReportGateway,
+    locale: String = "en",
     emit: (QueryReportUiState) -> Unit
 ): QueryReportUiState {
     val year = currentState.reportYear.trim()
@@ -106,7 +111,8 @@ internal suspend fun runYearReportAction(
                 kind = TemporalSelectionKind.DATE_RANGE,
                 startDate = "$year-01-01",
                 endDate = "$year-12-31"
-            )
+            ),
+            locale = locale
         )
     )
     return runningState.copyWithReportOutcome(
@@ -121,6 +127,7 @@ internal suspend fun runWeekReportAction(
     inputValidator: QueryInputValidator,
     textProvider: QueryReportTextProvider,
     reportGateway: ReportGateway,
+    locale: String = "en",
     emit: (QueryReportUiState) -> Unit
 ): QueryReportUiState {
     val weekDigits = currentState.reportWeek.trim()
@@ -142,7 +149,8 @@ internal suspend fun runWeekReportAction(
                 kind = TemporalSelectionKind.DATE_RANGE,
                 startDate = weekRange.weekStart.toString(),
                 endDate = weekRange.weekEnd.toString()
-            )
+            ),
+            locale = locale
         )
     )
     return runningState.copyWithReportOutcome(
@@ -157,6 +165,7 @@ internal suspend fun runRecentReportAction(
     inputValidator: QueryInputValidator,
     textProvider: QueryReportTextProvider,
     reportGateway: ReportGateway,
+    locale: String = "en",
     emit: (QueryReportUiState) -> Unit
 ): QueryReportUiState {
     val recentDays = currentState.reportRecentDays.trim()
@@ -175,7 +184,8 @@ internal suspend fun runRecentReportAction(
             selection = TemporalSelectionPayload(
                 kind = TemporalSelectionKind.RECENT_DAYS,
                 days = recentDays.toInt()
-            )
+            ),
+            locale = locale
         )
     )
     return runningState.copyWithReportOutcome(
@@ -190,6 +200,7 @@ internal suspend fun runRangeReportAction(
     inputValidator: QueryInputValidator,
     textProvider: QueryReportTextProvider,
     reportGateway: ReportGateway,
+    locale: String = "en",
     emit: (QueryReportUiState) -> Unit
 ): QueryReportUiState {
     val startDateDigits = currentState.reportRangeStartDate.trim()
@@ -229,7 +240,8 @@ internal suspend fun runRangeReportAction(
                 kind = TemporalSelectionKind.DATE_RANGE,
                 startDate = startIso,
                 endDate = endIso
-            )
+            ),
+            locale = locale
         )
     )
     return runningState.copyWithReportOutcome(

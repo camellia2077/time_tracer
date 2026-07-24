@@ -9,6 +9,7 @@ internal class TemporalReportRequestJsonCodec {
             .put("operation_kind", ReportOperationKind.QUERY.wireValue)
             .put("display_mode", request.displayMode.wireValue)
             .put("format", request.format.wireValue)
+            .put("locale", request.locale)
         appendSelection(payload, request.selection)
         return payload.toString()
     }
@@ -34,6 +35,7 @@ internal class TemporalReportRequestJsonCodec {
             .put("display_mode", request.displayMode.wireValue)
             .put("export_scope", request.exportScope.wireValue)
             .put("format", request.format.wireValue)
+            .put("locale", request.locale)
         request.selection?.let { appendSelection(payload, it) }
         if (request.recentDaysList.isNotEmpty()) {
             payload.put(

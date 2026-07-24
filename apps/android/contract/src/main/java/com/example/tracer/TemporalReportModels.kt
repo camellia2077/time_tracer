@@ -46,7 +46,8 @@ data class TemporalSelectionPayload(
 data class TemporalReportQueryRequest(
     val displayMode: ReportDisplayMode,
     val selection: TemporalSelectionPayload,
-    val format: ReportOutputFormat = ReportOutputFormat.MARKDOWN
+    val format: ReportOutputFormat = ReportOutputFormat.MARKDOWN,
+    val locale: String = "en"
 )
 
 data class TemporalReportTargetsRequest(
@@ -58,5 +59,6 @@ data class TemporalReportExportRequest(
     val exportScope: ReportExportScope,
     val format: ReportOutputFormat = ReportOutputFormat.MARKDOWN,
     val selection: TemporalSelectionPayload? = null,
-    val recentDaysList: List<Int> = emptyList()
+    val recentDaysList: List<Int> = emptyList(),
+    val locale: String = "en"
 )

@@ -62,6 +62,15 @@ fun TracerScreen(
             )
         }
     )
+    LaunchedEffect(appLanguage) {
+        queryReportViewModel.onReportLocaleChange(
+            when (appLanguage) {
+                com.example.tracer.data.AppLanguage.Chinese -> "zh"
+                com.example.tracer.data.AppLanguage.English -> "en"
+                com.example.tracer.data.AppLanguage.Japanese -> "ja"
+            }
+        )
+    }
     val recordInputPersistence = remember(userPreferencesRepository) {
         UserPreferencesRecordInputPersistence(userPreferencesRepository)
     }

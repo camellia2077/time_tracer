@@ -261,6 +261,24 @@ class QueryReportViewModelReportSyncTest {
     }
 
     @Test
+    fun changingReportLocale_requeriesCurrentMarkdownWithNewLocale() = runTest {
+        val fakeReportGateway = FakeStructuredReportGateway()
+        val viewModel = QueryReportViewModel(
+            reportGateway = fakeReportGateway,
+            queryGateway = FakeReportSyncQueryGateway(),
+            clock = fixedClock("2026-02-14T12:00:00Z", "Asia/Shanghai")
+        )
+
+        // Exercise an actual transition regardless of the host JVM's default locale.
+        viewModel.onReportLocaleChange("en")
+        advanceUntilIdle()
+        viewModel.onReportLocaleChange("zh")
+        advanceUntilIdle()
+
+        assertEquals("zh", fakeReportGateway.lastTemporalRequest?.locale)
+    }
+
+    @Test
     fun refreshReportDayDefault_beforeCutoff_uses_previous_logical_day() = runTest {
         val viewModel = QueryReportViewModel(
             reportGateway = FakeStructuredReportGateway(),

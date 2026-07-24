@@ -1,5 +1,7 @@
 package com.example.tracer
 
+import java.util.Locale
+
 internal class QueryReportUseCases(
     private val reportGateway: ReportGateway,
     private val queryGateway: QueryGateway,
@@ -16,8 +18,15 @@ internal class QueryReportUseCases(
         queryGateway = queryGateway,
         inputValidator = inputValidator,
         textProvider = textProvider
-    )
+    ),
+    private var reportLocale: String = Locale.getDefault().language
 ) {
+    fun updateReportLocale(locale: String) {
+        reportLocale = locale
+    }
+
+    fun currentReportLocale(): String = reportLocale
+
     suspend fun reportDay(
         currentState: QueryReportUiState,
         emit: (QueryReportUiState) -> Unit
@@ -26,6 +35,7 @@ internal class QueryReportUseCases(
         inputValidator = inputValidator,
         textProvider = textProvider,
         reportGateway = reportGateway,
+        locale = reportLocale,
         emit = emit
     )
 
@@ -37,6 +47,7 @@ internal class QueryReportUseCases(
         inputValidator = inputValidator,
         textProvider = textProvider,
         reportGateway = reportGateway,
+        locale = reportLocale,
         emit = emit
     )
 
@@ -48,6 +59,7 @@ internal class QueryReportUseCases(
         inputValidator = inputValidator,
         textProvider = textProvider,
         reportGateway = reportGateway,
+        locale = reportLocale,
         emit = emit
     )
 
@@ -59,6 +71,7 @@ internal class QueryReportUseCases(
         inputValidator = inputValidator,
         textProvider = textProvider,
         reportGateway = reportGateway,
+        locale = reportLocale,
         emit = emit
     )
 
@@ -70,6 +83,7 @@ internal class QueryReportUseCases(
         inputValidator = inputValidator,
         textProvider = textProvider,
         reportGateway = reportGateway,
+        locale = reportLocale,
         emit = emit
     )
 
@@ -81,6 +95,7 @@ internal class QueryReportUseCases(
         inputValidator = inputValidator,
         textProvider = textProvider,
         reportGateway = reportGateway,
+        locale = reportLocale,
         emit = emit
     )
 

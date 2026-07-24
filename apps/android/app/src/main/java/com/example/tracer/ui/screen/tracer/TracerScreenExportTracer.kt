@@ -140,7 +140,10 @@ internal suspend fun exportAllMonthsTracerToTree(
         }
 
         val detachedOutputFd = runCatching {
-            context.contentResolver.openFileDescriptor(outputUri, "w")?.use { descriptor ->
+            // `data.tracer` may already exist. `wt` is required here so a
+            // shorter replacement cannot leave stale ciphertext bytes at the
+            // end of the SAF document.
+            context.contentResolver.openFileDescriptor(outputUri, "wt")?.use { descriptor ->
                 descriptor.detachFd()
             } ?: error(context.getString(R.string.tracer_export_error_open_output_stream))
         }.getOrElse {
