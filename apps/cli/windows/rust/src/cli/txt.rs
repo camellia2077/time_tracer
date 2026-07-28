@@ -27,9 +27,19 @@ pub struct TxtAppendEventArgs {
         conflicts_with_all = ["start", "end"]
     )]
     pub time: Option<String>,
-    #[arg(long = "start", value_name = "HHMM", conflicts_with = "time", requires = "end")]
+    #[arg(
+        long = "start",
+        value_name = "HHMM",
+        conflicts_with = "time",
+        requires = "end"
+    )]
     pub start: Option<String>,
-    #[arg(long = "end", value_name = "HHMM", conflicts_with = "time", requires = "start")]
+    #[arg(
+        long = "end",
+        value_name = "HHMM",
+        conflicts_with = "time",
+        requires = "start"
+    )]
     pub end: Option<String>,
     #[arg(long = "activity", value_name = "TOKEN")]
     pub activity: String,

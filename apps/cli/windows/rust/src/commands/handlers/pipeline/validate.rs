@@ -1,5 +1,6 @@
 use crate::cli::{
-    PipelineValidateAllArgs, PipelineValidateArgs, PipelineValidateCommand,
+    PipelineValidateAllArgs, PipelineValidateArgs, PipelineValidateBundleArgs,
+    PipelineValidateCommand,
     PipelineValidateLogicArgs, PipelineValidateStructureArgs,
 };
 use crate::commands::handler::{CommandContext, CommandHandler};
@@ -22,8 +23,27 @@ impl CommandHandler<PipelineValidateArgs> for ValidateHandler {
             PipelineValidateCommand::All(args) => {
                 run_all_with_port(args, ctx, &RuntimePipelineSessionPort)
             }
+            PipelineValidateCommand::Bundle(args) => {
+                run_bundle_with_port(args, &RuntimePipelineSessionPort)
+            }
         }
     }
+}
+
+fn run_bundle_with_port(
+    args: PipelineValidateBundleArgs,
+    port: &dyn PipelineSessionPort,
+) -> Result<(), AppError> {
+    let date_check_mode = if args.no_date_check {
+        "none"
+    } else {
+        match args.date_check.unwrap_or(crate::cli::DateCheckMode::None) {
+            crate::cli::DateCheckMode::None => "none",
+            crate::cli::DateCheckMode::Continuity => "continuity",
+            crate::cli::DateCheckMode::Full => "full",
+        }
+    };
+    port.validate_external_bundle(&args.txt_path, &args.config_path, date_check_mode)
 }
 
 pub(crate) fn run_structure_with_port(

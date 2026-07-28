@@ -11,6 +11,7 @@ pub(crate) type RuntimeResolveCliContextFn = unsafe extern "C" fn(
 pub(crate) type RuntimeCreateFn =
     unsafe extern "C" fn(*const c_char, *const c_char, *const c_char) -> *mut c_void;
 pub(crate) type RuntimeDestroyFn = unsafe extern "C" fn(*mut c_void);
+pub(crate) type LastErrorFn = unsafe extern "C" fn() -> *const c_char;
 pub(crate) type RuntimeJsonFn = unsafe extern "C" fn(*mut c_void, *const c_char) -> *const c_char;
 pub(crate) type LogCallbackFn = unsafe extern "C" fn(c_int, *const c_char, *mut c_void);
 pub(crate) type DiagnosticsCallbackFn = unsafe extern "C" fn(c_int, *const c_char, *mut c_void);
@@ -29,12 +30,13 @@ pub(crate) struct RuntimeSymbols {
     pub(crate) runtime_resolve_cli_context: RuntimeResolveCliContextFn,
     pub(crate) runtime_create: RuntimeCreateFn,
     pub(crate) runtime_destroy: RuntimeDestroyFn,
+    pub(crate) last_error: LastErrorFn,
     pub(crate) runtime_ingest: RuntimeJsonFn,
     pub(crate) runtime_convert: RuntimeJsonFn,
     pub(crate) runtime_import: RuntimeJsonFn,
     pub(crate) runtime_validate_structure: RuntimeJsonFn,
     pub(crate) runtime_validate_logic: RuntimeJsonFn,
-    pub(crate) runtime_txt: RuntimeJsonFn,
+    pub(crate) runtime_config: RuntimeJsonFn,
     pub(crate) runtime_query: RuntimeJsonFn,
     pub(crate) runtime_report: RuntimeJsonFn,
     pub(crate) runtime_report_batch: RuntimeJsonFn,

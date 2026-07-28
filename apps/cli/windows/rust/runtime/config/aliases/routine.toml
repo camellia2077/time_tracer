@@ -1,11 +1,11 @@
 parent = "routine"
 
 [aliases]
-"上厕所" = "toilet"
-"快递" = "express"
+"toilet" = ["上厕所"]
+"express" = ["快递"]
 
 [aliases.body-hygiene]
-"洗澡" = "bathing"
+"bathing" = ["洗澡"]
 
 [aliases.personal-hygiene]
-"洗漱" = "oral-hygiene"
+"oral-hygiene" = ["洗漱"]

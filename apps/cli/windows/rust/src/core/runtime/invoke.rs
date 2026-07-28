@@ -10,7 +10,9 @@ use super::env_flags::log_timing;
 use super::errors::{ErrorContract, format_error_detail, format_tree_error_detail};
 use super::ffi::RuntimeJsonFn;
 use super::{
-    CoreRuntime, TreeResponse, TxtCanonicalReplaceOutput, TxtReplaceOutput, TxtResolveOutput,
+    AliasHierarchyCanonicalReplacement, AliasHierarchyOperationOutput, AliasKeyReplacement,
+    CoreRuntime, TreeResponse,
+    TxtCanonicalReplaceOutput, TxtReplaceOutput, TxtResolveOutput,
 };
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -114,6 +116,44 @@ struct TxtReplaceResponse {
     updated_content: String,
     #[serde(flatten)]
     error_contract: ErrorContract,
+}
+
+#[derive(Deserialize)]
+struct AliasCanonicalReplacementResponse {
+    old_canonical: String,
+    new_canonical: String,
+}
+
+#[derive(Deserialize)]
+struct AliasHierarchyOperationResponse {
+    ok: bool,
+    #[serde(default)]
+    error_message: String,
+    #[serde(default)]
+    updated_toml_content: String,
+    #[serde(default)]
+    replacements: Vec<AliasCanonicalReplacementResponse>,
+    #[serde(default)]
+    alias_replacements: Vec<AliasKeyReplacementResponse>,
+    #[serde(flatten)]
+    error_contract: ErrorContract,
+}
+
+#[derive(Deserialize)]
+struct AliasHierarchyTextResponse {
+    ok: bool,
+    #[serde(default)]
+    error_message: String,
+    #[serde(default)]
+    content: String,
+    #[serde(flatten)]
+    error_contract: ErrorContract,
+}
+
+#[derive(Deserialize)]
+struct AliasKeyReplacementResponse {
+    old_alias: String,
+    new_alias: String,
 }
 
 pub(crate) fn run_query_data(runtime: &CoreRuntime, request: &Value) -> Result<String, AppError> {
@@ -286,7 +326,7 @@ pub(crate) fn run_txt_resolve_day_block(
 ) -> Result<TxtResolveOutput, AppError> {
     let run_start = Instant::now();
     let request_json = to_request_json(request)?;
-    let raw = unsafe { (runtime.api.symbols.runtime_txt)(runtime.handle, request_json.as_ptr()) };
+    let raw = unsafe { (runtime.api.symbols.runtime_config)(runtime.handle, request_json.as_ptr()) };
     let payload = read_c_json::<TxtResolveResponse>(raw, "txt")?;
     log_timing("runtime.txt", run_start.elapsed());
     if !payload.ok {
@@ -311,7 +351,7 @@ pub(crate) fn run_txt_replace_day_block(
 ) -> Result<TxtReplaceOutput, AppError> {
     let run_start = Instant::now();
     let request_json = to_request_json(request)?;
-    let raw = unsafe { (runtime.api.symbols.runtime_txt)(runtime.handle, request_json.as_ptr()) };
+    let raw = unsafe { (runtime.api.symbols.runtime_config)(runtime.handle, request_json.as_ptr()) };
     let payload = read_c_json::<TxtReplaceResponse>(raw, "txt")?;
     log_timing("runtime.txt", run_start.elapsed());
     if !payload.ok {
@@ -334,7 +374,7 @@ pub(crate) fn run_txt_replace_canonical_activity_names(
 ) -> Result<TxtCanonicalReplaceOutput, AppError> {
     let run_start = Instant::now();
     let request_json = to_request_json(request)?;
-    let raw = unsafe { (runtime.api.symbols.runtime_txt)(runtime.handle, request_json.as_ptr()) };
+    let raw = unsafe { (runtime.api.symbols.runtime_config)(runtime.handle, request_json.as_ptr()) };
     let payload = read_c_json::<TxtReplaceResponse>(raw, "txt")?;
     log_timing("runtime.txt", run_start.elapsed());
     if !payload.ok {
@@ -346,6 +386,60 @@ pub(crate) fn run_txt_replace_canonical_activity_names(
     Ok(TxtCanonicalReplaceOutput {
         updated_content: payload.updated_content,
     })
+}
+
+pub(crate) fn run_alias_hierarchy_operation(
+    runtime: &CoreRuntime,
+    request: &Value,
+) -> Result<AliasHierarchyOperationOutput, AppError> {
+    let run_start = Instant::now();
+    let request_json = to_request_json(request)?;
+    let raw = unsafe { (runtime.api.symbols.runtime_config)(runtime.handle, request_json.as_ptr()) };
+    let payload = read_c_json::<AliasHierarchyOperationResponse>(raw, "alias hierarchy")?;
+    log_timing("runtime.alias_hierarchy", run_start.elapsed());
+    if !payload.ok {
+        return Err(map_runtime_text_error(
+            payload.error_message,
+            &payload.error_contract,
+        ));
+    }
+    Ok(AliasHierarchyOperationOutput {
+        updated_toml_content: payload.updated_toml_content,
+        replacements: payload
+            .replacements
+            .into_iter()
+            .map(|replacement| AliasHierarchyCanonicalReplacement {
+                old_canonical: replacement.old_canonical,
+                new_canonical: replacement.new_canonical,
+            })
+            .collect(),
+        alias_replacements: payload
+            .alias_replacements
+            .into_iter()
+            .map(|replacement| AliasKeyReplacement {
+                old_alias: replacement.old_alias,
+                new_alias: replacement.new_alias,
+            })
+            .collect(),
+    })
+}
+
+pub(crate) fn run_alias_hierarchy_text(
+    runtime: &CoreRuntime,
+    request: &Value,
+) -> Result<String, AppError> {
+    let run_start = Instant::now();
+    let request_json = to_request_json(request)?;
+    let raw = unsafe { (runtime.api.symbols.runtime_config)(runtime.handle, request_json.as_ptr()) };
+    let payload = read_c_json::<AliasHierarchyTextResponse>(raw, "alias hierarchy")?;
+    log_timing("runtime.alias_hierarchy", run_start.elapsed());
+    if !payload.ok {
+        return Err(map_runtime_text_error(
+            payload.error_message,
+            &payload.error_contract,
+        ));
+    }
+    Ok(payload.content)
 }
 
 pub(crate) fn run_tracer_exchange_export(

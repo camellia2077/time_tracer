@@ -8,7 +8,7 @@ use serde_json::Value;
 use crate::error::AppError;
 
 use super::ffi::{
-    RuntimeCheckEnvironmentFn, RuntimeCreateFn, RuntimeDestroyFn, RuntimeJsonFn,
+    LastErrorFn, RuntimeCheckEnvironmentFn, RuntimeCreateFn, RuntimeDestroyFn, RuntimeJsonFn,
     RuntimeResolveCliContextFn, RuntimeSymbols, SetCryptoProgressCallbackFn,
     SetDiagnosticsCallbackFn, SetLogCallbackFn,
 };
@@ -65,6 +65,9 @@ pub(crate) fn load_runtime_symbols(lib: &Library) -> Result<RuntimeSymbols, AppE
         let runtime_destroy: RuntimeDestroyFn = *lib
             .get(b"tracer_core_runtime_destroy")
             .map_err(symbol_error)?;
+        let last_error: LastErrorFn = *lib
+            .get(b"tracer_core_last_error")
+            .map_err(symbol_error)?;
         let runtime_ingest: RuntimeJsonFn = *lib
             .get(b"tracer_core_runtime_ingest_json")
             .map_err(symbol_error)?;
@@ -80,8 +83,8 @@ pub(crate) fn load_runtime_symbols(lib: &Library) -> Result<RuntimeSymbols, AppE
         let runtime_validate_logic: RuntimeJsonFn = *lib
             .get(b"tracer_core_runtime_validate_logic_json")
             .map_err(symbol_error)?;
-        let runtime_txt: RuntimeJsonFn = *lib
-            .get(b"tracer_core_runtime_txt_json")
+        let runtime_config: RuntimeJsonFn = *lib
+            .get(b"tracer_core_runtime_config_json")
             .map_err(symbol_error)?;
         let runtime_query: RuntimeJsonFn = *lib
             .get(b"tracer_core_runtime_query_json")
@@ -113,12 +116,13 @@ pub(crate) fn load_runtime_symbols(lib: &Library) -> Result<RuntimeSymbols, AppE
             runtime_resolve_cli_context,
             runtime_create,
             runtime_destroy,
+            last_error,
             runtime_ingest,
             runtime_convert,
             runtime_import,
             runtime_validate_structure,
             runtime_validate_logic,
-            runtime_txt,
+            runtime_config,
             runtime_query,
             runtime_report,
             runtime_report_batch,

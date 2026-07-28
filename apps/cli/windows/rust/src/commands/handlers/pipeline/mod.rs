@@ -54,6 +54,12 @@ pub(crate) trait PipelineSessionPort {
         ctx: &CommandContext,
         request: &Value,
     ) -> Result<(), AppError>;
+    fn validate_external_bundle(
+        &self,
+        txt_path: &str,
+        config_path: &str,
+        date_check_mode: &str,
+    ) -> Result<(), AppError>;
 }
 
 pub(crate) struct RuntimePipelineSessionPort;
@@ -122,6 +128,20 @@ impl PipelineSessionPort for RuntimePipelineSessionPort {
         let api = CoreApi::load()?;
         let session = api.bootstrap(command_name, ctx)?;
         session.pipeline().validate_logic(request)
+    }
+
+    fn validate_external_bundle(
+        &self,
+        txt_path: &str,
+        config_path: &str,
+        date_check_mode: &str,
+    ) -> Result<(), AppError> {
+        let api = CoreApi::load()?;
+        api.validate_external_bundle(
+            std::path::Path::new(txt_path),
+            std::path::Path::new(config_path),
+            date_check_mode,
+        )
     }
 }
 
@@ -204,6 +224,15 @@ mod tests {
             request: &Value,
         ) -> Result<(), crate::error::AppError> {
             self.recorded.record_ack(command_name, request)
+        }
+
+        fn validate_external_bundle(
+            &self,
+            _txt_path: &str,
+            _config_path: &str,
+            _date_check_mode: &str,
+        ) -> Result<(), crate::error::AppError> {
+            self.recorded.record_ack("validate-external-bundle", &Value::Null)
         }
     }
 

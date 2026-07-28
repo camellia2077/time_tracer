@@ -15,6 +15,7 @@ mod txt;
 pub use about::{AboutArgs, AboutCommand};
 pub use alias::{
     AliasAddArgs, AliasArgs, AliasCommand, AliasFileArgs, AliasGroupArgs, AliasMoveArgs,
+    AliasMoveConfigArgs, AliasRenameGroupArgs, AliasTreeArgs,
 };
 pub use chart::{ChartArgs, ChartTheme, ChartType};
 pub use doctor::DoctorArgs;
@@ -25,8 +26,8 @@ pub use exchange::{
 pub use licenses::LicensesArgs;
 pub use pipeline::{
     DateCheckMode, PipelineArgs, PipelineCommand, PipelineConvertArgs, PipelineImportArgs,
-    PipelineIngestArgs, PipelineValidateAllArgs, PipelineValidateArgs, PipelineValidateCommand,
-    PipelineValidateLogicArgs, PipelineValidateStructureArgs,
+    PipelineIngestArgs, PipelineValidateAllArgs, PipelineValidateArgs, PipelineValidateBundleArgs,
+    PipelineValidateCommand, PipelineValidateLogicArgs, PipelineValidateStructureArgs,
 };
 pub use query::{
     DataOutputMode, QueryArgs, QueryCommand, QueryDataArgs, QueryPeriod, QueryTreeArgs,
@@ -102,7 +103,7 @@ mod tests {
     use clap::{Parser, error::ErrorKind};
 
     use super::{
-        AboutCommand, Cli, Command, DataOutputMode, DateCheckMode, ExchangeCommand,
+        AboutCommand, AliasCommand, Cli, Command, DataOutputMode, DateCheckMode, ExchangeCommand,
         PipelineCommand, PipelineValidateCommand, ReportCommand, ReportExportPeriod,
         ReportRenderPeriod, SystemCommand, TxtCommand,
     };
@@ -111,6 +112,38 @@ mod tests {
     fn version_flag_still_uses_clap_display_version() {
         let error = Cli::try_parse_from(["time_tracer_cli", "--version"]).unwrap_err();
         assert_eq!(error.kind(), ErrorKind::DisplayVersion);
+    }
+
+    #[test]
+    fn alias_rename_group_parses_txt_input_and_new_name() {
+        let cli = Cli::try_parse_from([
+            "time_tracer_cli",
+            "--db",
+            "data/time_data.sqlite3",
+            "alias",
+            "rename-group",
+            "--file",
+            "config/aliases/exercise.toml",
+            "--group",
+            "cardio",
+            "--name",
+            "conditioning",
+            "--input",
+            "test/data",
+        ])
+        .unwrap();
+
+        match cli.command {
+            Command::Alias(args) => match args.command {
+                AliasCommand::RenameGroup(args) => {
+                    assert_eq!(args.group, "cardio");
+                    assert_eq!(args.name, "conditioning");
+                    assert_eq!(args.input, "test/data");
+                }
+                _ => panic!("expected alias rename-group command"),
+            },
+            _ => panic!("expected alias command"),
+        }
     }
 
     #[test]
@@ -375,12 +408,83 @@ mod tests {
     }
 
     #[test]
+    fn pipeline_validate_bundle_parses_external_txt_and_config_paths() {
+        let cli = Cli::try_parse_from([
+            "time_tracer_cli",
+            "pipeline",
+            "validate",
+            "bundle",
+            "--txt",
+            "temp/txt",
+            "--config",
+            "temp/config",
+            "--no-date-check",
+        ])
+        .unwrap();
+
+        match cli.command {
+            Command::Pipeline(args) => match args.command {
+                PipelineCommand::Validate(args) => match args.command {
+                    PipelineValidateCommand::Bundle(args) => {
+                        assert_eq!(args.txt_path, "temp/txt");
+                        assert_eq!(args.config_path, "temp/config");
+                        assert!(args.no_date_check);
+                    }
+                    _ => panic!("expected pipeline validate bundle command"),
+                },
+                _ => panic!("expected pipeline validate command"),
+            },
+            _ => panic!("expected pipeline command"),
+        }
+    }
+
+    #[test]
     fn pipeline_help_mentions_interval_authored_lines() {
         let error = Cli::try_parse_from(["time_tracer_cli", "pipeline", "--help"]).unwrap_err();
         assert_eq!(error.kind(), ErrorKind::DisplayHelp);
         let help = error.to_string();
         assert!(help.contains("HHMMtoken"));
         assert!(help.contains("HHMM-HHMMtoken"));
+    }
+
+    #[test]
+    fn alias_help_explains_move_and_move_config() {
+        let error = Cli::try_parse_from(["time_tracer_cli", "alias", "--help"]).unwrap_err();
+        assert_eq!(error.kind(), ErrorKind::DisplayHelp);
+        let help = error.to_string();
+        assert!(help.contains("move-config"));
+        assert!(help.contains("TXT files and the database"));
+        assert!(help.contains("TOML-only hierarchy editing"));
+
+        let error =
+            Cli::try_parse_from(["time_tracer_cli", "alias", "move-config", "--help"]).unwrap_err();
+        assert_eq!(error.kind(), ErrorKind::DisplayHelp);
+        let help = error.to_string();
+        assert!(help.contains("without modifying TXT files or the database"));
+        assert!(help.contains("--file config/aliases/study.toml"));
+    }
+
+    #[test]
+    fn alias_tree_parses_file_and_show_aliases() {
+        let cli = Cli::try_parse_from([
+            "time_tracer_cli",
+            "alias",
+            "tree",
+            "--file",
+            "config/aliases/study.toml",
+            "--show-aliases",
+        ])
+        .unwrap();
+        match cli.command {
+            Command::Alias(args) => match args.command {
+                super::AliasCommand::Tree(args) => {
+                    assert_eq!(args.file, "config/aliases/study.toml");
+                    assert!(args.show_aliases);
+                }
+                _ => panic!("expected alias tree command"),
+            },
+            _ => panic!("expected alias command"),
+        }
     }
 
     #[test]

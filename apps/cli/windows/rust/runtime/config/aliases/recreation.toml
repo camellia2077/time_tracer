@@ -1,18 +1,12 @@
 parent = "recreation"
 
 [aliases.online-platforms]
-"zhihu" = "zhihu"
-"知乎" = "zhihu"
-"douyin" = "douyin"
-"抖音" = "douyin"
-"bilibili" = "bilibili"
-"哔哩哔哩" = "bilibili"
-"weibo" = "weibo"
+"zhihu" = ["zhihu", "知乎"]
+"douyin" = ["douyin", "抖音"]
+"bilibili" = ["bilibili", "哔哩哔哩"]
+"weibo" = ["weibo"]
 
 [aliases.game]
-"minecraft" = "minecraft"
-"守望先锋" = "overwatch"
-"overwatch" = "overwatch"
-"皇室战争" = "clash-royale"
-"cr" = "clash-royale"
-"Clash Royale" = "clash-royale"
+"minecraft" = ["minecraft"]
+"overwatch" = ["守望先锋", "overwatch"]
+"clash-royale" = ["皇室战争", "cr", "Clash Royale"]

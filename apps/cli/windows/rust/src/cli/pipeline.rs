@@ -57,6 +57,21 @@ pub struct PipelineValidateAllArgs {
     pub no_date_check: bool,
 }
 
+#[derive(Debug, Args)]
+pub struct PipelineValidateBundleArgs {
+    #[arg(long = "txt", help = "TXT directory to validate")]
+    pub txt_path: String,
+    #[arg(
+        long = "config",
+        help = "Config directory containing config.toml and aliases/"
+    )]
+    pub config_path: String,
+    #[arg(long = "date-check", value_enum, conflicts_with = "no_date_check")]
+    pub date_check: Option<DateCheckMode>,
+    #[arg(long = "no-date-check", action = ArgAction::SetTrue)]
+    pub no_date_check: bool,
+}
+
 #[derive(Debug, Subcommand)]
 pub enum PipelineValidateCommand {
     #[command(about = "Validate source TXT syntax and structure")]
@@ -65,6 +80,11 @@ pub enum PipelineValidateCommand {
     Logic(PipelineValidateLogicArgs),
     #[command(about = "Run structure and logic validation in order")]
     All(PipelineValidateAllArgs),
+    #[command(
+        about = "Validate an external TXT+TOML bundle without importing it",
+        long_about = "Validate an external data bundle without writing to the database.\n\nThe config directory must contain config.toml and aliases/. Core validates the TOML alias schema, TXT structure, business logic, and activity-name references."
+    )]
+    Bundle(PipelineValidateBundleArgs),
 }
 
 #[derive(Debug, Args)]

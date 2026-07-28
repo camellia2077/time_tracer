@@ -135,7 +135,7 @@ fn resolve_cli_context(
     Ok(ResolvedCliContext { paths, cli_config })
 }
 
-fn create_runtime(api: CoreApi, paths: &ResolvedCliPaths) -> Result<CoreRuntime, AppError> {
+pub(crate) fn create_runtime(api: CoreApi, paths: &ResolvedCliPaths) -> Result<CoreRuntime, AppError> {
     let db_c = CString::new(paths.db_path.clone())
         .map_err(|e| AppError::InvalidArguments(format!("Invalid db path: {e}")))?;
     let output_c = CString::new(paths.runtime_output_root.clone())
@@ -146,9 +146,16 @@ fn create_runtime(api: CoreApi, paths: &ResolvedCliPaths) -> Result<CoreRuntime,
         (api.symbols.runtime_create)(db_c.as_ptr(), output_c.as_ptr(), converter_c.as_ptr())
     };
     if handle.is_null() {
-        return Err(AppError::DllCompatibility(
-            "Create core runtime failed.".to_string(),
-        ));
+        let detail = unsafe {
+            std::ffi::CStr::from_ptr((api.symbols.last_error)())
+                .to_string_lossy()
+                .into_owned()
+        };
+        return Err(AppError::Config(if detail.is_empty() {
+            "Create core runtime failed.".to_string()
+        } else {
+            detail
+        }));
     }
     Ok(CoreRuntime { api, handle })
 }

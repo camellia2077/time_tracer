@@ -1,7 +1,4 @@
 parent = "rest"
 
 [aliases]
-"rest" = "rest"
-"rest_insomnia" = "insomnia"
-"休息" = "rest"
-"r" = "rest"
+"rest" = ["rest", "休息", "r"]
