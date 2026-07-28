@@ -42,7 +42,7 @@ auto EncodeCapabilitiesResponse(const CapabilitiesResponsePayload& response)
             response.features.runtime_record_activity_atomically_json},
            {"runtime_update_activity_remark_atomically_json",
             response.features.runtime_update_activity_remark_atomically_json},
-           {"runtime_txt_json", response.features.runtime_txt_json},
+           {"runtime_config_json", response.features.runtime_config_json},
            {"runtime_query_json", response.features.runtime_query_json},
            {"runtime_temporal_report_json",
             response.features.runtime_temporal_report_json},

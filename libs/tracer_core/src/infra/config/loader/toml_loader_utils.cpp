@@ -14,12 +14,60 @@ constexpr double kTypMarginLeftRightCm = 2.0;
 constexpr std::string_view kStyleSourceKey = "style_source";
 namespace infra_file_io = tracer::core::infrastructure::internal::file_io;
 
+auto ReadTomlSourceLine(const std::string& content, std::size_t line_number)
+    -> std::string {
+  if (line_number == 0U) {
+    return {};
+  }
+  std::size_t current_line = 1U;
+  std::size_t line_start = 0U;
+  while (current_line < line_number) {
+    const std::size_t newline = content.find('\n', line_start);
+    if (newline == std::string::npos) {
+      return {};
+    }
+    line_start = newline + 1U;
+    ++current_line;
+  }
+  const std::size_t line_end = content.find('\n', line_start);
+  std::string line = content.substr(
+      line_start, line_end == std::string::npos ? std::string::npos
+                                                : line_end - line_start);
+  if (!line.empty() && line.back() == '\r') {
+    line.pop_back();
+  }
+  return line;
+}
+
+auto BuildTomlParseDiagnostic(const fs::path& path, const std::string& content,
+                              const toml::parse_error& error) -> std::string {
+  const auto& source = error.source();
+  const auto line = static_cast<std::size_t>(source.begin.line);
+  const auto column = static_cast<std::size_t>(source.begin.column);
+  std::string message = path.string();
+  if (line > 0U) {
+    message += ":" + std::to_string(line);
+    if (column > 0U) {
+      message += ":" + std::to_string(column);
+    }
+  }
+  message += ": ";
+  message += std::string(error.description());
+  const std::string raw_line = ReadTomlSourceLine(content, line);
+  if (!raw_line.empty()) {
+    message += "\n> ";
+    message += raw_line;
+  }
+  return message;
+}
+
 auto ParseTomlFile(const fs::path& path) -> toml::table {
+  const std::string content = infra_file_io::ReadCanonicalText(path);
   try {
-    return toml::parse(infra_file_io::ReadCanonicalText(path));
+    return toml::parse(content, path.string());
   } catch (const toml::parse_error& e) {
-    throw std::runtime_error("Config TOML Parse Error [" + path.string() +
-                             "]: " + std::string(e.description()));
+    throw std::runtime_error("Config TOML Parse Error: " +
+                             BuildTomlParseDiagnostic(path, content, e));
   } catch (const std::exception& e) {
     throw std::runtime_error("Config Load Error [" + path.string() +
                              "]: " + e.what());

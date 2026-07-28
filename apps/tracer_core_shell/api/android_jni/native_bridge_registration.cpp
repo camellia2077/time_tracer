@@ -71,9 +71,9 @@ const std::array<JNINativeMethod, 20> kNativeMethods = {
         reinterpret_cast<void*>(&NativeUpdateDayRemarkAtomically),
     },
     JNINativeMethod{
-        const_cast<char*>("nativeTxt"),
+        const_cast<char*>("nativeConfig"),
         const_cast<char*>("(Ljava/lang/String;)Ljava/lang/String;"),
-        reinterpret_cast<void*>(&NativeTxt),
+        reinterpret_cast<void*>(&NativeConfig),
     },
     JNINativeMethod{
         const_cast<char*>("nativeEncryptFile"),

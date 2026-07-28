@@ -212,12 +212,17 @@ d0102
 
 普通活动名的合法性基于：
 
-`assets/tracer_core/config/aliases/*.toml`
+`assets/tracer_core/config_test/aliases/*.toml` for test/packaging fixtures or
+`assets/tracer_core/config_distribution/aliases/*.toml` for distribution
+defaults. Generated platform copies are not sources of truth.
 
 这里的核心语义是：
 
-1. `alias_mapping.keys` 是普通活动可识别 token 集合
-2. 这些 token 在后续转换时映射到项目路径或规范活动名
+1. alias TOML 使用 canonical-key-first 格式：canonical key 位于左侧，右侧
+   是一个或多个 alias 的字符串数组，例如 `"running" = ["跑步", "run"]`
+2. canonical key 和 alias 数组中的字符串共同组成普通活动可识别 token 集合
+3. 这些 token 在后续转换时映射到项目路径或规范活动名；旧的
+   `alias = "canonical"` 格式不再是有效配置
 
 但有一类特殊 token 不属于“普通活动映射”，而属于 wake 语义集合，见下一节。
 

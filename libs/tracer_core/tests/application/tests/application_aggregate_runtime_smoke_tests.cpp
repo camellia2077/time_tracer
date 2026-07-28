@@ -124,6 +124,11 @@ class SmokePipelineWorkflow final
       -> tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse override {
     return {.ok = true, .updated_content = request.content, .error_message = ""};
   }
+  auto RunReplaceTxtAliasActivityNames(
+      const tracer_core::core::dto::ReplaceTxtAliasActivityNamesRequest& request)
+      -> tracer_core::core::dto::ReplaceTxtAliasActivityNamesResponse override {
+    return {.ok = true, .updated_content = request.content, .error_message = ""};
+  }
   auto InstallActiveConverterConfig(
       const tracer::core::application::pipeline::
           ActiveConverterConfigInstallRequest&) -> void override {}

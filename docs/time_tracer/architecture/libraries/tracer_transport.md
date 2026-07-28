@@ -24,7 +24,7 @@ Detailed navigation for the transport implementation library.
 ## TXT Runtime Family Index
 
 1. `tracer_transport` owns TXT runtime envelope/codec mechanics such as
-   `runtime_txt_json` capability projection and JSON envelope normalization.
+   `runtime_config_json` capability projection and JSON envelope normalization.
 2. It does not own TXT day-block business semantics, `MMDD` validation rules,
    or action meaning for `default_day_marker`, `resolve_day_block`, and
    `replace_day_block`.

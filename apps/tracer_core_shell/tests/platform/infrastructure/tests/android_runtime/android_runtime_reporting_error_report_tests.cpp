@@ -77,7 +77,7 @@ auto TestValidateLogicReusesStructureReporter(int& failures) -> void {
 
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
-      kRepoRoot / "assets" / "tracer_core" / "config" /
+      kRepoRoot / "assets" / "tracer_core" / "config_test" /
       "aliases/_system.toml";
 
   auto logger = std::make_shared<CapturingLogger>();
@@ -187,7 +187,7 @@ auto TestValidateStructureSkipsErrorReportFiles(int& failures) -> void {
 
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
-      kRepoRoot / "assets" / "tracer_core" / "config" /
+      kRepoRoot / "assets" / "tracer_core" / "config_test" /
       "aliases/_system.toml";
 
   auto logger = std::make_shared<CapturingLogger>();
@@ -271,7 +271,7 @@ auto TestAndroidDefaultRuntimeSkipsErrorReportFiles(int& failures) -> void {
 
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
-      kRepoRoot / "assets" / "tracer_core" / "config" /
+      kRepoRoot / "assets" / "tracer_core" / "config_test" /
       "aliases/_system.toml";
 
   auto logger = std::make_shared<CapturingLogger>();

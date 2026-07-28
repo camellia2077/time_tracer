@@ -76,6 +76,8 @@ using tracer_core::core::dto::ConvertTxtActivityNamesRequest;
 using tracer_core::core::dto::ConvertTxtActivityNamesResponse;
 using tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest;
 using tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse;
+using tracer_core::core::dto::ReplaceTxtAliasActivityNamesRequest;
+using tracer_core::core::dto::ReplaceTxtAliasActivityNamesResponse;
 
 namespace {
 
@@ -352,6 +354,31 @@ auto PipelineWorkflow::RunReplaceTxtCanonicalActivityNames(
   return {.ok = true,
           .updated_content = converter.ReplaceCanonicalNames(request.content,
                                                                replacements),
+          .error_message = ""};
+}
+
+auto PipelineWorkflow::RunReplaceTxtAliasActivityNames(
+    const ReplaceTxtAliasActivityNamesRequest& request)
+    -> ReplaceTxtAliasActivityNamesResponse {
+  std::unordered_map<std::string, std::string> replacements;
+  replacements.reserve(request.replacements.size());
+  for (const auto& replacement : request.replacements) {
+    if (replacement.old_alias.empty() || replacement.new_alias.empty()) {
+      throw std::invalid_argument("alias replacement names must not be empty.");
+    }
+    const auto [_, inserted] = replacements.emplace(
+        replacement.old_alias, replacement.new_alias);
+    if (!inserted) {
+      throw std::invalid_argument(
+          "alias replacement source must be unique: " +
+          replacement.old_alias);
+    }
+  }
+  const ActivityNameTextConverter converter(
+      converter_config_provider_->LoadConverterConfig());
+  return {.ok = true,
+          .updated_content = converter.ReplaceAliasNames(request.content,
+                                                          replacements),
           .error_message = ""};
 }
 

@@ -32,6 +32,8 @@ using tracer_core::core::dto::ConvertTxtActivityNamesRequest;
 using tracer_core::core::dto::ConvertTxtActivityNamesResponse;
 using tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest;
 using tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse;
+using tracer_core::core::dto::ReplaceTxtAliasActivityNamesRequest;
+using tracer_core::core::dto::ReplaceTxtAliasActivityNamesResponse;
 using tracer::core::domain::types::AppOptions;
 namespace core_api_failure = tracer::core::application::use_cases::failure;
 
@@ -294,6 +296,24 @@ auto PipelineApi::RunReplaceTxtCanonicalActivityNames(
             .updated_content = request.content,
             .error_message = core_api_failure::BuildErrorMessage(
                 "RunReplaceTxtCanonicalActivityNames", "Unknown error.")};
+  }
+}
+
+auto PipelineApi::RunReplaceTxtAliasActivityNames(
+    const ReplaceTxtAliasActivityNamesRequest& request)
+    -> ReplaceTxtAliasActivityNamesResponse {
+  try {
+    return pipeline_workflow_.RunReplaceTxtAliasActivityNames(request);
+  } catch (const std::exception& exception) {
+    return {.ok = false,
+            .updated_content = request.content,
+            .error_message = core_api_failure::BuildErrorMessage(
+                "RunReplaceTxtAliasActivityNames", exception.what())};
+  } catch (...) {
+    return {.ok = false,
+            .updated_content = request.content,
+            .error_message = core_api_failure::BuildErrorMessage(
+                "RunReplaceTxtAliasActivityNames", "Unknown error.")};
   }
 }
 

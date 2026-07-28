@@ -1,0 +1,4 @@
+parent = "meal"
+
+[aliases]
+"dining" = ["meal", "吃饭", "饭"]

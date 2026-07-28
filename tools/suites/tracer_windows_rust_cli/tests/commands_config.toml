@@ -31,6 +31,8 @@ expect_stdout_contains = [
   "promote",
   "add",
   "move",
+  "move-config",
+  "tree",
   "rename-group-alias",
   "add-group-alias",
 ]

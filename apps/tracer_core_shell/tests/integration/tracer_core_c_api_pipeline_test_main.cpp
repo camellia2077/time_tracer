@@ -18,8 +18,7 @@ auto main() -> int {
     Require(!kRepoRoot.empty(), "Unable to locate repository root");
 
     const fs::path kConverterConfig = kRepoRoot / "assets" / "tracer_core" /
-                                      "config" / "converter" /
-                                      "aliases/_system.toml";
+                                      "config_test" / "aliases/_system.toml";
     const fs::path kInputRoot = kRepoRoot / "test" / "data";
     Require(fs::exists(kInputRoot), "Missing test/data directory");
     const fs::path kTempRoot =

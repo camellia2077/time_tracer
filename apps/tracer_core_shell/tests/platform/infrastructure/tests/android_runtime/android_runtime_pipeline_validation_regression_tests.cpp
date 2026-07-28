@@ -144,7 +144,7 @@ auto TestValidateLogicRejectsWakeKeywordAfterFirstEvent(int& failures) -> void {
 
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
-      kRepoRoot / "assets" / "tracer_core" / "config" /
+      kRepoRoot / "assets" / "tracer_core" / "config_test" /
       "aliases/_system.toml";
 
   auto logger = std::make_shared<CapturingLogger>();
@@ -222,7 +222,7 @@ auto TestValidateLogicAllowsSingleAuthoredEventDay(int& failures) -> void {
 
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
-      kRepoRoot / "assets" / "tracer_core" / "config" /
+      kRepoRoot / "assets" / "tracer_core" / "config_test" /
       "aliases/_system.toml";
 
   auto logger = std::make_shared<CapturingLogger>();
@@ -289,7 +289,7 @@ auto TestValidateLogicRejectsBadTimeRangeFixture(int& failures) -> void {
 
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
-      kRepoRoot / "assets" / "tracer_core" / "config" /
+      kRepoRoot / "assets" / "tracer_core" / "config_test" /
       "aliases/_system.toml";
 
   auto diagnostics_sink = std::make_shared<CapturingDiagnosticsSink>();
@@ -362,7 +362,7 @@ auto TestRecordActivityAtomicallyWarnsForWakeOnlyDay(int& failures) -> void {
 
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
-      kRepoRoot / "assets" / "tracer_core" / "config" /
+      kRepoRoot / "assets" / "tracer_core" / "config_test" /
       "aliases/_system.toml";
 
   infrastructure::bootstrap::AndroidRuntime runtime;
@@ -475,7 +475,7 @@ auto TestRecordActivityAtomicallyAcceptsCanonicalActivityToken(
 
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
-      kRepoRoot / "assets" / "tracer_core" / "config" /
+      kRepoRoot / "assets" / "tracer_core" / "config_test" /
       "aliases/_system.toml";
 
   infrastructure::bootstrap::AndroidRuntime runtime;
@@ -532,7 +532,7 @@ auto TestRecordActivityAtomicallyWarnsForOvernightContinuationDay(
 
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
-      kRepoRoot / "assets" / "tracer_core" / "config" /
+      kRepoRoot / "assets" / "tracer_core" / "config_test" /
       "aliases/_system.toml";
 
   infrastructure::bootstrap::AndroidRuntime runtime;
@@ -597,7 +597,7 @@ auto TestRecordActivityAtomicallyPreservesMultilineRemark(
   const auto cleanup = [&]() -> void { RemoveTree(kPaths.test_root); };
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
-      kRepoRoot / "assets" / "tracer_core" / "config" /
+      kRepoRoot / "assets" / "tracer_core" / "config_test" /
       "aliases/_system.toml";
 
   infrastructure::bootstrap::AndroidRuntime runtime;
@@ -655,7 +655,7 @@ auto TestRecordActivityAtomicallySkipsCompletenessWarningForCompleteDay(
 
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
-      kRepoRoot / "assets" / "tracer_core" / "config" /
+      kRepoRoot / "assets" / "tracer_core" / "config_test" /
       "aliases/_system.toml";
 
   const std::filesystem::path kMonthFile =
@@ -720,7 +720,7 @@ auto TestConvertLogsActualConversionFailure(int& failures) -> void {
 
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
-      kRepoRoot / "assets" / "tracer_core" / "config" /
+      kRepoRoot / "assets" / "tracer_core" / "config_test" /
       "aliases/_system.toml";
 
   auto logger = std::make_shared<CapturingLogger>();
@@ -820,7 +820,7 @@ auto TestValidateStructureReportsInvalidUtf8(int& failures) -> void {
 
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
-      kRepoRoot / "assets" / "tracer_core" / "config" /
+      kRepoRoot / "assets" / "tracer_core" / "config_test" /
       "aliases/_system.toml";
 
   infrastructure::bootstrap::AndroidRuntime runtime;

@@ -72,6 +72,27 @@ auto LoadLocalizedMarkdownReports(const fs::path& markdown_dir,
   }
 }
 
+auto ResolveMarkdownLocaleRoot(const fs::path& day_config_path) -> fs::path {
+  const fs::path parent = day_config_path.parent_path();
+  const fs::path candidate = parent.parent_path();
+  if (!fs::exists(candidate) || !fs::is_directory(candidate)) {
+    return parent;
+  }
+  for (const auto& entry : fs::directory_iterator(candidate)) {
+    if (!entry.is_directory()) {
+      continue;
+    }
+    if (fs::exists(entry.path() / "day.toml") &&
+        fs::exists(entry.path() / "month.toml") &&
+        fs::exists(entry.path() / "period.toml") &&
+        fs::exists(entry.path() / "week.toml") &&
+        fs::exists(entry.path() / "year.toml")) {
+      return candidate;
+    }
+  }
+  return parent;
+}
+
 #include "host/bootstrap/internal/android_runtime_factory_resolver_namespace.inc"
 
 }  // namespace
@@ -130,9 +151,8 @@ auto ResolveAndroidRuntimeConfigPathsBridge(
     };
   }
 
-  throw std::runtime_error(
-      "Android runtime config bundle not found under: " +
-      config_root.string());
+  throw std::runtime_error("Android runtime config bundle not found under: " +
+                           config_root.string());
 }
 
 auto BuildAndroidReportCatalogBridge(
@@ -152,7 +172,7 @@ auto BuildAndroidReportCatalogBridge(
   catalog.loaded_reports.markdown.year = ReportConfigLoader::LoadYearlyMdConfig(
       runtime_config_paths.markdown.year);
   LoadLocalizedMarkdownReports(
-      runtime_config_paths.markdown.day.parent_path(), catalog);
+      ResolveMarkdownLocaleRoot(runtime_config_paths.markdown.day), catalog);
 
 #if TT_REPORT_ENABLE_LATEX
   if (runtime_config_paths.latex.has_value()) {

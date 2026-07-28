@@ -148,7 +148,10 @@ TT_CORE_API const char* tracer_core_runtime_update_activity_remark_atomically_js
     TtCoreRuntimeHandle* handle, const char* request_json);
 TT_CORE_API const char* tracer_core_runtime_update_day_remark_atomically_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
-TT_CORE_API const char* tracer_core_runtime_txt_json(
+// Runs shared TXT and alias-hierarchy config actions. The
+// `apply_alias_hierarchy_operation` action accepts in-memory TOML plus one
+// operation request and returns updated TOML with canonical replacements.
+TT_CORE_API const char* tracer_core_runtime_config_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
 TT_CORE_API const char* tracer_core_runtime_query_json(
     TtCoreRuntimeHandle* handle, const char* request_json);

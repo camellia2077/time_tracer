@@ -6,6 +6,7 @@ import tracer.core.infrastructure.config;
 
 #include "application/runtime_bridge/logger.hpp"
 #include "domain/types/converter_config.hpp"
+#include "infra/config/loader/alias_mapping_index_utils.hpp"
 #include "infra/config/models/app_config.hpp"
 #include "infra/tests/modules_smoke/config.hpp"
 #include "infra/tests/modules_smoke/support.hpp"
@@ -91,7 +92,7 @@ auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int {
   const std::filesystem::path kCopiedConfigRoot =
       kFakeExePath.parent_path() / "config";
   const std::filesystem::path kSourceConfigRoot =
-      BuildRepoRoot() / "assets" / "tracer_core" / "config";
+      BuildRepoRoot() / "assets" / "tracer_core" / "config_test";
   std::filesystem::remove_all(kConfigSmokeDir, cleanup_error);
   std::filesystem::create_directories(kConfigSmokeDir);
   std::filesystem::create_directories(kCopiedConfigRoot.parent_path());
@@ -103,7 +104,7 @@ auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int {
   WriteSmokeFile(kFakeExePath, "smoke");
 
   const std::filesystem::path kDailyMarkdownConfig =
-      kCopiedConfigRoot / "reports" / "markdown" / "day.toml";
+      kCopiedConfigRoot / "reports" / "markdown" / "en" / "day.toml";
   const toml::table kDailyMarkdownTable =
       tracer::core::infrastructure::config::loader::ReadToml(
           kDailyMarkdownConfig);
@@ -124,6 +125,68 @@ auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int {
   const ConverterConfig kLoadedFileConfig = file_provider.LoadConverterConfig();
   if (!kLoadedFileConfig.text_mapping.contains("wake")) {
     return 402;
+  }
+  if (kLoadedFileConfig.text_mapping.at("rest") != "rest_rest" ||
+      kLoadedFileConfig.text_mapping.at("休息") != "rest_rest" ||
+      kLoadedFileConfig.text_mapping.at("r") != "rest_rest" ||
+      kLoadedFileConfig.text_mapping.at("吃饭") != "meal_dining" ||
+      kLoadedFileConfig.text_mapping.at("有氧训练") != "exercise_cardio" ||
+      kLoadedFileConfig.text_mapping.at("有氧") != "exercise_cardio") {
+    return 404;
+  }
+
+  const std::filesystem::path kLegacyAliasDir =
+      kConfigSmokeDir / "legacy_aliases";
+  const std::filesystem::path kLegacyAliasFile =
+      kLegacyAliasDir / "legacy.toml";
+  WriteSmokeFile(kLegacyAliasFile,
+                 "parent = \"legacy\"\n\n[aliases]\n"
+                 "\"old-alias\" = \"activity\"\n");
+  bool rejected_legacy_shape = false;
+  try {
+    static_cast<void>(
+        tracer::core::infrastructure::config::loader::detail::
+            LoadAliasMappingDefinition(
+                kLegacyAliasDir,
+                tracer::core::infrastructure::config::loader::ReadToml));
+  } catch (const std::runtime_error&) {
+    rejected_legacy_shape = true;
+  }
+  if (!rejected_legacy_shape) {
+    return 405;
+  }
+
+  const std::filesystem::path kDuplicateGroupAliasDir =
+      kConfigSmokeDir / "duplicate_group_aliases";
+  WriteSmokeFile(kDuplicateGroupAliasDir / "duplicate.toml",
+                 "parent = \"exercise\"\n\n[aliases.cardio]\n"
+                 "group_aliases = [\"有氧训练\", \"有氧\"]\n\n"
+                 "[aliases.other]\n"
+                 "group_aliases = [\"有氧\"]\n");
+  bool rejected_duplicate_group_alias = false;
+  std::string duplicate_group_alias_error;
+  try {
+    static_cast<void>(
+        tracer::core::infrastructure::config::loader::detail::
+            LoadAliasMappingDefinition(
+                kDuplicateGroupAliasDir,
+                tracer::core::infrastructure::config::loader::ReadToml));
+  } catch (const std::runtime_error& error) {
+    rejected_duplicate_group_alias = true;
+    duplicate_group_alias_error = error.what();
+  }
+  if (!rejected_duplicate_group_alias) {
+    return 406;
+  }
+  if (duplicate_group_alias_error.find("duplicate.toml:7") ==
+          std::string::npos ||
+      duplicate_group_alias_error.find("group_aliases = [\"有氧\"]") ==
+          std::string::npos ||
+      duplicate_group_alias_error.find("first defined at") ==
+          std::string::npos ||
+      duplicate_group_alias_error.find("duplicate.toml:4") ==
+          std::string::npos) {
+    return 407;
   }
 
   tracer::core::infrastructure::config::ConfigLoader config_loader(

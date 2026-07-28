@@ -89,8 +89,7 @@ auto FindRepoRoot() -> std::filesystem::path {
   fs::path current = fs::current_path();
   while (!current.empty()) {
     const fs::path kConfigProbe = current / "assets" / "tracer_core" /
-                                  "config" / "converter" /
-                                  "aliases/_system.toml";
+                                  "config_test" / "aliases/_system.toml";
     if (fs::exists(kConfigProbe)) {
       return current;
     }
@@ -174,7 +173,7 @@ auto main() -> int {
     const auto kRuntimeIngest = reinterpret_cast<RuntimeIngestFn>(
         LookupSymbol(library, "tracer_core_runtime_ingest_json"));
     const auto kRuntimeTxt = reinterpret_cast<RuntimeTxtFn>(
-        LookupSymbol(library, "tracer_core_runtime_txt_json"));
+        LookupSymbol(library, "tracer_core_runtime_config_json"));
     const auto kRuntimeQuery = reinterpret_cast<RuntimeQueryFn>(
         LookupSymbol(library, "tracer_core_runtime_query_json"));
     const auto kRuntimeReport = reinterpret_cast<RuntimeReportFn>(
@@ -281,7 +280,7 @@ auto main() -> int {
     }
 
     const std::filesystem::path kConverterConfig =
-        kRepoRoot / "assets" / "tracer_core" / "config" /
+        kRepoRoot / "assets" / "tracer_core" / "config_test" /
         "aliases/_system.toml";
     const std::filesystem::path kInputRoot = kRepoRoot / "test" / "data";
     if (!std::filesystem::exists(kInputRoot)) {
@@ -340,14 +339,13 @@ auto main() -> int {
     }
 
     const std::string kReportRequest =
-        nlohmann::json{
-            {"operation_kind", "query"},
-            {"display_mode", "day"},
-            // The test data spans exclusively 2025-01-01, 2026-12-31.
-            // Do not include dates outside this range.
-            {"selection_kind", "single_day"},
-            {"date", "2026-01-01"},
-            {"format", "markdown"}}
+        nlohmann::json{{"operation_kind", "query"},
+                       {"display_mode", "day"},
+                       // The test data spans exclusively 2025-01-01,
+                       // 2026-12-31. Do not include dates outside this range.
+                       {"selection_kind", "single_day"},
+                       {"date", "2026-01-01"},
+                       {"format", "markdown"}}
             .dump();
     if (!IsOkResponse(kRuntimeReport(runtime_handle, kReportRequest.c_str()),
                       "report", &response_error)) {

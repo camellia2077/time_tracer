@@ -42,8 +42,9 @@ Current Android JNI integration uses C ABI entrypoints in these categories:
 - ingest/query/report
 - record-atomic pipeline calls (including explicit `time_order_mode` passthrough)
 - activity and day remark atomic update calls
-- TXT runtime calls (`tracer_core_runtime_txt_json`) for day-block operations
-  and current-month activity-name conversion
+- Config runtime calls (`tracer_core_runtime_config_json`) for TXT day-block,
+  alias hierarchy operations/raw alias-TOML rewrite, and current-month
+  activity-name conversion
 - structure/logic validation
 - last-error access
 
@@ -82,8 +83,12 @@ Current status:
 - Android reporting JNI keeps `nativeReportJson(requestJson)` as the single raw
   reporting native method; legacy `nativeReport(...)` no longer exists.
 - Atomic record requests carry explicit `time_order_mode` (`strict_calendar` / `logical_day_0600`) from Kotlin -> JNI -> C ABI.
-- TXT requests use the dedicated `tracer_core_runtime_txt_json` family and keep
+- Config requests use the shared `tracer_core_runtime_config_json` family and keep
   month-TXT business semantics in core rather than Kotlin UI helpers.
+- Android must not directly save an alias TOML document. Every alias TOML
+  change must use a Core hierarchy operation or
+  `rewrite_alias_hierarchy_document`, then pass the returned TOML and both
+  replacement lists through `RuntimeAliasMoveMigrationService`.
 - Validation requests still have JNI-local request assembly.
 - Android tracer exchange export supports an in-memory payload JSON request plus fd sink output.
 - Tree responses are normalized before returning to Kotlin.
@@ -121,7 +126,7 @@ Current Android-facing responsibilities are:
 1. Kotlin UI keeps presentation state such as mode, raw marker input, and
    editor visibility.
 2. Android runtime services encode TXT actions and forward them through JNI.
-3. JNI forwards those JSON payloads to `tracer_core_runtime_txt_json`.
+3. JNI forwards those JSON payloads to `tracer_core_runtime_config_json`.
 4. Core owns:
    - default day marker resolution
    - `MMDD` normalization and validation

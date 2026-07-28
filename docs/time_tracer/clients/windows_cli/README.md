@@ -1,140 +1,46 @@
-# Windows CLI Docs
+# Windows CLI 文档
 
-## Purpose
+本文档按主命令组织 Windows Rust CLI。先看下面的命令索引，再进入对应主命令
+文档查看用途、数据影响范围和示例。
 
-Provide the minimal navigation map for the Windows Rust CLI implementation under
-`apps/cli/windows/rust`.
+## 命令索引
 
-## When To Open
+| 主命令 | 用途 | 文档 |
+|---|---|---|
+| `alias` | 编辑 alias TOML、查看层级、迁移 canonical | [alias.md](commands/alias.md) |
+| `pipeline` | TXT/config 校验、转换、导入、入库 | [pipeline.md](commands/pipeline.md) |
+| `query` | 查询数据库数据和树 | [query.md](commands/query.md) |
+| `report` | 生成报告、导出结果、生成图表 | [report.md](commands/report.md) |
+| `exchange` | tracer 数据包导入、导出、检查 | [exchange.md](commands/exchange.md) |
+| `txt` | 查看和编辑 TXT 日块 | [txt.md](commands/txt.md) |
+| `system` | 检查 CLI/Core 运行环境 | [system.md](commands/system.md) |
+| `about` | 查看版本、许可和项目信息 | [about.md](commands/about.md) |
 
-- You are changing CLI command parsing or top-level command routing.
-- You are changing Rust-side runtime bootstrap or C ABI host integration.
-- You are changing report/query/exchange/pipeline command behavior.
+## 全局参数
 
-## What This Doc Does Not Cover
-
-- Core business logic inside `libs/tracer_core/**`
-- Historical refactor notes
-- Full command reference for every flag
-
-## Start Here
-
-1. CLI entry and command model:
-   - `apps/cli/windows/rust/src/main.rs`
-   - `apps/cli/windows/rust/src/cli/*.rs`
-2. Command routing:
-   - `apps/cli/windows/rust/src/commands/mod.rs`
-   - `apps/cli/windows/rust/src/commands/handlers/`
-3. Runtime host boundary:
-   - `apps/cli/windows/rust/src/core/runtime.rs`
-   - `apps/cli/windows/rust/src/core/runtime/*.rs`
-
-## Command Families
-
-- `pipeline`
-  - source/processed data flows and validation
-- `query`
-  - semantic data queries and tree presentation
-- `report`
-  - textual render/export flows and chart presentation
-- `exchange`
-  - tracer exchange package export/import/inspect
-- `system`
-  - runtime/system inspection commands
-- `about`
-  - `about licenses`, `about tracer`, `about motto`
-- `txt`
-  - shared month-TXT day-block inspection and minimal authored-event append
-
-## Canonical CLI Surface
-
-- `query data`
-- `query tree`
-- `report render`
-- `report export`
-- `report chart`
-- `exchange export`
-- `exchange import`
-- `exchange inspect`
-- `pipeline convert`
-- `pipeline import`
-- `pipeline ingest`
-- `pipeline validate`
-- `txt view-day`
-- `txt append-event`
-- `alias promote`
-- `alias add`
-- `alias move`
-- `alias rename-group-alias`
-- `alias add-group-alias`
-- `system doctor`
-- `about licenses`
-- `about tracer`
-- `about motto`
-
-## Current TXT Authored Event Support
-
-- CLI does not own point/interval timeline semantics locally.
-- Source TXT authored events accepted by core include:
-  - `HHMMtoken`
-  - `HHMM-HHMMtoken`
-- `txt view-day` prints the resolved day-block body as-is, including interval lines.
-- `txt append-event` appends one authored event line to an existing day block and
-  persists it through shared TXT `replace_day_block` semantics.
-
-## Recent Fixed Window
-
-- `report render recent` and `report export recent` accept
-  `--as-of YYYY-MM-DD` only for the `recent` period.
-- The CLI maps `--as-of` directly to the canonical temporal request
-  `anchor_date`; it does not rewrite the request into a local `range`.
-
-Example:
+- `--db <PATH>`：覆盖数据库路径。
+- `--output <PATH>`：覆盖输出路径；部分导出命令要求提供。
+- `--version`：显示版本。
 
 ```powershell
-time_tracer_cli report render recent 7 --as-of 2026-03-07 --format md --db <db_path>
-time_tracer_cli report export recent 7 --as-of 2026-03-07 --format md --db <db_path> --output <out_dir>
+time_tracer_cli --db <db_path> <command> <subcommand> [options]
 ```
 
-## Chart Semantics
+## 实现入口
 
-- `line`, `bar`, and `heatmap-*` chart types use the trend/daily-series report
-  chart contract.
-- `pie` uses report composition and represents the selected period's root
-  breakdown.
-- `pie` does not accept `--root`, because its purpose is to show the whole
-  period's root composition.
+- 命令模型：`apps/cli/windows/rust/src/cli/`
+- 命令路由：`apps/cli/windows/rust/src/commands/`
+- Core runtime host：`apps/cli/windows/rust/src/core/runtime/`
 
-## Exchange Import Runtime Refresh
+## 数据边界
 
-- `exchange import` replaces the active converter config (`main`,
-  `alias_mapping`, and `duration_rules`).
-- Core owns the runtime refresh after the replacement; the CLI must not maintain
-  an independent cache-invalidation patch.
-- Import-path changes require a regression proving that an immediate
-  validate/query operation observes the imported config.
+CLI 负责参数解析、文件操作和命令编排；Core 负责 TXT 语义、alias/config 校验、
+canonical 解析、入库和报告业务逻辑。具体命令的 TOML、TXT、DB 修改范围见各命令文档。
 
-## Alias Hierarchy Editing
+## 兼容说明
 
-- `alias promote` rewrites one alias leaf as a group with `group_aliases`; its
-  canonical path is unchanged.
-- `alias move` rewrites the alias TOML, asks Core to replace old canonical
-  activity names in every TXT file, builds a candidate database through Core
-  ingest, and swaps the database only after candidate success.
-- `alias rename-group-alias` and `alias add-group-alias` update only the alias
-  TOML because the group canonical path does not change.
-- The CLI owns TOML file serialization and source-file transaction/rollback;
-  Core owns canonical replacement, config validation, and database ingest.
-
-## Removed Compat Surface
-
-- `blink`
-- `zen`
-- `--database`
-- `--out`
-- `--project`
-- `remark-day`
-- `sensitive`
+已移除的参数或命令包括：`--database`、`--out`、`--project`、`blink`、`zen`、
+`remark-day`、`sensitive`。
 
 ## Validation
 
@@ -142,7 +48,7 @@ time_tracer_cli report export recent 7 --as-of 2026-03-07 --format md --db <db_p
 python tools/run.py verify --app tracer_core --concise
 ```
 
-If you need explicit build confirmation for the Windows runtime + Rust CLI:
+如需显式构建 Windows runtime 和 Rust CLI：
 
 ```powershell
 python tools/run.py build --app tracer_core --profile release_bundle --build-dir build --runtime-platform windows

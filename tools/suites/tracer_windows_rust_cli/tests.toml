@@ -12,4 +12,5 @@ includes = [
   "tests/commands_query_data.toml",
   "tests/commands_pipeline.toml",
   "tests/commands_exchange.toml",
+  "tests/commands_alias.toml",
 ]

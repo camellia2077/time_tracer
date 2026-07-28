@@ -90,6 +90,12 @@ struct ReplaceTxtCanonicalActivityNamesResponse {
   std::string error_message;
 };
 
+struct ReplaceTxtAliasActivityNamesResponse {
+  bool ok = false;
+  std::string updated_content;
+  std::string error_message;
+};
+
 }  // namespace tracer_core::core::dto
 
 #endif  // APPLICATION_DTO_PIPELINE_RESPONSES_HPP_

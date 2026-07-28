@@ -120,7 +120,7 @@ auto WriteFileWithParents(const std::filesystem::path& target_path,
 auto PrepareAndroidConfigFixture(const std::filesystem::path& target_root)
     -> bool {
   const std::filesystem::path source_root =
-      BuildRepoRoot() / "assets" / "tracer_core" / "config";
+      BuildRepoRoot() / "assets" / "tracer_core" / "config_test";
   const std::filesystem::path android_bundle_path =
       BuildRepoRoot() / "apps" / "android" / "runtime" / "src" / "main" /
       "assets" / "tracer_core" / "config" / "meta" / "bundle.toml";

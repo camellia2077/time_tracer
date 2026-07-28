@@ -171,6 +171,138 @@ void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
               "y2026\nm01\n\n0830exercise_cardio_walk // exercise_walk remark\n",
           "canonical replacement should preserve remarks and replace only event names");
 
+  const json kAliasReplacement = ParseResponse(
+      api.runtime_txt(
+          runtime,
+          json{{"action", "replace_alias_activity_names"},
+               {"content", "y2026\nm01\n\n012431有氧\n012500exercise_cardio // keep canonical\n"},
+               {"replacements", json::array({
+                   {{"old_alias", "有氧"}, {"new_alias", "有氧aa"}}})}}
+              .dump()
+              .c_str()),
+      "txt replace alias activity names");
+  Require(kAliasReplacement.value("ok", false),
+          "replace_alias_activity_names should return ok=true");
+  Require(kAliasReplacement.value("updated_content", std::string{}) ==
+              "y2026\nm01\n\n012431有氧aa\n012500exercise_cardio // keep canonical\n",
+          "alias replacement should preserve canonical names and remarks");
+
+  const std::string kAliasToml =
+      "parent = \"exercise\"\n\n"
+      "[aliases.cardio]\n"
+      "group_aliases = [\"有氧\"]\n\n"
+      "[aliases.cardio.running]\n"
+      "group_aliases = [\"跑步\"]\n"
+      "treadmill = [\"跑步机\"]\n";
+  const json kApplyAliasHierarchyOperation = ParseResponse(
+      api.runtime_txt(
+          runtime,
+          json{{"action", "apply_alias_hierarchy_operation"},
+               {"toml_content", kAliasToml},
+               {"operation",
+                {{"kind", "rename_group_canonical"},
+                 {"target_path", "cardio"},
+                 {"new_name", "conditioning"}}}}
+              .dump()
+              .c_str()),
+      "apply alias hierarchy operation");
+  Require(kApplyAliasHierarchyOperation.value("ok", false),
+          "apply_alias_hierarchy_operation should return ok=true");
+  Require(kApplyAliasHierarchyOperation.value("updated_toml_content",
+                                               std::string{})
+              .find("[aliases.conditioning]") != std::string::npos,
+          "generic hierarchy operation should update the group TOML key");
+  Require(kApplyAliasHierarchyOperation.at("replacements").size() == 3,
+          "generic group rename should return all canonical replacements");
+  const auto& kHierarchy = kApplyAliasHierarchyOperation.at("hierarchy");
+  Require(kHierarchy.value("parent", std::string{}) == "exercise" &&
+              kHierarchy.at("nodes").at(1).value("path", std::string{}) ==
+                  "conditioning",
+          "generic hierarchy operation should return the core hierarchy snapshot");
+
+  const json kDescribeAliasHierarchy = ParseResponse(
+      api.runtime_txt(runtime,
+                      json{{"action", "describe_alias_hierarchy"},
+                           {"toml_content", kAliasToml}}
+                          .dump()
+                          .c_str()),
+      "describe alias hierarchy");
+  Require(kDescribeAliasHierarchy.value("ok", false) &&
+              kDescribeAliasHierarchy.at("hierarchy")
+                      .value("parent", std::string{}) == "exercise",
+          "describe_alias_hierarchy should return the core hierarchy snapshot");
+
+  const json kRenderAliasHierarchyText = ParseResponse(
+      api.runtime_txt(runtime,
+                      json{{"action", "render_alias_hierarchy_text"},
+                           {"toml_content", kAliasToml},
+                           {"show_aliases", true}}
+                          .dump()
+                          .c_str()),
+      "render alias hierarchy text");
+  Require(kRenderAliasHierarchyText.value("ok", false) &&
+              kRenderAliasHierarchyText.value("content", std::string{})
+                      .find("cardio — group_aliases: 有氧") !=
+                  std::string::npos,
+          "render_alias_hierarchy_text should render the core hierarchy");
+
+  const json kDuplicateHierarchyDocuments = ParseResponse(
+      api.runtime_txt(
+          runtime,
+          json{{"action", "validate_alias_hierarchy_documents"},
+               {"documents",
+                {{{"source_name", "exercise.toml"},
+                  {"toml_content", kAliasToml}},
+                 {{"source_name", "rest.toml"},
+                  {"toml_content",
+                   "parent = \"rest\"\n\n[aliases]\nrest = [\"步行\"]\n"}}}}}
+              .dump()
+              .c_str()),
+      "validate duplicate alias hierarchy documents");
+  Require(!kDuplicateHierarchyDocuments.value("ok", true) &&
+              kDuplicateHierarchyDocuments.value("error_code", std::string{}) ==
+                  "config.alias_hierarchy.failed",
+          "document-set validation should reject cross-file duplicate aliases");
+
+  const json kMoveLeafOperation = ParseResponse(
+      api.runtime_txt(
+          runtime,
+          json{{"action", "apply_alias_hierarchy_operation"},
+               {"toml_content", kAliasToml},
+               {"operation",
+                {{"kind", "move_leaf"},
+                 {"target_path", "cardio.running.treadmill"},
+                 {"destination_path", "cardio"}}}}
+              .dump()
+              .c_str()),
+      "move alias hierarchy leaf");
+  Require(kMoveLeafOperation.value("ok", false),
+          "move_leaf hierarchy operation should return ok=true");
+  const auto& kMoveReplacements = kMoveLeafOperation.at("replacements");
+  Require(kMoveReplacements.size() == 1 &&
+              kMoveReplacements[0].value("old_canonical", std::string{}) ==
+                  "exercise_cardio_running_treadmill" &&
+              kMoveReplacements[0].value("new_canonical", std::string{}) ==
+                  "exercise_cardio_treadmill",
+          "move_leaf should return the precise canonical replacement");
+
+  const json kInvalidHierarchyOperation = ParseResponse(
+      api.runtime_txt(
+          runtime,
+          json{{"action", "apply_alias_hierarchy_operation"},
+               {"toml_content", kAliasToml},
+               {"operation", {{"kind", "rename_everything"}}}}
+              .dump()
+              .c_str()),
+      "invalid alias hierarchy operation");
+  Require(!kInvalidHierarchyOperation.value("ok", true),
+          "invalid hierarchy operation should return ok=false");
+  Require(kInvalidHierarchyOperation.value("error_code", std::string{}) ==
+              "config.alias_hierarchy.failed" &&
+              kInvalidHierarchyOperation.value("error_category",
+                                                std::string{}) == "config",
+          "invalid hierarchy operation should return the config error contract");
+
   const json kDefaultMarker = ParseResponse(
       api.runtime_txt(runtime, json{{"action", "default_day_marker"},
                                     {"selected_month", "2025-02"},

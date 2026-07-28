@@ -30,3 +30,6 @@ When tests exercise CLI report targets:
   forms such as `YYYY-MM-DD` and `YYYY-MM`.
 - If the shared fixture range changes, update this file and the suite-local
   comments that rely on it.
+- The current 2025–2026 data was regenerated from the canonical alias assets
+  with `log_generator --items 8 --nosleep --seed 123`; the seed keeps the
+  checked-in refresh reproducible.

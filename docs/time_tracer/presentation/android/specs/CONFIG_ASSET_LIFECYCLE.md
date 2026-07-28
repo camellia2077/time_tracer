@@ -17,15 +17,18 @@ Describe the path from shared config source to Android runtime consumption.
 ## Source of Truth
 
 - Shared config source:
-  - `assets/tracer_core/config`
+  - `assets/tracer_core/config_distribution` (new-user distribution)
+  - `assets/tracer_core/config_test` (test/report data)
 - Android checked-in runtime snapshot:
   - `apps/android/runtime/src/main/assets/tracer_core/config`
 
 Boundary rules:
 
-- The shared config source is canonical.
+- The selected shared config directory is canonical for a build.
+- Android build selection defaults to `test`; pass
+  `--config-profile distribution` to build the distribution variant.
 - The Android runtime snapshot is generated and consumed by Android builds.
-- Fix shared config at the shared source, then refresh the Android snapshot.
+- Fix the selected shared config source, then refresh the Android snapshot.
 
 ## Runtime Consumption Path
 
@@ -42,8 +45,10 @@ Boundary rules:
   - `<filesDir>/tracer_core/config/aliases/_system.toml`
 - Config editor reads and writes under:
   - `<filesDir>/tracer_core/config`
-  - The Config tab currently exposes raw TOML editing for three user-facing
-    categories: `converter`, `charts`, and `reports`.
+- The Config tab exposes structured editing plus an advanced raw TOML mode for
+  the user-facing categories: `alias`, `charts`, and `reports`. Alias
+  files use the structured canonical-to-alias-list editor; the advanced mode
+  still serializes and validates the same strict TOML shape.
 
 ## Diagnostics and Support
 

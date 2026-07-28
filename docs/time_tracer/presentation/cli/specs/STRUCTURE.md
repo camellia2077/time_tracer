@@ -32,7 +32,7 @@
 
 ## 2.1 TXT Runtime Family
 
-1. `txt view-day` is a host command over `tracer_core_runtime_txt_json`.
+1. `txt view-day` is a host command over `tracer_core_runtime_config_json`.
 2. CLI host responsibilities:
    - parse `--in` and `--day`
    - read the input TXT file
@@ -91,7 +91,7 @@
 2. `src/commands/mod.rs` dispatches into `src/commands/handlers/txt.rs`.
 3. The handler reads the file, infers `selected_month`, and builds the TXT
    runtime request.
-4. `src/core/runtime/*.rs` loads and calls `tracer_core_runtime_txt_json`.
+4. `src/core/runtime/*.rs` loads and calls `tracer_core_runtime_config_json`.
 5. The handler prints the returned `day_body` or reports the normalized error.
 
 ## 5. 最小验证命令

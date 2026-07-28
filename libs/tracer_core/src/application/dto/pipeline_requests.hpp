@@ -99,6 +99,16 @@ struct ReplaceTxtCanonicalActivityNamesRequest {
   std::vector<CanonicalActivityNameReplacement> replacements;
 };
 
+struct AliasActivityNameReplacement {
+  std::string old_alias;
+  std::string new_alias;
+};
+
+struct ReplaceTxtAliasActivityNamesRequest {
+  std::string content;
+  std::vector<AliasActivityNameReplacement> replacements;
+};
+
 }  // namespace tracer_core::core::dto
 
 #endif  // APPLICATION_DTO_PIPELINE_REQUESTS_HPP_

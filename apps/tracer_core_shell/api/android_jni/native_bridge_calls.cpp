@@ -363,7 +363,7 @@ auto NativeUpdateDayRemarkAtomically(
   });
 }
 
-auto NativeTxt(JNIEnv* env, jobject /*thiz*/, jstring request_json) -> jstring {
+auto NativeConfig(JNIEnv* env, jobject /*thiz*/, jstring request_json) -> jstring {
   return ExecuteJniMethod(env, [&]() -> std::string {
     const std::string request_json_utf8 = ToUtf8(env, request_json);
 
@@ -378,14 +378,14 @@ auto NativeTxt(JNIEnv* env, jobject /*thiz*/, jstring request_json) -> jstring {
           .dump();
     }
 
-    const char* response_json = tracer_core_runtime_txt_json(
+    const char* response_json = tracer_core_runtime_config_json(
         g_runtime.core_runtime,
         request_json_utf8.empty() ? "{}" : request_json_utf8.c_str());
     return response_json != nullptr
                ? std::string(response_json)
                : nlohmann::json{
                      {"ok", false},
-                     {"error_message", "nativeTxt returned null response."},
+                     {"error_message", "nativeConfig returned null response."},
                      {"error_code", "runtime.generic_error"},
                      {"error_category", "runtime"},
                      {"hints", nlohmann::json::array()}}

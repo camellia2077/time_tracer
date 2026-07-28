@@ -50,7 +50,7 @@ auto TestAndroidRuntimeBootstrapStaysSideEffectFree(int& failures) -> void {
       BuildTempTestPaths("time_tracer_android_runtime_side_effect_free_test");
   const std::filesystem::path repo_root = BuildRepoRoot();
   const std::filesystem::path config_toml_path =
-      repo_root / "assets" / "tracer_core" / "config" /
+      repo_root / "assets" / "tracer_core" / "config_test" /
       "aliases/_system.toml";
 
   RemoveTree(paths.test_root);

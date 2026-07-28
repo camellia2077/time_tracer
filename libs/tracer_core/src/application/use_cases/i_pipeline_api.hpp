@@ -64,6 +64,10 @@ class IPipelineApi {
   virtual auto RunReplaceTxtCanonicalActivityNames(
       const tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest& request)
       -> tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse = 0;
+
+  virtual auto RunReplaceTxtAliasActivityNames(
+      const tracer_core::core::dto::ReplaceTxtAliasActivityNamesRequest& request)
+      -> tracer_core::core::dto::ReplaceTxtAliasActivityNamesResponse = 0;
 };
 
 }  // namespace tracer::core::application::use_cases

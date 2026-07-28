@@ -18,6 +18,29 @@ namespace tracer::core::infrastructure::config::internal {
 
 namespace {
 
+auto ResolveMarkdownLocaleRoot(const std::filesystem::path& day_config_path)
+    -> std::filesystem::path {
+  const auto parent = day_config_path.parent_path();
+  const auto candidate = parent.parent_path();
+  if (!std::filesystem::exists(candidate) ||
+      !std::filesystem::is_directory(candidate)) {
+    return parent;
+  }
+  for (const auto& entry : std::filesystem::directory_iterator(candidate)) {
+    if (!entry.is_directory()) {
+      continue;
+    }
+    if (std::filesystem::exists(entry.path() / "day.toml") &&
+        std::filesystem::exists(entry.path() / "month.toml") &&
+        std::filesystem::exists(entry.path() / "period.toml") &&
+        std::filesystem::exists(entry.path() / "week.toml") &&
+        std::filesystem::exists(entry.path() / "year.toml")) {
+      return candidate;
+    }
+  }
+  return parent;
+}
+
 auto LoadLocalizedMarkdownReports(const std::filesystem::path& markdown_dir,
                                   LoadedReportConfigs& reports) -> void {
   constexpr std::array<std::string_view, 5> kReportNames = {
@@ -127,7 +150,7 @@ void LoadDetailedReports(AppConfig& config) {
   }
   if (!config.reports.day_md_config_path.empty()) {
     LoadLocalizedMarkdownReports(
-        config.reports.day_md_config_path.parent_path(),
+        ResolveMarkdownLocaleRoot(config.reports.day_md_config_path),
         config.loaded_reports);
   }
 }

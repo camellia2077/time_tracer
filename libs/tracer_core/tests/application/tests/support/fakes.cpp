@@ -180,6 +180,12 @@ auto FakePipelineWorkflow::RunReplaceTxtCanonicalActivityNames(
   return {.ok = true, .updated_content = request.content, .error_message = ""};
 }
 
+auto FakePipelineWorkflow::RunReplaceTxtAliasActivityNames(
+    const tracer_core::core::dto::ReplaceTxtAliasActivityNamesRequest& request)
+    -> tracer_core::core::dto::ReplaceTxtAliasActivityNamesResponse {
+  return {.ok = true, .updated_content = request.content, .error_message = ""};
+}
+
 auto FakePipelineWorkflow::InstallActiveConverterConfig(
     const tracer::core::application::pipeline::
         ActiveConverterConfigInstallRequest& /*request*/) -> void {}

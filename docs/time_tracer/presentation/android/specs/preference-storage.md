@@ -28,10 +28,10 @@ Do not store UI preferences in the runtime SQLite database.
 ## Current Preference Groups
 
 - Theme and appearance:
-  - theme color
   - theme mode
-  - dynamic color toggle
   - dark theme style
+  - theme palette
+  - the selected UI and Report color systems are defined in `../ui/color-system.md` and `../ui/report/README.md`; the selected palette is user-persisted
 - App language
 - Record assistance preferences:
   - suggestion lookback days

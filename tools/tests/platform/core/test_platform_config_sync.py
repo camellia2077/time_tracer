@@ -21,7 +21,7 @@ from tools.toolchain.core.context import Context  # noqa: E402
 
 class TestPlatformConfigSync(TestCase):
     def test_windows_sync_writes_state_and_cache_hit(self):
-        source_root = REPO_ROOT / "assets" / "tracer_core" / "config"
+        source_root = REPO_ROOT / "assets" / "tracer_core" / "config_test"
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_root = Path(temp_dir)
             windows_out = temp_root / "windows_config"
@@ -59,7 +59,7 @@ class TestPlatformConfigSync(TestCase):
             self.assertIn('"cache_hit": true', output.lower())
 
     def test_check_mode_passes_when_output_is_current(self):
-        source_root = REPO_ROOT / "assets" / "tracer_core" / "config"
+        source_root = REPO_ROOT / "assets" / "tracer_core" / "config_test"
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_root = Path(temp_dir)
             windows_out = temp_root / "windows_config"
@@ -94,7 +94,7 @@ class TestPlatformConfigSync(TestCase):
             self.assertIn("up to date", capture.getvalue().lower())
 
     def test_check_mode_fails_on_drift_without_writing(self):
-        source_root = REPO_ROOT / "assets" / "tracer_core" / "config"
+        source_root = REPO_ROOT / "assets" / "tracer_core" / "config_test"
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_root = Path(temp_dir)
             windows_out = temp_root / "windows_config"
@@ -134,7 +134,7 @@ class TestPlatformConfigSync(TestCase):
             self.assertTrue(config_file.read_text(encoding="utf-8").endswith("# drift\n"))
 
     def test_check_mode_ignores_toml_line_ending_only_drift(self):
-        source_root = REPO_ROOT / "assets" / "tracer_core" / "config"
+        source_root = REPO_ROOT / "assets" / "tracer_core" / "config_test"
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_root = Path(temp_dir)
             windows_out = temp_root / "windows_config"

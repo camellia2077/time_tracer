@@ -109,7 +109,7 @@ auto NativeUpdateDayRemarkAtomically(
     JNIEnv* env, jobject thiz, jstring target_date_iso, jstring remark,
     jstring preferred_txt_path, jint date_check_mode) -> jstring;
 
-auto NativeTxt(JNIEnv* env, jobject thiz, jstring request_json) -> jstring;
+auto NativeConfig(JNIEnv* env, jobject thiz, jstring request_json) -> jstring;
 
 auto NativeEncryptFile(JNIEnv* env, jobject thiz, jstring input_path,
                        jstring output_path, jstring passphrase,

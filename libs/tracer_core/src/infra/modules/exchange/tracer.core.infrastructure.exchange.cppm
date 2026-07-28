@@ -27,15 +27,15 @@ inline constexpr std::string_view kManifestPath = "manifest.toml";
 inline constexpr std::string_view kConverterMainPath =
     "config/aliases/_system.toml";
 inline constexpr std::string_view kReportMarkdownDayPath =
-    "config/reports/markdown/day.toml";
+    "config/reports/markdown/en/day.toml";
 inline constexpr std::string_view kReportMarkdownMonthPath =
-    "config/reports/markdown/month.toml";
+    "config/reports/markdown/en/month.toml";
 inline constexpr std::string_view kReportMarkdownPeriodPath =
-    "config/reports/markdown/period.toml";
+    "config/reports/markdown/en/period.toml";
 inline constexpr std::string_view kReportMarkdownWeekPath =
-    "config/reports/markdown/week.toml";
+    "config/reports/markdown/en/week.toml";
 inline constexpr std::string_view kReportMarkdownYearPath =
-    "config/reports/markdown/year.toml";
+    "config/reports/markdown/en/year.toml";
 inline constexpr std::string_view kPayloadRoot = "payload";
 
 inline constexpr std::array<std::string_view, 7> kRequiredPackagePaths = {

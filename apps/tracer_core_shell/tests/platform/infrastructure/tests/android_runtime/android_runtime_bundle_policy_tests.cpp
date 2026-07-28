@@ -34,11 +34,11 @@ profile = "android"
 required = [
   "aliases/_system.toml",
   "charts/heatmap.toml",
-  "reports/markdown/day.toml",
-  "reports/markdown/month.toml",
-  "reports/markdown/period.toml",
-  "reports/markdown/week.toml",
-  "reports/markdown/year.toml",
+  "reports/markdown/en/day.toml",
+  "reports/markdown/en/month.toml",
+  "reports/markdown/en/period.toml",
+  "reports/markdown/en/week.toml",
+  "reports/markdown/en/year.toml",
 ]
 optional = []
 
@@ -49,18 +49,18 @@ main_config = "aliases/_system.toml"
 heatmap = "charts/heatmap.toml"
 
 [paths.reports.markdown]
-day = "reports/markdown/day.toml"
-month = "reports/markdown/month.toml"
-period = "reports/markdown/period.toml"
-week = "reports/markdown/week.toml"
-year = "reports/markdown/year.toml"
+day = "reports/markdown/en/day.toml"
+month = "reports/markdown/en/month.toml"
+period = "reports/markdown/en/period.toml"
+week = "reports/markdown/en/week.toml"
+year = "reports/markdown/en/year.toml"
 
 [paths.reports.latex]
-day = "reports/markdown/day.toml"
-month = "reports/markdown/month.toml"
-period = "reports/markdown/period.toml"
-week = "reports/markdown/week.toml"
-year = "reports/markdown/year.toml"
+day = "reports/markdown/en/day.toml"
+month = "reports/markdown/en/month.toml"
+period = "reports/markdown/en/period.toml"
+week = "reports/markdown/en/week.toml"
+year = "reports/markdown/en/year.toml"
 )TOML";
 
   if (!WriteFileWithParents(kBundlePath, kBundleText)) {
@@ -115,11 +115,11 @@ profile = "android"
 required = [
   "aliases/_system.toml",
   "charts/heatmap.toml",
-  "reports/markdown/day.toml",
-  "reports/markdown/month.toml",
-  "reports/markdown/period.toml",
-  "reports/markdown/week.toml",
-  "reports/markdown/year.toml",
+  "reports/markdown/en/day.toml",
+  "reports/markdown/en/month.toml",
+  "reports/markdown/en/period.toml",
+  "reports/markdown/en/week.toml",
+  "reports/markdown/en/year.toml",
 ]
 optional = []
 
@@ -130,18 +130,18 @@ main_config = "aliases/_system.toml"
 heatmap = "charts/heatmap.toml"
 
 [paths.reports.markdown]
-day = "reports/markdown/day.toml"
-month = "reports/markdown/month.toml"
-period = "reports/markdown/period.toml"
-week = "reports/markdown/week.toml"
-year = "reports/markdown/year.toml"
+day = "reports/markdown/en/day.toml"
+month = "reports/markdown/en/month.toml"
+period = "reports/markdown/en/period.toml"
+week = "reports/markdown/en/week.toml"
+year = "reports/markdown/en/year.toml"
 
 [paths.reports.typst]
-day = "reports/markdown/day.toml"
-month = "reports/markdown/month.toml"
-period = "reports/markdown/period.toml"
-week = "reports/markdown/week.toml"
-year = "reports/markdown/year.toml"
+day = "reports/markdown/en/day.toml"
+month = "reports/markdown/en/month.toml"
+period = "reports/markdown/en/period.toml"
+week = "reports/markdown/en/week.toml"
+year = "reports/markdown/en/year.toml"
 )TOML";
 
   if (!WriteFileWithParents(kBundlePath, kBundleText)) {
@@ -196,11 +196,11 @@ profile = "android"
 required = [
   "aliases/_system.toml",
   "charts/heatmap.toml",
-  "reports/markdown/day.toml",
-  "reports/markdown/month.toml",
-  "reports/markdown/period.toml",
-  "reports/markdown/week.toml",
-  "reports/markdown/year.toml",
+  "reports/markdown/en/day.toml",
+  "reports/markdown/en/month.toml",
+  "reports/markdown/en/period.toml",
+  "reports/markdown/en/week.toml",
+  "reports/markdown/en/year.toml",
 ]
 optional = []
 
@@ -273,11 +273,11 @@ main_config = "aliases/_system.toml"
 heatmap = "charts/heatmap.toml"
 
 [paths.reports.markdown]
-day = "reports/markdown/day.toml"
-month = "reports/markdown/month.toml"
-period = "reports/markdown/period.toml"
-week = "reports/markdown/week.toml"
-year = "reports/markdown/year.toml"
+day = "reports/markdown/en/day.toml"
+month = "reports/markdown/en/month.toml"
+period = "reports/markdown/en/period.toml"
+week = "reports/markdown/en/week.toml"
+year = "reports/markdown/en/year.toml"
 )TOML";
 
   if (!WriteFileWithParents(kBundlePath, kBundleText)) {

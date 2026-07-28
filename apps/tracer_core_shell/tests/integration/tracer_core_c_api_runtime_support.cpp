@@ -128,7 +128,7 @@ auto LoadApi(LibHandle library) -> CoreApiFns {
       RequireSymbol<RuntimeRecordActivityAtomicallyFn>(
           library, "tracer_core_runtime_record_activity_atomically_json");
   api.runtime_txt =
-      RequireSymbol<RuntimeTxtFn>(library, "tracer_core_runtime_txt_json");
+      RequireSymbol<RuntimeTxtFn>(library, "tracer_core_runtime_config_json");
   api.runtime_query =
       RequireSymbol<RuntimeQueryFn>(library, "tracer_core_runtime_query_json");
   api.runtime_report = RequireSymbol<RuntimeReportFn>(
@@ -147,7 +147,7 @@ auto LoadApi(LibHandle library) -> CoreApiFns {
 auto FindRepoRoot() -> fs::path {
   fs::path current = fs::current_path();
   while (!current.empty()) {
-    const fs::path kProbe = current / "assets" / "tracer_core" / "config" /
+    const fs::path kProbe = current / "assets" / "tracer_core" / "config_test" /
                             "aliases" / "_system.toml";
     if (fs::exists(kProbe)) {
       return current;
@@ -218,7 +218,7 @@ void RunCapabilitiesChecks(const CoreApiFns& api) {
   kRequireBool("runtime_import_json");
   kRequireBool("runtime_validate_structure_json");
   kRequireBool("runtime_validate_logic_json");
-  kRequireBool("runtime_txt_json");
+  kRequireBool("runtime_config_json");
   kRequireBool("runtime_query_json");
   kRequireBool("runtime_temporal_report_json");
   kRequireBool("runtime_report_batch_json");

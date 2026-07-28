@@ -48,7 +48,7 @@ name = "Converter Interval Uses fixed aliases directory"
 stage = "base-config"
 args = [
   "/c",
-  "if not exist ..\\..\\..\\..\\assets\\tracer_core\\config\\converter\\aliases\\*.toml (echo Missing converter aliases && exit /b 1) else exit /b 0"
+  "if not exist ..\\..\\..\\..\\assets\\tracer_core\\config_test\\aliases\\*.toml (echo Missing converter aliases && exit /b 1) else exit /b 0"
 ]
 expect_exit = 0
 
@@ -57,7 +57,7 @@ name = "Converter Interval Rejects mappings_config_path"
 stage = "base-config"
 args = [
   "/c",
-  "findstr /c:mappings_config_path ..\\..\\..\\..\\assets\\tracer_core\\config\\converter\\aliases\\_system.toml >nul && (echo Unexpected legacy mappings_config_path in converter aliases _system.toml && exit /b 1) || exit /b 0"
+  "findstr /c:mappings_config_path ..\\..\\..\\..\\assets\\tracer_core\\config_test\\aliases\\_system.toml >nul && (echo Unexpected legacy mappings_config_path in converter aliases _system.toml && exit /b 1) || exit /b 0"
 ]
 expect_exit = 0
 

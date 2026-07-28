@@ -6,12 +6,16 @@ This document defines how an activity alias becomes a recordable category, how
 an alias moves into a category, and when that structural edit requires TXT and
 database migration.
 
-It applies to every client that edits files under
-`assets/tracer_core/config/aliases/`.
+It applies to every client that edits alias files generated from
+`assets/tracer_core/config_test/aliases/` or
+`assets/tracer_core/config_distribution/aliases/`.
 
 ## Terms
 
-- **Activity alias**: a string leaf such as `"跑步" = "running"`.
+- **Canonical key**: the recordable activity identifier on the left side of a
+  TOML entry, such as `"running"`.
+- **Activity alias**: a string in the canonical key's alias array, such as
+  `"跑步"` in `"running" = ["跑步"]`.
 - **Activity category**: a nested TOML table such as `[aliases.cardio]`.
 - **Category record name**: a member of a category's `group_aliases` array.
   It records directly to that category's canonical path.
@@ -36,7 +40,7 @@ parent = "exercise"
 
 [aliases.cardio]
 group_aliases = ["有氧运动"]
-"跑步" = "running"
+"running" = ["跑步"]
 ```
 
 - `有氧运动` resolves to `exercise_cardio`.
@@ -50,8 +54,8 @@ Initial state:
 parent = "exercise"
 
 [aliases]
-"有氧运动" = "cardio"
-"跑步" = "running"
+"cardio" = ["有氧运动"]
+"running" = ["跑步"]
 ```
 
 The canonical paths are:
@@ -66,7 +70,7 @@ The category automatically retains the original alias as its record name:
 parent = "exercise"
 
 [aliases]
-"跑步" = "running"
+"running" = ["跑步"]
 
 [aliases.cardio]
 group_aliases = ["有氧运动"]
@@ -77,8 +81,11 @@ The resulting canonical paths are unchanged:
 - `有氧运动` → `exercise_cardio`
 - `跑步` → `exercise_running`
 
-This operation changes TOML structure only. It does **not** replace TXT tokens
-or rebuild the database.
+Core returns an updated TOML with an empty token replacement plan for this
+operation. The host still commits the document through
+`RuntimeAliasMoveMigrationService`, which validates the candidate configuration
+and database before activation; an empty plan never authorizes a direct TOML
+save.
 
 ## Move an Alias into a Category
 
@@ -89,7 +96,7 @@ parent = "exercise"
 
 [aliases.cardio]
 group_aliases = ["有氧运动"]
-"跑步" = "running"
+"running" = ["跑步"]
 ```
 
 The paths then become:
@@ -100,23 +107,30 @@ The paths then become:
 Because `跑步` changes from `exercise_running` to
 `exercise_cardio_running`, confirmation must perform this atomic migration:
 
-1. update the alias TOML;
-2. replace matching canonical activity tokens in TXT files;
-3. construct a candidate database by re-ingesting the updated TXT files;
-4. replace the active database only after the candidate succeeds;
-5. restore TOML, TXT, and database state if any stage fails.
+1. Android/CLI sends the operation and user input to Core;
+2. Core returns the updated TOML and canonical/alias replacement plan;
+3. `RuntimeAliasMoveMigrationService` replaces matching tokens in TXT files;
+4. the service constructs a candidate database from the updated TOML and TXT;
+5. TOML, TXT, and database are atomically activated only after success, and
+   restored if any stage fails.
 
 Only a leaf alias can be moved in the current implementation. A category and
-its descendants cannot be moved as one operation.
+its descendants cannot be moved as one operation. When a leaf is moved between
+alias TOML documents, Core must validate and produce the updated source and
+destination documents plus the complete canonical replacement plan; the host
+must commit both documents, all TXT changes, and the candidate database in one
+atomic migration.
 
 ## Edit Category Record Names
 
 For a category with an existing `group_aliases` member:
 
-- **Rename a record name**: update TOML, replace the old activity token in TXT,
-  and rebuild the database. The category canonical path itself does not change.
-- **Add a record name**: update TOML only. No historic TXT token needs to be
-  changed and no database rebuild is required.
+- **Rename a record name**: Core returns an `alias_replacements` entry; the
+  migration service replaces the old token in TXT and rebuilds the database.
+  The category canonical path itself does not change.
+- **Add a record name**: Core returns an updated TOML with an empty replacement
+  plan; it still goes through the migration service so TOML/TXT/database state
+  is committed consistently.
 
 The Config UI exposes record-name editing only for categories that already have
 one or more category record names. It exposes adding a record name from the

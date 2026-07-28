@@ -116,6 +116,12 @@ auto WorkflowHandler::RunReplaceTxtCanonicalActivityNames(
   return impl_.RunReplaceTxtCanonicalActivityNames(request);
 }
 
+auto WorkflowHandler::RunReplaceTxtAliasActivityNames(
+    const tracer_core::core::dto::ReplaceTxtAliasActivityNamesRequest& request)
+    -> tracer_core::core::dto::ReplaceTxtAliasActivityNamesResponse {
+  return impl_.RunReplaceTxtAliasActivityNames(request);
+}
+
 auto WorkflowHandler::InstallActiveConverterConfig(
     const pipeline::ActiveConverterConfigInstallRequest& request) -> void {
   impl_.InstallActiveConverterConfig(request);

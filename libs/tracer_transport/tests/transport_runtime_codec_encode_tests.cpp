@@ -361,7 +361,7 @@ void TestEncodeResponses(int& failures) {
   capabilities.features.runtime_import_json = true;
   capabilities.features.runtime_validate_structure_json = true;
   capabilities.features.runtime_validate_logic_json = true;
-  capabilities.features.runtime_txt_json = true;
+  capabilities.features.runtime_config_json = true;
   capabilities.features.runtime_query_json = true;
   capabilities.features.runtime_temporal_report_json = true;
   capabilities.features.runtime_report_batch_json = true;
@@ -397,8 +397,8 @@ void TestEncodeResponses(int& failures) {
          "EncodeCapabilitiesResponse features.runtime_diagnostics_callback "
          "mismatch.",
          failures);
-  Expect(capabilities_json["features"].value("runtime_txt_json", false),
-         "EncodeCapabilitiesResponse features.runtime_txt_json mismatch.",
+  Expect(capabilities_json["features"].value("runtime_config_json", false),
+         "EncodeCapabilitiesResponse features.runtime_config_json mismatch.",
          failures);
   Expect(capabilities_json["features"].value("runtime_crypto_progress_callback",
                                              false),

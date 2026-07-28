@@ -19,6 +19,7 @@ Describe the user-visible report, query, and chart presentation behavior.
 - Report results support text-oriented and chart-oriented presentation.
 - Chart behavior is driven by query/report UI state, not by app-level route logic.
 - Tree/report rendering prefers structured data where available and falls back only where the product still allows it.
+- Breakdown horizontal bars render every visible item at its natural row height; the Report page owns vertical scrolling instead of placing bars in a fixed-height inner viewport.
 
 ## Core Flow
 

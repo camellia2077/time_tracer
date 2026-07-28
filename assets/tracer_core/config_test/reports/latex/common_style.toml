@@ -1,0 +1,8 @@
+main_font = "Noto Serif SC"
+cjk_main_font = "Noto Serif SC"
+base_font_size = 12
+report_title_font_size = 18
+category_title_font_size = 16
+margin_in = 1.0
+list_top_sep_pt = 0
+list_item_sep_ex = -0.5

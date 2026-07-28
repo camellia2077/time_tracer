@@ -29,7 +29,7 @@ def _write_custom_alias_child(aliases_root: Path) -> None:
     custom_child_path = aliases_root / CUSTOM_CHILD_FILE
     custom_child_path.parent.mkdir(parents=True, exist_ok=True)
     custom_child_path.write_text(
-        'parent = "zzdemo"\n\n[aliases]\n"cliimportalias" = "only"\n',
+        'parent = "zzdemo"\n\n[aliases]\n"only" = ["cliimportalias"]\n',
         encoding="utf-8",
     )
 

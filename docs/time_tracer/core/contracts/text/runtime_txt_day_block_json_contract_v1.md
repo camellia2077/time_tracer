@@ -3,7 +3,7 @@
 ## Scope
 
 1. This document defines the host-facing JSON contract for
-   `tracer_core_runtime_txt_json`.
+   `tracer_core_runtime_config_json`.
 2. The contract covers month-TXT day-block semantics and activity-name
    representation conversion.
 3. The runtime accepts raw month TXT content as input and does not read or
@@ -227,6 +227,31 @@ Rules:
 3. The runtime remains file-system agnostic; the host owns source-file writes,
    candidate database construction, replacement, and rollback.
 
+### `replace_alias_activity_names`
+
+This action is for alias-key migrations. It replaces only exact authored alias
+tokens specified by the host; canonical activity names, remarks, headers, and
+other TXT structure remain unchanged.
+
+Request:
+
+```json
+{
+  "action": "replace_alias_activity_names",
+  "content": "y2026\nm01\n\n0830有氧 // remark\n",
+  "replacements": [
+    {
+      "old_alias": "有氧",
+      "new_alias": "有氧aa"
+    }
+  ]
+}
+```
+
+The response uses the same `updated_content` result shape as
+`replace_canonical_activity_names`. Persistence and database re-ingest remain
+host-side migration responsibilities.
+
 ## Alias hierarchy TOML
 
 An alias group may itself be recordable. Its `group_aliases` string array maps
@@ -238,13 +263,25 @@ parent = "recreation"
 
 [aliases.online]
 group_aliases = ["上网"]
-"哔哩哔哩" = "bilibili"
-"抖音" = "douyin"
+"bilibili" = ["哔哩哔哩"]
+"douyin" = ["抖音"]
 ```
 
 The resulting canonical paths are `recreation_online`,
 `recreation_online_bilibili`, and `recreation_online_douyin`. The
 `group_aliases` key is reserved inside group tables and is not an activity leaf.
+
+### Android alias-key hierarchy migration
+
+1. Android sends a hierarchy operation or raw TOML rewrite request to Core and
+   receives the updated alias TOML together with `replacements[]` and
+   `alias_replacements[]`.
+2. Android passes both replacement lists to the Core TXT actions for every
+   managed TXT file through `RuntimeAliasMoveMigrationService`.
+3. The service writes candidate TOML and rewritten TXT files, rebuilds an
+   isolated database by ingesting the candidate data, and swaps it in only
+   after successful ingestion.
+4. On failure the service restores the source files and the previous database.
 
 ## Cross-Layer Call Chains
 
@@ -253,7 +290,7 @@ The resulting canonical paths are `recreation_online`,
 1. Compose screen keeps UI state such as mode, raw marker input, and visibility.
 2. Android runtime service encodes a TXT action request and forwards it through
    JNI.
-3. JNI/native bridge calls `tracer_core_runtime_txt_json`.
+3. JNI/native bridge calls `tracer_core_runtime_config_json`.
 4. Shell C ABI decodes the action and forwards it into `tracer_core` pipeline
    TXT day-block APIs.
 5. Core resolves or replaces the block and returns JSON for the Android UI to
@@ -271,19 +308,21 @@ The resulting canonical paths are `recreation_online`,
 
 ### Android canonical hierarchy migration
 
-1. Android confirms an in-memory TOML move plan and sends its old/new
-   canonical pair to `replace_canonical_activity_names` for every managed TXT.
-2. Android writes the candidate TOML and changed TXT files, builds an isolated
-   temporary database by full ingest, then swaps it in only after success.
-3. On any failure Android restores source files and retains/restores the prior
-   database before reinitializing the active runtime.
+1. Android sends the move operation to Core; Core computes the updated TOML and
+   all affected canonical replacements (including descendants when a hierarchy
+   path changes).
+2. `RuntimeAliasMoveMigrationService` sends those replacements to
+   `replace_canonical_activity_names`, writes the candidate TOML and TXT files,
+   and builds an isolated temporary database by full ingest.
+3. On any failure the service restores source files and retains/restores the
+   prior database before reinitializing the active runtime.
 
 ### Windows CLI `txt view-day`
 
 1. CLI parses arguments and reads the TXT file locally.
 2. CLI infers `selected_month` from `YYYY-MM.txt` when possible; otherwise it
    sends an empty value.
-3. CLI calls `tracer_core_runtime_txt_json` with the full file content.
+3. CLI calls `tracer_core_runtime_config_json` with the full file content.
 4. Core resolves the target day block and returns JSON.
 5. CLI prints `day_body` on success or a host-formatted error on failure.
 

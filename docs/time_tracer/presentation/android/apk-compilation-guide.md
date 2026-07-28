@@ -4,7 +4,7 @@
 # arguments += listOf("-DANDROID_STL=c++_static")
 
 # Release (Signed, Native Optimization Enabled) - Recommended (repo root)
-python .\scripts\run.py build --app tracer_android --profile android_release
+python tools/run.py build --app tracer_android --profile android_release --config-profile distribution
 
 # Release signing setup (local, untracked)
 # 1. Copy:
@@ -23,14 +23,14 @@ python .\scripts\run.py build --app tracer_android --profile android_release
 #    TT_ANDROID_KEY_PASSWORD
 
 # Troubleshooting Only: Native No-Optimization
-python .\scripts\run.py build --app tracer_android --profile android_release_no_opt
+python tools/run.py build --app tracer_android --profile android_release_no_opt --config-profile distribution
 
 # Important:
 # tracer_android uses Gradle backend, so `--cmake-args` is ignored in `tools/run.py`.
 # If you need to change STL mode, modify runtime/build.gradle.kts first, then run python command above.
 
 # Direct Gradle (apps/android)
-.\gradlew.bat :app:assembleRelease -PtimeTracerDisableNativeOptimization=false
+.\gradlew.bat :app:assembleRelease -PtracerConfigProfile=distribution -PtimeTracerDisableNativeOptimization=false
 
 # Debug (Fast & Debuggable)
-.\gradlew.bat :app:assembleDebug
+.\gradlew.bat :app:assembleDebug -PtracerConfigProfile=test

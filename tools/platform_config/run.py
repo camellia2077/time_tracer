@@ -10,10 +10,20 @@ if __package__ in (None, ""):
     if str(REPO_ROOT) not in sys.path:
         sys.path.insert(0, str(REPO_ROOT))
     from tools.platform_config import sync
-    from tools.platform_paths import android_config_root, tracer_core_config_root, windows_cli_config_root
+    from tools.platform_paths import (
+        CONFIG_PROFILES,
+        android_config_root,
+        tracer_core_config_root,
+        windows_cli_config_root,
+    )
 else:
     from tools.platform_config import sync
-    from tools.platform_paths import android_config_root, tracer_core_config_root, windows_cli_config_root
+    from tools.platform_paths import (
+        CONFIG_PROFILES,
+        android_config_root,
+        tracer_core_config_root,
+        windows_cli_config_root,
+    )
 
 
 def default_repo_root() -> Path:
@@ -33,10 +43,16 @@ def parse_args() -> argparse.Namespace:
         help="Platform target to generate.",
     )
     parser.add_argument(
+        "--config-profile",
+        choices=CONFIG_PROFILES,
+        default="test",
+        help="Config source profile to generate (default: test).",
+    )
+    parser.add_argument(
         "--source-root",
         type=Path,
-        default=tracer_core_config_root(repo_root),
-        help="Canonical source config root (default: assets/tracer_core/config).",
+        default=None,
+        help="Canonical source config root (overrides --config-profile).",
     )
     parser.add_argument(
         "--windows-output-root",
@@ -75,9 +91,12 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    source_root = args.source_root or tracer_core_config_root(
+        default_repo_root(), args.config_profile
+    )
     return sync.run_generation(
         target=args.target,
-        source_root=args.source_root.resolve(),
+        source_root=source_root.resolve(),
         windows_output_root=args.windows_output_root.resolve(),
         android_output_root=args.android_output_root.resolve(),
         apply=args.apply,

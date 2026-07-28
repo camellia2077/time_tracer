@@ -2,863 +2,574 @@ y2025
 m02
 
 d0201
-063559起床
-072723休息
-074458线性代数
-080514exercise_strength-training_squat_deadlift
-081426拉 // 备注
-132251recreation_online-platforms_zhihu // apple
+// 没有牺牲大到无法接受
+060030醒
+064833洗漱 // remark
+// 备注
+// 备注
+103305exercise_strength-training_pull // cherry
+// banana
 // cherry
+151213杠铃划船
+173037exercise_strength-training_squat_front-squat // 备注
+// 备注
+// banana
+230346白天睡觉 // apple
+// date
 // apple
 // cherry
-150116exercise_cardio_running_treadmill // remark
-// banana
-// banana
-// date
-150848zhihu // date
-// remark
-171151exercise_strength-training_squat_squat
-181606exercise_cardio_running_treadmill-incline
-183210weibo
-202434exercise_strength-training_pull_barbell-row // date
-// remark
-// cherry
-// banana
-011616普拉提
-012444深蹲 // remark
-// date
-012925exercise_strength-training_push_dips // date
-// banana
-// remark
-023815exercise_strength-training_pull_barbell-row // date
+231112zhihu // cherry
+011952推 // remark
 // cherry
 // 备注
-// remark
+020452操场跑
+021656minecraft // banana
+// cherry
+// cherry
+// apple
 
 d0202
-// 守望先锋真好玩
-// beta
-// 没有牺牲大到无法接受
-// 没有背叛小到可以容忍
-065248w
-085109recreation_online-platforms_zhihu
-102626游泳 // 备注
-103303study_math_calculus
-111445meal // 备注
-// cherry
-// remark
-// remark
-123428有氧训练
-143730洗漱 // 备注
-// 备注
-// banana
-// 备注
-144938routine_express
-150034recreation_game_clash-royale
-180838exercise_cardio_running_treadmill-incline
-203608recreation_online-platforms_zhihu // cherry
-// cherry
-// 备注
-205531weibo
-005527上厕所 // apple
-// 备注
-014752臂屈伸 // 备注
+061943醒
+104840exercise_cardio_running_treadmill
+110117recreation_online-platforms_weibo
+144713study_math_probability-theory_random-variable_continuous-random-variable
+162017study_math_probability-theory_probability-basics_conditional-probability // remark
+// apple
 // date
-015819sleep_insomnia
-030451硬拉
+// date
+194232重积分 // date
+// apple
+// cherry
+225054exercise_strength-training_squat
+000043高等数学
+002955study_math_probability-theory_probability-basics_conditional-probability
+004601数据结构 // cherry
+// apple
+// banana
 
 d0203
-// 烤肉自助
-062426新的一天开始了
-065855exercise_strength-training
-072056study_math_linear-algebra_matrix // banana
-// apple
-// date
-075335meal_dining
-095409围棋 // date
-// remark
-104745routine_express
-111913sleep_day // banana
-// apple
-113455meal
-115032exercise_strength-training_pull
-133231douyin // 备注
-// apple
-142208吃饭 // date
-// apple
+// alpha
+// alpha
+060509新的一天开始了
+064902站姿杠铃肩推 // remark
+101439正态分布 // date
 // remark
 // date
-165831overwatch
-180352推 // 备注
-// cherry
-195653meal_dining
-223509exercise_strength-training_push_bench-press // apple
-// cherry
+134321study_english_words
+161302骑行
+185923recreation_game_clash-royale // cherry
+// date
 // remark
-230037-060059sleep_day
+225233sleep_day
+002732exercise_strength-training_push_dips // remark
+012639二重积分 // cherry
+// date
+// cherry
+// 备注
+013201sleep_day
 
 d0204
+// 烤肉自助
 // beta
-060059新的一天开始了
-061240失眠
-063448routine_personal-hygiene_oral-hygiene // banana
-// remark
+// beta
+061124醒
+064747行列式 // remark
 // apple
-// cherry
-072536study_computer_data-structure_graphs // apple
-// date
-075330study_computer_data-structure_graphs // banana
-// cherry
-// 备注
-// remark
-090159recreation_online-platforms_bilibili // banana
-// cherry
+104332泊松分布
+140155study_english_listening // apple
+150537概率运算
+222328exercise_pilates
+233145有氧 // banana
 // apple
-102946recreation_online-platforms_zhihu // banana
-// apple
+// banana
+001211三重积分
+014442特征值与特征向量
+015211exercise_cardio_running_treadmill-incline // 备注
+// banana
 // cherry
-111245哔哩哔哩 // banana
-// cherry
-112941douyin
-132428routine_body-hygiene_bathing // 备注
-162158拉
-170459cr // apple
-// 备注
-173022洗漱 // banana
-// cherry
-// remark
-// apple
-193505exercise_strength-training_squat
-200941高等数学二重积分
-224520routine_personal-hygiene_oral-hygiene // banana
 
 d0205
-// 守望先锋真好玩
-064306wake
-072005exercise_strength-training_push_overhead-press
-081149洗澡
-084748study_english_article // apple
-// cherry
+// alpha
+063605新的一天开始了
+081056sleep_day
+083219routine_personal-hygiene_oral-hygiene
+142304臂屈伸 // date
 // banana
-// cherry
-090526饭
-091234洗澡 // 备注
-101110exercise_strength-training
-114247exercise_strength-training_pull_pull-up // cherry
-114313站姿杠铃肩推
-120234exercise_strength-training_squat_deadlift
-120928杠铃划船 // 备注
-// banana
-121748站姿杠铃肩推 // 备注
-// 备注
-// cherry
+// date
+151942饭 // 备注
+204645三重积分
+213607卧推
+010229线性代数矩阵 // 备注
 // remark
-190127exercise_cardio_swimming // apple
-// date
-// date
-// date
-195945exercise_strength-training_push
-225904meal_dining
-230219-060232sleep_day
+// remark
+// remark
+013503有氧训练
+014521有氧训练
 
 d0206
+// alpha
+// 没有背叛小到可以容忍
 // beta
 // alpha
-// 烤肉自助
-060232wake
-080342围棋 // cherry
-// cherry
+061834wake
+095027exercise_go
+113125study_math_probability-theory_probability-distribution_binomial-distribution
+152454瑜伽 // 备注
 // remark
-082912study_math_probability-theory
-085852study_computer_data-structure_graphs
-091941study_english_article // banana
-093114抖音
-101748有氧训练 // date
-// date
-// banana
-// date
-105115站姿杠铃肩推 // remark
-// banana
-// date
-105456meal_dining
-143348exercise_strength-training_push_bench-press // cherry
+164625硬拉
+203202exercise_strength-training
+235258英语听力
+012917study_math_linear-algebra_matrix_determinant
+021602exercise_cardio_cycling // banana
 // apple
-// banana
-// apple
-144436study_english_article
-171551study_english_listening // 备注
-// cherry
-// banana
-181025meal // remark
-// 备注
-194359sleep_insomnia
-225603数据结构 // remark
-// banana
-// banana
-230808-060847sleep_day
+// date
+022705study_math_calculus_multiple-integral_triple-integral
 
 d0207
-// 守望先锋真好玩
-// 守望先锋真好玩
-// alpha
-// 没有牺牲大到无法接受
-060847醒
-065619数据结构图 // date
-// 备注
-// banana
-070220休息
-083527操场跑
-085726routine_personal-hygiene_oral-hygiene // apple
+// 没有背叛小到可以容忍
+061607w
+080728拉 // date
 // apple
-// cherry
-090707recreation_game_minecraft
-091825英语写作 // 备注
+082743recreation_game_overwatch
+132644study_english_words // cherry
+// 备注
 // date
-092618线性代数矩阵 // banana
 // remark
-// apple
-// cherry
-094106拉 // date
-// 备注
-// 备注
-140253exercise_strength-training_push_bench-press
-160658操场跑
-163108数据结构二叉树 // date
-// cherry
-172135study_computer_data_structure
-202607study_math_probability-theory // remark
-// apple
-// 备注
-223929bilibili // date
-234208exercise_strength-training_push_dips // cherry
+175706离散型随机变量 // apple
+// banana
+204535recreation_online-platforms_douyin // remark
 // date
+234529吃饭
+011549recreation_online-platforms_zhihu // remark
+// banana
+// remark
+013342r // date
+// 备注
+023423study_math_linear-algebra_matrix
 
 d0208
 // alpha
-// 没有牺牲大到无法接受
-064213醒
-075223数据结构 // date
-// banana
-// banana
+061007起床
+080433bilibili
+095320exercise_strength-training_squat_deadlift // 备注
+// remark
+135823卧推 // banana
+// cherry
 // 备注
-082819数据结构图
-085706study_english_listening // banana
-// cherry
-// cherry
+155656英语听力 // date
+182322douyin // apple
+184323矩阵
+002026meal
+002123连续型随机变量
+011322线性代数矩阵 // remark
 // apple
-093647高等数学
-123635rest_insomnia
-163241study_math_calculus_double-integral
-164958recreation_game_overwatch // date
-174133exercise_strength-training_squat_deadlift
-193721exercise_strength-training_pull
-200802exercise_strength-training_squat_deadlift // remark
-// date
-// 备注
+// remark
 // banana
-224303recreation_game_clash-royale // banana
-// cherry
-004234rest_rest // 备注
-010531吃饭
-012857饭 // cherry
-// cherry
-013928rest_rest // apple
-// date
-// banana
-// 备注
 
 d0209
-// 没有牺牲大到无法接受
+// alpha
 // 没有背叛小到可以容忍
-// 没有背叛小到可以容忍
-// 没有背叛小到可以容忍
-060952w
-064029routine_personal-hygiene_oral-hygiene
-072320洗澡
-084503exercise_cardio_running_track-running // banana
+// alpha
+064633w
+083133routine_express
+091347英语写作
+135246引体
+155206饭 // 备注
+// apple
+// banana
+// banana
+181254exercise_yoga // cherry
+213258exercise_cardio_running_track-running
+000533二重积分 // apple
 // date
-// banana
-092816数据结构
-123517exercise_cardio_running_track-running
-131340recreation_game_clash-royale // remark
-// remark
-// banana
-151020study_math_linear-algebra // date
-162930exercise_strength-training_squat_squat
-205453站姿杠铃肩推
-212118recreation_online-platforms_douyin // apple
-// remark
-// remark
-// banana
-233641exercise_strength-training_push_dips // date
-005432数据结构图
-012148recreation_online-platforms_douyin // remark
-// 备注
-012338Clash Royale // 备注
-// 备注
-021056routine_express
+001733概率统计 // banana
+// apple
+024102study_math_linear-algebra_matrix
 
 d0210
-// 烤肉自助
-065341w
-070623深蹲 // date
-071128高等数学二重积分 // banana
-// banana
+// beta
+// alpha
+// 守望先锋真好玩
+// alpha
+063401w
+083840游泳
+090144douyin
+132533study_english_writing // date
 // 备注
-093827rest_rest // date
+174359study_math_probability-theory_probability-distribution_normal-distribution
+223329骑行 // 备注
 // banana
-// cherry
-100740exercise_strength-training
-101343recreation_online-platforms_douyin // banana
-// cherry
+224049study_math_probability-theory_probability-distribution_poisson-distribution // date
 // date
-103301recreation_game_minecraft
-110852recreation_online-platforms_douyin // 备注
-// 备注
-112841recreation_online-platforms_zhihu // banana
-// banana
-// 备注
+003257exercise_strength-training_squat_front-squat
+024443重积分 // apple
+031548study_english_writing // banana
 // date
-135825recreation_online-platforms_zhihu // date
-// 备注
-// cherry
-// banana
-161245exercise_strength-training_push_bench-press
-165320recreation_online-platforms_douyin
-194817recreation_online-platforms_zhihu
-221903杠铃划船 // banana
-// remark
-// date
-224353exercise_cardio_cycling
-230513-060504sleep_day
 
 d0211
 // 没有背叛小到可以容忍
-060504起床
-061253cr // cherry
-// apple
+// 没有背叛小到可以容忍
+063935醒
+102517连续型随机变量 // banana
 // 备注
+// cherry
+114229recreation_game_clash-royale // banana
+124954围棋
+160314overwatch // remark
+184854推 // cherry
+// cherry
+211132rest_rest
+005247recreation_game_clash-royale // remark
+// cherry
+// cherry
 // apple
-063742exercise_cardio_running_treadmill // remark
-// banana
-// apple
-// remark
-071302卧推 // apple
-080222睡觉
-085258瑜伽 // apple
-// 备注
-// banana
-101532recreation_game_clash-royale
-111812rest_rest
-113557study_english_writing
-133126骑行
-142339瑜伽 // 备注
-// apple
-// date
-150054routine_body-hygiene_bathing
-205014白天睡觉
-220514知乎 // remark
-// date
-// banana
-// remark
-225034跑步机爬坡 // remark
-233358-063333sleep_day
+022627douyin
+025512study_math_probability-theory_probability-distribution
 
 d0212
-// 守望先锋真好玩
-063333wake
-071332study_math_calculus_double-integral // apple
-// banana
+// beta
+// 没有牺牲大到无法接受
+062238w
+104229exercise_strength-training_squat // cherry
+112724study_math_linear-algebra_matrix // remark
 // date
-074317上厕所
-075603快递
-081314weibo
-091323recreation_online-platforms_zhihu // date
-// apple
-102940meal_dining // banana
+// cherry
+121657study_math_probability-theory_probability-distribution_normal-distribution // banana
 // remark
+// remark
+// apple
+132923rest_rest
+214253exercise_yoga // remark
+233110recreation_online-platforms_weibo
+012635study_math_probability-theory_probability-distribution_normal-distribution // 备注
+// cherry
+// apple
+015800exercise_cardio
+022515exercise_cardio_running_treadmill // date
+// date
 // 备注
-103301吃饭 // 备注
-113059study_math_calculus // apple
-125815数据结构
-154100硬拉
-154942rest_rest // remark
-175441routine_body-hygiene_bathing // remark
-202504meal_dining
-204409exercise_cardio_running_treadmill
-222750英语写作 // banana
 
 d0213
+// 没有背叛小到可以容忍
 // 没有牺牲大到无法接受
-// beta
-063900起床
-071911routine_toilet
-095054线性代数矩阵 // date
-// date
-// date
+// 守望先锋真好玩
+062734w
+092917exercise_strength-training_pull_barbell-row
+114434白天睡觉 // banana
+// cherry
 // 备注
-110100饭 // date
-111425study_math_linear-algebra // remark
-// remark
+125840recreation_online-platforms_douyin
+145619study_math_probability-theory_probability-basics_random-events // remark
+192217study_math_probability-theory_probability-distribution_normal-distribution
+224244study_math_probability-theory_random-variable_discrete-random-variable // remark
 // date
-// date
-125105白天睡觉
-135223recreation_game_clash-royale
-145416线性代数矩阵
-173423跑步
-190122recreation_game_overwatch
-212418数据结构图 // cherry
-// banana
-// 备注
+005413overwatch // apple
+015023无氧训练
+022158exercise_yoga // date
 // remark
-222055站姿杠铃肩推 // banana
 // apple
-// 备注
-000655rest_insomnia
-010309exercise_cardio_cycling // banana
-// remark
-// 备注
-// apple
-012344哔哩哔哩
-024828study_computer_data-structure_trees // apple
-// remark
 
 d0214
-// 烤肉自助
-// alpha
-// alpha
-063641w
-085305数据结构图
-093827study_english_article // remark
-// date
-095654拉 // date
-// 备注
+// 没有牺牲大到无法接受
+// 守望先锋真好玩
+060758w
+065059矩阵运算 // apple
 // apple
-095708rest // cherry
-// 备注
-// cherry
-// cherry
-145239minecraft
-152517study_math_calculus_double-integral // date
-// remark
-// remark
-// 备注
-165402拉
-173947study_math_calculus_double-integral
-202746exercise_strength-training_push_bench-press
-220854exercise_strength-training_pull_pull-up // banana
-// apple
-231621卧推
-012820拉 // date
-// 备注
+090006Clash Royale // cherry
+141505有氧 // 备注
 // banana
-013129study_computer_data-structure_trees
-014300meal_dining // remark
+141826推 // 备注
 // remark
+202412study_english_words
+223352douyin
+003033二项分布
+004412exercise_strength-training_squat_deadlift // 备注
 // remark
-// 备注
-033123recreation_online-platforms_bilibili // 备注
-// 备注
-// 备注
-// cherry
+// banana
+011816离散型随机变量
 
 d0215
-// alpha
-// 烤肉自助
-064616w
-074205study_english_listening
-092542recreation_online-platforms_douyin // apple
+// 没有牺牲大到无法接受
+// 守望先锋真好玩
+// 没有背叛小到可以容忍
+062307醒
+074257无氧训练
+075602recreation_online-platforms_zhihu // apple
+120837离散型随机变量
+151916骑行 // date
 // 备注
 // 备注
-113842recreation_online-platforms_zhihu
-115636站姿杠铃肩推
-121427study_english_writing
-150535高等数学 // date
-171024Clash Royale // remark
-// date
+180028study_math_probability-theory_random-variable
+192409数据结构二叉树 // apple
+003640exercise_cardio_swimming // remark
+// 备注
+// banana
+004003recreation_online-platforms_bilibili
+011421study_math_calculus_multiple-integral_triple-integral // 备注
+// 备注
 // apple
-171546exercise_strength-training_squat_front-squat
-181807骑行 // 备注
-190822洗漱
-233144上厕所
-004048exercise_strength-training_squat_squat // cherry
-004426抖音 // 备注
-015122exercise_strength-training_pull_barbell-row
-015704守望先锋
+// 备注
 
 d0216
-060353起床
-062609普拉提 // apple
-// date
-// remark
-// 备注
-065116study_math_probability-theory
-105823recreation_online-platforms_weibo
-115123exercise_pilates
-123954routine_personal-hygiene_oral-hygiene
-131706rest_rest // date
-// date
-// remark
-144121英语听力 // cherry
-// remark
-// date
-// 备注
-173055游泳
-181956上厕所
-193442rest // cherry
-231857cr // 备注
+062915新的一天开始了
+064825皇室战争
+110521rest_rest // cherry
+122234cr // banana
+123900卧推 // cherry
 // apple
-000535study_english_listening
-012514study_english_article // apple
-013525臂屈伸 // remark
-// remark
+// apple
+191420recreation_online-platforms_zhihu // 备注
+202459exercise_strength-training_pull_barbell-row
+004230exercise_go // cherry
+// apple
 // cherry
-014733r // remark
-// cherry
-// cherry
-// cherry
+// apple
+011233exercise_strength-training_push_dips // remark
+011847study_math_probability-theory // remark
 
 d0217
-065433起床
-071452sleep_day
-080812骑行
-081505recreation_game_minecraft
-100341sleep_insomnia // apple
-// banana
-// banana
-120358recreation_game_overwatch
-130629线性代数 // banana
-132440瑜伽 // remark
-// banana
-// cherry
-// 备注
-175446数据结构图 // apple
-211458recreation_online-platforms_zhihu
-220107sleep_day
-223234study_english_article // cherry
+// 守望先锋真好玩
+// 没有背叛小到可以容忍
+062106新的一天开始了
+081133study_computer_data-structure_trees // apple
 // date
-001956recreation_online-platforms_bilibili // remark
-// date
-// remark
-012411跑步机 // banana
-013725有氧训练 // apple
-020107sleep_insomnia // 备注
+// banana
 // apple
+104924exercise_cardio // cherry
+// 备注
 // banana
+140921概率统计
+150735study_math_probability-theory_probability-basics_conditional-probability // date
+// cherry
+183029douyin
+194908sleep_day // remark
+// cherry
+022034深蹲
+030342重积分 // cherry
+// apple
+// cherry
+// cherry
+030859矩阵运算 // cherry
 
 d0218
+// 没有牺牲大到无法接受
+// 没有背叛小到可以容忍
 // alpha
-// 烤肉自助
-065634wake
-082659站姿杠铃肩推 // date
-// remark
-// date
-// 备注
-100905rest_rest // banana
-// 备注
-101025recreation_game_overwatch // 备注
-// banana
-// cherry
-// date
-102841rest_rest // cherry
-104416吃饭
-104535recreation_game_clash-royale
-104643英语文章
-113256无氧训练
-125924深蹲 // date
-133015exercise_strength-training_squat_deadlift
-173315exercise_strength-training_push_bench-press // apple
-// remark
-// date
+065818起床
+085604失眠 // apple
+101218exercise_strength-training_push_overhead-press // cherry
+121301recreation_game_clash-royale
+170808study_math_probability-theory_probability-distribution
+195838study_math_calculus_multiple-integral_double-integral
+212658exercise_strength-training_pull_pull-up
+013819睡觉 // apple
 // apple
-185042卧推
-210037exercise_strength-training_squat
-215847study_math_linear-algebra_matrix
-234513-064502sleep_day
+015806矩阵
+025205exercise_strength-training_push // apple
+// banana
+// remark
 
 d0219
-// 守望先锋真好玩
-064502wake
-073220study_english_writing // remark
-073454exercise_strength-training_squat // banana
-// cherry
-// date
-// apple
-075715数据结构 // 备注
-// apple
-085154exercise_strength-training_push_dips // cherry
-// banana
-092931exercise_go // cherry
-// banana
-// remark
-095305study_computer_data_structure // apple
-// banana
-// apple
-103257快递 // cherry
-// banana
-// apple
-// banana
-112642study_math_linear-algebra
-120215exercise_cardio_swimming
-140140sleep_insomnia // cherry
-// remark
-153136exercise_pilates // 备注
-// 备注
-// cherry
-153536操场跑 // banana
-// 备注
-// 备注
-// cherry
-220025study_english_listening // 备注
-// cherry
-231023线性代数
-232211recreation_game_clash-royale
+060139wake
+065930meal_dining
+094213二项分布
+135115study_english_words // remark
+143926exercise_cardio_running_treadmill // remark
+182648三重积分
+191329study_math_linear-algebra_matrix_matrix-operations
+002220英语写作
+010121study_math_probability-theory_probability-basics_probability-operations
+014223study_math_linear-algebra
 
 d0220
+// alpha
+// alpha
 // 烤肉自助
-// beta
-// 没有牺牲大到无法接受
-// 没有牺牲大到无法接受
-065521w
-072139rest_rest
-081447吃饭
-095600饭
-100128routine_personal-hygiene_oral-hygiene // remark
-// remark
-// banana
-103309exercise_strength-training_squat_squat // apple
-// remark
-103438数据结构二叉树
-104622英语单词
-113423蹲 // 备注
-131138英语单词
-151907exercise_cardio_cycling // date
-170119exercise_cardio_running_track-running
-190351exercise_cardio
-190906study_computer_data-structure_graphs
-222335exercise_pilates // cherry
-// banana
+063545起床
+065947recreation_game_clash-royale // date
 // date
-231940-061949sleep_day
+// apple
+073857exercise_strength-training_squat_deadlift // cherry
+// 备注
+// date
+142654overwatch
+174624study_math_probability-theory_random-variable_continuous-random-variable
+184035矩阵运算 // cherry
+// 备注
+203257概率统计
+013248exercise_cardio_swimming
+023147recreation_game_clash-royale // date
+// remark
+023909recreation_online-platforms_douyin // apple
 
 d0221
-// 烤肉自助
-// 烤肉自助
-// 没有牺牲大到无法接受
-061949wake
-074710数据结构二叉树
-082754meal_dining
-091404meal_dining // date
-// remark
-091832卧推
-092527minecraft
-095313颈前深蹲
-111001exercise_strength-training_squat_deadlift
-113608exercise_strength-training_push_dips // banana
-132621recreation_online-platforms_bilibili // date
-// cherry
-144743exercise_go
-163337无氧训练 // banana
-// remark
+061848新的一天开始了
+092738有氧
+095651recreation_game_overwatch
+145238exercise_strength-training_squat_squat
+164146跑步 // apple
+// 备注
 // banana
-180758跑步 // cherry
-// apple
-// remark
+// date
+232600跑步机
+233051study_math_probability-theory_probability-distribution_binomial-distribution // remark
+// 备注
 // cherry
-185412无氧训练
-222547sleep_day
-232914-062952sleep_day
+005346overwatch // remark
+// remark
+023818study_computer_data-structure_graphs
+031550exercise_pilates
 
 d0222
-// 守望先锋真好玩
-// alpha
-062952wake
-074429exercise_cardio // cherry
-// banana
+// 烤肉自助
+062635新的一天开始了
+062758颈前深蹲
+115851抖音
+141720overwatch // cherry
+// 备注
+144834骑行 // banana
+194123上厕所 // date
 // cherry
-// remark
-074528exercise_strength-training_push
-082454跑步 // apple
-// remark
-084043exercise_strength-training_squat_squat // remark
-085133exercise_strength-training_squat
-094321exercise_strength-training // banana
-// banana
+// 备注
+// cherry
+195629study_english_article
+005203sleep_day // remark
+// cherry
+011758study_math_probability-theory_probability-distribution // cherry
+// cherry
 // apple
-105710recreation_online-platforms_zhihu // date
-// apple
+022940exercise_cardio_running // remark
+// remark
 // date
-// cherry
-115756exercise_strength-training_pull_pull-up
-130907exercise_cardio_cycling
-144256exercise_strength-training_push_overhead-press
-160425exercise_cardio
-163805exercise_strength-training_squat
-180607sleep_insomnia
-204622exercise_strength-training
-205518minecraft // cherry
-// apple
-// cherry
 
 d0223
-063410起床
-072744exercise_strength-training_pull
-074336study_math_linear-algebra
-080122recreation_online-platforms_bilibili // banana
+065742起床
+082236sleep_day // apple
 // 备注
-// 备注
-101352高等数学
-110350bilibili // apple
+115557抖音 // banana
+172916study_english_article
+175747rest_rest // date
 // cherry
-// cherry
-// remark
-111308exercise_strength-training_squat_front-squat
-114454meal_dining
-115220study_math_probability-theory // remark
-154010exercise_strength-training_push_overhead-press // apple
-// cherry
-// 备注
-// apple
-170832study_english_listening // 备注
-174753推 // date
-203733exercise_cardio_running_treadmill // cherry
-// date
-// date
-215125cr
-220352exercise_cardio_swimming // date
-// remark
 // banana
-230008-060014sleep_day
+// remark
+195052高等数学二重积分 // apple
+210955卧推
+001937正态分布
+012913exercise_strength-training // date
+// cherry
+// banana
+021857exercise_strength-training_push_overhead-press
 
 d0224
-// 烤肉自助
+// alpha
 // 没有背叛小到可以容忍
-060014新的一天开始了
-063939cr // date
-// cherry
+// 没有背叛小到可以容忍
+// 没有牺牲大到无法接受
+064703wake
+100038study_computer_data_structure // 备注
+113056泊松分布
+120627meal // cherry
+// banana
 // apple
-070029英语听力 // remark
-072017游泳
-073538英语写作 // 备注
-// apple
-083929overwatch
-103320meal_dining
-110755Clash Royale // banana
-111011跑步机
-132438study_math_calculus // 备注
-170244rest_rest // 备注
 // date
+172849recreation_online-platforms_bilibili // remark
+// date
+// 备注
+232423二重积分
+234443study_math_probability-theory_probability-basics
+001109守望先锋
+014421r // 备注
 // remark
 // 备注
-173225exercise_cardio_running_track-running
-200740study_english_words
-230816study_math_probability-theory
-232720meal_dining // cherry
-// apple
-// apple
-// 备注
-233244-063250sleep_day
+015451跑步机爬坡 // 备注
+// cherry
 
 d0225
 // alpha
-063250醒
-064325跑步 // remark
+// alpha
+065204wake
+093827exercise_strength-training_pull_pull-up
+111824study_math_probability-theory // banana
+120620瑜伽 // cherry
+// banana
+124342洗漱 // 备注
+// remark
+// 备注
+// banana
+193212rest_rest // date
 // remark
 // cherry
-084141饭 // remark
-// date
-// banana
-090534数据结构二叉树
-094417臂屈伸 // 备注
-// apple
-// date
-102719exercise_cardio_running_treadmill-incline
-103827study_computer_data_structure
-111541sleep_insomnia
-114655白天睡觉
-141240跑步机爬坡 // 备注
+225218meal_dining // date
 // 备注
-154601rest_rest
-154931骑行
-174523exercise_strength-training_push
-182552recreation_game_clash-royale // date
+// cherry
+000147recreation_online-platforms_weibo
+004247study_math_probability-theory // date
 // remark
-// apple
+025749无氧训练 // 备注
 // banana
-184943深蹲 // apple
-211531抖音
 
 d0226
-061811起床
-065432皇室战争 // date
-082603瑜伽
-085127meal_dining
-095326知乎 // date
-103345洗漱
-105435exercise_strength-training_pull_barbell-row
-114829minecraft
-115138douyin // banana
-133758推 // date
+// beta
+// beta
+// alpha
+// 没有背叛小到可以容忍
+065945新的一天开始了
+080607臂屈伸
+101834bilibili // cherry
+// banana
+// cherry
+// banana
+130824study_computer_data_structure
+155010study_math_calculus // date
+// 备注
 // remark
+191129臂屈伸 // remark
+// banana
+194252recreation_game_minecraft
+011358站姿杠铃肩推 // date
+013215sleep_day // date
 // remark
-143800study_english_listening
-163107休息
-194405rest
-215625exercise_strength-training // banana
-230502recreation_online-platforms_bilibili
-232052-062006sleep_day
+013422特征值与特征向量 // apple
+// apple
+// banana
+// date
 
 d0227
-062006wake
-062253跑步 // date
+// 守望先锋真好玩
+// 没有牺牲大到无法接受
+065653起床
+083608meal_dining // date
+// apple
+// 备注
+// date
+105830exercise_go // 备注
 // remark
-// banana
-065517蹲 // 备注
-// banana
-065935饭 // remark
-// date
-// apple
-072556Clash Royale // apple
-084154recreation_game_clash-royale
-085014exercise_strength-training_push_bench-press // 备注
-// apple
-101605exercise_strength-training_pull_pull-up // remark
-102242meal_dining
-125152recreation_game_clash-royale // apple
-// 备注
-131942exercise_strength-training_push
-132323sleep_insomnia // banana
-194916zhihu // cherry
-// 备注
-// cherry
-// 备注
-201643recreation_game_clash-royale // banana
-// date
-// 备注
-211038数据结构图
-230933-060906sleep_day
+// remark
+134148引体
+175722吃饭
+181410英语写作
+200113study_math_linear-algebra_matrix
+000216meal_dining
+004909休息 // 备注
+013308守望先锋
 
 d0228
 // 烤肉自助
-// 没有背叛小到可以容忍
-// 烤肉自助
-060906新的一天开始了
-065210recreation_online-platforms_zhihu
-085220exercise_strength-training_pull_barbell-row
-094117哔哩哔哩
-103725快递
-104242洗澡 // remark
+063435w
+084705study_math_probability-theory // banana
 // date
-105003rest_rest
-110208exercise_cardio_running_track-running // apple
+// remark
+// apple
+111057洗漱 // cherry
+// 备注
+124700游泳
+151348recreation_online-platforms_weibo // date
+// banana
+211145特征值与特征向量
+230206exercise_strength-training_squat_squat
+013734cr
+021624meal_dining
+023933臂屈伸 // banana
 // 备注
 // date
-114931臂屈伸
-124448饭 // banana
-152647study_math_linear-algebra_matrix
-154057recreation_game_overwatch
-160257study_english_article
-180214引体
-214400recreation_online-platforms_bilibili // date
-// apple
-234030守望先锋 // remark
+// date

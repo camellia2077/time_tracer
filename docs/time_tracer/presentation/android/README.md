@@ -32,6 +32,15 @@ Navigation hub for active Android documentation.
 - Behavior reference hub:
   - `docs/time_tracer/presentation/android/features.md`
 
+## UI Design
+
+- UI documentation hub:
+  - `docs/time_tracer/presentation/android/ui/README.md`
+- Shared UI color system:
+  - `docs/time_tracer/presentation/android/ui/color-system.md`
+- Report semantic colors:
+  - `docs/time_tracer/presentation/android/ui/report/README.md`
+
 ## Runtime / Contract Reference
 
 - Runtime protocol:

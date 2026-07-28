@@ -195,6 +195,25 @@ auto TestCanonicalReplacementIsExact(TestState& state) -> void {
          "Canonical replacement should change only matching event names.");
 }
 
+auto TestAliasReplacementIsExact(TestState& state) -> void {
+  const ActivityNameTextConverter converter(BuildTestConfig());
+  const std::unordered_map<std::string, std::string> replacements = {
+      {"有氧", "有氧aa"},
+  };
+  const std::string source =
+      "y2026\nm01\n\nd0103\n"
+      "012431有氧\n"
+      "012500exercise_cardio // canonical remark\n"
+      "012600-013000有氧 // alias interval\n";
+  const std::string expected =
+      "y2026\nm01\n\nd0103\n"
+      "012431有氧aa\n"
+      "012500exercise_cardio // canonical remark\n"
+      "012600-013000有氧aa // alias interval\n";
+  Expect(state, converter.ReplaceAliasNames(source, replacements) == expected,
+         "Alias replacement should change only authored activity tokens.");
+}
+
 }  // namespace
 
 auto RunActivityNameConverterTests(TestState& state) -> void {
@@ -202,6 +221,7 @@ auto RunActivityNameConverterTests(TestState& state) -> void {
   TestSingleMonthFixture(state);
   TestMultiMonthFixture(state);
   TestCanonicalReplacementIsExact(state);
+  TestAliasReplacementIsExact(state);
 }
 
 }  // namespace tracer_core::application::tests

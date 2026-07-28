@@ -64,9 +64,12 @@ canonical TXT 契约的月日志文件。
   - 提供可用于生成的活动 token 来源
 
 当前实现中，生成器使用 canonical converter alias bundle 中收集到的活动
-映射项作为活动池。每次生成非 wake 活动时，会在该映射项的 alias token 与
-canonical token 之间做一次固定 50/50 选择，用于产出包含 canonical 活动名的
-prework 样本。
+映射项作为活动池。alias TOML 的普通条目必须使用
+`canonical_leaf = ["alias1", "alias2"]` 结构；加载器会展开每个 alias，构造
+完整 canonical path。每次生成非 wake 活动时，会在 alias token 与 canonical
+token 之间做一次固定 50/50 选择，用于产出包含 canonical 活动名的样本。
+
+旧的 `alias = "canonical_leaf"` scalar 结构不再支持。
 
 ## 命令行参数
 

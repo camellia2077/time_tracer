@@ -180,6 +180,9 @@ class FakePipelineWorkflow final
   auto RunReplaceTxtCanonicalActivityNames(
       const tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest& request)
       -> tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse override;
+  auto RunReplaceTxtAliasActivityNames(
+      const tracer_core::core::dto::ReplaceTxtAliasActivityNamesRequest& request)
+      -> tracer_core::core::dto::ReplaceTxtAliasActivityNamesResponse override;
   auto InstallActiveConverterConfig(
       const tracer::core::application::pipeline::ActiveConverterConfigInstallRequest&
           request) -> void override;

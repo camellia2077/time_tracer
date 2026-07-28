@@ -7,12 +7,15 @@
 #include <cctype>
 #include <filesystem>
 #include <functional>
+#include <fstream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <unordered_map>
 #include <utility>
 #include <vector>
+
+#include "infra/config/loader/alias_document.hpp"
 
 namespace tracer::core::infrastructure::config::loader::detail {
 
@@ -34,6 +37,12 @@ struct AliasMappingDefinition {
   fs::path alias_directory_path;
   std::vector<AliasMappingChildFile> child_files;
   std::vector<ExpandedAliasMappingEntry> expanded_entries;
+};
+
+struct AliasSourceLocation {
+  fs::path path;
+  std::size_t line = 0U;
+  std::size_t column = 0U;
 };
 
 inline auto NormalizeRelativeTomlPath(std::string path_text) -> fs::path {
@@ -71,28 +80,61 @@ inline auto BuildAliasFieldPath(std::string_view relative_child_path,
   return field;
 }
 
-inline auto BuildCanonicalValue(std::string_view parent,
-                                const std::vector<std::string>& groups,
-                                std::string_view leaf_value) -> std::string {
-  std::string canonical(parent);
-  for (const auto& group : groups) {
-    canonical += "_";
-    canonical += group;
+inline auto ReadTomlSourceLine(const fs::path& path, std::size_t line_number)
+    -> std::string {
+  if (line_number == 0U) {
+    return {};
   }
-  canonical += "_";
-  canonical += leaf_value;
-  return canonical;
+  std::ifstream input(path, std::ios::binary);
+  if (!input.is_open()) {
+    return {};
+  }
+  std::string line;
+  for (std::size_t current = 1U; current <= line_number; ++current) {
+    if (!std::getline(input, line)) {
+      return {};
+    }
+  }
+  return line;
 }
 
-inline auto BuildCanonicalGroupValue(
-    std::string_view parent, const std::vector<std::string>& groups)
-    -> std::string {
-  std::string canonical(parent);
-  for (const auto& group : groups) {
-    canonical += "_";
-    canonical += group;
+inline auto BuildTomlDiagnostic(const fs::path& path, std::size_t line_number,
+                                std::size_t column_number,
+                                std::string_view message) -> std::string {
+  std::string diagnostic = path.string();
+  if (line_number > 0U) {
+    diagnostic += ":" + std::to_string(line_number);
+    if (column_number > 0U) {
+      diagnostic += ":" + std::to_string(column_number);
+    }
   }
-  return canonical;
+  diagnostic += ": ";
+  diagnostic += message;
+  const std::string raw_line = ReadTomlSourceLine(path, line_number);
+  if (!raw_line.empty()) {
+    diagnostic += "\n> ";
+    diagnostic += raw_line;
+  }
+  return diagnostic;
+}
+
+inline auto BuildTomlDiagnostic(const fs::path& path,
+                                const toml::source_region& source,
+                                std::string_view message) -> std::string {
+  return BuildTomlDiagnostic(
+      path, static_cast<std::size_t>(source.begin.line),
+      static_cast<std::size_t>(source.begin.column), message);
+}
+
+inline auto BuildTomlDiagnostic(const fs::path& path, const toml::node& node,
+                                std::string_view message) -> std::string {
+  return BuildTomlDiagnostic(path, node.source(), message);
+}
+
+inline auto BuildTomlDiagnostic(const fs::path& path,
+                                AliasDocumentSourceLocation source,
+                                std::string_view message) -> std::string {
+  return BuildTomlDiagnostic(path, source.line, source.column, message);
 }
 
 inline auto BuildAliasChildParseHint(const fs::path& relative_path,
@@ -120,7 +162,9 @@ inline auto LoadAliasMappingDefinition(const fs::path& alias_directory_path,
     -> AliasMappingDefinition {
   // Alias mapping only normalizes user-authored activity-name tokens.
   // Its responsibility is limited to resolving an alias key into a canonical
-  // activity path (the right-hand value).
+  // activity path. Alias child files use the strict canonical-keyed shape:
+  // each ordinary entry has a canonical leaf key and a non-empty string array
+  // of aliases.
   //
   // Design rules:
   // 1. Every alias key must be globally unambiguous.
@@ -163,103 +207,33 @@ inline auto LoadAliasMappingDefinition(const fs::path& alias_directory_path,
 
   AliasMappingDefinition definition{
       .alias_directory_path = normalized_alias_directory,
+      .child_files = {},
+      .expanded_entries = {},
   };
   definition.child_files.reserve(relative_paths.size());
 
-  std::unordered_map<std::string, fs::path> alias_sources;
-
-  const std::function<void(const toml::table&, const AliasMappingChildFile&,
-                           std::vector<std::string>&)>
-      expand_alias_table =
-          [&](const toml::table& aliases_tbl,
-              const AliasMappingChildFile& child_file,
-              std::vector<std::string>& groups) -> void {
-    for (const auto& [alias_key_node, alias_value_node] : aliases_tbl) {
-      const std::string alias_key = std::string(alias_key_node.str());
-      if (alias_key.empty()) {
-        throw std::runtime_error("Alias keys must not be empty in " +
-                                 BuildAliasFieldPath(
-                                     child_file.relative_path.generic_string(),
-                                     groups, ""));
-      }
-
-      if (const auto* nested_table = alias_value_node.as_table()) {
-        groups.push_back(alias_key);
-        expand_alias_table(*nested_table, child_file, groups);
-        groups.pop_back();
-        continue;
-      }
-
-      // A group can be recorded directly as well as contain child aliases.
-      // Its aliases resolve to the parent + current group path, while normal
-      // string leaves retain the historical parent + groups + leaf form.
-      if (alias_key == "group_aliases") {
-        if (groups.empty()) {
-          throw std::runtime_error(BuildAliasFieldPath(
-                                   child_file.relative_path.generic_string(),
-                                   groups, alias_key) +
-                               " is only valid inside an alias group.");
-        }
-        const toml::array* group_aliases = alias_value_node.as_array();
-        if (group_aliases == nullptr || group_aliases->empty()) {
-          throw std::runtime_error(BuildAliasFieldPath(
-                                   child_file.relative_path.generic_string(),
-                                   groups, alias_key) +
-                               " must be a non-empty string array.");
-        }
-        for (const auto& group_alias_node : *group_aliases) {
-          const auto group_alias = group_alias_node.value<std::string>();
-          if (!group_alias.has_value() || group_alias->empty()) {
-            throw std::runtime_error(BuildAliasFieldPath(
-                                     child_file.relative_path.generic_string(),
-                                     groups, alias_key) +
-                                 " must contain only non-empty strings.");
-          }
-          const auto [existing_it, inserted] =
-              alias_sources.emplace(*group_alias, child_file.relative_path);
-          if (!inserted) {
-            throw std::runtime_error(
-                "Duplicate alias key `" + *group_alias +
-                "` across alias child files: " +
-                existing_it->second.generic_string() + " and " +
-                child_file.relative_path.generic_string());
-          }
-          definition.expanded_entries.push_back({
-              .alias_key = *group_alias,
-              .canonical_value =
-                  BuildCanonicalGroupValue(child_file.parent, groups),
-              .source_path = child_file.relative_path,
-          });
-        }
-        continue;
-      }
-
-      const auto leaf_value = alias_value_node.value<std::string>();
-      if (!leaf_value.has_value() || leaf_value->empty()) {
-        throw std::runtime_error(BuildAliasFieldPath(
-                                     child_file.relative_path.generic_string(),
-                                     groups, alias_key) +
-                                 " must be a non-empty string.");
-      }
-
-      const auto [existing_it, inserted] =
-          alias_sources.emplace(alias_key, child_file.relative_path);
-      if (!inserted) {
-        throw std::runtime_error(
-            "Duplicate alias key `" + alias_key + "` across alias child files: " +
-            existing_it->second.generic_string() + " and " +
-            child_file.relative_path.generic_string());
-      }
-
-      definition.expanded_entries.push_back({
-          .alias_key = alias_key,
-          // Canonical paths stay underscore-joined for converter/query flows.
-          .canonical_value =
-              BuildCanonicalValue(child_file.parent, groups, *leaf_value),
-          .source_path = child_file.relative_path,
-      });
+  std::unordered_map<std::string, AliasSourceLocation> alias_sources;
+  const auto add_expanded_alias =
+      [&](const AliasMappingChildFile& child_file,
+          const AliasDocumentAlias& alias, std::string_view canonical) -> void {
+    const auto [existing_it, inserted] = alias_sources.emplace(
+        alias.value, AliasSourceLocation{child_file.absolute_path,
+                                         alias.source.line,
+                                         alias.source.column});
+    if (!inserted) {
+      throw std::runtime_error(BuildTomlDiagnostic(
+          child_file.absolute_path, alias.source,
+          "Duplicate alias key `" + alias.value + "`; first defined at " +
+              BuildTomlDiagnostic(existing_it->second.path,
+                                  existing_it->second.line,
+                                  existing_it->second.column, "here")));
     }
-          };
+    definition.expanded_entries.push_back({
+        .alias_key = alias.value,
+        .canonical_value = std::string(canonical),
+        .source_path = child_file.relative_path,
+    });
+  };
 
   for (const fs::path& relative_path : relative_paths) {
     const fs::path absolute_path = normalized_alias_directory / relative_path;
@@ -275,25 +249,18 @@ inline auto LoadAliasMappingDefinition(const fs::path& alias_directory_path,
       throw std::runtime_error(
           BuildAliasChildParseHint(relative_path, error.what()));
     }
-    const auto parent = child_tbl["parent"].value<std::string>();
-    if (!parent.has_value() || parent->empty()) {
-      throw std::runtime_error("Alias child file must contain a non-empty "
-                               "`parent` string: " +
-                               relative_path.generic_string());
-    }
-
-    const toml::table* aliases_tbl = child_tbl["aliases"].as_table();
-    if (aliases_tbl == nullptr) {
-      throw std::runtime_error("Alias child file must contain an `aliases` "
-                               "table: " +
-                               relative_path.generic_string());
+    AliasDocument document;
+    try {
+      document = ParseAliasDocument(child_tbl);
+    } catch (const AliasDocumentParseError& error) {
+      throw std::runtime_error(
+          BuildTomlDiagnostic(absolute_path, error.source(), error.what()));
     }
 
     // Read a child file as:
     //   parent -> top-level canonical segment
     //   aliases.<group path> -> middle canonical segments
-    //   alias key -> user-authored token
-    //   string leaf -> canonical leaf segment
+    //   canonical leaf key -> user-authored alias string array
     // `parent` owns the top-level segment; nested alias tables contribute the
     // middle path segments before the string leaf becomes the canonical tail.
     // Child files therefore define the top-level ownership boundary, while the
@@ -302,11 +269,16 @@ inline auto LoadAliasMappingDefinition(const fs::path& alias_directory_path,
     definition.child_files.push_back({
         .relative_path = relative_path,
         .absolute_path = absolute_path,
-        .parent = *parent,
+        .parent = document.parent,
     });
 
-    std::vector<std::string> groups;
-    expand_alias_table(*aliases_tbl, definition.child_files.back(), groups);
+    for (const auto& canonical_node :
+         CollectAliasDocumentCanonicalNodes(document)) {
+      for (const auto& alias : canonical_node.node->aliases) {
+        add_expanded_alias(definition.child_files.back(), alias,
+                           canonical_node.canonical);
+      }
+    }
   }
 
   return definition;

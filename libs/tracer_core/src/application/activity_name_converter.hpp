@@ -43,6 +43,14 @@ class ActivityNameTextConverter {
       const std::unordered_map<std::string, std::string>& replacements) const
       -> std::string;
 
+  // Replaces only supplied authored alias tokens in event names. This is used
+  // when an alias is renamed and historical TXT must remain parseable under
+  // the updated alias document.
+  [[nodiscard]] auto ReplaceAliasNames(
+      std::string_view text,
+      const std::unordered_map<std::string, std::string>& replacements) const
+      -> std::string;
+
  private:
   [[nodiscard]] auto ConvertEventLine(
       std::string_view line, ActivityNameMappingDirection direction) const

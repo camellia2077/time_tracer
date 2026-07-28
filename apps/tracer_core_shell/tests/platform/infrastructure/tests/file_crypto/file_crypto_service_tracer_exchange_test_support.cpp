@@ -46,7 +46,8 @@ auto BuildValidPackageEntries(
     const std::vector<PayloadFixture>& alias_child_configs)
     -> std::vector<exchange_pkg::TracerExchangePackageEntry> {
   std::vector<PayloadFixture> sorted_alias_child_configs = alias_child_configs;
-  std::sort(sorted_alias_child_configs.begin(), sorted_alias_child_configs.end(),
+  std::sort(sorted_alias_child_configs.begin(),
+            sorted_alias_child_configs.end(),
             [](const PayloadFixture& left, const PayloadFixture& right) {
               return left.relative_path < right.relative_path;
             });
@@ -75,9 +76,8 @@ auto BuildValidPackageEntries(
   for (const auto report_path : exchange_pkg::kReportMarkdownPackagePaths) {
     const fs::path asset_relative =
         fs::path("assets/tracer_core") / fs::path(report_path);
-    entries.push_back(
-        BuildEntry(report_path,
-                   ReadRepoConverterConfig(asset_relative.generic_string())));
+    entries.push_back(BuildEntry(
+        report_path, ReadRepoConverterConfig(asset_relative.generic_string())));
   }
   for (const auto& alias_child : sorted_alias_child_configs) {
     entries.push_back(BuildEntry(alias_child.relative_path, alias_child.text));
@@ -158,13 +158,13 @@ auto BuildDefaultAliasChildConfigs() -> std::vector<PayloadFixture> {
 
 auto BuildRepoAliasChildConfigs() -> std::vector<PayloadFixture> {
   const std::vector<std::string> relative_paths = {
-      "assets/tracer_core/config/aliases/meal.toml",
-      "assets/tracer_core/config/aliases/recreation.toml",
-      "assets/tracer_core/config/aliases/routine.toml",
-      "assets/tracer_core/config/aliases/sleep.toml",
-      "assets/tracer_core/config/aliases/rest.toml",
-      "assets/tracer_core/config/aliases/exercise.toml",
-      "assets/tracer_core/config/aliases/study.toml",
+      "assets/tracer_core/config_test/aliases/meal.toml",
+      "assets/tracer_core/config_test/aliases/recreation.toml",
+      "assets/tracer_core/config_test/aliases/routine.toml",
+      "assets/tracer_core/config_test/aliases/sleep.toml",
+      "assets/tracer_core/config_test/aliases/rest.toml",
+      "assets/tracer_core/config_test/aliases/exercise.toml",
+      "assets/tracer_core/config_test/aliases/study.toml",
   };
 
   std::vector<PayloadFixture> entries;
@@ -173,8 +173,7 @@ auto BuildRepoAliasChildConfigs() -> std::vector<PayloadFixture> {
     const fs::path relative_fs_path(relative_path);
     entries.push_back({
         .relative_path =
-            (fs::path("config") / "aliases" /
-             relative_fs_path.filename())
+            (fs::path("config") / "aliases" / relative_fs_path.filename())
                 .generic_string(),
         .text = ReadRepoConverterConfig(relative_path),
     });

@@ -65,6 +65,8 @@ class TestRunCliDispatchCoreBuildVerify(RunCliDispatchTestBase):
                     "android_style",
                     "--profile",
                     "android_ci",
+                    "--config-profile",
+                    "test",
                 ]
             )
 
@@ -72,6 +74,20 @@ class TestRunCliDispatchCoreBuildVerify(RunCliDispatchTestBase):
             FakeBuildCommand.last_kwargs["profile_name"],
             ["android_style", "android_ci"],
         )
+
+    def test_build_rejects_tracer_android_without_config_profile(self):
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        with patch.object(
+            sys,
+            "argv",
+            ["run.py", "build", "--app", "tracer_android", "--profile", "android_edit"],
+        ), redirect_stdout(stdout), redirect_stderr(stderr):
+            rc = self.run_module.main()
+
+        self.assertEqual(rc, 2)
+        self.assertIn("requires `--config-profile distribution|test`", stderr.getvalue())
+        self.assertEqual(stdout.getvalue(), "")
 
     def test_build_dispatches_concise_and_kill_build_procs(self):
         class FakeBuildCommand:
@@ -209,7 +225,16 @@ class TestRunCliDispatchCoreBuildVerify(RunCliDispatchTestBase):
         with patch.object(
             sys,
             "argv",
-            ["run.py", "build", "--app", "tracer_android", "--build-dir", "build_fast"],
+            [
+                "run.py",
+                "build",
+                "--app",
+                "tracer_android",
+                "--build-dir",
+                "build_fast",
+                "--config-profile",
+                "test",
+            ],
         ), redirect_stdout(stdout), redirect_stderr(stderr):
             rc = self.run_module.main()
 

@@ -25,7 +25,7 @@ Detailed navigation for the shared bridge-helper library.
 
 1. `tracer_core_bridge_common` may help shared bridge-side envelope handling, but
    it does not own TXT runtime action schemas or month-TXT day-block rules.
-2. `tracer_core_runtime_txt_json` semantic ownership remains in `tracer_core`.
+2. `tracer_core_runtime_config_json` semantic ownership remains in `tracer_core`.
 3. Transport-level JSON envelope ownership remains in `tracer_transport`.
 
 ## Allowed Dependencies

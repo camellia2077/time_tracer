@@ -1,0 +1,64 @@
+# config/config.toml
+
+[system]
+error_log = "../output/error_log.txt"
+export_root = "exported_reports"
+save_processed_output = true
+date_check_continuity = true
+
+[defaults]
+db_path = "output/db/time_data.sqlite3"
+output_root = "output"
+default_format = "md"
+
+[commands.export]
+format = "md"
+
+[commands.convert]
+# date_check: none | continuity | full
+# continuity: 仅检查 1号到“当前最大已记录日期”的连续性（允许未覆盖到月底）
+# full: 检查 1号到月底的完整性（包含连续性要求）
+date_check = "continuity"
+
+# 校验原始 TXT 结构与基础规则（年/月/日/事件格式、顺序、可识别活动等），确保可解析/可转换
+validate_structure = true
+
+# 校验转换后的业务逻辑（日期连续/完整性、活动时长>0且不超过16小时、每天活动数等）
+validate_logic = true
+
+save_processed_output = true
+
+[commands.query]
+format = "md"
+
+[commands.ingest]
+date_check = "continuity"
+save_processed_output = true
+
+[commands.validate-logic]
+date_check = "none"
+
+[converter]
+# Converter system config and main loader entry point.
+main_config = "aliases/_system.toml"
+
+[reports.typst]
+day = "reports/typst/day.toml"
+month = "reports/typst/month.toml"
+period = "reports/typst/period.toml"
+week = "reports/typst/week.toml"
+year = "reports/typst/year.toml"
+
+[reports.latex]
+day = "reports/latex/day.toml"
+month = "reports/latex/month.toml"
+period = "reports/latex/period.toml"
+week = "reports/latex/week.toml"
+year = "reports/latex/year.toml"
+
+[reports.markdown]
+day = "reports/markdown/en/day.toml"
+month = "reports/markdown/en/month.toml"
+period = "reports/markdown/en/period.toml"
+week = "reports/markdown/en/week.toml"
+year = "reports/markdown/en/year.toml"

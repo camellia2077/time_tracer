@@ -180,7 +180,7 @@ of those behavioral rules.
    marker input, and editor visibility.
 2. Android runtime client/service converts that state into TXT runtime action
    requests.
-3. JNI forwards the request to `tracer_core_runtime_txt_json`.
+3. JNI forwards the request to `tracer_core_runtime_config_json`.
 4. Shell C ABI routes the action into pipeline-owned TXT DTO/workflow helpers.
 5. `tracer_core` resolves or replaces the target day block and returns JSON for
    Android rendering and save gating.
@@ -189,7 +189,7 @@ of those behavioral rules.
 
 1. CLI parses arguments and reads the target TXT file locally.
 2. CLI host code infers `selected_month` from the filename when possible.
-3. CLI sends the full month content to `tracer_core_runtime_txt_json`.
+3. CLI sends the full month content to `tracer_core_runtime_config_json`.
 4. Core pipeline TXT semantics resolve the requested block.
 5. CLI prints `day_body` or reports a host-formatted error without re-encoding
    the month-TXT business rules locally.

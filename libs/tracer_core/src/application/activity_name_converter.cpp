@@ -162,6 +162,34 @@ auto ActivityNameTextConverter::ReplaceCanonicalNames(
   return replaced;
 }
 
+auto ActivityNameTextConverter::ReplaceAliasNames(
+    const std::string_view text,
+    const std::unordered_map<std::string, std::string>& replacements) const
+    -> std::string {
+  const std::string canonical_text =
+      tracer::core::shared::canonical_text::RequireCanonicalText(
+          text, "alias activity replacement input");
+
+  std::string replaced;
+  replaced.reserve(canonical_text.size());
+  std::size_t line_start = 0;
+  while (line_start < canonical_text.size()) {
+    const std::size_t newline = canonical_text.find('\n', line_start);
+    const std::size_t line_end =
+        newline == std::string::npos ? canonical_text.size() : newline;
+    replaced += ReplaceCanonicalNamesInEventLine(
+        std::string_view(canonical_text).substr(line_start,
+                                                 line_end - line_start),
+        replacements);
+    if (newline == std::string::npos) {
+      break;
+    }
+    replaced.push_back('\n');
+    line_start = newline + 1;
+  }
+  return replaced;
+}
+
 auto ActivityNameTextConverter::ConvertEventLine(
     const std::string_view line,
     const ActivityNameMappingDirection direction) const -> std::string {

@@ -7,8 +7,8 @@ This document defines the business rules for converter alias mapping under
 
 It answers:
 
-1. what an alias key means
-2. what a canonical activity path means
+1. what a canonical leaf key means
+2. what an alias array means
 3. which duplicate patterns are allowed or rejected
 4. what alias mapping is responsible for, and what it is not responsible for
 
@@ -31,18 +31,28 @@ Those concerns belong to later conversion, persistence, and query stages.
 
 ## Terminology
 
-### Alias key
+### Canonical leaf key
 
-The left-hand value authored by the user in TXT input.
+The left-hand key in a normal alias entry. It is the canonical leaf segment;
+the parent and nested table path are used to build the full canonical activity
+path.
 
-Examples:
+Example:
 
 ```toml
-"zh" = "recreation_online-platforms_zhihu"
-"zhihu" = "recreation_online-platforms_zhihu"
+parent = "recreation"
+
+[aliases.online-platforms]
+"zhihu" = ["zhihu", "知乎"]
 ```
 
-Here, `zh` and `zhihu` are alias keys.
+Here, `zhihu` is the canonical leaf key and `zhihu` plus `知乎` are aliases.
+
+### Alias array
+
+The right-hand value of a normal alias entry. It must be a non-empty array of
+non-empty strings. Each string is a user-authored token that resolves to the
+canonical path represented by the left-hand key.
 
 ### Canonical activity path
 
@@ -57,9 +67,9 @@ Examples:
 
 ## Rules
 
-### 1. Every alias key must be globally unambiguous
+### 1. Every alias must be globally unambiguous
 
-A given alias key must always resolve to exactly one canonical activity path.
+A given alias must always resolve to exactly one canonical activity path.
 
 This is required so that TXT parsing can deterministically map an authored
 activity token to one and only one canonical result.
@@ -67,15 +77,18 @@ activity token to one and only one canonical result.
 Allowed:
 
 ```toml
-"zh" = "recreation_online-platforms_zhihu"
-"zhihu" = "recreation_online-platforms_zhihu"
+[aliases.online-platforms]
+"zhihu" = ["zhihu", "知乎"]
 ```
 
 Rejected:
 
 ```toml
-"zhihu" = "recreation_online-platforms_zhihu"
-"zhihu" = "game_overwatch"
+[aliases.online-platforms]
+"zhihu" = ["zhihu"]
+
+[aliases.game]
+"overwatch" = ["zhihu"]
 ```
 
 ### 2. Canonical activity paths do not need to be unique
@@ -88,24 +101,36 @@ same activity.
 Allowed:
 
 ```toml
-"zh" = "recreation_online-platforms_zhihu"
-"zhihu" = "recreation_online-platforms_zhihu"
+"zhihu" = ["zh", "zhihu"]
 ```
 
-### 3. Duplicate alias keys are always rejected
+### 3. Duplicate aliases are always rejected
 
-Duplicate alias keys are rejected strictly, even if the right-hand value is
-identical.
+Duplicate aliases are rejected strictly, even if they appear under the same
+canonical key or resolve to the same canonical path.
 
 Example of rejected redundant configuration:
 
 ```toml
-"zhihu" = "recreation_online-platforms_zhihu"
-"zhihu" = "recreation_online-platforms_zhihu"
+"zhihu" = ["zhihu", "zhihu"]
 ```
 
 This rule exists because repeated declarations are treated as accidental
 redundancy rather than useful configuration.
+
+### 4. Only the new canonical-keyed shape is accepted
+
+Normal entries must use a canonical leaf key and a non-empty string array:
+
+```toml
+"rest" = ["rest", "休息", "r"]
+```
+
+The legacy alias-to-canonical scalar shape is invalid and is not supported:
+
+```toml
+"休息" = "rest"
+```
 
 ## TOML Shape
 
@@ -119,15 +144,14 @@ Example:
 parent = "recreation"
 
 [aliases.online-platforms]
-"zh" = "zhihu"
-"zhihu" = "zhihu"
+"zhihu" = ["zh", "zhihu"]
 ```
 
 This expands to:
 
-```toml
-"zh" = "recreation_online-platforms_zhihu"
-"zhihu" = "recreation_online-platforms_zhihu"
+```text
+"zh" -> "recreation_online-platforms_zhihu"
+"zhihu" -> "recreation_online-platforms_zhihu"
 ```
 
 ## How To Read A Child File
@@ -139,9 +163,9 @@ A child file should be read in four layers:
 2. table path under `aliases.*`
    - the middle grouping segments under that parent
 3. left-hand key
-   - the user-authored alias key
-4. right-hand value
    - the canonical leaf segment
+4. right-hand array
+   - the user-authored aliases
 
 Example:
 
@@ -149,15 +173,15 @@ Example:
 parent = "study"
 
 [aliases.math.calculus]
-"不定积分" = "indefinite-integral"
+"indefinite-integral" = ["不定积分"]
 ```
 
 This should be read as:
 
 1. top-level parent: `study`
 2. middle group path: `math.calculus`
-3. alias key: `不定积分`
-4. canonical leaf: `indefinite-integral`
+3. canonical leaf: `indefinite-integral`
+4. aliases: `不定积分`
 
 The final canonical activity path is:
 
@@ -195,26 +219,20 @@ These two forms are semantically equivalent:
 parent = "recreation"
 
 [aliases.online-platforms]
-"zhihu" = "zhihu"
-"知乎" = "zhihu"
-"douyin" = "douyin"
-"抖音" = "douyin"
-"bilibili" = "bilibili"
-"哔哩哔哩" = "bilibili"
-"weibo" = "weibo"
+"zhihu" = ["zhihu", "知乎"]
+"douyin" = ["douyin", "抖音"]
+"bilibili" = ["bilibili", "哔哩哔哩"]
+"weibo" = ["weibo"]
 ```
 
 ```toml
 parent = "recreation"
 
 [aliases.online-platforms]
-"weibo" = "weibo"
-"抖音" = "douyin"
-"zhihu" = "zhihu"
-"哔哩哔哩" = "bilibili"
-"知乎" = "zhihu"
-"bilibili" = "bilibili"
-"douyin" = "douyin"
+"weibo" = ["weibo"]
+"douyin" = ["douyin", "抖音"]
+"zhihu" = ["zhihu", "知乎"]
+"bilibili" = ["bilibili", "哔哩哔哩"]
 ```
 
 ### 3. Reordering is allowed, duplicate alias keys are not
@@ -227,17 +245,15 @@ This is still rejected:
 parent = "recreation"
 
 [aliases.online-platforms]
-"weibo" = "weibo"
-"zhihu" = "zhihu"
-"weibo" = "weibo"
+"weibo" = ["weibo", "weibo"]
 ```
 
-The problem here is not ordering. The problem is that the alias key `weibo`
-was declared twice.
+The problem here is not ordering. The alias `weibo` was declared twice in the
+same array.
 
 ## Expansion Rule
 
-String leaves under `aliases` expand as:
+Each alias string in a normal array under `aliases` expands as:
 
 `parent + "_" + nested_table_segments + "_" + leaf_value`
 
@@ -245,9 +261,20 @@ Root-level `aliases` leaves omit the middle group portion.
 
 Examples:
 
-1. `parent = "meal"` and `"饭" = "dining"` -> `meal_dining`
-2. `parent = "recreation"` and `[aliases.game] "overwatch" = "overwatch"`
+1. `parent = "meal"` and `"dining" = ["饭"]` -> `meal_dining`
+2. `parent = "recreation"` and `[aliases.game] "overwatch" = ["守望先锋"]`
    -> `recreation_game_overwatch`
+
+Group aliases use the same global uniqueness rule and may contain multiple
+recordable names for one group:
+
+```toml
+[aliases.cardio]
+group_aliases = ["有氧训练", "有氧"]
+```
+
+Each group alias resolves to the canonical group path. A group alias cannot
+also appear in another group or in a normal alias array.
 
 For the category promotion, alias move, TXT replacement, and database rebuild
 rules built on this expansion, see [Activity Alias Hierarchy Migration](activity_alias_hierarchy_migration.md).
@@ -296,6 +323,15 @@ Example:
 
 This rule exists because of TOML syntax, not because alias mapping itself has
 special timing, persistence, or query semantics.
+
+## Plaintext Tree Rendering
+
+Core can render one alias child TOML file as plaintext for hierarchy
+inspection. The basic mode prints canonical node names only. The alias mode
+also prints `aliases` on normal leaves and `group_aliases` on recordable groups.
+Aliases remain attributes of their canonical node; they are not rendered as
+additional tree nodes. The renderer does not modify TOML, TXT, or the database
+and does not provide a JSON configuration-conversion format.
 
 ## Downstream Relationship
 

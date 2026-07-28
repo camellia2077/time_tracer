@@ -9,7 +9,7 @@ from pathlib import Path
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Sync Android debug runtime input/full seed TXT files from canonical test/data."
+        description="Sync Android test runtime input TXT files from canonical test/data."
     )
     parser.add_argument(
         "--source-root",
@@ -17,9 +17,9 @@ def parse_args() -> argparse.Namespace:
         help="Canonical source root (default: test/data).",
     )
     parser.add_argument(
-        "--android-input-full-root",
-        default="apps/android/runtime/build/generated/tracer/runtime/debug/assets/tracer_core/input/full",
-        help="Android debug assets input/full root.",
+        "--android-input-root",
+        default="apps/android/runtime/build/generated/tracer/runtime/debug/assets/tracer_core/input",
+        help="Android test assets input root.",
     )
     parser.add_argument(
         "--apply",
@@ -61,7 +61,7 @@ def main() -> int:
         raise SystemExit("One mode is required: use --apply or --check.")
 
     source_root = Path(args.source_root).resolve()
-    target_root = Path(args.android_input_full_root).resolve()
+    target_root = Path(args.android_input_root).resolve()
 
     if not source_root.exists():
         raise SystemExit(f"Missing source root: {source_root}")
@@ -69,6 +69,11 @@ def main() -> int:
 
     source_files = collect_txt_files(source_root)
     target_files = collect_txt_files(target_root)
+
+    legacy_full_root = target_root / "full"
+    legacy_files: list[Path] = []
+    if legacy_full_root.is_dir():
+        legacy_files = sorted(path for path in legacy_full_root.rglob("*") if path.is_file())
 
     to_copy: list[str] = []
     for rel, src_path in source_files.items():
@@ -88,6 +93,9 @@ def main() -> int:
                 continue
             if rel_parts[0] in managed_years and rel not in source_files:
                 to_remove.append(rel)
+
+    legacy_rel_files = [path.relative_to(target_root).as_posix() for path in legacy_files]
+    to_remove.extend(rel for rel in legacy_rel_files if rel not in to_remove)
 
     if not to_copy and not to_remove:
         print("--- sync input: no drift")
@@ -111,6 +119,8 @@ def main() -> int:
         dst = target_root / rel
         if dst.exists():
             dst.unlink()
+    if legacy_full_root.is_dir():
+        shutil.rmtree(legacy_full_root)
 
     print("--- sync input: applied")
     return 0

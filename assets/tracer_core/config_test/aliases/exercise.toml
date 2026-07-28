@@ -1,0 +1,37 @@
+parent = "exercise"
+
+[aliases]
+"go" = ["围棋"]
+"pilates" = ["普拉提"]
+"yoga" = ["瑜伽"]
+
+[aliases.cardio]
+group_aliases = ["有氧训练","有氧"]
+"swimming" = ["游泳"]
+"cycling" = ["骑行"]
+
+[aliases.cardio.running]
+group_aliases = ["跑步"]
+"track-running" = ["操场跑"]
+"treadmill" = ["跑步机"]
+"treadmill-incline" = ["跑步机爬坡"]
+
+[aliases.strength-training]
+group_aliases = ["无氧训练"]
+
+[aliases.strength-training.pull]
+group_aliases = ["拉"]
+"pull-up" = ["引体"]
+"barbell-row" = ["杠铃划船"]
+
+[aliases.strength-training.push]
+group_aliases = ["推"]
+"bench-press" = ["卧推"]
+"overhead-press" = ["站姿杠铃肩推"]
+"dips" = ["臂屈伸"]
+
+[aliases.strength-training.squat]
+group_aliases = ["蹲"]
+"squat" = ["深蹲"]
+"deadlift" = ["硬拉"]
+"front-squat" = ["颈前深蹲"]
