@@ -35,7 +35,7 @@ endforeach()
 set(CONVERTER_CONFIG_FILES)
 
 foreach(FILENAME ${CONVERTER_CONFIG_FILES})
-    set(SRC "${CMAKE_CURRENT_SOURCE_DIR}/../../../assets/tracer_core/config/${FILENAME}")
+    set(SRC "${CMAKE_CURRENT_SOURCE_DIR}/../../../assets/tracer_core/config_test/${FILENAME}")
     set(DEST "${CONVERTER_DEST_DIR}/${FILENAME}")
 
     add_custom_command(
@@ -60,7 +60,7 @@ set(CONVERTER_ALIAS_FILES
 )
 
 foreach(FILENAME ${CONVERTER_ALIAS_FILES})
-    set(SRC "${CMAKE_CURRENT_SOURCE_DIR}/../../../assets/tracer_core/config/aliases/${FILENAME}")
+    set(SRC "${CMAKE_CURRENT_SOURCE_DIR}/../../../assets/tracer_core/config_test/aliases/${FILENAME}")
     set(DEST "${CONVERTER_ALIASES_DEST_DIR}/${FILENAME}")
 
     add_custom_command(
