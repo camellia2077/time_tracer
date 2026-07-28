@@ -24,7 +24,7 @@ internal class RuntimeCanonicalCatalogQueryDelegate(
                     )
                 }
 
-                val aliasFiles = listResult.converterFiles
+                val aliasFiles = listResult.aliasFiles
                     .filter { entry ->
                         entry.relativePath.startsWith("aliases/") &&
                             entry.relativePath != SYSTEM_ALIAS_CONFIG_PATH

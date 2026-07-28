@@ -84,7 +84,6 @@ internal fun ReportChartResultContent(
     onChartRootChange: (String) -> Unit,
     onChartShowAverageLineChange: (Boolean) -> Unit,
     onChartVisualModeChange: (ReportChartVisualMode) -> Unit,
-    onLoadChart: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val normalizedSemanticMode = chartSemanticMode.normalizeForReportMode(reportMode)
@@ -133,18 +132,13 @@ internal fun ReportChartResultContent(
             chartSemanticMode = normalizedSemanticMode,
             rootOptions = rootOptions,
             trendChartSelectedRoot = trendChartSelectedRoot,
-            chartLoading = if (normalizedSemanticMode == ReportChartSemanticMode.TREND) {
-                trendChartLoading
-            } else {
-                compositionChartLoading
-            },
-            onChartRootChange = onChartRootChange,
-            onLoadChart = onLoadChart
+            onChartRootChange = onChartRootChange
         )
 
         if (normalizedSemanticMode == ReportChartSemanticMode.TREND) {
             ReportChartVisualizationSection(
                 chartError = trendChartError,
+                chartLoading = trendChartLoading,
                 reportMode = reportMode,
                 sortedChartPoints = sortedChartPoints,
                 chartFromDateIso = trendChartRenderModel?.fromDateIso,

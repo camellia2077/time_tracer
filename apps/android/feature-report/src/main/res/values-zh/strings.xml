@@ -9,9 +9,9 @@
     <string name="report_result_mode_text">文字</string>
     <string name="report_result_mode_chart">图表</string>
 
-    <string name="report_title_mode_parameters">%1$s 参数</string>
-    <string name="report_parameter_section_day">日报</string>
-    <string name="report_parameter_section_tree">树</string>
+    <string name="report_title_mode_parameters">日期选择</string>
+    <string name="report_parameter_section_day">日期</string>
+    <string name="report_parameter_section_tree">活动层级</string>
     <string name="report_parameter_section_timeline">时间线</string>
     <string name="report_parameter_section_markdown">md</string>
     <string name="report_title_report_date">报表日期</string>
@@ -26,8 +26,8 @@
 
     <string name="report_action_loading">加载中...</string>
 
-    <string name="report_title_project_tree_parameters">项目树参数</string>
-    <string name="report_section_tree">树</string>
+    <string name="report_title_project_tree_parameters">活动层级</string>
+    <string name="report_section_tree">活动层级</string>
     <string name="report_label_tree_level">显示层级</string>
     <string name="report_tree_level_all">全部层级</string>
     <string name="report_tree_level_number">第 %1$d 层</string>
@@ -35,10 +35,10 @@
     <string name="report_tree_sort_duration_asc">时长：从低到高</string>
 
     <string name="report_chart_semantic_trend">趋势</string>
-    <string name="report_chart_semantic_composition">分布</string>
-    <string name="report_label_chart_root">根节点</string>
-    <string name="report_chart_root_all">全部根节点</string>
-    <string name="report_chart_composition_scope_hint">分布图会使用当前时间范围内的全部根节点。</string>
+    <string name="report_chart_semantic_composition">构成</string>
+    <string name="report_label_chart_root">顶层活动</string>
+    <string name="report_chart_root_all">全部顶层活动</string>
+    <string name="report_chart_composition_scope_hint">活动分布包含所选时间范围内的全部顶层活动。</string>
     <string name="report_label_chart_lookback_days">最近天数 (N)</string>
     <string name="report_label_chart_date_filter_mode">日期筛选方式</string>
     <string name="report_chart_date_mode_lookback">最近天数</string>
@@ -47,9 +47,9 @@
     <string name="report_action_chart_loading">图表加载中...</string>
     <string name="report_chart_empty">当前范围暂无图表数据。</string>
     <string name="report_chart_empty_in_range">所选日期范围暂无图表数据。</string>
-    <string name="report_chart_empty_composition">当前范围暂无分布数据。</string>
+    <string name="report_chart_empty_composition">当前范围暂无活动分布数据。</string>
     <string name="report_label_chart_visual">图表类型</string>
-    <string name="report_label_chart_measure">分布统计方式</string>
+    <string name="report_label_chart_measure">统计指标</string>
     <string name="report_label_select_year_month">选择年份和月份</string>
     <string name="report_sheet_select_year_month">选择年份和月份</string>
     <string name="report_sheet_select_year">选择年份</string>
@@ -67,21 +67,21 @@
     <string name="report_chart_range_error_invalid_end">结束日期无效。</string>
     <string name="report_chart_range_error_order">日期范围无效，开始日期必须小于或等于结束日期。</string>
     <string name="report_chart_visual_line">折线图</string>
-    <string name="report_chart_visual_bar">纵向柱状图</string>
-    <string name="report_chart_visual_composition_pie">饼</string>
-    <string name="report_chart_visual_composition_bar">条</string>
-    <string name="report_chart_visual_composition_treemap">树</string>
-    <string name="report_chart_measure_duration">时长</string>
-    <string name="report_chart_measure_frequency">频率</string>
+    <string name="report_chart_visual_bar">柱状图</string>
+    <string name="report_chart_visual_composition_pie">饼图</string>
+    <string name="report_chart_visual_composition_bar">横向条形图</string>
+    <string name="report_chart_visual_composition_treemap">矩形占比图</string>
+    <string name="report_chart_measure_duration">活动时长</string>
+    <string name="report_chart_measure_frequency">记录次数</string>
     <string name="report_chart_visual_heatmap">热力图</string>
-    <string name="report_chart_pie_hint">点击扇区查看根节点、时长和占比。</string>
-    <string name="report_chart_pie_drilldown_hint">点击有子节点的扇区或图例行进入对应活动层级。</string>
+    <string name="report_chart_pie_hint">点击扇区查看活动、活动时长和占比。</string>
+    <string name="report_chart_pie_drilldown_hint">点击包含下级活动的扇区或图例行，打开对应活动层级。</string>
     <string name="report_chart_pie_drilldown_path">当前层级：%1$s</string>
     <string name="report_chart_pie_drilldown_back">返回 %1$s</string>
-    <string name="report_chart_pie_drilldown_summary">可逐层点击活动树，查看每一层的时间占比。</string>
-    <string name="report_chart_composition_bar_hint">点击条目查看根节点、时长和占比。</string>
-    <string name="report_chart_bar_drilldown_hint">点击有子节点的条目进入下一个活动层级。</string>
-    <string name="report_chart_composition_treemap_hint">点击矩形块或图例行查看活动、时长和占比；点击有子节点的内容可进入下一层。</string>
+    <string name="report_chart_pie_drilldown_summary">可逐层点击活动层级，查看每一层的时间占比。</string>
+    <string name="report_chart_composition_bar_hint">点击条目查看活动、活动时长和占比。</string>
+    <string name="report_chart_bar_drilldown_hint">点击包含下级活动的条目，打开下一个活动层级。</string>
+    <string name="report_chart_composition_treemap_hint">点击矩形块或图例行查看活动、活动时长和占比；点击包含下级活动的内容可继续查看下一层。</string>
     <string name="report_chart_heatmap_hint">点击日期方格查看日期和时长。</string>
     <string name="report_chart_heatmap_multi_month_hint">所有月份共用同一色阶，可直接比较。</string>
     <string name="report_chart_heatmap_theme_policy_label">热力图主题</string>
@@ -93,12 +93,12 @@
     <string name="report_chart_toggle_average_line">显示平均线</string>
     <string name="report_chart_average_duration">平均时长：%1$s</string>
     <string name="report_chart_total_duration">总时长：%1$s</string>
-    <string name="report_chart_total_frequency">当前层级总次数：%1$d</string>
-    <string name="report_chart_active_roots">活跃根节点：%1$d</string>
+    <string name="report_chart_total_frequency">当前层级记录次数：%1$d</string>
+    <string name="report_chart_active_roots">活跃顶层活动：%1$d</string>
     <string name="report_chart_range_days">区间天数：%1$d</string>
     <string name="report_chart_legacy_fallback_notice">当前使用本地平均值兼容兜底（计划于 v0.3.0 下线）。</string>
     <string name="report_chart_selected_detail">已选点：%1$s · %2$s</string>
-    <string name="report_chart_composition_summary">所选时间范围内的根节点分布。</string>
+    <string name="report_chart_composition_summary">所选时间范围内的顶层活动分布。</string>
     <string name="report_chart_composition_selected_detail">已选中：%1$s · %2$s (%3$.1f%%)</string>
     <string name="report_chart_composition_selected_frequency_detail">已选中：%1$s · %2$d 次 (%3$.1f%%)</string>
 
@@ -124,7 +124,7 @@
     <string name="report_save_activity_remark">保存</string>
     <string name="report_cancel_activity_remark">取消</string>
 
-    <string name="report_subject_tree">树</string>
+    <string name="report_subject_tree">活动层级</string>
 
     <string name="report_status_native_report_running">nativeReportJson(%1$s, md) 运行中...</string>
     <string name="report_status_native_report_result">nativeReportJson(%1$s, md) -&gt; OK=%2$s</string>
@@ -147,7 +147,7 @@
     <string name="report_result_title_report_window_summary">%1$s窗口摘要</string>
     <string name="report_result_title_chart">图表结果</string>
     <string name="report_result_title_analysis_error">分析错误</string>
-    <string name="report_result_title_tree">%1$s树结果</string>
+    <string name="report_result_title_tree">%1$s活动层级</string>
     <string name="report_summary_missing_target_body">所选%1$s目标没有对应的报表数据。</string>
     <string name="report_summary_no_data_body">这一天没有记录活动。</string>
     <string name="report_summary_error_code">错误码：%1$s</string>
@@ -160,7 +160,7 @@
     <string name="report_summary_matched_days">匹配天数：%1$d</string>
     <string name="report_summary_matched_records">匹配记录数：%1$d</string>
 
-    <string name="report_error_tree_level_min">树层级必须 &gt;= -1。</string>
+    <string name="report_error_tree_level_min">活动层级必须 &gt;= -1。</string>
     <string name="report_error_chart_payload_invalid">图表数据载荷无效。</string>
     <string name="report_error_composition_payload_invalid">分布数据载荷无效。</string>
     <string name="report_error_period_argument_required">%1$s 参数在 %2$s 周期下必填。</string>

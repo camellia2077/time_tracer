@@ -57,8 +57,8 @@
     <string name="record_action_record_to_today">今日</string>
     <string name="record_title_record_input">記録入力</string>
     <string name="record_cd_open_txt_preview">TXT プレビューを開く</string>
-    <string name="record_mode_point">Point</string>
-    <string name="record_mode_interval">Interval</string>
+    <string name="record_mode_point">時点</string>
+    <string name="record_mode_interval">計測</string>
     <string name="record_last_recorded_summary">前回:
 %1$s
 %2$s</string>
@@ -77,6 +77,7 @@
     <string name="record_interval_active_title">タイマー実行中</string>
     <string name="record_interval_draft_title">区間を確認</string>
     <string name="record_interval_started_at">開始 %1$s</string>
+    <string name="record_interval_attribution_date">記録日: %1$s</string>
     <string name="record_interval_elapsed">経過 %1$s</string>
     <string name="record_interval_summary">%1$s – %2$s · %3$s</string>
     <string name="record_interval_edit_title">区間時間を編集</string>
@@ -88,7 +89,6 @@
     <string name="record_interval_discard_title">この区間を破棄しますか？</string>
     <string name="record_interval_discard_description">記録した時間は失われます。</string>
     <string name="record_title_quick_access">クイックアクセス</string>
-    <string name="record_hint_long_press_drag_sort">長押ししてドラッグするとクイック活動の順序を並べ替えられます。</string>
     <string name="record_cd_collapse">折りたたむ</string>
     <string name="record_cd_expand">展開</string>
     <string name="record_title_assist_settings">補助設定</string>
@@ -100,12 +100,17 @@
     <string name="record_chip_add_activity">+ %1$s</string>
     <string name="record_chip_remove_activity">%1$s X</string>
     <string name="record_hint_no_quick_activities">クイック活動がありません。検索して「追加」を押してください。</string>
-    <string name="record_action_suggestions">提案</string>
-    <string name="record_suggestions_sheet_title">アクティビティ提案</string>
+    <string name="record_action_suggestions">クイックアクセスに追加する候補</string>
+    <string name="record_suggestions_sheet_title">クイックアクセスへの追加候補</string>
     <string name="record_suggestions_settings_title">提案設定</string>
     <string name="record_canonical_catalog_title">Canonical ブラウザ</string>
-    <string name="record_cd_open_canonical_catalog">Canonical ブラウザを開く</string>
+    <string name="record_cd_open_canonical_catalog">活動を参照してRecord Inputに入力</string>
+    <string name="record_action_browse_quick_access_catalog">追加する活動を参照</string>
+    <string name="record_cd_open_quick_access_catalog">活動を参照してクイックアクセスに追加</string>
+    <string name="record_cd_edit_quick_access">クイックアクセスを編集</string>
     <string name="record_canonical_catalog_description">canonical アクティビティパスを参照して、タップで入力欄へ反映します。</string>
+    <string name="record_canonical_catalog_quick_access_title">クイックアクセス活動を追加</string>
+    <string name="record_canonical_catalog_quick_access_description">活動ツリーを参照し、タップした活動をクイックアクセスに追加します。</string>
     <string name="record_canonical_catalog_loading">canonical カタログを読み込み中...</string>
     <string name="record_canonical_catalog_empty">利用可能な canonical パスがありません。</string>
     <string name="record_canonical_catalog_display_mode_canonical">ブラウザ表示: canonical トークン</string>

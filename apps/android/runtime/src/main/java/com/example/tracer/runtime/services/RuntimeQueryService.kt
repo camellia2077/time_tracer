@@ -19,6 +19,9 @@ internal class RuntimeQueryService(
     suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult =
         queryDelegate.queryProjectTree(params)
 
+    suspend fun queryReportCalendarAvailability(): ReportCalendarAvailabilityResult =
+        queryDelegate.queryReportCalendarAvailability()
+
     suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult =
         queryDelegate.queryReportChart(params)
 

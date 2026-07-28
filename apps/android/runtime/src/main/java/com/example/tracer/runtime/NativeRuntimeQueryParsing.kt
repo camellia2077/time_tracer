@@ -196,6 +196,25 @@ internal fun parseMappingNamesContent(content: String): List<String> {
     }
 }
 
+internal fun parseSemanticListContent(content: String, expectedAction: String): List<String>? {
+    if (content.isBlank()) {
+        return null
+    }
+
+    return try {
+        val payload = JSONObject(content)
+        if (payload.optString("action") != expectedAction ||
+            payload.optString("output_mode") != DataQueryOutputMode.SEMANTIC_JSON
+        ) {
+            return null
+        }
+        val items = payload.optJSONArray("items") ?: return null
+        parseStringArray(items)
+    } catch (_: Exception) {
+        null
+    }
+}
+
 internal fun parseActivityAliasMappingsContent(content: String): List<ActivityAliasMappingEntry> {
     if (content.isBlank()) {
         return emptyList()

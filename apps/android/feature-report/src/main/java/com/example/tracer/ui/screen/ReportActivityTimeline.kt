@@ -43,6 +43,7 @@ internal fun ReportActivityTimeline(
     onUpdateActivityRemark: suspend (ActivityTimelineItem, String) -> RecordActionResult,
     onUpdateDayRemark: suspend (String) -> RecordActionResult
 ) {
+    val colors = reportSemanticColors()
     var editingActivity by remember { mutableStateOf<ActivityTimelineItem?>(null) }
     var draftRemark by remember { mutableStateOf("") }
     var editError by remember { mutableStateOf("") }
@@ -56,7 +57,7 @@ internal fun ReportActivityTimeline(
         Text(
             text = stringResource(R.string.report_result_title_activity_timeline),
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary
+            color = colors.root
         )
         Spacer(modifier = Modifier.height(8.dp))
         report.dayRemark.let { dayRemark ->
@@ -69,7 +70,7 @@ internal fun ReportActivityTimeline(
                     Text(
                         text = stringResource(R.string.report_day_remark_label),
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary
+                        color = colors.child
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
@@ -135,7 +136,7 @@ internal fun ReportActivityTimeline(
                         Box(
                             modifier = Modifier
                                 .size(12.dp)
-                                .background(MaterialTheme.colorScheme.primary, CircleShape)
+                                .background(colors.node, CircleShape)
                         )
                         // This flexible segment represents the activity duration.
                         // Its parent row height is derived from durationSeconds.
@@ -143,7 +144,7 @@ internal fun ReportActivityTimeline(
                             modifier = Modifier
                                 .weight(1f)
                                 .width(2.dp)
-                                .background(MaterialTheme.colorScheme.outlineVariant)
+                                .background(colors.track)
                         )
                         // The hollow node marks the activity end at the bottom of
                         // the same interval.
@@ -152,7 +153,7 @@ internal fun ReportActivityTimeline(
                                 .size(12.dp)
                                 .border(
                                     width = 2.dp,
-                                    color = MaterialTheme.colorScheme.primary,
+                                    color = colors.node,
                                     shape = CircleShape
                                 )
                                 .background(MaterialTheme.colorScheme.surface, CircleShape)
@@ -187,7 +188,7 @@ internal fun ReportActivityTimeline(
                             Text(
                                 text = formatTimelineDuration(activity.durationSeconds),
                                 style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.primary
+                                color = colors.progress
                             )
                             TextButton(
                                 onClick = {

@@ -1,7 +1,9 @@
 package com.example.tracer
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -202,6 +204,90 @@ class QueryReportViewModelChartTest {
     }
 
     @Test
+    fun delayedTrendResult_cannotOverwriteNewerDateSelection() = runTest {
+        val firstResponse = CompletableDeferred<Unit>()
+        val fakeQueryGateway = FakeChartQueryGateway(
+            chartResponder = { params, requestNumber ->
+                if (requestNumber == 1) {
+                    firstResponse.await()
+                    ReportChartQueryResult(
+                        ok = true,
+                        data = ReportChartData(
+                            roots = listOf("sleep"),
+                            selectedRoot = params.root.orEmpty(),
+                            lookbackDays = params.lookbackDays,
+                            points = emptyList()
+                        ),
+                        message = "no chart data"
+                    )
+                } else {
+                    ReportChartQueryResult(
+                        ok = true,
+                        data = ReportChartData(
+                            roots = listOf("study"),
+                            selectedRoot = params.root.orEmpty(),
+                            lookbackDays = params.lookbackDays,
+                            points = listOf(
+                                ReportChartPoint(
+                                    date = "2026-04-13",
+                                    durationSeconds = 3600L
+                                )
+                            )
+                        ),
+                        message = "ok"
+                    )
+                }
+            }
+        )
+        val viewModel = QueryReportViewModel(
+            reportGateway = FakeChartReportGateway(),
+            queryGateway = fakeQueryGateway
+        )
+        viewModel.selectTrendChart()
+        viewModel.onReportModeChange(ReportMode.WEEK)
+        viewModel.onReportWeekChange("202615")
+        viewModel.onResultDisplayModeChange(ReportResultDisplayMode.CHART)
+        runCurrent()
+
+        viewModel.onReportWeekChange("202616")
+        runCurrent()
+        assertEquals(2, fakeQueryGateway.chartQueryCount)
+        assertEquals("2026-04-13", viewModel.uiState.trendChartPoints.single().date)
+
+        firstResponse.complete(Unit)
+        advanceUntilIdle()
+
+        assertEquals("2026-04-13", viewModel.uiState.trendChartPoints.single().date)
+        assertTrue(viewModel.uiState.trendChartError.isEmpty())
+    }
+
+    @Test
+    fun changingReportModeInChartMode_doesNotStartTreeThatCanOverwriteChart() = runTest {
+        val fakeQueryGateway = FakeChartQueryGateway()
+        val viewModel = QueryReportViewModel(
+            reportGateway = FakeChartReportGateway(),
+            queryGateway = fakeQueryGateway
+        )
+        viewModel.applyPersistedReportPresentation(
+            reportMode = ReportMode.WEEK,
+            chartSemanticMode = ReportChartSemanticMode.TREND,
+            resultDisplayMode = ReportResultDisplayMode.CHART,
+            parameterSection = ReportParameterSection.ACTIVITY_HIERARCHY
+        )
+        viewModel.onReportWeekChange("202615")
+        advanceUntilIdle()
+
+        viewModel.onReportModeChange(ReportMode.MONTH)
+        advanceUntilIdle()
+
+        assertEquals(0, fakeQueryGateway.treeQueryCount)
+        assertEquals(3, fakeQueryGateway.chartQueryCount)
+        assertEquals(ReportMode.MONTH, viewModel.uiState.reportMode)
+        assertTrue(!viewModel.uiState.trendChartLoading)
+        assertEquals(2, viewModel.uiState.trendChartPoints.size)
+    }
+
+    @Test
     fun switchToChart_withoutCoreStats_usesDerivedStatsFromPipeline() = runTest {
         val fakeQueryGateway = FakeChartQueryGateway(includeCoreStats = false)
         val viewModel = QueryReportViewModel(
@@ -248,6 +334,114 @@ class QueryReportViewModelChartTest {
             viewModel.uiState.compositionVisualMode
         )
         assertNotNull(viewModel.uiState.compositionChartRenderModel)
+    }
+
+    @Test
+    fun coldStart_appliesPersistedChartSelectionBeforeGeneratingAReport() = runTest {
+        val reportGateway = FakeChartReportGateway()
+        val queryGateway = FakeChartQueryGateway()
+        val viewModel = QueryReportViewModel(
+            reportGateway = reportGateway,
+            queryGateway = queryGateway
+        )
+
+        // The tab-enter callback runs before preference hydration on a cold start.
+        viewModel.onReportTabEntered()
+        // App language is also restored before the report presentation preference group.
+        viewModel.onReportLocaleChange("ja")
+        advanceUntilIdle()
+        assertEquals(0, reportGateway.reportQueryCount)
+        assertEquals(0, queryGateway.compositionQueryCount)
+
+        viewModel.applyPersistedReportPresentation(
+            reportMode = ReportMode.DAY,
+            chartSemanticMode = ReportChartSemanticMode.COMPOSITION,
+            resultDisplayMode = ReportResultDisplayMode.CHART,
+            parameterSection = ReportParameterSection.DAY
+        )
+        advanceUntilIdle()
+
+        assertEquals(0, reportGateway.reportQueryCount)
+        assertEquals(1, queryGateway.compositionQueryCount)
+        assertNotNull(viewModel.uiState.compositionChartRenderModel)
+    }
+
+    @Test
+    fun chartAutoLoadsCompositionAndTrendForEverySupportedReportPeriod() = runTest {
+        ReportMode.entries.forEach { reportMode ->
+            val fakeQueryGateway = FakeChartQueryGateway()
+            val viewModel = QueryReportViewModel(
+                reportGateway = FakeChartReportGateway(),
+                queryGateway = fakeQueryGateway
+            )
+            viewModel.configureValidChartPeriod(reportMode)
+
+            viewModel.onResultDisplayModeChange(ReportResultDisplayMode.CHART)
+            advanceUntilIdle()
+
+            assertEquals(
+                "composition should load automatically for $reportMode",
+                1,
+                fakeQueryGateway.compositionQueryCount
+            )
+            assertNotNull(viewModel.uiState.compositionChartRenderModel)
+
+            if (reportMode != ReportMode.DAY) {
+                // This is the path used when DataStore emits a persisted chart semantic
+                // preference after the Chart display is already visible.
+                viewModel.onPersistedChartSemanticModeChange(ReportChartSemanticMode.TREND)
+                advanceUntilIdle()
+
+                assertEquals(
+                    "trend should load automatically for $reportMode",
+                    1,
+                    fakeQueryGateway.chartQueryCount
+                )
+                assertNotNull(viewModel.uiState.trendChartRenderModel)
+            }
+        }
+    }
+
+    @Test
+    fun returningToReportChart_refreshesEveryReportPeriod() = runTest {
+        ReportMode.entries.forEach { reportMode ->
+            val fakeQueryGateway = FakeChartQueryGateway()
+            val viewModel = QueryReportViewModel(
+                reportGateway = FakeChartReportGateway(),
+                queryGateway = fakeQueryGateway
+            )
+            viewModel.applyPersistedReportPresentation(
+                reportMode = reportMode,
+                chartSemanticMode = ReportChartSemanticMode.COMPOSITION,
+                resultDisplayMode = ReportResultDisplayMode.TEXT,
+                parameterSection = ReportParameterSection.DAY
+            )
+            advanceUntilIdle()
+            viewModel.configureValidChartPeriod(reportMode)
+            viewModel.onResultDisplayModeChange(ReportResultDisplayMode.CHART)
+            advanceUntilIdle()
+
+            if (reportMode != ReportMode.DAY) {
+                viewModel.onPersistedChartSemanticModeChange(ReportChartSemanticMode.TREND)
+                advanceUntilIdle()
+            }
+            viewModel.refreshReportDayDefault()
+            advanceUntilIdle()
+
+            if (reportMode == ReportMode.DAY) {
+                assertEquals(
+                    "returning to Report should regenerate $reportMode composition",
+                    2,
+                    fakeQueryGateway.compositionQueryCount
+                )
+            } else {
+                assertEquals(
+                    "returning to Report should regenerate $reportMode trend",
+                    2,
+                    fakeQueryGateway.chartQueryCount
+                )
+            }
+        }
     }
 
     @Test
@@ -400,23 +594,43 @@ private fun QueryReportViewModel.selectTrendChart() {
     onPersistedChartSemanticModeChange(ReportChartSemanticMode.TREND)
 }
 
+private fun QueryReportViewModel.configureValidChartPeriod(reportMode: ReportMode) {
+    onReportModeChange(reportMode)
+    when (reportMode) {
+        ReportMode.DAY -> onReportDateChange("20260413")
+        ReportMode.WEEK -> onReportWeekChange("202615")
+        ReportMode.MONTH -> onReportMonthChange("202604")
+        ReportMode.YEAR -> onReportYearChange("2026")
+        ReportMode.RANGE -> {
+            onReportRangeStartDateChange("20260410")
+            onReportRangeEndDateChange("20260413")
+        }
+        ReportMode.RECENT -> onReportRecentDaysChange("7")
+    }
+}
+
 private class FakeChartReportGateway : ReportGateway {
+    var reportQueryCount: Int = 0
+
     override suspend fun reportMarkdown(request: TemporalReportQueryRequest): ReportCallResult =
         ReportCallResult(
             initialized = true,
             operationOk = true,
             outputText = "",
             rawResponse = ""
-        )
+        ).also { reportQueryCount += 1 }
 }
 
 private class FakeChartQueryGateway(
-    private val includeCoreStats: Boolean = true
+    private val includeCoreStats: Boolean = true,
+    private val chartResponder: (suspend (ReportChartQueryParams, Int) -> ReportChartQueryResult)? =
+        null
 ) : QueryGateway {
     var chartQueryCount: Int = 0
     var lastChartParams: ReportChartQueryParams? = null
     var compositionQueryCount: Int = 0
     var lastCompositionParams: ReportCompositionQueryParams? = null
+    var treeQueryCount: Int = 0
 
     override suspend fun queryActivitySuggestions(
         lookbackDays: Int,
@@ -434,12 +648,17 @@ private class FakeChartQueryGateway(
     override suspend fun queryDayDurationStats(params: DataDurationQueryParams): DataQueryTextResult =
         DataQueryTextResult(ok = true, outputText = "", message = "ok")
 
-    override suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult =
-        TreeQueryResult(ok = true, found = false, message = "ok")
+    override suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult {
+        treeQueryCount += 1
+        return TreeQueryResult(ok = true, found = false, message = "ok")
+    }
 
     override suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult {
         chartQueryCount += 1
         lastChartParams = params
+        chartResponder?.let { responder ->
+            return responder(params, chartQueryCount)
+        }
         val chartData = ReportChartData(
             roots = listOf("sleep", "study"),
             selectedRoot = params.root.orEmpty(),

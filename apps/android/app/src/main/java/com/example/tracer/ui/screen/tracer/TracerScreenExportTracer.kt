@@ -280,7 +280,7 @@ internal suspend fun exportCurrentTxtZipToTree(
         }
         val configPaths = buildConfigTomlExportEntries(
             (
-                configListResult.converterFiles +
+                configListResult.aliasFiles +
                 configListResult.chartFiles +
                 configListResult.metaFiles +
                 configListResult.reportFiles

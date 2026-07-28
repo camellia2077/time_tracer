@@ -1,37 +1,37 @@
 parent = "exercise"
 
 [aliases]
-"围棋" = "go"
-"普拉提" = "pilates"
-"瑜伽" = "yoga"
+"go" = ["围棋"]
+"pilates" = ["普拉提"]
+"yoga" = ["瑜伽"]
 
 [aliases.cardio]
-group_aliases = ["有氧训练"]
-"游泳" = "swimming"
-"骑行" = "cycling"
+group_aliases = ["有氧训练","有氧"]
+"swimming" = ["游泳"]
+"cycling" = ["骑行"]
 
 [aliases.cardio.running]
 group_aliases = ["跑步"]
-"操场跑" = "track-running"
-"跑步机" = "treadmill"
-"跑步机爬坡" = "treadmill-incline"
+"track-running" = ["操场跑"]
+"treadmill" = ["跑步机"]
+"treadmill-incline" = ["跑步机爬坡"]
 
 [aliases.strength-training]
 group_aliases = ["无氧训练"]
 
 [aliases.strength-training.pull]
 group_aliases = ["拉"]
-"引体" = "pull-up"
-"杠铃划船" = "barbell-row"
+"pull-up" = ["引体"]
+"barbell-row" = ["杠铃划船"]
 
 [aliases.strength-training.push]
 group_aliases = ["推"]
-"卧推" = "bench-press"
-"站姿杠铃肩推" = "overhead-press"
-"臂屈伸" = "dips"
+"bench-press" = ["卧推"]
+"overhead-press" = ["站姿杠铃肩推"]
+"dips" = ["臂屈伸"]
 
 [aliases.strength-training.squat]
 group_aliases = ["蹲"]
-"深蹲" = "squat"
-"硬拉" = "deadlift"
-"颈前深蹲" = "front-squat"
+"squat" = ["深蹲"]
+"deadlift" = ["硬拉"]
+"front-squat" = ["颈前深蹲"]

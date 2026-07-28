@@ -14,10 +14,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import com.example.tracer.feature.data.R as DataFeatureR
 import com.example.tracer.data.AppLanguage
-import com.example.tracer.data.DarkThemeStyle
-import com.example.tracer.data.ThemeColor
 import com.example.tracer.data.ThemeConfig
-import com.example.tracer.data.ThemeMode
+import com.example.tracer.ui.viewmodel.ThemeEvent
 
 internal enum class TracerTab {
     DATA,
@@ -51,10 +49,7 @@ internal data class TracerTabRouteArgs(
     val configUiState: ConfigUiState,
     val configViewModel: ConfigViewModel,
     val themeConfig: ThemeConfig,
-    val onSetThemeColor: (ThemeColor) -> Unit,
-    val onSetThemeMode: (ThemeMode) -> Unit,
-    val onSetUseDynamicColor: (Boolean) -> Unit,
-    val onSetDarkThemeStyle: (DarkThemeStyle) -> Unit,
+    val onThemeEvent: (ThemeEvent) -> Unit,
     val reportPiePalettePreset: ReportPiePalettePreset,
     val onReportPiePalettePresetChange: (ReportPiePalettePreset) -> Unit,
     val reportChartShowAverageLine: Boolean,
@@ -81,6 +76,7 @@ internal data class TracerTabRouteArgs(
     val onSetAppLanguage: (AppLanguage) -> Unit,
     val validAuthorableEventTokens: Set<String>,
     val onPersistRecordQuickActivities: (List<String>) -> Unit,
+    val onPersistRecordQuickAccessCardExpanded: (Boolean) -> Unit,
     val onPersistRecordAssistSettingsExpanded: (Boolean) -> Unit,
     val onPersistRecordCanonicalCatalogDisplayMode: (RecordSuggestionOutputMode) -> Unit,
     val onPersistRecordCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
@@ -88,8 +84,7 @@ internal data class TracerTabRouteArgs(
     val onPersistRecordSuggestLookbackDays: (Int) -> Unit,
     val onPersistRecordSuggestOutputMode: (RecordSuggestionOutputMode) -> Unit,
     val onPersistRecordSuggestTopN: (Int) -> Unit,
-    val onImportSingleTxt: () -> Unit,
-    val onImportTomlFolder: () -> Unit,
+    val onImportDataFolder: () -> Unit,
     val onImportSingleTracer: () -> Unit,
     val onExportAllMonthsTracer: () -> Unit,
     val onExportCurrentTxtTracer: () -> Unit,
@@ -160,8 +155,7 @@ internal object TracerTabRegistry {
                 )
                 DataManagementSection(
                     modifier = modifier,
-                    onImportSingleTxt = args.onImportSingleTxt,
-                    onImportTomlFolder = args.onImportTomlFolder,
+                    onImportDataFolder = args.onImportDataFolder,
                     onImportSingleTracer = args.onImportSingleTracer,
                     canExportAllMonthsTracer = args.recordUiState.availableMonths.isNotEmpty(),
                     canExportCurrentTxtTracer = true,
@@ -203,7 +197,9 @@ internal object TracerTabRegistry {
                 testTag = "tab_report"
             ),
             scrollBehavior = TracerTabScrollBehavior.NONE,
-            onEnter = { args -> args.queryReportViewModel.refreshReportDayDefault() },
+            // The ViewModel defers its first refresh until the report presentation preferences
+            // are available, preventing the default Text query from racing the persisted Chart.
+            onEnter = { args -> args.queryReportViewModel.onReportTabEntered() },
             statusText = { args -> args.queryStatusText },
             statusEvent = { args ->
                 if (args.statusText.startsWith("query data ", ignoreCase = true) ||
@@ -221,7 +217,6 @@ internal object TracerTabRegistry {
                     modifier = modifier,
                     queryUiState = args.queryUiState,
                     queryReportViewModel = args.queryReportViewModel,
-                    availableTxtMonths = args.recordUiState.availableMonths,
                     preferredReportMode = args.reportMode,
                     onPreferredReportModeChange = args.onReportModeChange,
                     preferredResultDisplayMode = args.reportResultDisplayMode,
@@ -272,6 +267,8 @@ internal object TracerTabRegistry {
                     txtStorageGateway = args.txtStorageGateway,
                     validAuthorableEventTokens = args.validAuthorableEventTokens,
                     onPersistQuickActivities = args.onPersistRecordQuickActivities,
+                    onPersistQuickAccessCardExpanded =
+                        args.onPersistRecordQuickAccessCardExpanded,
                     onPersistAssistSettingsExpanded = args.onPersistRecordAssistSettingsExpanded,
                     onPersistCanonicalCatalogDisplayMode =
                         args.onPersistRecordCanonicalCatalogDisplayMode,
@@ -346,7 +343,7 @@ internal object TracerTabRegistry {
             content = { _, args ->
                 ConfigSection(
                     selectedCategory = args.configUiState.selectedCategory,
-                    converterFiles = args.configUiState.converterFiles,
+                    aliasFiles = args.configUiState.aliasFiles,
                     chartFiles = args.configUiState.chartFiles,
                     metaFiles = args.configUiState.metaFiles,
                     reportFiles = args.configUiState.reportFiles,
@@ -362,7 +359,7 @@ internal object TracerTabRegistry {
                     aliasEditorErrorMessage = args.configUiState.aliasEditorErrorMessage,
                     autoSaveStatus = args.configUiState.autoSaveStatus,
                     themeConfig = args.themeConfig,
-                    onSelectConverter = { args.configViewModel.selectCategory(ConfigCategory.CONVERTER) },
+                    onSelectAlias = { args.configViewModel.selectCategory(ConfigCategory.ALIAS) },
                     onSelectCharts = { args.configViewModel.selectCategory(ConfigCategory.CHARTS) },
                     onSelectMeta = { args.configViewModel.selectCategory(ConfigCategory.META) },
                     onSelectReports = { args.configViewModel.selectCategory(ConfigCategory.REPORTS) },
@@ -382,20 +379,19 @@ internal object TracerTabRegistry {
                     onAliasAdvancedTomlChange = args.configViewModel::onAliasAdvancedTomlChange,
                     onAddAliasGroup = args.configViewModel::addAliasGroup,
                     onDeleteAliasGroup = args.configViewModel::deleteAliasGroup,
+                    onRenameAliasGroup = args.configViewModel::renameAliasGroup,
                     onAddAliasEntry = args.configViewModel::addAliasEntry,
                     onUpdateAliasEntry = args.configViewModel::updateAliasEntry,
                     onPromoteAliasEntry = args.configViewModel::promoteAliasEntryToGroup,
                     onRenameGroupAlias = args.configViewModel::renameGroupAlias,
                     onAddGroupAlias = args.configViewModel::addGroupAlias,
+                    onUpdateGroupAliases = args.configViewModel::updateGroupAliases,
                     onDeleteAliasEntry = args.configViewModel::deleteAliasEntry,
                     onPreviewAliasEntryMove = args.configViewModel::previewAliasEntryMove,
                     onConfirmAliasEntryMovePlan = args.configViewModel::confirmAliasEntryMovePlan,
                     onDiscardAliasEntryMovePlan = args.configViewModel::discardAliasEntryMovePlan,
                     onSaveCurrentFile = args.configViewModel::saveCurrentFile,
-                    onSetThemeColor = args.onSetThemeColor,
-                    onSetThemeMode = args.onSetThemeMode,
-                    onSetUseDynamicColor = args.onSetUseDynamicColor,
-                    onSetDarkThemeStyle = args.onSetDarkThemeStyle,
+                    onThemeEvent = args.onThemeEvent,
                     reportPiePalettePreset = args.reportPiePalettePreset,
                     onReportPiePalettePresetChange = args.onReportPiePalettePresetChange,
                     appLanguage = args.appLanguage,

@@ -15,6 +15,7 @@ fun RecordTabContent(
     txtStorageGateway: TxtStorageGateway,
     validAuthorableEventTokens: Set<String>,
     onPersistQuickActivities: (List<String>) -> Unit,
+    onPersistQuickAccessCardExpanded: (Boolean) -> Unit,
     onPersistAssistSettingsExpanded: (Boolean) -> Unit,
     onPersistCanonicalCatalogDisplayMode: (RecordSuggestionOutputMode) -> Unit,
     onPersistCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
@@ -42,6 +43,53 @@ fun RecordTabContent(
         stringResource(R.string.record_status_invalid_quick_activities)
     val quickActivitiesSavedTemplate =
         stringResource(R.string.record_status_quick_activities_saved)
+
+    fun updateQuickActivities(targetActivities: List<String>): Boolean {
+        val currentNormalized = recordUiState.quickActivities
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .distinct()
+        val normalized = targetActivities
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .distinct()
+        val isRemovalOnlyUpdate = normalized.size <= currentNormalized.size &&
+            normalized.all(currentNormalized::contains)
+
+        // Deleting quick activities should never depend on authorable-token validation.
+        // This lets users clear shipped defaults before re-adding entries that match config.
+        if (!isRemovalOnlyUpdate && validAuthorableEventTokens.isEmpty()) {
+            recordViewModel.setStatusText(quickActivitiesSaveFailedEmptyValidationText)
+            return false
+        }
+        if (normalized.size > 12) {
+            recordViewModel.setStatusText(quickActivitiesExceedLimitText)
+            return false
+        }
+        val invalidActivities = normalized.filter {
+            !validAuthorableEventTokens.contains(it)
+        }
+        if (!isRemovalOnlyUpdate && invalidActivities.isNotEmpty()) {
+            recordViewModel.setStatusText(
+                formatWithLocale(
+                    locale,
+                    invalidQuickActivitiesTemplate,
+                    invalidActivities.joinToString(", ")
+                )
+            )
+            return false
+        }
+        if (normalized == currentNormalized) {
+            return false
+        }
+        recordViewModel.updateQuickActivities(normalized)
+        recordViewModel.setStatusText(
+            formatWithLocale(locale, quickActivitiesSavedTemplate, normalized.size)
+        )
+        onPersistQuickActivities(normalized)
+        return true
+    }
+
     RecordSection(
         txtStorageGateway = txtStorageGateway,
         authoringMode = recordUiState.authoringMode,
@@ -60,54 +108,16 @@ fun RecordTabContent(
         availableActivityNames = remember(validAuthorableEventTokens) {
             validAuthorableEventTokens.toList().sorted()
         },
-        onQuickActivitiesUpdate = { targetActivities ->
-            val currentNormalized = recordUiState.quickActivities
-                .map { it.trim() }
-                .filter { it.isNotEmpty() }
-                .distinct()
-            val normalized = targetActivities
-                .map { it.trim() }
-                .filter { it.isNotEmpty() }
-                .distinct()
-            val isRemovalOnlyUpdate = normalized.size <= currentNormalized.size &&
-                normalized.all(currentNormalized::contains)
-
-            // Deleting quick activities should never depend on authorable-token validation.
-            // This lets users clear shipped defaults before re-adding entries that match config.
-            if (!isRemovalOnlyUpdate && validAuthorableEventTokens.isEmpty()) {
-                recordViewModel.setStatusText(
-                    quickActivitiesSaveFailedEmptyValidationText
-                )
-                return@RecordSection false
+        onQuickActivitiesUpdate = ::updateQuickActivities,
+        quickAccessCardExpanded = recordUiState.quickAccessCardExpanded,
+        onToggleQuickAccessCard = {
+            val nextExpanded = !recordUiState.quickAccessCardExpanded
+            recordViewModel.updateQuickAccessCardExpanded(nextExpanded)
+            onPersistQuickAccessCardExpanded(nextExpanded)
+            if (!nextExpanded && recordUiState.assistSettingsExpanded) {
+                recordViewModel.updateAssistUiState(assistSettingsExpanded = false)
+                onPersistAssistSettingsExpanded(false)
             }
-            if (normalized.size > 12) {
-                recordViewModel.setStatusText(
-                    quickActivitiesExceedLimitText
-                )
-                return@RecordSection false
-            }
-            val invalidActivities = normalized.filter {
-                !validAuthorableEventTokens.contains(it)
-            }
-            if (!isRemovalOnlyUpdate && invalidActivities.isNotEmpty()) {
-                recordViewModel.setStatusText(
-                    formatWithLocale(
-                        locale,
-                        invalidQuickActivitiesTemplate,
-                        invalidActivities.joinToString(", ")
-                    )
-                )
-                return@RecordSection false
-            }
-            if (normalized == currentNormalized) {
-                return@RecordSection false
-            }
-            recordViewModel.updateQuickActivities(normalized)
-            recordViewModel.setStatusText(
-                formatWithLocale(locale, quickActivitiesSavedTemplate, normalized.size)
-            )
-            onPersistQuickActivities(normalized)
-            true
         },
         assistSettingsExpanded = recordUiState.assistSettingsExpanded,
         onToggleAssistSettings = {
@@ -115,6 +125,9 @@ fun RecordTabContent(
             recordViewModel.updateAssistUiState(
                 assistSettingsExpanded = nextValue
             )
+            if (!recordUiState.quickAccessCardExpanded) {
+                recordViewModel.updateQuickAccessCardExpanded(true)
+            }
             onPersistAssistSettingsExpanded(nextValue)
         },
         suggestionLookbackDays = recordUiState.suggestionLookbackDays,
@@ -156,6 +169,7 @@ fun RecordTabContent(
         orderedCanonicalRootPaths = recordUiState.orderedCanonicalRootPaths,
         suggestionsVisible = recordUiState.suggestionsVisible,
         isCanonicalCatalogVisible = recordUiState.isCanonicalCatalogVisible,
+        canonicalBrowserTarget = recordUiState.canonicalBrowserTarget,
         isCanonicalCatalogLoading = recordUiState.isCanonicalCatalogLoading,
         isSuggestionsLoading = recordUiState.isSuggestionsLoading,
         isTxtPreviewVisible = recordUiState.isTxtPreviewVisible,
@@ -164,6 +178,10 @@ fun RecordTabContent(
         selectedMonth = recordUiState.selectedMonth,
         selectedHistoryFile = recordUiState.selectedHistoryFile,
         editableHistoryContent = recordUiState.editableHistoryContent,
+        actualTimeExpanded = recordUiState.actualTimeExpanded,
+        onToggleActualTime = {
+            recordViewModel.updateActualTimeExpanded(!recordUiState.actualTimeExpanded)
+        },
         logicalDayTarget = recordUiState.logicalDayTarget,
         logicalDayClock = recordViewModel.logicalDayClock,
         onSelectLogicalDayYesterday = recordViewModel::selectLogicalDayYesterday,
@@ -172,9 +190,12 @@ fun RecordTabContent(
         onToggleSuggestions = recordViewModel::toggleSuggestions,
         onDismissSuggestions = recordViewModel::dismissSuggestions,
         onSuggestedActivityClick = { activity ->
-            recordViewModel.applySuggestedActivity(activity)
+            if (updateQuickActivities(recordUiState.quickActivities + activity)) {
+                recordViewModel.dismissSuggestions()
+            }
         },
         onOpenCanonicalCatalog = recordViewModel::openCanonicalCatalog,
+        onOpenQuickAccessCanonicalCatalog = recordViewModel::openQuickAccessCanonicalCatalog,
         onDismissCanonicalCatalog = recordViewModel::dismissCanonicalCatalog,
         onCanonicalCatalogDisplayModeChange = { mode ->
             recordViewModel.updateCanonicalCatalogDisplayMode(mode)
@@ -188,8 +209,17 @@ fun RecordTabContent(
             recordViewModel.updateOrderedCanonicalRootPaths(paths)
             onPersistOrderedCanonicalRootPaths(paths)
         },
-        onCanonicalCatalogEntryClick = { token ->
-            recordViewModel.applyCanonicalCatalogEntry(token)
+        onCanonicalCatalogEntryClick = { target, token ->
+            when (target) {
+                CanonicalBrowserTarget.RECORD_INPUT -> {
+                    recordViewModel.applyCanonicalCatalogEntry(token)
+                    true
+                }
+
+                CanonicalBrowserTarget.QUICK_ACCESS -> {
+                    updateQuickActivities(recordUiState.quickActivities + token)
+                }
+            }
         },
         onOpenTxtPreview = recordViewModel::openTxtPreview,
         onStartIntervalRecording = recordViewModel::startIntervalRecording,

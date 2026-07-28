@@ -27,7 +27,7 @@ import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
 @Composable
 internal fun ConfigCategorySwitchCard(
     selectedCategory: ConfigCategory,
-    onSelectConverter: () -> Unit,
+    onSelectAlias: () -> Unit,
     onSelectCharts: () -> Unit,
     onSelectMeta: () -> Unit,
     onSelectReports: () -> Unit,
@@ -54,7 +54,7 @@ internal fun ConfigCategorySwitchCard(
             }
 
             val configCategories = listOf(
-                ConfigCategory.CONVERTER to stringResource(R.string.config_category_converter),
+                ConfigCategory.ALIAS to stringResource(R.string.config_category_alias),
                 ConfigCategory.CHARTS to stringResource(R.string.config_category_charts),
                 ConfigCategory.META to stringResource(R.string.config_category_meta),
                 ConfigCategory.REPORTS to stringResource(R.string.config_category_reports)
@@ -66,7 +66,7 @@ internal fun ConfigCategorySwitchCard(
                         shape = SegmentedButtonDefaults.itemShape(index = index, count = configCategories.size),
                         onClick = {
                             when (category) {
-                                ConfigCategory.CONVERTER -> onSelectConverter()
+                                ConfigCategory.ALIAS -> onSelectAlias()
                                 ConfigCategory.CHARTS -> onSelectCharts()
                                 ConfigCategory.META -> onSelectMeta()
                                 ConfigCategory.REPORTS -> onSelectReports()

@@ -55,6 +55,7 @@ data class QueryReportUiState(
     val reportRangeStartDate: String = currentMonthStartDateDigits(),
     val reportRangeEndDate: String = currentDateDigits(),
     val reportRecentDays: String = "7",
+    val availableReportMonths: List<String> = emptyList(),
     val reportResultsByPeriod: Map<DataTreePeriod, QueryResult.Report> = emptyMap(),
     val reportSummariesByPeriod: Map<DataTreePeriod, ReportSummary> = emptyMap(),
     val reportErrorsByPeriod: Map<DataTreePeriod, String> = emptyMap(),

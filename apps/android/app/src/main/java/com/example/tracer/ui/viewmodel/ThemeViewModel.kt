@@ -4,9 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.tracer.data.AppLanguage
-import com.example.tracer.data.ThemeColor
 import com.example.tracer.data.ThemeConfig
-import com.example.tracer.data.ThemeMode
 import com.example.tracer.data.UserPreferencesRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -27,27 +25,13 @@ class ThemeViewModel(private val repository: UserPreferencesRepository) : ViewMo
             initialValue = AppLanguage.English
         )
 
-    fun setThemeColor(color: ThemeColor) {
+    fun onThemeEvent(event: ThemeEvent) {
         viewModelScope.launch {
-            repository.setThemeColor(color)
-        }
-    }
-
-    fun setThemeMode(mode: ThemeMode) {
-        viewModelScope.launch {
-            repository.setThemeMode(mode)
-        }
-    }
-
-    fun setUseDynamicColor(useDynamic: Boolean) {
-        viewModelScope.launch {
-            repository.setUseDynamicColor(useDynamic)
-        }
-    }
-
-    fun setDarkThemeStyle(style: com.example.tracer.data.DarkThemeStyle) {
-        viewModelScope.launch {
-            repository.setDarkThemeStyle(style)
+            when (event) {
+                is ThemeEvent.SetMode -> repository.setThemeMode(event.mode)
+                is ThemeEvent.SetDarkStyle -> repository.setDarkThemeStyle(event.style)
+                is ThemeEvent.SetPalette -> repository.setThemePalette(event.palette)
+            }
         }
     }
 

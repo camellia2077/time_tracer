@@ -1,6 +1,5 @@
 package com.example.tracer
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -51,7 +50,7 @@ internal fun ReportChartStyleSection(
         color = MaterialTheme.colorScheme.onSurfaceVariant
     )
     // Tests can render the expanded section directly through this initial state hook
-    // instead of depending on click/animation timing in Robolectric.
+    // instead of depending on click timing in Robolectric.
     var isPiePaletteExpanded by rememberSaveable { mutableStateOf(initialExpanded) }
     val piePalettePresets = ReportPiePalettePreset.entries
     var previewSliceIndex by rememberSaveable { mutableStateOf(0) }
@@ -77,7 +76,7 @@ internal fun ReportChartStyleSection(
         }
     )
 
-    AnimatedVisibility(visible = isPiePaletteExpanded) {
+    if (isPiePaletteExpanded) {
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(10.dp)

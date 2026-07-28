@@ -405,6 +405,7 @@ private fun RecordCanonicalCatalogSection(
     roots: List<CanonicalPathNode>,
     statusText: String,
     displayMode: RecordSuggestionOutputMode,
+    target: CanonicalBrowserTarget? = null,
     collapsedRootPaths: Set<String>,
     orderedRootPaths: List<String>,
     onCollapsedRootPathsChange: (Set<String>) -> Unit,
@@ -489,12 +490,24 @@ private fun RecordCanonicalCatalogSection(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            text = stringResource(R.string.record_canonical_catalog_title),
+            text = stringResource(
+                if (target == CanonicalBrowserTarget.QUICK_ACCESS) {
+                    R.string.record_canonical_catalog_quick_access_title
+                } else {
+                    R.string.record_canonical_catalog_title
+                }
+            ),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.primary
         )
         Text(
-            text = stringResource(R.string.record_canonical_catalog_description),
+            text = stringResource(
+                if (target == CanonicalBrowserTarget.QUICK_ACCESS) {
+                    R.string.record_canonical_catalog_quick_access_description
+                } else {
+                    R.string.record_canonical_catalog_description
+                }
+            ),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -620,6 +633,7 @@ internal fun RecordCanonicalCatalogScreen(
     roots: List<CanonicalPathNode>,
     statusText: String,
     displayMode: RecordSuggestionOutputMode,
+    target: CanonicalBrowserTarget? = null,
     collapsedRootPaths: Set<String>,
     orderedRootPaths: List<String>,
     onDismissRequest: () -> Unit,
@@ -649,7 +663,13 @@ internal fun RecordCanonicalCatalogScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = stringResource(R.string.record_canonical_catalog_title),
+                            text = stringResource(
+                                if (target == CanonicalBrowserTarget.QUICK_ACCESS) {
+                                    R.string.record_canonical_catalog_quick_access_title
+                                } else {
+                                    R.string.record_canonical_catalog_title
+                                }
+                            ),
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -735,6 +755,7 @@ internal fun RecordCanonicalCatalogScreen(
                         roots = roots,
                         statusText = statusText,
                         displayMode = displayMode,
+                        target = target,
                         collapsedRootPaths = collapsedRootPaths,
                         orderedRootPaths = orderedRootPaths,
                         onCollapsedRootPathsChange = onCollapsedRootPathsChange,

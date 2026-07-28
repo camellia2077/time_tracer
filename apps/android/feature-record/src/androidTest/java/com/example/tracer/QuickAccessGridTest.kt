@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
@@ -25,6 +26,37 @@ import org.junit.runner.RunWith
 class QuickAccessGridTest {
     @get:Rule
     val composeRule = createAndroidComposeRule<ComponentActivity>()
+
+    @Test
+    fun quickAccessEdit_browseCatalogEntryIsShownOnlyInEditMode() {
+        var openCount = 0
+
+        composeRule.setContent {
+            MaterialTheme {
+                RecordQuickAccessCard(
+                    recordContent = "",
+                    onRecordContentChange = {},
+                    quickActivities = listOf("meal"),
+                    availableActivityNames = emptyList(),
+                    onQuickActivitiesUpdate = { true },
+                    quickAccessCardExpanded = true,
+                    assistSettingsExpanded = true,
+                    onToggleAssistSettings = {},
+                    onOpenQuickAccessCanonicalCatalog = { openCount += 1 },
+                    suggestionsVisible = false,
+                    onToggleSuggestions = {},
+                    quickActivitySearch = "",
+                    onQuickActivitySearchChange = {},
+                    maxQuickActivityCount = 12
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Browse activities to add").assertIsDisplayed()
+            .performClick()
+
+        assertEquals(1, openCount)
+    }
 
     @Test
     fun quickAccessGrid_clickUpdatesRecordContent_withoutReordering() {
@@ -44,7 +76,7 @@ class QuickAccessGridTest {
                     },
                     assistSettingsExpanded = false,
                     onToggleAssistSettings = {},
-                    onOpenCanonicalCatalog = {},
+                    onOpenQuickAccessCanonicalCatalog = {},
                     quickActivitySearch = "",
                     onQuickActivitySearchChange = {},
                     maxQuickActivityCount = 12
@@ -80,7 +112,7 @@ class QuickAccessGridTest {
                     },
                     assistSettingsExpanded = false,
                     onToggleAssistSettings = {},
-                    onOpenCanonicalCatalog = {},
+                    onOpenQuickAccessCanonicalCatalog = {},
                     quickActivitySearch = "",
                     onQuickActivitySearchChange = {},
                     maxQuickActivityCount = 12
@@ -126,7 +158,7 @@ class QuickAccessGridTest {
                     },
                     assistSettingsExpanded = true,
                     onToggleAssistSettings = {},
-                    onOpenCanonicalCatalog = {},
+                    onOpenQuickAccessCanonicalCatalog = {},
                     quickActivitySearch = "",
                     onQuickActivitySearchChange = {},
                     maxQuickActivityCount = 12

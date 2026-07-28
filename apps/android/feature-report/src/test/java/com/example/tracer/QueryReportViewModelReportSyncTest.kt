@@ -43,6 +43,23 @@ class QueryReportViewModelReportSyncTest {
     }
 
     @Test
+    fun switchingBackToText_requeriesCurrentWeekReport() = runTest {
+        val fakeReportGateway = FakeStructuredReportGateway()
+        val viewModel = QueryReportViewModel(
+            reportGateway = fakeReportGateway,
+            queryGateway = FakeReportSyncQueryGateway()
+        )
+
+        viewModel.onResultDisplayModeChange(ReportResultDisplayMode.CHART)
+        viewModel.onReportModeChange(ReportMode.WEEK)
+        viewModel.onReportWeekChange("202615")
+        viewModel.onResultDisplayModeChange(ReportResultDisplayMode.TEXT)
+        advanceUntilIdle()
+
+        assertEquals(ReportDisplayMode.WEEK, fakeReportGateway.lastTemporalRequest?.displayMode)
+    }
+
+    @Test
     fun reportDay_missingTarget_isPresentedAsNormalNoData() = runTest {
         val fakeReportGateway = FakeStructuredReportGateway().apply {
             dayResult = ReportCallResult(
@@ -268,6 +285,13 @@ class QueryReportViewModelReportSyncTest {
             queryGateway = FakeReportSyncQueryGateway(),
             clock = fixedClock("2026-02-14T12:00:00Z", "Asia/Shanghai")
         )
+        viewModel.applyPersistedReportPresentation(
+            reportMode = ReportMode.DAY,
+            chartSemanticMode = ReportChartSemanticMode.COMPOSITION,
+            resultDisplayMode = ReportResultDisplayMode.TEXT,
+            parameterSection = ReportParameterSection.DAY
+        )
+        advanceUntilIdle()
 
         // Exercise an actual transition regardless of the host JVM's default locale.
         viewModel.onReportLocaleChange("en")

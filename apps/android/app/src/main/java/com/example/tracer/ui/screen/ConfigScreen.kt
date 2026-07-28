@@ -46,7 +46,7 @@ private data class LibrariesLoadState(
 @Composable
 internal fun ConfigSection(
     selectedCategory: ConfigCategory,
-    converterFiles: List<ConfigTomlFileEntry>,
+    aliasFiles: List<ConfigTomlFileEntry>,
     chartFiles: List<ConfigTomlFileEntry>,
     metaFiles: List<ConfigTomlFileEntry>,
     reportFiles: List<ConfigTomlFileEntry>,
@@ -62,7 +62,7 @@ internal fun ConfigSection(
     aliasEditorErrorMessage: String,
     autoSaveStatus: ConfigAutoSaveStatus,
     themeConfig: com.example.tracer.data.ThemeConfig,
-    onSelectConverter: () -> Unit,
+    onSelectAlias: () -> Unit,
     onSelectCharts: () -> Unit,
     onSelectMeta: () -> Unit,
     onSelectReports: () -> Unit,
@@ -78,40 +78,35 @@ internal fun ConfigSection(
     onAliasAdvancedTomlChange: (String) -> Unit,
     onAddAliasGroup: (String?, String) -> Unit,
     onDeleteAliasGroup: (String) -> Unit,
-    onAddAliasEntry: (String?, String, String) -> Unit,
-    onUpdateAliasEntry: (String, String, String) -> Unit,
+    onRenameAliasGroup: (String, String) -> Unit,
+    onAddAliasEntry: (String?, String, List<String>) -> Unit,
+    onUpdateAliasEntry: (String, String, List<String>) -> Unit,
     onPromoteAliasEntry: (String) -> Unit,
     onRenameGroupAlias: (String, String, String) -> Unit,
     onAddGroupAlias: (String, String) -> Unit,
+    onUpdateGroupAliases: (String, List<String>) -> Unit,
     onDeleteAliasEntry: (String) -> Unit,
     onPreviewAliasEntryMove: (String, String) -> Unit,
     onConfirmAliasEntryMovePlan: () -> Unit,
     onDiscardAliasEntryMovePlan: () -> Unit,
     onSaveCurrentFile: () -> Unit,
-    onSetThemeColor: (com.example.tracer.data.ThemeColor) -> Unit,
-    onSetThemeMode: (com.example.tracer.data.ThemeMode) -> Unit,
-    onSetUseDynamicColor: (Boolean) -> Unit,
-    onSetDarkThemeStyle: (com.example.tracer.data.DarkThemeStyle) -> Unit,
+    onThemeEvent: (com.example.tracer.ui.viewmodel.ThemeEvent) -> Unit,
     reportPiePalettePreset: ReportPiePalettePreset,
     onReportPiePalettePresetChange: (ReportPiePalettePreset) -> Unit,
     appLanguage: com.example.tracer.data.AppLanguage,
     onSetAppLanguage: (com.example.tracer.data.AppLanguage) -> Unit
 ) {
     var showAboutPage by rememberSaveable { mutableStateOf(false) }
-    // Converter keeps Aliases as the default editor scope; the category itself
-    // still shows both alias and rule files now that the secondary selector is gone.
-    val converterScope = ConverterSubcategory.ALIASES
     val visibleFiles = when (selectedCategory) {
-        ConfigCategory.CONVERTER -> converterFiles
+        ConfigCategory.ALIAS -> aliasFiles
         ConfigCategory.CHARTS -> chartFiles
         ConfigCategory.META -> metaFiles
         ConfigCategory.REPORTS -> reportFiles
     }.map { entry ->
-        entry.copy(displayName = displayNameForCurrentScope(entry, selectedCategory, converterScope))
+        entry.copy(displayName = displayNameForCurrentScope(entry, selectedCategory))
     }
     val scopedSelectedFileDisplayName = selectedFileDisplayName.removeCurrentScopePrefix(
-        selectedCategory = selectedCategory,
-        selectedConverterSubcategory = converterScope
+        selectedCategory = selectedCategory
     )
     val usesAliasStructuredEditor = selectedFilePath.isAliasFilePathForConfigScreen()
 
@@ -129,10 +124,7 @@ internal fun ConfigSection(
     ) {
         AppearanceSettingsCard(
             themeConfig = themeConfig,
-            onSetThemeColor = onSetThemeColor,
-            onSetThemeMode = onSetThemeMode,
-            onSetUseDynamicColor = onSetUseDynamicColor,
-            onSetDarkThemeStyle = onSetDarkThemeStyle,
+            onThemeEvent = onThemeEvent,
             reportPiePalettePreset = reportPiePalettePreset,
             onReportPiePalettePresetChange = onReportPiePalettePresetChange,
             appLanguage = appLanguage,
@@ -141,7 +133,7 @@ internal fun ConfigSection(
 
         ConfigCategorySwitchCard(
             selectedCategory = selectedCategory,
-            onSelectConverter = onSelectConverter,
+            onSelectAlias = onSelectAlias,
             onSelectCharts = onSelectCharts,
             onSelectMeta = onSelectMeta,
             onSelectReports = onSelectReports,
@@ -167,11 +159,13 @@ internal fun ConfigSection(
                     onAdvancedTomlChange = onAliasAdvancedTomlChange,
                     onAddGroup = onAddAliasGroup,
                     onDeleteGroup = onDeleteAliasGroup,
+                    onRenameGroup = onRenameAliasGroup,
                     onAddEntry = onAddAliasEntry,
                     onUpdateEntry = onUpdateAliasEntry,
                     onPromoteEntry = onPromoteAliasEntry,
                     onRenameGroupAlias = onRenameGroupAlias,
                     onAddGroupAlias = onAddGroupAlias,
+                    onUpdateGroupAliases = onUpdateGroupAliases,
                     onDeleteEntry = onDeleteAliasEntry,
                     onPreviewEntryMove = onPreviewAliasEntryMove,
                     onConfirmMovePlan = onConfirmAliasEntryMovePlan,
@@ -199,26 +193,20 @@ internal fun ConfigSection(
 
 private fun displayNameForCurrentScope(
     entry: ConfigTomlFileEntry,
-    selectedCategory: ConfigCategory,
-    selectedConverterSubcategory: ConverterSubcategory
+    selectedCategory: ConfigCategory
 ): String {
     // Keep canonical path and stable displayName untouched in state/runtime.
     // Only trim the in-scope subcategory prefix at render time when the user
-    // has already narrowed Converter into Aliases.
+    // has already opened the Alias category.
     return entry.displayName.removeCurrentScopePrefix(
-        selectedCategory = selectedCategory,
-        selectedConverterSubcategory = selectedConverterSubcategory
+        selectedCategory = selectedCategory
     )
 }
 
 private fun String.removeCurrentScopePrefix(
-    selectedCategory: ConfigCategory,
-    selectedConverterSubcategory: ConverterSubcategory
+    selectedCategory: ConfigCategory
 ): String {
-    return if (
-        selectedCategory == ConfigCategory.CONVERTER &&
-        selectedConverterSubcategory == ConverterSubcategory.ALIASES
-    ) {
+    return if (selectedCategory == ConfigCategory.ALIAS) {
         removePrefix("aliases/")
     } else {
         this

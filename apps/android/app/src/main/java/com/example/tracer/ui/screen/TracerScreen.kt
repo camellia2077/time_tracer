@@ -34,10 +34,7 @@ fun TracerScreen(
     tracerExchangeGateway: TracerExchangeGateway,
     userPreferencesRepository: com.example.tracer.data.UserPreferencesRepository,
     themeConfig: com.example.tracer.data.ThemeConfig,
-    onSetThemeColor: (com.example.tracer.data.ThemeColor) -> Unit,
-    onSetThemeMode: (com.example.tracer.data.ThemeMode) -> Unit,
-    onSetUseDynamicColor: (Boolean) -> Unit,
-    onSetDarkThemeStyle: (com.example.tracer.data.DarkThemeStyle) -> Unit,
+    onThemeEvent: (com.example.tracer.ui.viewmodel.ThemeEvent) -> Unit,
     appLanguage: com.example.tracer.data.AppLanguage,
     onSetAppLanguage: (com.example.tracer.data.AppLanguage) -> Unit
 ) {
@@ -109,7 +106,8 @@ fun TracerScreen(
             outputMode = com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_SUGGEST_OUTPUT_MODE,
             canonicalCatalogDisplayMode =
                 com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_CANONICAL_CATALOG_DISPLAY_MODE,
-            quickActivities = com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_QUICK_ACTIVITIES,
+            quickActivities = emptyList(),
+            quickAccessCardExpanded = com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_QUICK_ACCESS_CARD_EXPANDED,
             assistSettingsExpanded = com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_ASSIST_SETTINGS_EXPANDED,
             collapsedCanonicalRootPaths = com.example.tracer.data.UserPreferencesRepository.DEFAULT_COLLAPSED_CANONICAL_ROOT_PATHS,
             orderedCanonicalRootPaths = com.example.tracer.data.UserPreferencesRepository.DEFAULT_ORDERED_CANONICAL_ROOT_PATHS
@@ -222,15 +220,10 @@ fun TracerScreen(
         tracerExchangeGateway = tracerExchangeGateway,
         recordViewModel = recordViewModel
     )
-    val importSingleTxtAction = rememberTracerTxtFolderImportAction(
+    val importDataFolderAction = rememberTracerDataFolderImportAction(
         context = context,
         coroutineScope = coroutineScope,
-        dataViewModel = dataViewModel,
-        recordViewModel = recordViewModel
-    )
-    val importTomlFolderAction = rememberTracerTomlFolderImportAction(
-        context = context,
-        coroutineScope = coroutineScope,
+        recordViewModel = recordViewModel,
         dataViewModel = dataViewModel,
         configGateway = configGateway,
         configViewModel = configViewModel
@@ -298,10 +291,7 @@ fun TracerScreen(
         configUiState = configUiState,
         configViewModel = configViewModel,
         themeConfig = themeConfig,
-        onSetThemeColor = onSetThemeColor,
-        onSetThemeMode = onSetThemeMode,
-        onSetUseDynamicColor = onSetUseDynamicColor,
-        onSetDarkThemeStyle = onSetDarkThemeStyle,
+        onThemeEvent = onThemeEvent,
         reportPiePalettePreset = reportPiePalettePreset,
         onReportPiePalettePresetChange = { value ->
             coroutineScope.launch {
@@ -360,6 +350,8 @@ fun TracerScreen(
         onSetAppLanguage = onSetAppLanguage,
         validAuthorableEventTokens = validAuthorableEventTokens,
         onPersistRecordQuickActivities = actions.onPersistRecordQuickActivities,
+        onPersistRecordQuickAccessCardExpanded =
+            actions.onPersistRecordQuickAccessCardExpanded,
         onPersistRecordAssistSettingsExpanded = actions.onPersistRecordAssistSettingsExpanded,
         onPersistRecordCanonicalCatalogDisplayMode =
             actions.onPersistRecordCanonicalCatalogDisplayMode,
@@ -370,8 +362,7 @@ fun TracerScreen(
         onPersistRecordSuggestLookbackDays = actions.onPersistRecordSuggestLookbackDays,
         onPersistRecordSuggestOutputMode = actions.onPersistRecordSuggestOutputMode,
         onPersistRecordSuggestTopN = actions.onPersistRecordSuggestTopN,
-        onImportSingleTxt = importSingleTxtAction,
-        onImportTomlFolder = importTomlFolderAction,
+        onImportDataFolder = importDataFolderAction,
         onImportSingleTracer = importSingleTracerAction,
         onExportAllMonthsTracer = exportActions.onExportAllMonthsTracer,
         onExportCurrentTxtTracer = exportActions.onExportCurrentTxtTracer,

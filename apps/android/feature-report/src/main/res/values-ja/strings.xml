@@ -9,9 +9,9 @@
     <string name="report_result_mode_text">テキスト</string>
     <string name="report_result_mode_chart">グラフ</string>
 
-    <string name="report_title_mode_parameters">%1$s パラメータ</string>
-    <string name="report_parameter_section_day">日</string>
-    <string name="report_parameter_section_tree">ツリー</string>
+    <string name="report_title_mode_parameters">日付選択</string>
+    <string name="report_parameter_section_day">日付</string>
+    <string name="report_parameter_section_tree">活動階層</string>
     <string name="report_parameter_section_timeline">タイムライン</string>
     <string name="report_parameter_section_markdown">md</string>
     <string name="report_title_report_date">レポート日付</string>
@@ -26,8 +26,8 @@
 
     <string name="report_action_loading">読み込み中...</string>
 
-    <string name="report_title_project_tree_parameters">プロジェクトツリーパラメータ</string>
-    <string name="report_section_tree">ツリー</string>
+    <string name="report_title_project_tree_parameters">活動階層</string>
+    <string name="report_section_tree">活動階層</string>
     <string name="report_label_tree_level">表示レベル</string>
     <string name="report_tree_level_all">すべてのレベル</string>
     <string name="report_tree_level_number">レベル %1$d</string>
@@ -36,9 +36,9 @@
 
     <string name="report_chart_semantic_trend">推移</string>
     <string name="report_chart_semantic_composition">内訳</string>
-    <string name="report_label_chart_root">ルートノード</string>
-    <string name="report_chart_root_all">すべてのルート</string>
-    <string name="report_chart_composition_scope_hint">内訳チャートは選択期間内のすべてのルートノードを使います。</string>
+    <string name="report_label_chart_root">最上位の活動</string>
+    <string name="report_chart_root_all">すべての最上位活動</string>
+    <string name="report_chart_composition_scope_hint">活動の内訳には、選択期間内のすべての最上位活動が含まれます。</string>
     <string name="report_label_chart_lookback_days">最近日数 (N)</string>
     <string name="report_label_chart_date_filter_mode">日付フィルター方式</string>
     <string name="report_chart_date_mode_lookback">最近日数</string>
@@ -47,9 +47,9 @@
     <string name="report_action_chart_loading">グラフを読み込み中...</string>
     <string name="report_chart_empty">この範囲にはグラフデータがありません。</string>
     <string name="report_chart_empty_in_range">選択した日付範囲にグラフデータがありません。</string>
-    <string name="report_chart_empty_composition">この範囲には内訳データがありません。</string>
-    <string name="report_label_chart_visual">グラフ種類</string>
-    <string name="report_label_chart_measure">内訳の集計方法</string>
+    <string name="report_chart_empty_composition">この範囲には活動の内訳データがありません。</string>
+    <string name="report_label_chart_visual">グラフの種類</string>
+    <string name="report_label_chart_measure">集計指標</string>
     <string name="report_label_select_year_month">年と月を選択</string>
     <string name="report_sheet_select_year_month">年と月を選択</string>
     <string name="report_sheet_select_year">年を選択</string>
@@ -66,22 +66,22 @@
     <string name="report_chart_range_error_invalid_start">開始日が無効です。</string>
     <string name="report_chart_range_error_invalid_end">終了日が無効です。</string>
     <string name="report_chart_range_error_order">範囲が無効です。開始日は終了日以下である必要があります。</string>
-    <string name="report_chart_visual_line">折れ線</string>
-    <string name="report_chart_visual_bar">縦棒</string>
-    <string name="report_chart_visual_composition_pie">円</string>
-    <string name="report_chart_visual_composition_bar">棒</string>
-    <string name="report_chart_visual_composition_treemap">ツリー</string>
-    <string name="report_chart_measure_duration">時間</string>
-    <string name="report_chart_measure_frequency">頻度</string>
+    <string name="report_chart_visual_line">折れ線グラフ</string>
+    <string name="report_chart_visual_bar">棒グラフ</string>
+    <string name="report_chart_visual_composition_pie">円グラフ</string>
+    <string name="report_chart_visual_composition_bar">横棒グラフ</string>
+    <string name="report_chart_visual_composition_treemap">面積図</string>
+    <string name="report_chart_measure_duration">記録時間</string>
+    <string name="report_chart_measure_frequency">記録回数</string>
     <string name="report_chart_visual_heatmap">ヒートマップ</string>
-    <string name="report_chart_pie_hint">扇形をタップしてルート、時間、割合を表示します。</string>
-    <string name="report_chart_pie_drilldown_hint">子ノードがある扇形または凡例の行をタップして、そのアクティビティ階層に進みます。</string>
+    <string name="report_chart_pie_hint">扇形をタップして活動、記録時間、割合を表示します。</string>
+    <string name="report_chart_pie_drilldown_hint">下位の活動がある扇形または凡例の行をタップして、その活動階層を開きます。</string>
     <string name="report_chart_pie_drilldown_path">現在の階層: %1$s</string>
     <string name="report_chart_pie_drilldown_back">%1$s に戻る</string>
-    <string name="report_chart_pie_drilldown_summary">アクティビティツリーを階層ごとにたどり、各階層の時間割合を確認できます。</string>
-    <string name="report_chart_composition_bar_hint">行をタップしてルート、時間、割合を表示します。</string>
-    <string name="report_chart_bar_drilldown_hint">子ノードがある行をタップして次のアクティビティ階層に進みます。</string>
-    <string name="report_chart_composition_treemap_hint">タイルまたは凡例の行をタップしてアクティビティ、時間、割合を表示します。子ノードを持つ項目をタップすると次の階層に進みます。</string>
+    <string name="report_chart_pie_drilldown_summary">活動階層をたどり、各階層の時間割合を確認できます。</string>
+    <string name="report_chart_composition_bar_hint">行をタップして活動、記録時間、割合を表示します。</string>
+    <string name="report_chart_bar_drilldown_hint">下位の活動がある行をタップして、次の活動階層を開きます。</string>
+    <string name="report_chart_composition_treemap_hint">タイルまたは凡例の行をタップして活動、記録時間、割合を表示します。下位の活動がある項目をタップすると、次の階層に進みます。</string>
     <string name="report_chart_heatmap_hint">日付セルをタップして日付と時間を表示します。</string>
     <string name="report_chart_heatmap_multi_month_hint">すべての月で同じ色スケールを使うため、直接比較できます。</string>
     <string name="report_chart_heatmap_theme_policy_label">ヒートマップテーマ</string>
@@ -93,12 +93,12 @@
     <string name="report_chart_toggle_average_line">平均線を表示</string>
     <string name="report_chart_average_duration">平均時間: %1$s</string>
     <string name="report_chart_total_duration">合計時間: %1$s</string>
-    <string name="report_chart_total_frequency">現在の階層の合計: %1$d 回</string>
-    <string name="report_chart_active_roots">アクティブルート: %1$d</string>
+    <string name="report_chart_total_frequency">この階層の記録回数: %1$d</string>
+    <string name="report_chart_active_roots">活動中の最上位活動: %1$d</string>
     <string name="report_chart_range_days">期間日数: %1$d</string>
     <string name="report_chart_legacy_fallback_notice">現在はローカル平均の互換フォールバックを使用中（v0.3.0 で削除予定）。</string>
     <string name="report_chart_selected_detail">選択: %1$s ・ %2$s</string>
-    <string name="report_chart_composition_summary">選択期間内の上位ルート内訳です。</string>
+    <string name="report_chart_composition_summary">選択期間内の最上位活動の内訳です。</string>
     <string name="report_chart_composition_selected_detail">選択: %1$s ・ %2$s (%3$.1f%%)</string>
     <string name="report_chart_composition_selected_frequency_detail">選択: %1$s ・ %2$d 回 (%3$.1f%%)</string>
 
@@ -124,7 +124,7 @@
     <string name="report_save_activity_remark">保存</string>
     <string name="report_cancel_activity_remark">キャンセル</string>
 
-    <string name="report_subject_tree">ツリー</string>
+    <string name="report_subject_tree">活動階層</string>
 
     <string name="report_status_native_report_running">nativeReportJson(%1$s, md) 実行中...</string>
     <string name="report_status_native_report_result">nativeReportJson(%1$s, md) -&gt; OK=%2$s</string>
@@ -147,7 +147,7 @@
     <string name="report_result_title_report_window_summary">%1$s ウィンドウ概要</string>
     <string name="report_result_title_chart">グラフ結果</string>
     <string name="report_result_title_analysis_error">解析エラー</string>
-    <string name="report_result_title_tree">%1$s ツリー結果</string>
+    <string name="report_result_title_tree">%1$s 活動階層</string>
     <string name="report_summary_missing_target_body">選択した %1$s 対象に対応するレポートデータはありません。</string>
     <string name="report_summary_no_data_body">この日には活動が記録されていません。</string>
     <string name="report_summary_error_code">コード: %1$s</string>
@@ -160,7 +160,7 @@
     <string name="report_summary_matched_days">一致日数: %1$d</string>
     <string name="report_summary_matched_records">一致レコード数: %1$d</string>
 
-    <string name="report_error_tree_level_min">ツリーレベルは -1 以上である必要があります。</string>
+    <string name="report_error_tree_level_min">活動階層のレベルは -1 以上である必要があります。</string>
     <string name="report_error_chart_payload_invalid">グラフデータのペイロードが無効です。</string>
     <string name="report_error_composition_payload_invalid">内訳データのペイロードが無効です。</string>
     <string name="report_error_period_argument_required">%1$s の引数は %2$s 期間で必須です。</string>

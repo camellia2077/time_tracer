@@ -423,6 +423,7 @@ class RecordUseCases(
             lastRecordedDuration = "",
             suggestionsVisible = false,
             isCanonicalCatalogVisible = false,
+            canonicalBrowserTarget = null,
             isCanonicalCatalogLoading = false,
             isSuggestionsLoading = false,
             statusText = "TXT editor state reset."

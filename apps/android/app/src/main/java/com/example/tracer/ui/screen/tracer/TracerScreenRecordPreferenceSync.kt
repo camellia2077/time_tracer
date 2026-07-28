@@ -17,6 +17,7 @@ internal fun SyncTracerScreenRecordPreferences(
         recordSuggestionPreferences.outputMode,
         recordSuggestionPreferences.canonicalCatalogDisplayMode,
         recordSuggestionPreferences.quickActivities,
+        recordSuggestionPreferences.quickAccessCardExpanded,
         recordSuggestionPreferences.assistSettingsExpanded,
         recordSuggestionPreferences.collapsedCanonicalRootPaths,
         recordSuggestionPreferences.orderedCanonicalRootPaths
@@ -30,6 +31,9 @@ internal fun SyncTracerScreenRecordPreferences(
             recordSuggestionPreferences.canonicalCatalogDisplayMode
         )
         recordViewModel.updateQuickActivities(recordSuggestionPreferences.quickActivities)
+        recordViewModel.updateQuickAccessCardExpanded(
+            recordSuggestionPreferences.quickAccessCardExpanded
+        )
         recordViewModel.updateAssistUiState(
             assistSettingsExpanded = recordSuggestionPreferences.assistSettingsExpanded
         )

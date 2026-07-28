@@ -20,7 +20,6 @@ fun QueryReportTabContent(
     modifier: Modifier = Modifier,
     queryUiState: QueryReportUiState,
     queryReportViewModel: QueryReportViewModel,
-    availableTxtMonths: List<String>,
     preferredReportMode: ReportMode,
     onPreferredReportModeChange: (ReportMode) -> Unit,
     preferredResultDisplayMode: ReportResultDisplayMode,
@@ -44,34 +43,45 @@ fun QueryReportTabContent(
     isAppDarkThemeActive: Boolean,
     bottomContentPadding: Dp = 0.dp
 ) {
-    LaunchedEffect(preferredReportMode) {
-        queryReportViewModel.onPersistedReportModeChange(preferredReportMode)
+    LaunchedEffect(
+        preferredReportMode,
+        preferredChartSemanticMode,
+        preferredResultDisplayMode,
+        preferredParameterSection
+    ) {
+        // These four DataStore values form one report presentation selection. Applying them
+        // independently can launch a default text report before the persisted Chart mode has
+        // arrived, whose late result overwrites the chart during cold start.
+        queryReportViewModel.applyPersistedReportPresentation(
+            reportMode = preferredReportMode,
+            chartSemanticMode = preferredChartSemanticMode,
+            resultDisplayMode = preferredResultDisplayMode,
+            parameterSection = preferredParameterSection
+        )
     }
-    LaunchedEffect(preferredChartSemanticMode) {
-        queryReportViewModel.onPersistedChartSemanticModeChange(preferredChartSemanticMode)
-    }
-    LaunchedEffect(preferredResultDisplayMode) {
-        queryReportViewModel.onResultDisplayModeChange(preferredResultDisplayMode)
-    }
-    LaunchedEffect(preferredParameterSection) {
-        queryReportViewModel.onParameterSectionChange(preferredParameterSection)
-    }
-    val displayedReportMode = preferredReportMode
-    val displayedResultDisplayMode = preferredResultDisplayMode
+    // DataStore preferences are asynchronous persistence input, while chart results and loading
+    // state are produced by the ViewModel. Rendering the selectors from preferences but the
+    // chart from queryUiState split one user selection across two clocks: after switching Month,
+    // Compose could render the new Trend shell with the old empty/loading chart snapshot. Once
+    // preferences have been applied above, use the ViewModel's single, atomic presentation state
+    // for every visible report control and result.
+    val displayedReportMode = queryUiState.reportMode
+    val displayedResultDisplayMode = queryUiState.resultDisplayMode
     val displayedParameterSection = if (
         displayedReportMode != ReportMode.DAY &&
-        preferredParameterSection == ReportParameterSection.TIMELINE
+        queryUiState.parameterSection == ReportParameterSection.TIMELINE
     ) {
         ReportParameterSection.DAY
     } else {
-        preferredParameterSection
+        queryUiState.parameterSection
     }
-    val displayedChartSemanticMode = preferredChartSemanticMode
-        .normalizeForReportMode(displayedReportMode)
+    val displayedChartSemanticMode = queryUiState.chartSemanticMode
 
-    // Report year menus intentionally follow existing TXT year directories so
-    // users only pick years that actually back YYYY/YYYY-MM.txt storage.
-    val calendarAvailability = CalendarAvailability.fromMonthKeys(availableTxtMonths)
+    // Report period selectors are backed by Core's database calendar query. TXT storage is
+    // intentionally not consulted here because Report reads the database projection.
+    val calendarAvailability = CalendarAvailability.fromMonthKeys(
+        queryUiState.availableReportMonths
+    )
     val selectedPeriod = displayedReportMode.toPeriod()
     val treeMaxAvailableDepth = (queryUiState.activeResult as? QueryResult.Tree)
         ?.maxAvailableDepth
@@ -197,7 +207,6 @@ fun QueryReportTabContent(
                 onChartRootChange = queryReportViewModel::onChartRootChange,
                 onChartShowAverageLineChange = onChartShowAverageLineChange,
                 onChartVisualModeChange = onPreferredChartVisualModeChange,
-                onLoadChart = queryReportViewModel::loadChart,
                 onUpdateActivityRemark = queryReportViewModel::updateActivityRemark,
                 onUpdateDayRemark = queryReportViewModel::updateDayRemark
             )
@@ -211,7 +220,7 @@ internal fun resolveDisplayResult(
     selectedSection: ReportParameterSection
 ): QueryResult? {
     return when (selectedSection) {
-        ReportParameterSection.TREE -> uiState.activeResult as? QueryResult.Tree
+        ReportParameterSection.ACTIVITY_HIERARCHY -> uiState.activeResult as? QueryResult.Tree
         ReportParameterSection.DAY,
         ReportParameterSection.TIMELINE -> uiState.reportResultsByPeriod[selectedPeriod]
     }
@@ -222,7 +231,7 @@ private fun resolveDisplayReportSummary(
     selectedPeriod: DataTreePeriod,
     selectedSection: ReportParameterSection
 ): ReportSummary? {
-    if (selectedSection == ReportParameterSection.TREE) {
+    if (selectedSection == ReportParameterSection.ACTIVITY_HIERARCHY) {
         return null
     }
     return uiState.reportResultsByPeriod[selectedPeriod]?.summary
@@ -234,7 +243,7 @@ private fun resolveDisplayReportError(
     selectedPeriod: DataTreePeriod,
     selectedSection: ReportParameterSection
 ): String {
-    return if (selectedSection == ReportParameterSection.TREE) {
+    return if (selectedSection == ReportParameterSection.ACTIVITY_HIERARCHY) {
         ""
     } else {
         uiState.reportErrorsByPeriod[selectedPeriod].orEmpty()

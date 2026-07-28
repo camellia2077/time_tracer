@@ -14,7 +14,7 @@ class TracerScreenExportTracerTest {
                 "aliases/study.toml",
                 "charts/heatmap.toml",
                 "meta/bundle.toml",
-                "reports/markdown/day.toml",
+                "reports/markdown/en/day.toml",
                 "config.toml"
             )
         )
@@ -27,8 +27,8 @@ class TracerScreenExportTracerTest {
                 ConfigTomlExportEntry("config.toml", "config.toml"),
                 ConfigTomlExportEntry("meta/bundle.toml", "meta/bundle.toml"),
                 ConfigTomlExportEntry(
-                    "reports/markdown/day.toml",
-                    "reports/markdown/day.toml"
+                    "reports/markdown/en/day.toml",
+                    "reports/markdown/en/day.toml"
                 )
             ),
             result

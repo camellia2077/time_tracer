@@ -63,6 +63,16 @@ internal class RecordIntentHandler(
     fun updateQuickActivities(state: RecordUiState, values: List<String>): RecordUiState =
         RecordStateReducer.updateQuickActivities(state, values)
 
+    fun updateActualTimeExpanded(
+        state: RecordUiState,
+        expanded: Boolean
+    ): RecordUiState = RecordStateReducer.updateActualTimeExpanded(state, expanded)
+
+    fun updateQuickAccessCardExpanded(
+        state: RecordUiState,
+        expanded: Boolean
+    ): RecordUiState = RecordStateReducer.updateQuickAccessCardExpanded(state, expanded)
+
     fun updateAssistUiState(
         state: RecordUiState,
         assistSettingsExpanded: Boolean
@@ -90,8 +100,10 @@ internal class RecordIntentHandler(
     fun hideCanonicalCatalog(state: RecordUiState): RecordUiState =
         RecordStateReducer.hideCanonicalCatalog(state)
 
-    fun showCanonicalCatalogLoading(state: RecordUiState): RecordUiState =
-        RecordStateReducer.showCanonicalCatalogLoading(state)
+    fun showCanonicalCatalogLoading(
+        state: RecordUiState,
+        target: CanonicalBrowserTarget
+    ): RecordUiState = RecordStateReducer.showCanonicalCatalogLoading(state, target)
 
     suspend fun loadActivitySuggestions(state: RecordUiState): RecordUiState =
         useCaseCaller.loadActivitySuggestions(

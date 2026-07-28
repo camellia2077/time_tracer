@@ -4,13 +4,13 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountTree
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.ElevatedCard
@@ -36,9 +36,13 @@ internal fun RecordQuickAccessCard(
     quickActivities: List<String>,
     availableActivityNames: List<String>,
     onQuickActivitiesUpdate: (List<String>) -> Boolean,
+    quickAccessCardExpanded: Boolean = true,
+    onToggleQuickAccessCard: () -> Unit = {},
     assistSettingsExpanded: Boolean,
     onToggleAssistSettings: () -> Unit,
-    onOpenCanonicalCatalog: () -> Unit,
+    suggestionsVisible: Boolean = false,
+    onToggleSuggestions: () -> Unit = {},
+    onOpenQuickAccessCanonicalCatalog: () -> Unit,
     quickActivitySearch: String,
     onQuickActivitySearchChange: (String) -> Unit,
     maxQuickActivityCount: Int
@@ -88,26 +92,27 @@ internal fun RecordQuickAccessCard(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                     ) {
-                        IconButton(
-                            onClick = onOpenCanonicalCatalog,
-                            modifier = Modifier.size(40.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.AccountTree,
-                                contentDescription = stringResource(
-                                    R.string.record_cd_open_canonical_catalog
-                                ),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
                         IconButton(onClick = onToggleAssistSettings) {
                             Icon(
-                                imageVector = if (assistSettingsExpanded) {
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = stringResource(
+                                    R.string.record_cd_edit_quick_access
+                                ),
+                                tint = if (assistSettingsExpanded) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                }
+                            )
+                        }
+                        IconButton(onClick = onToggleQuickAccessCard) {
+                            Icon(
+                                imageVector = if (quickAccessCardExpanded) {
                                     Icons.Default.ExpandLess
                                 } else {
                                     Icons.Default.ExpandMore
                                 },
-                                contentDescription = if (assistSettingsExpanded) {
+                                contentDescription = if (quickAccessCardExpanded) {
                                     stringResource(R.string.record_cd_collapse)
                                 } else {
                                     stringResource(R.string.record_cd_expand)
@@ -117,20 +122,17 @@ internal fun RecordQuickAccessCard(
                         }
                     }
                 }
-                Text(
-                    text = stringResource(R.string.record_hint_long_press_drag_sort),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
             }
 
-            AnimatedVisibility(visible = assistSettingsExpanded) {
-                Column(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .padding(bottom = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
+            if (quickAccessCardExpanded) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                AnimatedVisibility(visible = assistSettingsExpanded) {
+                    Column(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .padding(top = 12.dp, bottom = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
                     OutlinedTextField(
                         value = quickActivitySearch,
                         onValueChange = onQuickActivitySearchChange,
@@ -198,6 +200,38 @@ internal fun RecordQuickAccessCard(
                             )
                         }
                     }
+
+                    TextButton(
+                        onClick = onToggleSuggestions,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(stringResource(R.string.record_action_suggestions))
+                        Icon(
+                            imageVector = if (suggestionsVisible) {
+                                Icons.Default.ExpandLess
+                            } else {
+                                Icons.Default.ExpandMore
+                            },
+                            contentDescription = null
+                        )
+                    }
+
+                    TextButton(
+                        onClick = onOpenQuickAccessCanonicalCatalog,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AccountTree,
+                            contentDescription = stringResource(
+                                R.string.record_cd_open_quick_access_catalog
+                            )
+                        )
+                        Text(
+                            text = stringResource(
+                                R.string.record_action_browse_quick_access_catalog
+                            )
+                        )
+                    }
                 }
             }
 
@@ -224,4 +258,6 @@ internal fun RecordQuickAccessCard(
             }
         }
     }
+}
+}
 }

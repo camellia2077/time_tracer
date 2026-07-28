@@ -10,23 +10,14 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 
 internal enum class ConfigCategory {
-    // Converter alias files live under `aliases/*.toml`.
-    CONVERTER,
+    // Alias files live under `aliases/*.toml`.
+    ALIAS,
     // Charts = `charts/*.toml`
     CHARTS,
     // Meta = `config.toml` plus `meta/*.toml`
     META,
     // Reports = `reports/**/*.toml`
     REPORTS
-}
-
-internal enum class ConverterSubcategory {
-    // Aliases represent the `aliases/` directory. `_system.toml`
-    // is intentionally kept in the plain TOML editor for now.
-    // This set is intentionally dynamic because users define their own
-    // activity-name mapping files, so the UI treats it as a high-frequency
-    // editable bucket instead of a fixed file list.
-    ALIASES,
 }
 
 internal enum class ConfigAutoSaveStatus {
@@ -37,9 +28,8 @@ internal enum class ConfigAutoSaveStatus {
 }
 
 internal data class ConfigUiState(
-    val selectedCategory: ConfigCategory = ConfigCategory.CONVERTER,
-    val selectedConverterSubcategory: ConverterSubcategory = ConverterSubcategory.ALIASES,
-    val converterFiles: List<ConfigTomlFileEntry> = emptyList(),
+    val selectedCategory: ConfigCategory = ConfigCategory.ALIAS,
+    val aliasFiles: List<ConfigTomlFileEntry> = emptyList(),
     val chartFiles: List<ConfigTomlFileEntry> = emptyList(),
     val metaFiles: List<ConfigTomlFileEntry> = emptyList(),
     val reportFiles: List<ConfigTomlFileEntry> = emptyList(),
@@ -74,7 +64,6 @@ internal class ConfigViewModel(
     private val aliasMoveMigrationGateway: AliasMoveMigrationGateway? =
         configGateway as? AliasMoveMigrationGateway
 ) : ViewModel() {
-    private val aliasEditorUseCase = ActivityAliasEditorUseCase()
     private val aliasMigrationUseCase = aliasMoveMigrationGateway?.let(::ActivityAliasMigrationUseCase)
     companion object {
         private const val ALIAS_RENAME_LOG_TAG = "AliasRename"
@@ -101,7 +90,7 @@ internal class ConfigViewModel(
             }
 
             val updated = uiState.copy(
-                converterFiles = listResult.converterFiles,
+                aliasFiles = listResult.aliasFiles,
                 chartFiles = listResult.chartFiles,
                 metaFiles = listResult.metaFiles,
                 reportFiles = listResult.reportFiles
@@ -126,42 +115,12 @@ internal class ConfigViewModel(
 
     fun selectCategory(category: ConfigCategory) {
         viewModelScope.launch {
-            val changed = uiState.copy(
-                selectedCategory = category,
-                selectedConverterSubcategory = if (category == ConfigCategory.CONVERTER) {
-                    ConverterSubcategory.ALIASES
-                } else {
-                    uiState.selectedConverterSubcategory
-                }
-            )
+            val changed = uiState.copy(selectedCategory = category)
             val files = configFilesForCategory(changed, category)
             if (files.isEmpty()) {
                 uiState = clearSelectedConfigFile(
                     changed,
                     statusText = "No TOML files in ${category.name.lowercase()}."
-                )
-                return@launch
-            }
-
-            uiState = readConfigFileIntoState(
-                baseState = changed,
-                path = preferredConfigFilePath(changed, files),
-                statusText = "open toml -> ${preferredConfigFilePath(changed, files)}"
-            )
-        }
-    }
-
-    fun selectConverterSubcategory(subcategory: ConverterSubcategory) {
-        if (uiState.selectedCategory != ConfigCategory.CONVERTER) {
-            return
-        }
-        viewModelScope.launch {
-            val changed = uiState.copy(selectedConverterSubcategory = subcategory)
-            val files = configFilesForCategory(changed, ConfigCategory.CONVERTER)
-            if (files.isEmpty()) {
-                uiState = clearSelectedConfigFile(
-                    changed,
-                    statusText = "No TOML files in converter."
                 )
                 return@launch
             }
@@ -227,9 +186,31 @@ internal class ConfigViewModel(
         if (!isAliasConfigFilePath(uiState.selectedFilePath) || uiState.aliasEditorMode == mode) {
             return
         }
-        uiState = when (mode) {
-            AliasEditorMode.ADVANCED -> cacheAliasAdvancedMode(switchAliasEditorToAdvanced(uiState))
-            AliasEditorMode.STRUCTURED -> cacheAliasStructuredMode(switchAliasEditorToStructured(uiState))
+        if (mode == AliasEditorMode.ADVANCED) {
+            uiState = cacheAliasAdvancedMode(switchAliasEditorToAdvanced(uiState))
+            return
+        }
+        val gateway = configGateway as? AliasHierarchyGateway ?: run {
+            uiState = uiState.copy(aliasEditorErrorMessage = "Alias hierarchy runtime is unavailable.")
+            return
+        }
+        val rawToml = uiState.aliasAdvancedTomlDraft
+        viewModelScope.launch {
+            val result = gateway.describeAliasHierarchy(rawToml)
+            val document = result.hierarchy?.toActivityAliasDocument()
+            if (!result.ok || document == null) {
+                val message = result.message.ifBlank { "Alias hierarchy validation failed." }
+                uiState = uiState.copy(aliasEditorErrorMessage = message, statusText = message)
+                return@launch
+            }
+            uiState = cacheAliasStructuredMode(uiState.copy(
+                aliasEditorMode = AliasEditorMode.STRUCTURED,
+                aliasDocumentDraft = document,
+                aliasParentOptions = normalizeAliasParentOptions(
+                    uiState.aliasParentOptions + document.parent
+                ),
+                aliasEditorErrorMessage = ""
+            ))
         }
     }
 
@@ -242,34 +223,22 @@ internal class ConfigViewModel(
             val currentFilePath = uiState.selectedFilePath
             val targetFilePath = resolveAliasFilePathForParent(
                 configGateway = configGateway,
-                converterFiles = uiState.converterFiles,
+                aliasFiles = uiState.aliasFiles,
                 currentFilePath = currentFilePath,
                 currentAliasDocument = uiState.aliasDocumentDraft,
                 parent = normalizedValue
             )
             if (targetFilePath != null && targetFilePath != currentFilePath) {
                 uiState = readConfigFileIntoState(
-                    baseState = uiState.copy(selectedConverterSubcategory = ConverterSubcategory.ALIASES),
+                    baseState = uiState,
                     path = targetFilePath,
                     statusText = "open toml -> $targetFilePath"
                 )
                 return@launch
             }
 
-            val document = uiState.aliasDocumentDraft ?: return@launch
-            val updatedDocument = aliasEditorUseCase.updateParent(document, normalizedValue)
-            uiState = uiState.copy(
-                aliasDocumentDraft = updatedDocument,
-                aliasStructuredDraftsByFile = cacheStructuredDraft(
-                    filePath = currentFilePath,
-                    document = updatedDocument
-                ),
-                aliasEditorModeByFile = cacheAliasMode(
-                    filePath = currentFilePath,
-                    mode = AliasEditorMode.STRUCTURED
-                ),
-                aliasEntryMovePlan = null,
-                aliasEditorErrorMessage = ""
+            applyCoreAliasHierarchyOperation(
+                AliasHierarchyOperation(kind = "rename_parent", newName = normalizedValue)
             )
         }
     }
@@ -281,226 +250,301 @@ internal class ConfigViewModel(
             uiState = uiState.copy(aliasEditorErrorMessage = "Alias group name must not be empty.")
             return
         }
-        val updatedDocument = aliasEditorUseCase.addCategory(document, parentGroupId, normalizedName)
-        uiState = uiState.copy(
-            aliasDocumentDraft = updatedDocument,
-            aliasStructuredDraftsByFile = cacheStructuredDraft(
-                filePath = uiState.selectedFilePath,
-                document = updatedDocument
-            ),
-            aliasEditorModeByFile = cacheAliasMode(
-                filePath = uiState.selectedFilePath,
-                mode = AliasEditorMode.STRUCTURED
-            ),
-            aliasEntryMovePlan = null,
-            aliasEditorErrorMessage = ""
+        applyCoreAliasHierarchyOperation(
+            AliasHierarchyOperation(
+                kind = "add_group",
+                targetPath = parentGroupId?.let(document::canonicalTargetPathForGroup) ?: "root",
+                canonicalKey = normalizedName
+            )
         )
     }
 
     fun deleteAliasGroup(groupId: String) {
         val document = uiState.aliasDocumentDraft ?: return
-        val updatedDocument = aliasEditorUseCase.deleteCategory(document, groupId)
-        uiState = uiState.copy(
-            aliasDocumentDraft = updatedDocument,
-            aliasStructuredDraftsByFile = cacheStructuredDraft(
-                filePath = uiState.selectedFilePath,
-                document = updatedDocument
-            ),
-            aliasEditorModeByFile = cacheAliasMode(
-                filePath = uiState.selectedFilePath,
-                mode = AliasEditorMode.STRUCTURED
-            ),
-            aliasEntryMovePlan = null,
-            aliasEditorErrorMessage = ""
-        )
+        val path = document.canonicalTargetPathForGroup(groupId) ?: return
+        applyCoreAliasHierarchyOperation(AliasHierarchyOperation("delete_group", targetPath = path))
     }
 
-    fun addAliasEntry(parentGroupId: String?, aliasKey: String, canonicalLeaf: String) {
+    fun addAliasEntry(parentGroupId: String?, canonicalLeaf: String, aliases: List<String>) {
         val document = uiState.aliasDocumentDraft ?: return
-        val normalizedAliasKey = aliasKey.trim()
         val normalizedCanonicalLeaf = canonicalLeaf.trim()
-        if (normalizedAliasKey.isEmpty() || normalizedCanonicalLeaf.isEmpty()) {
+        val normalizedAliases = aliases.map(String::trim).filter(String::isNotEmpty)
+        if (normalizedCanonicalLeaf.isEmpty() || normalizedAliases.isEmpty()) {
             uiState = uiState.copy(
-                aliasEditorErrorMessage = "Alias key and canonical leaf must not be empty."
+                aliasEditorErrorMessage = "Canonical and at least one alias must not be empty."
             )
             return
         }
-        val updatedDocument = aliasEditorUseCase.addAlias(
-            document, parentGroupId, normalizedAliasKey, normalizedCanonicalLeaf
-        )
-        uiState = uiState.copy(
-            aliasDocumentDraft = updatedDocument,
-            aliasStructuredDraftsByFile = cacheStructuredDraft(
-                filePath = uiState.selectedFilePath,
-                document = updatedDocument
-            ),
-            aliasEditorModeByFile = cacheAliasMode(
-                filePath = uiState.selectedFilePath,
-                mode = AliasEditorMode.STRUCTURED
-            ),
-            aliasEntryMovePlan = null,
-            aliasEditorErrorMessage = ""
-        )
+        applyCoreAliasHierarchyOperation(AliasHierarchyOperation(
+            kind = "add_leaf",
+            targetPath = parentGroupId?.let(document::canonicalTargetPathForGroup) ?: "root",
+            canonicalKey = normalizedCanonicalLeaf,
+            aliases = normalizedAliases
+        ))
     }
 
-    fun updateAliasEntry(entryId: String, aliasKey: String, canonicalLeaf: String) {
+    fun updateAliasEntry(entryId: String, canonicalLeaf: String, aliases: List<String>) {
         val document = uiState.aliasDocumentDraft ?: return
-        val normalizedAliasKey = aliasKey.trim()
         val normalizedCanonicalLeaf = canonicalLeaf.trim()
-        if (normalizedAliasKey.isEmpty() || normalizedCanonicalLeaf.isEmpty()) {
+        val normalizedAliases = aliases.map(String::trim).filter(String::isNotEmpty)
+        if (normalizedCanonicalLeaf.isEmpty() || normalizedAliases.isEmpty()) {
             uiState = uiState.copy(
-                aliasEditorErrorMessage = "Alias key and canonical leaf must not be empty."
+                aliasEditorErrorMessage = "Canonical and at least one alias must not be empty."
             )
             return
         }
-        val updatedDocument = aliasEditorUseCase.updateAlias(
-            document, entryId, normalizedAliasKey, normalizedCanonicalLeaf
-        )
-        uiState = uiState.copy(
-            aliasDocumentDraft = updatedDocument,
-            aliasStructuredDraftsByFile = cacheStructuredDraft(
-                filePath = uiState.selectedFilePath,
-                document = updatedDocument
-            ),
-            aliasEditorModeByFile = cacheAliasMode(
-                filePath = uiState.selectedFilePath,
-                mode = AliasEditorMode.STRUCTURED
-            ),
-            aliasEntryMovePlan = null,
-            aliasEditorErrorMessage = ""
-        )
+        val canonicalTargetPath = document.canonicalTargetPathForEntry(entryId)
+        val oldLeaf = document.findAliasEntry(entryId)?.canonicalLeaf
+        if (canonicalTargetPath == null || oldLeaf == null) return
+        applyCoreAliasHierarchyOperation(AliasHierarchyOperation(
+            kind = if (oldLeaf == normalizedCanonicalLeaf) "set_leaf_aliases" else "rename_leaf_canonical",
+            targetPath = canonicalTargetPath,
+            newName = normalizedCanonicalLeaf,
+            aliases = normalizedAliases
+        ))
     }
 
     fun deleteAliasEntry(entryId: String) {
         val document = uiState.aliasDocumentDraft ?: return
-        val updatedDocument = aliasEditorUseCase.deleteAlias(document, entryId)
-        uiState = uiState.copy(
-            aliasDocumentDraft = updatedDocument,
-            aliasStructuredDraftsByFile = cacheStructuredDraft(
-                filePath = uiState.selectedFilePath,
-                document = updatedDocument
-            ),
-            aliasEditorModeByFile = cacheAliasMode(
-                filePath = uiState.selectedFilePath,
-                mode = AliasEditorMode.STRUCTURED
-            ),
-            aliasEntryMovePlan = null,
-            aliasEditorErrorMessage = ""
-        )
+        val path = document.canonicalTargetPathForEntry(entryId) ?: return
+        applyCoreAliasHierarchyOperation(AliasHierarchyOperation("delete_leaf", targetPath = path))
+    }
+
+    private fun applyCoreAliasHierarchyOperation(operation: AliasHierarchyOperation) {
+        val gateway = configGateway as? AliasHierarchyGateway ?: run {
+            uiState = uiState.copy(aliasEditorErrorMessage = "Alias hierarchy runtime is unavailable.")
+            return
+        }
+        val content = uiState.aliasAdvancedTomlDraft.ifBlank { uiState.selectedFileContent }
+        val selectedFile = uiState.selectedFilePath
+        viewModelScope.launch {
+            val result = gateway.applyAliasHierarchyOperation(content, operation)
+            val document = result.hierarchy?.toActivityAliasDocument()
+            if (!result.ok || document == null) {
+                uiState = uiState.copy(aliasEditorErrorMessage = result.message.ifBlank { "Alias hierarchy operation failed." })
+                return@launch
+            }
+            // Every Core-produced alias TOML is persisted transactionally,
+            // including operations whose TXT replacement list is empty.
+            val requiresMigration = true
+            val migratedToml = if (requiresMigration) {
+                uiState = uiState.copy(autoSaveStatus = ConfigAutoSaveStatus.SAVING)
+                val migration = aliasMigrationUseCase?.applyCoreResult(
+                    configRelativePath = selectedFile,
+                    updatedTomlContent = result.updatedTomlContent,
+                    replacements = result.replacements,
+                    aliasReplacements = result.aliasReplacements
+                ) ?: ActivityAliasMigrationOutcome.Invalid("Alias migration runtime is unavailable.")
+                if (migration is ActivityAliasMigrationOutcome.Invalid) {
+                    uiState = uiState.copy(
+                        aliasEditorErrorMessage = migration.message,
+                        autoSaveStatus = ConfigAutoSaveStatus.FAILED
+                    )
+                    return@launch
+                }
+                if (result.aliasReplacements.isNotEmpty()) {
+                    val replacements = result.aliasReplacements.associate {
+                        it.oldAlias to it.newAlias
+                    }
+                    val quickAccessUpdate = runCatching {
+                        quickActivitiesPreferenceGateway.setQuickActivities(
+                            quickActivitiesPreferenceGateway.getQuickActivities().map { value ->
+                                replacements[value] ?: value
+                            }
+                        )
+                    }.exceptionOrNull()
+                    if (quickAccessUpdate != null) {
+                        uiState = uiState.copy(
+                            aliasEditorErrorMessage = quickAccessUpdate.message
+                                ?: "Quick Access alias migration failed.",
+                            autoSaveStatus = ConfigAutoSaveStatus.FAILED
+                        )
+                        return@launch
+                    }
+                }
+                (migration as ActivityAliasMigrationOutcome.Applied).renderedToml
+            } else {
+                result.updatedTomlContent
+            }
+            val parentOptions = if (requiresMigration) {
+                resolveAliasParentOptions(
+                    configGateway = configGateway,
+                    aliasFiles = uiState.aliasFiles,
+                    selectedFilePath = selectedFile,
+                    selectedFileContent = migratedToml
+                )
+            } else {
+                uiState.aliasParentOptions
+            }
+            uiState = uiState.copy(
+                aliasDocumentDraft = document,
+                aliasBaselineDocument = if (requiresMigration) {
+                    document
+                } else {
+                    uiState.aliasBaselineDocument
+                },
+                selectedFileContent = if (requiresMigration) migratedToml else uiState.selectedFileContent,
+                aliasAdvancedTomlDraft = migratedToml,
+                aliasStructuredDraftsByFile = cacheStructuredDraft(
+                    selectedFile,
+                    document,
+                    migratedToml
+                ),
+                aliasEditorModeByFile = cacheAliasMode(selectedFile, AliasEditorMode.STRUCTURED),
+                aliasEntryMovePlan = null,
+                aliasParentOptions = parentOptions,
+                aliasEditorErrorMessage = "",
+                txtReloadRequestVersion = if (requiresMigration) {
+                    uiState.txtReloadRequestVersion + 1
+                } else {
+                    uiState.txtReloadRequestVersion
+                },
+                autoSaveStatus = if (requiresMigration) {
+                    ConfigAutoSaveStatus.SAVED
+                } else {
+                    uiState.autoSaveStatus
+                }
+            )
+        }
+    }
+
+    fun renameAliasGroup(groupId: String, name: String) {
+        val document = uiState.aliasDocumentDraft ?: return
+        val normalizedName = name.trim()
+        if (normalizedName.isEmpty()) return
+        val targetPath = document.canonicalTargetPathForGroup(groupId)
+        if (targetPath == null) return
+        applyCoreAliasHierarchyOperation(AliasHierarchyOperation(
+            kind = "rename_group_canonical", targetPath = targetPath, newName = normalizedName
+        ))
+    }
+
+    fun addAliasToEntry(entryId: String, alias: String) {
+        val document = uiState.aliasDocumentDraft ?: return
+        val normalizedAlias = alias.trim()
+        if (normalizedAlias.isEmpty()) return
+        val path = document.canonicalTargetPathForEntry(entryId) ?: return
+        val parentPath = path.substringBeforeLast('.', missingDelimiterValue = "root")
+        val key = path.substringAfterLast('.')
+        applyCoreAliasHierarchyOperation(AliasHierarchyOperation(
+            kind = "append_leaf_alias", targetPath = parentPath,
+            canonicalKey = key, aliases = listOf(normalizedAlias)
+        ))
+    }
+
+    fun renameAliasOnEntry(entryId: String, oldAlias: String, newAlias: String) {
+        val document = uiState.aliasDocumentDraft ?: return
+        val normalizedAlias = newAlias.trim()
+        if (normalizedAlias.isEmpty() || normalizedAlias == oldAlias) return
+        val entry = document.findAliasEntry(entryId) ?: return
+        val path = document.canonicalTargetPathForEntry(entryId) ?: return
+        applyCoreAliasHierarchyOperation(AliasHierarchyOperation(
+            kind = "set_leaf_aliases", targetPath = path,
+            aliases = entry.aliases.map { if (it == oldAlias) normalizedAlias else it }
+        ))
+    }
+
+    fun deleteAliasFromEntry(entryId: String, alias: String) {
+        val document = uiState.aliasDocumentDraft ?: return
+        val entry = document.findAliasEntry(entryId) ?: return
+        if (entry.aliases.size <= 1) {
+            uiState = uiState.copy(aliasEditorErrorMessage = "A canonical must keep at least one alias.")
+            return
+        }
+        val path = document.canonicalTargetPathForEntry(entryId) ?: return
+        applyCoreAliasHierarchyOperation(AliasHierarchyOperation(
+            kind = "set_leaf_aliases", targetPath = path,
+            aliases = entry.aliases - alias
+        ))
     }
 
     fun promoteAliasEntryToGroup(entryId: String) {
         val document = uiState.aliasDocumentDraft ?: return
-        when (val result = aliasEditorUseCase.promoteAlias(document, entryId)) {
-            is AliasEntryPromotePlanResult.Invalid -> {
-                uiState = uiState.copy(
-                    aliasEditorErrorMessage = result.message,
-                    statusText = result.message
-                )
-            }
-            is AliasEntryPromotePlanResult.Ready -> {
-                val updatedDocument = aliasEditorUseCase.applyPromotion(document, result.plan)
-                uiState = uiState.copy(
-                    aliasDocumentDraft = updatedDocument,
-                    aliasStructuredDraftsByFile = cacheStructuredDraft(
-                        filePath = uiState.selectedFilePath,
-                        document = updatedDocument
-                    ),
-                    aliasEditorModeByFile = cacheAliasMode(
-                        filePath = uiState.selectedFilePath,
-                        mode = AliasEditorMode.STRUCTURED
-                    ),
-                    aliasEntryMovePlan = null,
-                    aliasEditorErrorMessage = "",
-                    statusText = "promoted `${result.plan.aliasKey}` to recordable group `${result.plan.canonicalLeaf}`"
-                )
-            }
-        }
+        val path = document.canonicalTargetPathForEntry(entryId) ?: return
+        applyCoreAliasHierarchyOperation(AliasHierarchyOperation("promote_leaf", targetPath = path))
     }
 
     fun renameGroupAlias(groupId: String, oldAlias: String, newAlias: String) {
         val trimmedAlias = newAlias.trim()
         val document = uiState.aliasDocumentDraft ?: return
         if (trimmedAlias.isEmpty() || trimmedAlias == oldAlias) return
-        val migrationUseCase = aliasMigrationUseCase ?: run {
-            uiState = uiState.copy(
-                aliasEditorErrorMessage = "Alias migration runtime is unavailable.",
-                autoSaveStatus = ConfigAutoSaveStatus.FAILED
-            )
-            return
-        }
-        val updatedDocument = document.renameGroupAlias(groupId, oldAlias, trimmedAlias)
-        val selectedFile = uiState.selectedFilePath
-        uiState = uiState.copy(autoSaveStatus = ConfigAutoSaveStatus.SAVING)
-        viewModelScope.launch {
-            when (val outcome = migrationUseCase.apply(
-                configRelativePath = selectedFile,
-                updatedDocument = updatedDocument,
-                replacements = listOf(CanonicalActivityNameReplacement(oldAlias, trimmedAlias))
-            )) {
-                is ActivityAliasMigrationOutcome.Invalid -> {
-                    uiState = uiState.copy(
-                        aliasEditorErrorMessage = outcome.message,
-                        autoSaveStatus = ConfigAutoSaveStatus.FAILED
-                    )
-                    return@launch
-                }
-                is ActivityAliasMigrationOutcome.Applied -> {
-                    val renderedToml = outcome.renderedToml
-                    uiState = applyLoadedConfigFile(
-                        state = uiState.copy(
-                            aliasStructuredDraftsByFile = uiState.aliasStructuredDraftsByFile - selectedFile,
-                            aliasAdvancedDraftsByFile = uiState.aliasAdvancedDraftsByFile - selectedFile,
-                            autoSaveStatus = ConfigAutoSaveStatus.SAVED,
-                            txtReloadRequestVersion = uiState.txtReloadRequestVersion + 1
-                        ),
-                        filePath = selectedFile,
-                        content = renderedToml,
-                        aliasParentOptions = uiState.aliasParentOptions,
-                        statusText = "Renamed category record name; updated ${outcome.result.updatedTxtFileCount} TXT file(s)."
-                    )
-                }
-            }
-        }
+        val path = document.canonicalTargetPathForGroup(groupId) ?: return
+        applyCoreAliasHierarchyOperation(AliasHierarchyOperation(
+            kind = "rename_group_alias", targetPath = path,
+            oldAlias = oldAlias, newName = trimmedAlias
+        ))
     }
 
     fun addGroupAlias(groupId: String, alias: String) {
         val trimmedAlias = alias.trim()
         val document = uiState.aliasDocumentDraft ?: return
         if (trimmedAlias.isEmpty()) return
-        val updatedDocument = document.addGroupAlias(groupId, trimmedAlias)
-        val validationMessage = AliasTomlEditorCodec.validateForSave(updatedDocument)
-        if (validationMessage != null) {
-            uiState = uiState.copy(aliasEditorErrorMessage = validationMessage)
+        val path = document.canonicalTargetPathForGroup(groupId) ?: return
+        applyCoreAliasHierarchyOperation(AliasHierarchyOperation(
+            kind = "append_group_alias", targetPath = path, aliases = listOf(trimmedAlias)
+        ))
+    }
+
+    fun updateGroupAliases(groupId: String, aliases: List<String>) {
+        val document = uiState.aliasDocumentDraft ?: return
+        val normalizedAliases = aliases.map(String::trim)
+        if (normalizedAliases.any(String::isEmpty) || normalizedAliases.distinct().size != normalizedAliases.size) {
+            uiState = uiState.copy(aliasEditorErrorMessage = "Group aliases must be non-empty and unique.")
             return
         }
-        uiState = uiState.copy(
-            aliasDocumentDraft = updatedDocument,
-            aliasStructuredDraftsByFile = cacheStructuredDraft(uiState.selectedFilePath, updatedDocument),
-            aliasEditorModeByFile = cacheAliasMode(uiState.selectedFilePath, AliasEditorMode.STRUCTURED),
-            aliasEditorErrorMessage = "",
-            statusText = "Added category record name `$trimmedAlias`."
-        )
+        val path = document.canonicalTargetPathForGroup(groupId) ?: return
+        applyCoreAliasHierarchyOperation(AliasHierarchyOperation(
+            kind = "set_group_aliases", targetPath = path, aliases = normalizedAliases
+        ))
     }
 
     fun previewAliasEntryMove(entryId: String, targetGroupId: String) {
         val document = uiState.aliasDocumentDraft ?: return
-        when (val result = aliasEditorUseCase.planMove(document, entryId, targetGroupId)) {
-            is AliasEntryMovePlanResult.Ready -> {
-                uiState = uiState.copy(
-                    aliasEntryMovePlan = result.plan,
-                    aliasEditorErrorMessage = "",
-                    statusText = "move plan -> ${result.plan.oldCanonical} to ${result.plan.newCanonical} (not saved)"
+        val gateway = configGateway as? AliasHierarchyGateway ?: run {
+            uiState = uiState.copy(aliasEditorErrorMessage = "Alias hierarchy runtime is unavailable.")
+            return
+        }
+        val entry = document.findAliasEntry(entryId) ?: return
+        val sourcePath = document.canonicalTargetPathForEntry(entryId) ?: return
+        val destinationPath = document.canonicalTargetPathForGroup(targetGroupId) ?: return
+        val content = uiState.aliasAdvancedTomlDraft.ifBlank { uiState.selectedFileContent }
+        viewModelScope.launch {
+            val result = gateway.applyAliasHierarchyOperation(
+                content,
+                AliasHierarchyOperation(
+                    kind = "move_leaf",
+                    targetPath = sourcePath,
+                    destinationPath = destinationPath
                 )
-            }
-
-            is AliasEntryMovePlanResult.Invalid -> {
+            )
+            val replacement = result.replacements.singleOrNull()
+            if (!result.ok || replacement == null) {
+                val message = result.message.ifBlank { "Alias move preview failed." }
                 uiState = uiState.copy(
                     aliasEntryMovePlan = null,
-                    aliasEditorErrorMessage = result.message,
-                    statusText = result.message
+                    aliasEditorErrorMessage = message,
+                    statusText = message
                 )
+                return@launch
             }
+            val sourceGroupPath = sourcePath.substringBeforeLast('.', "").split('.').filter(String::isNotEmpty)
+            val targetGroupPath = destinationPath.removePrefix("root.").split('.').filter(String::isNotEmpty)
+            val plan = AliasEntryMovePlan(
+                entryId = entryId,
+                aliasKey = entry.aliasKey,
+                canonicalLeaf = entry.canonicalLeaf,
+                sourceParentGroupId = sourcePath.substringBeforeLast('.', "").ifBlank { null },
+                sourceGroupPath = sourceGroupPath,
+                targetGroupId = targetGroupId,
+                targetGroupPath = targetGroupPath,
+                oldCanonical = replacement.oldCanonical,
+                newCanonical = replacement.newCanonical
+            )
+            uiState = uiState.copy(
+                aliasEntryMovePlan = plan,
+                aliasEditorErrorMessage = "",
+                statusText = "move plan -> ${plan.oldCanonical} to ${plan.newCanonical} (not saved)"
+            )
         }
     }
 
@@ -518,58 +562,15 @@ internal class ConfigViewModel(
     fun confirmAliasEntryMovePlan() {
         val plan = uiState.aliasEntryMovePlan ?: return
         val document = uiState.aliasDocumentDraft ?: return
-        val migrationUseCase = aliasMigrationUseCase
-        if (migrationUseCase == null) {
-            uiState = uiState.copy(
-                aliasEditorErrorMessage = "Alias move migration runtime is unavailable.",
-                autoSaveStatus = ConfigAutoSaveStatus.FAILED
+        val sourcePath = document.canonicalTargetPathForEntry(plan.entryId) ?: return
+        val destinationPath = document.canonicalTargetPathForGroup(plan.targetGroupId) ?: return
+        applyCoreAliasHierarchyOperation(
+            AliasHierarchyOperation(
+                kind = "move_leaf",
+                targetPath = sourcePath,
+                destinationPath = destinationPath
             )
-            return
-        }
-        val updatedDocument = aliasEditorUseCase.applyMove(document, plan)
-        val selectedFile = uiState.selectedFilePath
-        uiState = uiState.copy(autoSaveStatus = ConfigAutoSaveStatus.SAVING)
-        viewModelScope.launch {
-            when (val outcome = migrationUseCase.apply(
-                configRelativePath = selectedFile,
-                updatedDocument = updatedDocument,
-                replacements = listOf(CanonicalActivityNameReplacement(plan.oldCanonical, plan.newCanonical))
-            )) {
-                is ActivityAliasMigrationOutcome.Invalid -> {
-                    uiState = uiState.copy(
-                        aliasEditorErrorMessage = outcome.message,
-                        autoSaveStatus = ConfigAutoSaveStatus.FAILED,
-                        statusText = outcome.message
-                    )
-                    return@launch
-                }
-                is ActivityAliasMigrationOutcome.Applied -> {
-                    val renderedToml = outcome.renderedToml
-                    val aliasParentOptions = resolveAliasParentOptions(
-                        configGateway = configGateway,
-                        converterFiles = uiState.converterFiles,
-                        selectedFilePath = selectedFile,
-                        selectedFileContent = renderedToml
-                    )
-                    uiState = applyLoadedConfigFile(
-                        state = uiState.copy(
-                            aliasEntryMovePlan = null,
-                            aliasEditorErrorMessage = "",
-                            aliasStructuredDraftsByFile = uiState.aliasStructuredDraftsByFile - selectedFile,
-                            aliasAdvancedDraftsByFile = uiState.aliasAdvancedDraftsByFile - selectedFile,
-                            aliasEditorModeByFile = uiState.aliasEditorModeByFile +
-                                (selectedFile to AliasEditorMode.STRUCTURED),
-                            txtReloadRequestVersion = uiState.txtReloadRequestVersion + 1,
-                            autoSaveStatus = ConfigAutoSaveStatus.SAVED
-                        ),
-                        filePath = selectedFile,
-                        content = renderedToml,
-                        aliasParentOptions = aliasParentOptions,
-                        statusText = "Moved ${plan.aliasKey}; updated ${outcome.result.updatedTxtFileCount} TXT file(s) and rebuilt database."
-                    )
-                }
-            }
-        }
+        )
     }
 
     fun setStatusText(message: String) {
@@ -591,7 +592,7 @@ internal class ConfigViewModel(
                 return@launch
             }
             val existingPaths = sequenceOf(
-                listResult.converterFiles,
+                listResult.aliasFiles,
                 listResult.chartFiles,
                 listResult.metaFiles,
                 listResult.reportFiles
@@ -602,20 +603,22 @@ internal class ConfigViewModel(
             }
 
             val parent = targetFilePath.substringAfterLast('/').removeSuffix(".toml")
-            val initialContent = AliasTomlEditorCodec.serialize(
-                AliasTomlDocument(parent = parent, nodes = emptyList())
-            )
-            val saveResult = configGateway.saveConfigTomlFile(targetFilePath, initialContent)
-            if (!saveResult.ok) {
-                uiState = uiState.copy(statusText = saveResult.message)
-                return@launch
-            }
-
-            val reloadResult = (configGateway as? RuntimeInitializer)?.initializeRuntime()
-            if (reloadResult != null && !reloadResult.initialized) {
-                uiState = uiState.copy(
-                    statusText = "Alias file was created but runtime reload failed."
-                )
+            val initialContent = (configGateway as? AliasHierarchyGateway)
+                ?.createAliasHierarchyDocument(parent)
+                ?.takeIf { it.ok }
+                ?.tomlContent
+                ?: run {
+                    uiState = uiState.copy(statusText = "Alias hierarchy runtime is unavailable.")
+                    return@launch
+                }
+            val migration = aliasMigrationUseCase?.applyCoreResult(
+                configRelativePath = targetFilePath,
+                updatedTomlContent = initialContent,
+                replacements = emptyList(),
+                allowMissingConfig = true
+            ) ?: ActivityAliasMigrationOutcome.Invalid("Alias migration runtime is unavailable.")
+            if (migration is ActivityAliasMigrationOutcome.Invalid) {
+                uiState = uiState.copy(statusText = migration.message)
                 return@launch
             }
 
@@ -625,7 +628,7 @@ internal class ConfigViewModel(
                 return@launch
             }
             val updated = uiState.copy(
-                converterFiles = refreshedListResult.converterFiles,
+                aliasFiles = refreshedListResult.aliasFiles,
                 chartFiles = refreshedListResult.chartFiles,
                 metaFiles = refreshedListResult.metaFiles,
                 reportFiles = refreshedListResult.reportFiles
@@ -633,7 +636,7 @@ internal class ConfigViewModel(
             uiState = readConfigFileIntoState(
                 baseState = updated,
                 path = targetFilePath,
-                statusText = "created toml -> $targetFilePath"
+                statusText = "created alias toml through core migration -> $targetFilePath"
             )
         }
     }
@@ -690,16 +693,19 @@ internal class ConfigViewModel(
     fun discardUnsavedDraft() {
         if (isAliasConfigFilePath(uiState.selectedFilePath)) {
             val selectedFile = uiState.selectedFilePath
-            uiState = applyLoadedConfigFile(
-                state = uiState.copy(
-                    aliasStructuredDraftsByFile = uiState.aliasStructuredDraftsByFile - selectedFile,
-                    aliasAdvancedDraftsByFile = uiState.aliasAdvancedDraftsByFile - selectedFile,
-                    aliasEditorModeByFile = uiState.aliasEditorModeByFile - selectedFile
-                ),
-                filePath = selectedFile,
-                content = uiState.selectedFileContent,
-                aliasParentOptions = uiState.aliasParentOptions,
-                statusText = uiState.statusText
+            val baseline = uiState.aliasBaselineDocument
+            uiState = uiState.copy(
+                aliasEditorMode = AliasEditorMode.STRUCTURED,
+                aliasDocumentDraft = baseline,
+                aliasAdvancedTomlDraft = uiState.selectedFileContent,
+                aliasStructuredDraftsByFile = uiState.aliasStructuredDraftsByFile - selectedFile,
+                aliasAdvancedDraftsByFile = uiState.aliasAdvancedDraftsByFile - selectedFile,
+                aliasEditorModeByFile = uiState.aliasEditorModeByFile - selectedFile,
+                aliasEditorErrorMessage = if (baseline == null) {
+                    "Alias hierarchy is unavailable for this file."
+                } else {
+                    ""
+                }
             )
             return
         }
@@ -724,16 +730,31 @@ internal class ConfigViewModel(
         }
         val aliasParentOptions = resolveAliasParentOptions(
             configGateway = configGateway,
-            converterFiles = baseState.converterFiles,
+            aliasFiles = baseState.aliasFiles,
             selectedFilePath = readResult.filePath,
             selectedFileContent = readResult.content
         )
+        val hierarchyResult = if (isAliasConfigFilePath(readResult.filePath)) {
+            val gateway = configGateway as? AliasHierarchyGateway
+            if (gateway == null) {
+                AliasHierarchyDescribeResult(
+                    ok = false,
+                    message = "Alias hierarchy runtime is unavailable."
+                )
+            } else {
+                gateway.describeAliasHierarchy(readResult.content)
+            }
+        } else {
+            null
+        }
         return applyLoadedConfigFile(
             state = baseState,
             filePath = readResult.filePath,
             content = readResult.content,
             aliasParentOptions = aliasParentOptions,
-            statusText = statusText
+            statusText = statusText,
+            coreDocument = hierarchyResult?.hierarchy?.toActivityAliasDocument(),
+            coreErrorMessage = hierarchyResult?.takeIf { !it.ok }?.message.orEmpty()
         )
     }
 
@@ -770,177 +791,78 @@ internal class ConfigViewModel(
                 statusText = "Alias editor is unavailable for this file.",
                 autoSaveStatus = ConfigAutoSaveStatus.FAILED
             )
-        val baselineDocument = uiState.aliasBaselineDocument
-        val validationMessage = AliasTomlEditorCodec.validateForSave(document)
-        if (validationMessage != null) {
-            return uiState.copy(
-                aliasEditorErrorMessage = validationMessage,
-                autoSaveStatus = ConfigAutoSaveStatus.FAILED,
-                statusText = validationMessage
-            )
-        }
-        val duplicateMessage = validateAliasKeyUniqueness(
-            configGateway = configGateway,
-            converterFiles = uiState.converterFiles,
-            currentFilePath = selectedFile,
-            currentDocument = document
-        )
-        if (duplicateMessage != null) {
-            return uiState.copy(
-                aliasEditorErrorMessage = duplicateMessage,
-                autoSaveStatus = ConfigAutoSaveStatus.FAILED,
-                statusText = duplicateMessage
-            )
-        }
-        val renamePlans = baselineDocument?.let { baseline ->
-            collectAliasRenamePlans(baseline = baseline, current = document)
-        }.orEmpty()
-        logInfo(
-            ALIAS_RENAME_LOG_TAG,
-            "saveStructuredAliasFile path=$selectedFile renamePlanCount=${renamePlans.size}"
-        )
-        val quickActivitiesMigrationCandidate = buildQuickActivitiesAliasMigrationCandidate(
-            quickActivities = quickActivitiesPreferenceGateway.getQuickActivities(),
-            renamePlans = renamePlans
-        )
-        val txtMigrationCandidatesResult = buildTxtAliasMigrationCandidates(
-            txtStorageGateway = txtStorageGateway,
-            renamePlans = renamePlans
-        )
-        val txtMigrationCandidates = txtMigrationCandidatesResult.getOrElse { error ->
-            val message = error.message ?: "Alias rename TXT migration plan failed."
-            return uiState.copy(
-                aliasEditorErrorMessage = message,
-                autoSaveStatus = ConfigAutoSaveStatus.FAILED,
-                statusText = message
-            )
-        }
-        val renderedToml = AliasTomlEditorCodec.serialize(document)
-        val txtWriteResult = writeTxtAliasMigrationCandidates(
-            txtStorageGateway = txtStorageGateway,
-            candidates = txtMigrationCandidates
-        )
-        txtWriteResult.exceptionOrNull()?.let { error ->
-            val message = error.message ?: "Alias rename TXT migration failed."
-            return uiState.copy(
-                aliasEditorErrorMessage = message,
-                autoSaveStatus = ConfigAutoSaveStatus.FAILED,
-                statusText = message
-            )
-        }
-        val saveResult = configGateway.saveConfigTomlFile(
-            relativePath = selectedFile,
-            content = renderedToml
-        )
-        if (!saveResult.ok) {
-            val rollbackErrors = rollbackTxtAliasMigrationCandidates(
-                txtStorageGateway = txtStorageGateway,
-                candidates = txtMigrationCandidates
-            )
-            val rollbackSuffix = if (rollbackErrors.isEmpty()) {
-                ""
-            } else {
-                "\nTXT rollback issues: ${rollbackErrors.joinToString("; ")}"
-            }
-            return uiState.copy(
-                statusText = saveResult.message + rollbackSuffix,
-                aliasEditorErrorMessage = saveResult.message,
-                autoSaveStatus = ConfigAutoSaveStatus.FAILED
-            )
-        }
-        val quickActivitiesUpdateError = runCatching {
-            quickActivitiesMigrationCandidate?.let { candidate ->
-                logInfo(
-                    ALIAS_RENAME_LOG_TAG,
-                    "applyQuickAccessMigration from=${candidate.originalValues} to=${candidate.updatedValues}"
-                )
-                quickActivitiesPreferenceGateway.setQuickActivities(candidate.updatedValues)
-            }
-        }.exceptionOrNull()
-        if (quickActivitiesUpdateError != null) {
-            val message = quickActivitiesUpdateError.message
-                ?: "Quick Access alias migration failed."
-            return uiState.copy(
-                aliasEditorErrorMessage = message,
-                autoSaveStatus = ConfigAutoSaveStatus.FAILED,
-                statusText = message
-            )
-        }
-        reloadRuntimeAfterAliasConfigChange()?.let { message ->
-            return uiState.copy(
-                aliasEditorErrorMessage = message,
-                autoSaveStatus = ConfigAutoSaveStatus.FAILED,
-                statusText = message
-            )
-        }
-        val aliasParentOptions = resolveAliasParentOptions(
-            configGateway = configGateway,
-            converterFiles = uiState.converterFiles,
-            selectedFilePath = saveResult.filePath,
-            selectedFileContent = saveResult.content
-        )
-        val migrationSummary = buildString {
-            append("save toml -> ")
-            append(saveResult.filePath)
-            if (renamePlans.isNotEmpty()) {
-                append(" | renamed ")
-                append(renamePlans.size)
-                append(" alias")
-                if (renamePlans.size != 1) {
-                    append("es")
-                }
-                append(", updated ")
-                append(txtMigrationCandidates.size)
-                append(" TXT file")
-                if (txtMigrationCandidates.size != 1) {
-                    append("s")
-                }
-                if (quickActivitiesMigrationCandidate != null) {
-                    append(", updated Quick Access")
-                }
-            }
-        }
-        return applyLoadedConfigFile(
-            state = uiState.copy(
-                aliasEditorMode = AliasEditorMode.STRUCTURED,
-                aliasStructuredDraftsByFile = uiState.aliasStructuredDraftsByFile - selectedFile,
-                aliasAdvancedDraftsByFile = uiState.aliasAdvancedDraftsByFile - selectedFile,
-                aliasEditorModeByFile = uiState.aliasEditorModeByFile + (selectedFile to AliasEditorMode.STRUCTURED),
-                txtReloadRequestVersion = if (renamePlans.isNotEmpty()) {
-                    uiState.txtReloadRequestVersion + 1
-                } else {
-                    uiState.txtReloadRequestVersion
-                },
-                autoSaveStatus = ConfigAutoSaveStatus.SAVED
-            ),
-            filePath = saveResult.filePath,
-            content = saveResult.content,
-            aliasParentOptions = aliasParentOptions,
-            statusText = migrationSummary
+        // Structured operations are already persisted by
+        // applyCoreAliasHierarchyOperation through the migration service.
+        // This button only clears presentation drafts; it must never write
+        // alias TOML directly from Android.
+        return uiState.copy(
+            aliasEditorMode = AliasEditorMode.STRUCTURED,
+            aliasStructuredDraftsByFile = uiState.aliasStructuredDraftsByFile - selectedFile,
+            aliasAdvancedDraftsByFile = uiState.aliasAdvancedDraftsByFile - selectedFile,
+            aliasEditorModeByFile = uiState.aliasEditorModeByFile + (selectedFile to AliasEditorMode.STRUCTURED),
+            aliasEditorErrorMessage = "",
+            autoSaveStatus = ConfigAutoSaveStatus.SAVED,
+            statusText = "alias TOML already persisted by core"
         )
     }
 
+    /** Import path for alias TOML; persistence still goes through Core + migration. */
+    suspend fun applyImportedAliasToml(relativePath: String, updatedTomlContent: String): String? {
+        if (!isAliasConfigFilePath(relativePath)) return "Not an alias TOML path: $relativePath"
+        val gateway = configGateway as? AliasHierarchyGateway
+            ?: return "Alias hierarchy runtime is unavailable."
+        val original = configGateway.readConfigTomlFile(relativePath)
+        val result = gateway.rewriteAliasHierarchyDocument(
+            originalTomlContent = if (original.ok) original.content else updatedTomlContent,
+            updatedTomlContent = updatedTomlContent
+        )
+        if (!result.ok) return result.message
+        val duplicateMessage = validateAliasKeyUniqueness(
+            configGateway = configGateway,
+            aliasFiles = uiState.aliasFiles,
+            currentFilePath = relativePath,
+            currentTomlContent = result.updatedTomlContent
+        )
+        if (duplicateMessage != null) return duplicateMessage
+        val migration = aliasMigrationUseCase?.applyCoreResult(
+            configRelativePath = relativePath,
+            updatedTomlContent = result.updatedTomlContent,
+            replacements = result.replacements,
+            aliasReplacements = result.aliasReplacements,
+            allowMissingConfig = !original.ok
+        ) ?: return "Alias migration runtime is unavailable."
+        return (migration as? ActivityAliasMigrationOutcome.Invalid)?.message
+    }
+
     private suspend fun saveAdvancedAliasFile(selectedFile: String): ConfigUiState {
-        val parseResult = AliasTomlEditorCodec.parse(uiState.aliasAdvancedTomlDraft)
-        val document = parseResult.document
+        val gateway = configGateway as? AliasHierarchyGateway
             ?: return uiState.copy(
-                aliasEditorErrorMessage = parseResult.errorMessage,
+                aliasEditorErrorMessage = "Alias hierarchy runtime is unavailable.",
                 autoSaveStatus = ConfigAutoSaveStatus.FAILED,
-                statusText = parseResult.errorMessage
+                statusText = "Alias hierarchy runtime is unavailable."
             )
-        val validationMessage = AliasTomlEditorCodec.validateForSave(document)
-        if (validationMessage != null) {
-            return uiState.copy(
-                aliasEditorErrorMessage = validationMessage,
+        val result = gateway.rewriteAliasHierarchyDocument(
+            originalTomlContent = uiState.selectedFileContent,
+            updatedTomlContent = uiState.aliasAdvancedTomlDraft
+        )
+        val document = result.hierarchy?.toActivityAliasDocument()
+            ?: return uiState.copy(
+                aliasEditorErrorMessage = result.message,
                 autoSaveStatus = ConfigAutoSaveStatus.FAILED,
-                statusText = validationMessage
+                statusText = result.message
+            )
+        if (!result.ok) {
+            return uiState.copy(
+                aliasEditorErrorMessage = result.message,
+                autoSaveStatus = ConfigAutoSaveStatus.FAILED,
+                statusText = result.message
             )
         }
         val duplicateMessage = validateAliasKeyUniqueness(
             configGateway = configGateway,
-            converterFiles = uiState.converterFiles,
+            aliasFiles = uiState.aliasFiles,
             currentFilePath = selectedFile,
-            currentDocument = document
+            currentTomlContent = result.updatedTomlContent
         )
         if (duplicateMessage != null) {
             return uiState.copy(
@@ -949,49 +871,60 @@ internal class ConfigViewModel(
                 statusText = duplicateMessage
             )
         }
-        val saveResult = configGateway.saveConfigTomlFile(
-            relativePath = selectedFile,
-            content = uiState.aliasAdvancedTomlDraft
-        )
-        if (!saveResult.ok) {
+        uiState = uiState.copy(autoSaveStatus = ConfigAutoSaveStatus.SAVING)
+        val migration = aliasMigrationUseCase?.applyCoreResult(
+            configRelativePath = selectedFile,
+            updatedTomlContent = result.updatedTomlContent,
+            replacements = result.replacements,
+            aliasReplacements = result.aliasReplacements
+        ) ?: ActivityAliasMigrationOutcome.Invalid("Alias migration runtime is unavailable.")
+        if (migration is ActivityAliasMigrationOutcome.Invalid) {
             return uiState.copy(
-                statusText = saveResult.message,
+                statusText = migration.message,
+                aliasEditorErrorMessage = migration.message,
                 autoSaveStatus = ConfigAutoSaveStatus.FAILED
             )
         }
-        reloadRuntimeAfterAliasConfigChange()?.let { message ->
-            return uiState.copy(
-                aliasEditorErrorMessage = message,
-                autoSaveStatus = ConfigAutoSaveStatus.FAILED,
-                statusText = message
+        val migratedToml = (migration as ActivityAliasMigrationOutcome.Applied).renderedToml
+        if (result.aliasReplacements.isNotEmpty()) {
+            val replacements = result.aliasReplacements.associate { it.oldAlias to it.newAlias }
+            quickActivitiesPreferenceGateway.setQuickActivities(
+                quickActivitiesPreferenceGateway.getQuickActivities().map { value ->
+                    replacements[value] ?: value
+                }
             )
         }
         val aliasParentOptions = resolveAliasParentOptions(
             configGateway = configGateway,
-            converterFiles = uiState.converterFiles,
-            selectedFilePath = saveResult.filePath,
-            selectedFileContent = saveResult.content
+            aliasFiles = uiState.aliasFiles,
+            selectedFilePath = selectedFile,
+            selectedFileContent = migratedToml
         )
         return uiState.copy(
-            selectedFileContent = saveResult.content,
+            selectedFileContent = migratedToml,
             aliasDocumentDraft = document,
             aliasParentOptions = aliasParentOptions,
-            aliasAdvancedTomlDraft = saveResult.content,
+            aliasAdvancedTomlDraft = migratedToml,
             aliasStructuredDraftsByFile = uiState.aliasStructuredDraftsByFile - selectedFile,
             aliasAdvancedDraftsByFile = uiState.aliasAdvancedDraftsByFile - selectedFile,
             aliasEditorModeByFile = uiState.aliasEditorModeByFile + (selectedFile to AliasEditorMode.ADVANCED),
             aliasEditorErrorMessage = "",
             autoSaveStatus = ConfigAutoSaveStatus.SAVED,
-            statusText = "save toml -> ${saveResult.filePath}"
+            txtReloadRequestVersion = uiState.txtReloadRequestVersion + 1,
+            statusText = "save alias TOML through core migration"
         )
     }
 
-    private fun cacheStructuredDraft(filePath: String, document: AliasTomlDocument): Map<String, AliasTomlDocument> {
+    private fun cacheStructuredDraft(
+        filePath: String,
+        document: AliasTomlDocument,
+        tomlContent: String
+    ): Map<String, AliasTomlDocument> {
         if (filePath.isBlank()) {
             return uiState.aliasStructuredDraftsByFile
         }
         val nextDrafts = uiState.aliasStructuredDraftsByFile.toMutableMap()
-        if (AliasTomlEditorCodec.serialize(document) == uiState.selectedFileContent) {
+        if (tomlContent == uiState.selectedFileContent) {
             nextDrafts.remove(filePath)
         } else {
             nextDrafts[filePath] = document
@@ -1030,7 +963,7 @@ internal class ConfigViewModel(
             return state
         }
         val nextStructuredDrafts = state.aliasStructuredDraftsByFile.toMutableMap()
-        if (AliasTomlEditorCodec.serialize(document) == state.selectedFileContent) {
+        if (state.aliasAdvancedTomlDraft == state.selectedFileContent) {
             nextStructuredDrafts.remove(selectedFile)
         } else {
             nextStructuredDrafts[selectedFile] = document

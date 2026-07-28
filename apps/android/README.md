@@ -13,7 +13,7 @@ Human-facing entrypoint for the Android workspace.
 Run standard flows from the repository root:
 
 ```bash
-python tools/run.py build --app tracer_android --profile android_edit
+python tools/run.py build --app tracer_android --profile android_edit --config-profile test
 python tools/run.py verify --app tracer_android --profile android_ci --concise
 python tools/run.py verify --app tracer_android --profile android_release_verify --concise
 python tools/run.py verify --app tracer_android --profile android_release_device --concise
@@ -31,9 +31,12 @@ Notes:
 
 ## Local Facts
 
-- Runtime config source of truth: `assets/tracer_core/config`
+- Runtime config source of truth:
+  `assets/tracer_core/config_distribution` and `assets/tracer_core/config_test`
 - Android runtime config snapshot:
   `apps/android/runtime/src/main/assets/tracer_core/config`
+- Android APK builds require an explicit config profile. Select the source config with:
+  `--config-profile distribution` or `--config-profile test`.
 - Android app version source: `apps/android/meta/version.properties`
 - Core business version source: `libs/tracer_core/src/shared/types/version.hpp`
 - Release signing template: `apps/android/keystore.properties.example`

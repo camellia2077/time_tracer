@@ -107,7 +107,7 @@ object NativeBridge {
         dateCheckMode: Int
     ): String
 
-    external fun nativeTxt(
+    external fun nativeConfig(
         requestJson: String
     ): String
 

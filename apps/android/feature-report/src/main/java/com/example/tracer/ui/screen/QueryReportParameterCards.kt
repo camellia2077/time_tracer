@@ -15,7 +15,7 @@ import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
 enum class ReportParameterSection {
     TIMELINE,
     DAY,
-    TREE
+    ACTIVITY_HIERARCHY
 }
 
 @Composable
@@ -115,7 +115,7 @@ internal fun QueryReportParameterCards(
             onExpandedChange = onTimeParametersExpandedChange
         )
 
-        ReportParameterSection.TREE -> TreeParametersCard(
+        ReportParameterSection.ACTIVITY_HIERARCHY -> TreeParametersCard(
             analysisPeriod = analysisPeriod,
             maxAvailableDepth = treeMaxAvailableDepth,
             treeLevel = treeLevel,
@@ -174,6 +174,6 @@ private fun ReportParameterSectionSelector(
 
 private fun ReportParameterSection.labelRes(): Int = when (this) {
     ReportParameterSection.DAY -> R.string.report_parameter_section_markdown
-    ReportParameterSection.TREE -> R.string.report_parameter_section_tree
+    ReportParameterSection.ACTIVITY_HIERARCHY -> R.string.report_parameter_section_tree
     ReportParameterSection.TIMELINE -> R.string.report_parameter_section_timeline
 }

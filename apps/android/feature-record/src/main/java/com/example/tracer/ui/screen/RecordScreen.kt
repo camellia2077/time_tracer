@@ -40,6 +40,8 @@ fun RecordSection(
     quickActivities: List<String>,
     availableActivityNames: List<String>,
     onQuickActivitiesUpdate: (List<String>) -> Boolean,
+    quickAccessCardExpanded: Boolean = true,
+    onToggleQuickAccessCard: () -> Unit = {},
     assistSettingsExpanded: Boolean,
     onToggleAssistSettings: () -> Unit,
     suggestionLookbackDays: Int,
@@ -66,6 +68,8 @@ fun RecordSection(
     selectedMonth: String,
     selectedHistoryFile: String,
     editableHistoryContent: String,
+    actualTimeExpanded: Boolean = false,
+    onToggleActualTime: () -> Unit = {},
     logicalDayTarget: RecordLogicalDayTarget,
     logicalDayClock: Clock,
     onSelectLogicalDayYesterday: () -> Unit,
@@ -75,11 +79,13 @@ fun RecordSection(
     onDismissSuggestions: () -> Unit,
     onSuggestedActivityClick: (String) -> Unit,
     onOpenCanonicalCatalog: () -> Unit,
+    onOpenQuickAccessCanonicalCatalog: () -> Unit,
     onDismissCanonicalCatalog: () -> Unit,
     onCanonicalCatalogDisplayModeChange: (RecordSuggestionOutputMode) -> Unit,
     onCollapsedCanonicalRootPathsChange: (Set<String>) -> Unit,
     onOrderedCanonicalRootPathsChange: (List<String>) -> Unit,
-    onCanonicalCatalogEntryClick: (String) -> Unit,
+    onCanonicalCatalogEntryClick: (CanonicalBrowserTarget, String) -> Boolean,
+    canonicalBrowserTarget: CanonicalBrowserTarget?,
     onOpenTxtPreview: () -> Unit,
     onStartIntervalRecording: () -> Unit,
     onStopIntervalRecording: () -> Unit,
@@ -111,6 +117,8 @@ fun RecordSection(
         RecordTimeSettingsCard(
             currentTimeText = currentTimeText,
             logicalDayTarget = logicalDayTarget,
+            actualTimeExpanded = actualTimeExpanded,
+            onToggleActualTime = onToggleActualTime,
             onSelectLogicalDayYesterday = onSelectLogicalDayYesterday,
             onSelectLogicalDayToday = onSelectLogicalDayToday
         )
@@ -121,9 +129,13 @@ fun RecordSection(
             quickActivities = quickActivities,
             availableActivityNames = availableActivityNames,
             onQuickActivitiesUpdate = onQuickActivitiesUpdate,
+            quickAccessCardExpanded = quickAccessCardExpanded,
+            onToggleQuickAccessCard = onToggleQuickAccessCard,
             assistSettingsExpanded = assistSettingsExpanded,
             onToggleAssistSettings = onToggleAssistSettings,
-            onOpenCanonicalCatalog = onOpenCanonicalCatalog,
+            suggestionsVisible = suggestionsVisible,
+            onToggleSuggestions = onToggleSuggestions,
+            onOpenQuickAccessCanonicalCatalog = onOpenQuickAccessCanonicalCatalog,
             quickActivitySearch = quickActivitySearch,
             onQuickActivitySearchChange = { quickActivitySearch = it },
             maxQuickActivityCount = MAX_QUICK_ACTIVITY_COUNT
@@ -145,8 +157,7 @@ fun RecordSection(
             currentTimeMillis = currentTimeMillis,
             lastRecordedActivityAlias = lastRecordedActivityAlias,
             lastRecordedDuration = lastRecordedDuration,
-            suggestionsVisible = suggestionsVisible,
-            onToggleSuggestions = onToggleSuggestions,
+            onOpenCanonicalCatalog = onOpenCanonicalCatalog,
             onOpenTxtPreview = onOpenTxtPreview,
             onStartIntervalRecording = {
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -191,15 +202,19 @@ fun RecordSection(
             roots = canonicalCatalogRoots,
             statusText = canonicalCatalogStatusText,
             displayMode = canonicalCatalogDisplayMode,
+            target = canonicalBrowserTarget,
             collapsedRootPaths = collapsedCanonicalRootPaths,
             orderedRootPaths = orderedCanonicalRootPaths,
             onDismissRequest = onDismissCanonicalCatalog,
             onDisplayModeChange = onCanonicalCatalogDisplayModeChange,
             onCollapsedRootPathsChange = onCollapsedCanonicalRootPathsChange,
             onOrderedRootPathsChange = onOrderedCanonicalRootPathsChange,
-            onCanonicalPathClick = {
-                onCanonicalCatalogEntryClick(it)
-                onDismissCanonicalCatalog()
+            onCanonicalPathClick = { token ->
+                canonicalBrowserTarget?.let { target ->
+                    if (onCanonicalCatalogEntryClick(target, token)) {
+                        onDismissCanonicalCatalog()
+                    }
+                }
             }
         )
     }

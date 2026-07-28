@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Folder
@@ -27,6 +26,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -188,7 +189,7 @@ internal fun AliasGroupRowCard(
                 IconButton(onClick = onEdit) {
                     Icon(
                         Icons.Filled.Edit,
-                        contentDescription = stringResource(R.string.config_alias_action_edit_record_name)
+                        contentDescription = stringResource(R.string.config_alias_action_edit_alias)
                     )
                 }
                 IconButton(onClick = onEnterGroup) {
@@ -206,15 +207,22 @@ internal fun AliasGroupRowCard(
             )
             if (group.groupAliases.isNotEmpty()) {
                 Text(
-                    text = stringResource(
-                        R.string.config_alias_group_recordable_aliases,
-                        group.groupAliases.joinToString()
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    text = stringResource(R.string.config_alias_group_recordable_aliases_label),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.horizontalScroll(rememberScrollState())
+                ) {
+                    group.groupAliases.forEach { alias ->
+                        AssistChip(
+                            onClick = onEdit,
+                            label = { Text(alias, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                            colors = AssistChipDefaults.assistChipColors()
+                        )
+                    }
+                }
             }
         }
     }
@@ -233,7 +241,7 @@ internal fun AliasEntryRow(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = entry.aliasKey,
+                    text = entry.canonicalLeaf,
                     style = MaterialTheme.typography.titleSmall,
                     modifier = Modifier.weight(1f),
                     maxLines = 1,
@@ -246,24 +254,24 @@ internal fun AliasEntryRow(
                     )
                 }
             }
+            Text(
+                text = stringResource(R.string.config_alias_aliases_label),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = entry.canonicalLeaf,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.weight(1f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                entry.aliases.forEach { alias ->
+                    AssistChip(
+                        onClick = onEdit,
+                        label = { Text(alias, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                        colors = AssistChipDefaults.assistChipColors()
+                    )
+                }
             }
         }
     }

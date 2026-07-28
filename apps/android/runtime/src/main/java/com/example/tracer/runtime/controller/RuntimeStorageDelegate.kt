@@ -107,7 +107,7 @@ private fun String.toLogSnippet(maxLength: Int = 160): String {
         } catch (error: Exception) {
             ConfigTomlListResult(
                 ok = false,
-                converterFiles = emptyList(),
+                aliasFiles = emptyList(),
                 chartFiles = emptyList(),
                 metaFiles = emptyList(),
                 reportFiles = emptyList(),

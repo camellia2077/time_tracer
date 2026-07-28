@@ -178,7 +178,10 @@ internal class TxtInspectionService(
                 expectedCanonicalRelativePath = expectedPath,
                 syncState = TxtSyncState.PATH_MISMATCH,
                 canOpen = false,
-                message = "TXT header month resolves to $expectedPath, but file is stored at ${entry.relativePath}."
+                message =
+                    "TXT was discovered by recursive scanning, but its path does not match the canonical layout. " +
+                        "Expected: input/$expectedPath; current: input/${entry.relativePath}. " +
+                        "Recommended: move the file to input/$expectedPath."
             )
         }
 

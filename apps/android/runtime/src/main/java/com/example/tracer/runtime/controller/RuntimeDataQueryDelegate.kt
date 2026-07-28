@@ -1,5 +1,6 @@
 package com.example.tracer
 
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -10,6 +11,10 @@ internal class RuntimeDataQueryDelegate(
         onRuntimePaths: ((RuntimePaths) -> Unit)?
     ) -> NativeCallResult
 ) {
+    private companion object {
+        const val REPORT_QUERY_LOG_TAG = "TracerReportChart"
+    }
+
     suspend fun queryDayDurations(params: DataDurationQueryParams): DataQueryTextResult =
         withContext(Dispatchers.IO) {
             runDataQuery(
@@ -82,16 +87,88 @@ internal class RuntimeDataQueryDelegate(
             }
         }
 
+    suspend fun queryReportCalendarAvailability(): ReportCalendarAvailabilityResult =
+        withContext(Dispatchers.IO) {
+            try {
+                val yearsResult = runDataQuery(
+                    DataQueryRequest(
+                        action = NativeBridge.QUERY_ACTION_YEARS,
+                        outputMode = DataQueryOutputMode.SEMANTIC_JSON
+                    )
+                )
+                if (!yearsResult.ok) {
+                    return@withContext ReportCalendarAvailabilityResult(
+                        ok = false,
+                        message = yearsResult.message,
+                        operationId = yearsResult.operationId
+                    )
+                }
+                val years = parseSemanticListContent(yearsResult.outputText, "years")
+                    ?: return@withContext ReportCalendarAvailabilityResult(
+                        ok = false,
+                        message = "report years query returned invalid payload.",
+                        operationId = yearsResult.operationId
+                    )
+
+                val monthsResult = runDataQuery(
+                    DataQueryRequest(
+                        action = NativeBridge.QUERY_ACTION_MONTHS,
+                        outputMode = DataQueryOutputMode.SEMANTIC_JSON
+                    )
+                )
+                if (!monthsResult.ok) {
+                    return@withContext ReportCalendarAvailabilityResult(
+                        ok = false,
+                        years = years,
+                        message = monthsResult.message,
+                        operationId = monthsResult.operationId
+                    )
+                }
+                val months = parseSemanticListContent(monthsResult.outputText, "months")
+                    ?: return@withContext ReportCalendarAvailabilityResult(
+                        ok = false,
+                        years = years,
+                        message = "report months query returned invalid payload.",
+                        operationId = monthsResult.operationId
+                    )
+
+                ReportCalendarAvailabilityResult(
+                    ok = true,
+                    years = years,
+                    months = months,
+                    message = "report calendar availability loaded.",
+                    operationId = monthsResult.operationId
+                )
+            } catch (error: Exception) {
+                ReportCalendarAvailabilityResult(
+                    ok = false,
+                    message = formatNativeFailure(
+                        "query report calendar availability failed",
+                        error
+                    )
+                )
+            }
+        }
+
     suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult =
         withContext(Dispatchers.IO) {
             val fromDateIso = params.fromDateIso?.trim()?.takeIf { it.isNotEmpty() }
             val toDateIso = params.toDateIso?.trim()?.takeIf { it.isNotEmpty() }
+            Log.i(
+                REPORT_QUERY_LOG_TAG,
+                "native trend request; root=${params.root.orEmpty()} " +
+                    "lookbackDays=${params.lookbackDays} from=$fromDateIso to=$toDateIso"
+            )
             val validationFailure = validateReportChartQueryParams(
                 lookbackDays = params.lookbackDays,
                 fromDateIso = fromDateIso,
                 toDateIso = toDateIso
             )
             if (validationFailure != null) {
+                Log.i(
+                    REPORT_QUERY_LOG_TAG,
+                    "native trend validation failed; message=${validationFailure.message}"
+                )
                 return@withContext validationFailure
             }
 
@@ -109,6 +186,11 @@ internal class RuntimeDataQueryDelegate(
                 )
 
                 if (!queryResult.ok) {
+                    Log.i(
+                        REPORT_QUERY_LOG_TAG,
+                        "native trend failed; operationId=${queryResult.operationId} " +
+                            "message=${queryResult.message}"
+                    )
                     return@withContext ReportChartQueryResult(
                         ok = false,
                         data = null,
@@ -118,7 +200,12 @@ internal class RuntimeDataQueryDelegate(
                 }
 
                 val parsed = parseReportChartContent(queryResult.outputText)
-                    ?: return@withContext ReportChartQueryResult(
+                    ?: run {
+                        Log.i(
+                            REPORT_QUERY_LOG_TAG,
+                            "native trend payload invalid; operationId=${queryResult.operationId}"
+                        )
+                        return@withContext ReportChartQueryResult(
                         ok = false,
                         data = null,
                         message = appendFailureContext(
@@ -126,7 +213,15 @@ internal class RuntimeDataQueryDelegate(
                             operationId = queryResult.operationId
                         ),
                         operationId = queryResult.operationId
-                    )
+                        )
+                    }
+
+                Log.i(
+                    REPORT_QUERY_LOG_TAG,
+                    "native trend succeeded; operationId=${queryResult.operationId} " +
+                        "points=${parsed.points.size} roots=${parsed.roots.size} " +
+                        "lookbackDays=${parsed.lookbackDays}"
+                )
 
                 ReportChartQueryResult(
                     ok = true,
@@ -135,6 +230,10 @@ internal class RuntimeDataQueryDelegate(
                     operationId = queryResult.operationId
                 )
             } catch (error: Exception) {
+                Log.i(
+                    REPORT_QUERY_LOG_TAG,
+                    "native trend exception; type=${error::class.simpleName} message=${error.message}"
+                )
                 ReportChartQueryResult(
                     ok = false,
                     data = null,
@@ -148,12 +247,21 @@ internal class RuntimeDataQueryDelegate(
     ): ReportCompositionQueryResult = withContext(Dispatchers.IO) {
         val fromDateIso = params.fromDateIso?.trim()?.takeIf { it.isNotEmpty() }
         val toDateIso = params.toDateIso?.trim()?.takeIf { it.isNotEmpty() }
+        Log.i(
+            REPORT_QUERY_LOG_TAG,
+            "native composition request; lookbackDays=${params.lookbackDays} " +
+                "from=$fromDateIso to=$toDateIso"
+        )
         val validationFailure = validateReportCompositionQueryParams(
             lookbackDays = params.lookbackDays,
             fromDateIso = fromDateIso,
             toDateIso = toDateIso
         )
         if (validationFailure != null) {
+            Log.i(
+                REPORT_QUERY_LOG_TAG,
+                "native composition validation failed; message=${validationFailure.message}"
+            )
             return@withContext validationFailure
         }
 
@@ -169,6 +277,11 @@ internal class RuntimeDataQueryDelegate(
             )
 
             if (!queryResult.ok) {
+                Log.i(
+                    REPORT_QUERY_LOG_TAG,
+                    "native composition failed; operationId=${queryResult.operationId} " +
+                        "message=${queryResult.message}"
+                )
                 return@withContext ReportCompositionQueryResult(
                     ok = false,
                     data = null,
@@ -178,7 +291,12 @@ internal class RuntimeDataQueryDelegate(
             }
 
             val parsed = parseReportCompositionContent(queryResult.outputText)
-                ?: return@withContext ReportCompositionQueryResult(
+                ?: run {
+                    Log.i(
+                        REPORT_QUERY_LOG_TAG,
+                        "native composition payload invalid; operationId=${queryResult.operationId}"
+                    )
+                    return@withContext ReportCompositionQueryResult(
                     ok = false,
                     data = null,
                     message = appendFailureContext(
@@ -186,7 +304,14 @@ internal class RuntimeDataQueryDelegate(
                         operationId = queryResult.operationId
                     ),
                     operationId = queryResult.operationId
-                )
+                    )
+                }
+
+            Log.i(
+                REPORT_QUERY_LOG_TAG,
+                "native composition succeeded; operationId=${queryResult.operationId} " +
+                    "items=${parsed.tree.size} roots=${parsed.activeRootCount}"
+            )
 
             ReportCompositionQueryResult(
                 ok = true,
@@ -195,6 +320,10 @@ internal class RuntimeDataQueryDelegate(
                 operationId = queryResult.operationId
             )
         } catch (error: Exception) {
+            Log.i(
+                REPORT_QUERY_LOG_TAG,
+                "native composition exception; type=${error::class.simpleName} message=${error.message}"
+            )
             ReportCompositionQueryResult(
                 ok = false,
                 data = null,

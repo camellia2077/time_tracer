@@ -92,6 +92,28 @@ class NativeTxtRuntimeCodecTest {
     }
 
     @Test
+    fun parseAliasCanonicalRename_readsTomlAndMigrationPlan() {
+        val payload = codec.parseAliasCanonicalRename(
+            """
+                {
+                  "ok": true,
+                  "updated_toml_content": "parent = exercise",
+                  "replacements": [
+                    {"old_canonical":"exercise_cardio","new_canonical":"exercise_conditioning"}
+                  ],
+                  "error_message": ""
+                }
+            """.trimIndent()
+        )
+
+        assertTrue(payload.ok)
+        assertEquals("parent = exercise", payload.updatedTomlContent)
+        assertEquals(1, payload.replacements.size)
+        assertEquals("exercise_cardio", payload.replacements.single().oldCanonical)
+        assertEquals("exercise_conditioning", payload.replacements.single().newCanonical)
+    }
+
+    @Test
     fun parseResolve_returnsFailurePayloadWhenJsonIsInvalid() {
         val payload = codec.parseResolve("not-json")
 

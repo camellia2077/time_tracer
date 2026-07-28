@@ -15,11 +15,10 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountTree
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Button
@@ -84,8 +83,7 @@ internal fun RecordInputCard(
     currentTimeMillis: Long,
     lastRecordedActivityAlias: String,
     lastRecordedDuration: String,
-    suggestionsVisible: Boolean,
-    onToggleSuggestions: () -> Unit,
+    onOpenCanonicalCatalog: () -> Unit = {},
     onOpenTxtPreview: () -> Unit,
     onStartIntervalRecording: () -> Unit,
     onStopIntervalRecording: () -> Unit,
@@ -116,6 +114,14 @@ internal fun RecordInputCard(
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    IconButton(onClick = onOpenCanonicalCatalog) {
+                        Icon(
+                            imageVector = Icons.Default.AccountTree,
+                            contentDescription = stringResource(
+                                R.string.record_cd_open_canonical_catalog
+                            )
+                        )
+                    }
                     IconButton(
                         onClick = onOpenTxtPreview,
                         modifier = Modifier.testTag(recordTxtPreviewButtonTestTag())
@@ -123,18 +129,6 @@ internal fun RecordInputCard(
                         Icon(
                             imageVector = Icons.Default.Description,
                             contentDescription = stringResource(R.string.record_cd_open_txt_preview)
-                        )
-                    }
-                    TextButton(onClick = onToggleSuggestions) {
-                        Text(stringResource(R.string.record_action_suggestions))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Icon(
-                            imageVector = if (suggestionsVisible) {
-                                Icons.Default.KeyboardArrowUp
-                            } else {
-                                Icons.Default.KeyboardArrowDown
-                            },
-                            contentDescription = null
                         )
                     }
                 }

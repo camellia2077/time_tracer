@@ -8,7 +8,7 @@ class ConfigAliasEditorCardNavigationTest {
     @Test
     fun resolve_layer_shows_only_target_level_nodes_for_deep_path() {
         // Contract: deep hierarchy should project to one current layer view.
-        val definiteEntry = AliasTomlEntry(id = "entry-def", aliasKey = "变限积分", canonicalLeaf = "integrals")
+        val definiteEntry = AliasTomlEntry(id = "entry-def", canonicalLeaf = "integrals", aliases = listOf("变限积分"))
         val definite = AliasTomlGroup(id = "g-def", name = "definite-integral", nodes = listOf(definiteEntry))
         val calculus = AliasTomlGroup(id = "g-cal", name = "calculus", nodes = listOf(definite))
         val math = AliasTomlGroup(id = "g-math", name = "math", nodes = listOf(calculus))
@@ -62,7 +62,7 @@ class ConfigAliasEditorCardNavigationTest {
     @Test
     fun resolve_layer_uses_root_nodes_when_path_is_empty() {
         // Contract: empty path always maps to root layer.
-        val rootEntry = AliasTomlEntry(id = "entry-root", aliasKey = "英语", canonicalLeaf = "english")
+        val rootEntry = AliasTomlEntry(id = "entry-root", canonicalLeaf = "english", aliases = listOf("英语"))
         val rootGroup = AliasTomlGroup(id = "g-math", name = "math")
         val document = AliasTomlDocument(parent = "study", nodes = listOf(rootGroup, rootEntry))
 

@@ -13,6 +13,7 @@ internal data class TracerScreenActions(
     val onCoordinatorEvent: (TracerCoordinatorEvent) -> Unit,
     val onCopyDiagnosticsPayload: () -> Unit,
     val onPersistRecordQuickActivities: (List<String>) -> Unit,
+    val onPersistRecordQuickAccessCardExpanded: (Boolean) -> Unit,
     val onPersistRecordAssistSettingsExpanded: (Boolean) -> Unit,
     val onPersistRecordCanonicalCatalogDisplayMode: (RecordSuggestionOutputMode) -> Unit,
     val onPersistRecordCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
@@ -28,6 +29,7 @@ private data class TracerScreenDiagnosticsActions(
 
 private data class TracerScreenPreferenceActions(
     val onPersistRecordQuickActivities: (List<String>) -> Unit,
+    val onPersistRecordQuickAccessCardExpanded: (Boolean) -> Unit,
     val onPersistRecordAssistSettingsExpanded: (Boolean) -> Unit,
     val onPersistRecordCanonicalCatalogDisplayMode: (RecordSuggestionOutputMode) -> Unit,
     val onPersistRecordCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
@@ -71,6 +73,8 @@ internal fun rememberTracerScreenActions(
         },
         onCopyDiagnosticsPayload = diagnosticsActions.onCopyDiagnosticsPayload,
         onPersistRecordQuickActivities = preferenceActions.onPersistRecordQuickActivities,
+        onPersistRecordQuickAccessCardExpanded =
+            preferenceActions.onPersistRecordQuickAccessCardExpanded,
         onPersistRecordAssistSettingsExpanded = preferenceActions.onPersistRecordAssistSettingsExpanded,
         onPersistRecordCanonicalCatalogDisplayMode =
             preferenceActions.onPersistRecordCanonicalCatalogDisplayMode,
@@ -127,6 +131,11 @@ private fun rememberTracerScreenPreferenceActions(
         onPersistRecordQuickActivities = { activities ->
             coroutineScope.launch {
                 userPreferencesRepository.setRecordQuickActivities(activities)
+            }
+        },
+        onPersistRecordQuickAccessCardExpanded = { value ->
+            coroutineScope.launch {
+                userPreferencesRepository.setRecordQuickAccessCardExpanded(value)
             }
         },
         onPersistRecordAssistSettingsExpanded = { value ->

@@ -57,7 +57,7 @@
     <string name="record_action_record_to_today">Today</string>
     <string name="record_title_record_input">Record Input</string>
     <string name="record_cd_open_txt_preview">Open TXT Preview</string>
-    <string name="record_mode_point">Point</string>
+    <string name="record_mode_point">Time point</string>
     <string name="record_mode_interval">Interval</string>
     <string name="record_last_recorded_summary">Last:
 %1$s
@@ -89,7 +89,6 @@
     <string name="record_interval_discard_title">Discard this interval?</string>
     <string name="record_interval_discard_description">The recorded time will be lost.</string>
     <string name="record_title_quick_access">Quick Access</string>
-    <string name="record_hint_long_press_drag_sort">Long press and drag to reorder quick activities.</string>
     <string name="record_cd_collapse">Collapse</string>
     <string name="record_cd_expand">Expand</string>
     <string name="record_title_assist_settings">Assist Settings</string>
@@ -101,12 +100,17 @@
     <string name="record_chip_add_activity">+ %1$s</string>
     <string name="record_chip_remove_activity">%1$s X</string>
     <string name="record_hint_no_quick_activities">No quick activities. Use search and Add to create one.</string>
-    <string name="record_action_suggestions">Suggestions</string>
-    <string name="record_suggestions_sheet_title">Activity Suggestions</string>
+    <string name="record_action_suggestions">Suggest Quick Access Activities</string>
+    <string name="record_suggestions_sheet_title">Suggested Quick Access Activities</string>
     <string name="record_suggestions_settings_title">Suggestion Settings</string>
     <string name="record_canonical_catalog_title">Canonical Browser</string>
-    <string name="record_cd_open_canonical_catalog">Open canonical browser</string>
+    <string name="record_cd_open_canonical_catalog">Browse activities for Record Input</string>
+    <string name="record_action_browse_quick_access_catalog">Browse activities to add</string>
+    <string name="record_cd_open_quick_access_catalog">Browse activities to add to Quick Access</string>
+    <string name="record_cd_edit_quick_access">Edit Quick Access</string>
     <string name="record_canonical_catalog_description">Browse canonical activity paths and tap one to fill the input.</string>
+    <string name="record_canonical_catalog_quick_access_title">Add Quick Access Activity</string>
+    <string name="record_canonical_catalog_quick_access_description">Browse the activity tree and tap one to add it to Quick Access.</string>
     <string name="record_canonical_catalog_loading">Loading canonical catalog...</string>
     <string name="record_canonical_catalog_empty">No canonical paths are available.</string>
     <string name="record_canonical_catalog_display_mode_canonical">Browser display: canonical token</string>

@@ -59,10 +59,10 @@ internal object RuntimeCanonicalCatalogParser {
                 continue
             }
             when (node) {
-                is String -> add(
+                is TomlArray -> add(
                     CanonicalAliasEntry(
-                        aliasKey = key,
-                        canonicalLeaf = node.trim()
+                        canonicalLeaf = key.trim(),
+                        aliases = node.toStringList(key)
                     )
                 )
 
@@ -75,7 +75,7 @@ internal object RuntimeCanonicalCatalogParser {
                 )
 
                 else -> throw IllegalArgumentException(
-                    "Alias field `$key` must be a string or nested table."
+                    "Alias field `$key` must be an array or nested table."
                 )
             }
         }
@@ -162,7 +162,7 @@ internal object RuntimeCanonicalCatalogBuilder {
                             sourceFilePath = sourceFilePath
                         )
                     }
-                    aggregate.aliases += node.aliasKey.trim()
+                    aggregate.aliases += node.aliases
                     currentNode.entryPaths += canonicalPath
                 }
 

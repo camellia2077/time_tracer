@@ -107,7 +107,7 @@ class ConfigTomlStorageTest {
     }
 
     @Test
-    fun listTomlFiles_separates_converter_chart_and_report_categories() {
+    fun listTomlFiles_separates_alias_chart_and_report_categories() {
         val root = Files.createTempDirectory("config-toml-storage-list").toFile()
         try {
             File(root, "config.toml").writeText("root = true\n")
@@ -117,18 +117,18 @@ class ConfigTomlStorageTest {
             }
             File(root, "aliases/_system.toml").apply {
                 parentFile?.mkdirs()
-                writeText("converter = true\n")
+                writeText("alias = true\n")
             }
             File(root, "aliases/study.toml").apply {
                 parentFile?.mkdirs()
                 writeText("legacy_alias = true\n")
             }
-            File(root, "break.toml").writeText("legacy_converter = true\n")
+            File(root, "break.toml").writeText("legacy_alias = true\n")
             File(root, "charts/heatmap.toml").apply {
                 parentFile?.mkdirs()
                 writeText("chart = true\n")
             }
-            File(root, "reports/markdown/day.toml").apply {
+            File(root, "reports/markdown/en/day.toml").apply {
                 parentFile?.mkdirs()
                 writeText("report = true\n")
             }
@@ -147,7 +147,7 @@ class ConfigTomlStorageTest {
                         displayName = "study.toml"
                     )
                 ),
-                result.converterFiles
+                result.aliasFiles
             )
             assertEquals(
                 listOf(
@@ -174,8 +174,8 @@ class ConfigTomlStorageTest {
             assertEquals(
                 listOf(
                     ConfigTomlFileEntry(
-                        relativePath = "reports/markdown/day.toml",
-                        displayName = "markdown/day.toml"
+                        relativePath = "reports/markdown/en/day.toml",
+                        displayName = "markdown/en/day.toml"
                     )
                 ),
                 result.reportFiles

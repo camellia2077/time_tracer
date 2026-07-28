@@ -44,6 +44,7 @@ set(TIME_TRACKER_ANDROID_BRIDGE_SOURCES
     "${TRACER_CORE_C_API_DIR}/runtime/tracer_core_c_api_internal.cpp"
     "${TRACER_CORE_C_API_DIR}/runtime/tracer_core_c_api_file_crypto.cpp"
     "${TRACER_CORE_C_API_DIR}/capabilities/config/cli_runtime_config_bridge.cpp"
+    "${TRACER_CORE_C_API_DIR}/capabilities/config/alias_hierarchy_operation_bridge.cpp"
     "${TRACER_CORE_C_API_DIR}/capabilities/config/tracer_core_c_api_runtime_config.cpp"
     "${TRACER_CORE_C_API_DIR}/capabilities/pipeline/tracer_core_c_api_pipeline.cpp"
     "${TRACER_CORE_C_API_DIR}/capabilities/txt/tracer_core_c_api_txt.cpp"

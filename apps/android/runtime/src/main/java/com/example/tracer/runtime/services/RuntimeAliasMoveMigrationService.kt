@@ -32,9 +32,6 @@ internal class RuntimeAliasMoveMigrationService(
         }
 
     private fun applyLocked(request: AliasEntryMoveMigrationRequest): AliasEntryMoveMigrationResult {
-        if (request.replacements.isEmpty()) {
-            return AliasEntryMoveMigrationResult(false, "Move plan has no canonical replacement.")
-        }
         val paths = try {
             ensureRuntimePaths()
         } catch (error: Exception) {
@@ -42,10 +39,13 @@ internal class RuntimeAliasMoveMigrationService(
         }
         val textStorage = ensureTextStorage()
         val configStorage = ensureConfigTomlStorage()
-        val originalToml = configStorage.readTomlFile(request.configRelativePath)
-        if (!originalToml.ok) {
-            return AliasEntryMoveMigrationResult(false, originalToml.message)
+        val originalTomlResult = configStorage.readTomlFile(request.configRelativePath)
+        if (!originalTomlResult.ok && !request.allowMissingConfig) {
+            return AliasEntryMoveMigrationResult(false, originalTomlResult.message)
         }
+        val originalTomlContent = if (originalTomlResult.ok) originalTomlResult.content else ""
+        var updatedTomlContent = request.updatedTomlContent
+        var replacements = request.replacements
         val txtOriginals = linkedMapOf<String, String>()
         val txtCandidates = linkedMapOf<String, String>()
         val listed = textStorage.listTxtFiles()
@@ -57,13 +57,28 @@ internal class RuntimeAliasMoveMigrationService(
             if (!init.ok) {
                 return AliasEntryMoveMigrationResult(false, init.errorMessage.ifBlank { "native init failed." })
             }
+            request.canonicalRename?.let { rename ->
+                val planned = planCanonicalRename(originalTomlContent, rename)
+                if (!planned.ok) {
+                    return AliasEntryMoveMigrationResult(false, planned.message)
+                }
+                updatedTomlContent = planned.updatedTomlContent
+                replacements = planned.replacements
+            }
             for (relativePath in listed.files) {
                 val original = textStorage.readTxtFile(relativePath)
                 if (!original.ok) {
                     return AliasEntryMoveMigrationResult(false, original.message)
                 }
                 txtOriginals[relativePath] = original.content
-                val replaced = replaceCanonicalNames(original.content, request.replacements)
+                val canonicalReplaced = replaceCanonicalNames(original.content, replacements)
+                if (!canonicalReplaced.ok) {
+                    return AliasEntryMoveMigrationResult(false, canonicalReplaced.message)
+                }
+                val replaced = replaceAliasNames(
+                    canonicalReplaced.updatedContent,
+                    request.aliasReplacements
+                )
                 if (!replaced.ok) {
                     return AliasEntryMoveMigrationResult(false, replaced.message)
                 }
@@ -81,7 +96,7 @@ internal class RuntimeAliasMoveMigrationService(
         try {
             require(transactionRoot.mkdirs()) { "Cannot create migration cache directory." }
             sourcesWritten = true
-            writeSources(configStorage, textStorage, request, txtCandidates)
+            writeSources(configStorage, textStorage, request, updatedTomlContent, txtCandidates)
 
             val candidatePaths = paths.copy(
                 dbPath = File(transactionRoot, "candidate/time_data.sqlite3").absolutePath,
@@ -106,14 +121,15 @@ internal class RuntimeAliasMoveMigrationService(
             transactionRoot.deleteRecursively()
             return AliasEntryMoveMigrationResult(
                 ok = true,
-                message = "Moved canonical path and rebuilt database.",
-                updatedTxtFileCount = txtCandidates.size
+                message = "Applied alias migration and rebuilt database.",
+                updatedTxtFileCount = txtCandidates.size,
+                updatedTomlContent = updatedTomlContent
             )
         } catch (error: Exception) {
             runCatching { nativeShutdown() }
             val rollbackProblems = mutableListOf<String>()
             if (sourcesWritten) {
-                rollbackSources(configStorage, textStorage, originalToml.content, request.configRelativePath, txtOriginals, rollbackProblems)
+                rollbackSources(configStorage, textStorage, originalTomlContent, request.configRelativePath, txtOriginals, rollbackProblems)
             }
             if (databaseSwapStarted) {
                 runCatching { restoreDatabase(paths.dbPath, transactionRoot) }
@@ -147,13 +163,57 @@ internal class RuntimeAliasMoveMigrationService(
         )
     }
 
+    private fun replaceAliasNames(
+        content: String,
+        replacements: List<AliasKeyReplacement>
+    ): TxtCanonicalActivityReplacementResult {
+        val payload = JSONObject()
+            .put("action", "replace_alias_activity_names")
+            .put("content", content)
+            .put("replacements", JSONArray().apply {
+                replacements.forEach { replacement ->
+                    put(JSONObject()
+                        .put("old_alias", replacement.oldAlias)
+                        .put("new_alias", replacement.newAlias))
+                }
+            })
+        return NativeTxtRuntimeCodec().parseCanonicalActivityReplacement(
+            nativeTxt(payload.toString()), content
+        )
+    }
+
+    private fun planCanonicalRename(
+        content: String,
+        request: AliasCanonicalRenameRequest
+    ): AliasCanonicalRenameResult {
+        val operationKind = when (request.targetType) {
+            "group" -> "rename_group_canonical"
+            "leaf" -> "rename_leaf_canonical"
+            else -> return AliasCanonicalRenameResult(
+                ok = false,
+                updatedTomlContent = "",
+                replacements = emptyList(),
+                message = "Unsupported canonical rename target type: ${request.targetType}"
+            )
+        }
+        val payload = JSONObject()
+            .put("action", "apply_alias_hierarchy_operation")
+            .put("toml_content", content)
+            .put("operation", JSONObject()
+                .put("kind", operationKind)
+                .put("target_path", request.targetPath)
+                .put("new_name", request.newName))
+        return NativeTxtRuntimeCodec().parseAliasCanonicalRename(nativeTxt(payload.toString()))
+    }
+
     private fun writeSources(
         configStorage: ConfigTomlStorage,
         textStorage: TextStorage,
         request: AliasEntryMoveMigrationRequest,
+        updatedTomlContent: String,
         txtCandidates: Map<String, String>
     ) {
-        val configWrite = configStorage.writeTomlFile(request.configRelativePath, request.updatedTomlContent)
+        val configWrite = configStorage.writeTomlFile(request.configRelativePath, updatedTomlContent)
         require(configWrite.ok) { configWrite.message }
         txtCandidates.forEach { (relativePath, content) ->
             val write = textStorage.writeTxtFile(relativePath, content)

@@ -164,7 +164,7 @@ internal class NativeRuntimeBridge {
         dateCheckMode = dateCheckMode
     )
 
-    fun nativeTxt(requestJson: String): String = NativeBridge.nativeTxt(requestJson)
+    fun nativeConfig(requestJson: String): String = NativeBridge.nativeConfig(requestJson)
 
     fun nativeQuery(request: DataQueryRequest): String = NativeBridge.nativeQuery(
         action = request.action,

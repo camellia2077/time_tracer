@@ -137,6 +137,26 @@ internal object RecordStateReducer {
         return state.copy(quickActivities = normalized)
     }
 
+    fun updateActualTimeExpanded(
+        state: RecordUiState,
+        expanded: Boolean
+    ): RecordUiState {
+        if (state.actualTimeExpanded == expanded) {
+            return state
+        }
+        return state.copy(actualTimeExpanded = expanded)
+    }
+
+    fun updateQuickAccessCardExpanded(
+        state: RecordUiState,
+        expanded: Boolean
+    ): RecordUiState {
+        if (state.quickAccessCardExpanded == expanded) {
+            return state
+        }
+        return state.copy(quickAccessCardExpanded = expanded)
+    }
+
     fun updateAssistUiState(
         state: RecordUiState,
         assistSettingsExpanded: Boolean
@@ -189,11 +209,19 @@ internal object RecordStateReducer {
         )
 
     fun hideCanonicalCatalog(state: RecordUiState): RecordUiState =
-        state.copy(isCanonicalCatalogVisible = false)
+        state.copy(
+            isCanonicalCatalogVisible = false,
+            canonicalBrowserTarget = null,
+            isCanonicalCatalogLoading = false
+        )
 
-    fun showCanonicalCatalogLoading(state: RecordUiState): RecordUiState =
+    fun showCanonicalCatalogLoading(
+        state: RecordUiState,
+        target: CanonicalBrowserTarget
+    ): RecordUiState =
         state.copy(
             isCanonicalCatalogVisible = true,
+            canonicalBrowserTarget = target,
             isCanonicalCatalogLoading = true,
             canonicalCatalogStatusText = "",
             statusText = "Loading canonical catalog..."
@@ -207,6 +235,7 @@ internal object RecordStateReducer {
             recordContent = token.trim(),
             suggestionsVisible = false,
             isCanonicalCatalogVisible = false,
+            canonicalBrowserTarget = null,
             isCanonicalCatalogLoading = false,
             statusText = ""
         )

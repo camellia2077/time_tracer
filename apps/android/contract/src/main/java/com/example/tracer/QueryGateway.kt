@@ -9,6 +9,11 @@ interface QueryGateway {
     suspend fun queryDayDurations(params: DataDurationQueryParams): DataQueryTextResult
     suspend fun queryDayDurationStats(params: DataDurationQueryParams): DataQueryTextResult
     suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult
+    suspend fun queryReportCalendarAvailability(): ReportCalendarAvailabilityResult =
+        ReportCalendarAvailabilityResult(
+            ok = false,
+            message = "report calendar availability query not implemented."
+        )
     suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult
     suspend fun queryReportComposition(
         params: ReportCompositionQueryParams

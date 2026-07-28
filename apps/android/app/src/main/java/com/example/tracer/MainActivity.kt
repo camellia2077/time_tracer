@@ -1,8 +1,10 @@
 package com.example.tracer
 
 import android.app.LocaleManager
+import android.os.Build
 import android.os.LocaleList
 import android.os.Bundle
+import java.util.Locale
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -61,10 +63,7 @@ class MainActivity : ComponentActivity() {
                             tracerExchangeGateway = tracerExchangeGateway,
                             userPreferencesRepository = userPreferencesRepository,
                             themeConfig = currentTheme,
-                            onSetThemeColor = themeViewModel::setThemeColor,
-                            onSetThemeMode = themeViewModel::setThemeMode,
-                            onSetUseDynamicColor = themeViewModel::setUseDynamicColor,
-                            onSetDarkThemeStyle = themeViewModel::setDarkThemeStyle,
+                            onThemeEvent = themeViewModel::onThemeEvent,
                             appLanguage = appLanguage,
                             onSetAppLanguage = themeViewModel::setAppLanguage
                         )
@@ -86,10 +85,22 @@ class MainActivity : ComponentActivity() {
             AppLanguage.English -> "en"
             AppLanguage.Japanese -> "ja"
         }
-        val localeManager = getSystemService(LocaleManager::class.java) ?: return
-        if (localeManager.applicationLocales.toLanguageTags() == localeTag) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val localeManager = getSystemService(LocaleManager::class.java) ?: return
+            if (localeManager.applicationLocales.toLanguageTags() == localeTag) {
+                return
+            }
+            localeManager.applicationLocales = LocaleList.forLanguageTags(localeTag)
             return
         }
-        localeManager.applicationLocales = LocaleList.forLanguageTags(localeTag)
+
+        val locale = Locale.forLanguageTag(localeTag)
+        val configuration = resources.configuration
+        if (configuration.locales.isEmpty() || configuration.locales[0] != locale) {
+            configuration.setLocale(locale)
+            @Suppress("DEPRECATION")
+            resources.updateConfiguration(configuration, resources.displayMetrics)
+            recreate()
+        }
     }
 }

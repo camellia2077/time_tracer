@@ -4,28 +4,32 @@ package com.example.tracer
 internal class ActivityAliasMigrationUseCase(
     private val gateway: AliasMoveMigrationGateway
 ) {
-    suspend fun apply(
+    suspend fun applyCoreResult(
         configRelativePath: String,
-        updatedDocument: ActivityAliasDocument,
-        replacements: List<CanonicalActivityNameReplacement>
+        updatedTomlContent: String,
+        replacements: List<CanonicalActivityNameReplacement>,
+        aliasReplacements: List<AliasKeyReplacement> = emptyList(),
+        allowMissingConfig: Boolean = false
     ): ActivityAliasMigrationOutcome {
-        val validationMessage = ActivityAliasHierarchyValidator.validateForSave(updatedDocument)
-        if (validationMessage != null) return ActivityAliasMigrationOutcome.Invalid(validationMessage)
-
-        val renderedToml = ActivityAliasTomlSerializer.serialize(updatedDocument)
         val result = gateway.applyAliasEntryMoveMigration(
             AliasEntryMoveMigrationRequest(
                 configRelativePath = configRelativePath,
-                updatedTomlContent = renderedToml,
-                replacements = replacements
+                updatedTomlContent = updatedTomlContent,
+                replacements = replacements,
+                aliasReplacements = aliasReplacements,
+                allowMissingConfig = allowMissingConfig
             )
         )
         return if (result.ok) {
-            ActivityAliasMigrationOutcome.Applied(renderedToml, result)
+            ActivityAliasMigrationOutcome.Applied(
+                result.updatedTomlContent.ifBlank { updatedTomlContent },
+                result
+            )
         } else {
             ActivityAliasMigrationOutcome.Invalid(result.message)
         }
     }
+
 }
 
 internal sealed interface ActivityAliasMigrationOutcome {

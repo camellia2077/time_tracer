@@ -5,7 +5,7 @@ internal fun configFilesForCategory(
     category: ConfigCategory
 ): List<ConfigTomlFileEntry> {
     return when (category) {
-        ConfigCategory.CONVERTER -> state.converterFiles
+        ConfigCategory.ALIAS -> state.aliasFiles
 
         ConfigCategory.CHARTS -> state.chartFiles
         ConfigCategory.META -> state.metaFiles
@@ -19,7 +19,7 @@ internal fun preferredConfigFilePath(
 ): String {
     return when {
         files.any { it.relativePath == state.selectedFilePath } -> state.selectedFilePath
-        state.selectedCategory == ConfigCategory.CONVERTER ->
+        state.selectedCategory == ConfigCategory.ALIAS ->
             files.firstOrNull { isAliasConfigFilePath(it.relativePath) }
                 ?.relativePath
                 ?: files.firstOrNull()?.relativePath.orEmpty()
@@ -52,7 +52,9 @@ internal fun applyLoadedConfigFile(
     filePath: String,
     content: String,
     aliasParentOptions: List<String>,
-    statusText: String
+    statusText: String,
+    coreDocument: AliasTomlDocument? = null,
+    coreErrorMessage: String = ""
 ): ConfigUiState {
     val selectedEntry = findConfigFileEntry(state, filePath)
     val base = state.copy(
@@ -75,8 +77,10 @@ internal fun applyLoadedConfigFile(
         )
     }
 
-    val parseResult = AliasTomlEditorCodec.parse(content)
-    val document = parseResult.document
+    val document = coreDocument
+    val documentError = coreErrorMessage.ifBlank {
+        "Alias hierarchy runtime did not return a structured snapshot."
+    }
     val restoredAdvancedDraft = state.aliasAdvancedDraftsByFile[filePath] ?: content
     val restoredStructuredDraft = state.aliasStructuredDraftsByFile[filePath]
     val restoredMode = state.aliasEditorModeByFile[filePath]
@@ -85,15 +89,14 @@ internal fun applyLoadedConfigFile(
     // caches here only keep the editor surface stable while users browse elsewhere.
     return when {
         restoredMode == AliasEditorMode.ADVANCED -> {
-            val advancedParseResult = AliasTomlEditorCodec.parse(restoredAdvancedDraft)
             base.copy(
                 editableContent = "",
                 aliasEditorMode = AliasEditorMode.ADVANCED,
-                aliasDocumentDraft = restoredStructuredDraft ?: advancedParseResult.document,
+                aliasDocumentDraft = restoredStructuredDraft ?: document,
                 aliasBaselineDocument = document,
                 aliasParentOptions = aliasParentOptions,
                 aliasAdvancedTomlDraft = restoredAdvancedDraft,
-                aliasEditorErrorMessage = advancedParseResult.errorMessage
+                aliasEditorErrorMessage = ""
             )
         }
         restoredStructuredDraft != null -> {
@@ -128,8 +131,8 @@ internal fun applyLoadedConfigFile(
                 aliasBaselineDocument = null,
                 aliasParentOptions = aliasParentOptions,
                 aliasAdvancedTomlDraft = restoredAdvancedDraft,
-                aliasEditorErrorMessage = parseResult.errorMessage,
-                statusText = parseResult.errorMessage
+                aliasEditorErrorMessage = documentError,
+                statusText = documentError
             )
         }
     }
@@ -140,7 +143,7 @@ internal fun findConfigFileEntry(
     filePath: String
 ): ConfigTomlFileEntry? {
     return sequenceOf(
-        state.converterFiles,
+        state.aliasFiles,
         state.chartFiles,
         state.metaFiles,
         state.reportFiles
@@ -148,7 +151,7 @@ internal fun findConfigFileEntry(
 }
 
 internal fun isAliasConfigFilePath(path: String): Boolean =
-    // `_system.toml` is a converter system config, not a structured alias file.
+    // `_system.toml` is an alias system config, not a structured alias file.
     path.startsWith("aliases/") &&
         !path.endsWith("/_system.toml", ignoreCase = true) &&
         path.endsWith(".toml", ignoreCase = true)

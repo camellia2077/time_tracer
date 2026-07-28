@@ -7,7 +7,6 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.test.core.app.ApplicationProvider
 import com.example.tracer.data.AppLanguage
 import com.example.tracer.data.DarkThemeStyle
-import com.example.tracer.data.ThemeColor
 import com.example.tracer.data.ThemeConfig
 import com.example.tracer.data.ThemeMode
 import com.example.tracer.ui.theme.TracerTheme
@@ -71,9 +70,7 @@ class ConfigAppearanceSettingsCardRobolectricTest {
         initialReportPaletteExpanded: Boolean
     ) {
         val themeConfig = ThemeConfig(
-            themeColor = ThemeColor.Slate,
             themeMode = ThemeMode.Light,
-            useDynamicColor = false,
             darkThemeStyle = DarkThemeStyle.Tinted
         )
 
@@ -81,10 +78,7 @@ class ConfigAppearanceSettingsCardRobolectricTest {
             TracerTheme(themeConfig = themeConfig) {
                 AppearanceSettingsCard(
                     themeConfig = themeConfig,
-                    onSetThemeColor = {},
-                    onSetThemeMode = {},
-                    onSetUseDynamicColor = {},
-                    onSetDarkThemeStyle = {},
+                    onThemeEvent = {},
                     reportPiePalettePreset = ReportPiePalettePreset.SOFT,
                     onReportPiePalettePresetChange = {},
                     appLanguage = AppLanguage.English,

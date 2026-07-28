@@ -27,40 +27,17 @@ import kotlinx.coroutines.flow.map
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
-enum class ThemeColor {
-    Rose,
-    Orange,
-    Peach,
-    Amber,
-    Gold,
-    Mint,
-    Emerald,
-    Teal,
-    Turquoise,
-    Cyan,
-    Sky,
-    Periwinkle,
-    Lavender,
-    Violet,
-    Pink,
-    Sakura,
-    Magenta,
-    Cobalt,
-    Navy,
-    Crimson,
-    Burgundy,
-    Lime,
-    Cocoa,
-    Graphite,
-    Slate
-}
-
 enum class ThemeMode {
     System, Light, Dark
 }
 
 enum class DarkThemeStyle {
     Tinted, Neutral, Black
+}
+
+enum class ThemePalette(val supportsLightDarkMode: Boolean) {
+    Indigo(true), GraphiteAmber(true), Teal(true), Orange(true), Rose(true), Amber(true),
+    Parchment(false), Snowfield(false), Blueprint(false), Newsprint(false), InkWash(false), Kraft(false)
 }
 
 enum class AppLanguage {
@@ -70,10 +47,9 @@ enum class AppLanguage {
 }
 
 data class ThemeConfig(
-    val themeColor: ThemeColor,
     val themeMode: ThemeMode,
-    val useDynamicColor: Boolean,
-    val darkThemeStyle: DarkThemeStyle = DarkThemeStyle.Tinted
+    val darkThemeStyle: DarkThemeStyle = DarkThemeStyle.Tinted,
+    val palette: ThemePalette = ThemePalette.Indigo
 )
 
 data class RecordSuggestionPreferences(
@@ -82,6 +58,7 @@ data class RecordSuggestionPreferences(
     val outputMode: RecordSuggestionOutputMode,
     val canonicalCatalogDisplayMode: RecordSuggestionOutputMode,
     val quickActivities: List<String>,
+    val quickAccessCardExpanded: Boolean,
     val assistSettingsExpanded: Boolean,
     val collapsedCanonicalRootPaths: Set<String>,
     val orderedCanonicalRootPaths: List<String>
@@ -95,7 +72,7 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             RecordSuggestionOutputMode.CANONICAL
         val DEFAULT_RECORD_CANONICAL_CATALOG_DISPLAY_MODE: RecordSuggestionOutputMode =
             RecordSuggestionOutputMode.CANONICAL
-        val DEFAULT_RECORD_QUICK_ACTIVITIES: List<String> = listOf("meal", "洗漱", "上厕所")
+        val DEFAULT_RECORD_QUICK_ACTIVITIES: List<String> = emptyList()
         const val DEFAULT_REPORT_CHART_SHOW_AVERAGE_LINE: Boolean = false
         val DEFAULT_REPORT_CHART_SEMANTIC_MODE: ReportChartSemanticMode =
             ReportChartSemanticMode.COMPOSITION
@@ -116,6 +93,7 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         private const val MAX_RECORD_QUICK_ACTIVITY_COUNT: Int = 12
         private const val MAX_RECORD_QUICK_ACTIVITY_LENGTH: Int = 40
         const val DEFAULT_RECORD_ASSIST_SETTINGS_EXPANDED: Boolean = false
+        const val DEFAULT_RECORD_QUICK_ACCESS_CARD_EXPANDED: Boolean = true
         val DEFAULT_COLLAPSED_CANONICAL_ROOT_PATHS: Set<String> = emptySet()
         val DEFAULT_ORDERED_CANONICAL_ROOT_PATHS: List<String> = emptyList()
         private const val MAX_COLLAPSED_CANONICAL_ROOT_COUNT: Int = 64
@@ -125,10 +103,9 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
     }
 
     private object PreferencesKeys {
-        val THEME_COLOR = stringPreferencesKey("theme_color")
         val THEME_MODE = stringPreferencesKey("theme_mode")
-        val USE_DYNAMIC_COLOR = booleanPreferencesKey("use_dynamic_color")
         val DARK_THEME_STYLE = stringPreferencesKey("dark_theme_style")
+        val THEME_PALETTE = stringPreferencesKey("theme_palette")
         val APP_LANGUAGE = stringPreferencesKey("app_language")
         val RECORD_SUGGEST_LOOKBACK_DAYS = intPreferencesKey("record_suggest_lookback_days")
         val RECORD_SUGGEST_TOP_N = intPreferencesKey("record_suggest_top_n")
@@ -136,6 +113,8 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         val RECORD_CANONICAL_CATALOG_DISPLAY_MODE =
             stringPreferencesKey("record_canonical_catalog_display_mode")
         val RECORD_QUICK_ACTIVITIES = stringPreferencesKey("record_quick_activities")
+        val RECORD_QUICK_ACCESS_CARD_EXPANDED =
+            booleanPreferencesKey("record_quick_access_card_expanded")
         val RECORD_ASSIST_SETTINGS_EXPANDED = booleanPreferencesKey("record_assist_settings_expanded")
         val RECORD_COLLAPSED_CANONICAL_ROOT_PATHS =
             stringPreferencesKey("record_collapsed_canonical_root_paths")
@@ -162,17 +141,16 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
     }
 
     val themeConfig: Flow<ThemeConfig> = dataStore.data.map { preferences ->
-        val colorName = preferences[PreferencesKeys.THEME_COLOR] ?: ThemeColor.Slate.name
         val modeName = preferences[PreferencesKeys.THEME_MODE] ?: ThemeMode.System.name
-        val useDynamicColor = preferences[PreferencesKeys.USE_DYNAMIC_COLOR] ?: false
         val darkThemeStyleName = preferences[PreferencesKeys.DARK_THEME_STYLE] ?: DarkThemeStyle.Tinted.name
+        val paletteName = preferences[PreferencesKeys.THEME_PALETTE] ?: ThemePalette.Indigo.name
         
         ThemeConfig(
-            themeColor = runCatching { ThemeColor.valueOf(colorName) }.getOrDefault(ThemeColor.Slate),
             themeMode = runCatching { ThemeMode.valueOf(modeName) }.getOrDefault(ThemeMode.System),
-            useDynamicColor = useDynamicColor,
             darkThemeStyle = runCatching { DarkThemeStyle.valueOf(darkThemeStyleName) }
-                .getOrDefault(DarkThemeStyle.Tinted)
+                .getOrDefault(DarkThemeStyle.Tinted),
+            palette = runCatching { ThemePalette.valueOf(paletteName) }
+                .getOrDefault(ThemePalette.Indigo)
         )
     }
 
@@ -198,6 +176,8 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         )
         val assistSettingsExpanded = preferences[PreferencesKeys.RECORD_ASSIST_SETTINGS_EXPANDED]
             ?: DEFAULT_RECORD_ASSIST_SETTINGS_EXPANDED
+        val quickAccessCardExpanded = preferences[PreferencesKeys.RECORD_QUICK_ACCESS_CARD_EXPANDED]
+            ?: DEFAULT_RECORD_QUICK_ACCESS_CARD_EXPANDED
         val collapsedCanonicalRootPaths = parseCollapsedCanonicalRootPaths(
             preferences[PreferencesKeys.RECORD_COLLAPSED_CANONICAL_ROOT_PATHS]
         )
@@ -214,6 +194,7 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
                 RecordSuggestionOutputMode.valueOf(storedCanonicalCatalogDisplayMode)
             }.getOrDefault(DEFAULT_RECORD_CANONICAL_CATALOG_DISPLAY_MODE),
             quickActivities = quickActivities,
+            quickAccessCardExpanded = quickAccessCardExpanded,
             assistSettingsExpanded = assistSettingsExpanded,
             collapsedCanonicalRootPaths = collapsedCanonicalRootPaths,
             orderedCanonicalRootPaths = orderedCanonicalRootPaths
@@ -260,21 +241,9 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         )
     }
 
-    suspend fun setThemeColor(color: ThemeColor) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.THEME_COLOR] = color.name
-        }
-    }
-
     suspend fun setThemeMode(mode: ThemeMode) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.THEME_MODE] = mode.name
-        }
-    }
-
-    suspend fun setUseDynamicColor(useDynamic: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.USE_DYNAMIC_COLOR] = useDynamic
         }
     }
 
@@ -381,6 +350,18 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         }
     }
 
+    suspend fun setRecordQuickAccessCardExpanded(value: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.RECORD_QUICK_ACCESS_CARD_EXPANDED] = value
+        }
+    }
+
+    suspend fun setThemePalette(palette: ThemePalette) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.THEME_PALETTE] = palette.name
+        }
+    }
+
     val reportTimeParametersExpanded: Flow<Boolean> = dataStore.data.map { preferences ->
         preferences[PreferencesKeys.REPORT_TIME_PARAMETERS_EXPANDED]
             ?: DEFAULT_REPORT_TIME_PARAMETERS_EXPANDED
@@ -453,8 +434,8 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
     }
 
     private fun parseQuickActivities(raw: String?, hasStoredValue: Boolean): List<String> {
-        // Only use shipped defaults when the preference key has never been configured.
-        // Once users explicitly clear the list, keep it empty instead of rehydrating defaults.
+        // An unconfigured list must stay empty so the UI does not render placeholder activities
+        // before the persisted quick-access preference has been loaded.
         if (!hasStoredValue) {
             return DEFAULT_RECORD_QUICK_ACTIVITIES
         }

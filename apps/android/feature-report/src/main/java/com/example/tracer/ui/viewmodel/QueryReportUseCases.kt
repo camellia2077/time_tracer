@@ -27,6 +27,11 @@ internal class QueryReportUseCases(
 
     fun currentReportLocale(): String = reportLocale
 
+    fun invalidateChartCache() {
+        chartUseCase.invalidateCache()
+        compositionUseCase.invalidateCache()
+    }
+
     suspend fun reportDay(
         currentState: QueryReportUiState,
         emit: (QueryReportUiState) -> Unit

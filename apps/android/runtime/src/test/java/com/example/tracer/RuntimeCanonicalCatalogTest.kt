@@ -16,10 +16,10 @@ class RuntimeCanonicalCatalogTest {
                 parent = "study"
 
                 [aliases.math]
-                "高等数学" = "calculus"
+                "calculus-overview" = ["高等数学"]
 
                 [aliases.math.calculus]
-                "高等数学二重积分" = "double-integral"
+                "double-integral" = ["高等数学二重积分"]
             """.trimIndent()
         )
 
@@ -27,7 +27,7 @@ class RuntimeCanonicalCatalogTest {
         assertEquals("study", document.parent)
         val mathGroup = document.nodes.single() as CanonicalAliasGroup
         assertEquals("math", mathGroup.name)
-        assertEquals("calculus", (mathGroup.nodes[0] as CanonicalAliasEntry).canonicalLeaf)
+        assertEquals("calculus-overview", (mathGroup.nodes[0] as CanonicalAliasEntry).canonicalLeaf)
         val calculusGroup = mathGroup.nodes[1] as CanonicalAliasGroup
         assertEquals("calculus", calculusGroup.name)
         assertEquals(
@@ -44,7 +44,7 @@ class RuntimeCanonicalCatalogTest {
 
                 [aliases.online]
                 group_aliases = ["上网"]
-                "哔哩哔哩" = "bilibili"
+                "bilibili" = ["哔哩哔哩"]
             """.trimIndent()
         )
 
@@ -66,9 +66,8 @@ class RuntimeCanonicalCatalogTest {
                     parent = "meal"
 
                     [aliases]
-                    "meal" = "dining"
-                    "吃饭" = "dining"
-                    "早餐" = "breakfast"
+                    "dining" = ["meal", "吃饭"]
+                    "breakfast" = ["早餐"]
                 """.trimIndent() + "\n"
             )
             writeAliasToml(
@@ -78,10 +77,10 @@ class RuntimeCanonicalCatalogTest {
                     parent = "study"
 
                     [aliases.math]
-                    "高等数学" = "calculus"
+                    "calculus-overview" = ["高等数学"]
 
                     [aliases.math.calculus]
-                    "高等数学二重积分" = "double-integral"
+                    "double-integral" = ["高等数学二重积分"]
                 """.trimIndent() + "\n"
             )
 
@@ -109,7 +108,7 @@ class RuntimeCanonicalCatalogTest {
             val studyRoot = result.roots.first { it.path == "study" }
             assertEquals(listOf("study_math"), studyRoot.children.map { it.path })
             val mathNode = studyRoot.children.single()
-            assertEquals(listOf("study_math_calculus"), mathNode.entries.map { it.canonicalPath })
+            assertEquals(listOf("study_math_calculus-overview"), mathNode.entries.map { it.canonicalPath })
             val calculusNode = mathNode.children.single()
             assertEquals("study_math_calculus", calculusNode.path)
             assertEquals(
@@ -140,7 +139,7 @@ class RuntimeCanonicalCatalogTest {
                     parent = "other"
 
                     [aliases]
-                    "找东西" = "looking-for"
+                    "looking-for" = ["找东西"]
                 """.trimIndent()
             )
 
@@ -164,7 +163,7 @@ class RuntimeCanonicalCatalogTest {
                 relativePath = "aliases/broken.toml",
                 content = """
                     [aliases]
-                    "meal" = "dining"
+                    "dining" = ["meal"]
                 """.trimIndent() + "\n"
             )
 

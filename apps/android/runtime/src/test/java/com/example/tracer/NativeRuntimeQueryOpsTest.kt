@@ -7,6 +7,37 @@ import org.junit.Test
 
 class NativeRuntimeQueryOpsTest {
     @Test
+    fun parseSemanticListContent_parsesCoreCalendarLists() {
+        val years = parseSemanticListContent(
+            """{"schema_version":1,"action":"years","output_mode":"semantic_json","items":["2024","2025"],"total_count":2}""",
+            "years"
+        )
+        val months = parseSemanticListContent(
+            """{"schema_version":1,"action":"months","output_mode":"semantic_json","items":["2025-01","2025-03"],"total_count":2}""",
+            "months"
+        )
+
+        assertEquals(listOf("2024", "2025"), years)
+        assertEquals(listOf("2025-01", "2025-03"), months)
+    }
+
+    @Test
+    fun parseSemanticListContent_wrongActionOrMode_returnsNull() {
+        assertNull(
+            parseSemanticListContent(
+                """{"action":"months","output_mode":"semantic_json","items":["2025-01"]}""",
+                "years"
+            )
+        )
+        assertNull(
+            parseSemanticListContent(
+                """{"action":"years","output_mode":"text","items":["2025"]}""",
+                "years"
+            )
+        )
+    }
+
+    @Test
     fun parseTreeQueryContent_parsesStructuredTreePayload() {
         val content = """
             {

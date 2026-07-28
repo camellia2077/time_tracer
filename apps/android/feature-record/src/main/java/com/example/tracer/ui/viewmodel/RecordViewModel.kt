@@ -27,6 +27,15 @@ enum class RecordSuggestionOutputMode {
     ALIAS
 }
 
+private fun logDebug(tag: String, message: String) {
+    runCatching { Log.d(tag, message) }
+}
+
+enum class CanonicalBrowserTarget {
+    RECORD_INPUT,
+    QUICK_ACCESS
+}
+
 data class RecordSuggestedActivity(
     val canonicalToken: String,
     val aliasToken: String = ""
@@ -80,7 +89,10 @@ data class RecordUiState(
     // discard it. This cache is intentionally UI-session-only and is never treated as persisted
     // storage.
     val historyDraftsByFile: Map<String, String> = emptyMap(),
-    val quickActivities: List<String> = listOf("meal", "洗漱", "上厕所"),
+    val quickActivities: List<String> = emptyList(),
+    val actualTimeExpanded: Boolean = false,
+    // The card visibility and the activity-management controls are independent UI states.
+    val quickAccessCardExpanded: Boolean = true,
     val assistSettingsExpanded: Boolean = false,
     val suggestionLookbackDays: Int = 7,
     val suggestionTopN: Int = 5,
@@ -96,6 +108,7 @@ data class RecordUiState(
     val orderedCanonicalRootPaths: List<String> = emptyList(),
     val suggestionsVisible: Boolean = false,
     val isCanonicalCatalogVisible: Boolean = false,
+    val canonicalBrowserTarget: CanonicalBrowserTarget? = null,
     val isCanonicalCatalogLoading: Boolean = false,
     val isSuggestionsLoading: Boolean = false,
     val isTxtPreviewVisible: Boolean = false,
@@ -127,7 +140,7 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
         stateProvider = { uiState },
         stateConsumer = { nextState ->
             uiState = nextState.copy(txtHistoryLoaded = true)
-            Log.d(
+            logDebug(
                 TXT_TAB_LOG_TAG,
                 "history load complete inspectionCount=${uiState.txtInspectionEntries.size} " +
                     "selectedFile=${uiState.selectedHistoryFile} selectedMonth=${uiState.selectedMonth} " +
@@ -304,6 +317,14 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
         uiState = intentHandler.updateQuickActivities(uiState, values)
     }
 
+    fun updateActualTimeExpanded(expanded: Boolean) {
+        uiState = intentHandler.updateActualTimeExpanded(uiState, expanded)
+    }
+
+    fun updateQuickAccessCardExpanded(expanded: Boolean) {
+        uiState = intentHandler.updateQuickAccessCardExpanded(uiState, expanded)
+    }
+
     fun updateAssistUiState(assistSettingsExpanded: Boolean) {
         uiState = intentHandler.updateAssistUiState(
             state = uiState,
@@ -349,7 +370,15 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
     }
 
     fun openCanonicalCatalog() {
-        uiState = intentHandler.showCanonicalCatalogLoading(uiState)
+        openCanonicalCatalog(CanonicalBrowserTarget.RECORD_INPUT)
+    }
+
+    fun openQuickAccessCanonicalCatalog() {
+        openCanonicalCatalog(CanonicalBrowserTarget.QUICK_ACCESS)
+    }
+
+    private fun openCanonicalCatalog(target: CanonicalBrowserTarget) {
+        uiState = intentHandler.showCanonicalCatalogLoading(uiState, target)
         viewModelScope.launch {
             uiState = intentHandler.loadCanonicalCatalog(uiState)
         }
@@ -457,7 +486,7 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
     }
 
     fun refreshHistory() {
-        Log.d(
+        logDebug(
             TXT_TAB_LOG_TAG,
             "history load start inspectionCount=${uiState.txtInspectionEntries.size} " +
                 "selectedFile=${uiState.selectedHistoryFile} selectedMonth=${uiState.selectedMonth}"

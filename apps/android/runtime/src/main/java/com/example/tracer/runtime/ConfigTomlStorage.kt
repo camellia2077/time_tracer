@@ -8,7 +8,7 @@ internal class ConfigTomlStorage(private val configRootPath: String) {
         if (!root.exists()) {
             return ConfigTomlListResult(
                 ok = true,
-                converterFiles = emptyList(),
+                aliasFiles = emptyList(),
                 chartFiles = emptyList(),
                 metaFiles = emptyList(),
                 reportFiles = emptyList(),
@@ -22,7 +22,7 @@ internal class ConfigTomlStorage(private val configRootPath: String) {
             .sorted()
             .toList()
 
-        val converterFiles = mutableListOf<ConfigTomlFileEntry>()
+        val aliasFiles = mutableListOf<ConfigTomlFileEntry>()
         val chartFiles = mutableListOf<ConfigTomlFileEntry>()
         val metaFiles = mutableListOf<ConfigTomlFileEntry>()
         val reportFiles = mutableListOf<ConfigTomlFileEntry>()
@@ -34,14 +34,14 @@ internal class ConfigTomlStorage(private val configRootPath: String) {
             } else if (path == "config.toml" || path.startsWith("meta/")) {
                 metaFiles += path.toConfigTomlFileEntry(prefixToTrim = null)
             } else if (path.startsWith("aliases/")) {
-                converterFiles += path.toConfigTomlFileEntry(prefixToTrim = "aliases/")
+                aliasFiles += path.toConfigTomlFileEntry(prefixToTrim = "aliases/")
             }
             // Other root-level TOML files are outside the canonical config layout.
         }
 
         return ConfigTomlListResult(
             ok = true,
-            converterFiles = converterFiles,
+            aliasFiles = aliasFiles,
             chartFiles = chartFiles,
             metaFiles = metaFiles,
             reportFiles = reportFiles,

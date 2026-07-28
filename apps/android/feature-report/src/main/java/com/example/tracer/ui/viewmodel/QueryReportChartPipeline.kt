@@ -19,6 +19,10 @@ internal class QueryReportChartUseCase(
     private var operationCounter = 0L
     private val paramResolver = QueryReportChartParamResolver(inputValidator, textProvider)
 
+    fun invalidateCache() {
+        cache.clear()
+    }
+
     suspend fun execute(
         currentState: QueryReportUiState,
         emit: (QueryReportUiState) -> Unit
@@ -192,6 +196,10 @@ internal class QueryReportCompositionUseCase(
     private val maxCacheEntries = 24
     private var operationCounter = 0L
     private val paramResolver = QueryReportChartParamResolver(inputValidator, textProvider)
+
+    fun invalidateCache() {
+        cache.clear()
+    }
 
     suspend fun execute(
         currentState: QueryReportUiState,

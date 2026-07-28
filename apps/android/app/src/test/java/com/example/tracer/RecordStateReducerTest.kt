@@ -12,6 +12,7 @@ class RecordStateReducerTest {
     @Test
     fun recordInput_defaultsToIntervalMode() {
         assertEquals(RecordAuthoringMode.INTERVAL, RecordUiState().authoringMode)
+        assertFalse(RecordUiState().actualTimeExpanded)
     }
 
     @Test
@@ -39,6 +40,41 @@ class RecordStateReducerTest {
         viewModel.updateQuickActivities(emptyList())
 
         assertEquals(emptyList<String>(), viewModel.uiState.quickActivities)
+    }
+
+    @Test
+    fun actualTimeExpansion_canHideOnlyRecordToControls() {
+        val viewModel = buildRecordViewModel()
+
+        viewModel.updateActualTimeExpanded(false)
+
+        assertFalse(viewModel.uiState.actualTimeExpanded)
+        assertEquals(RecordAuthoringMode.INTERVAL, viewModel.uiState.authoringMode)
+    }
+
+    @Test
+    fun quickAccessCardExpansion_isIndependentFromEditState() {
+        val viewModel = buildRecordViewModel()
+
+        viewModel.updateQuickAccessCardExpanded(false)
+        viewModel.updateAssistUiState(true)
+
+        assertFalse(viewModel.uiState.quickAccessCardExpanded)
+        assertTrue(viewModel.uiState.assistSettingsExpanded)
+    }
+
+    @Test
+    fun canonicalBrowser_hasNoDefaultTarget_untilAnEntryIsOpened() {
+        val viewModel = buildRecordViewModel()
+
+        assertEquals(null, viewModel.uiState.canonicalBrowserTarget)
+
+        viewModel.openQuickAccessCanonicalCatalog()
+
+        assertEquals(
+            CanonicalBrowserTarget.QUICK_ACCESS,
+            viewModel.uiState.canonicalBrowserTarget
+        )
     }
 
     @Test

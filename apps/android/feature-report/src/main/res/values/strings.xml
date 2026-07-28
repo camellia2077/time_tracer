@@ -9,9 +9,9 @@
     <string name="report_result_mode_text">Text</string>
     <string name="report_result_mode_chart">Chart</string>
 
-    <string name="report_title_mode_parameters">%1$s Parameters</string>
-    <string name="report_parameter_section_day">Day</string>
-    <string name="report_parameter_section_tree">Tree</string>
+    <string name="report_title_mode_parameters">Date selection</string>
+    <string name="report_parameter_section_day">Date</string>
+    <string name="report_parameter_section_tree">Activity hierarchy</string>
     <string name="report_parameter_section_timeline">Timeline</string>
     <string name="report_parameter_section_markdown">md</string>
     <string name="report_title_report_date">Report Date</string>
@@ -26,8 +26,8 @@
 
     <string name="report_action_loading">Loading...</string>
 
-    <string name="report_title_project_tree_parameters">Project Tree Parameters</string>
-    <string name="report_section_tree">Tree</string>
+    <string name="report_title_project_tree_parameters">Activity hierarchy</string>
+    <string name="report_section_tree">Activity hierarchy</string>
     <string name="report_label_tree_level">Display Level</string>
     <string name="report_tree_level_all">All Levels</string>
     <string name="report_tree_level_number">Level %1$d</string>
@@ -36,9 +36,9 @@
 
     <string name="report_chart_semantic_trend">Trend</string>
     <string name="report_chart_semantic_composition">Breakdown</string>
-    <string name="report_label_chart_root">Root Node</string>
-    <string name="report_chart_root_all">All Roots</string>
-    <string name="report_chart_composition_scope_hint">Breakdown uses all root nodes in the selected period.</string>
+    <string name="report_label_chart_root">Top-level activity</string>
+    <string name="report_chart_root_all">All top-level activities</string>
+    <string name="report_chart_composition_scope_hint">The activity breakdown includes all top-level activities in the selected period.</string>
     <string name="report_label_chart_lookback_days">Lookback Days (N)</string>
     <string name="report_label_chart_date_filter_mode">Date Filter Mode</string>
     <string name="report_chart_date_mode_lookback">Lookback</string>
@@ -47,9 +47,9 @@
     <string name="report_action_chart_loading">Loading Chart...</string>
     <string name="report_chart_empty">No chart data in this range.</string>
     <string name="report_chart_empty_in_range">No chart data in the selected date range.</string>
-    <string name="report_chart_empty_composition">No breakdown data in this range.</string>
-    <string name="report_label_chart_visual">Chart Type</string>
-    <string name="report_label_chart_measure">Breakdown by</string>
+    <string name="report_chart_empty_composition">No activity breakdown data in this range.</string>
+    <string name="report_label_chart_visual">Chart type</string>
+    <string name="report_label_chart_measure">Measure</string>
     <string name="report_label_select_year_month">Select year and month</string>
     <string name="report_sheet_select_year_month">Select Year &amp; Month</string>
     <string name="report_sheet_select_year">Select Year</string>
@@ -66,22 +66,22 @@
     <string name="report_chart_range_error_invalid_start">Invalid start date.</string>
     <string name="report_chart_range_error_invalid_end">Invalid end date.</string>
     <string name="report_chart_range_error_order">Invalid range. Start date must be less than or equal to end date.</string>
-    <string name="report_chart_visual_line">Line</string>
-    <string name="report_chart_visual_bar">Vertical Bar</string>
-    <string name="report_chart_visual_composition_pie">Pie</string>
-    <string name="report_chart_visual_composition_bar">Bar</string>
-    <string name="report_chart_visual_composition_treemap">Tree</string>
-    <string name="report_chart_measure_duration">Duration</string>
-    <string name="report_chart_measure_frequency">Frequency</string>
+    <string name="report_chart_visual_line">Line chart</string>
+    <string name="report_chart_visual_bar">Bar chart</string>
+    <string name="report_chart_visual_composition_pie">Pie chart</string>
+    <string name="report_chart_visual_composition_bar">Horizontal bar</string>
+    <string name="report_chart_visual_composition_treemap">Treemap</string>
+    <string name="report_chart_measure_duration">Time spent</string>
+    <string name="report_chart_measure_frequency">Number of records</string>
     <string name="report_chart_visual_heatmap">Heatmap</string>
-    <string name="report_chart_pie_hint">Tap a slice to view root, duration, and share.</string>
-    <string name="report_chart_pie_drilldown_hint">Tap a slice or legend row with children to enter that activity level.</string>
+    <string name="report_chart_pie_hint">Tap a slice to view the activity, time spent, and share.</string>
+    <string name="report_chart_pie_drilldown_hint">Tap a slice or legend row with sub-activities to open that activity level.</string>
     <string name="report_chart_pie_drilldown_path">Current level: %1$s</string>
     <string name="report_chart_pie_drilldown_back">Back to %1$s</string>
-    <string name="report_chart_pie_drilldown_summary">Tap through the activity tree to inspect each level.</string>
-    <string name="report_chart_composition_bar_hint">Tap a row to view root, duration, and share.</string>
-    <string name="report_chart_bar_drilldown_hint">Tap a row with children to enter the next activity level.</string>
-    <string name="report_chart_composition_treemap_hint">Tap a tile or legend row to view its activity, duration, and share. Tap one with children to drill down.</string>
+    <string name="report_chart_pie_drilldown_summary">Tap through the activity hierarchy to inspect each level.</string>
+    <string name="report_chart_composition_bar_hint">Tap a row to view the activity, time spent, and share.</string>
+    <string name="report_chart_bar_drilldown_hint">Tap a row with sub-activities to open the next activity level.</string>
+    <string name="report_chart_composition_treemap_hint">Tap a tile or legend row to view its activity, time spent, and share. Tap one with sub-activities to drill down.</string>
     <string name="report_chart_heatmap_hint">Tap a day cell to view date and duration.</string>
     <string name="report_chart_heatmap_multi_month_hint">Each month uses the same color scale for direct comparison.</string>
     <string name="report_chart_heatmap_theme_policy_label">Heatmap Theme</string>
@@ -93,12 +93,12 @@
     <string name="report_chart_toggle_average_line">Show Average Line</string>
     <string name="report_chart_average_duration">Average: %1$s</string>
     <string name="report_chart_total_duration">Total: %1$s</string>
-    <string name="report_chart_total_frequency">Current level total: %1$d occurrences</string>
-    <string name="report_chart_active_roots">Active Roots: %1$d</string>
+    <string name="report_chart_total_frequency">Records at this level: %1$d</string>
+    <string name="report_chart_active_roots">Active top-level activities: %1$d</string>
     <string name="report_chart_range_days">Days in Range: %1$d</string>
     <string name="report_chart_legacy_fallback_notice">Using legacy local average fallback (planned removal in v0.3.0).</string>
     <string name="report_chart_selected_detail">Selected: %1$s · %2$s</string>
-    <string name="report_chart_composition_summary">Top roots in the selected breakdown.</string>
+    <string name="report_chart_composition_summary">Top-level activities in the selected breakdown.</string>
     <string name="report_chart_composition_selected_detail">Selected: %1$s · %2$s (%3$.1f%%)</string>
     <string name="report_chart_composition_selected_frequency_detail">Selected: %1$s · %2$d occurrences (%3$.1f%%)</string>
 
@@ -124,7 +124,7 @@
     <string name="report_save_activity_remark">Save</string>
     <string name="report_cancel_activity_remark">Cancel</string>
 
-    <string name="report_subject_tree">Tree</string>
+    <string name="report_subject_tree">Activity hierarchy</string>
 
     <string name="report_status_native_report_running">nativeReportJson(%1$s, md) running...</string>
     <string name="report_status_native_report_result">nativeReportJson(%1$s, md) -&gt; OK=%2$s</string>
@@ -147,7 +147,7 @@
     <string name="report_result_title_report_window_summary">%1$s Window Summary</string>
     <string name="report_result_title_chart">Chart Result</string>
     <string name="report_result_title_analysis_error">Analysis Error</string>
-    <string name="report_result_title_tree">%1$s Tree Result</string>
+    <string name="report_result_title_tree">%1$s Activity Hierarchy</string>
     <string name="report_summary_missing_target_body">No report data was found for the selected %1$s target.</string>
     <string name="report_summary_no_data_body">No activity was recorded on this %1$s.</string>
     <string name="report_summary_error_code">Code: %1$s</string>
@@ -160,7 +160,7 @@
     <string name="report_summary_matched_days">Matched days: %1$d</string>
     <string name="report_summary_matched_records">Matched records: %1$d</string>
 
-    <string name="report_error_tree_level_min">Tree level must be &gt;= -1.</string>
+    <string name="report_error_tree_level_min">Activity hierarchy level must be &gt;= -1.</string>
     <string name="report_error_chart_payload_invalid">Report chart payload is invalid.</string>
     <string name="report_error_composition_payload_invalid">Report breakdown payload is invalid.</string>
     <string name="report_error_period_argument_required">%1$s argument is required for period %2$s.</string>

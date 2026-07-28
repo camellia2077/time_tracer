@@ -81,16 +81,22 @@ internal fun rememberTracerTomlFolderImportAction(
                         continue
                     }
 
-                    val result = withContext(Dispatchers.IO) {
-                        configGateway.saveConfigTomlFile(
-                            relativePath = document.relativePath,
-                            content = content
-                        )
+                    val aliasError = if (isAliasConfigFilePath(document.relativePath)) {
+                        configViewModel.applyImportedAliasToml(document.relativePath, content)
+                    } else {
+                        null
                     }
-                    if (result.ok) {
+                    val result = if (aliasError == null && !isAliasConfigFilePath(document.relativePath)) {
+                        withContext(Dispatchers.IO) {
+                            configGateway.saveConfigTomlFile(document.relativePath, content)
+                        }
+                    } else {
+                        null
+                    }
+                    if (aliasError == null && (result == null || result.ok)) {
                         successCount += 1
                     } else {
-                        errors += "${document.relativePath}: ${result.message}"
+                        errors += "${document.relativePath}: ${aliasError ?: result?.message.orEmpty()}"
                     }
                 }
 

@@ -54,7 +54,7 @@ class QueryReportTreePipelineTest {
             )
         )
 
-        viewModel.onParameterSectionChange(ReportParameterSection.TREE)
+        viewModel.onParameterSectionChange(ReportParameterSection.ACTIVITY_HIERARCHY)
         advanceUntilIdle()
 
         val request = fakeQueryGateway.lastTreeRequest
@@ -65,6 +65,39 @@ class QueryReportTreePipelineTest {
     }
 
     @Test
+    fun selectingTreeAgain_rehydratesMissingResult() = runTest {
+        val fakeQueryGateway = FakeTreeQueryGateway().apply {
+            treeResult = TreeQueryResult(
+                ok = false,
+                found = false,
+                message = "temporary failure"
+            )
+        }
+        val viewModel = QueryReportViewModel(
+            reportGateway = FakeTreeReportGateway(),
+            queryGateway = fakeQueryGateway
+        )
+
+        viewModel.onParameterSectionChange(ReportParameterSection.ACTIVITY_HIERARCHY)
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.activeResult == null)
+
+        fakeQueryGateway.treeResult = TreeQueryResult(
+            ok = true,
+            found = true,
+            nodes = listOf(TreeNode(name = "study", path = "study")),
+            message = "ok"
+        )
+        // The selected section has not changed, but its result is still missing.
+        // This is the state that can occur after a theme-driven recomposition.
+        viewModel.onParameterSectionChange(ReportParameterSection.ACTIVITY_HIERARCHY)
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.activeResult is QueryResult.Tree)
+        assertEquals(2, fakeQueryGateway.treeRequestCount)
+    }
+
+    @Test
     fun changingTreeDate_reloadsTreeUsingSelectedLevel() = runTest {
         val fakeQueryGateway = FakeTreeQueryGateway()
         val viewModel = QueryReportViewModel(
@@ -72,7 +105,7 @@ class QueryReportTreePipelineTest {
             queryGateway = fakeQueryGateway
         )
 
-        viewModel.onParameterSectionChange(ReportParameterSection.TREE)
+        viewModel.onParameterSectionChange(ReportParameterSection.ACTIVITY_HIERARCHY)
         advanceUntilIdle()
         viewModel.onTreeLevelChange(1)
         advanceUntilIdle()
@@ -95,7 +128,7 @@ class QueryReportTreePipelineTest {
             queryGateway = fakeQueryGateway
         )
 
-        viewModel.onParameterSectionChange(ReportParameterSection.TREE)
+        viewModel.onParameterSectionChange(ReportParameterSection.ACTIVITY_HIERARCHY)
         advanceUntilIdle()
         viewModel.onTreeLevelChange(1)
         advanceUntilIdle()
@@ -132,7 +165,7 @@ class QueryReportTreePipelineTest {
         )
         assertEquals(
             tree,
-            resolveDisplayResult(state, DataTreePeriod.DAY, ReportParameterSection.TREE)
+            resolveDisplayResult(state, DataTreePeriod.DAY, ReportParameterSection.ACTIVITY_HIERARCHY)
         )
     }
 }
@@ -149,6 +182,7 @@ private class FakeTreeReportGateway : ReportGateway {
 
 private class FakeTreeQueryGateway : QueryGateway {
     var lastTreeRequest: DataTreeQueryParams? = null
+    var treeRequestCount: Int = 0
     var treeResult: TreeQueryResult = TreeQueryResult(
         ok = true,
         found = true,
@@ -189,6 +223,7 @@ private class FakeTreeQueryGateway : QueryGateway {
 
     override suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult {
         lastTreeRequest = params
+        treeRequestCount += 1
         return treeResult
     }
 

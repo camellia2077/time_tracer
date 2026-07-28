@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -34,6 +35,7 @@ class RecordCanonicalCatalogDragTest {
                     roots = roots,
                     statusText = "",
                     displayMode = RecordSuggestionOutputMode.CANONICAL,
+                    target = CanonicalBrowserTarget.QUICK_ACCESS,
                     collapsedRootPaths = emptySet(),
                     orderedRootPaths = emptyList(),
                     onDismissRequest = {},
@@ -45,6 +47,7 @@ class RecordCanonicalCatalogDragTest {
             }
         }
         composeRule.waitForIdle()
+        composeRule.onNodeWithText("Add Quick Access Activity").assertIsDisplayed()
 
         val draggedRoot = composeRule.onNodeWithTag(canonicalCatalogRootTestTag("alpha"))
         val targetCenter = composeRule.onNodeWithTag(canonicalCatalogRootTestTag("beta"))

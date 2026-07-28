@@ -60,7 +60,6 @@ internal fun QueryReportResultDisplay(
     onChartRootChange: (String) -> Unit,
     onChartShowAverageLineChange: (Boolean) -> Unit,
     onChartVisualModeChange: (ReportChartVisualMode) -> Unit,
-    onLoadChart: () -> Unit,
     onUpdateActivityRemark: suspend (ActivityTimelineItem, String) -> RecordActionResult = { _, _ ->
         RecordActionResult(ok = false, message = "Activity remark editing is unavailable.")
     },
@@ -109,8 +108,7 @@ internal fun QueryReportResultDisplay(
                     onCompositionVisualModeChange = onCompositionVisualModeChange,
                     onChartRootChange = onChartRootChange,
                     onChartShowAverageLineChange = onChartShowAverageLineChange,
-                    onChartVisualModeChange = onChartVisualModeChange,
-                    onLoadChart = onLoadChart
+                    onChartVisualModeChange = onChartVisualModeChange
                 )
             }
         }

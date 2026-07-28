@@ -530,7 +530,7 @@ private class FakeRuntimeServices(
 
     override suspend fun listConfigTomlFiles(): ConfigTomlListResult = ConfigTomlListResult(
         ok = true,
-        converterFiles = emptyList(),
+        aliasFiles = emptyList(),
         chartFiles = emptyList(),
         metaFiles = emptyList(),
         reportFiles = emptyList(),

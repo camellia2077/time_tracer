@@ -168,8 +168,7 @@ class QueryReportResultDisplayRobolectricTest {
                     onCompositionVisualModeChange = {},
                     onChartRootChange = {},
                     onChartShowAverageLineChange = {},
-                    onChartVisualModeChange = {},
-                    onLoadChart = {}
+                    onChartVisualModeChange = {}
                 )
             }
         }

@@ -204,7 +204,6 @@ internal fun ReportCompositionVisualizationSection(
                 valueLabel = compositionValueLabel,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(280.dp)
                     .clip(MaterialTheme.shapes.medium)
             )
         }

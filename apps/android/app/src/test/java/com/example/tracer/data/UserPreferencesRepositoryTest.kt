@@ -20,7 +20,7 @@ import kotlin.io.path.createTempDirectory
 
 class UserPreferencesRepositoryTest {
     @Test
-    fun recordSuggestionPreferences_usesDefaultQuickActivities_whenQuickActivitiesNotConfigured() = runTest {
+    fun recordSuggestionPreferences_usesEmptyQuickActivities_whenQuickActivitiesNotConfigured() = runTest {
         val repository = buildRepository(
             testName = "missing_quick_activities",
             scope = backgroundScope
@@ -29,7 +29,7 @@ class UserPreferencesRepositoryTest {
         val preferences = repository.recordSuggestionPreferences.first()
 
         assertEquals(
-            UserPreferencesRepository.DEFAULT_RECORD_QUICK_ACTIVITIES,
+            emptyList<String>(),
             preferences.quickActivities
         )
         assertEquals(
@@ -218,6 +218,26 @@ class UserPreferencesRepositoryTest {
         repository.setReportTimeParametersExpanded(false)
 
         assertEquals(false, repository.reportTimeParametersExpanded.first())
+    }
+
+    @Test
+    fun recordQuickAccessCardExpanded_defaultsExpanded_andPersistsCollapsedState() = runTest {
+        val repository = buildRepository(
+            testName = "persist_record_quick_access_card_expanded",
+            scope = backgroundScope
+        )
+
+        assertEquals(
+            true,
+            repository.recordSuggestionPreferences.first().quickAccessCardExpanded
+        )
+
+        repository.setRecordQuickAccessCardExpanded(false)
+
+        assertEquals(
+            false,
+            repository.recordSuggestionPreferences.first().quickAccessCardExpanded
+        )
     }
 
     @Test

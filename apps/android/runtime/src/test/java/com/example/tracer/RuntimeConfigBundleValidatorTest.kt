@@ -32,12 +32,12 @@ class RuntimeConfigBundleValidatorTest {
         try {
             writeBundleToml(configRoot, profile = "android")
             writeRequiredFiles(configRoot)
-            File(configRoot, "reports/markdown/year.toml").delete()
+            File(configRoot, "reports/markdown/en/year.toml").delete()
 
             val result = validateRuntimeConfigBundle(configRoot)
 
             assertFalse(result.ok)
-            assertTrue(result.missingFiles.contains("reports/markdown/year.toml"))
+            assertTrue(result.missingFiles.contains("reports/markdown/en/year.toml"))
         } finally {
             configRoot.deleteRecursively()
         }
@@ -90,11 +90,11 @@ class RuntimeConfigBundleValidatorTest {
             required = [
               "config.toml",
               "aliases/_system.toml",
-              "reports/markdown/day.toml",
-              "reports/markdown/month.toml",
-              "reports/markdown/period.toml",
-              "reports/markdown/week.toml",
-              "reports/markdown/year.toml",
+              "reports/markdown/en/day.toml",
+              "reports/markdown/en/month.toml",
+              "reports/markdown/en/period.toml",
+              "reports/markdown/en/week.toml",
+              "reports/markdown/en/year.toml",
             ]
             """.trimIndent()
         )
@@ -104,11 +104,11 @@ class RuntimeConfigBundleValidatorTest {
         val requiredFiles = listOf(
             "config.toml",
             "aliases/_system.toml",
-            "reports/markdown/day.toml",
-            "reports/markdown/month.toml",
-            "reports/markdown/period.toml",
-            "reports/markdown/week.toml",
-            "reports/markdown/year.toml"
+            "reports/markdown/en/day.toml",
+            "reports/markdown/en/month.toml",
+            "reports/markdown/en/period.toml",
+            "reports/markdown/en/week.toml",
+            "reports/markdown/en/year.toml"
         )
         for (relativePath in requiredFiles) {
             val file = File(configRoot, relativePath)

@@ -213,16 +213,93 @@ data class TxtCanonicalActivityReplacementResult(
     val message: String
 )
 
+data class AliasCanonicalRenameRequest(
+    val targetType: String,
+    val targetPath: String,
+    val newName: String
+)
+
+data class AliasCanonicalRenameResult(
+    val ok: Boolean,
+    val updatedTomlContent: String,
+    val replacements: List<CanonicalActivityNameReplacement>,
+    val message: String
+)
+
+data class AliasHierarchyNode(
+    val canonicalKey: String,
+    val path: String,
+    val isGroup: Boolean,
+    val aliases: List<String>,
+    val children: List<AliasHierarchyNode>
+)
+
+data class AliasHierarchySnapshot(
+    val parent: String,
+    val nodes: List<AliasHierarchyNode>
+)
+
+data class AliasHierarchyDescribeResult(
+    val ok: Boolean,
+    val hierarchy: AliasHierarchySnapshot? = null,
+    val message: String = ""
+)
+
+data class AliasHierarchyCreateResult(
+    val ok: Boolean,
+    val tomlContent: String = "",
+    val message: String = ""
+)
+
+data class AliasHierarchyDocumentInput(
+    val sourceName: String,
+    val tomlContent: String
+)
+
+data class AliasHierarchyValidationResult(
+    val ok: Boolean,
+    val message: String = ""
+)
+
+data class AliasHierarchyOperation(
+    val kind: String,
+    val targetPath: String = "",
+    val destinationPath: String = "",
+    val canonicalKey: String = "",
+    val newName: String = "",
+    val targetAlias: String = "",
+    val oldAlias: String = "",
+    val aliases: List<String> = emptyList()
+)
+
+data class AliasKeyReplacement(
+    val oldAlias: String,
+    val newAlias: String
+)
+
+data class AliasHierarchyOperationResult(
+    val ok: Boolean,
+    val updatedTomlContent: String,
+    val replacements: List<CanonicalActivityNameReplacement>,
+    val aliasReplacements: List<AliasKeyReplacement> = emptyList(),
+    val hierarchy: AliasHierarchySnapshot? = null,
+    val message: String = ""
+)
+
 data class AliasEntryMoveMigrationRequest(
     val configRelativePath: String,
     val updatedTomlContent: String,
-    val replacements: List<CanonicalActivityNameReplacement>
+    val replacements: List<CanonicalActivityNameReplacement>,
+    val aliasReplacements: List<AliasKeyReplacement> = emptyList(),
+    val canonicalRename: AliasCanonicalRenameRequest? = null,
+    val allowMissingConfig: Boolean = false
 )
 
 data class AliasEntryMoveMigrationResult(
     val ok: Boolean,
     val message: String,
-    val updatedTxtFileCount: Int = 0
+    val updatedTxtFileCount: Int = 0,
+    val updatedTomlContent: String = ""
 )
 
 data class ConfigTomlFileEntry(
@@ -232,7 +309,7 @@ data class ConfigTomlFileEntry(
 
 data class ConfigTomlListResult(
     val ok: Boolean,
-    val converterFiles: List<ConfigTomlFileEntry>,
+    val aliasFiles: List<ConfigTomlFileEntry>,
     val chartFiles: List<ConfigTomlFileEntry>,
     val metaFiles: List<ConfigTomlFileEntry>,
     val reportFiles: List<ConfigTomlFileEntry>,
@@ -336,6 +413,14 @@ data class DataQueryTextResult(
     val ok: Boolean,
     val outputText: String,
     val message: String,
+    val operationId: String = ""
+)
+
+data class ReportCalendarAvailabilityResult(
+    val ok: Boolean,
+    val years: List<String> = emptyList(),
+    val months: List<String> = emptyList(),
+    val message: String = "",
     val operationId: String = ""
 )
 

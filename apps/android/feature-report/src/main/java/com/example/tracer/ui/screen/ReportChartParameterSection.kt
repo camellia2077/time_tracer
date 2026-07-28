@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -30,9 +29,7 @@ internal fun ReportChartParameterSection(
     chartSemanticMode: ReportChartSemanticMode,
     rootOptions: List<String>,
     trendChartSelectedRoot: String,
-    chartLoading: Boolean,
-    onChartRootChange: (String) -> Unit,
-    onLoadChart: () -> Unit
+    onChartRootChange: (String) -> Unit
 ) {
     var rootMenuExpanded by remember { mutableStateOf(false) }
 
@@ -86,19 +83,4 @@ internal fun ReportChartParameterSection(
             modifier = Modifier.fillMaxWidth()
         )
     }
-
-    Button(
-        onClick = onLoadChart,
-        enabled = !chartLoading,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text(
-            text = if (chartLoading) {
-                stringResource(R.string.report_action_chart_loading)
-            } else {
-                stringResource(R.string.report_action_load_chart)
-            }
-        )
-    }
-
 }

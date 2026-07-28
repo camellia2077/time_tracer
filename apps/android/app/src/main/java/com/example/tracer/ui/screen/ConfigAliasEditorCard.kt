@@ -54,11 +54,13 @@ internal fun ConfigAliasEditorCard(
     onAdvancedTomlChange: (String) -> Unit,
     onAddGroup: (parentGroupId: String?, name: String) -> Unit,
     onDeleteGroup: (groupId: String) -> Unit,
-    onAddEntry: (parentGroupId: String?, aliasKey: String, canonicalLeaf: String) -> Unit,
-    onUpdateEntry: (entryId: String, aliasKey: String, canonicalLeaf: String) -> Unit,
+    onRenameGroup: (groupId: String, name: String) -> Unit,
+    onAddEntry: (parentGroupId: String?, canonicalLeaf: String, aliases: List<String>) -> Unit,
+    onUpdateEntry: (entryId: String, canonicalLeaf: String, aliases: List<String>) -> Unit,
     onPromoteEntry: (entryId: String) -> Unit,
     onRenameGroupAlias: (groupId: String, oldAlias: String, newAlias: String) -> Unit,
     onAddGroupAlias: (groupId: String, alias: String) -> Unit,
+    onUpdateGroupAliases: (groupId: String, aliases: List<String>) -> Unit,
     onDeleteEntry: (entryId: String) -> Unit,
     onPreviewEntryMove: (entryId: String, targetGroupId: String) -> Unit,
     onConfirmMovePlan: () -> Unit,
@@ -70,23 +72,13 @@ internal fun ConfigAliasEditorCard(
     var currentPathGroupIds by remember(selectedFileDisplayName) {
         mutableStateOf(emptyList<String>())
     }
-    val renderedStructuredDraft = remember(document) {
-        document?.let(AliasTomlEditorCodec::serialize).orEmpty()
-    }
-
-    LaunchedEffect(mode, selectedFileContent, advancedTomlDraft, renderedStructuredDraft) {
-        val currentDraft = when (mode) {
-            AliasEditorMode.STRUCTURED -> renderedStructuredDraft
-            AliasEditorMode.ADVANCED -> advancedTomlDraft
-        }
+    LaunchedEffect(mode, selectedFileContent, advancedTomlDraft) {
+        val currentDraft = advancedTomlDraft
         if (currentDraft.isBlank() || currentDraft == selectedFileContent) {
             return@LaunchedEffect
         }
         delay(CONFIG_ALIAS_EDITOR_AUTO_SAVE_DELAY_MS)
-        val latestDraft = when (mode) {
-            AliasEditorMode.STRUCTURED -> renderedStructuredDraft
-            AliasEditorMode.ADVANCED -> advancedTomlDraft
-        }
+        val latestDraft = advancedTomlDraft
         if (latestDraft.isNotBlank() && latestDraft != selectedFileContent) {
             onSave()
         }
@@ -259,26 +251,50 @@ internal fun ConfigAliasEditorCard(
         is AliasEditorDialogState.AddEntry -> {
             AliasEntryDialog(
                 title = stringResource(R.string.config_alias_dialog_add_entry_title),
-                initialAliasKey = "",
                 initialCanonicalLeaf = "",
+                initialAliases = listOf(""),
                 onDismiss = { dialogState = null },
-                onConfirm = { aliasKey, canonicalLeaf ->
+                onConfirm = { canonicalLeaf, aliases ->
                     dialogState = null
-                    onAddEntry(activeDialog.parentGroupId, aliasKey, canonicalLeaf)
+                    onAddEntry(activeDialog.parentGroupId, canonicalLeaf, aliases)
                 }
             )
         }
 
-        is AliasEditorDialogState.EditEntry -> {
-            AliasEntryDialog(
-                title = stringResource(R.string.config_alias_dialog_rename_alias_title),
-                initialAliasKey = activeDialog.initialAliasKey,
-                initialCanonicalLeaf = activeDialog.initialCanonicalLeaf,
-                showCanonicalLeafField = false,
+        is AliasEditorDialogState.EditEntryAliases -> {
+            AliasManagementDialog(
+                title = stringResource(R.string.config_alias_dialog_edit_aliases_title),
+                aliases = activeDialog.entry.aliases,
+                minimumAliases = 1,
                 onDismiss = { dialogState = null },
-                onConfirm = { aliasKey, canonicalLeaf ->
+                onConfirm = { aliases ->
                     dialogState = null
-                    onUpdateEntry(activeDialog.entryId, aliasKey, canonicalLeaf)
+                    onUpdateEntry(activeDialog.entry.id, activeDialog.entry.canonicalLeaf, aliases)
+                }
+            )
+        }
+
+        is AliasEditorDialogState.EditGroupName -> {
+            AliasGroupNameDialog(
+                title = stringResource(R.string.config_alias_dialog_edit_group_name_title),
+                initialName = activeDialog.group.name,
+                onDismiss = { dialogState = null },
+                onConfirm = { name ->
+                    dialogState = null
+                    onRenameGroup(activeDialog.group.id, name)
+                }
+            )
+        }
+
+        is AliasEditorDialogState.EditEntryName -> {
+            AliasEntryDialog(
+                title = stringResource(R.string.config_alias_dialog_edit_entry_name_title),
+                initialCanonicalLeaf = activeDialog.entry.canonicalLeaf,
+                initialAliases = activeDialog.entry.aliases,
+                onDismiss = { dialogState = null },
+                onConfirm = { canonicalLeaf, aliases ->
+                    dialogState = null
+                    onUpdateEntry(activeDialog.entry.id, canonicalLeaf, aliases)
                 }
             )
         }
@@ -287,7 +303,12 @@ internal fun ConfigAliasEditorCard(
             AliasGroupActionsDialog(
                 group = activeDialog.group,
                 onDismiss = { dialogState = null },
-                onEditAlias = { alias -> dialogState = AliasEditorDialogState.EditGroupAlias(activeDialog.group.id, alias) },
+                onEditName = {
+                    dialogState = AliasEditorDialogState.EditGroupName(activeDialog.group)
+                },
+                onEditAlias = {
+                    dialogState = AliasEditorDialogState.EditGroupAliases(activeDialog.group)
+                },
                 onAddAlias = { dialogState = AliasEditorDialogState.AddGroupAlias(activeDialog.group.id) },
                 onDelete = { dialogState = AliasEditorDialogState.ConfirmDeleteGroup(activeDialog.group) }
             )
@@ -297,12 +318,11 @@ internal fun ConfigAliasEditorCard(
             AliasEntryActionsDialog(
                 entry = activeDialog.entry,
                 onDismiss = { dialogState = null },
-                onEdit = {
-                    dialogState = AliasEditorDialogState.EditEntry(
-                        entryId = activeDialog.entry.id,
-                        initialAliasKey = activeDialog.entry.aliasKey,
-                        initialCanonicalLeaf = activeDialog.entry.canonicalLeaf
-                    )
+                onEditName = {
+                    dialogState = AliasEditorDialogState.EditEntryName(activeDialog.entry)
+                },
+                onEditAlias = {
+                    dialogState = AliasEditorDialogState.EditEntryAliases(activeDialog.entry)
                 },
                 onPromote = { dialogState = AliasEditorDialogState.ConfirmPromote(activeDialog.entry) },
                 onMove = { dialogState = AliasEditorDialogState.PlanEntryMove(activeDialog.entry) },
@@ -325,7 +345,7 @@ internal fun ConfigAliasEditorCard(
         is AliasEditorDialogState.ConfirmDeleteEntry -> {
             AliasDeleteConfirmDialog(
                 title = stringResource(R.string.config_alias_delete_entry_title),
-                message = stringResource(R.string.config_alias_delete_entry_message, activeDialog.entry.aliasKey),
+                message = stringResource(R.string.config_alias_delete_entry_message, activeDialog.entry.canonicalLeaf),
                 onDismiss = { dialogState = null },
                 onConfirm = {
                     dialogState = null
@@ -357,21 +377,22 @@ internal fun ConfigAliasEditorCard(
             )
         }
 
-        is AliasEditorDialogState.EditGroupAlias -> {
-            AliasGroupAliasDialog(
-                title = stringResource(R.string.config_alias_edit_record_name_title),
-                initialAlias = activeDialog.oldAlias,
+        is AliasEditorDialogState.EditGroupAliases -> {
+            AliasManagementDialog(
+                title = stringResource(R.string.config_alias_dialog_edit_aliases_title),
+                aliases = activeDialog.group.groupAliases,
+                minimumAliases = 0,
                 onDismiss = { dialogState = null },
-                onConfirm = { newAlias ->
+                onConfirm = { aliases ->
                     dialogState = null
-                    onRenameGroupAlias(activeDialog.groupId, activeDialog.oldAlias, newAlias)
+                    onUpdateGroupAliases(activeDialog.group.id, aliases)
                 }
             )
         }
 
         is AliasEditorDialogState.AddGroupAlias -> {
             AliasGroupAliasDialog(
-                title = stringResource(R.string.config_alias_add_record_name_title),
+                title = stringResource(R.string.config_alias_dialog_add_alias_title),
                 initialAlias = "",
                 onDismiss = { dialogState = null },
                 onConfirm = { alias ->
@@ -562,16 +583,14 @@ internal fun resolveAliasStructuredLayer(
 internal sealed interface AliasEditorDialogState {
     data class AddGroup(val parentGroupId: String?) : AliasEditorDialogState
     data class AddEntry(val parentGroupId: String?) : AliasEditorDialogState
-    data class EditEntry(
-        val entryId: String,
-        val initialAliasKey: String,
-        val initialCanonicalLeaf: String
-    ) : AliasEditorDialogState
+    data class EditEntryAliases(val entry: AliasTomlEntry) : AliasEditorDialogState
+    data class EditGroupName(val group: AliasTomlGroup) : AliasEditorDialogState
+    data class EditEntryName(val entry: AliasTomlEntry) : AliasEditorDialogState
     data class GroupActions(val group: AliasTomlGroup) : AliasEditorDialogState
     data class EntryActions(val entry: AliasTomlEntry) : AliasEditorDialogState
     data class PlanEntryMove(val entry: AliasTomlEntry) : AliasEditorDialogState
     data class ConfirmPromote(val entry: AliasTomlEntry) : AliasEditorDialogState
-    data class EditGroupAlias(val groupId: String, val oldAlias: String) : AliasEditorDialogState
+    data class EditGroupAliases(val group: AliasTomlGroup) : AliasEditorDialogState
     data class AddGroupAlias(val groupId: String) : AliasEditorDialogState
     data class ConfirmDeleteGroup(val group: AliasTomlGroup) : AliasEditorDialogState
     data class ConfirmDeleteEntry(val entry: AliasTomlEntry) : AliasEditorDialogState

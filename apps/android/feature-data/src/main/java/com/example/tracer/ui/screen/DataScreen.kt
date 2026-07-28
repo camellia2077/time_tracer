@@ -46,8 +46,7 @@ private val DataScreenBottomContentPadding = 96.dp
 @Composable
 fun DataManagementSection(
     modifier: Modifier = Modifier,
-    onImportSingleTxt: () -> Unit,
-    onImportTomlFolder: () -> Unit,
+    onImportDataFolder: () -> Unit,
     onImportSingleTracer: () -> Unit,
     canExportAllMonthsTracer: Boolean,
     canExportCurrentTxtTracer: Boolean,
@@ -99,21 +98,12 @@ fun DataManagementSection(
                     )
 
                     Button(
-                        onClick = onImportSingleTxt,
+                        onClick = onImportDataFolder,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Icon(Icons.Filled.Refresh, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(R.string.data_action_import_single_txt))
-                    }
-
-                    Button(
-                        onClick = onImportTomlFolder,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(Icons.Filled.Refresh, contentDescription = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(R.string.data_action_import_toml_folder))
+                        Text(stringResource(R.string.data_action_import_data_folder))
                     }
 
                     Button(

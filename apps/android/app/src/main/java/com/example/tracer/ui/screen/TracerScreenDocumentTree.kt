@@ -160,6 +160,61 @@ internal fun listTomlDocumentsRecursively(
     extension = ".toml"
 )
 
+internal fun listTextDocumentsInSubdirectory(
+    contentResolver: ContentResolver,
+    treeUri: Uri,
+    directoryName: String
+): List<TreeTextDocument> = listDocumentsInSubdirectory(
+    contentResolver = contentResolver,
+    treeUri = treeUri,
+    directoryName = directoryName,
+    extension = ".txt"
+)
+
+internal fun listTomlDocumentsInSubdirectory(
+    contentResolver: ContentResolver,
+    treeUri: Uri,
+    directoryName: String
+): List<TreeTextDocument> = listDocumentsInSubdirectory(
+    contentResolver = contentResolver,
+    treeUri = treeUri,
+    directoryName = directoryName,
+    extension = ".toml"
+)
+
+private fun listDocumentsInSubdirectory(
+    contentResolver: ContentResolver,
+    treeUri: Uri,
+    directoryName: String,
+    extension: String
+): List<TreeTextDocument> {
+    val rootDocumentId = runCatching {
+        DocumentsContract.getTreeDocumentId(treeUri)
+    }.getOrNull() ?: return emptyList()
+    val rootDocumentUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, rootDocumentId)
+    val child = findDirectChildDocument(
+        contentResolver = contentResolver,
+        treeUri = treeUri,
+        parentDocumentUri = rootDocumentUri,
+        childName = directoryName
+    ) ?: return emptyList()
+    if (child.mimeType != DocumentsContract.Document.MIME_TYPE_DIR) return emptyList()
+
+    val output = mutableListOf<TreeTextDocument>()
+    collectTextDocumentsRecursively(
+        contentResolver = contentResolver,
+        treeUri = treeUri,
+        parentDocumentUri = DocumentsContract.buildDocumentUriUsingTree(
+            treeUri,
+            child.documentId
+        ),
+        currentRelativeDir = "",
+        extension = extension,
+        output = output
+    )
+    return output.sortedBy { it.relativePath }
+}
+
 private fun listDocumentsRecursively(
     contentResolver: ContentResolver,
     treeUri: Uri,

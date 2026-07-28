@@ -22,6 +22,14 @@ import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.record.R
 import java.time.Clock
 import java.time.format.DateTimeFormatter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
+private data class TxtPreviewState(
+    val isLoading: Boolean,
+    val markerResult: TxtDayMarkerResult,
+    val dayBlockResult: TxtDayBlockResolveResult?
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,80 +50,72 @@ internal fun RecordTxtPreviewSheet(
     )
     val targetDateIso = targetDate.toString()
     val targetMonth = targetDate.format(DateTimeFormatter.ofPattern("yyyy-MM"))
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val resolvedMonth = selectedMonth.ifBlank { targetMonth }
     val normalizedStatusText = previewStatusText.trim()
 
-    val markerResult by produceState(
-        initialValue = TxtDayMarkerResult(
-            ok = false,
-            normalizedDayMarker = "",
-            message = normalizedStatusText
+    val previewState by produceState(
+        initialValue = TxtPreviewState(
+            isLoading = true,
+            markerResult = TxtDayMarkerResult(
+                ok = false,
+                normalizedDayMarker = "",
+                message = normalizedStatusText
+            ),
+            dayBlockResult = null
         ),
         selectedHistoryFile,
+        editableHistoryContent,
         resolvedMonth,
         targetDateIso,
         isLoading
     ) {
-        value = if (
+        if (
             isLoading ||
             selectedHistoryFile.isBlank() ||
             resolvedMonth.isBlank()
         ) {
-            TxtDayMarkerResult(
-                ok = false,
-                normalizedDayMarker = "",
-                message = normalizedStatusText
+            value = TxtPreviewState(
+                isLoading = false,
+                markerResult = TxtDayMarkerResult(
+                    ok = false,
+                    normalizedDayMarker = "",
+                    message = normalizedStatusText
+                ),
+                dayBlockResult = null
             )
-        } else {
+            return@produceState
+        }
+
+        val markerResult = withContext(Dispatchers.IO) {
             txtStorageGateway.defaultTxtDayMarker(
                 selectedMonth = resolvedMonth,
                 targetDateIso = targetDateIso
             )
         }
-    }
-
-    val dayBlockResult by produceState(
-        initialValue = TxtDayBlockResolveResult(
-            ok = false,
-            normalizedDayMarker = markerResult.normalizedDayMarker,
-            found = false,
-            isMarkerValid = false,
-            canSave = false,
-            dayBody = "",
-            dayContentIsoDate = null,
-            message = normalizedStatusText
-        ),
-        selectedHistoryFile,
-        editableHistoryContent,
-        markerResult,
-        resolvedMonth,
-        isLoading
-    ) {
-        value = if (
-            isLoading ||
-            selectedHistoryFile.isBlank() ||
-            !markerResult.ok ||
-            markerResult.normalizedDayMarker.isBlank()
+        val dayBlockResult = if (
+            markerResult.ok && markerResult.normalizedDayMarker.isNotBlank()
         ) {
-            TxtDayBlockResolveResult(
-                ok = false,
-                normalizedDayMarker = markerResult.normalizedDayMarker,
-                found = false,
-                isMarkerValid = false,
-                canSave = false,
-                dayBody = "",
-                dayContentIsoDate = null,
-                message = normalizedStatusText.ifBlank { markerResult.message }
-            )
+            withContext(Dispatchers.IO) {
+                txtStorageGateway.resolveTxtDayBlock(
+                    content = editableHistoryContent,
+                    dayMarker = markerResult.normalizedDayMarker,
+                    selectedMonth = resolvedMonth
+                )
+            }
         } else {
-            txtStorageGateway.resolveTxtDayBlock(
-                content = editableHistoryContent,
-                dayMarker = markerResult.normalizedDayMarker,
-                selectedMonth = resolvedMonth
-            )
+            null
         }
+
+        value = TxtPreviewState(
+            isLoading = false,
+            markerResult = markerResult,
+            dayBlockResult = dayBlockResult
+        )
     }
+    val markerResult = previewState.markerResult
+    val dayBlockResult = previewState.dayBlockResult
+
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
@@ -144,7 +144,7 @@ internal fun RecordTxtPreviewSheet(
             )
 
             when {
-                isLoading -> {
+                isLoading || previewState.isLoading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.testTag(recordTxtPreviewLoadingTestTag())
                     )
@@ -172,7 +172,7 @@ internal fun RecordTxtPreviewSheet(
                     )
                 }
 
-                !dayBlockResult.ok -> {
+                dayBlockResult != null && !dayBlockResult.ok -> {
                     Text(
                         text = dayBlockResult.message.ifBlank {
                             stringResource(R.string.record_txt_preview_day_block_failed)
@@ -181,7 +181,7 @@ internal fun RecordTxtPreviewSheet(
                     )
                 }
 
-                !dayBlockResult.found -> {
+                dayBlockResult != null && !dayBlockResult.found -> {
                     Text(
                         text = stringResource(R.string.record_txt_preview_day_block_missing),
                         style = MaterialTheme.typography.bodyMedium
@@ -189,6 +189,7 @@ internal fun RecordTxtPreviewSheet(
                 }
 
                 else -> {
+                    val resolvedDayBlockResult = requireNotNull(dayBlockResult)
                     Text(
                         text = stringResource(
                             R.string.record_txt_preview_day_marker,
@@ -198,7 +199,7 @@ internal fun RecordTxtPreviewSheet(
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = dayBlockResult.dayBody.ifBlank {
+                        text = resolvedDayBlockResult.dayBody.ifBlank {
                             stringResource(R.string.record_txt_preview_day_block_empty)
                         },
                         style = MaterialTheme.typography.bodyLarge,

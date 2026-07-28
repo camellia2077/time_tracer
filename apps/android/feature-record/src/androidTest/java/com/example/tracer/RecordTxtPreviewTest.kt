@@ -29,6 +29,7 @@ class RecordTxtPreviewTest {
 
     @Test
     fun recordInputCard_runningIntervalShowsStopTimerOnly() {
+        var browserOpenCount = 0
         composeRule.setContent {
             MaterialTheme {
                 RecordInputCard(
@@ -46,8 +47,7 @@ class RecordTxtPreviewTest {
                     currentTimeMillis = 61_000L,
                     lastRecordedActivityAlias = "",
                     lastRecordedDuration = "",
-                    suggestionsVisible = false,
-                    onToggleSuggestions = {},
+                    onOpenCanonicalCatalog = { browserOpenCount += 1 },
                     onOpenTxtPreview = {},
                     onStartIntervalRecording = {},
                     onStopIntervalRecording = {},
@@ -58,6 +58,9 @@ class RecordTxtPreviewTest {
         }
 
         composeRule.onNodeWithText("Stop timer").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Browse activities for Record Input")
+            .performClick()
+        assertEquals(1, browserOpenCount)
     }
 
     @Test
@@ -81,8 +84,6 @@ class RecordTxtPreviewTest {
                     currentTimeMillis = 61_000L,
                     lastRecordedActivityAlias = "",
                     lastRecordedDuration = "",
-                    suggestionsVisible = false,
-                    onToggleSuggestions = {},
                     onOpenTxtPreview = {},
                     onStartIntervalRecording = {},
                     onStopIntervalRecording = {},
@@ -121,8 +122,6 @@ class RecordTxtPreviewTest {
                     currentTimeMillis = 0L,
                     lastRecordedActivityAlias = "",
                     lastRecordedDuration = "",
-                    suggestionsVisible = false,
-                    onToggleSuggestions = {},
                     onOpenTxtPreview = { clickCount += 1 },
                     onStartIntervalRecording = {},
                     onStopIntervalRecording = {},
@@ -157,8 +156,6 @@ class RecordTxtPreviewTest {
                     currentTimeMillis = 0L,
                     lastRecordedActivityAlias = "coding",
                     lastRecordedDuration = "00:25",
-                    suggestionsVisible = false,
-                    onToggleSuggestions = {},
                     onOpenTxtPreview = {},
                     onStartIntervalRecording = {},
                     onStopIntervalRecording = {},
@@ -192,8 +189,6 @@ class RecordTxtPreviewTest {
                     currentTimeMillis = 0L,
                     lastRecordedActivityAlias = "",
                     lastRecordedDuration = "",
-                    suggestionsVisible = false,
-                    onToggleSuggestions = {},
                     onOpenTxtPreview = {},
                     onStartIntervalRecording = {},
                     onStopIntervalRecording = {},

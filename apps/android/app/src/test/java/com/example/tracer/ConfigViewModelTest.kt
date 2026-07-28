@@ -30,15 +30,14 @@ class ConfigViewModelTest {
     }
 
     @Test
-    fun converter_defaults_to_aliases() = runTest(dispatcher) {
+    fun alias_category_is_selected_by_default() = runTest(dispatcher) {
         val gateway = FakeConfigRuntime()
         val quickActivitiesGateway = FakeQuickActivitiesPreferenceGateway()
 
         val viewModel = ConfigViewModel(gateway, gateway, quickActivitiesGateway)
         advanceUntilIdle()
 
-        assertEquals(ConfigCategory.CONVERTER, viewModel.uiState.selectedCategory)
-        assertEquals(ConverterSubcategory.ALIASES, viewModel.uiState.selectedConverterSubcategory)
+        assertEquals(ConfigCategory.ALIAS, viewModel.uiState.selectedCategory)
         assertEquals("meal.toml", viewModel.uiState.selectedFileDisplayName)
         assertEquals("aliases/meal.toml", viewModel.uiState.selectedFilePath)
         assertEquals(AliasEditorMode.STRUCTURED, viewModel.uiState.aliasEditorMode)
@@ -108,7 +107,7 @@ class ConfigViewModelTest {
         val viewModel = ConfigViewModel(gateway, gateway, FakeQuickActivitiesPreferenceGateway())
         advanceUntilIdle()
 
-        viewModel.addAliasEntry(parentGroupId = null, aliasKey = "zhihu", canonicalLeaf = "news")
+        viewModel.addAliasEntry(parentGroupId = null, canonicalLeaf = "news", aliases = listOf("zhihu"))
         viewModel.saveCurrentFile()
         advanceUntilIdle()
 
@@ -122,8 +121,7 @@ class ConfigViewModelTest {
         val viewModel = ConfigViewModel(gateway, gateway, FakeQuickActivitiesPreferenceGateway())
         advanceUntilIdle()
 
-        viewModel.addAliasEntry(parentGroupId = null, aliasKey = "吃饭", canonicalLeaf = "dining")
-        viewModel.addAliasEntry(parentGroupId = null, aliasKey = "饭", canonicalLeaf = "dining")
+        viewModel.addAliasEntry(parentGroupId = null, canonicalLeaf = "dining", aliases = listOf("吃饭", "饭"))
         viewModel.saveCurrentFile()
         advanceUntilIdle()
 
@@ -131,7 +129,7 @@ class ConfigViewModelTest {
     }
 
     @Test
-    fun rules_files_keep_plain_toml_editor_state() = runTest(dispatcher) {
+    fun alias_system_file_keeps_plain_toml_editor_state() = runTest(dispatcher) {
         val runtime = FakeConfigRuntime()
         val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
         advanceUntilIdle()
@@ -183,7 +181,7 @@ class ConfigViewModelTest {
         advanceUntilIdle()
 
         assertTrue(!runtime.hasConfigFile("aliases/meal.toml"))
-        assertTrue(viewModel.uiState.converterFiles.none { it.relativePath == "aliases/meal.toml" })
+        assertTrue(viewModel.uiState.aliasFiles.none { it.relativePath == "aliases/meal.toml" })
     }
 
     @Test
@@ -194,7 +192,7 @@ class ConfigViewModelTest {
 
         viewModel.openFile("aliases/_system.toml")
         advanceUntilIdle()
-        viewModel.onEditableContentChange("unsaved rules draft")
+        viewModel.onEditableContentChange("unsaved alias system draft")
 
         viewModel.openFile("aliases/meal.toml")
         advanceUntilIdle()
@@ -202,7 +200,7 @@ class ConfigViewModelTest {
         advanceUntilIdle()
 
         assertEquals("aliases/_system.toml", viewModel.uiState.selectedFilePath)
-        assertEquals("unsaved rules draft", viewModel.uiState.editableContent)
+        assertEquals("unsaved alias system draft", viewModel.uiState.editableContent)
     }
 
     @Test
@@ -212,7 +210,7 @@ class ConfigViewModelTest {
         advanceUntilIdle()
 
         viewModel.selectAliasEditorMode(AliasEditorMode.ADVANCED)
-        viewModel.onAliasAdvancedTomlChange("parent = \"meal\"\n\n[aliases.breakfast]\n\"早餐\" = \"draft\"")
+        viewModel.onAliasAdvancedTomlChange("parent = \"meal\"\n\n[aliases.breakfast]\n\"draft\" = [\"早餐\"]")
 
         viewModel.openFile("aliases/recreation.toml")
         advanceUntilIdle()
@@ -244,8 +242,8 @@ class ConfigViewModelTest {
 
         viewModel.updateAliasEntry(
             entryId = breakfastEntryId,
-            aliasKey = "早饭",
-            canonicalLeaf = "breakfast"
+            canonicalLeaf = "breakfast",
+            aliases = listOf("早饭")
         )
         viewModel.saveCurrentFile()
         advanceUntilIdle()
@@ -277,14 +275,14 @@ class ConfigViewModelTest {
             .filterIsInstance<AliasTomlGroup>()
             .first { it.name == "dinner" }
         val entry = breakfast.nodes.filterIsInstance<AliasTomlEntry>().single()
-        val originalToml = AliasTomlEditorCodec.serialize(document)
+        val originalToml = viewModel.uiState.aliasAdvancedTomlDraft
 
         viewModel.previewAliasEntryMove(entry.id, dinner.id)
 
         val plan = requireNotNull(viewModel.uiState.aliasEntryMovePlan)
         assertEquals("meal_breakfast_breakfast", plan.oldCanonical)
         assertEquals("meal_dinner_breakfast", plan.newCanonical)
-        assertEquals(originalToml, AliasTomlEditorCodec.serialize(requireNotNull(viewModel.uiState.aliasDocumentDraft)))
+        assertEquals(originalToml, viewModel.uiState.aliasAdvancedTomlDraft)
         assertTrue(runtime.saveCalls.isEmpty())
         assertTrue(runtime.savedTxtWrites.isEmpty())
     }
@@ -351,9 +349,32 @@ class ConfigViewModelTest {
         advanceUntilIdle()
 
         val request = requireNotNull(runtime.lastMoveMigrationRequest)
-        assertEquals("早餐", request.replacements.single().oldCanonical)
-        assertEquals("早饭", request.replacements.single().newCanonical)
+        assertTrue(request.replacements.isEmpty())
+        assertEquals("早餐", request.aliasReplacements.single().oldAlias)
+        assertEquals("早饭", request.aliasReplacements.single().newAlias)
         assertTrue(request.updatedTomlContent.contains("group_aliases = [\"早饭\"]"))
+    }
+
+    @Test
+    fun changing_group_alias_list_migrates_the_renamed_alias_token() = runTest(dispatcher) {
+        val runtime = FakeConfigRuntime()
+        val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
+        advanceUntilIdle()
+        val entry = requireNotNull(viewModel.uiState.aliasDocumentDraft).nodes
+            .filterIsInstance<AliasTomlGroup>().first { it.name == "dinner" }
+            .nodes.filterIsInstance<AliasTomlEntry>().single()
+        viewModel.promoteAliasEntryToGroup(entry.id)
+        val category = requireNotNull(viewModel.uiState.aliasDocumentDraft).nodes
+            .filterIsInstance<AliasTomlGroup>().first { it.name == "dinner" }
+
+        viewModel.updateGroupAliases(category.id, listOf("晚饭", "晚餐"))
+        advanceUntilIdle()
+
+        val request = requireNotNull(runtime.lastMoveMigrationRequest)
+        assertTrue(request.replacements.isEmpty())
+        assertEquals("晚饭", request.aliasReplacements.single().oldAlias)
+        assertEquals("晚餐", request.aliasReplacements.single().newAlias)
+        assertTrue(request.updatedTomlContent.contains("group_aliases = [\"晚饭\", \"晚餐\"]"))
     }
 
     @Test
@@ -385,19 +406,19 @@ private class FakeConfigRuntime : ConfigGateway, TxtStorageGateway, AliasMoveMig
             parent = "meal"
 
             [aliases.breakfast]
-            "早餐" = "breakfast"
+            "breakfast" = ["早餐"]
 
             [aliases.dinner]
-            "晚饭" = "dinner"
+            "dinner" = ["晚饭"]
         """.trimIndent(),
         "aliases/recreation.toml" to """
             parent = "recreation"
 
             [aliases.online-platforms]
-            "zhihu" = "zhihu"
+            "zhihu" = ["zhihu"]
 
             [aliases.game]
-            "minecraft" = "minecraft"
+            "minecraft" = ["minecraft"]
         """.trimIndent(),
     )
     private val txtContents = linkedMapOf(
@@ -424,7 +445,7 @@ private class FakeConfigRuntime : ConfigGateway, TxtStorageGateway, AliasMoveMig
 
     override suspend fun listConfigTomlFiles(): ConfigTomlListResult = ConfigTomlListResult(
         ok = true,
-        converterFiles = fileEntriesUnder("aliases/"),
+        aliasFiles = fileEntriesUnder("aliases/"),
         chartFiles = fileEntriesUnder("charts/"),
         metaFiles = fileEntriesUnder("meta/"),
         reportFiles = fileEntriesUnder("reports/"),

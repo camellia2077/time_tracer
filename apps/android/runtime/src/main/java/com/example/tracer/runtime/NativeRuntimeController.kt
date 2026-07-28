@@ -35,7 +35,7 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         ensureTextStorage = runtimeSession::ensureTextStorage,
         executeAfterInit = coreAdapter::executeAfterInit,
         nativeListTxtIngestSyncStatus = runtimeBridge::nativeListTxtIngestSyncStatus,
-        nativeTxt = runtimeBridge::nativeTxt,
+        nativeTxt = runtimeBridge::nativeConfig,
         responseCodec = responseCodec,
         statusCodec = ingestSyncStatusCodec
     )
@@ -48,12 +48,12 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     )
     private val txtDayBlockService = RuntimeTxtDayBlockService(
         initializeRuntimeInternal = coreAdapter::initializeRuntimeInternal,
-        nativeTxt = runtimeBridge::nativeTxt,
+        nativeTxt = runtimeBridge::nativeConfig,
         codec = txtRuntimeCodec
     )
     private val txtActivityNameService = RuntimeTxtActivityNameService(
         initializeRuntimeInternal = coreAdapter::initializeRuntimeInternal,
-        nativeTxt = runtimeBridge::nativeTxt,
+        nativeTxt = runtimeBridge::nativeConfig,
         codec = txtRuntimeCodec
     )
     private val aliasMoveMigrationService = RuntimeAliasMoveMigrationService(
@@ -63,8 +63,13 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         nativeInit = runtimeBridge::nativeInit,
         nativeShutdown = runtimeBridge::nativeShutdown,
         nativeIngest = runtimeBridge::nativeIngest,
-        nativeTxt = runtimeBridge::nativeTxt,
+        nativeTxt = runtimeBridge::nativeConfig,
         responseCodec = responseCodec
+    )
+    private val aliasHierarchyService = RuntimeAliasHierarchyService(
+        initializeRuntimeInternal = coreAdapter::initializeRuntimeInternal,
+        nativeConfig = runtimeBridge::nativeConfig,
+        codec = txtRuntimeCodec
     )
     private val recordDelegate = RuntimeRecordDelegate(
         ensureRuntimePaths = runtimeSession::ensureRuntimePaths,
@@ -288,6 +293,28 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         request: AliasEntryMoveMigrationRequest
     ): AliasEntryMoveMigrationResult = aliasMoveMigrationService.apply(request)
 
+    override suspend fun applyAliasHierarchyOperation(
+        tomlContent: String,
+        operation: AliasHierarchyOperation
+    ): AliasHierarchyOperationResult = aliasHierarchyService.apply(tomlContent, operation)
+
+    override suspend fun rewriteAliasHierarchyDocument(
+        originalTomlContent: String,
+        updatedTomlContent: String
+    ): AliasHierarchyOperationResult =
+        aliasHierarchyService.rewrite(originalTomlContent, updatedTomlContent)
+
+    override suspend fun describeAliasHierarchy(
+        tomlContent: String
+    ): AliasHierarchyDescribeResult = aliasHierarchyService.describe(tomlContent)
+
+    override suspend fun createAliasHierarchyDocument(parent: String): AliasHierarchyCreateResult =
+        aliasHierarchyService.create(parent)
+
+    override suspend fun validateAliasHierarchyDocuments(
+        documents: List<AliasHierarchyDocumentInput>
+    ): AliasHierarchyValidationResult = aliasHierarchyService.validate(documents)
+
     // storage
     override suspend fun listConfigTomlFiles(): ConfigTomlListResult =
         configService.listConfigTomlFiles()
@@ -416,6 +443,9 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
 
     override suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult =
         queryService.queryProjectTree(params)
+
+    override suspend fun queryReportCalendarAvailability(): ReportCalendarAvailabilityResult =
+        queryService.queryReportCalendarAvailability()
 
     override suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult =
         queryService.queryReportChart(params)

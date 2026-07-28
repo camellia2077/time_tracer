@@ -47,6 +47,7 @@ internal fun QueryReportTreeResultContent(
     result: QueryResult.Tree,
     modifier: Modifier = Modifier
 ) {
+    val colors = reportSemanticColors()
     if (!result.found || result.nodes.isEmpty()) {
         ElevatedCard(modifier = modifier.fillMaxWidth()) {
             Column(
@@ -136,12 +137,13 @@ internal fun QueryReportTreeResultContent(
                     for ((index, node) in sortedRoots.withIndex()) {
                         TreeResultNodeItem(
                             node = node,
-                        depth = 0,
-                        nodeKey = buildNodeKey(parentKey = "root_$index", node = node),
-                        treeRootPath = treeNodePath(node),
-                        totalTreeDurationSeconds = totalTreeDurationSeconds,
-                        period = result.period,
-                        sortDescending = sortDescending
+                            depth = 0,
+                            nodeKey = buildNodeKey(parentKey = "root_$index", node = node),
+                            treeRootPath = treeNodePath(node),
+                            totalTreeDurationSeconds = totalTreeDurationSeconds,
+                            period = result.period,
+                            sortDescending = sortDescending,
+                            colors = colors
                         )
                     }
                 }
@@ -158,7 +160,8 @@ private fun TreeResultNodeItem(
     treeRootPath: String,
     totalTreeDurationSeconds: Long,
     period: DataTreePeriod,
-    sortDescending: Boolean
+    sortDescending: Boolean,
+    colors: ReportSemanticColors
 ) {
     val hasChildren = node.children.isNotEmpty()
     val isTopLevelActivity = depth == 0
@@ -199,7 +202,7 @@ private fun TreeResultNodeItem(
                             Icons.Default.ChevronRight
                         },
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = if (isTopLevelActivity) colors.root else colors.child,
                         modifier = Modifier.size(22.dp)
                     )
                 } else {
@@ -215,7 +218,7 @@ private fun TreeResultNodeItem(
                             MaterialTheme.typography.bodyMedium
                         },
                         color = if (isTopLevelActivity) {
-                            MaterialTheme.colorScheme.primary
+                            colors.root
                         } else {
                             MaterialTheme.colorScheme.onSurface
                         },
@@ -257,10 +260,11 @@ private fun TreeResultNodeItem(
                         Text(
                             text = formatTreeParentDurationPercent(percent),
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = colors.treeProgressAccent
                         )
                     }
                     LinearProgressIndicator(
+                        color = colors.treeProgressAccent,
                         progress = { percent.coerceIn(0f, 100f) / 100f },
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -295,7 +299,8 @@ private fun TreeResultNodeItem(
                                 treeRootPath = treeRootPath,
                                 totalTreeDurationSeconds = totalTreeDurationSeconds,
                                 period = period,
-                                sortDescending = sortDescending
+                                sortDescending = sortDescending,
+                                colors = colors
                             )
                         }
                     }

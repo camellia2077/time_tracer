@@ -1,8 +1,5 @@
 package com.example.tracer
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -121,11 +118,7 @@ internal fun ExpandableParameterCard(
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
-            AnimatedVisibility(
-                visible = expanded,
-                enter = expandVertically(),
-                exit = shrinkVertically()
-            ) {
+            if (expanded) {
                 Column(
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
