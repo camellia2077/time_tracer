@@ -19,11 +19,11 @@ auto ConfigHandler::load(const Config& config,
 
   std::filesystem::path settings_path =
       exe_dir / "config" / "activities_config.toml";
-  std::filesystem::path alias_directory_path = exe_dir / "config" / "aliases";
+  std::filesystem::path alias_directory_path = exe_dir / "config" / "activity_hierarchy";
 
   if (!std::filesystem::exists(alias_directory_path)) {
     std::cerr << RED_COLOR
-              << "Critical: Failed to locate converter aliases directory."
+              << "Critical: Failed to locate activity hierarchy directory."
               << RESET_COLOR << std::endl;
     return std::nullopt;
   }
@@ -47,8 +47,8 @@ auto ConfigHandler::load(const Config& config,
   context.all_activities = toml_configs_opt->mapped_activities;
   if (context.all_activities.empty()) {
     std::cerr << RED_COLOR
-              << "Critical: No mapped activities found in converter alias "
-                 "mapping bundle."
+              << "Critical: No mapped activities found in the activity "
+                 "hierarchy mapping bundle."
               << RESET_COLOR << std::endl;
     return std::nullopt;
   }

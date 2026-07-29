@@ -45,8 +45,10 @@ void DayMdFormatter::FormatHeaderContent(...) const {
 
 Markdown 的本地化配置按 BCP-47 语言代码分目录保存，例如
 `reports/markdown/en/`、`reports/markdown/zh/` 和 `reports/markdown/ja/`。
-报告请求中的 `locale` 决定 Core 使用哪一套配置；缺少或不支持的语言回退到
-英文。LaTeX 和 Typst 目前继续使用根目录下的单语言配置。
+配置通过 `reports.markdown.root` 指定根目录，通过 `default_locale` 指定默认语言，
+通过 `supported_locales` 声明可用语言。报告请求中的 `locale` 决定 Core 使用哪一套
+配置；缺少或不支持的语言回退到默认语言。LaTeX 和 Typst 通过各自的 `root` 字段
+使用根目录下的单语言配置。
 
 ### 2.3 树节点递归渲染
 最引人瞩目的多层级项目时长明细树，是如何画进 Markdown 的？

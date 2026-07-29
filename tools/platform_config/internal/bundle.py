@@ -4,19 +4,36 @@ import tomllib
 from pathlib import Path
 from typing import Any
 
-from .constants import REPORT_FORMAT_ORDER, REPORT_PERIOD_KEYS
+from .constants import REPORT_FORMAT_ORDER
 from .model import BundleModel
 from .path_utils import dedupe_keep_order, normalize_rel_path
 from .validation import ensure_dict, ensure_list_of_str, ensure_str
 
 
-def parse_report_paths(reports_table: dict[str, Any], format_name: str) -> dict[str, str]:
-    format_table = ensure_dict(reports_table.get(format_name), f"paths.reports.{format_name}")
-    parsed: dict[str, str] = {}
-    for key in REPORT_PERIOD_KEYS:
-        parsed[key] = normalize_rel_path(
-            ensure_str(format_table.get(key), f"paths.reports.{format_name}.{key}")
+def parse_report_paths(
+    reports_table: dict[str, Any], format_name: str, table_prefix: str
+) -> dict[str, object]:
+    format_table = ensure_dict(
+        reports_table.get(format_name), f"{table_prefix}.{format_name}"
+    )
+    parsed: dict[str, object] = {
+        "root": normalize_rel_path(
+            ensure_str(format_table.get("root"), f"{table_prefix}.{format_name}.root")
         )
+    }
+    if format_name == "markdown":
+        parsed["default_locale"] = ensure_str(
+            format_table.get("default_locale"),
+            f"{table_prefix}.{format_name}.default_locale",
+        )
+        supported_locales = format_table.get("supported_locales")
+        if not isinstance(supported_locales, list) or not all(
+            isinstance(locale, str) and locale for locale in supported_locales
+        ):
+            raise ValueError(
+                f"{table_prefix}.{format_name}.supported_locales must be a non-empty string array"
+            )
+        parsed["supported_locales"] = list(supported_locales)
     return parsed
 
 
@@ -28,7 +45,17 @@ def load_source_bundle(source_root: Path) -> dict[str, Any]:
     return ensure_dict(data, "root")
 
 
-def build_bundle_model(source_bundle: dict[str, Any], target: str) -> BundleModel:
+def load_source_config(source_root: Path) -> dict[str, Any]:
+    config_path = source_root / "config.toml"
+    if not config_path.exists():
+        raise FileNotFoundError(f"Source config not found: {config_path}")
+    data = tomllib.loads(config_path.read_text(encoding="utf-8"))
+    return ensure_dict(data, "root")
+
+
+def build_bundle_model(
+    source_bundle: dict[str, Any], source_config: dict[str, Any], target: str
+) -> BundleModel:
     schema_version_raw = source_bundle.get("schema_version")
     if not isinstance(schema_version_raw, int):
         raise ValueError("Expected integer at 'schema_version'.")
@@ -39,18 +66,21 @@ def build_bundle_model(source_bundle: dict[str, Any], target: str) -> BundleMode
     source_required = ensure_list_of_str(file_list.get("required"), "file_list.required")
     source_optional = ensure_list_of_str(file_list.get("optional"), "file_list.optional")
 
-    paths_table = ensure_dict(source_bundle.get("paths"), "paths")
-    converter_table = ensure_dict(paths_table.get("converter"), "paths.converter")
+    converter_table = ensure_dict(source_config.get("converter"), "converter")
     main_config = normalize_rel_path(
-        ensure_str(converter_table.get("main_config"), "paths.converter.main_config")
+        ensure_str(converter_table.get("main_config"), "converter.main_config")
     )
-    visualization_table = ensure_dict(paths_table.get("visualization"), "paths.visualization")
+    visualization_table = ensure_dict(
+        source_config.get("visualization"), "visualization"
+    )
     heatmap_config = normalize_rel_path(
-        ensure_str(visualization_table.get("heatmap"), "paths.visualization.heatmap")
+        ensure_str(visualization_table.get("heatmap"), "visualization.heatmap")
     )
 
-    reports_table = ensure_dict(paths_table.get("reports"), "paths.reports")
-    markdown_paths = parse_report_paths(reports_table, "markdown")
+    reports_table = ensure_dict(source_config.get("reports"), "reports")
+    markdown_paths = parse_report_paths(reports_table, "markdown", "reports")
+    markdown_root = str(markdown_paths["root"])
+    markdown_default_locale = str(markdown_paths["default_locale"])
     localized_markdown_files = [
         path
         for path in source_required
@@ -60,7 +90,11 @@ def build_bundle_model(source_bundle: dict[str, Any], target: str) -> BundleMode
 
     if target == "android":
         converter_files = dedupe_keep_order(
-            [path for path in source_required + source_optional if path.startswith("aliases/")]
+            [
+                path
+                for path in source_required + source_optional
+                if path.startswith("activity_hierarchy/")
+            ]
         )
         required_files = dedupe_keep_order(
             [
@@ -68,7 +102,11 @@ def build_bundle_model(source_bundle: dict[str, Any], target: str) -> BundleMode
                 heatmap_config,
                 *converter_files,
                 main_config,
-                *markdown_paths.values(),
+                f"{markdown_root}/{markdown_default_locale}/day.toml",
+                f"{markdown_root}/{markdown_default_locale}/month.toml",
+                f"{markdown_root}/{markdown_default_locale}/period.toml",
+                f"{markdown_root}/{markdown_default_locale}/week.toml",
+                f"{markdown_root}/{markdown_default_locale}/year.toml",
                 *localized_markdown_files,
             ]
         )
@@ -83,12 +121,14 @@ def build_bundle_model(source_bundle: dict[str, Any], target: str) -> BundleMode
             reports={"markdown": markdown_paths},
         )
 
-    windows_reports: dict[str, dict[str, str]] = {}
+    windows_reports: dict[str, dict[str, object]] = {}
     for format_name in REPORT_FORMAT_ORDER:
         if format_name in reports_table:
-            windows_reports[format_name] = parse_report_paths(reports_table, format_name)
+            windows_reports[format_name] = parse_report_paths(
+                reports_table, format_name, "reports"
+            )
     if "markdown" not in windows_reports:
-        raise ValueError("Windows bundle generation requires paths.reports.markdown.")
+        raise ValueError("Windows bundle generation requires reports.markdown.")
 
     required_files = dedupe_keep_order(
         ["config.toml", heatmap_config, main_config, *source_required]
@@ -123,22 +163,7 @@ def render_bundle_toml(model: BundleModel) -> str:
     lines.extend(["]", "optional = ["])
     for path in model.optional_files:
         lines.append(f'  "{path}",')
-    lines.extend(["]", "", "[paths.converter]"])
-    lines.append(f'main_config = "{model.converter_main_config}"')
-    lines.append("")
-    lines.append("[paths.visualization]")
-    lines.append(f'heatmap = "{model.visualization_heatmap_config}"')
-
-    for format_name in REPORT_FORMAT_ORDER:
-        section = model.reports.get(format_name)
-        if section is None:
-            continue
-        lines.append("")
-        lines.append(f"[paths.reports.{format_name}]")
-        for key in REPORT_PERIOD_KEYS:
-            lines.append(f'{key} = "{section[key]}"')
-
-    lines.append("")
+    lines.extend(["]", ""])
     return "\n".join(lines)
 
 

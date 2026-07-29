@@ -54,7 +54,7 @@ class ConfigMigrateCommand:
 
         up_to_date = exists_before and old_text == generated_text
         mode = "apply" if apply_changes else "dry-run"
-        report_formats = ", ".join(model["paths"]["reports"].keys())
+        report_formats = "configured in config.toml"
         print(f"--- config-migrate mode: {mode}")
         print(f"--- source: {source_config_path}")
         print(f"--- target: {bundle_path}")

@@ -1,5 +1,7 @@
 #include "tests/integration/tracer_core_c_api_stability_internal.hpp"
 
+#include <algorithm>
+
 namespace tracer_core_c_api_stability_internal {
 
 void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
@@ -194,10 +196,10 @@ void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
       "[aliases.cardio.running]\n"
       "group_aliases = [\"跑步\"]\n"
       "treadmill = [\"跑步机\"]\n";
-  const json kApplyAliasHierarchyOperation = ParseResponse(
+  const json kApplyActivityHierarchyOperation = ParseResponse(
       api.runtime_txt(
           runtime,
-          json{{"action", "apply_alias_hierarchy_operation"},
+          json{{"action", "apply_activity_hierarchy_operation"},
                {"toml_content", kAliasToml},
                {"operation",
                 {{"kind", "rename_group_canonical"},
@@ -205,69 +207,109 @@ void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
                  {"new_name", "conditioning"}}}}
               .dump()
               .c_str()),
-      "apply alias hierarchy operation");
-  Require(kApplyAliasHierarchyOperation.value("ok", false),
-          "apply_alias_hierarchy_operation should return ok=true");
-  Require(kApplyAliasHierarchyOperation.value("updated_toml_content",
+      "apply activity hierarchy operation");
+  Require(kApplyActivityHierarchyOperation.value("ok", false),
+          "apply_activity_hierarchy_operation should return ok=true");
+  Require(kApplyActivityHierarchyOperation.value("updated_toml_content",
                                                std::string{})
               .find("[aliases.conditioning]") != std::string::npos,
           "generic hierarchy operation should update the group TOML key");
-  Require(kApplyAliasHierarchyOperation.at("replacements").size() == 3,
+  Require(kApplyActivityHierarchyOperation.at("replacements").size() == 3,
           "generic group rename should return all canonical replacements");
-  const auto& kHierarchy = kApplyAliasHierarchyOperation.at("hierarchy");
+  const auto& kHierarchy = kApplyActivityHierarchyOperation.at("hierarchy");
   Require(kHierarchy.value("parent", std::string{}) == "exercise" &&
-              kHierarchy.at("nodes").at(1).value("path", std::string{}) ==
-                  "conditioning",
+              std::ranges::any_of(
+                  kHierarchy.at("nodes"), [](const auto& node) {
+                    return node.value("path", std::string{}) ==
+                           "conditioning";
+                  }),
           "generic hierarchy operation should return the core hierarchy snapshot");
 
-  const json kDescribeAliasHierarchy = ParseResponse(
+  const json kRenameParent = ParseResponse(
+      api.runtime_txt(
+          runtime,
+          json{{"action", "apply_activity_hierarchy_operation"},
+               {"toml_content", kAliasToml},
+               {"operation",
+                {{"kind", "rename_parent"},
+                 {"old_parent", "exercise"},
+                 {"new_name", "training"}}}}
+              .dump()
+              .c_str()),
+      "rename activity hierarchy parent");
+  Require(kRenameParent.value("ok", false),
+          "rename_parent should return ok=true");
+  Require(kRenameParent.value("updated_toml_content", std::string{}).find(
+              "parent =") != std::string::npos,
+          "rename_parent should return updated TOML content");
+  Require(kRenameParent.at("replacements").size() == 3,
+          "rename_parent should return group and leaf canonical replacements");
+  Require(std::ranges::any_of(
+              kRenameParent.at("replacements"), [](const auto& replacement) {
+                return replacement.value("old_canonical", std::string{}) ==
+                           "exercise_cardio" &&
+                       replacement.value("new_canonical", std::string{}) ==
+                           "training_cardio";
+              }),
+          "rename_parent should return the Core canonical replacement plan");
+  Require(kRenameParent.at("hierarchy").value("parent", std::string{}) ==
+              "training",
+          "rename_parent hierarchy should expose the new parent");
+
+  const json kDescribeActivityHierarchy = ParseResponse(
       api.runtime_txt(runtime,
-                      json{{"action", "describe_alias_hierarchy"},
+                      json{{"action", "describe_activity_hierarchy"},
                            {"toml_content", kAliasToml}}
                           .dump()
                           .c_str()),
-      "describe alias hierarchy");
-  Require(kDescribeAliasHierarchy.value("ok", false) &&
-              kDescribeAliasHierarchy.at("hierarchy")
-                      .value("parent", std::string{}) == "exercise",
-          "describe_alias_hierarchy should return the core hierarchy snapshot");
+      "describe activity hierarchy");
+  Require(kDescribeActivityHierarchy.value("ok", false) &&
+              kDescribeActivityHierarchy.at("hierarchy")
+                      .value("parent", std::string{}) == "exercise" &&
+              std::ranges::any_of(
+                  kDescribeActivityHierarchy.at("hierarchy").at("nodes"),
+                  [](const auto& node) {
+                    return node.value("kind", std::string{}) == "group" &&
+                           node.value("is_group", false);
+                  }),
+          "describe_activity_hierarchy should return the core hierarchy snapshot");
 
-  const json kRenderAliasHierarchyText = ParseResponse(
+  const json kRenderActivityHierarchyText = ParseResponse(
       api.runtime_txt(runtime,
-                      json{{"action", "render_alias_hierarchy_text"},
+                      json{{"action", "render_activity_hierarchy_text"},
                            {"toml_content", kAliasToml},
                            {"show_aliases", true}}
                           .dump()
                           .c_str()),
-      "render alias hierarchy text");
-  Require(kRenderAliasHierarchyText.value("ok", false) &&
-              kRenderAliasHierarchyText.value("content", std::string{})
+      "render activity hierarchy text");
+  Require(kRenderActivityHierarchyText.value("ok", false) &&
+              kRenderActivityHierarchyText.value("content", std::string{})
                       .find("cardio — group_aliases: 有氧") !=
                   std::string::npos,
-          "render_alias_hierarchy_text should render the core hierarchy");
+          "render_activity_hierarchy_text should render the core hierarchy");
 
   const json kDuplicateHierarchyDocuments = ParseResponse(
       api.runtime_txt(
           runtime,
-          json{{"action", "validate_alias_hierarchy_documents"},
+          json{{"action", "validate_activity_hierarchy_documents"},
                {"documents",
                 {{{"source_name", "exercise.toml"},
                   {"toml_content", kAliasToml}},
                  {{"source_name", "rest.toml"},
                   {"toml_content",
-                   "parent = \"rest\"\n\n[aliases]\nrest = [\"步行\"]\n"}}}}}
-              .dump()
-              .c_str()),
-      "validate duplicate alias hierarchy documents");
+                   "parent = \"rest\"\n\n[aliases]\nrest = [\"有氧\"]\n"}}}}}
+               .dump()
+               .c_str()),
+       "validate duplicate activity hierarchy documents");
   Require(!kDuplicateHierarchyDocuments.value("ok", true) &&
               kDuplicateHierarchyDocuments.value("error_code", std::string{}) ==
-                  "config.alias_hierarchy.failed",
+                  "config.activity_hierarchy.failed",
           "document-set validation should reject cross-file duplicate aliases");
 
   const json kMoveLeafOperation = ParseResponse(
       api.runtime_txt(
           runtime,
-          json{{"action", "apply_alias_hierarchy_operation"},
+          json{{"action", "apply_activity_hierarchy_operation"},
                {"toml_content", kAliasToml},
                {"operation",
                 {{"kind", "move_leaf"},
@@ -275,7 +317,7 @@ void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
                  {"destination_path", "cardio"}}}}
               .dump()
               .c_str()),
-      "move alias hierarchy leaf");
+      "move activity hierarchy leaf");
   Require(kMoveLeafOperation.value("ok", false),
           "move_leaf hierarchy operation should return ok=true");
   const auto& kMoveReplacements = kMoveLeafOperation.at("replacements");
@@ -286,19 +328,141 @@ void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
                   "exercise_cardio_treadmill",
           "move_leaf should return the precise canonical replacement");
 
+  const std::string kExerciseDocument =
+      "parent = \"exercise\"\n\n"
+      "[aliases]\n"
+      "go = [\"围棋\"]\n\n"
+      "[aliases.cardio.running]\n"
+      "group_aliases = [\"跑步\"]\n"
+      "treadmill = [\"跑步机\"]\n";
+  const std::string kMealDocument =
+      "parent = \"meal\"\n\n"
+      "[aliases]\n"
+      "dining = [\"吃饭\"]\n";
+  const json kCrossDocumentLeafMove = ParseResponse(
+      api.runtime_txt(
+          runtime,
+          json{{"action", "move_activity_hierarchy_leaf_between_documents"},
+               {"source_name", "exercise.toml"},
+               {"destination_name", "meal.toml"},
+               {"documents",
+                {{{"source_name", "exercise.toml"},
+                  {"toml_content", kExerciseDocument}},
+                 {{"source_name", "meal.toml"},
+                  {"toml_content", kMealDocument}}}},
+               {"operation",
+                {{"kind", "move_leaf"},
+                 {"target_alias", "围棋"},
+                 {"destination_path", "root"}}}}
+              .dump()
+              .c_str()),
+      "cross-document root leaf move");
+  Require(kCrossDocumentLeafMove.value("ok", false),
+          "cross-document root leaf move should return ok=true");
+  Require(kCrossDocumentLeafMove.at("updated_documents").size() == 2,
+          "cross-document leaf move should return both updated TOML documents");
+  Require(kCrossDocumentLeafMove.at("updated_documents")[0]
+                  .value("updated_toml_content", std::string{})
+                  .find("\ngo =") == std::string::npos &&
+              kCrossDocumentLeafMove.at("updated_documents")[1]
+                      .value("updated_toml_content", std::string{})
+                      .find("go = [ '围棋' ]") != std::string::npos,
+          "cross-document root leaf move should remove and insert the leaf");
+  const auto& kCrossDocumentReplacements =
+      kCrossDocumentLeafMove.at("replacements");
+  Require(kCrossDocumentReplacements.size() == 1 &&
+              kCrossDocumentReplacements[0].value(
+                  "old_canonical", std::string{}) == "exercise_go" &&
+              kCrossDocumentReplacements[0].value(
+                  "new_canonical", std::string{}) == "meal_go",
+          "cross-document root leaf move should return canonical replacement");
+
+  const json kCrossDocumentNestedLeafMove = ParseResponse(
+      api.runtime_txt(
+          runtime,
+          json{{"action", "move_activity_hierarchy_leaf_between_documents"},
+               {"source_name", "exercise.toml"},
+               {"destination_name", "meal.toml"},
+               {"documents",
+                {{{"source_name", "exercise.toml"},
+                  {"toml_content", kExerciseDocument}},
+                 {{"source_name", "meal.toml"},
+                  {"toml_content", kMealDocument}}}},
+               {"operation",
+                {{"kind", "move_leaf"},
+                 {"target_alias", "跑步机"},
+                 {"destination_path", "root"}}}}
+              .dump()
+              .c_str()),
+      "cross-document nested leaf move");
+  Require(kCrossDocumentNestedLeafMove.value("ok", false) &&
+              kCrossDocumentNestedLeafMove.at("replacements").size() == 1 &&
+              kCrossDocumentNestedLeafMove.at("replacements")[0].value(
+                  "old_canonical", std::string{}) ==
+                  "exercise_cardio_running_treadmill" &&
+              kCrossDocumentNestedLeafMove.at("replacements")[0].value(
+                  "new_canonical", std::string{}) == "meal_treadmill",
+          "cross-document nested leaf move should preserve the full old path");
+
+  const json kCrossDocumentGroupMove = ParseResponse(
+      api.runtime_txt(
+          runtime,
+          json{{"action", "move_activity_hierarchy_node_between_documents"},
+               {"source_name", "exercise.toml"},
+               {"destination_name", "meal.toml"},
+               {"documents",
+                {{{"source_name", "exercise.toml"},
+                  {"toml_content", kExerciseDocument}},
+                 {{"source_name", "meal.toml"},
+                  {"toml_content", kMealDocument}}}},
+               {"operation",
+                {{"kind", "move_group"},
+                 {"target_path", "cardio"},
+                 {"destination_path", "root"}}}}
+              .dump()
+              .c_str()),
+      "cross-document group subtree move");
+  Require(kCrossDocumentGroupMove.value("ok", false),
+          "cross-document group subtree move should return ok=true");
+  const auto& kGroupMoveDocuments =
+      kCrossDocumentGroupMove.at("updated_documents");
+  Require(kGroupMoveDocuments.size() == 2 &&
+              kGroupMoveDocuments[0]
+                      .value("updated_toml_content", std::string{})
+                      .find("[aliases.cardio]") == std::string::npos &&
+              kGroupMoveDocuments[1]
+                      .value("updated_toml_content", std::string{})
+                      .find("[aliases.cardio.running]") != std::string::npos &&
+              kGroupMoveDocuments[1]
+                      .value("updated_toml_content", std::string{})
+                      .find("group_aliases = [ '跑步' ]") != std::string::npos,
+          "group subtree move should preserve nested groups and group aliases");
+  const auto& kGroupMoveReplacements =
+      kCrossDocumentGroupMove.at("replacements");
+  Require(kGroupMoveReplacements.size() == 3 &&
+              kGroupMoveReplacements[0].value("old_canonical", std::string{}) ==
+                  "exercise_cardio" &&
+              kGroupMoveReplacements[0].value("new_canonical", std::string{}) ==
+                  "meal_cardio" &&
+              kGroupMoveReplacements[2].value("old_canonical", std::string{}) ==
+                  "exercise_cardio_running_treadmill" &&
+              kGroupMoveReplacements[2].value("new_canonical", std::string{}) ==
+                  "meal_cardio_running_treadmill",
+          "group subtree move should return replacements for every descendant");
+
   const json kInvalidHierarchyOperation = ParseResponse(
       api.runtime_txt(
           runtime,
-          json{{"action", "apply_alias_hierarchy_operation"},
+          json{{"action", "apply_activity_hierarchy_operation"},
                {"toml_content", kAliasToml},
                {"operation", {{"kind", "rename_everything"}}}}
               .dump()
               .c_str()),
-      "invalid alias hierarchy operation");
+      "invalid activity hierarchy operation");
   Require(!kInvalidHierarchyOperation.value("ok", true),
           "invalid hierarchy operation should return ok=false");
   Require(kInvalidHierarchyOperation.value("error_code", std::string{}) ==
-              "config.alias_hierarchy.failed" &&
+              "config.activity_hierarchy.failed" &&
               kInvalidHierarchyOperation.value("error_category",
                                                 std::string{}) == "config",
           "invalid hierarchy operation should return the config error contract");

@@ -27,7 +27,7 @@ auto main() -> int {
             "Unable to locate repository root in stability tests");
 
     const fs::path kConverterConfig = kRepoRoot / "assets" / "tracer_core" /
-                                      "config_test" / "aliases/_system.toml";
+                                      "config_test" / "activity_hierarchy/_system.toml";
     fs::path cli_executable = kRepoRoot / "apps" / "tracer_cli" / "windows" /
                               "build_fast" / "bin" / "time_tracer_cli.exe";
     if (!fs::exists(cli_executable)) {

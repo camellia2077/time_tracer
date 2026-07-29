@@ -84,7 +84,7 @@ def extract_converter_main_config_path(config_toml: dict[str, Any], source_path:
 
 def extract_report_paths(
     config_toml: dict[str, Any], source_path: Path
-) -> dict[str, dict[str, str]]:
+) -> dict[str, dict[str, Any]]:
     reports_tbl = require_table(config_toml, "reports", source_path, "")
     alias_map: list[tuple[str, tuple[str, ...]]] = [
         ("markdown", ("markdown", "md")),
@@ -113,29 +113,23 @@ def extract_report_paths(
             continue
 
         section_prefix = f"reports.{selected_alias}"
-        _, day = find_non_empty_string_alias(selected_tbl, ("day",), source_path, section_prefix)
-        _, month = find_non_empty_string_alias(
-            selected_tbl,
-            ("month",),
-            source_path,
-            section_prefix,
-        )
-        _, period = find_non_empty_string_alias(
-            selected_tbl,
-            ("period", "range"),
-            source_path,
-            section_prefix,
-        )
-        _, week = find_non_empty_string_alias(selected_tbl, ("week",), source_path, section_prefix)
-        _, year = find_non_empty_string_alias(selected_tbl, ("year",), source_path, section_prefix)
-
-        result[canonical_name] = {
-            "day": normalize_path_value(day),
-            "month": normalize_path_value(month),
-            "period": normalize_path_value(period),
-            "week": normalize_path_value(week),
-            "year": normalize_path_value(year),
-        }
+        _, root = find_non_empty_string_alias(selected_tbl, ("root",), source_path, section_prefix)
+        section: dict[str, Any] = {"root": normalize_path_value(root)}
+        if canonical_name == "markdown":
+            _, default_locale = find_non_empty_string_alias(
+                selected_tbl, ("default_locale",), source_path, section_prefix
+            )
+            supported = selected_tbl.get("supported_locales")
+            if not isinstance(supported, list) or not all(
+                isinstance(locale, str) and locale for locale in supported
+            ):
+                raise RuntimeError(
+                    f"Invalid config [{source_path}] field '{section_prefix}.supported_locales': "
+                    "must be a non-empty string array."
+                )
+            section["default_locale"] = default_locale
+            section["supported_locales"] = list(supported)
+        result[canonical_name] = section
 
     if not result:
         raise RuntimeError(
@@ -167,8 +161,28 @@ def build_bundle_model(
     report_paths = extract_report_paths(config_toml, source_config_path)
 
     required: set[str] = {"config.toml", main_config_rel_path}
-    for report in report_paths.values():
-        required.update(report.values())
+    for format_name, report in report_paths.items():
+        root = config_root / str(report["root"])
+        if format_name == "markdown":
+            locales = [str(locale) for locale in report["supported_locales"]]
+            for locale in locales:
+                required.update(
+                    str(path.relative_to(config_root)).replace("\\", "/")
+                    for path in (root / locale).glob("*.toml")
+                )
+        else:
+            required.update(
+                str(path.relative_to(config_root)).replace("\\", "/")
+                for path in root.glob("*.toml")
+            )
+
+    optional = set(collect_optional_files(config_root))
+    for path in config_root.rglob("*.toml"):
+        relative = path.relative_to(config_root).as_posix()
+        if relative in optional or relative == "meta/bundle.toml":
+            continue
+        required.add(relative)
+    required.difference_update(optional)
 
     return {
         "schema_version": 1,
@@ -176,10 +190,6 @@ def build_bundle_model(
         "bundle_name": "tracer_core_config",
         "file_list": {
             "required": sorted(required),
-            "optional": collect_optional_files(config_root),
-        },
-        "paths": {
-            "converter": {"main_config": main_config_rel_path},
-            "reports": report_paths,
+            "optional": sorted(optional),
         },
     }

@@ -5,7 +5,7 @@
 set(APP_BIN_DIR "${CMAKE_BINARY_DIR}/bin")
 set(CONFIG_DEST_DIR "${APP_BIN_DIR}/config")
 set(CONVERTER_DEST_DIR "${CONFIG_DEST_DIR}")
-set(CONVERTER_ALIASES_DEST_DIR "${CONFIG_DEST_DIR}/aliases")
+set(CONVERTER_ALIASES_DEST_DIR "${CONFIG_DEST_DIR}/activity_hierarchy")
 
 set_target_properties(log_generator PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${APP_BIN_DIR}"
@@ -60,7 +60,7 @@ set(CONVERTER_ALIAS_FILES
 )
 
 foreach(FILENAME ${CONVERTER_ALIAS_FILES})
-    set(SRC "${CMAKE_CURRENT_SOURCE_DIR}/../../../assets/tracer_core/config_test/aliases/${FILENAME}")
+    set(SRC "${CMAKE_CURRENT_SOURCE_DIR}/../../../assets/tracer_core/config_test/activity_hierarchy/${FILENAME}")
     set(DEST "${CONVERTER_ALIASES_DEST_DIR}/${FILENAME}")
 
     add_custom_command(

@@ -120,7 +120,7 @@ auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int {
 
   tracer::core::infrastructure::config::FileConverterConfigProvider
       file_provider(
-          kCopiedConfigRoot / "aliases" / "_system.toml",
+          kCopiedConfigRoot / "activity_hierarchy" / "_system.toml",
           std::unordered_map<std::filesystem::path, std::filesystem::path>{});
   const ConverterConfig kLoadedFileConfig = file_provider.LoadConverterConfig();
   if (!kLoadedFileConfig.text_mapping.contains("wake")) {

@@ -233,7 +233,7 @@ auto BuildActivityAliasMappingsContent(
   const std::filesystem::path config_path = *converter_config_toml_path;
   const std::filesystem::path config_dir = config_path.parent_path();
   const auto definition = modloader::detail::LoadAliasMappingDefinition(
-      config_dir / "aliases", [](const std::filesystem::path& path) {
+      config_dir / "activity_hierarchy", [](const std::filesystem::path& path) {
         return modloader::ReadToml(path);
       });
   return BuildAliasEntriesPayload(definition.expanded_entries);

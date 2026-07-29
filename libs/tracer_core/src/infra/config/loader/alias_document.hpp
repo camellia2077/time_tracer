@@ -118,7 +118,7 @@ inline auto ParseAliasDocument(const toml::table& table) -> AliasDocument {
     throw AliasDocumentParseError(
         aliases_node == nullptr ? AliasDocumentSourceLocation{1U, 1U}
                                 : AliasDocumentSource(aliases_node->source()),
-        {}, "aliases", "Alias TOML must contain an `aliases` table.");
+                                {}, "aliases", "Alias TOML must contain an `aliases` table.");
   }
 
   const std::function<std::vector<AliasDocumentAlias>(

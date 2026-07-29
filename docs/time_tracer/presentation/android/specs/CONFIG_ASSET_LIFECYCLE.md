@@ -42,7 +42,7 @@ Boundary rules:
 ## Runtime Access Paths
 
 - Native init config TOML:
-  - `<filesDir>/tracer_core/config/aliases/_system.toml`
+  - `<filesDir>/tracer_core/config/activity_hierarchy/_system.toml`
 - Config editor reads and writes under:
   - `<filesDir>/tracer_core/config`
 - The Config tab exposes structured editing plus an advanced raw TOML mode for

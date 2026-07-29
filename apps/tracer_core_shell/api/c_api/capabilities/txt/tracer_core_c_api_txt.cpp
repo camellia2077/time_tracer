@@ -10,8 +10,8 @@ import tracer.core.application.use_cases.interface;
 #include "nlohmann/json.hpp"
 #include "application/dto/pipeline_requests.hpp"
 #include "application/ports/config/alias_toml_editor.hpp"
-#include "api/c_api/capabilities/config/alias_hierarchy_operation_bridge.hpp"
-#include "application/ports/config/alias_tree_text_renderer.hpp"
+#include "api/c_api/capabilities/config/activity_hierarchy_operation_bridge.hpp"
+#include "application/ports/config/activity_hierarchy_text_renderer.hpp"
 #include "api/c_api/tracer_core_c_api.h"
 #include "api/c_api/runtime/tracer_core_c_api_internal.hpp"
 
@@ -20,11 +20,12 @@ using tracer_core::core::c_api::internal::BuildFailureResponse;
 using tracer_core::core::c_api::internal::ClearLastError;
 using tracer_core::core::c_api::internal::RequireRuntime;
 using tracer_core::core::c_api::internal::ToRequestJsonView;
-using tracer_core::shell::config_bridge::ApplyAliasHierarchyOperationJson;
-using tracer_core::shell::config_bridge::RewriteAliasHierarchyDocumentJson;
-using tracer_core::shell::config_bridge::DescribeAliasHierarchyJson;
-using tracer_core::shell::config_bridge::CreateAliasHierarchyDocumentJson;
-using tracer_core::shell::config_bridge::ValidateAliasHierarchyDocumentsJson;
+using tracer_core::shell::config_bridge::ApplyActivityHierarchyOperationJson;
+using tracer_core::shell::config_bridge::MoveActivityHierarchyLeafBetweenDocumentsJson;
+using tracer_core::shell::config_bridge::MoveActivityHierarchyNodeBetweenDocumentsJson;
+using tracer_core::shell::config_bridge::RewriteActivityHierarchyDocumentJson;
+using tracer_core::shell::config_bridge::DescribeActivityHierarchyJson;
+using tracer_core::shell::config_bridge::ValidateActivityHierarchyDocumentsJson;
 
 namespace {
 
@@ -72,7 +73,7 @@ auto BuildTxtSuccessResponse(Builder&& builder) -> const char* {
 extern "C" TT_CORE_API auto tracer_core_runtime_config_json(
     TtCoreRuntimeHandle* handle, const char* request_json) -> const char* {
   // This runtime family carries TXT authoring operations and the config-owned
-  // alias hierarchy edit port without routing either through query/pipeline.
+  // activity hierarchy edit port without routing either through query/pipeline.
   try {
     ClearLastError();
     ITracerCoreRuntime& runtime = RequireRuntime(handle);
@@ -199,70 +200,82 @@ extern "C" TT_CORE_API auto tracer_core_runtime_config_json(
       });
     }
 
-    if (action == "apply_alias_hierarchy_operation") {
+    if (action == "apply_activity_hierarchy_operation") {
       try {
         return BuildTxtSuccessResponse(
-            [&]() { return ApplyAliasHierarchyOperationJson(payload); });
+            [&]() { return ApplyActivityHierarchyOperationJson(payload); });
       } catch (const std::exception& error) {
-        return BuildFailureResponse(error.what(), "config.alias_hierarchy.failed",
+        return BuildFailureResponse(error.what(), "config.activity_hierarchy.failed",
                                     "config",
                                     {"Inspect the hierarchy operation fields."});
       }
     }
 
-    if (action == "rewrite_alias_hierarchy_document") {
+    if (action == "move_activity_hierarchy_leaf_between_documents") {
       try {
         return BuildTxtSuccessResponse(
-            [&]() { return RewriteAliasHierarchyDocumentJson(payload); });
+            [&]() { return MoveActivityHierarchyLeafBetweenDocumentsJson(payload); });
       } catch (const std::exception& error) {
-        return BuildFailureResponse(error.what(), "config.alias_hierarchy.failed",
+        return BuildFailureResponse(
+            error.what(), "config.activity_hierarchy.failed", "config",
+            {"Inspect the source, destination, document set, and leaf operation fields."});
+      }
+    }
+
+    if (action == "move_activity_hierarchy_node_between_documents") {
+      try {
+        return BuildTxtSuccessResponse(
+            [&]() { return MoveActivityHierarchyNodeBetweenDocumentsJson(payload); });
+      } catch (const std::exception& error) {
+        return BuildFailureResponse(
+            error.what(), "config.activity_hierarchy.failed", "config",
+            {"Inspect the source, destination, document set, and move operation fields."});
+      }
+    }
+
+    if (action == "rewrite_activity_hierarchy_document") {
+      try {
+        return BuildTxtSuccessResponse(
+            [&]() { return RewriteActivityHierarchyDocumentJson(payload); });
+      } catch (const std::exception& error) {
+        return BuildFailureResponse(error.what(), "config.activity_hierarchy.failed",
                                     "config",
                                     {"Inspect the original and updated alias TOML."});
       }
     }
 
-    if (action == "describe_alias_hierarchy") {
+    if (action == "describe_activity_hierarchy") {
       try {
         return BuildTxtSuccessResponse(
-            [&]() { return DescribeAliasHierarchyJson(payload); });
+            [&]() { return DescribeActivityHierarchyJson(payload); });
       } catch (const std::exception& error) {
-        return BuildFailureResponse(error.what(), "config.alias_hierarchy.failed",
+        return BuildFailureResponse(error.what(), "config.activity_hierarchy.failed",
                                     "config", {});
       }
     }
 
-    if (action == "validate_alias_hierarchy_documents") {
+    if (action == "validate_activity_hierarchy_documents") {
       try {
         return BuildTxtSuccessResponse(
-            [&]() { return ValidateAliasHierarchyDocumentsJson(payload); });
+            [&]() { return ValidateActivityHierarchyDocumentsJson(payload); });
       } catch (const std::exception& error) {
-        return BuildFailureResponse(error.what(), "config.alias_hierarchy.failed",
+        return BuildFailureResponse(error.what(), "config.activity_hierarchy.failed",
                                     "config", {});
       }
     }
 
-    if (action == "create_alias_hierarchy_document") {
-      try {
-        return BuildTxtSuccessResponse(
-            [&]() { return CreateAliasHierarchyDocumentJson(payload); });
-      } catch (const std::exception& error) {
-        return BuildFailureResponse(error.what(), "config.alias_hierarchy.failed",
-                                    "config", {});
-      }
-    }
-
-    if (action == "render_alias_hierarchy_text") {
+    if (action == "render_activity_hierarchy_text") {
       try {
         const std::string toml_content =
             RequireStringField(payload, "toml_content");
         return BuildTxtSuccessResponse([&]() -> json {
           return json{{"content",
-                       tracer::core::application::config::RenderAliasTreeText(
+                       tracer::core::application::config::RenderActivityHierarchyText(
                            std::string_view(toml_content),
                            payload.value("show_aliases", false))}};
         });
       } catch (const std::exception& error) {
-        return BuildFailureResponse(error.what(), "config.alias_hierarchy.failed",
+        return BuildFailureResponse(error.what(), "config.activity_hierarchy.failed",
                                     "config", {});
       }
     }
@@ -270,7 +283,7 @@ extern "C" TT_CORE_API auto tracer_core_runtime_config_json(
     return BuildFailureResponse(
         "Unsupported runtime config action: " + action,
         "runtime.invalid_request", "runtime",
-        {"Use action=default_day_marker|resolve_day_block|replace_day_block|convert_activity_names|replace_canonical_activity_names|replace_alias_activity_names|apply_alias_hierarchy_operation|rewrite_alias_hierarchy_document|describe_alias_hierarchy|validate_alias_hierarchy_documents|create_alias_hierarchy_document|render_alias_hierarchy_text."});
+        {"Use action=default_day_marker|resolve_day_block|replace_day_block|convert_activity_names|replace_canonical_activity_names|replace_alias_activity_names|apply_activity_hierarchy_operation|move_activity_hierarchy_leaf_between_documents|move_activity_hierarchy_node_between_documents|rewrite_activity_hierarchy_document|describe_activity_hierarchy|validate_activity_hierarchy_documents|render_activity_hierarchy_text."});
   } catch (const std::exception& error) {
     return BuildFailureResponse(error.what());
   } catch (...) {

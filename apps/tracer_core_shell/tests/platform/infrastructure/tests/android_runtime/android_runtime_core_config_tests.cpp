@@ -37,7 +37,7 @@ auto PrepareCustomConfigFixture(
     return {};
   }
 
-  const std::filesystem::path aliases_root = config_root / "aliases";
+  const std::filesystem::path aliases_root = config_root / "activity_hierarchy";
   if (!CopyFixtureFile(converter_main_fixture_relative_path,
                        aliases_root / "_system.toml")) {
     return {};
@@ -51,7 +51,7 @@ auto TestAndroidRuntimeBootstrapStaysSideEffectFree(int& failures) -> void {
   const std::filesystem::path repo_root = BuildRepoRoot();
   const std::filesystem::path config_toml_path =
       repo_root / "assets" / "tracer_core" / "config_test" /
-      "aliases/_system.toml";
+      "activity_hierarchy/_system.toml";
 
   RemoveTree(paths.test_root);
 
@@ -136,7 +136,7 @@ auto TestAndroidRuntimeRejectsInvalidUtf8ConverterConfig(int& failures)
   const RuntimeTestPaths paths = BuildTempTestPaths(
       "time_tracer_android_runtime_factory_invalid_utf8_config_test");
   const std::filesystem::path kInvalidConfigPath =
-      paths.test_root / "config" / "aliases" / "_system.toml";
+      paths.test_root / "config" / "activity_hierarchy" / "_system.toml";
 
   RemoveTree(paths.test_root);
   if (!PrepareAndroidConfigFixture(paths.test_root / "config")) {

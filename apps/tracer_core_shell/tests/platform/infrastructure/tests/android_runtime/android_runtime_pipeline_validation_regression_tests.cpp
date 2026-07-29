@@ -48,7 +48,7 @@ auto PrepareCustomConfigFixture(
     return std::nullopt;
   }
 
-  const std::filesystem::path aliases_root = config_root / "aliases";
+  const std::filesystem::path aliases_root = config_root / "activity_hierarchy";
   if (!CopyFixtureFile(converter_main_fixture_relative_path,
                        aliases_root / "_system.toml")) {
     return std::nullopt;
@@ -145,7 +145,7 @@ auto TestValidateLogicRejectsWakeKeywordAfterFirstEvent(int& failures) -> void {
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
       kRepoRoot / "assets" / "tracer_core" / "config_test" /
-      "aliases/_system.toml";
+      "activity_hierarchy/_system.toml";
 
   auto logger = std::make_shared<CapturingLogger>();
   auto diagnostics_sink = std::make_shared<CapturingDiagnosticsSink>();
@@ -223,7 +223,7 @@ auto TestValidateLogicAllowsSingleAuthoredEventDay(int& failures) -> void {
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
       kRepoRoot / "assets" / "tracer_core" / "config_test" /
-      "aliases/_system.toml";
+      "activity_hierarchy/_system.toml";
 
   auto logger = std::make_shared<CapturingLogger>();
   auto diagnostics_sink = std::make_shared<CapturingDiagnosticsSink>();
@@ -290,7 +290,7 @@ auto TestValidateLogicRejectsBadTimeRangeFixture(int& failures) -> void {
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
       kRepoRoot / "assets" / "tracer_core" / "config_test" /
-      "aliases/_system.toml";
+      "activity_hierarchy/_system.toml";
 
   auto diagnostics_sink = std::make_shared<CapturingDiagnosticsSink>();
   auto error_report_writer = std::make_shared<CapturingErrorReportWriter>();
@@ -363,7 +363,7 @@ auto TestRecordActivityAtomicallyWarnsForWakeOnlyDay(int& failures) -> void {
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
       kRepoRoot / "assets" / "tracer_core" / "config_test" /
-      "aliases/_system.toml";
+      "activity_hierarchy/_system.toml";
 
   infrastructure::bootstrap::AndroidRuntime runtime;
   try {
@@ -476,7 +476,7 @@ auto TestRecordActivityAtomicallyAcceptsCanonicalActivityToken(
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
       kRepoRoot / "assets" / "tracer_core" / "config_test" /
-      "aliases/_system.toml";
+      "activity_hierarchy/_system.toml";
 
   infrastructure::bootstrap::AndroidRuntime runtime;
   try {
@@ -533,7 +533,7 @@ auto TestRecordActivityAtomicallyWarnsForOvernightContinuationDay(
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
       kRepoRoot / "assets" / "tracer_core" / "config_test" /
-      "aliases/_system.toml";
+      "activity_hierarchy/_system.toml";
 
   infrastructure::bootstrap::AndroidRuntime runtime;
   try {
@@ -598,7 +598,7 @@ auto TestRecordActivityAtomicallyPreservesMultilineRemark(
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
       kRepoRoot / "assets" / "tracer_core" / "config_test" /
-      "aliases/_system.toml";
+      "activity_hierarchy/_system.toml";
 
   infrastructure::bootstrap::AndroidRuntime runtime;
   try {
@@ -656,7 +656,7 @@ auto TestRecordActivityAtomicallySkipsCompletenessWarningForCompleteDay(
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
       kRepoRoot / "assets" / "tracer_core" / "config_test" /
-      "aliases/_system.toml";
+      "activity_hierarchy/_system.toml";
 
   const std::filesystem::path kMonthFile =
       kPaths.test_root / "input" / "2026" / "2026-03.txt";
@@ -721,7 +721,7 @@ auto TestConvertLogsActualConversionFailure(int& failures) -> void {
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
       kRepoRoot / "assets" / "tracer_core" / "config_test" /
-      "aliases/_system.toml";
+      "activity_hierarchy/_system.toml";
 
   auto logger = std::make_shared<CapturingLogger>();
   auto diagnostics_sink = std::make_shared<CapturingDiagnosticsSink>();
@@ -821,7 +821,7 @@ auto TestValidateStructureReportsInvalidUtf8(int& failures) -> void {
   const std::filesystem::path kRepoRoot = BuildRepoRoot();
   const std::filesystem::path kConfigTomlPath =
       kRepoRoot / "assets" / "tracer_core" / "config_test" /
-      "aliases/_system.toml";
+      "activity_hierarchy/_system.toml";
 
   infrastructure::bootstrap::AndroidRuntime runtime;
   try {

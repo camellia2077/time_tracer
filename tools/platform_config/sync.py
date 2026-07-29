@@ -4,7 +4,11 @@ import time
 import tomllib
 from pathlib import Path
 
-from .internal.bundle import build_bundle_model, load_source_bundle
+from .internal.bundle import (
+    build_bundle_model,
+    load_source_bundle,
+    load_source_config,
+)
 from .internal.constants import SUPPORTED_TARGETS
 from .internal.files import (
     apply_plan_atomic,
@@ -43,7 +47,8 @@ def sync_target(
         )
 
     source_bundle = load_source_bundle(source_root)
-    model = build_bundle_model(source_bundle, target)
+    source_config = load_source_config(source_root)
+    model = build_bundle_model(source_bundle, source_config, target)
     planned_files = collect_plan_files(source_root, model)
     file_hashes = build_file_hashes(planned_files)
     input_hash = compute_input_hash(target, source_root, file_hashes)

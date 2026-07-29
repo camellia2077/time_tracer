@@ -3,7 +3,7 @@
 ## Purpose
 
 This document defines the business rules for converter alias mapping under
-`assets/tracer_core/config/aliases/`.
+`assets/tracer_core/config/activity_hierarchy/`.
 
 It answers:
 
@@ -198,9 +198,9 @@ Each top-level parent belongs to its own child file.
 
 Examples:
 
-1. `meal` rules belong in `aliases/meal.toml`
-2. `recreation` rules belong in `aliases/recreation.toml`
-3. `study` rules belong in `aliases/study.toml`
+1. `meal` rules belong in `activity_hierarchy/meal.toml`
+2. `recreation` rules belong in `activity_hierarchy/recreation.toml`
+3. `study` rules belong in `activity_hierarchy/study.toml`
 
 This boundary is part of the config organization model and should not be mixed
 freely across unrelated parent files.
@@ -277,7 +277,7 @@ Each group alias resolves to the canonical group path. A group alias cannot
 also appear in another group or in a normal alias array.
 
 For the category promotion, alias move, TXT replacement, and database rebuild
-rules built on this expansion, see [Activity Alias Hierarchy Migration](activity_alias_hierarchy_migration.md).
+rules built on this expansion, see [Activity Hierarchy Migration](activity_hierarchy_migration.md).
 
 ## TOML-Safe Path Segments
 

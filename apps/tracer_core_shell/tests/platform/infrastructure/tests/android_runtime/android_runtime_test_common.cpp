@@ -134,8 +134,8 @@ auto PrepareAndroidConfigFixture(const std::filesystem::path& target_root)
   return CopyFileWithParents(android_bundle_path,
                              target_root / "meta" / "bundle.toml") &&
          copy_required_file("config.toml") &&
-         copy_required_file("aliases/_system.toml") &&
-         CopyDirectoryTree(source_root / "aliases", target_root / "aliases") &&
+         copy_required_file("activity_hierarchy/_system.toml") &&
+         CopyDirectoryTree(source_root / "activity_hierarchy", target_root / "activity_hierarchy") &&
          copy_required_file("charts/heatmap.toml") &&
          CopyDirectoryTree(source_root / "reports" / "markdown",
                            target_root / "reports" / "markdown");

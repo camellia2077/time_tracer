@@ -49,9 +49,9 @@ constexpr std::string_view kDatabaseFilename = "time_data.sqlite3";
 [[nodiscard]] auto ResolveReportConfigRoot(
     const fs::path& converter_config_toml_path) -> fs::path {
   const fs::path aliases_dir = converter_config_toml_path.parent_path();
-  if (aliases_dir.filename() != "aliases") {
+  if (aliases_dir.filename() != "activity_hierarchy") {
     throw std::runtime_error(
-        "Converter main config path must be under 'config/aliases': " +
+        "Converter main config path must be under 'config/activity_hierarchy': " +
         converter_config_toml_path.string());
   }
 
@@ -68,15 +68,15 @@ constexpr std::string_view kDatabaseFilename = "time_data.sqlite3";
     -> AndroidReportConfigPathSet {
   return {
       .day = ResolveRequiredReportTomlPath(config.day,
-                                           "paths.reports.markdown.day"),
+                                           "reports.markdown.root"),
       .month = ResolveRequiredReportTomlPath(config.month,
-                                             "paths.reports.markdown.month"),
+                                             "reports.markdown.root"),
       .period = ResolveRequiredReportTomlPath(config.period,
-                                              "paths.reports.markdown.period"),
+                                              "reports.markdown.root"),
       .week = ResolveRequiredReportTomlPath(config.week,
-                                            "paths.reports.markdown.week"),
+                                            "reports.markdown.root"),
       .year = ResolveRequiredReportTomlPath(config.year,
-                                            "paths.reports.markdown.year"),
+                                            "reports.markdown.root"),
   };
 }
 

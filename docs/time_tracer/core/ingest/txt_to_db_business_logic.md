@@ -212,8 +212,8 @@ d0102
 
 普通活动名的合法性基于：
 
-`assets/tracer_core/config_test/aliases/*.toml` for test/packaging fixtures or
-`assets/tracer_core/config_distribution/aliases/*.toml` for distribution
+`assets/tracer_core/config_test/activity_hierarchy/*.toml` for test/packaging fixtures or
+`assets/tracer_core/config_distribution/activity_hierarchy/*.toml` for distribution
 defaults. Generated platform copies are not sources of truth.
 
 这里的核心语义是：
@@ -232,7 +232,7 @@ defaults. Generated platform copies are not sources of truth.
 
 wake 语义只来源于：
 
-`assets/tracer_core/config/aliases/_system.toml`
+`assets/tracer_core/config/activity_hierarchy/_system.toml`
 
 中的：
 
@@ -272,7 +272,7 @@ wake 相关活动只能是一天中的第一个语义活动。
 
 ## 8. `sleep_night` 的自动生成
 
-在 `aliases/_system.toml` 中有：
+在 `activity_hierarchy/_system.toml` 中有：
 
 ```toml
 [sleep_inference]

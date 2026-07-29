@@ -52,7 +52,7 @@ auto CopyConverterConfigFile(const std::filesystem::path& source_path,
 
 auto RemoveConverterAliasDirectory(const std::filesystem::path& target_root)
     -> void {
-  const std::filesystem::path kAliasDir = target_root / "aliases";
+  const std::filesystem::path kAliasDir = target_root / "activity_hierarchy";
   if (!std::filesystem::exists(kAliasDir)) {
     return;
   }
@@ -60,7 +60,7 @@ auto RemoveConverterAliasDirectory(const std::filesystem::path& target_root)
   std::error_code io_error;
   std::filesystem::remove_all(kAliasDir, io_error);
   if (io_error) {
-    throw std::runtime_error("Failed to remove converter alias directory: " +
+    throw std::runtime_error("Failed to remove activity hierarchy directory: " +
                              kAliasDir.string() + " | " +
                              io_error.message());
   }

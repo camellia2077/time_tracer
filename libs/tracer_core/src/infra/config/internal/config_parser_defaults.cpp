@@ -198,4 +198,78 @@ void ParseCliDefaultsImpl(const toml::table& tbl, const fs::path& exe_path,
   }
 }
 
+auto ParseRuntimeConfigPaths(const toml::table& config_tbl,
+                             const fs::path& config_dir,
+                             const fs::path& source_path, AppConfig& config)
+    -> void {
+  const toml::table* converter_tbl =
+      TryReadTableField(config_tbl, "converter", source_path, "");
+  if (converter_tbl == nullptr) {
+    ThrowConfigFieldError(source_path, "converter",
+                          "is required and must be a table.");
+  }
+  const std::string main_config = RequireNonEmptyStringField(
+      *converter_tbl, "main_config", source_path, "converter");
+  config.pipeline.converter_main_config_path =
+      NormalizeConfigRelativePath(config_dir, main_config);
+  EnsureFileExists(source_path, "converter.main_config",
+                   config.pipeline.converter_main_config_path);
+
+  const toml::table* visualization_tbl =
+      TryReadTableField(config_tbl, "visualization", source_path, "");
+  if (visualization_tbl == nullptr) {
+    ThrowConfigFieldError(source_path, "visualization",
+                          "is required and must be a table.");
+  }
+  const std::string heatmap = RequireNonEmptyStringField(
+      *visualization_tbl, "heatmap", source_path, "visualization");
+  const fs::path heatmap_path = NormalizeConfigRelativePath(config_dir, heatmap);
+  EnsureFileExists(source_path, "visualization.heatmap", heatmap_path);
+
+  const toml::table* reports_tbl =
+      TryReadTableField(config_tbl, "reports", source_path, "");
+  if (reports_tbl == nullptr) {
+    ThrowConfigFieldError(source_path, "reports",
+                          "is required and must be a table.");
+  }
+  const ReportPathSource report_source{
+      .config_dir = config_dir,
+      .source_path = source_path,
+  };
+  bool has_any_report_format = false;
+  if (const toml::table* typst_tbl =
+          TryReadTableField(*reports_tbl, "typst", source_path, "reports")) {
+    has_any_report_format = true;
+    LoadReportPathsFromTable(*typst_tbl, report_source, "reports.typst",
+                             config.reports.day_typ_config_path,
+                             config.reports.month_typ_config_path,
+                             config.reports.period_typ_config_path,
+                             config.reports.week_typ_config_path,
+                             config.reports.year_typ_config_path);
+  }
+  if (const toml::table* latex_tbl =
+          TryReadTableField(*reports_tbl, "latex", source_path, "reports")) {
+    has_any_report_format = true;
+    LoadReportPathsFromTable(*latex_tbl, report_source, "reports.latex",
+                             config.reports.day_tex_config_path,
+                             config.reports.month_tex_config_path,
+                             config.reports.period_tex_config_path,
+                             config.reports.week_tex_config_path,
+                             config.reports.year_tex_config_path);
+  }
+  if (const toml::table* markdown_tbl = TryReadTableField(
+          *reports_tbl, "markdown", source_path, "reports")) {
+    has_any_report_format = true;
+    LoadReportPathsFromTable(
+        *markdown_tbl, report_source, "reports.markdown",
+        config.reports.day_md_config_path, config.reports.month_md_config_path,
+        config.reports.period_md_config_path,
+        config.reports.week_md_config_path, config.reports.year_md_config_path);
+  }
+  if (!has_any_report_format) {
+    ThrowConfigFieldError(source_path, "reports",
+                          "must contain at least one report format table.");
+  }
+}
+
 }  // namespace ConfigParserUtils::internal

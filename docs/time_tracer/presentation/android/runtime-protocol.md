@@ -43,7 +43,7 @@ Current Android JNI integration uses C ABI entrypoints in these categories:
 - record-atomic pipeline calls (including explicit `time_order_mode` passthrough)
 - activity and day remark atomic update calls
 - Config runtime calls (`tracer_core_runtime_config_json`) for TXT day-block,
-  alias hierarchy operations/raw alias-TOML rewrite, and current-month
+  activity hierarchy operations/raw alias-TOML rewrite, and current-month
   activity-name conversion
 - structure/logic validation
 - last-error access
@@ -87,11 +87,30 @@ Current status:
   month-TXT business semantics in core rather than Kotlin UI helpers.
 - Android must not directly save an alias TOML document. Every alias TOML
   change must use a Core hierarchy operation or
-  `rewrite_alias_hierarchy_document`, then pass the returned TOML and both
+  `rewrite_activity_hierarchy_document`, then pass the returned TOML and both
   replacement lists through `RuntimeAliasMoveMigrationService`.
+- `rename_parent` is the parent-document rename operation. Android sends the
+  current TOML content, `operation.new_name`, and should send
+  `operation.old_parent` as a stale-content guard. Core returns the updated
+  TOML, all affected canonical replacements, and the hierarchy whose `parent`
+  is the new file stem. The runtime protocol carries no filesystem filename
+  mutation; Android owns the later `<old_parent>.toml` ->
+  `<new_parent>.toml` transaction.
+- Cross-TOML activity hierarchy moves use
+  `move_activity_hierarchy_node_between_documents`. Android sends the complete
+  alias-document set plus source/destination file names; Core returns the
+  updated source and destination TOMLs and canonical/alias replacements.
+  Android passes those updated documents to one migration request so TXT and
+  database rebuilding remain part of the same rollback boundary.
+  The move_leaf operation moves one activity name; move_group moves the
+  complete group subtree.
 - Validation requests still have JNI-local request assembly.
 - Android tracer exchange export supports an in-memory payload JSON request plus fd sink output.
 - Tree responses are normalized before returning to Kotlin.
+- Activity hierarchy responses use Core's presentation-neutral node model:
+  each node carries canonical_key, canonical path, kind, aliases, and children.
+  Android consumes kind internally and keeps the existing presentation adapter;
+  the UI does not add canonical or alias text.
 - Kotlin-visible response shape remains `{ok,error_message,content}`.
 - JNI native method signatures remain stable.
 

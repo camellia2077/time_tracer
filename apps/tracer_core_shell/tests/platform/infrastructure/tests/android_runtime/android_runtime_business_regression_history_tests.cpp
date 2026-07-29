@@ -21,7 +21,7 @@ auto TestProjectRenameKeepsHistorySnapshot(int& failures) -> void {
   const std::filesystem::path kInputPath = kRepoRoot / "test" / "data";
   const std::filesystem::path kConfigTomlPath =
       BuildRepoRoot() / "assets" / "tracer_core" / "config_test" /
-      "aliases/_system.toml";
+      "activity_hierarchy/_system.toml";
 
   RemoveTree(paths.test_root);
 
@@ -193,7 +193,7 @@ auto TestSingleTxtIngestFallsBackToSiblingPreviousMonthTxt(int& failures)
       "time_tracer_single_txt_sibling_previous_month_fallback_test");
   const std::filesystem::path kConfigTomlPath =
       BuildRepoRoot() / "assets" / "tracer_core" / "config_test" /
-      "aliases/_system.toml";
+      "activity_hierarchy/_system.toml";
 
   RemoveTree(paths.test_root);
 

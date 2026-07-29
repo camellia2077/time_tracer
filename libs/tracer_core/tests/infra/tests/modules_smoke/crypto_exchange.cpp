@@ -32,7 +32,7 @@ auto RunInfrastructureModuleCryptoExchangeSmoke() -> int {
       "payload/2026/2026-12.txt",
   };
   manifest.converter_alias_mapping_files = {
-      "config/aliases/default.toml",
+      "config/activity_hierarchy/default.toml",
   };
 
   const std::string manifest_text = exchange::BuildManifestText(manifest);
@@ -54,7 +54,7 @@ auto RunInfrastructureModuleCryptoExchangeSmoke() -> int {
   for (const auto report_path : exchange::kReportMarkdownPackagePaths) {
     entries.push_back(BuildEntry(report_path, "title = \"report\"\n"));
   }
-  entries.push_back(BuildEntry("config/aliases/default.toml",
+  entries.push_back(BuildEntry("config/activity_hierarchy/default.toml",
                                "parent = \"study\"\n\n[aliases]\n\"study\" = "
                                "\"math\"\n"));
   entries.push_back(BuildEntry("payload/2025/2025-01.txt",

@@ -1,4 +1,4 @@
-#include "api/c_api/capabilities/config/alias_hierarchy_operation_bridge.hpp"
+#include "api/c_api/capabilities/config/activity_hierarchy_operation_bridge.hpp"
 
 #include <nlohmann/json.hpp>
 
@@ -15,7 +15,12 @@ namespace {
 using nlohmann::json;
 namespace config = tracer::core::application::config;
 
-[[nodiscard]] auto ToJson(const config::AliasHierarchyNodeSnapshot& node)
+[[nodiscard]] auto ToString(config::ActivityHierarchyNodeKind kind)
+    -> std::string_view {
+  return kind == config::ActivityHierarchyNodeKind::kGroup ? "group" : "leaf";
+}
+
+[[nodiscard]] auto ToJson(const config::ActivityHierarchyNodeSnapshot& node)
     -> json {
   json children = json::array();
   for (const auto& child : node.children) {
@@ -23,12 +28,14 @@ namespace config = tracer::core::application::config;
   }
   return {{"canonical_key", node.canonical_key},
           {"path", node.path},
-          {"is_group", node.is_group},
-          {"aliases", node.aliases},
+          {"kind", ToString(node.kind)},
+          // Kept for older clients. New clients should use `kind`.
+          {"is_group", node.IsGroup()},
+           {"aliases", node.aliases},
           {"children", std::move(children)}};
 }
 
-[[nodiscard]] auto ToJson(const config::AliasHierarchySnapshot& snapshot)
+[[nodiscard]] auto ToJson(const config::ActivityHierarchySnapshot& snapshot)
     -> json {
   json nodes = json::array();
   for (const auto& node : snapshot.nodes) {
@@ -85,8 +92,8 @@ namespace config = tracer::core::application::config;
 }
 
 [[nodiscard]] auto ParseOperationKind(std::string_view kind)
-    -> config::AliasHierarchyOperationKind {
-  using Kind = config::AliasHierarchyOperationKind;
+    -> config::ActivityHierarchyOperationKind {
+  using Kind = config::ActivityHierarchyOperationKind;
   if (kind == "add_group") {
     return Kind::kAddGroup;
   }
@@ -107,6 +114,9 @@ namespace config = tracer::core::application::config;
   }
   if (kind == "move_leaf") {
     return Kind::kMoveLeaf;
+  }
+  if (kind == "move_group") {
+    return Kind::kMoveGroup;
   }
   if (kind == "set_group_aliases") {
     return Kind::kSetGroupAliases;
@@ -129,12 +139,12 @@ namespace config = tracer::core::application::config;
   if (kind == "rename_group_alias") {
     return Kind::kRenameGroupAlias;
   }
-  throw std::invalid_argument("Unsupported alias hierarchy operation kind: " +
+  throw std::invalid_argument("Unsupported activity hierarchy operation kind: " +
                               std::string(kind));
 }
 
 [[nodiscard]] auto ParseOperationRequest(const json& payload)
-    -> config::AliasHierarchyOperationRequest {
+    -> config::ActivityHierarchyOperationRequest {
   const auto operation_it = payload.find("operation");
   if (operation_it == payload.end() || !operation_it->is_object()) {
     throw std::invalid_argument("field `operation` must be an object.");
@@ -147,6 +157,7 @@ namespace config = tracer::core::application::config;
           ReadOptionalStringField(operation, "destination_path"),
       .canonical_key = ReadOptionalStringField(operation, "canonical_key"),
       .new_name = ReadOptionalStringField(operation, "new_name"),
+      .old_parent = ReadOptionalStringField(operation, "old_parent"),
       .target_alias = ReadOptionalStringField(operation, "target_alias"),
       .old_alias = ReadOptionalStringField(operation, "old_alias"),
       .aliases = ReadOptionalAliases(operation),
@@ -154,8 +165,8 @@ namespace config = tracer::core::application::config;
 }
 
 [[nodiscard]] auto ToOperationResultJson(
-    const config::AliasHierarchyOperationResult& result) -> json {
-  const auto hierarchy = config::DescribeAliasHierarchy(result.updated_toml_content);
+    const config::ActivityHierarchyOperationResult& result) -> json {
+  const auto hierarchy = config::DescribeActivityHierarchy(result.updated_toml_content);
   json replacements = json::array();
   for (const auto& replacement : result.replacements) {
     replacements.push_back({{"old_canonical", replacement.old_canonical},
@@ -173,36 +184,87 @@ namespace config = tracer::core::application::config;
           {"hierarchy", ToJson(hierarchy)}};
 }
 
+[[nodiscard]] auto ToCrossDocumentOperationResultJson(
+    const config::ActivityHierarchyCrossDocumentOperationResult& result) -> json {
+  json updated_documents = json::array();
+  for (const auto& document : result.updated_documents) {
+    updated_documents.push_back({{"source_name", document.source_name},
+                                 {"updated_toml_content",
+                                  document.updated_toml_content}});
+  }
+  json replacements = json::array();
+  for (const auto& replacement : result.replacements) {
+    replacements.push_back({{"old_canonical", replacement.old_canonical},
+                            {"new_canonical", replacement.new_canonical}});
+  }
+  json alias_replacements = json::array();
+  for (const auto& replacement : result.alias_replacements) {
+    alias_replacements.push_back(
+        {{"old_alias", replacement.old_alias},
+         {"new_alias", replacement.new_alias}});
+  }
+  return {{"updated_documents", std::move(updated_documents)},
+          {"replacements", std::move(replacements)},
+          {"alias_replacements", std::move(alias_replacements)}};
+}
+
 }  // namespace
 
-auto ApplyAliasHierarchyOperationJson(const nlohmann::json& payload)
+auto ApplyActivityHierarchyOperationJson(const nlohmann::json& payload)
     -> nlohmann::json {
-  const auto result = config::ApplyAliasHierarchyOperation(
+  const auto result = config::ApplyActivityHierarchyOperation(
       RequireStringField(payload, "toml_content"), ParseOperationRequest(payload));
   return ToOperationResultJson(result);
 }
 
-auto RewriteAliasHierarchyDocumentJson(const nlohmann::json& payload)
+auto MoveActivityHierarchyLeafBetweenDocumentsJson(const nlohmann::json& payload)
     -> nlohmann::json {
-  return ToOperationResultJson(config::RewriteAliasHierarchyDocument(
-      RequireStringField(payload, "original_toml_content"),
-      RequireStringField(payload, "updated_toml_content")));
+  return MoveActivityHierarchyNodeBetweenDocumentsJson(payload);
 }
 
-auto DescribeAliasHierarchyJson(const nlohmann::json& payload)
-    -> nlohmann::json {
-  return {{"hierarchy",
-           ToJson(config::DescribeAliasHierarchy(
-               RequireStringField(payload, "toml_content")))}};
-}
-
-auto ValidateAliasHierarchyDocumentsJson(const nlohmann::json& payload)
+auto MoveActivityHierarchyNodeBetweenDocumentsJson(const nlohmann::json& payload)
     -> nlohmann::json {
   const auto documents_it = payload.find("documents");
   if (documents_it == payload.end() || !documents_it->is_array()) {
     throw std::invalid_argument("field `documents` must be an array.");
   }
-  std::vector<config::AliasHierarchyDocumentInput> documents;
+  std::vector<config::ActivityHierarchyDocumentInput> documents;
+  documents.reserve(documents_it->size());
+  for (const auto& item : *documents_it) {
+    if (!item.is_object()) {
+      throw std::invalid_argument("each `documents` item must be an object.");
+    }
+    documents.push_back({RequireStringField(item, "source_name"),
+                         RequireStringField(item, "toml_content")});
+  }
+  return ToCrossDocumentOperationResultJson(
+      config::MoveActivityHierarchyNodeBetweenDocuments(
+          documents, RequireStringField(payload, "source_name"),
+          RequireStringField(payload, "destination_name"),
+          ParseOperationRequest(payload)));
+}
+
+auto RewriteActivityHierarchyDocumentJson(const nlohmann::json& payload)
+    -> nlohmann::json {
+  return ToOperationResultJson(config::RewriteActivityHierarchyDocument(
+      RequireStringField(payload, "original_toml_content"),
+      RequireStringField(payload, "updated_toml_content")));
+}
+
+auto DescribeActivityHierarchyJson(const nlohmann::json& payload)
+    -> nlohmann::json {
+  return {{"hierarchy",
+           ToJson(config::DescribeActivityHierarchy(
+               RequireStringField(payload, "toml_content")))}};
+}
+
+auto ValidateActivityHierarchyDocumentsJson(const nlohmann::json& payload)
+    -> nlohmann::json {
+  const auto documents_it = payload.find("documents");
+  if (documents_it == payload.end() || !documents_it->is_array()) {
+    throw std::invalid_argument("field `documents` must be an array.");
+  }
+  std::vector<config::ActivityHierarchyDocumentInput> documents;
   documents.reserve(documents_it->size());
   for (const auto& item : *documents_it) {
     if (!item.is_object()) {
@@ -213,14 +275,8 @@ auto ValidateAliasHierarchyDocumentsJson(const nlohmann::json& payload)
         .toml_content = RequireStringField(item, "toml_content"),
     });
   }
-  config::ValidateAliasHierarchyDocuments(documents);
+  config::ValidateActivityHierarchyDocuments(documents);
   return json::object();
-}
-
-auto CreateAliasHierarchyDocumentJson(const nlohmann::json& payload)
-    -> nlohmann::json {
-  return {{"toml_content", config::CreateAliasHierarchyDocument(
-                               RequireStringField(payload, "parent"))}};
 }
 
 }  // namespace tracer_core::shell::config_bridge

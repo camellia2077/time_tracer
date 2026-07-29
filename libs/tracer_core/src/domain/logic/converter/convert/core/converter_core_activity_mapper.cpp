@@ -135,7 +135,8 @@ auto ActivityMapper::MapActivities(DailyLog& day) -> void {
 
   // Canonical mapping stage:
   // TXT stores alias keys (raw activity tokens). During full-text conversion/ingest we map
-  // alias key -> canonical value expanded from the fixed aliases directory.
+  // alias key -> canonical value expanded from the fixed activity hierarchy
+  // TOML directory.
   // Timing semantics are applied later: alias normalization decides only the
   // canonical activity path, while time ranges and durations are derived from
   // neighboring authored event timestamps in subsequent steps.

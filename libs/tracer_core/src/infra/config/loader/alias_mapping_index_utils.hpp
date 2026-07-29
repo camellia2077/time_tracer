@@ -66,7 +66,8 @@ inline auto IsAliasChildTomlPath(const fs::path& path) -> bool {
 inline auto BuildAliasFieldPath(std::string_view relative_child_path,
                                 const std::vector<std::string>& groups,
                                 std::string_view leaf_key) -> std::string {
-  std::string field = "alias child file `" + std::string(relative_child_path) +
+  std::string field = "activity hierarchy TOML file `" +
+                      std::string(relative_child_path) +
                       "` field `aliases";
   for (const auto& group : groups) {
     field += ".";
@@ -146,7 +147,7 @@ inline auto BuildAliasChildParseHint(const fs::path& relative_path,
   }
 
   return message +
-         " | Alias child files are encoded as TOML table paths such as "
+         " | Activity hierarchy TOML files are encoded as TOML table paths such as "
          "`[aliases.study.math]`. In TOML table headers, unquoted path "
          "segments cannot contain spaces. This is a TOML syntax requirement, "
          "not an alias-timing or database rule. If a canonical path segment "
@@ -185,7 +186,7 @@ inline auto LoadAliasMappingDefinition(const fs::path& alias_directory_path,
   const fs::path normalized_alias_directory = fs::absolute(alias_directory_path);
   if (!fs::exists(normalized_alias_directory) ||
       !fs::is_directory(normalized_alias_directory)) {
-    throw std::runtime_error("Alias directory not found: " +
+    throw std::runtime_error("Activity hierarchy directory not found: " +
                              normalized_alias_directory.string());
   }
 
@@ -200,11 +201,6 @@ inline auto LoadAliasMappingDefinition(const fs::path& alias_directory_path,
   std::ranges::sort(relative_paths, [](const fs::path& left, const fs::path& right) {
     return left.generic_string() < right.generic_string();
   });
-  if (relative_paths.empty()) {
-    throw std::runtime_error("Alias directory contains no TOML files: " +
-                             normalized_alias_directory.string());
-  }
-
   AliasMappingDefinition definition{
       .alias_directory_path = normalized_alias_directory,
       .child_files = {},
@@ -238,7 +234,7 @@ inline auto LoadAliasMappingDefinition(const fs::path& alias_directory_path,
   for (const fs::path& relative_path : relative_paths) {
     const fs::path absolute_path = normalized_alias_directory / relative_path;
     if (!fs::exists(absolute_path) || !fs::is_regular_file(absolute_path)) {
-      throw std::runtime_error("Alias child file not found: " +
+      throw std::runtime_error("Activity hierarchy TOML file not found: " +
                                absolute_path.string());
     }
 

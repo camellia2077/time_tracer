@@ -3,6 +3,6 @@
 #define TRACER_CORE_TESTS_INFRASTRUCTURE_MODULES_SMOKE_CONFIG_HPP_
 
 auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int;
-auto RunAliasHierarchyCharacterizationTests() -> int;
+auto RunActivityHierarchyCharacterizationTests() -> int;
 
 #endif  // TRACER_CORE_TESTS_INFRASTRUCTURE_MODULES_SMOKE_CONFIG_HPP_

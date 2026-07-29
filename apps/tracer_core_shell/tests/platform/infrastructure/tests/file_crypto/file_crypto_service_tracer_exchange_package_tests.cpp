@@ -78,7 +78,7 @@ auto TestTracerExchangeManifestRejectsPathDrift(int& failures) -> void {
   manifest.created_at_utc = "2026-03-18T12:34:56Z";
   manifest.source_root_name = "data";
   manifest.payload_files = {"payload/2025/2025-01.txt"};
-  manifest.converter_alias_mapping_files = {"config/aliases/default.toml"};
+  manifest.converter_alias_mapping_files = {"config/activity_hierarchy/default.toml"};
 
   const std::string invalid_manifest =
       ReplaceFirst(exchange_pkg::BuildManifestText(manifest),

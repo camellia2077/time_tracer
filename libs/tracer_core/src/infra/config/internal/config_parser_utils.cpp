@@ -23,6 +23,14 @@ void ParseCliDefaults(const toml::table& tbl,
       tbl, exe_path, source_config_path, config);
 }
 
+void ParseRuntimeConfigPaths(const toml::table& config_tbl,
+                             const std::filesystem::path& config_dir,
+                             const std::filesystem::path& source_path,
+                             AppConfig& config) {
+  config_parser_internal::ParseRuntimeConfigPaths(
+      config_tbl, config_dir, source_path, config);
+}
+
 auto ResolveBundlePath(const std::filesystem::path& config_dir)
     -> std::filesystem::path {
   return config_parser_internal::ResolveBundlePathImpl(config_dir);

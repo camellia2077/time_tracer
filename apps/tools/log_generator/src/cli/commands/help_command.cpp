@@ -18,7 +18,7 @@ void PrintUsage(std::string_view prog_name) {
                "range.\n";
   std::cerr << "             Reads configuration from "
                "'config/activities_config.toml'\n";
-  std::cerr << "             and 'config/aliases/*.toml'.\n\n";
+  std::cerr << "             and 'config/activity_hierarchy/*.toml'.\n\n";
   std::cerr << GREEN_COLOR << "Options:\n" << RESET_COLOR;
   std::cerr << "  -y, --year <year>       Generate data for a single year.\n";
   std::cerr << "  -s, --start <year>      The starting year for a range. (Used "

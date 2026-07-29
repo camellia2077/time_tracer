@@ -252,7 +252,7 @@ The response uses the same `updated_content` result shape as
 `replace_canonical_activity_names`. Persistence and database re-ingest remain
 host-side migration responsibilities.
 
-## Alias hierarchy TOML
+## Activity hierarchy TOML
 
 An alias group may itself be recordable. Its `group_aliases` string array maps
 each alias directly to the canonical path represented by the current group;

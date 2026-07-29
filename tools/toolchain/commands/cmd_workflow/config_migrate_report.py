@@ -29,24 +29,6 @@ def render_bundle_toml(model: dict) -> str:
     lines.append("]")
     lines.append("")
 
-    main_config_path = model["paths"]["converter"]["main_config"]
-    lines.append("[paths.converter]")
-    lines.append(f"main_config = {quote_toml_string(main_config_path)}")
-    lines.append("")
-
-    reports: dict[str, dict[str, str]] = model["paths"]["reports"]
-    for format_name in ("markdown", "latex", "typst"):
-        if format_name not in reports:
-            continue
-        section = reports[format_name]
-        lines.append(f"[paths.reports.{format_name}]")
-        lines.append(f"day = {quote_toml_string(section['day'])}")
-        lines.append(f"month = {quote_toml_string(section['month'])}")
-        lines.append(f"period = {quote_toml_string(section['period'])}")
-        lines.append(f"week = {quote_toml_string(section['week'])}")
-        lines.append(f"year = {quote_toml_string(section['year'])}")
-        lines.append("")
-
     return "\n".join(lines).rstrip() + "\n"
 
 

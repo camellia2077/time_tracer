@@ -25,7 +25,7 @@ export namespace tracer::core::infrastructure::crypto::exchange {
 
 inline constexpr std::string_view kManifestPath = "manifest.toml";
 inline constexpr std::string_view kConverterMainPath =
-    "config/aliases/_system.toml";
+    "config/activity_hierarchy/_system.toml";
 inline constexpr std::string_view kReportMarkdownDayPath =
     "config/reports/markdown/en/day.toml";
 inline constexpr std::string_view kReportMarkdownMonthPath =
@@ -305,11 +305,11 @@ auto ValidateAliasMappingFiles(
 
   std::string previous_path;
   for (const auto& alias_path : alias_mapping_files) {
-    if (!alias_path.starts_with("config/aliases/") ||
+    if (!alias_path.starts_with("config/activity_hierarchy/") ||
         !alias_path.ends_with(".toml")) {
       ThrowMalformedPackage(
           "manifest alias mapping files must live under "
-          "`config/aliases/` and end with `.toml`.");
+          "`config/activity_hierarchy/` and end with `.toml`.");
     }
     if (!previous_path.empty() && alias_path <= previous_path) {
       ThrowMalformedPackage(

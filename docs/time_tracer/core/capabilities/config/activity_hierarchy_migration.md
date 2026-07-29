@@ -1,4 +1,4 @@
-# Activity Alias Hierarchy Migration
+# Activity Hierarchy Migration
 
 ## Purpose
 
@@ -7,8 +7,8 @@ an alias moves into a category, and when that structural edit requires TXT and
 database migration.
 
 It applies to every client that edits alias files generated from
-`assets/tracer_core/config_test/aliases/` or
-`assets/tracer_core/config_distribution/aliases/`.
+`assets/tracer_core/config_test/activity_hierarchy/` or
+`assets/tracer_core/config_distribution/activity_hierarchy/`.
 
 ## Terms
 
@@ -114,11 +114,13 @@ Because `跑步` changes from `exercise_running` to
 5. TOML, TXT, and database are atomically activated only after success, and
    restored if any stage fails.
 
-Only a leaf alias can be moved in the current implementation. A category and
-its descendants cannot be moved as one operation. When a leaf is moved between
-alias TOML documents, Core must validate and produce the updated source and
-destination documents plus the complete canonical replacement plan; the host
-must commit both documents, all TXT changes, and the candidate database in one
+Leaf and group nodes can be moved between alias TOML documents. A leaf move
+includes root-level and nested activities. A group move includes the complete
+subtree: the group, its group aliases, nested groups, and leaf activities. Core
+receives the complete alias TOML document set, validates global alias
+uniqueness, and produces the updated source and destination documents plus a
+canonical replacement for every moved node whose path changes; the host must
+commit both documents, all TXT changes, and the candidate database in one
 atomic migration.
 
 ## Edit Category Record Names

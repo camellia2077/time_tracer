@@ -59,6 +59,8 @@ auto ConfigLoader::LoadConfiguration() -> AppConfig {
                                              app_config);
   infra_config_internal::ParseCliDefaults(tbl, exe_path_, main_config_path_,
                                           app_config);
+  infra_config_internal::ParseRuntimeConfigPaths(
+      tbl, config_dir_path_, main_config_path_, app_config);
 
   const bool kBundlePathsLoaded =
       infra_config_internal::TryParseBundlePaths(config_dir_path_, app_config);

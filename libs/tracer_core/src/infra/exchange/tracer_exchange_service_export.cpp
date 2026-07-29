@@ -160,7 +160,7 @@ auto TracerExchangeService::RunExport(
     // The manifest stores explicit child-file paths so import/inspect can
     // validate the full alias bundle instead of assuming a single alias file.
     manifest.converter_alias_mapping_files.push_back(
-        (fs::path("config") / "aliases" /
+        (fs::path("config") / "activity_hierarchy" /
          child_file.relative_path)
             .generic_string());
   }

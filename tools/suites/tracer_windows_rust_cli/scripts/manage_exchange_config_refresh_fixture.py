@@ -16,10 +16,10 @@ CUSTOM_CHILD_FILE = "zzdemo.toml"
 
 
 def _backup_converter_config(workspace_root: Path, scenario_root: Path) -> None:
-    aliases_root = workspace_root / "config" / "aliases"
+    aliases_root = workspace_root / "config" / "activity_hierarchy"
     backup_root = scenario_root / "backup_config"
     backup_root.mkdir(parents=True, exist_ok=True)
-    backup_aliases_root = backup_root / "aliases"
+    backup_aliases_root = backup_root / "activity_hierarchy"
     if backup_aliases_root.exists():
         shutil.rmtree(backup_aliases_root)
     shutil.copytree(aliases_root, backup_aliases_root)
@@ -45,7 +45,7 @@ def _build_custom_txt(target_txt_path: Path) -> None:
 
 def prepare_fixture(workspace_root: Path, scenario_root: Path) -> None:
     _backup_converter_config(workspace_root, scenario_root)
-    aliases_root = workspace_root / "config" / "aliases"
+    aliases_root = workspace_root / "config" / "activity_hierarchy"
     _write_custom_alias_child(aliases_root)
 
     custom_data_root = scenario_root / "custom_data"
@@ -56,14 +56,14 @@ def prepare_fixture(workspace_root: Path, scenario_root: Path) -> None:
 
 
 def restore_runtime(workspace_root: Path, scenario_root: Path) -> None:
-    aliases_root = workspace_root / "config" / "aliases"
+    aliases_root = workspace_root / "config" / "activity_hierarchy"
     backup_root = scenario_root / "backup_config"
     if not backup_root.is_dir():
         raise RuntimeError(f"backup config root is missing: {backup_root}")
 
     if aliases_root.exists():
         shutil.rmtree(aliases_root)
-    shutil.copytree(backup_root / "aliases", aliases_root)
+    shutil.copytree(backup_root / "activity_hierarchy", aliases_root)
 
     input_root = workspace_root / "input" / "full"
     if input_root.exists():

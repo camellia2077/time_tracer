@@ -50,10 +50,17 @@ auto ConverterConfigLoader::LoadMergedToml(const fs::path& main_config_path)
         main_config_path.string());
   }
 
-  if (!V2Rule::ValidateAliasMapping(alias_directory_path)) {
+  try {
+    // LoadAliasMappingDefinition retains the child TOML path, source
+    // location, field path, and remediation hint. Do not reduce that
+    // diagnostic to the parent directory; it is the actionable error shown by
+    // the CLI and Android runtime.
+    static_cast<void>(modalias::LoadAliasMappingDefinition(
+        alias_directory_path, modloader::ReadToml));
+  } catch (const std::exception& error) {
     throw std::runtime_error(
-        "Converter config validation failed for converter schema under: " +
-        alias_directory_path.string());
+        "Converter config validation failed for activity hierarchy TOML: " +
+        std::string(error.what()));
   }
 
   BuildTextMappingsFromAlias(main_tbl, alias_directory_path);

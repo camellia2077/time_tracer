@@ -17,6 +17,7 @@ namespace tracer::core::infrastructure::config::internal {
 namespace ConfigParserUtils {
 
 using tracer::core::infrastructure::config::internal::ParseCliDefaults;
+using tracer::core::infrastructure::config::internal::ParseRuntimeConfigPaths;
 using tracer::core::infrastructure::config::internal::ParseSystemSettings;
 using tracer::core::infrastructure::config::internal::ResolveBundlePath;
 using tracer::core::infrastructure::config::internal::TryParseBundlePaths;

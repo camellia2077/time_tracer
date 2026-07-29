@@ -22,38 +22,33 @@ auto LoadReportPathsFromTable(const toml::table& section,
                               fs::path& day_path, fs::path& month_path,
                               fs::path& period_path, fs::path& week_path,
                               fs::path& year_path) -> void {
-  EnsureFieldAbsent(section, "range", source.source_path, section_field_path,
-                    "period");
+  const std::string root = RequireNonEmptyStringField(
+      section, "root", source.source_path, section_field_path);
+  const fs::path root_path =
+      NormalizeConfigRelativePath(source.config_dir, root);
+  if (!fs::is_directory(root_path)) {
+    ThrowConfigFieldError(source.source_path,
+                          JoinFieldPath(section_field_path, "root"),
+                          "must point to an existing directory.");
+  }
 
-  const std::string kDay = RequireNonEmptyStringField(
-      section, "day", source.source_path, section_field_path);
-  day_path = NormalizeConfigRelativePath(source.config_dir, kDay);
-  EnsureFileExists(source.source_path, JoinFieldPath(section_field_path, "day"),
-                   day_path);
+  fs::path report_root = root_path;
+  if (section_field_path == "reports.markdown") {
+    const std::string locale = RequireNonEmptyStringField(
+        section, "default_locale", source.source_path, section_field_path);
+    report_root /= locale;
+  }
 
-  const std::string kMonth = RequireNonEmptyStringField(
-      section, "month", source.source_path, section_field_path);
-  month_path = NormalizeConfigRelativePath(source.config_dir, kMonth);
-  EnsureFileExists(source.source_path,
-                   JoinFieldPath(section_field_path, "month"), month_path);
-
-  const std::string kPeriod = RequireNonEmptyStringField(
-      section, "period", source.source_path, section_field_path);
-  period_path = NormalizeConfigRelativePath(source.config_dir, kPeriod);
-  EnsureFileExists(source.source_path,
-                   JoinFieldPath(section_field_path, "period"), period_path);
-
-  const std::string kWeek = RequireNonEmptyStringField(
-      section, "week", source.source_path, section_field_path);
-  week_path = NormalizeConfigRelativePath(source.config_dir, kWeek);
-  EnsureFileExists(source.source_path,
-                   JoinFieldPath(section_field_path, "week"), week_path);
-
-  const std::string kYear = RequireNonEmptyStringField(
-      section, "year", source.source_path, section_field_path);
-  year_path = NormalizeConfigRelativePath(source.config_dir, kYear);
-  EnsureFileExists(source.source_path,
-                   JoinFieldPath(section_field_path, "year"), year_path);
+  const auto load = [&](std::string_view key, fs::path& output) {
+    output = report_root / (std::string(key) + ".toml");
+    EnsureFileExists(source.source_path,
+                     JoinFieldPath(section_field_path, key), output);
+  };
+  load("day", day_path);
+  load("month", month_path);
+  load("period", period_path);
+  load("week", week_path);
+  load("year", year_path);
 }
 
 auto ValidateBundleFileList(const toml::table& bundle_tbl,
@@ -141,88 +136,55 @@ auto TryResolveAndroidBundleConfigPathsImpl(const fs::path& config_dir)
       .config_dir = config_dir,
   };
   ValidateBundleFileList(bundle_tbl, kBundleSource);
-
-  const toml::table* paths_tbl =
-      TryReadTableField(bundle_tbl, "paths", kBundlePath, "");
-  if (paths_tbl == nullptr) {
-    ThrowConfigFieldError(kBundlePath, "paths",
-                          "is required and must be a table.");
+  const fs::path config_path = config_dir / "config.toml";
+  if (!fs::exists(config_path)) {
+    ThrowConfigFieldError(kBundlePath, "file_list.required",
+                          "must include config.toml.");
+  }
+  toml::table config_tbl;
+  try {
+    config_tbl = toml::parse(infra_file_io::ReadCanonicalText(config_path));
+  } catch (const toml::parse_error& err) {
+    throw std::runtime_error("Failed to parse config.toml [" +
+                             config_path.string() + "]: " +
+                             std::string(err.description()));
   }
 
-  const toml::table* converter_tbl =
-      TryReadTableField(*paths_tbl, "converter", kBundlePath, "paths");
-  if (converter_tbl == nullptr) {
-    ThrowConfigFieldError(kBundlePath, "paths.converter",
-                          "is required and must be a table.");
-  }
+  AppConfig parsed_config;
+  ParseRuntimeConfigPaths(config_tbl, config_dir, config_path, parsed_config);
 
   AndroidBundleConfigPaths out{};
-  const std::string kMainConfig = RequireNonEmptyStringField(
-      *converter_tbl, "main_config", kBundlePath, "paths.converter");
   out.converter_config_toml_path =
-      NormalizeConfigRelativePath(config_dir, kMainConfig);
-  EnsureFileExists(kBundlePath, "paths.converter.main_config",
-                   out.converter_config_toml_path);
-
-  const toml::table* visualization_tbl =
-      TryReadTableField(*paths_tbl, "visualization", kBundlePath, "paths");
-  if (visualization_tbl == nullptr) {
-    ThrowConfigFieldError(kBundlePath, "paths.visualization",
-                          "is required and must be a table.");
-  }
-  const std::string kHeatmapConfig = RequireNonEmptyStringField(
-      *visualization_tbl, "heatmap", kBundlePath, "paths.visualization");
-  const fs::path kHeatmapConfigPath =
-      NormalizeConfigRelativePath(config_dir, kHeatmapConfig);
-  EnsureFileExists(kBundlePath, "paths.visualization.heatmap",
-                   kHeatmapConfigPath);
-  ValidateHeatmapConfigFile(kHeatmapConfigPath);
-
-  const toml::table* reports_tbl =
-      TryReadTableField(*paths_tbl, "reports", kBundlePath, "paths");
-  if (reports_tbl == nullptr) {
-    ThrowConfigFieldError(kBundlePath, "paths.reports",
-                          "is required and must be a table.");
-  }
-
-  const ReportPathSource kReportPathSource{
-      .config_dir = config_dir,
-      .source_path = kBundlePath,
+      parsed_config.pipeline.converter_main_config_path;
+  out.markdown = {
+      .day = parsed_config.reports.day_md_config_path,
+      .month = parsed_config.reports.month_md_config_path,
+      .period = parsed_config.reports.period_md_config_path,
+      .week = parsed_config.reports.week_md_config_path,
+      .year = parsed_config.reports.year_md_config_path,
   };
-
-  const toml::table* markdown_tbl =
-      TryReadTableField(*reports_tbl, "markdown", kBundlePath, "paths.reports");
-  if (markdown_tbl == nullptr) {
-    ThrowConfigFieldError(kBundlePath, "paths.reports.markdown",
-                          "is required and must be a table for Android "
-                          "runtime.");
+  if (!parsed_config.reports.day_typ_config_path.empty()) {
+    out.typst = AndroidBundleReportConfigPathSet{
+        .day = parsed_config.reports.day_typ_config_path,
+        .month = parsed_config.reports.month_typ_config_path,
+        .period = parsed_config.reports.period_typ_config_path,
+        .week = parsed_config.reports.week_typ_config_path,
+        .year = parsed_config.reports.year_typ_config_path,
+    };
   }
-  out.markdown = LoadAndroidReportPathSetFromTable(
-      *markdown_tbl, kReportPathSource, "paths.reports.markdown");
-
-  if (kProfile == "android") {
-    if (reports_tbl->get("latex") != nullptr) {
-      ThrowConfigFieldError(kBundlePath, "paths.reports.latex",
-                            "must not be present when profile is 'android'.");
-    }
-    if (reports_tbl->get("typst") != nullptr) {
-      ThrowConfigFieldError(kBundlePath, "paths.reports.typst",
-                            "must not be present when profile is 'android'.");
-    }
+  if (!parsed_config.reports.day_tex_config_path.empty()) {
+    out.latex = AndroidBundleReportConfigPathSet{
+        .day = parsed_config.reports.day_tex_config_path,
+        .month = parsed_config.reports.month_tex_config_path,
+        .period = parsed_config.reports.period_tex_config_path,
+        .week = parsed_config.reports.week_tex_config_path,
+        .year = parsed_config.reports.year_tex_config_path,
+    };
   }
-
-  if (const toml::table* latex_tbl = TryReadTableField(
-          *reports_tbl, "latex", kBundlePath, "paths.reports")) {
-    out.latex = LoadAndroidReportPathSetFromTable(*latex_tbl, kReportPathSource,
-                                                  "paths.reports.latex");
+  if (kProfile == "android" && (out.latex.has_value() || out.typst.has_value())) {
+    ThrowConfigFieldError(config_path, "reports",
+                          "must not contain LaTeX or Typst for profile 'android'.");
   }
-
-  if (const toml::table* typst_tbl = TryReadTableField(
-          *reports_tbl, "typst", kBundlePath, "paths.reports")) {
-    out.typst = LoadAndroidReportPathSetFromTable(*typst_tbl, kReportPathSource,
-                                                  "paths.reports.typst");
-  }
-
   return out;
 }
 
@@ -255,96 +217,6 @@ auto TryParseBundlePathsImpl(const fs::path& config_dir, AppConfig& config)
       .config_dir = config_dir,
   };
   ValidateBundleFileList(bundle_tbl, kBundleSource);
-
-  const toml::table* paths_tbl =
-      TryReadTableField(bundle_tbl, "paths", kBundlePath, "");
-  if (paths_tbl == nullptr) {
-    ThrowConfigFieldError(kBundlePath, "paths",
-                          "is required and must be a table.");
-  }
-
-  const toml::table* converter_tbl =
-      TryReadTableField(*paths_tbl, "converter", kBundlePath, "paths");
-  if (converter_tbl == nullptr) {
-    ThrowConfigFieldError(kBundlePath, "paths.converter",
-                          "is required and must be a table.");
-  }
-
-  const std::string kMainConfig = RequireNonEmptyStringField(
-      *converter_tbl, "main_config", kBundlePath, "paths.converter");
-  config.pipeline.converter_main_config_path =
-      NormalizeConfigRelativePath(config_dir, kMainConfig);
-  EnsureFileExists(kBundlePath, "paths.converter.main_config",
-                   config.pipeline.converter_main_config_path);
-
-  const toml::table* visualization_tbl =
-      TryReadTableField(*paths_tbl, "visualization", kBundlePath, "paths");
-  if (visualization_tbl == nullptr) {
-    ThrowConfigFieldError(kBundlePath, "paths.visualization",
-                          "is required and must be a table.");
-  }
-  const std::string kHeatmapConfig = RequireNonEmptyStringField(
-      *visualization_tbl, "heatmap", kBundlePath, "paths.visualization");
-  const fs::path kHeatmapConfigPath =
-      NormalizeConfigRelativePath(config_dir, kHeatmapConfig);
-  EnsureFileExists(kBundlePath, "paths.visualization.heatmap",
-                   kHeatmapConfigPath);
-  ValidateHeatmapConfigFile(kHeatmapConfigPath);
-
-  const toml::table* reports_tbl =
-      TryReadTableField(*paths_tbl, "reports", kBundlePath, "paths");
-  if (reports_tbl == nullptr) {
-    ThrowConfigFieldError(kBundlePath, "paths.reports",
-                          "is required and must be a table.");
-  }
-
-  const ReportPathSource kReportPathSource{
-      .config_dir = config_dir,
-      .source_path = kBundlePath,
-  };
-
-  bool has_any_report_format = false;
-
-  if (const toml::table* typst_tbl = TryReadTableField(
-          *reports_tbl, "typst", kBundlePath, "paths.reports")) {
-    has_any_report_format = true;
-    LoadReportPathsFromTable(*typst_tbl, kReportPathSource,
-                             "paths.reports.typst",
-                             config.reports.day_typ_config_path,
-                             config.reports.month_typ_config_path,
-                             config.reports.period_typ_config_path,
-                             config.reports.week_typ_config_path,
-                             config.reports.year_typ_config_path);
-  }
-
-  if (const toml::table* latex_tbl = TryReadTableField(
-          *reports_tbl, "latex", kBundlePath, "paths.reports")) {
-    has_any_report_format = true;
-    LoadReportPathsFromTable(*latex_tbl, kReportPathSource,
-                             "paths.reports.latex",
-                             config.reports.day_tex_config_path,
-                             config.reports.month_tex_config_path,
-                             config.reports.period_tex_config_path,
-                             config.reports.week_tex_config_path,
-                             config.reports.year_tex_config_path);
-  }
-
-  if (const toml::table* markdown_tbl = TryReadTableField(
-          *reports_tbl, "markdown", kBundlePath, "paths.reports")) {
-    has_any_report_format = true;
-    LoadReportPathsFromTable(
-        *markdown_tbl, kReportPathSource, "paths.reports.markdown",
-        config.reports.day_md_config_path, config.reports.month_md_config_path,
-        config.reports.period_md_config_path,
-        config.reports.week_md_config_path, config.reports.year_md_config_path);
-  }
-
-  if (!has_any_report_format) {
-    ThrowConfigFieldError(
-        kBundlePath, "paths.reports",
-        "must contain at least one report format table (markdown, latex, "
-        "typst).");
-  }
 
   return true;
 }

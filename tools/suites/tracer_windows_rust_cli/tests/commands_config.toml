@@ -23,11 +23,12 @@ expect_stdout_contains = [
 ]
 
 [[commands]]
-name = "Alias Hierarchy Commands Are Exposed"
+name = "Activity Hierarchy Commands Are Exposed"
 stage = "config"
 args = ["alias", "--help"]
 expect_exit = 0
 expect_stdout_contains = [
+  "create",
   "promote",
   "add",
   "move",

@@ -148,7 +148,7 @@ auto FindRepoRoot() -> fs::path {
   fs::path current = fs::current_path();
   while (!current.empty()) {
     const fs::path kProbe = current / "assets" / "tracer_core" / "config_test" /
-                            "aliases" / "_system.toml";
+                            "activity_hierarchy" / "_system.toml";
     if (fs::exists(kProbe)) {
       return current;
     }

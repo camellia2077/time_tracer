@@ -5,5 +5,5 @@ auto main() -> int {
   if (config_smoke != 0) {
     return config_smoke;
   }
-  return RunAliasHierarchyCharacterizationTests();
+  return RunActivityHierarchyCharacterizationTests();
 }

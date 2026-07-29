@@ -4,6 +4,7 @@
 #include "infra/config/loader/alias_toml_editor.hpp"
 
 #include <algorithm>
+#include <cctype>
 #include <map>
 #include <sstream>
 #include <stdexcept>
@@ -200,7 +201,7 @@ auto RequireCanonicalNode(const AliasDocument& document,
 }
 
 auto ResolveLeafPath(const AliasDocument& document,
-                     const config::AliasHierarchyOperationRequest& request)
+                     const config::ActivityHierarchyOperationRequest& request)
     -> std::vector<std::string> {
   if (!request.target_path.empty()) {
     return ParseHierarchyPath(request.target_path, false, "Leaf path");
@@ -220,6 +221,61 @@ auto ResolveLeafPath(const AliasDocument& document,
     }
   }
   throw std::invalid_argument("Alias leaf not found: " + request.target_alias);
+}
+
+auto ValidateParentName(std::string_view new_name) -> void {
+  ValidateNewKey(new_name);
+  if (new_name.find('/') != std::string_view::npos ||
+      new_name.find('\\') != std::string_view::npos ||
+      std::ranges::any_of(new_name, [](unsigned char value) {
+        return std::isspace(value) != 0;
+      })) {
+    throw std::invalid_argument(
+        "New parent name must be one path-safe canonical segment: " +
+        std::string(new_name));
+  }
+}
+
+auto ResolveGroupPath(const AliasDocument& document,
+                      const config::ActivityHierarchyOperationRequest& request)
+    -> std::vector<std::string> {
+  if (!request.target_path.empty()) {
+    return ParseHierarchyPath(request.target_path, false, "Group path");
+  }
+  if (request.target_alias.empty()) {
+    throw std::invalid_argument("Group path or target alias must be provided.");
+  }
+  for (const auto& node : tracer::core::infrastructure::config::loader::detail::
+           CollectAliasDocumentCanonicalNodes(document)) {
+    if (node.kind != AliasDocumentNodeKind::kGroup) {
+      continue;
+    }
+    for (const auto& alias : node.node->aliases) {
+      if (alias.value == request.target_alias) {
+        return node.path;
+      }
+    }
+  }
+  throw std::invalid_argument("Alias group not found: " + request.target_alias);
+}
+
+[[nodiscard]] auto IsPathPrefix(const std::vector<std::string>& prefix,
+                                const std::vector<std::string>& path) -> bool {
+  return path.size() >= prefix.size() &&
+         std::equal(prefix.begin(), prefix.end(), path.begin());
+}
+
+[[nodiscard]] auto BuildNodeCanonical(
+    std::string_view parent, const std::vector<std::string>& path,
+    AliasDocumentNodeKind kind) -> std::string {
+  if (kind == AliasDocumentNodeKind::kGroup) {
+    return tracer::core::infrastructure::config::loader::detail::
+        BuildAliasCanonicalPath(parent, path);
+  }
+  return tracer::core::infrastructure::config::loader::detail::
+      BuildAliasCanonicalPath(
+          parent, std::vector<std::string>(path.begin(), path.end() - 1),
+          path.back());
 }
 
 auto MakeAliasArray(const std::vector<std::string>& aliases) -> toml::array {
@@ -297,7 +353,7 @@ auto DescribeNode(
     const tracer::core::infrastructure::config::loader::detail::
         AliasDocumentNode& node,
                   const std::vector<std::string>& parent_path)
-    -> config::AliasHierarchyNodeSnapshot {
+    -> config::ActivityHierarchyNodeSnapshot {
   auto path = parent_path;
   path.push_back(node.canonical_key);
   std::ostringstream path_text;
@@ -307,10 +363,12 @@ auto DescribeNode(
     }
     path_text << path[index];
   }
-  config::AliasHierarchyNodeSnapshot snapshot{
+  config::ActivityHierarchyNodeSnapshot snapshot{
       .canonical_key = node.canonical_key,
       .path = path_text.str(),
-      .is_group = node.kind == AliasDocumentNodeKind::kGroup,
+      .kind = node.kind == AliasDocumentNodeKind::kGroup
+                  ? config::ActivityHierarchyNodeKind::kGroup
+                  : config::ActivityHierarchyNodeKind::kLeaf,
   };
   for (const auto& alias : node.aliases) {
     snapshot.aliases.push_back(alias.value);
@@ -349,10 +407,10 @@ auto CollectRenamedCanonicalReplacements(
   return replacements;
 }
 
-auto ApplyAliasHierarchyOperationImpl(
+auto ApplyActivityHierarchyOperationImpl(
     std::string_view toml_content,
-    const config::AliasHierarchyOperationRequest& request)
-    -> config::AliasHierarchyOperationResult {
+    const config::ActivityHierarchyOperationRequest& request)
+    -> config::ActivityHierarchyOperationResult {
   if (toml_content.empty()) {
     throw std::invalid_argument("Alias TOML content must not be empty.");
   }
@@ -364,13 +422,13 @@ auto ApplyAliasHierarchyOperationImpl(
   tracer::core::infrastructure::config::loader::detail::
       ValidateAliasDocumentAliasUniqueness(alias_document);
   toml::table* aliases = document["aliases"].as_table();
-  config::AliasHierarchyOperationResult result;
+  config::ActivityHierarchyOperationResult result;
 
   const auto collect_alias_replacements = [&]() {
     if (request.aliases.empty() ||
-        (request.kind != config::AliasHierarchyOperationKind::kSetLeafAliases &&
+        (request.kind != config::ActivityHierarchyOperationKind::kSetLeafAliases &&
          request.kind !=
-             config::AliasHierarchyOperationKind::kRenameLeafCanonical)) {
+             config::ActivityHierarchyOperationKind::kRenameLeafCanonical)) {
       return;
     }
     const auto path = ParseHierarchyPath(request.target_path, false, "Leaf path");
@@ -390,7 +448,7 @@ auto ApplyAliasHierarchyOperationImpl(
   collect_alias_replacements();
 
   const auto collect_group_alias_replacements = [&]() {
-    if (request.kind != config::AliasHierarchyOperationKind::kSetGroupAliases) {
+    if (request.kind != config::ActivityHierarchyOperationKind::kSetGroupAliases) {
       return;
     }
     const auto path = ParseHierarchyPath(request.target_path, false,
@@ -420,7 +478,7 @@ auto ApplyAliasHierarchyOperationImpl(
   };
 
   switch (request.kind) {
-    case config::AliasHierarchyOperationKind::kAddGroup: {
+    case config::ActivityHierarchyOperationKind::kAddGroup: {
       const auto parent_path =
           ParseHierarchyPath(request.target_path, true, "Parent group path");
       ValidateNewKey(request.canonical_key);
@@ -432,7 +490,7 @@ auto ApplyAliasHierarchyOperationImpl(
       parent->insert(request.canonical_key, toml::table{});
       break;
     }
-    case config::AliasHierarchyOperationKind::kDeleteGroup: {
+    case config::ActivityHierarchyOperationKind::kDeleteGroup: {
       const auto path =
           ParseHierarchyPath(request.target_path, false, "Group path");
       static_cast<void>(RequireCanonicalNode(alias_document, path,
@@ -444,7 +502,7 @@ auto ApplyAliasHierarchyOperationImpl(
       mutable_parent(parent_path)->erase(key);
       break;
     }
-    case config::AliasHierarchyOperationKind::kAddLeaf: {
+    case config::ActivityHierarchyOperationKind::kAddLeaf: {
       const auto parent_path =
           ParseHierarchyPath(request.target_path, true, "Parent group path");
       ValidateNewKey(request.canonical_key);
@@ -456,7 +514,7 @@ auto ApplyAliasHierarchyOperationImpl(
       parent->insert(request.canonical_key, MakeAliasArray(request.aliases));
       break;
     }
-    case config::AliasHierarchyOperationKind::kSetLeafAliases: {
+    case config::ActivityHierarchyOperationKind::kSetLeafAliases: {
       const auto path =
           ParseHierarchyPath(request.target_path, false, "Leaf path");
       static_cast<void>(RequireCanonicalNode(alias_document, path,
@@ -470,7 +528,7 @@ auto ApplyAliasHierarchyOperationImpl(
       parent->insert(key, MakeAliasArray(request.aliases));
       break;
     }
-    case config::AliasHierarchyOperationKind::kDeleteLeaf: {
+    case config::ActivityHierarchyOperationKind::kDeleteLeaf: {
       const auto path =
           ParseHierarchyPath(request.target_path, false, "Leaf path");
       static_cast<void>(RequireCanonicalNode(alias_document, path,
@@ -482,7 +540,7 @@ auto ApplyAliasHierarchyOperationImpl(
       mutable_parent(parent_path)->erase(key);
       break;
     }
-    case config::AliasHierarchyOperationKind::kPromoteLeaf: {
+    case config::ActivityHierarchyOperationKind::kPromoteLeaf: {
       const auto path = ResolveLeafPath(alias_document, request);
       const auto source = RequireCanonicalNode(alias_document, path,
                                                AliasDocumentNodeKind::kLeaf,
@@ -501,7 +559,7 @@ auto ApplyAliasHierarchyOperationImpl(
       parent->insert(key, std::move(group));
       break;
     }
-    case config::AliasHierarchyOperationKind::kMoveLeaf: {
+    case config::ActivityHierarchyOperationKind::kMoveLeaf: {
       const auto source_path = ResolveLeafPath(alias_document, request);
       const auto destination_path = ParseHierarchyPath(
           request.destination_path, false, "Destination group path");
@@ -536,7 +594,7 @@ auto ApplyAliasHierarchyOperationImpl(
       });
       break;
     }
-    case config::AliasHierarchyOperationKind::kSetGroupAliases: {
+    case config::ActivityHierarchyOperationKind::kSetGroupAliases: {
       const auto path =
           ParseHierarchyPath(request.target_path, false, "Group path");
       static_cast<void>(RequireCanonicalNode(alias_document, path,
@@ -549,9 +607,17 @@ auto ApplyAliasHierarchyOperationImpl(
       }
       break;
     }
-    case config::AliasHierarchyOperationKind::kRenameParent: {
-      if (request.new_name.empty()) {
-        throw std::invalid_argument("New parent name must not be empty.");
+    case config::ActivityHierarchyOperationKind::kRenameParent: {
+      if (!request.old_parent.empty() &&
+          request.old_parent != alias_document.parent) {
+        throw std::invalid_argument(
+            "Old parent does not match the alias TOML parent: " +
+            request.old_parent + " != " + alias_document.parent);
+      }
+      ValidateParentName(request.new_name);
+      if (request.new_name == alias_document.parent) {
+        throw std::invalid_argument(
+            "New parent name must differ from the current parent.");
       }
       for (const auto& node : tracer::core::infrastructure::config::loader::
                detail::CollectAliasDocumentCanonicalNodes(alias_document)) {
@@ -572,10 +638,10 @@ auto ApplyAliasHierarchyOperationImpl(
       document.insert("parent", request.new_name);
       break;
     }
-    case config::AliasHierarchyOperationKind::kRenameGroupCanonical:
-    case config::AliasHierarchyOperationKind::kRenameLeafCanonical: {
+    case config::ActivityHierarchyOperationKind::kRenameGroupCanonical:
+    case config::ActivityHierarchyOperationKind::kRenameLeafCanonical: {
       const bool group = request.kind ==
-                         config::AliasHierarchyOperationKind::
+                         config::ActivityHierarchyOperationKind::
                              kRenameGroupCanonical;
       const auto path = ParseHierarchyPath(
           request.target_path, false, group ? "Group path" : "Leaf path");
@@ -600,7 +666,7 @@ auto ApplyAliasHierarchyOperationImpl(
       }
       break;
     }
-    case config::AliasHierarchyOperationKind::kAppendLeafAlias: {
+    case config::ActivityHierarchyOperationKind::kAppendLeafAlias: {
       const auto parent_path =
           ParseHierarchyPath(request.target_path, true, "Parent group path");
       ValidateNewKey(request.canonical_key);
@@ -621,7 +687,7 @@ auto ApplyAliasHierarchyOperationImpl(
       }
       break;
     }
-    case config::AliasHierarchyOperationKind::kAppendGroupAlias: {
+    case config::ActivityHierarchyOperationKind::kAppendGroupAlias: {
       const auto path =
           ParseHierarchyPath(request.target_path, false, "Group path");
       static_cast<void>(RequireCanonicalNode(alias_document, path,
@@ -639,7 +705,7 @@ auto ApplyAliasHierarchyOperationImpl(
       }
       break;
     }
-    case config::AliasHierarchyOperationKind::kRenameGroupAlias: {
+    case config::ActivityHierarchyOperationKind::kRenameGroupAlias: {
       const auto path =
           ParseHierarchyPath(request.target_path, false, "Group path");
       if (request.old_alias.empty() || request.new_name.empty()) {
@@ -686,16 +752,189 @@ auto ApplyAliasHierarchyOperationImpl(
 
 namespace tracer::core::application::config {
 
-auto ApplyAliasHierarchyOperation(
+auto ApplyActivityHierarchyOperation(
     std::string_view toml_content,
-    const AliasHierarchyOperationRequest& request)
-    -> AliasHierarchyOperationResult {
-  return ApplyAliasHierarchyOperationImpl(toml_content, request);
+    const ActivityHierarchyOperationRequest& request)
+    -> ActivityHierarchyOperationResult {
+  return ApplyActivityHierarchyOperationImpl(toml_content, request);
 }
 
-auto RewriteAliasHierarchyDocument(
+auto MoveActivityHierarchyNodeBetweenDocuments(
+    const std::vector<ActivityHierarchyDocumentInput>& documents,
+    std::string_view source_name, std::string_view destination_name,
+    const ActivityHierarchyOperationRequest& request)
+    -> ActivityHierarchyCrossDocumentOperationResult {
+  if (documents.empty()) {
+    throw std::invalid_argument("Alias TOML document set must not be empty.");
+  }
+  if (source_name.empty() || destination_name.empty()) {
+    throw std::invalid_argument(
+        "Source and destination alias TOML names must not be empty.");
+  }
+  if (source_name == destination_name) {
+    throw std::invalid_argument(
+        "Cross-document leaf move requires different source and destination documents.");
+  }
+
+  ValidateActivityHierarchyDocuments(documents);
+
+  std::size_t source_index = documents.size();
+  std::size_t destination_index = documents.size();
+  std::vector<toml::table> tables;
+  tables.reserve(documents.size());
+  std::vector<AliasDocument> parsed_documents;
+  parsed_documents.reserve(documents.size());
+  for (std::size_t index = 0U; index < documents.size(); ++index) {
+    if (documents[index].source_name == source_name) {
+      if (source_index != documents.size()) {
+        throw std::invalid_argument("Duplicate source alias TOML name: " +
+                                    std::string(source_name));
+      }
+      source_index = index;
+    }
+    if (documents[index].source_name == destination_name) {
+      if (destination_index != documents.size()) {
+        throw std::invalid_argument(
+            "Duplicate destination alias TOML name: " +
+            std::string(destination_name));
+      }
+      destination_index = index;
+    }
+    tables.push_back(toml::parse(documents[index].toml_content));
+    parsed_documents.push_back(
+        infrastructure::config::loader::detail::ParseAliasDocument(
+            tables.back()));
+  }
+  if (source_index == documents.size()) {
+    throw std::invalid_argument("Source alias TOML not found: " +
+                                std::string(source_name));
+  }
+  if (destination_index == documents.size()) {
+    throw std::invalid_argument("Destination alias TOML not found: " +
+                                std::string(destination_name));
+  }
+
+  if (request.kind != config::ActivityHierarchyOperationKind::kMoveLeaf &&
+      request.kind != config::ActivityHierarchyOperationKind::kMoveGroup) {
+    throw std::invalid_argument(
+        "Cross-document move supports only move_leaf and move_group.");
+  }
+  const auto source_path =
+      request.kind == config::ActivityHierarchyOperationKind::kMoveLeaf
+          ? ResolveLeafPath(parsed_documents[source_index], request)
+          : ResolveGroupPath(parsed_documents[source_index], request);
+  const auto source = RequireCanonicalNode(parsed_documents[source_index],
+                                           source_path,
+                                           request.kind ==
+                                                   config::ActivityHierarchyOperationKind::kMoveLeaf
+                                               ? AliasDocumentNodeKind::kLeaf
+                                               : AliasDocumentNodeKind::kGroup,
+                                           request.kind ==
+                                                   config::ActivityHierarchyOperationKind::kMoveLeaf
+                                               ? "leaf"
+                                               : "group");
+  auto source_parent_path = source_path;
+  const std::string source_key = source_parent_path.back();
+  source_parent_path.pop_back();
+
+  std::vector<std::string> destination_path;
+  if (request.destination_path == "root") {
+    destination_path = {};
+  } else {
+    destination_path = ParseHierarchyPath(request.destination_path, false,
+                                           "Destination group path");
+    static_cast<void>(RequireCanonicalNode(
+        parsed_documents[destination_index], destination_path,
+        AliasDocumentNodeKind::kGroup, "destination group"));
+  }
+
+  toml::table* source_aliases = tables[source_index]["aliases"].as_table();
+  toml::table* destination_aliases =
+      tables[destination_index]["aliases"].as_table();
+  if (source_aliases == nullptr || destination_aliases == nullptr) {
+    throw std::invalid_argument("Alias TOML must contain an `aliases` table.");
+  }
+  toml::table* source_parent = FindTable(*source_aliases, source_parent_path);
+  toml::table* destination_parent =
+      FindTable(*destination_aliases, destination_path);
+  if (source_parent == nullptr || destination_parent == nullptr) {
+    throw std::invalid_argument("Alias group not found.");
+  }
+  if (destination_parent->contains(source_key)) {
+    throw std::invalid_argument("Canonical key already exists in destination: " +
+                                source_key);
+  }
+
+  toml::table moved_group;
+  toml::array moved_values;
+  if (request.kind == config::ActivityHierarchyOperationKind::kMoveGroup) {
+    moved_group = *source_parent->at(source_key).as_table();
+  } else {
+    for (const auto& alias : source.node->aliases) {
+      moved_values.push_back(alias.value);
+    }
+  }
+  source_parent->erase(source_key);
+  if (request.kind == config::ActivityHierarchyOperationKind::kMoveGroup) {
+    destination_parent->insert(source_key, std::move(moved_group));
+  } else {
+    destination_parent->insert(source_key, std::move(moved_values));
+  }
+
+  std::vector<AliasCanonicalReplacement> replacements;
+  for (const auto& node :
+       infrastructure::config::loader::detail::CollectAliasDocumentCanonicalNodes(
+           parsed_documents[source_index])) {
+    if (!IsPathPrefix(source_path, node.path)) {
+      continue;
+    }
+    auto new_path = destination_path;
+    new_path.push_back(source_key);
+    new_path.insert(new_path.end(), node.path.begin() + source_path.size(),
+                    node.path.end());
+    const auto old_canonical = BuildNodeCanonical(
+        parsed_documents[source_index].parent, node.path, node.kind);
+    const auto new_canonical = BuildNodeCanonical(
+        parsed_documents[destination_index].parent, new_path, node.kind);
+    if (old_canonical != new_canonical) {
+      replacements.push_back({old_canonical, new_canonical});
+    }
+  }
+
+  std::vector<ActivityHierarchyDocumentInput> updated_documents;
+  updated_documents.reserve(documents.size());
+  for (std::size_t index = 0U; index < documents.size(); ++index) {
+    updated_documents.push_back({documents[index].source_name,
+                                 SerializeAliasDocument(tables[index])});
+  }
+  ValidateActivityHierarchyDocuments(updated_documents);
+
+  ActivityHierarchyCrossDocumentOperationResult result;
+  result.updated_documents.push_back(
+      {std::string(source_name), updated_documents[source_index].toml_content});
+  result.updated_documents.push_back({std::string(destination_name),
+                                      updated_documents[destination_index]
+                                          .toml_content});
+  result.replacements = std::move(replacements);
+  return result;
+}
+
+auto MoveActivityHierarchyLeafBetweenDocuments(
+    const std::vector<ActivityHierarchyDocumentInput>& documents,
+    std::string_view source_name, std::string_view destination_name,
+    const ActivityHierarchyOperationRequest& request)
+    -> ActivityHierarchyCrossDocumentOperationResult {
+  if (request.kind != ActivityHierarchyOperationKind::kMoveLeaf) {
+    throw std::invalid_argument(
+        "Leaf cross-document move requires the move_leaf operation.");
+  }
+  return MoveActivityHierarchyNodeBetweenDocuments(documents, source_name,
+                                                destination_name, request);
+}
+
+auto RewriteActivityHierarchyDocument(
     std::string_view original_toml_content,
-    std::string_view updated_toml_content) -> AliasHierarchyOperationResult {
+    std::string_view updated_toml_content) -> ActivityHierarchyOperationResult {
   if (original_toml_content.empty() || updated_toml_content.empty()) {
     throw std::invalid_argument("Alias TOML content must not be empty.");
   }
@@ -712,29 +951,29 @@ auto RewriteAliasHierarchyDocument(
   infrastructure::config::loader::detail::ValidateAliasDocumentAliasUniqueness(
       updated);
 
-  AliasHierarchyOperationResult result;
+  ActivityHierarchyOperationResult result;
   AppendRawDocumentMigrationPlan(original, updated, {}, {}, result.replacements,
                                  result.alias_replacements);
   result.updated_toml_content = SerializeAliasDocument(updated_table);
   return result;
 }
 
-auto DescribeAliasHierarchy(std::string_view toml_content)
-    -> AliasHierarchySnapshot {
+auto DescribeActivityHierarchy(std::string_view toml_content)
+    -> ActivityHierarchySnapshot {
   const toml::table parsed = toml::parse(toml_content);
   const AliasDocument document =
       infrastructure::config::loader::detail::ParseAliasDocument(parsed);
   infrastructure::config::loader::detail::ValidateAliasDocumentAliasUniqueness(
       document);
-  AliasHierarchySnapshot snapshot{.parent = document.parent};
+  ActivityHierarchySnapshot snapshot{.parent = document.parent};
   for (const auto& node : document.nodes) {
     snapshot.nodes.push_back(DescribeNode(node, {}));
   }
   return snapshot;
 }
 
-auto ValidateAliasHierarchyDocuments(
-    const std::vector<AliasHierarchyDocumentInput>& documents) -> void {
+auto ValidateActivityHierarchyDocuments(
+    const std::vector<ActivityHierarchyDocumentInput>& documents) -> void {
   std::map<std::string, std::string> alias_sources;
   for (const auto& input : documents) {
     if (input.source_name.empty()) {
@@ -760,16 +999,6 @@ auto ValidateAliasHierarchyDocuments(
       }
     }
   }
-}
-
-auto CreateAliasHierarchyDocument(std::string_view parent) -> std::string {
-  if (parent.empty()) {
-    throw std::invalid_argument("Alias document parent must not be empty.");
-  }
-  toml::table document;
-  document.insert("parent", std::string(parent));
-  document.insert("aliases", toml::table{});
-  return SerializeAliasDocument(document);
 }
 
 }  // namespace tracer::core::application::config

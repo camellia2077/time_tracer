@@ -151,20 +151,20 @@ auto ReadLegacyRepoConverterConfig(std::string_view relative_path)
 
 auto BuildDefaultAliasChildConfigs() -> std::vector<PayloadFixture> {
   return {{
-      .relative_path = "config/aliases/default.toml",
+      .relative_path = "config/activity_hierarchy/default.toml",
       .text = "parent = \"study\"\n\n[aliases]\n\"study\" = \"math\"\n",
   }};
 }
 
 auto BuildRepoAliasChildConfigs() -> std::vector<PayloadFixture> {
   const std::vector<std::string> relative_paths = {
-      "assets/tracer_core/config_test/aliases/meal.toml",
-      "assets/tracer_core/config_test/aliases/recreation.toml",
-      "assets/tracer_core/config_test/aliases/routine.toml",
-      "assets/tracer_core/config_test/aliases/sleep.toml",
-      "assets/tracer_core/config_test/aliases/rest.toml",
-      "assets/tracer_core/config_test/aliases/exercise.toml",
-      "assets/tracer_core/config_test/aliases/study.toml",
+      "assets/tracer_core/config_test/activity_hierarchy/meal.toml",
+      "assets/tracer_core/config_test/activity_hierarchy/recreation.toml",
+      "assets/tracer_core/config_test/activity_hierarchy/routine.toml",
+      "assets/tracer_core/config_test/activity_hierarchy/sleep.toml",
+      "assets/tracer_core/config_test/activity_hierarchy/rest.toml",
+      "assets/tracer_core/config_test/activity_hierarchy/exercise.toml",
+      "assets/tracer_core/config_test/activity_hierarchy/study.toml",
   };
 
   std::vector<PayloadFixture> entries;
@@ -173,7 +173,7 @@ auto BuildRepoAliasChildConfigs() -> std::vector<PayloadFixture> {
     const fs::path relative_fs_path(relative_path);
     entries.push_back({
         .relative_path =
-            (fs::path("config") / "aliases" / relative_fs_path.filename())
+            (fs::path("config") / "activity_hierarchy" / relative_fs_path.filename())
                 .generic_string(),
         .text = ReadRepoConverterConfig(relative_path),
     });

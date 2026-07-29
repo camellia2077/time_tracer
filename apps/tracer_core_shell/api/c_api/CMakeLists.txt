@@ -4,7 +4,7 @@ set(TRACER_CORE_C_API_SOURCES
     "runtime/tracer_core_c_api_internal.cpp"
     "runtime/tracer_core_c_api_file_crypto.cpp"
     "capabilities/config/cli_runtime_config_bridge.cpp"
-    "capabilities/config/alias_hierarchy_operation_bridge.cpp"
+    "capabilities/config/activity_hierarchy_operation_bridge.cpp"
     "capabilities/config/tracer_core_c_api_runtime_config.cpp"
     "capabilities/pipeline/tracer_core_c_api_pipeline.cpp"
     "capabilities/txt/tracer_core_c_api_txt.cpp"

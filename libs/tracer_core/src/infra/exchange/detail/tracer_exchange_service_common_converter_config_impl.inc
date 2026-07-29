@@ -40,11 +40,11 @@ auto EnsureActiveConverterConfigExists(
                           "Active converter main config");
   if (!fs::exists(active_paths.alias_directory_path) ||
       !fs::is_directory(active_paths.alias_directory_path)) {
-    throw std::runtime_error("Active alias directory not found: " +
+    throw std::runtime_error("Active activity hierarchy directory not found: " +
                              active_paths.alias_directory_path.string());
   }
   for (const auto& child_path : active_paths.alias_child_paths) {
-    EnsureRegularFileExists(child_path, "Active alias child config");
+    EnsureRegularFileExists(child_path, "Active activity hierarchy TOML");
   }
   for (const auto& report_path : active_paths.report_markdown_paths) {
     EnsureRegularFileExists(report_path, "Active markdown report config");

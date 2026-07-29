@@ -485,7 +485,7 @@ if(BUILD_TESTING)
         add_executable(tc_config_infra_smoke_tests
             "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/infrastructure_modules_smoke_config_main.cpp"
             "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/modules_smoke/logging_platform_config.cpp"
-            "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/modules_smoke/alias_hierarchy_characterization.cpp"
+            "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/modules_smoke/activity_hierarchy_characterization.cpp"
         )
         setup_app_target(tc_config_infra_smoke_tests NO_PCH)
         target_include_directories(tc_config_infra_smoke_tests PRIVATE

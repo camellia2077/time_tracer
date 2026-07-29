@@ -16,17 +16,17 @@
 包内路径分为两部分：
 1. 固定前缀（顺序固定）：
    - `manifest.toml`
-   - `config/aliases/_system.toml`
-   - `config/aliases/*.toml`
+   - `config/activity_hierarchy/_system.toml`
+   - `config/activity_hierarchy/*.toml`
 2. 变长 alias child file 段（顺序固定为字典序）：
-   - `config/aliases/*.toml`
+   - `config/activity_hierarchy/*.toml`
 3. 变长 payload 后缀（顺序固定为字典序）：
    - `payload/<year>/YYYY-MM.txt`
 
 约束：
 1. payload 文件必须至少 1 个。
 2. alias child file 必须至少 1 个。
-3. alias child file 路径必须严格位于 `config/aliases/*.toml`。
+3. activity hierarchy child file 路径必须严格位于 `config/activity_hierarchy/*.toml`。
 4. payload 路径必须严格位于 `payload/<year>/YYYY-MM.txt`。
 5. `<year>` 目录必须与文件名中的 `YYYY` 一致。
 6. payload basename 必须精确等于 `YYYY-MM.txt`。
@@ -53,10 +53,10 @@ files = [
 ]
 
 [converter]
-main_config = "config/aliases/_system.toml"
+main_config = "config/activity_hierarchy/_system.toml"
 alias_mapping_files = [
-  "config/aliases/meal.toml",
-  "config/aliases/recreation.toml",
+  "config/activity_hierarchy/meal.toml",
+  "config/activity_hierarchy/recreation.toml",
 ]
 ```
 
@@ -72,9 +72,9 @@ alias_mapping_files = [
    - `<year>` 与文件名中的 `YYYY` 一致
    - 数组必须按字典序严格递增
 8. `[converter]` 表必须存在。
-9. `converter.main_config` 必须精确等于 `config/aliases/_system.toml`。
+9. `converter.main_config` 必须精确等于 `config/activity_hierarchy/_system.toml`。
 10. `converter.alias_mapping_files` 必须是非空字符串数组，并满足：
-    - 每一项都严格位于 `config/aliases/`
+    - 每一项都严格位于 `config/activity_hierarchy/`
     - 每一项都以 `.toml` 结尾
     - 数组必须按字典序严格递增
 12. `producer_platform` 与 `producer_app` 当前要求是非空字符串。

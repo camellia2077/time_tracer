@@ -20,6 +20,9 @@ def validate_config_keys(config_data: dict[str, Any], target: str) -> None:
         raise ValueError("sync gate failed: config.toml missing [converter] table.")
     if "main_config" not in converter:
         raise ValueError("sync gate failed: config.toml missing converter.main_config.")
+    visualization = config_data.get("visualization")
+    if not isinstance(visualization, dict) or "heatmap" not in visualization:
+        raise ValueError("sync gate failed: config.toml missing visualization.heatmap.")
 
     reports = config_data.get("reports")
     if target == "windows":
@@ -28,6 +31,19 @@ def validate_config_keys(config_data: dict[str, Any], target: str) -> None:
     elif target == "android":
         if not isinstance(reports, dict) or "markdown" not in reports:
             raise ValueError("sync gate failed: android config must contain reports.markdown.")
+    markdown = reports.get("markdown") if isinstance(reports, dict) else None
+    if not isinstance(markdown, dict):
+        raise ValueError("sync gate failed: reports.markdown must be a table.")
+    for key in ("root", "default_locale", "supported_locales"):
+        if key not in markdown:
+            raise ValueError(f"sync gate failed: config.toml missing reports.markdown.{key}.")
+    if not isinstance(markdown["supported_locales"], list) or not markdown["supported_locales"]:
+        raise ValueError("sync gate failed: reports.markdown.supported_locales must be non-empty.")
+    if target == "windows":
+        for format_name in ("typst", "latex"):
+            section = reports.get(format_name)
+            if not isinstance(section, dict) or "root" not in section:
+                raise ValueError(f"sync gate failed: config.toml missing reports.{format_name}.root.")
 
 
 def validate_sync_output(

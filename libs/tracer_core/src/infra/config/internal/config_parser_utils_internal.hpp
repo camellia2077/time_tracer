@@ -140,6 +140,11 @@ auto ParseValidateLogicDefaults(const toml::table& validate_logic_tbl,
                                 const fs::path& source_path, AppConfig& config)
     -> void;
 
+auto ParseRuntimeConfigPaths(const toml::table& config_tbl,
+                             const fs::path& config_dir,
+                             const fs::path& source_path, AppConfig& config)
+    -> void;
+
 auto ValidateBundleFileList(const toml::table& bundle_tbl,
                             const BundlePathSource& source) -> void;
 

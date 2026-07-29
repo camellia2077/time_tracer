@@ -61,7 +61,11 @@
      `_system.toml`。`_system.toml` 是系统业务配置，包含
      `wake_keywords`、`sleep_project_path` 等睡眠时间推导规则，不能删除或
      视为空白 alias 文件
-   - 校验 `config.toml` 关键键（如 `defaults.*`、`converter.main_config`、`reports.markdown`）
+   - 校验 `config.toml` 关键键（如 `defaults.*`、`converter.main_config`、
+     `reports.markdown.root/default_locale/supported_locales` 以及 Typst/LaTeX
+     的报告根目录）
+   - `meta/bundle.toml` 只声明包元数据和 `file_list`；路径配置统一来自
+     `config.toml`
 4. 结构化观测日志
    - 每次同步输出：`sync_report=<json>`
    - 字段包含：`target/source/output/planned_files/added/changed/removed/cache_hit/applied/duration_ms`
