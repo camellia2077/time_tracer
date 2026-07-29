@@ -135,7 +135,10 @@ fn resolve_cli_context(
     Ok(ResolvedCliContext { paths, cli_config })
 }
 
-pub(crate) fn create_runtime(api: CoreApi, paths: &ResolvedCliPaths) -> Result<CoreRuntime, AppError> {
+pub(crate) fn create_runtime(
+    api: CoreApi,
+    paths: &ResolvedCliPaths,
+) -> Result<CoreRuntime, AppError> {
     let db_c = CString::new(paths.db_path.clone())
         .map_err(|e| AppError::InvalidArguments(format!("Invalid db path: {e}")))?;
     let output_c = CString::new(paths.runtime_output_root.clone())

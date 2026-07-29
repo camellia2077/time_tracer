@@ -65,9 +65,7 @@ pub(crate) fn load_runtime_symbols(lib: &Library) -> Result<RuntimeSymbols, AppE
         let runtime_destroy: RuntimeDestroyFn = *lib
             .get(b"tracer_core_runtime_destroy")
             .map_err(symbol_error)?;
-        let last_error: LastErrorFn = *lib
-            .get(b"tracer_core_last_error")
-            .map_err(symbol_error)?;
+        let last_error: LastErrorFn = *lib.get(b"tracer_core_last_error").map_err(symbol_error)?;
         let runtime_ingest: RuntimeJsonFn = *lib
             .get(b"tracer_core_runtime_ingest_json")
             .map_err(symbol_error)?;

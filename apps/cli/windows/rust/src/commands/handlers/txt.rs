@@ -218,7 +218,11 @@ fn build_authored_event_line(args: &TxtAppendEventArgs) -> Result<String, AppErr
 
 fn append_event_to_day_body(day_body: &str, event_line: &str) -> String {
     let lines: Vec<&str> = day_body.split('\n').collect();
-    let trailing_empty_count = lines.iter().rev().take_while(|line| line.is_empty()).count();
+    let trailing_empty_count = lines
+        .iter()
+        .rev()
+        .take_while(|line| line.is_empty())
+        .count();
     let insert_at = lines.len().saturating_sub(trailing_empty_count);
 
     let mut rebuilt = Vec::with_capacity(lines.len().saturating_add(1));
@@ -235,16 +239,12 @@ fn validate_hhmm(value: &str, flag_name: &str) -> Result<(), AppError> {
         )));
     }
 
-    let hour: i32 = value[0..2]
-        .parse()
-        .map_err(|_| AppError::InvalidArguments(format!(
-            "{flag_name} expects HHMM digits, got `{value}`."
-        )))?;
-    let minute: i32 = value[2..4]
-        .parse()
-        .map_err(|_| AppError::InvalidArguments(format!(
-            "{flag_name} expects HHMM digits, got `{value}`."
-        )))?;
+    let hour: i32 = value[0..2].parse().map_err(|_| {
+        AppError::InvalidArguments(format!("{flag_name} expects HHMM digits, got `{value}`."))
+    })?;
+    let minute: i32 = value[2..4].parse().map_err(|_| {
+        AppError::InvalidArguments(format!("{flag_name} expects HHMM digits, got `{value}`."))
+    })?;
     if !(0..24).contains(&hour) || !(0..60).contains(&minute) {
         return Err(AppError::InvalidArguments(format!(
             "{flag_name} expects a valid HHMM time, got `{value}`."
@@ -554,7 +554,10 @@ mod tests {
         let requests = recorded.requests();
         assert_eq!(requests[0]["action"], "resolve_day_block");
         assert_eq!(requests[1]["action"], "replace_day_block");
-        assert_eq!(requests[1]["edited_day_body"], "0638醒\n0900-1030study //focus\n");
+        assert_eq!(
+            requests[1]["edited_day_body"],
+            "0638醒\n0900-1030study //focus\n"
+        );
         let written = std::fs::read_to_string(month_path).expect("read updated txt");
         assert!(written.contains("0900-1030study //focus"));
     }

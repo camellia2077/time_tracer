@@ -14,8 +14,8 @@ mod txt;
 
 pub use about::{AboutArgs, AboutCommand};
 pub use alias::{
-    AliasAddArgs, AliasArgs, AliasCommand, AliasFileArgs, AliasGroupArgs, AliasMoveArgs,
-    AliasMoveConfigArgs, AliasRenameGroupArgs, AliasTreeArgs,
+    AliasAddArgs, AliasArgs, AliasCommand, AliasCreateArgs, AliasFileArgs, AliasGroupArgs,
+    AliasMoveArgs, AliasMoveConfigArgs, AliasRenameGroupArgs, AliasRenameParentArgs, AliasTreeArgs,
 };
 pub use chart::{ChartArgs, ChartTheme, ChartType};
 pub use doctor::DoctorArgs;
@@ -80,7 +80,7 @@ pub struct Cli {
 
 #[derive(Debug, Subcommand)]
 pub enum Command {
-    #[command(about = "Edit alias hierarchy TOML and migrate canonical activity paths")]
+    #[command(about = "Edit activity hierarchy TOML and migrate canonical activity paths")]
     Alias(AliasArgs),
     #[command(about = "Run semantic data and tree queries")]
     Query(QueryArgs),
@@ -100,7 +100,7 @@ pub enum Command {
 
 #[cfg(test)]
 mod tests {
-    use clap::{Parser, error::ErrorKind};
+    use clap::{error::ErrorKind, Parser};
 
     use super::{
         AboutCommand, AliasCommand, Cli, Command, DataOutputMode, DateCheckMode, ExchangeCommand,
@@ -123,7 +123,7 @@ mod tests {
             "alias",
             "rename-group",
             "--file",
-            "config/aliases/exercise.toml",
+            "config/activity_hierarchy/exercise.toml",
             "--group",
             "cardio",
             "--name",
@@ -141,6 +141,34 @@ mod tests {
                     assert_eq!(args.input, "test/data");
                 }
                 _ => panic!("expected alias rename-group command"),
+            },
+            _ => panic!("expected alias command"),
+        }
+    }
+
+    #[test]
+    fn alias_rename_parent_parses_file_name_and_txt_input() {
+        let cli = Cli::try_parse_from([
+            "time_tracer_cli",
+            "alias",
+            "rename-parent",
+            "--file",
+            "config/activity_hierarchy/exercise.toml",
+            "--name",
+            "training",
+            "--input",
+            "test/data",
+        ])
+        .unwrap();
+
+        match cli.command {
+            Command::Alias(args) => match args.command {
+                AliasCommand::RenameParent(args) => {
+                    assert_eq!(args.file, "config/activity_hierarchy/exercise.toml");
+                    assert_eq!(args.name, "training");
+                    assert_eq!(args.input, "test/data");
+                }
+                _ => panic!("expected alias rename-parent command"),
             },
             _ => panic!("expected alias command"),
         }
@@ -461,7 +489,7 @@ mod tests {
         assert_eq!(error.kind(), ErrorKind::DisplayHelp);
         let help = error.to_string();
         assert!(help.contains("without modifying TXT files or the database"));
-        assert!(help.contains("--file config/aliases/study.toml"));
+        assert!(help.contains("--file config/activity_hierarchy/study.toml"));
     }
 
     #[test]
@@ -471,14 +499,14 @@ mod tests {
             "alias",
             "tree",
             "--file",
-            "config/aliases/study.toml",
+            "config/activity_hierarchy/study.toml",
             "--show-aliases",
         ])
         .unwrap();
         match cli.command {
             Command::Alias(args) => match args.command {
                 super::AliasCommand::Tree(args) => {
-                    assert_eq!(args.file, "config/aliases/study.toml");
+                    assert_eq!(args.file, "config/activity_hierarchy/study.toml");
                     assert!(args.show_aliases);
                 }
                 _ => panic!("expected alias tree command"),

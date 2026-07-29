@@ -1,7 +1,6 @@
 use crate::cli::{
     PipelineValidateAllArgs, PipelineValidateArgs, PipelineValidateBundleArgs,
-    PipelineValidateCommand,
-    PipelineValidateLogicArgs, PipelineValidateStructureArgs,
+    PipelineValidateCommand, PipelineValidateLogicArgs, PipelineValidateStructureArgs,
 };
 use crate::commands::handler::{CommandContext, CommandHandler};
 use crate::error::AppError;

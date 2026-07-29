@@ -232,7 +232,8 @@ mod tests {
             _config_path: &str,
             _date_check_mode: &str,
         ) -> Result<(), crate::error::AppError> {
-            self.recorded.record_ack("validate-external-bundle", &Value::Null)
+            self.recorded
+                .record_ack("validate-external-bundle", &Value::Null)
         }
     }
 

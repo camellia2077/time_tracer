@@ -1,20 +1,20 @@
 {
   "target": "windows",
   "source_root": "C:\\code\\time_tracer\\assets\\tracer_core\\config_test",
-  "input_hash": "538b6bac7ff60d1f7aa42bbbf89821f57219bb4f4911d117993b797ac90ba8a1",
+  "input_hash": "d73994ee1a6a73ebb924016490090990b4411250c004e458bf7e59592a495329",
   "planned_file_count": 38,
   "file_hashes": {
-    "aliases/_system.toml": "b90692bb2fd5a7d237efbfa5c92d29fcc44ee2934cc0c41d13dd6711c17ac1fa",
-    "aliases/exercise.toml": "1b7a9db27bc4b2a9b957db1385e772ce2d07fc5308fdb9fcd45bb52231f2d6a7",
-    "aliases/meal.toml": "18233795231508b2152697971b86758b463e15d81e454c85630446e3cb6896b0",
-    "aliases/recreation.toml": "eaa09b5ac03319673324f1deb9205d0b7f5523ede50105ff113b1e7a5807bfea",
-    "aliases/rest.toml": "7c2fa5718acff390093f5503b573e5dcdb582357d697b20606f3954b83fe582e",
-    "aliases/routine.toml": "5e0b807e917899d8da3af3b116acadd8375343107b40c23b25bc89fe73f2af69",
-    "aliases/sleep.toml": "a30b48611ad1f0bb07dc894d9427eef73ef6fda043620907a6dcb49e2728aecc",
-    "aliases/study.toml": "10ced937eb93504c02abd8575b9767c71027d2bef38dc3278c2efaa4de5c520d",
+    "activity_hierarchy/_system.toml": "b90692bb2fd5a7d237efbfa5c92d29fcc44ee2934cc0c41d13dd6711c17ac1fa",
+    "activity_hierarchy/exercise.toml": "1b7a9db27bc4b2a9b957db1385e772ce2d07fc5308fdb9fcd45bb52231f2d6a7",
+    "activity_hierarchy/meal.toml": "18233795231508b2152697971b86758b463e15d81e454c85630446e3cb6896b0",
+    "activity_hierarchy/recreation.toml": "eaa09b5ac03319673324f1deb9205d0b7f5523ede50105ff113b1e7a5807bfea",
+    "activity_hierarchy/rest.toml": "7c2fa5718acff390093f5503b573e5dcdb582357d697b20606f3954b83fe582e",
+    "activity_hierarchy/routine.toml": "5e0b807e917899d8da3af3b116acadd8375343107b40c23b25bc89fe73f2af69",
+    "activity_hierarchy/sleep.toml": "a30b48611ad1f0bb07dc894d9427eef73ef6fda043620907a6dcb49e2728aecc",
+    "activity_hierarchy/study.toml": "10ced937eb93504c02abd8575b9767c71027d2bef38dc3278c2efaa4de5c520d",
     "charts/heatmap.toml": "7059fab946cc08b495a37b0562fc7c6fa9b4f12e2d76c72b8f79a173936c42b4",
-    "config.toml": "6f56fcec75c2809648f41b1f23c13c48e8ab36a175725a85495b556de44866ca",
-    "meta/bundle.toml": "edecec2d00e9c76c4e4b172602a86e8f5f5ba75ad1677de06803a72f8003ba9e",
+    "config.toml": "a122a7f5257d3e26f20af7c63a7ae060f5ed424044c09e1eef6cdafddbd440ec",
+    "meta/bundle.toml": "234ed7b79d1ef705283827f29a89622238d77b6233b1e90ae59603d1874a819a",
     "reports/latex/common_style.toml": "b186b043ad8d17e31758eafef529127b3a076e804e01d5400bf31a7c7df6886d",
     "reports/latex/day.toml": "f601a9dd744e6040e0f5b682b596d0752e8a86b5e44b6883f6d045c4d4296b54",
     "reports/latex/month.toml": "70891e366ef1c8bde20bcda34254f314301d8f4a017706db9368230fce50c972",
@@ -43,5 +43,5 @@
     "reports/typst/week.toml": "1d83ed943c279e5929bb80a860a858c15aa1a4ac8b708af4c0e3735dc6750869",
     "reports/typst/year.toml": "fea4d47824eaf63908a6807a684cfca59d0529b76c139c9233cd8e81e584b877"
   },
-  "generated_at_utc": "2026-07-27T10:51:55.352339+00:00"
+  "generated_at_utc": "2026-07-29T03:58:11.618981+00:00"
 }

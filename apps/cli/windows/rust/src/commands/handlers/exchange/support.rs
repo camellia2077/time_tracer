@@ -51,9 +51,9 @@ pub fn require_output_path_for(raw: Option<&str>, context: &str) -> Result<PathB
         AppError::InvalidArguments(format!("-o/--output is required for {context}."))
     })?;
     if value.trim().is_empty() {
-        return Err(AppError::InvalidArguments(
-            format!("-o/--output is required for {context}."),
-        ));
+        return Err(AppError::InvalidArguments(format!(
+            "-o/--output is required for {context}."
+        )));
     }
     resolve_output_path(Some(value))?.ok_or_else(|| {
         AppError::InvalidArguments(format!("-o/--output is required for {context}."))

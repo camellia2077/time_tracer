@@ -4,8 +4,8 @@ use crate::error::AppError;
 
 use super::support::{
     build_all_matching_export_request, build_recent_batch_export_request,
-    build_single_export_request, parse_int_list, reject_argument_when_all,
-    require_export_argument, resolve_export_formats,
+    build_single_export_request, parse_int_list, reject_argument_when_all, require_export_argument,
+    resolve_export_formats,
 };
 use super::{ReportSession, ReportSessionPort, RuntimeReportSessionPort};
 
@@ -61,11 +61,13 @@ fn build_all_export_requests(
         | ReportExportPeriod::Week
         | ReportExportPeriod::Year => {
             reject_argument_when_all(args.period, args.argument.as_deref())?;
-            Ok(vec![build_all_matching_export_request(args.period, format)?])
+            Ok(vec![build_all_matching_export_request(
+                args.period,
+                format,
+            )?])
         }
         ReportExportPeriod::Range => Err(AppError::InvalidArguments(
-            "`report export range --all` is not supported; specify an explicit range."
-                .to_string(),
+            "`report export range --all` is not supported; specify an explicit range.".to_string(),
         )),
         ReportExportPeriod::Recent => {
             let argument = require_export_argument(args.period, args.argument.as_deref())?;

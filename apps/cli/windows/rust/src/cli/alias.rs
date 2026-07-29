@@ -6,9 +6,13 @@ use clap::{Args, Subcommand};
   2. Use `promote` to turn an existing leaf into a recordable group.
   3. Use `move` when TXT files and the database must stay consistent.
   4. Use `move-config` for TOML-only hierarchy editing and diagnostics.
+  5. Use `rename-parent` when the TOML file name, parent, TXT files, and
+     database must move together.
 
 Canonical paths are derived from parent, group path, and leaf name. Moving a
-leaf therefore changes its canonical path."#)]
+leaf or group move therefore changes canonical paths. Add --to-file to move
+between two existing alias TOMLs; use --group for a complete group subtree.
+Omit --to-file for the legacy same-file leaf move."#)]
 pub struct AliasArgs {
     #[command(subcommand)]
     pub command: AliasCommand,
@@ -17,11 +21,24 @@ pub struct AliasArgs {
 #[derive(Debug, Subcommand)]
 pub enum AliasCommand {
     #[command(
+        name = "create",
+        about = "Create a new activity hierarchy TOML file",
+        long_about = r#"Create a new empty activity hierarchy TOML file.
+
+The file name is also used as the hierarchy parent. The command creates the
+file under an `activity_hierarchy` directory and does not require runtime
+initialization.
+
+Example:
+  time_tracer_cli alias create --file config/activity_hierarchy/study.toml"#
+    )]
+    Create(AliasCreateArgs),
+    #[command(
         about = "Add a normal alias entry to an existing group",
         long_about = r#"Add an alias to a canonical leaf in an existing group.
 
 Example:
-  time_tracer_cli alias add --file config/aliases/study.toml \
+  time_tracer_cli alias add --file config/activity_hierarchy/study.toml \
     --group math.calculus --canonical multiple-integral --alias 重积分
 
 The target group must already exist. Use `promote` to turn the new leaf into a
@@ -37,22 +54,25 @@ group's `group_aliases` entry. This is useful for creating a new hierarchy
 level with `add` followed by `promote`.
 
 Example:
-  time_tracer_cli alias promote --file config/aliases/study.toml --alias 重积分"#
+  time_tracer_cli alias promote --file config/activity_hierarchy/study.toml --alias 重积分"#
     )]
     Promote(AliasFileArgs),
     #[command(
-        about = "Move a canonical leaf and migrate TXT/database data",
-        long_about = r#"Move an entire canonical leaf, including all of its aliases,
-to another group. This changes the canonical path, replaces the old canonical
-path in every TXT file under `--input`, ingests a candidate database, and swaps
+        about = "Move a leaf or group subtree and migrate TXT/database data",
+        long_about = r#"Move a canonical leaf or a complete group subtree to another group.
+This changes the canonical paths, replaces old canonical paths in every TXT
+file under `--input`, ingests a candidate database, and swaps
 the database only after the candidate succeeds.
+
+Use `--alias` for a leaf or `--group` for a group subtree. Add `--to-file` to
+move to another existing alias TOML. Group moves require `--to-file`.
 
 Use this when source TXT data and the active database must remain consistent
 with the new TOML hierarchy.
 
 Example:
-  time_tracer_cli alias move --file config/aliases/study.toml \
-    --alias 二重积分 --to math.calculus.multiple-integral --input test/data"#
+  time_tracer_cli alias move --file config/activity_hierarchy/study.toml \
+    --to-file config/activity_hierarchy/meal.toml --alias 二重积分 --to root --input test/data"#
     )]
     Move(AliasMoveArgs),
     #[command(
@@ -66,10 +86,26 @@ then rebuilds and swaps the database after successful ingestion.
 
 Example:
   time_tracer_cli --db data/time_data.sqlite3 alias rename-group \
-    --file config/aliases/exercise.toml --group cardio --name conditioning \
+    --file config/activity_hierarchy/exercise.toml --group cardio --name conditioning \
     --input test/data"#
     )]
     RenameGroup(AliasRenameGroupArgs),
+    #[command(
+        name = "rename-parent",
+        about = "Rename an activity hierarchy parent and migrate TOML, TXT, and database",
+        long_about = r#"Rename the parent of one activity hierarchy document.
+
+The TOML `parent` and its filename are treated as one value. This command
+updates the parent, renames `<old-parent>.toml` to `<new-parent>.toml`,
+rewrites matching canonical activity paths in every TXT file under `--input`,
+then rebuilds and swaps the database after successful ingestion.
+
+Example:
+  time_tracer_cli --db data/time_data.sqlite3 alias rename-parent \
+    --file config/activity_hierarchy/exercise.toml --name training \
+    --input test/data"#
+    )]
+    RenameParent(AliasRenameParentArgs),
     #[command(
         about = "Render an alias TOML hierarchy as plaintext",
         long_about = r#"Render the hierarchy from one alias TOML file as plaintext.
@@ -78,24 +114,28 @@ By default only canonical node names are printed. Add `--show-aliases` to show
 normal aliases and recordable group aliases next to their nodes.
 
 Example:
-  time_tracer_cli alias tree --file config/aliases/study.toml --show-aliases"#
+  time_tracer_cli alias tree --file config/activity_hierarchy/study.toml --show-aliases"#
     )]
     Tree(AliasTreeArgs),
     #[command(
-        about = "Move a canonical leaf in TOML only",
-        long_about = r#"Move an entire canonical leaf, including all of its aliases,
-to another group without modifying TXT files or the database.
+        about = "Move a leaf or group subtree in TOML only",
+        long_about = r#"Move a canonical leaf or a complete group subtree to another group
+without modifying TXT files or the database.
 
 The command prints the old and new canonical paths. Existing TXT files that
 still use the old canonical path may not resolve with the new TOML until they
 are migrated separately.
 
+Use `--alias` for a leaf or `--group` for a group subtree. Add `--to-file` for
+a Core-validated cross-document move; group moves require it. Without it, the
+command keeps the same-file leaf behavior.
+
 Use this for configuration editing, inspection, or repair workflows where TXT
 and database migration is intentionally handled later.
 
 Example:
-  time_tracer_cli alias move-config --file config/aliases/study.toml \
-    --alias 二重积分 --to math.calculus.multiple-integral"#
+  time_tracer_cli alias move-config --file config/activity_hierarchy/study.toml \
+    --to-file config/activity_hierarchy/meal.toml --alias 二重积分 --to root"#
     )]
     MoveConfig(AliasMoveConfigArgs),
     #[command(
@@ -108,6 +148,12 @@ Example:
         long_about = "Add a value to a group's `group_aliases` list. The group canonical path does not change."
     )]
     AddGroupAlias(AliasGroupArgs),
+}
+
+#[derive(Debug, Args)]
+pub struct AliasCreateArgs {
+    #[arg(long, value_name = "PATH", help = "New activity hierarchy TOML file")]
+    pub file: String,
 }
 
 #[derive(Debug, Args)]
@@ -136,14 +182,32 @@ pub struct AliasFileArgs {
 
 #[derive(Debug, Args)]
 pub struct AliasMoveArgs {
-    #[command(flatten)]
-    pub file_args: AliasFileArgs,
+    #[arg(long, value_name = "PATH", help = "Source alias TOML file")]
+    pub file: String,
+    #[arg(
+        long,
+        value_name = "ALIAS",
+        conflicts_with = "group",
+        required_unless_present = "group",
+        help = "Alias belonging to the canonical leaf"
+    )]
+    pub alias: Option<String>,
+    #[arg(
+        long,
+        value_name = "GROUP",
+        conflicts_with = "alias",
+        required_unless_present = "alias",
+        help = "Canonical group path to move with its complete subtree"
+    )]
+    pub group: Option<String>,
     #[arg(
         long,
         value_name = "GROUP",
         help = "Target group path, e.g. cardio or math.calculus"
     )]
     pub to: String,
+    #[arg(long, value_name = "PATH", help = "Destination alias TOML file")]
+    pub to_file: Option<String>,
     #[arg(long, value_name = "PATH", help = "TXT input directory to rebuild")]
     pub input: String,
 }
@@ -171,15 +235,41 @@ pub struct AliasMoveConfigArgs {
     #[arg(
         long,
         value_name = "ALIAS",
+        conflicts_with = "group",
+        required_unless_present = "group",
         help = "Alias belonging to the canonical leaf"
     )]
-    pub alias: String,
+    pub alias: Option<String>,
+    #[arg(
+        long,
+        value_name = "GROUP",
+        conflicts_with = "alias",
+        required_unless_present = "alias",
+        help = "Canonical group path to move with its complete subtree"
+    )]
+    pub group: Option<String>,
     #[arg(
         long,
         value_name = "GROUP",
         help = "Target group path, e.g. cardio or math.calculus"
     )]
     pub to: String,
+    #[arg(long, value_name = "PATH", help = "Destination alias TOML file")]
+    pub to_file: Option<String>,
+}
+
+#[derive(Debug, Args)]
+pub struct AliasRenameParentArgs {
+    #[arg(
+        long,
+        value_name = "PATH",
+        help = "Current activity hierarchy TOML file"
+    )]
+    pub file: String,
+    #[arg(long, value_name = "NAME", help = "New parent and TOML file stem")]
+    pub name: String,
+    #[arg(long, value_name = "PATH", help = "TXT input directory to rebuild")]
+    pub input: String,
 }
 
 #[derive(Debug, Args)]

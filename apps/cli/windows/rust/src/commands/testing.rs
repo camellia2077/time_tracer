@@ -7,8 +7,7 @@ use serde_json::Value;
 
 use crate::commands::handlers::report::{RenderedReport, ReportWindowMetadata};
 use crate::core::runtime::{
-    CliCommandDefaults, CliConfig, CliDefaults, TreeResponse, TxtReplaceOutput,
-    TxtResolveOutput,
+    CliCommandDefaults, CliConfig, CliDefaults, TreeResponse, TxtReplaceOutput, TxtResolveOutput,
 };
 use crate::error::AppError;
 

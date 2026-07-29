@@ -339,16 +339,14 @@ mod tests {
             .expect("open report session");
 
         let rendered = session
-            .render(
-                &serde_json::json!({
-                    "operation_kind": "query",
-                    "display_mode": "range",
-                    "selection_kind": "date_range",
-                    "start_date": "2024-12-01",
-                    "end_date": "2024-12-31",
-                    "format": "md"
-                }),
-            )
+            .render(&serde_json::json!({
+                "operation_kind": "query",
+                "display_mode": "range",
+                "selection_kind": "date_range",
+                "start_date": "2024-12-01",
+                "end_date": "2024-12-31",
+                "format": "md"
+            }))
             .expect("render report");
 
         assert_eq!(

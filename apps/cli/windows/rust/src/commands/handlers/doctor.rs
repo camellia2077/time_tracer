@@ -46,7 +46,7 @@ impl CommandHandler<DoctorArgs> for DoctorHandler {
             required_check("config_toml", exe_dir.join("config").join("config.toml")),
             required_dir_check(
                 "converter_alias_mapping",
-                exe_dir.join("config").join("aliases"),
+                exe_dir.join("config").join("activity_hierarchy"),
             ),
             optional_dir_check(
                 "db_parent_dir",

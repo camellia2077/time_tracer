@@ -1,5 +1,5 @@
+mod activity_hierarchy_client;
 mod bootstrap;
-mod alias_hierarchy_client;
 mod callbacks;
 mod codec;
 mod env_flags;
@@ -25,17 +25,19 @@ use serde_json::json;
 use crate::commands::handler::CommandContext;
 use crate::error::AppError;
 
-use self::loader::{load_runtime_symbols, resolve_core_dll_path};
+pub use self::activity_hierarchy_client::{
+    AliasCanonicalReplacement as ActivityHierarchyCanonicalReplacement, ActivityHierarchyClient,
+    ActivityHierarchyCrossDocumentOperationOutput, ActivityHierarchyDocumentOutput,
+    ActivityHierarchyNodeKind, ActivityHierarchyOperationOutput, ActivityHierarchyTree,
+    ActivityHierarchyTreeNode, AliasKeyReplacement,
+};
 use self::bootstrap::create_runtime;
 use self::callbacks::configure_callbacks;
+use self::loader::{load_runtime_symbols, resolve_core_dll_path};
 pub use self::pipeline_client::PipelineClient;
 pub use self::query_client::QueryClient;
 pub use self::report_client::ReportClient;
 pub use self::tracer_exchange_client::TracerExchangeClient;
-pub use self::alias_hierarchy_client::{
-    AliasCanonicalReplacement as AliasHierarchyCanonicalReplacement,
-    AliasHierarchyClient, AliasHierarchyOperationOutput, AliasKeyReplacement,
-};
 pub use self::txt_client::{
     TxtCanonicalReplaceOutput, TxtClient, TxtReplaceOutput, TxtResolveOutput,
 };
@@ -152,10 +154,10 @@ impl CoreApi {
         date_check_mode: &str,
     ) -> Result<(), AppError> {
         validate_external_toml_files(config_root)?;
-        let converter_config = config_root.join("aliases").join("_system.toml");
+        let converter_config = config_root.join("activity_hierarchy").join("_system.toml");
         if !converter_config.is_file() {
             return Err(AppError::Config(format!(
-                "External config is missing aliases/_system.toml: {}",
+                "External config is missing activity_hierarchy/_system.toml: {}",
                 converter_config.display()
             )));
         }
@@ -166,10 +168,8 @@ impl CoreApi {
             )));
         }
 
-        let output_root = std::env::temp_dir().join(format!(
-            "time_tracer_cli_validate_{}",
-            std::process::id()
-        ));
+        let output_root =
+            std::env::temp_dir().join(format!("time_tracer_cli_validate_{}", std::process::id()));
         fs::create_dir_all(&output_root).map_err(|error| {
             AppError::Io(format!(
                 "Create validation workspace failed ({}): {error}",
@@ -275,8 +275,8 @@ impl RuntimeSession {
         TxtClient::new(&self.runtime)
     }
 
-    pub fn alias_hierarchy(&self) -> AliasHierarchyClient<'_> {
-        AliasHierarchyClient::new(&self.runtime)
+    pub fn activity_hierarchy(&self) -> ActivityHierarchyClient<'_> {
+        ActivityHierarchyClient::new(&self.runtime)
     }
 
     pub fn cli_config(&self) -> &CliConfig {
