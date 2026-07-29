@@ -114,6 +114,89 @@ class NativeTxtRuntimeCodecTest {
     }
 
     @Test
+    fun parseAliasCrossDocumentMove_readsUpdatedDocumentsAndReplacements() {
+        val payload = codec.parseActivityHierarchyCrossDocumentOperation(
+            """
+                {
+                  "ok": true,
+                  "updated_documents": [
+                    {
+                      "source_name": "activity_hierarchy/exercise.toml",
+                      "updated_toml_content": "parent = exercise"
+                    },
+                    {
+                      "source_name": "activity_hierarchy/meal.toml",
+                      "updated_toml_content": "parent = meal"
+                    }
+                  ],
+                  "replacements": [
+                    {"old_canonical":"exercise_go","new_canonical":"meal_go"}
+                  ],
+                  "alias_replacements": [],
+                  "error_message": ""
+                }
+            """.trimIndent()
+        )
+
+        assertTrue(payload.ok)
+        assertEquals(2, payload.updatedDocuments.size)
+        assertEquals("activity_hierarchy/meal.toml", payload.updatedDocuments[1].sourceName)
+        assertEquals("meal_go", payload.replacements.single().newCanonical)
+    }
+
+    @Test
+    fun parseActivityHierarchyDescribe_consumesCoreNodeKind_withoutChangingPresentationData() {
+        val payload = codec.parseActivityHierarchyDescribe(
+            """
+                {
+                  "ok": true,
+                  "hierarchy": {
+                    "parent": "exercise",
+                    "nodes": [
+                      {
+                        "canonical_key": "walk",
+                        "path": "walk",
+                        "kind": "leaf",
+                        "aliases": ["步行"],
+                        "children": []
+                      },
+                      {
+                        "canonical_key": "cardio",
+                        "path": "cardio",
+                        "kind": "group",
+                        "aliases": ["有氧"],
+                        "children": [
+                          {
+                            "canonical_key": "swimming",
+                            "path": "cardio.swimming",
+                            "kind": "leaf",
+                            "aliases": ["游泳"],
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "error_message": ""
+                }
+            """.trimIndent()
+        )
+
+        val hierarchy = payload.hierarchy!!
+        assertEquals(ActivityHierarchyNodeKind.LEAF, hierarchy.nodes[0].kind)
+        assertEquals(ActivityHierarchyNodeKind.GROUP, hierarchy.nodes[1].kind)
+        assertTrue(hierarchy.nodes[1].isGroup)
+        assertEquals("swimming", hierarchy.nodes[1].children.single().canonicalKey)
+        assertEquals(listOf("游泳"), hierarchy.nodes[1].children.single().aliases)
+
+        val presentation = hierarchy.toActivityAliasDocument()
+        assertEquals("walk", (presentation.nodes[0] as ActivityAlias).canonicalLeaf)
+        val cardio = presentation.nodes[1] as ActivityCategory
+        assertEquals("cardio", cardio.name)
+        assertEquals("swimming", (cardio.nodes.single() as ActivityAlias).canonicalLeaf)
+    }
+
+    @Test
     fun parseResolve_returnsFailurePayloadWhenJsonIsInvalid() {
         val payload = codec.parseResolve("not-json")
 

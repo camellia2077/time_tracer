@@ -10,7 +10,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 
 internal enum class ConfigCategory {
-    // Alias files live under `aliases/*.toml`.
+    // Alias files live under `activity_hierarchy/*.toml`.
     ALIAS,
     // Charts = `charts/*.toml`
     CHARTS,
@@ -48,13 +48,21 @@ internal data class ConfigUiState(
     val aliasStructuredDraftsByFile: Map<String, AliasTomlDocument> = emptyMap(),
     val aliasAdvancedDraftsByFile: Map<String, String> = emptyMap(),
     val aliasEditorModeByFile: Map<String, AliasEditorMode> = emptyMap(),
-    // A relocation plan is intentionally preview-only in this iteration. It
-    // must not alter the TOML draft before TXT and database migration exist.
     val aliasEntryMovePlan: AliasEntryMovePlan? = null,
+    val aliasEntryMoveDestinations: List<AliasEntryMoveDestinationDocument> = emptyList(),
+    val aliasEntryMoveDestinationsLoading: Boolean = false,
     val aliasEditorErrorMessage: String = "",
     val txtReloadRequestVersion: Long = 0L,
     val autoSaveStatus: ConfigAutoSaveStatus = ConfigAutoSaveStatus.IDLE,
     val statusText: String = "Preparing config..."
+)
+
+private data class AliasMovePreviewResult(
+    val ok: Boolean,
+    val replacements: List<CanonicalActivityNameReplacement>,
+    val aliasReplacements: List<AliasKeyReplacement>,
+    val updatedDocuments: List<ActivityHierarchyDocumentOutput>,
+    val message: String
 )
 
 internal class ConfigViewModel(
@@ -190,16 +198,16 @@ internal class ConfigViewModel(
             uiState = cacheAliasAdvancedMode(switchAliasEditorToAdvanced(uiState))
             return
         }
-        val gateway = configGateway as? AliasHierarchyGateway ?: run {
-            uiState = uiState.copy(aliasEditorErrorMessage = "Alias hierarchy runtime is unavailable.")
+        val gateway = configGateway as? ActivityHierarchyGateway ?: run {
+            uiState = uiState.copy(aliasEditorErrorMessage = "Activity hierarchy runtime is unavailable.")
             return
         }
         val rawToml = uiState.aliasAdvancedTomlDraft
         viewModelScope.launch {
-            val result = gateway.describeAliasHierarchy(rawToml)
+            val result = gateway.describeActivityHierarchy(rawToml)
             val document = result.hierarchy?.toActivityAliasDocument()
             if (!result.ok || document == null) {
-                val message = result.message.ifBlank { "Alias hierarchy validation failed." }
+                val message = result.message.ifBlank { "Activity hierarchy validation failed." }
                 uiState = uiState.copy(aliasEditorErrorMessage = message, statusText = message)
                 return@launch
             }
@@ -237,8 +245,12 @@ internal class ConfigViewModel(
                 return@launch
             }
 
-            applyCoreAliasHierarchyOperation(
-                AliasHierarchyOperation(kind = "rename_parent", newName = normalizedValue)
+            applyCoreActivityHierarchyOperation(
+                ActivityHierarchyOperation(
+                    kind = "rename_parent",
+                    oldParent = uiState.aliasDocumentDraft?.parent.orEmpty(),
+                    newName = normalizedValue
+                )
             )
         }
     }
@@ -250,8 +262,8 @@ internal class ConfigViewModel(
             uiState = uiState.copy(aliasEditorErrorMessage = "Alias group name must not be empty.")
             return
         }
-        applyCoreAliasHierarchyOperation(
-            AliasHierarchyOperation(
+        applyCoreActivityHierarchyOperation(
+            ActivityHierarchyOperation(
                 kind = "add_group",
                 targetPath = parentGroupId?.let(document::canonicalTargetPathForGroup) ?: "root",
                 canonicalKey = normalizedName
@@ -262,7 +274,7 @@ internal class ConfigViewModel(
     fun deleteAliasGroup(groupId: String) {
         val document = uiState.aliasDocumentDraft ?: return
         val path = document.canonicalTargetPathForGroup(groupId) ?: return
-        applyCoreAliasHierarchyOperation(AliasHierarchyOperation("delete_group", targetPath = path))
+        applyCoreActivityHierarchyOperation(ActivityHierarchyOperation("delete_group", targetPath = path))
     }
 
     fun addAliasEntry(parentGroupId: String?, canonicalLeaf: String, aliases: List<String>) {
@@ -275,7 +287,7 @@ internal class ConfigViewModel(
             )
             return
         }
-        applyCoreAliasHierarchyOperation(AliasHierarchyOperation(
+        applyCoreActivityHierarchyOperation(ActivityHierarchyOperation(
             kind = "add_leaf",
             targetPath = parentGroupId?.let(document::canonicalTargetPathForGroup) ?: "root",
             canonicalKey = normalizedCanonicalLeaf,
@@ -296,7 +308,7 @@ internal class ConfigViewModel(
         val canonicalTargetPath = document.canonicalTargetPathForEntry(entryId)
         val oldLeaf = document.findAliasEntry(entryId)?.canonicalLeaf
         if (canonicalTargetPath == null || oldLeaf == null) return
-        applyCoreAliasHierarchyOperation(AliasHierarchyOperation(
+        applyCoreActivityHierarchyOperation(ActivityHierarchyOperation(
             kind = if (oldLeaf == normalizedCanonicalLeaf) "set_leaf_aliases" else "rename_leaf_canonical",
             targetPath = canonicalTargetPath,
             newName = normalizedCanonicalLeaf,
@@ -307,21 +319,21 @@ internal class ConfigViewModel(
     fun deleteAliasEntry(entryId: String) {
         val document = uiState.aliasDocumentDraft ?: return
         val path = document.canonicalTargetPathForEntry(entryId) ?: return
-        applyCoreAliasHierarchyOperation(AliasHierarchyOperation("delete_leaf", targetPath = path))
+        applyCoreActivityHierarchyOperation(ActivityHierarchyOperation("delete_leaf", targetPath = path))
     }
 
-    private fun applyCoreAliasHierarchyOperation(operation: AliasHierarchyOperation) {
-        val gateway = configGateway as? AliasHierarchyGateway ?: run {
-            uiState = uiState.copy(aliasEditorErrorMessage = "Alias hierarchy runtime is unavailable.")
+    private fun applyCoreActivityHierarchyOperation(operation: ActivityHierarchyOperation) {
+        val gateway = configGateway as? ActivityHierarchyGateway ?: run {
+            uiState = uiState.copy(aliasEditorErrorMessage = "Activity hierarchy runtime is unavailable.")
             return
         }
         val content = uiState.aliasAdvancedTomlDraft.ifBlank { uiState.selectedFileContent }
         val selectedFile = uiState.selectedFilePath
         viewModelScope.launch {
-            val result = gateway.applyAliasHierarchyOperation(content, operation)
+            val result = gateway.applyActivityHierarchyOperation(content, operation)
             val document = result.hierarchy?.toActivityAliasDocument()
             if (!result.ok || document == null) {
-                uiState = uiState.copy(aliasEditorErrorMessage = result.message.ifBlank { "Alias hierarchy operation failed." })
+                uiState = uiState.copy(aliasEditorErrorMessage = result.message.ifBlank { "Activity hierarchy operation failed." })
                 return@launch
             }
             // Every Core-produced alias TOML is persisted transactionally,
@@ -414,7 +426,7 @@ internal class ConfigViewModel(
         if (normalizedName.isEmpty()) return
         val targetPath = document.canonicalTargetPathForGroup(groupId)
         if (targetPath == null) return
-        applyCoreAliasHierarchyOperation(AliasHierarchyOperation(
+        applyCoreActivityHierarchyOperation(ActivityHierarchyOperation(
             kind = "rename_group_canonical", targetPath = targetPath, newName = normalizedName
         ))
     }
@@ -426,7 +438,7 @@ internal class ConfigViewModel(
         val path = document.canonicalTargetPathForEntry(entryId) ?: return
         val parentPath = path.substringBeforeLast('.', missingDelimiterValue = "root")
         val key = path.substringAfterLast('.')
-        applyCoreAliasHierarchyOperation(AliasHierarchyOperation(
+        applyCoreActivityHierarchyOperation(ActivityHierarchyOperation(
             kind = "append_leaf_alias", targetPath = parentPath,
             canonicalKey = key, aliases = listOf(normalizedAlias)
         ))
@@ -438,7 +450,7 @@ internal class ConfigViewModel(
         if (normalizedAlias.isEmpty() || normalizedAlias == oldAlias) return
         val entry = document.findAliasEntry(entryId) ?: return
         val path = document.canonicalTargetPathForEntry(entryId) ?: return
-        applyCoreAliasHierarchyOperation(AliasHierarchyOperation(
+        applyCoreActivityHierarchyOperation(ActivityHierarchyOperation(
             kind = "set_leaf_aliases", targetPath = path,
             aliases = entry.aliases.map { if (it == oldAlias) normalizedAlias else it }
         ))
@@ -452,7 +464,7 @@ internal class ConfigViewModel(
             return
         }
         val path = document.canonicalTargetPathForEntry(entryId) ?: return
-        applyCoreAliasHierarchyOperation(AliasHierarchyOperation(
+        applyCoreActivityHierarchyOperation(ActivityHierarchyOperation(
             kind = "set_leaf_aliases", targetPath = path,
             aliases = entry.aliases - alias
         ))
@@ -461,7 +473,7 @@ internal class ConfigViewModel(
     fun promoteAliasEntryToGroup(entryId: String) {
         val document = uiState.aliasDocumentDraft ?: return
         val path = document.canonicalTargetPathForEntry(entryId) ?: return
-        applyCoreAliasHierarchyOperation(AliasHierarchyOperation("promote_leaf", targetPath = path))
+        applyCoreActivityHierarchyOperation(ActivityHierarchyOperation("promote_leaf", targetPath = path))
     }
 
     fun renameGroupAlias(groupId: String, oldAlias: String, newAlias: String) {
@@ -469,7 +481,7 @@ internal class ConfigViewModel(
         val document = uiState.aliasDocumentDraft ?: return
         if (trimmedAlias.isEmpty() || trimmedAlias == oldAlias) return
         val path = document.canonicalTargetPathForGroup(groupId) ?: return
-        applyCoreAliasHierarchyOperation(AliasHierarchyOperation(
+        applyCoreActivityHierarchyOperation(ActivityHierarchyOperation(
             kind = "rename_group_alias", targetPath = path,
             oldAlias = oldAlias, newName = trimmedAlias
         ))
@@ -480,7 +492,7 @@ internal class ConfigViewModel(
         val document = uiState.aliasDocumentDraft ?: return
         if (trimmedAlias.isEmpty()) return
         val path = document.canonicalTargetPathForGroup(groupId) ?: return
-        applyCoreAliasHierarchyOperation(AliasHierarchyOperation(
+        applyCoreActivityHierarchyOperation(ActivityHierarchyOperation(
             kind = "append_group_alias", targetPath = path, aliases = listOf(trimmedAlias)
         ))
     }
@@ -493,15 +505,15 @@ internal class ConfigViewModel(
             return
         }
         val path = document.canonicalTargetPathForGroup(groupId) ?: return
-        applyCoreAliasHierarchyOperation(AliasHierarchyOperation(
+        applyCoreActivityHierarchyOperation(ActivityHierarchyOperation(
             kind = "set_group_aliases", targetPath = path, aliases = normalizedAliases
         ))
     }
 
     fun previewAliasEntryMove(entryId: String, targetGroupId: String) {
         val document = uiState.aliasDocumentDraft ?: return
-        val gateway = configGateway as? AliasHierarchyGateway ?: run {
-            uiState = uiState.copy(aliasEditorErrorMessage = "Alias hierarchy runtime is unavailable.")
+        val gateway = configGateway as? ActivityHierarchyGateway ?: run {
+            uiState = uiState.copy(aliasEditorErrorMessage = "Activity hierarchy runtime is unavailable.")
             return
         }
         val entry = document.findAliasEntry(entryId) ?: return
@@ -509,9 +521,9 @@ internal class ConfigViewModel(
         val destinationPath = document.canonicalTargetPathForGroup(targetGroupId) ?: return
         val content = uiState.aliasAdvancedTomlDraft.ifBlank { uiState.selectedFileContent }
         viewModelScope.launch {
-            val result = gateway.applyAliasHierarchyOperation(
+            val result = gateway.applyActivityHierarchyOperation(
                 content,
-                AliasHierarchyOperation(
+                ActivityHierarchyOperation(
                     kind = "move_leaf",
                     targetPath = sourcePath,
                     destinationPath = destinationPath
@@ -542,10 +554,262 @@ internal class ConfigViewModel(
             )
             uiState = uiState.copy(
                 aliasEntryMovePlan = plan,
-                aliasEditorErrorMessage = "",
-                statusText = "move plan -> ${plan.oldCanonical} to ${plan.newCanonical} (not saved)"
+                aliasEditorErrorMessage = ""
             )
         }
+    }
+
+    fun prepareAliasEntryMove(entryId: String) {
+        val sourceDocument = uiState.aliasDocumentDraft ?: return
+        val sourcePath = uiState.selectedFilePath
+        if (sourcePath.isBlank() || sourceDocument.findAliasEntry(entryId) == null) return
+        val sourceParentPath = sourceDocument.canonicalTargetPathForEntry(entryId)
+            ?.split('.')
+            ?.dropLast(1)
+            .orEmpty()
+        prepareAliasMoveDestinations(sourcePath, sourceParentPath, excludeDescendants = false)
+    }
+
+    fun prepareAliasGroupMove(groupId: String) {
+        val sourceDocument = uiState.aliasDocumentDraft ?: return
+        val sourcePath = uiState.selectedFilePath
+        val groupPath = sourceDocument.canonicalTargetPathForGroup(groupId)
+            ?.split('.')
+            ?.filter(String::isNotEmpty)
+            ?: return
+        if (sourcePath.isBlank() || sourceDocument.findAliasGroup(groupId) == null) return
+        prepareAliasMoveDestinations(sourcePath, groupPath, excludeDescendants = true)
+    }
+
+    private fun prepareAliasMoveDestinations(
+        sourcePath: String,
+        excludedGroupPath: List<String>,
+        excludeDescendants: Boolean
+    ) {
+        uiState = uiState.copy(
+            aliasEntryMoveDestinations = emptyList(),
+            aliasEntryMoveDestinationsLoading = true,
+            aliasEditorErrorMessage = ""
+        )
+        viewModelScope.launch {
+            val gateway = configGateway as? ActivityHierarchyGateway
+            if (gateway == null) {
+                uiState = uiState.copy(
+                    aliasEntryMoveDestinationsLoading = false,
+                    aliasEditorErrorMessage = "Activity hierarchy runtime is unavailable."
+                )
+                return@launch
+            }
+            val documents = mutableListOf<AliasEntryMoveDestinationDocument>()
+            for (file in uiState.aliasFiles.filter { isAliasConfigFilePath(it.relativePath) }) {
+                val content = if (file.relativePath == sourcePath) {
+                    uiState.aliasAdvancedTomlDraft.ifBlank { uiState.selectedFileContent }
+                } else {
+                    val read = configGateway.readConfigTomlFile(file.relativePath)
+                    if (!read.ok) {
+                        uiState = uiState.copy(
+                            aliasEntryMoveDestinationsLoading = false,
+                            aliasEditorErrorMessage = read.message
+                        )
+                        return@launch
+                    }
+                    read.content
+                }
+                val described = gateway.describeActivityHierarchy(content)
+                val document = described.hierarchy?.toActivityAliasDocument()
+                if (!described.ok || document == null) {
+                    val message = described.message.ifBlank {
+                        "Cannot read activity hierarchy: ${file.displayName}"
+                    }
+                    uiState = uiState.copy(
+                        aliasEntryMoveDestinationsLoading = false,
+                        aliasEditorErrorMessage = message
+                    )
+                    return@launch
+                }
+                documents += AliasEntryMoveDestinationDocument(
+                    sourceName = file.relativePath,
+                    displayName = file.displayName.removePrefix("activity_hierarchy/"),
+                    document = document,
+                    rootSelectable = file.relativePath != sourcePath,
+                    excludedGroupPath = if (file.relativePath == sourcePath) {
+                        excludedGroupPath
+                    } else {
+                        emptyList()
+                    },
+                    excludeDescendants = file.relativePath == sourcePath && excludeDescendants
+                )
+            }
+            uiState = uiState.copy(
+                aliasEntryMoveDestinations = documents,
+                aliasEntryMoveDestinationsLoading = false
+            )
+        }
+    }
+
+    fun previewAliasEntryMove(entryId: String, target: AliasEntryMoveTarget) {
+        val sourceDocument = uiState.aliasDocumentDraft ?: return
+        val sourcePath = uiState.selectedFilePath
+        val entry = sourceDocument.findAliasEntry(entryId) ?: return
+        val sourceCanonicalPath = sourceDocument.canonicalTargetPathForEntry(entryId) ?: return
+        if (target.sourceName == sourcePath) {
+            val targetGroupId = target.groupId ?: return
+            previewAliasEntryMove(entryId, targetGroupId)
+            return
+        }
+        val gateway = configGateway as? ActivityHierarchyGateway ?: run {
+            uiState = uiState.copy(aliasEditorErrorMessage = "Activity hierarchy runtime is unavailable.")
+            return
+        }
+        val sourceContent = uiState.aliasAdvancedTomlDraft.ifBlank { uiState.selectedFileContent }
+        viewModelScope.launch {
+            val documents = readActivityHierarchyDocumentsForMove(sourcePath, sourceContent, gateway)
+                ?: return@launch
+            val destinationPath = target.groupPath.joinToString(".").ifBlank { "root" }
+            val result = gateway.moveActivityHierarchyNodeBetweenDocuments(
+                documents = documents,
+                sourceName = sourcePath,
+                destinationName = target.sourceName,
+                operation = ActivityHierarchyOperation(
+                    kind = "move_leaf",
+                    targetPath = sourceCanonicalPath,
+                    destinationPath = destinationPath
+                )
+            )
+            val replacement = result.replacements.firstOrNull()
+            if (!result.ok || replacement == null || result.updatedDocuments.isEmpty()) {
+                val message = result.message.ifBlank { "Alias move preview failed." }
+                uiState = uiState.copy(
+                    aliasEntryMovePlan = null,
+                    aliasEditorErrorMessage = message,
+                    statusText = message
+                )
+                return@launch
+            }
+            uiState = uiState.copy(
+                aliasEntryMovePlan = AliasEntryMovePlan(
+                    entryId = entryId,
+                    aliasKey = entry.aliasKey,
+                    canonicalLeaf = entry.canonicalLeaf,
+                    sourceParentGroupId = sourceCanonicalPath.substringBeforeLast('.', "").ifBlank { null },
+                    sourceGroupPath = sourceCanonicalPath.split('.').dropLast(1),
+                    targetGroupId = target.groupId.orEmpty(),
+                    targetGroupPath = target.groupPath,
+                    oldCanonical = replacement.oldCanonical,
+                    newCanonical = replacement.newCanonical,
+                    sourceFilePath = sourcePath,
+                    destinationFilePath = target.sourceName,
+                    destinationGroupPath = target.groupPath,
+                    updatedDocuments = result.updatedDocuments,
+                    replacements = result.replacements,
+                    aliasReplacements = result.aliasReplacements
+                ),
+                aliasEditorErrorMessage = ""
+            )
+        }
+    }
+
+    fun previewAliasGroupMove(groupId: String, target: AliasEntryMoveTarget) {
+        val sourceDocument = uiState.aliasDocumentDraft ?: return
+        val sourcePath = uiState.selectedFilePath
+        val group = sourceDocument.findAliasGroup(groupId) ?: return
+        val sourceCanonicalPath = sourceDocument.canonicalTargetPathForGroup(groupId) ?: return
+        val destinationPath = target.groupPath.joinToString(".").ifBlank { "root" }
+        val gateway = configGateway as? ActivityHierarchyGateway ?: run {
+            uiState = uiState.copy(aliasEditorErrorMessage = "Activity hierarchy runtime is unavailable.")
+            return
+        }
+        val sourceContent = uiState.aliasAdvancedTomlDraft.ifBlank { uiState.selectedFileContent }
+        viewModelScope.launch {
+            val operation = ActivityHierarchyOperation(
+                kind = "move_group",
+                targetPath = sourceCanonicalPath,
+                destinationPath = destinationPath
+            )
+            val result = if (target.sourceName == sourcePath) {
+                gateway.applyActivityHierarchyOperation(sourceContent, operation).let {
+                    AliasMovePreviewResult(
+                        ok = it.ok,
+                        replacements = it.replacements,
+                        aliasReplacements = it.aliasReplacements,
+                        updatedDocuments = emptyList(),
+                        message = it.message
+                    )
+                }
+            } else {
+                val documents = readActivityHierarchyDocumentsForMove(sourcePath, sourceContent, gateway)
+                    ?: return@launch
+                gateway.moveActivityHierarchyNodeBetweenDocuments(
+                    documents = documents,
+                    sourceName = sourcePath,
+                    destinationName = target.sourceName,
+                    operation = operation
+                ).let {
+                    AliasMovePreviewResult(
+                        ok = it.ok,
+                        replacements = it.replacements,
+                        aliasReplacements = it.aliasReplacements,
+                        updatedDocuments = it.updatedDocuments,
+                        message = it.message
+                    )
+                }
+            }
+            val replacement = result.replacements.firstOrNull()
+            val missingCrossDocumentResult =
+                target.sourceName != sourcePath && result.updatedDocuments.isEmpty()
+            if (!result.ok || replacement == null || missingCrossDocumentResult) {
+                val message = result.message.ifBlank { "Group move preview failed." }
+                uiState = uiState.copy(
+                    aliasEntryMovePlan = null,
+                    aliasEditorErrorMessage = message,
+                    statusText = message
+                )
+                return@launch
+            }
+            uiState = uiState.copy(
+                aliasEntryMovePlan = AliasEntryMovePlan(
+                    entryId = groupId,
+                    aliasKey = group.name,
+                    canonicalLeaf = group.name,
+                    nodeKind = AliasMoveNodeKind.GROUP,
+                    sourceParentGroupId = sourceCanonicalPath.substringBeforeLast('.', "").ifBlank { null },
+                    sourceGroupPath = sourceCanonicalPath.split('.').dropLast(1),
+                    targetGroupId = target.groupId.orEmpty(),
+                    targetGroupPath = target.groupPath,
+                    oldCanonical = replacement.oldCanonical,
+                    newCanonical = replacement.newCanonical,
+                    sourceFilePath = sourcePath,
+                    destinationFilePath = target.sourceName,
+                    destinationGroupPath = target.groupPath,
+                    updatedDocuments = result.updatedDocuments,
+                    replacements = result.replacements,
+                    aliasReplacements = result.aliasReplacements
+                ),
+                aliasEditorErrorMessage = ""
+            )
+        }
+    }
+
+    private suspend fun readActivityHierarchyDocumentsForMove(
+        currentPath: String,
+        currentContent: String,
+        gateway: ActivityHierarchyGateway
+    ): List<ActivityHierarchyDocumentInput>? {
+        val documents = mutableListOf<ActivityHierarchyDocumentInput>()
+        for (file in uiState.aliasFiles.filter { isAliasConfigFilePath(it.relativePath) }) {
+            val content = if (file.relativePath == currentPath) {
+                currentContent
+            } else {
+                val read = configGateway.readConfigTomlFile(file.relativePath)
+                if (!read.ok) {
+                    uiState = uiState.copy(aliasEditorErrorMessage = read.message)
+                    return null
+                }
+                read.content
+            }
+            documents += ActivityHierarchyDocumentInput(file.relativePath, content)
+        }
+        return documents
     }
 
     fun discardAliasEntryMovePlan() {
@@ -554,6 +818,8 @@ internal class ConfigViewModel(
         }
         uiState = uiState.copy(
             aliasEntryMovePlan = null,
+            aliasEntryMoveDestinations = emptyList(),
+            aliasEntryMoveDestinationsLoading = false,
             aliasEditorErrorMessage = "",
             statusText = "move plan discarded"
         )
@@ -561,17 +827,108 @@ internal class ConfigViewModel(
 
     fun confirmAliasEntryMovePlan() {
         val plan = uiState.aliasEntryMovePlan ?: return
+        if (plan.updatedDocuments.isNotEmpty()) {
+            confirmCrossDocumentAliasEntryMovePlan(plan)
+            return
+        }
         val document = uiState.aliasDocumentDraft ?: return
-        val sourcePath = document.canonicalTargetPathForEntry(plan.entryId) ?: return
+        val sourcePath = if (plan.nodeKind == AliasMoveNodeKind.GROUP) {
+            document.canonicalTargetPathForGroup(plan.entryId)
+        } else {
+            document.canonicalTargetPathForEntry(plan.entryId)
+        } ?: return
         val destinationPath = document.canonicalTargetPathForGroup(plan.targetGroupId) ?: return
-        applyCoreAliasHierarchyOperation(
-            AliasHierarchyOperation(
-                kind = "move_leaf",
+        applyCoreActivityHierarchyOperation(
+            ActivityHierarchyOperation(
+                kind = if (plan.nodeKind == AliasMoveNodeKind.GROUP) "move_group" else "move_leaf",
                 targetPath = sourcePath,
                 destinationPath = destinationPath
             )
         )
     }
+
+    private fun confirmCrossDocumentAliasEntryMovePlan(plan: AliasEntryMovePlan) {
+        val migration = aliasMigrationUseCase ?: run {
+            uiState = uiState.copy(aliasEditorErrorMessage = "Alias migration runtime is unavailable.")
+            return
+        }
+        val sourceDocument = plan.updatedDocuments.firstOrNull { it.sourceName == plan.sourceFilePath }
+            ?: return
+        viewModelScope.launch {
+            uiState = uiState.copy(autoSaveStatus = ConfigAutoSaveStatus.SAVING)
+            val outcome = migration.applyCoreResult(
+                configRelativePath = plan.sourceFilePath,
+                updatedTomlContent = sourceDocument.updatedTomlContent,
+                replacements = plan.replacements,
+                aliasReplacements = plan.aliasReplacements,
+                updatedDocuments = plan.updatedDocuments.map {
+                    ActivityHierarchyDocumentInput(it.sourceName, it.updatedTomlContent)
+                }
+            )
+            if (outcome is ActivityAliasMigrationOutcome.Invalid) {
+                uiState = uiState.copy(
+                    aliasEditorErrorMessage = outcome.message,
+                    autoSaveStatus = ConfigAutoSaveStatus.FAILED
+                )
+                return@launch
+            }
+            if (plan.aliasReplacements.isNotEmpty()) {
+                val replacements = plan.aliasReplacements.associate {
+                    it.oldAlias to it.newAlias
+                }
+                runCatching {
+                    quickActivitiesPreferenceGateway.setQuickActivities(
+                        quickActivitiesPreferenceGateway.getQuickActivities().map { value ->
+                            replacements[value] ?: value
+                        }
+                    )
+                }.onFailure { error ->
+                    uiState = uiState.copy(
+                        aliasEditorErrorMessage = error.message
+                            ?: "Quick Access alias migration failed.",
+                        autoSaveStatus = ConfigAutoSaveStatus.FAILED
+                    )
+                    return@launch
+                }
+            }
+            val refreshed = configGateway.listConfigTomlFiles()
+            val refreshedState = if (refreshed.ok) {
+                uiState.copy(
+                    aliasFiles = refreshed.aliasFiles,
+                    chartFiles = refreshed.chartFiles,
+                    metaFiles = refreshed.metaFiles,
+                    reportFiles = refreshed.reportFiles,
+                    aliasEntryMovePlan = null,
+                    aliasEntryMoveDestinations = emptyList(),
+                    aliasEntryMoveDestinationsLoading = false,
+                    autoSaveStatus = ConfigAutoSaveStatus.SAVED,
+                    txtReloadRequestVersion = uiState.txtReloadRequestVersion + 1,
+                    statusText = moveCompletionStatus(plan)
+                )
+            } else {
+                uiState.copy(
+                    aliasEntryMovePlan = null,
+                    aliasEntryMoveDestinations = emptyList(),
+                    aliasEntryMoveDestinationsLoading = false,
+                    autoSaveStatus = ConfigAutoSaveStatus.SAVED,
+                    txtReloadRequestVersion = uiState.txtReloadRequestVersion + 1,
+                    statusText = moveCompletionStatus(plan)
+                )
+            }
+            uiState = readConfigFileIntoState(
+                baseState = refreshedState,
+                path = plan.sourceFilePath,
+                statusText = refreshedState.statusText
+            )
+        }
+    }
+
+    private fun moveCompletionStatus(plan: AliasEntryMovePlan): String =
+        if (plan.nodeKind == AliasMoveNodeKind.GROUP) {
+            "moved group subtree across TOML and rebuilt database"
+        } else {
+            "moved activity name across TOML and rebuilt database"
+        }
 
     fun setStatusText(message: String) {
         uiState = uiState.copy(statusText = message)
@@ -603,22 +960,10 @@ internal class ConfigViewModel(
             }
 
             val parent = targetFilePath.substringAfterLast('/').removeSuffix(".toml")
-            val initialContent = (configGateway as? AliasHierarchyGateway)
-                ?.createAliasHierarchyDocument(parent)
-                ?.takeIf { it.ok }
-                ?.tomlContent
-                ?: run {
-                    uiState = uiState.copy(statusText = "Alias hierarchy runtime is unavailable.")
-                    return@launch
-                }
-            val migration = aliasMigrationUseCase?.applyCoreResult(
-                configRelativePath = targetFilePath,
-                updatedTomlContent = initialContent,
-                replacements = emptyList(),
-                allowMissingConfig = true
-            ) ?: ActivityAliasMigrationOutcome.Invalid("Alias migration runtime is unavailable.")
-            if (migration is ActivityAliasMigrationOutcome.Invalid) {
-                uiState = uiState.copy(statusText = migration.message)
+            val initialContent = newActivityHierarchyToml(parent)
+            val saveResult = configGateway.saveConfigTomlFile(targetFilePath, initialContent)
+            if (!saveResult.ok) {
+                uiState = uiState.copy(statusText = saveResult.message)
                 return@launch
             }
 
@@ -636,7 +981,7 @@ internal class ConfigViewModel(
             uiState = readConfigFileIntoState(
                 baseState = updated,
                 path = targetFilePath,
-                statusText = "created alias toml through core migration -> $targetFilePath"
+                statusText = "created activity hierarchy toml -> $targetFilePath"
             )
         }
     }
@@ -702,7 +1047,7 @@ internal class ConfigViewModel(
                 aliasAdvancedDraftsByFile = uiState.aliasAdvancedDraftsByFile - selectedFile,
                 aliasEditorModeByFile = uiState.aliasEditorModeByFile - selectedFile,
                 aliasEditorErrorMessage = if (baseline == null) {
-                    "Alias hierarchy is unavailable for this file."
+                    "Activity hierarchy is unavailable for this file."
                 } else {
                     ""
                 }
@@ -735,14 +1080,14 @@ internal class ConfigViewModel(
             selectedFileContent = readResult.content
         )
         val hierarchyResult = if (isAliasConfigFilePath(readResult.filePath)) {
-            val gateway = configGateway as? AliasHierarchyGateway
+            val gateway = configGateway as? ActivityHierarchyGateway
             if (gateway == null) {
-                AliasHierarchyDescribeResult(
+                ActivityHierarchyDescribeResult(
                     ok = false,
-                    message = "Alias hierarchy runtime is unavailable."
+                    message = "Activity hierarchy runtime is unavailable."
                 )
             } else {
-                gateway.describeAliasHierarchy(readResult.content)
+                gateway.describeActivityHierarchy(readResult.content)
             }
         } else {
             null
@@ -792,7 +1137,7 @@ internal class ConfigViewModel(
                 autoSaveStatus = ConfigAutoSaveStatus.FAILED
             )
         // Structured operations are already persisted by
-        // applyCoreAliasHierarchyOperation through the migration service.
+        // applyCoreActivityHierarchyOperation through the migration service.
         // This button only clears presentation drafts; it must never write
         // alias TOML directly from Android.
         return uiState.copy(
@@ -809,10 +1154,10 @@ internal class ConfigViewModel(
     /** Import path for alias TOML; persistence still goes through Core + migration. */
     suspend fun applyImportedAliasToml(relativePath: String, updatedTomlContent: String): String? {
         if (!isAliasConfigFilePath(relativePath)) return "Not an alias TOML path: $relativePath"
-        val gateway = configGateway as? AliasHierarchyGateway
-            ?: return "Alias hierarchy runtime is unavailable."
+        val gateway = configGateway as? ActivityHierarchyGateway
+            ?: return "Activity hierarchy runtime is unavailable."
         val original = configGateway.readConfigTomlFile(relativePath)
-        val result = gateway.rewriteAliasHierarchyDocument(
+        val result = gateway.rewriteActivityHierarchyDocument(
             originalTomlContent = if (original.ok) original.content else updatedTomlContent,
             updatedTomlContent = updatedTomlContent
         )
@@ -835,13 +1180,13 @@ internal class ConfigViewModel(
     }
 
     private suspend fun saveAdvancedAliasFile(selectedFile: String): ConfigUiState {
-        val gateway = configGateway as? AliasHierarchyGateway
+        val gateway = configGateway as? ActivityHierarchyGateway
             ?: return uiState.copy(
-                aliasEditorErrorMessage = "Alias hierarchy runtime is unavailable.",
+                aliasEditorErrorMessage = "Activity hierarchy runtime is unavailable.",
                 autoSaveStatus = ConfigAutoSaveStatus.FAILED,
-                statusText = "Alias hierarchy runtime is unavailable."
+                statusText = "Activity hierarchy runtime is unavailable."
             )
-        val result = gateway.rewriteAliasHierarchyDocument(
+        val result = gateway.rewriteActivityHierarchyDocument(
             originalTomlContent = uiState.selectedFileContent,
             updatedTomlContent = uiState.aliasAdvancedTomlDraft
         )

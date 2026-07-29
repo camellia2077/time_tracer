@@ -3,6 +3,8 @@ package com.example.tracer
 import android.content.Context
 import java.io.File
 
+internal const val DATA_FOLDER_SNAPSHOT_MARKER = ".data_folder_snapshot"
+
 internal class RuntimeEnvironment(private val context: Context) {
     private companion object {
         const val RUNTIME_ROOT_DIR_NAME = "tracer_core"
@@ -27,7 +29,9 @@ internal class RuntimeEnvironment(private val context: Context) {
 
     fun prepareRuntimePaths(): RuntimePaths {
         val rootDir = rootResolver.resolveRuntimeRootDir()
-        assetBootstrapper.bootstrap(rootDir)
+        if (!File(rootDir, DATA_FOLDER_SNAPSHOT_MARKER).isFile) {
+            assetBootstrapper.bootstrap(rootDir)
+        }
 
         val configRootDir = File(rootDir, "config")
         val configBundleStatus = validateRuntimeConfigBundle(configRootDir)
@@ -44,7 +48,7 @@ internal class RuntimeEnvironment(private val context: Context) {
             outputRoot.mkdirs()
         }
 
-        val configToml = File(configRootDir, "aliases/_system.toml")
+        val configToml = File(configRootDir, "activity_hierarchy/_system.toml")
         if (!configToml.exists()) {
             throw IllegalStateException("Missing config TOML: ${configToml.absolutePath}")
         }

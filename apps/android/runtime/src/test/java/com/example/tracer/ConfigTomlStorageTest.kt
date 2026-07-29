@@ -75,10 +75,10 @@ class ConfigTomlStorageTest {
     fun writeTomlFile_createsMissingTomlFileUnderConfigRoot() {
         val root = Files.createTempDirectory("config-toml-storage-create").toFile()
         try {
-            val target = File(root, "aliases/custom.toml")
+            val target = File(root, "activity_hierarchy/custom.toml")
 
             val result = ConfigTomlStorage(root.absolutePath).writeTomlFile(
-                relativePath = "aliases/custom.toml",
+                relativePath = "activity_hierarchy/custom.toml",
                 content = "name = \"custom\"\r\n"
             )
 
@@ -115,11 +115,11 @@ class ConfigTomlStorageTest {
                 parentFile?.mkdirs()
                 writeText("meta = true\n")
             }
-            File(root, "aliases/_system.toml").apply {
+            File(root, "activity_hierarchy/_system.toml").apply {
                 parentFile?.mkdirs()
                 writeText("alias = true\n")
             }
-            File(root, "aliases/study.toml").apply {
+            File(root, "activity_hierarchy/study.toml").apply {
                 parentFile?.mkdirs()
                 writeText("legacy_alias = true\n")
             }
@@ -139,11 +139,11 @@ class ConfigTomlStorageTest {
             assertEquals(
                 listOf(
                     ConfigTomlFileEntry(
-                        relativePath = "aliases/_system.toml",
+                        relativePath = "activity_hierarchy/_system.toml",
                         displayName = "_system.toml"
                     ),
                     ConfigTomlFileEntry(
-                        relativePath = "aliases/study.toml",
+                        relativePath = "activity_hierarchy/study.toml",
                         displayName = "study.toml"
                     )
                 ),

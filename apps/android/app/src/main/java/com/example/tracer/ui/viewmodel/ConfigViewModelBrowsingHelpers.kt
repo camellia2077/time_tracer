@@ -5,7 +5,10 @@ internal fun configFilesForCategory(
     category: ConfigCategory
 ): List<ConfigTomlFileEntry> {
     return when (category) {
-        ConfigCategory.ALIAS -> state.aliasFiles
+        // `_system.toml` is a runtime/system file. Keep it available for an
+        // explicit raw-TOML open, but do not treat it as an activity hierarchy
+        // document when choosing the default file for the Alias tab.
+        ConfigCategory.ALIAS -> state.aliasFiles.filter { isAliasConfigFilePath(it.relativePath) }
 
         ConfigCategory.CHARTS -> state.chartFiles
         ConfigCategory.META -> state.metaFiles
@@ -79,7 +82,7 @@ internal fun applyLoadedConfigFile(
 
     val document = coreDocument
     val documentError = coreErrorMessage.ifBlank {
-        "Alias hierarchy runtime did not return a structured snapshot."
+        "Activity hierarchy runtime did not return a structured snapshot."
     }
     val restoredAdvancedDraft = state.aliasAdvancedDraftsByFile[filePath] ?: content
     val restoredStructuredDraft = state.aliasStructuredDraftsByFile[filePath]
@@ -152,7 +155,7 @@ internal fun findConfigFileEntry(
 
 internal fun isAliasConfigFilePath(path: String): Boolean =
     // `_system.toml` is an alias system config, not a structured alias file.
-    path.startsWith("aliases/") &&
+    path.startsWith("activity_hierarchy/") &&
         !path.endsWith("/_system.toml", ignoreCase = true) &&
         path.endsWith(".toml", ignoreCase = true)
 
@@ -173,5 +176,12 @@ internal fun newAliasTomlPath(
     } else {
         "$requestedName.toml"
     }
-    return "aliases/$normalizedFileName"
+    return "activity_hierarchy/$normalizedFileName"
+}
+
+internal fun newActivityHierarchyToml(parent: String): String {
+    val escapedParent = parent
+        .replace("\\", "\\\\")
+        .replace("\"", "\\\"")
+    return "parent = \"$escapedParent\"\n\n[aliases]\n"
 }

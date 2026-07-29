@@ -77,6 +77,13 @@ data class ClearDatabaseResult(
     val message: String
 )
 
+data class DataFolderSnapshotResult(
+    val ok: Boolean,
+    val message: String,
+    val txtFileCount: Int = 0,
+    val tomlFileCount: Int = 0
+)
+
 data class RecordActionResult(
     val ok: Boolean,
     val message: String,
@@ -226,47 +233,56 @@ data class AliasCanonicalRenameResult(
     val message: String
 )
 
-data class AliasHierarchyNode(
+enum class ActivityHierarchyNodeKind(val wireValue: String) {
+    LEAF("leaf"),
+    GROUP("group");
+
+    companion object {
+        fun fromWireValue(value: String, legacyIsGroup: Boolean): ActivityHierarchyNodeKind =
+            entries.firstOrNull { it.wireValue == value } ?: if (legacyIsGroup) GROUP else LEAF
+    }
+}
+
+data class ActivityHierarchyNode(
     val canonicalKey: String,
     val path: String,
-    val isGroup: Boolean,
+    val kind: ActivityHierarchyNodeKind,
     val aliases: List<String>,
-    val children: List<AliasHierarchyNode>
-)
+    val children: List<ActivityHierarchyNode>
+) {
+    /** Compatibility view for the existing presentation adapter. */
+    val isGroup: Boolean
+        get() = kind == ActivityHierarchyNodeKind.GROUP
+}
 
-data class AliasHierarchySnapshot(
+data class ActivityHierarchySnapshot(
     val parent: String,
-    val nodes: List<AliasHierarchyNode>
+    val nodes: List<ActivityHierarchyNode>
 )
 
-data class AliasHierarchyDescribeResult(
+data class ActivityHierarchyDescribeResult(
     val ok: Boolean,
-    val hierarchy: AliasHierarchySnapshot? = null,
+    val hierarchy: ActivityHierarchySnapshot? = null,
     val message: String = ""
 )
 
-data class AliasHierarchyCreateResult(
-    val ok: Boolean,
-    val tomlContent: String = "",
-    val message: String = ""
-)
-
-data class AliasHierarchyDocumentInput(
+data class ActivityHierarchyDocumentInput(
     val sourceName: String,
     val tomlContent: String
 )
 
-data class AliasHierarchyValidationResult(
+data class ActivityHierarchyValidationResult(
     val ok: Boolean,
     val message: String = ""
 )
 
-data class AliasHierarchyOperation(
+data class ActivityHierarchyOperation(
     val kind: String,
     val targetPath: String = "",
     val destinationPath: String = "",
     val canonicalKey: String = "",
     val newName: String = "",
+    val oldParent: String = "",
     val targetAlias: String = "",
     val oldAlias: String = "",
     val aliases: List<String> = emptyList()
@@ -277,12 +293,25 @@ data class AliasKeyReplacement(
     val newAlias: String
 )
 
-data class AliasHierarchyOperationResult(
+data class ActivityHierarchyOperationResult(
     val ok: Boolean,
     val updatedTomlContent: String,
     val replacements: List<CanonicalActivityNameReplacement>,
     val aliasReplacements: List<AliasKeyReplacement> = emptyList(),
-    val hierarchy: AliasHierarchySnapshot? = null,
+    val hierarchy: ActivityHierarchySnapshot? = null,
+    val message: String = ""
+)
+
+data class ActivityHierarchyDocumentOutput(
+    val sourceName: String,
+    val updatedTomlContent: String
+)
+
+data class ActivityHierarchyCrossDocumentOperationResult(
+    val ok: Boolean,
+    val updatedDocuments: List<ActivityHierarchyDocumentOutput> = emptyList(),
+    val replacements: List<CanonicalActivityNameReplacement> = emptyList(),
+    val aliasReplacements: List<AliasKeyReplacement> = emptyList(),
     val message: String = ""
 )
 
@@ -291,6 +320,7 @@ data class AliasEntryMoveMigrationRequest(
     val updatedTomlContent: String,
     val replacements: List<CanonicalActivityNameReplacement>,
     val aliasReplacements: List<AliasKeyReplacement> = emptyList(),
+    val updatedDocuments: List<ActivityHierarchyDocumentInput> = emptyList(),
     val canonicalRename: AliasCanonicalRenameRequest? = null,
     val allowMissingConfig: Boolean = false
 )

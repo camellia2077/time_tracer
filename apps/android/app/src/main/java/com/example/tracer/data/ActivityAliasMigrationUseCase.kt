@@ -1,6 +1,6 @@
 package com.example.tracer
 
-/** Coordinates the persisted half of an already-confirmed alias hierarchy change. */
+/** Coordinates the persisted half of an already-confirmed activity hierarchy change. */
 internal class ActivityAliasMigrationUseCase(
     private val gateway: AliasMoveMigrationGateway
 ) {
@@ -9,6 +9,7 @@ internal class ActivityAliasMigrationUseCase(
         updatedTomlContent: String,
         replacements: List<CanonicalActivityNameReplacement>,
         aliasReplacements: List<AliasKeyReplacement> = emptyList(),
+        updatedDocuments: List<ActivityHierarchyDocumentInput> = emptyList(),
         allowMissingConfig: Boolean = false
     ): ActivityAliasMigrationOutcome {
         val result = gateway.applyAliasEntryMoveMigration(
@@ -17,6 +18,7 @@ internal class ActivityAliasMigrationUseCase(
                 updatedTomlContent = updatedTomlContent,
                 replacements = replacements,
                 aliasReplacements = aliasReplacements,
+                updatedDocuments = updatedDocuments,
                 allowMissingConfig = allowMissingConfig
             )
         )

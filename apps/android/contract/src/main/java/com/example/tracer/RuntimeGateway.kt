@@ -7,7 +7,8 @@ interface RuntimeGateway :
     QueryGateway,
     TxtStorageGateway,
     ConfigGateway,
-    AliasHierarchyGateway,
+    DataFolderSnapshotGateway,
+    ActivityHierarchyGateway,
     AliasMoveMigrationGateway,
     FileCryptoGateway,
     TracerExchangeGateway

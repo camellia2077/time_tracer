@@ -25,7 +25,7 @@ internal fun buildConfigTomlExportEntries(relativePaths: Iterable<String>): List
         .mapNotNull { sourcePath ->
             if (
                 sourcePath == "config.toml" ||
-                sourcePath.startsWith("aliases/") ||
+                sourcePath.startsWith("activity_hierarchy/") ||
                 sourcePath.startsWith("charts/") ||
                 sourcePath.startsWith("meta/") ||
                 sourcePath.startsWith("reports/")
@@ -40,7 +40,7 @@ internal fun buildConfigTomlExportEntries(relativePaths: Iterable<String>): List
         .map { entries ->
             entries.sortedWith(
                 compareBy<ConfigTomlExportEntry> {
-                    !it.sourcePath.startsWith("aliases/")
+                    !it.sourcePath.startsWith("activity_hierarchy/")
                 }.thenBy { it.sourcePath }
             ).first()
         }

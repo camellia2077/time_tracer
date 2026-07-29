@@ -135,7 +135,7 @@
     <string name="config_delete_alias_mapping_warning">このマッピングを削除すると、過去にその別名を使用した記録を正しく解析できなくなる可能性があります。この操作は元に戻せません。</string>
     <string name="config_title_new_alias_mapping">アクティビティ名マッピングを新規作成</string>
     <string name="config_label_new_alias_file_name">ファイル名</string>
-    <string name="config_new_alias_file_location">作成先: aliases/</string>
+    <string name="config_new_alias_file_location">作成先: activity_hierarchy/</string>
     <string name="config_action_create">作成</string>
     <string name="config_action_cancel">キャンセル</string>
     <string name="config_action_delete">削除</string>
@@ -192,6 +192,7 @@
     <string name="config_alias_dialog_edit_entry_name_title">アクティビティ名を編集</string>
     <string name="config_alias_action_save_aliases">保存</string>
     <string name="config_alias_dialog_move_entry_title">アクティビティ名を移動</string>
+    <string name="config_alias_dialog_move_group_title">活動カテゴリを移動</string>
     <string name="config_alias_group_name_label">階層名</string>
     <string name="config_alias_group_name_required">カテゴリ名は必須です。</string>
     <string name="config_alias_alias_key_label">Alias Key</string>
@@ -206,9 +207,14 @@
     <string name="config_alias_entry_required">Alias key と canonical leaf は必須です。</string>
     <string name="config_alias_alias_key_required">Alias key は必須です。</string>
     <string name="config_alias_move_entry_label">%1$s を活動カテゴリへ移動</string>
-    <string name="config_alias_move_no_destination">このアクティビティ名を移動する前に別の活動カテゴリを作成してください。</string>
+    <string name="config_alias_move_group_label">%1$s とその内容を活動カテゴリへ移動</string>
+    <string name="config_alias_move_target_toml">移動先 TOML</string>
+    <string name="config_alias_move_target_root">ルート</string>
+    <string name="config_alias_move_loading">alias TOML を読み込み中…</string>
+    <string name="config_alias_move_no_destination">利用可能な移動先 TOML またはカテゴリがありません。</string>
     <string name="config_alias_move_plan_title">移動プラン</string>
     <string name="config_alias_move_plan_canonical">%1$s → %2$s</string>
+    <string name="config_alias_move_plan_location">%1$s / %2$s → %3$s / %4$s</string>
     <string name="config_alias_move_plan_impact">TXT を更新し、ローカルデータベースを再構築します。</string>
     <string name="config_alias_move_plan_not_saved">プレビューのみです。TOML、TXT、データベースは変更されません。</string>
 

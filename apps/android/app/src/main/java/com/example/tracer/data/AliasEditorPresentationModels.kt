@@ -8,26 +8,58 @@ internal typealias AliasTomlNode = ActivityAliasNode
 internal typealias AliasTomlGroup = ActivityCategory
 internal typealias AliasTomlEntry = ActivityAlias
 
+internal enum class AliasMoveNodeKind {
+    LEAF,
+    GROUP
+}
+
 /** Preview data only; core owns move validation and the actual edit. */
 internal data class AliasEntryMovePlan(
     val entryId: String,
     val aliasKey: String,
     val canonicalLeaf: String,
+    val nodeKind: AliasMoveNodeKind = AliasMoveNodeKind.LEAF,
     val sourceParentGroupId: String?,
     val sourceGroupPath: List<String>,
     val targetGroupId: String,
     val targetGroupPath: List<String>,
     val oldCanonical: String,
-    val newCanonical: String
+    val newCanonical: String,
+    val sourceFilePath: String = "",
+    val destinationFilePath: String = "",
+    val destinationGroupPath: List<String> = emptyList(),
+    val updatedDocuments: List<ActivityHierarchyDocumentOutput> = emptyList(),
+    val replacements: List<CanonicalActivityNameReplacement> = emptyList(),
+    val aliasReplacements: List<AliasKeyReplacement> = emptyList()
 )
 
 internal data class AliasEntryMoveDestination(
     val groupId: String,
-    val groupPath: List<String>
+    val groupPath: List<String>,
+    val sourceName: String = "",
+    val isRoot: Boolean = false
+)
+
+internal data class AliasEntryMoveDestinationDocument(
+    val sourceName: String,
+    val displayName: String,
+    val document: AliasTomlDocument,
+    val rootSelectable: Boolean = true,
+    val excludedGroupPath: List<String> = emptyList(),
+    val excludeDescendants: Boolean = false
+)
+
+internal data class AliasEntryMoveTarget(
+    val sourceName: String,
+    val groupPath: List<String>,
+    val groupId: String? = null
 )
 
 internal fun AliasTomlDocument.findAliasEntry(entryId: String): AliasTomlEntry? =
     nodes.entryLocations().firstOrNull { it.entry.id == entryId }?.entry
+
+internal fun AliasTomlDocument.findAliasGroup(groupId: String): AliasTomlGroup? =
+    nodes.groupLocations().firstOrNull { it.group.id == groupId }?.group
 
 internal fun AliasTomlDocument.canonicalTargetPathForEntry(entryId: String): String? =
     nodes.entryLocations().firstOrNull { it.entry.id == entryId }?.let { location ->

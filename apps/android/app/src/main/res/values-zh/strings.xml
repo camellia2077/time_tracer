@@ -135,7 +135,7 @@
     <string name="config_delete_alias_mapping_warning">删除此活动名映射后，过去使用其中简称的记录可能无法被正常解析。此操作无法撤销。</string>
     <string name="config_title_new_alias_mapping">新建活动名映射</string>
     <string name="config_label_new_alias_file_name">文件名</string>
-    <string name="config_new_alias_file_location">将在 aliases/ 中创建</string>
+    <string name="config_new_alias_file_location">将在 activity_hierarchy/ 中创建</string>
     <string name="config_action_create">创建</string>
     <string name="config_action_cancel">取消</string>
     <string name="config_action_delete">删除</string>
@@ -192,6 +192,7 @@
     <string name="config_alias_dialog_edit_entry_name_title">编辑活动名称</string>
     <string name="config_alias_action_save_aliases">保存</string>
     <string name="config_alias_dialog_move_entry_title">移动活动名</string>
+    <string name="config_alias_dialog_move_group_title">移动活动分类</string>
     <string name="config_alias_group_name_label">层级名称</string>
     <string name="config_alias_group_name_required">分类名称不能为空。</string>
     <string name="config_alias_alias_key_label">活动名键</string>
@@ -206,9 +207,14 @@
     <string name="config_alias_entry_required">活动层级名称和简称都不能为空。</string>
     <string name="config_alias_alias_key_required">活动名键不能为空。</string>
     <string name="config_alias_move_entry_label">将 %1$s 移动到活动分类</string>
-    <string name="config_alias_move_no_destination">请先创建其他活动分类，再移动此活动名。</string>
+    <string name="config_alias_move_group_label">将 %1$s 及其内容移动到活动分类</string>
+    <string name="config_alias_move_target_toml">目标 TOML</string>
+    <string name="config_alias_move_target_root">根目录</string>
+    <string name="config_alias_move_loading">正在加载 alias TOML…</string>
+    <string name="config_alias_move_no_destination">没有可用的目标 TOML 或活动分类。</string>
     <string name="config_alias_move_plan_title">移动计划</string>
     <string name="config_alias_move_plan_canonical">%1$s → %2$s</string>
+    <string name="config_alias_move_plan_location">%1$s / %2$s → %3$s / %4$s</string>
     <string name="config_alias_move_plan_impact">将更新 TXT 并重建本地数据库。</string>
     <string name="config_alias_move_plan_not_saved">仅预览；尚未修改 TOML、TXT 或数据库。</string>
 

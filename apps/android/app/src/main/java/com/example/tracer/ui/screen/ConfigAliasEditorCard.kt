@@ -43,6 +43,8 @@ internal fun ConfigAliasEditorCard(
     mode: AliasEditorMode,
     document: AliasTomlDocument?,
     movePlan: AliasEntryMovePlan?,
+    moveDestinations: List<AliasEntryMoveDestinationDocument>,
+    moveDestinationsLoading: Boolean,
     parentOptions: List<String>,
     advancedTomlDraft: String,
     errorMessage: String,
@@ -62,7 +64,10 @@ internal fun ConfigAliasEditorCard(
     onAddGroupAlias: (groupId: String, alias: String) -> Unit,
     onUpdateGroupAliases: (groupId: String, aliases: List<String>) -> Unit,
     onDeleteEntry: (entryId: String) -> Unit,
-    onPreviewEntryMove: (entryId: String, targetGroupId: String) -> Unit,
+    onPrepareEntryMove: (entryId: String) -> Unit,
+    onPrepareGroupMove: (groupId: String) -> Unit,
+    onPreviewEntryMove: (entryId: String, target: AliasEntryMoveTarget) -> Unit,
+    onPreviewGroupMove: (groupId: String, target: AliasEntryMoveTarget) -> Unit,
     onConfirmMovePlan: () -> Unit,
     onDiscardMovePlan: () -> Unit,
     onSave: () -> Unit
@@ -310,6 +315,10 @@ internal fun ConfigAliasEditorCard(
                     dialogState = AliasEditorDialogState.EditGroupAliases(activeDialog.group)
                 },
                 onAddAlias = { dialogState = AliasEditorDialogState.AddGroupAlias(activeDialog.group.id) },
+                onMove = {
+                    onPrepareGroupMove(activeDialog.group.id)
+                    dialogState = AliasEditorDialogState.PlanGroupMove(activeDialog.group)
+                },
                 onDelete = { dialogState = AliasEditorDialogState.ConfirmDeleteGroup(activeDialog.group) }
             )
         }
@@ -325,7 +334,10 @@ internal fun ConfigAliasEditorCard(
                     dialogState = AliasEditorDialogState.EditEntryAliases(activeDialog.entry)
                 },
                 onPromote = { dialogState = AliasEditorDialogState.ConfirmPromote(activeDialog.entry) },
-                onMove = { dialogState = AliasEditorDialogState.PlanEntryMove(activeDialog.entry) },
+                onMove = {
+                    onPrepareEntryMove(activeDialog.entry.id)
+                    dialogState = AliasEditorDialogState.PlanEntryMove(activeDialog.entry)
+                },
                 onDelete = { dialogState = AliasEditorDialogState.ConfirmDeleteEntry(activeDialog.entry) }
             )
         }
@@ -357,11 +369,25 @@ internal fun ConfigAliasEditorCard(
         is AliasEditorDialogState.PlanEntryMove -> {
             AliasEntryMoveTargetDialog(
                 entry = activeDialog.entry,
-                destinations = document?.moveDestinationsForEntry(activeDialog.entry.id).orEmpty(),
+                destinations = moveDestinations,
+                loading = moveDestinationsLoading,
                 onDismiss = { dialogState = null },
-                onConfirm = { targetGroupId ->
+                onConfirm = { target ->
                     dialogState = null
-                    onPreviewEntryMove(activeDialog.entry.id, targetGroupId)
+                    onPreviewEntryMove(activeDialog.entry.id, target)
+                }
+            )
+        }
+
+        is AliasEditorDialogState.PlanGroupMove -> {
+            AliasGroupMoveTargetDialog(
+                group = activeDialog.group,
+                destinations = moveDestinations,
+                loading = moveDestinationsLoading,
+                onDismiss = { dialogState = null },
+                onConfirm = { target ->
+                    dialogState = null
+                    onPreviewGroupMove(activeDialog.group.id, target)
                 }
             )
         }
@@ -442,6 +468,22 @@ private fun AliasEntryMovePlanPreview(
                         plan.newCanonical
                     )
                 )
+                if (plan.sourceFilePath.isNotBlank() && plan.destinationFilePath.isNotBlank()) {
+                    Text(
+                        text = stringResource(
+                            R.string.config_alias_move_plan_location,
+                            plan.sourceFilePath.removePrefix("activity_hierarchy/"),
+                            plan.sourceGroupPath.joinToString(" / ").ifBlank {
+                                stringResource(R.string.config_alias_move_target_root)
+                            },
+                            plan.destinationFilePath.removePrefix("activity_hierarchy/"),
+                            plan.destinationGroupPath.joinToString(" / ").ifBlank {
+                                stringResource(R.string.config_alias_move_target_root)
+                            }
+                        ),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
                 Text(
                     text = stringResource(R.string.config_alias_move_plan_impact),
                     style = MaterialTheme.typography.bodySmall,
@@ -589,6 +631,7 @@ internal sealed interface AliasEditorDialogState {
     data class GroupActions(val group: AliasTomlGroup) : AliasEditorDialogState
     data class EntryActions(val entry: AliasTomlEntry) : AliasEditorDialogState
     data class PlanEntryMove(val entry: AliasTomlEntry) : AliasEditorDialogState
+    data class PlanGroupMove(val group: AliasTomlGroup) : AliasEditorDialogState
     data class ConfirmPromote(val entry: AliasTomlEntry) : AliasEditorDialogState
     data class EditGroupAliases(val group: AliasTomlGroup) : AliasEditorDialogState
     data class AddGroupAlias(val groupId: String) : AliasEditorDialogState

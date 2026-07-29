@@ -57,6 +57,8 @@ internal fun ConfigSection(
     aliasEditorMode: AliasEditorMode,
     aliasDocumentDraft: AliasTomlDocument?,
     aliasEntryMovePlan: AliasEntryMovePlan?,
+    aliasEntryMoveDestinations: List<AliasEntryMoveDestinationDocument>,
+    aliasEntryMoveDestinationsLoading: Boolean,
     aliasParentOptions: List<String>,
     aliasAdvancedTomlDraft: String,
     aliasEditorErrorMessage: String,
@@ -86,7 +88,10 @@ internal fun ConfigSection(
     onAddGroupAlias: (String, String) -> Unit,
     onUpdateGroupAliases: (String, List<String>) -> Unit,
     onDeleteAliasEntry: (String) -> Unit,
-    onPreviewAliasEntryMove: (String, String) -> Unit,
+    onPrepareAliasEntryMove: (String) -> Unit,
+    onPrepareAliasGroupMove: (String) -> Unit,
+    onPreviewAliasEntryMove: (String, AliasEntryMoveTarget) -> Unit,
+    onPreviewAliasGroupMove: (String, AliasEntryMoveTarget) -> Unit,
     onConfirmAliasEntryMovePlan: () -> Unit,
     onDiscardAliasEntryMovePlan: () -> Unit,
     onSaveCurrentFile: () -> Unit,
@@ -98,7 +103,9 @@ internal fun ConfigSection(
 ) {
     var showAboutPage by rememberSaveable { mutableStateOf(false) }
     val visibleFiles = when (selectedCategory) {
-        ConfigCategory.ALIAS -> aliasFiles
+        // `_system.toml` has no structured editor and must not hide the empty
+        // activity-hierarchy creation surface on a fresh installation.
+        ConfigCategory.ALIAS -> aliasFiles.filter { isAliasConfigFilePath(it.relativePath) }
         ConfigCategory.CHARTS -> chartFiles
         ConfigCategory.META -> metaFiles
         ConfigCategory.REPORTS -> reportFiles
@@ -148,6 +155,8 @@ internal fun ConfigSection(
                     mode = aliasEditorMode,
                     document = aliasDocumentDraft,
                     movePlan = aliasEntryMovePlan,
+                    moveDestinations = aliasEntryMoveDestinations,
+                    moveDestinationsLoading = aliasEntryMoveDestinationsLoading,
                     parentOptions = aliasParentOptions,
                     advancedTomlDraft = aliasAdvancedTomlDraft,
                     errorMessage = aliasEditorErrorMessage,
@@ -167,7 +176,10 @@ internal fun ConfigSection(
                     onAddGroupAlias = onAddGroupAlias,
                     onUpdateGroupAliases = onUpdateGroupAliases,
                     onDeleteEntry = onDeleteAliasEntry,
+                    onPrepareEntryMove = onPrepareAliasEntryMove,
+                    onPrepareGroupMove = onPrepareAliasGroupMove,
                     onPreviewEntryMove = onPreviewAliasEntryMove,
+                    onPreviewGroupMove = onPreviewAliasGroupMove,
                     onConfirmMovePlan = onConfirmAliasEntryMovePlan,
                     onDiscardMovePlan = onDiscardAliasEntryMovePlan,
                     onSave = onSaveCurrentFile
@@ -182,12 +194,41 @@ internal fun ConfigSection(
                     onSaveCurrentFile = onSaveCurrentFile
                 )
             }
+        } else if (selectedCategory == ConfigCategory.ALIAS) {
+            ConfigAliasEmptyFileCard(
+                onCreateAliasTomlFile = onCreateAliasTomlFile
+            )
         }
 
         ConfigAboutCard(
             onOpenAbout = { showAboutPage = true },
             onCopyDiagnosticsPayload = onCopyDiagnosticsPayload
         )
+    }
+}
+
+@Composable
+private fun ConfigAliasEmptyFileCard(
+    onCreateAliasTomlFile: (String) -> Unit
+) {
+    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.config_alias_empty_title),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                text = stringResource(R.string.config_alias_empty_message),
+                style = MaterialTheme.typography.bodyMedium
+            )
+            ConfigEditorFileControls(
+                onCreateAliasTomlFile = onCreateAliasTomlFile
+            )
+        }
     }
 }
 
@@ -207,14 +248,14 @@ private fun String.removeCurrentScopePrefix(
     selectedCategory: ConfigCategory
 ): String {
     return if (selectedCategory == ConfigCategory.ALIAS) {
-        removePrefix("aliases/")
+        removePrefix("activity_hierarchy/")
     } else {
         this
     }
 }
 
 private fun String.isAliasFilePathForConfigScreen(): Boolean =
-        startsWith("aliases/") &&
+        startsWith("activity_hierarchy/") &&
         !endsWith("/_system.toml", ignoreCase = true) &&
         endsWith(".toml", ignoreCase = true)
 

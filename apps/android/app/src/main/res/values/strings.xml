@@ -138,7 +138,7 @@
     <string name="config_delete_alias_mapping_warning">Deleting this alias mapping may prevent past records using its aliases from being parsed correctly. This cannot be undone.</string>
     <string name="config_title_new_alias_mapping">New Alias Mapping</string>
     <string name="config_label_new_alias_file_name">File name</string>
-    <string name="config_new_alias_file_location">Created in aliases/</string>
+    <string name="config_new_alias_file_location">Created in activity_hierarchy/</string>
     <string name="config_action_create">Create</string>
     <string name="config_action_cancel">Cancel</string>
     <string name="config_action_delete">Delete</string>
@@ -195,6 +195,7 @@
     <string name="config_alias_dialog_edit_entry_name_title">Edit activity name</string>
     <string name="config_alias_action_save_aliases">Save</string>
     <string name="config_alias_dialog_move_entry_title">Move Activity Name</string>
+    <string name="config_alias_dialog_move_group_title">Move Activity Category</string>
     <string name="config_alias_group_name_label">Hierarchy Name</string>
     <string name="config_alias_group_name_required">Category name must not be empty.</string>
     <string name="config_alias_alias_key_label">Alias Key</string>
@@ -209,9 +210,14 @@
     <string name="config_alias_entry_required">Alias key and canonical leaf must not be empty.</string>
     <string name="config_alias_alias_key_required">Alias key must not be empty.</string>
     <string name="config_alias_move_entry_label">Move %1$s to a category</string>
-    <string name="config_alias_move_no_destination">Create another category before moving this activity name.</string>
+    <string name="config_alias_move_group_label">Move %1$s and its contents to a category</string>
+    <string name="config_alias_move_target_toml">Destination TOML</string>
+    <string name="config_alias_move_target_root">Root</string>
+    <string name="config_alias_move_loading">Loading alias TOMLs…</string>
+    <string name="config_alias_move_no_destination">No destination TOML or category is available.</string>
     <string name="config_alias_move_plan_title">Move plan</string>
     <string name="config_alias_move_plan_canonical">%1$s → %2$s</string>
+    <string name="config_alias_move_plan_location">%1$s / %2$s → %3$s / %4$s</string>
     <string name="config_alias_move_plan_impact">Updates TXT and rebuilds the local database.</string>
     <string name="config_alias_move_plan_not_saved">Preview only. No TOML, TXT, or database data has changed.</string>
 

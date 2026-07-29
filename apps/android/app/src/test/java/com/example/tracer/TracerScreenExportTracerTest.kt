@@ -9,9 +9,9 @@ class TracerScreenExportTracerTest {
         val result = buildConfigTomlExportEntries(
             listOf(
                 "break.toml",
-                "aliases/break.toml",
-                "aliases/study.toml",
-                "aliases/study.toml",
+                "activity_hierarchy/break.toml",
+                "activity_hierarchy/study.toml",
+                "activity_hierarchy/study.toml",
                 "charts/heatmap.toml",
                 "meta/bundle.toml",
                 "reports/markdown/en/day.toml",
@@ -21,8 +21,8 @@ class TracerScreenExportTracerTest {
 
         assertEquals(
             listOf(
-                ConfigTomlExportEntry("aliases/break.toml", "aliases/break.toml"),
-                ConfigTomlExportEntry("aliases/study.toml", "aliases/study.toml"),
+                ConfigTomlExportEntry("activity_hierarchy/break.toml", "activity_hierarchy/break.toml"),
+                ConfigTomlExportEntry("activity_hierarchy/study.toml", "activity_hierarchy/study.toml"),
                 ConfigTomlExportEntry("charts/heatmap.toml", "charts/heatmap.toml"),
                 ConfigTomlExportEntry("config.toml", "config.toml"),
                 ConfigTomlExportEntry("meta/bundle.toml", "meta/bundle.toml"),

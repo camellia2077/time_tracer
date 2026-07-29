@@ -7,7 +7,7 @@ internal class RuntimeCanonicalCatalogQueryDelegate(
     private val ensureConfigTomlStorage: () -> ConfigTomlStorage
 ) {
     private companion object {
-        const val SYSTEM_ALIAS_CONFIG_PATH = "aliases/_system.toml"
+        const val SYSTEM_ALIAS_CONFIG_PATH = "activity_hierarchy/_system.toml"
     }
 
     suspend fun listCanonicalCatalog(): CanonicalCatalogResult =
@@ -26,7 +26,7 @@ internal class RuntimeCanonicalCatalogQueryDelegate(
 
                 val aliasFiles = listResult.aliasFiles
                     .filter { entry ->
-                        entry.relativePath.startsWith("aliases/") &&
+                        entry.relativePath.startsWith("activity_hierarchy/") &&
                             entry.relativePath != SYSTEM_ALIAS_CONFIG_PATH
                     }
                     .sortedBy { it.relativePath }

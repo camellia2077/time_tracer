@@ -38,19 +38,19 @@ data class ActivityAlias(
 private fun randomActivityAliasNodeId(): String = UUID.randomUUID().toString()
 
 /** Adapts the core-owned hierarchy snapshot into presentation-only row state. */
-fun AliasHierarchySnapshot.toActivityAliasDocument(): ActivityAliasDocument =
+fun ActivityHierarchySnapshot.toActivityAliasDocument(): ActivityAliasDocument =
     ActivityAliasDocument(
         parent = parent,
-        nodes = nodes.map(AliasHierarchyNode::toPresentationNode)
+        nodes = nodes.map(ActivityHierarchyNode::toPresentationNode)
     )
 
-private fun AliasHierarchyNode.toPresentationNode(): ActivityAliasNode =
-    if (isGroup) {
+private fun ActivityHierarchyNode.toPresentationNode(): ActivityAliasNode =
+    if (kind == ActivityHierarchyNodeKind.GROUP) {
         ActivityCategory(
             id = path,
             name = canonicalKey,
             groupAliases = aliases,
-            nodes = children.map(AliasHierarchyNode::toPresentationNode)
+            nodes = children.map(ActivityHierarchyNode::toPresentationNode)
         )
     } else {
         ActivityAlias(

@@ -9,14 +9,14 @@ bundle_name = "tracer_core_config"
 required = [
   "config.toml",
   "charts/heatmap.toml",
-  "aliases/_system.toml",
-  "aliases/meal.toml",
-  "aliases/recreation.toml",
-  "aliases/routine.toml",
-  "aliases/sleep.toml",
-  "aliases/rest.toml",
-  "aliases/exercise.toml",
-  "aliases/study.toml",
+  "activity_hierarchy/_system.toml",
+  "activity_hierarchy/meal.toml",
+  "activity_hierarchy/recreation.toml",
+  "activity_hierarchy/routine.toml",
+  "activity_hierarchy/sleep.toml",
+  "activity_hierarchy/rest.toml",
+  "activity_hierarchy/exercise.toml",
+  "activity_hierarchy/study.toml",
   "reports/markdown/en/day.toml",
   "reports/markdown/en/month.toml",
   "reports/markdown/en/period.toml",
@@ -35,16 +35,3 @@ required = [
 ]
 optional = [
 ]
-
-[paths.converter]
-main_config = "aliases/_system.toml"
-
-[paths.visualization]
-heatmap = "charts/heatmap.toml"
-
-[paths.reports.markdown]
-day = "reports/markdown/en/day.toml"
-month = "reports/markdown/en/month.toml"
-period = "reports/markdown/en/period.toml"
-week = "reports/markdown/en/week.toml"
-year = "reports/markdown/en/year.toml"

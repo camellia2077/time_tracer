@@ -137,12 +137,12 @@ internal class NativeTxtRuntimeCodec {
             )
         }
 
-    fun parseAliasHierarchyOperation(
+    fun parseActivityHierarchyOperation(
         response: String,
         fallbackTomlContent: String
-    ): AliasHierarchyOperationResult = try {
+    ): ActivityHierarchyOperationResult = try {
         val json = JSONObject(response)
-        AliasHierarchyOperationResult(
+        ActivityHierarchyOperationResult(
             ok = json.optBoolean("ok", false),
             updatedTomlContent = json.optString("updated_toml_content", fallbackTomlContent),
             replacements = parseReplacements(json.optJSONArray("replacements")),
@@ -151,43 +151,63 @@ internal class NativeTxtRuntimeCodec {
             message = json.optString("error_message", "")
         )
     } catch (_: Exception) {
-        AliasHierarchyOperationResult(
+        ActivityHierarchyOperationResult(
             ok = false,
             updatedTomlContent = fallbackTomlContent,
             replacements = emptyList(),
-            message = "Invalid native alias hierarchy response."
+            message = "Invalid native activity hierarchy response."
         )
     }
 
-    fun parseAliasHierarchyDescribe(response: String): AliasHierarchyDescribeResult = try {
+    fun parseActivityHierarchyCrossDocumentOperation(
+        response: String
+    ): ActivityHierarchyCrossDocumentOperationResult = try {
         val json = JSONObject(response)
-        AliasHierarchyDescribeResult(
+        ActivityHierarchyCrossDocumentOperationResult(
+            ok = json.optBoolean("ok", false),
+            updatedDocuments = buildList {
+                val documents = json.optJSONArray("updated_documents")
+                for (index in 0 until (documents?.length() ?: 0)) {
+                    val item = documents?.optJSONObject(index) ?: continue
+                    add(ActivityHierarchyDocumentOutput(
+                        sourceName = item.optString("source_name", ""),
+                        updatedTomlContent = item.optString("updated_toml_content", "")
+                    ))
+                }
+            },
+            replacements = parseReplacements(json.optJSONArray("replacements")),
+            aliasReplacements = parseAliasReplacements(json.optJSONArray("alias_replacements")),
+            message = json.optString("error_message", "")
+        )
+    } catch (_: Exception) {
+        ActivityHierarchyCrossDocumentOperationResult(
+            ok = false,
+            message = "Invalid native cross-document activity hierarchy response."
+        )
+    }
+
+    fun parseActivityHierarchyDescribe(response: String): ActivityHierarchyDescribeResult = try {
+        val json = JSONObject(response)
+        ActivityHierarchyDescribeResult(
             ok = json.optBoolean("ok", false),
             hierarchy = json.optJSONObject("hierarchy")?.let(::parseHierarchy),
             message = json.optString("error_message", "")
         )
     } catch (_: Exception) {
-        AliasHierarchyDescribeResult(
+        ActivityHierarchyDescribeResult(
             ok = false,
-            message = "Invalid native alias hierarchy response."
+            message = "Invalid native activity hierarchy response."
         )
     }
 
-    fun parseAliasHierarchyCreate(response: String): AliasHierarchyCreateResult = try {
+    fun parseActivityHierarchyValidation(response: String): ActivityHierarchyValidationResult = try {
         val json = JSONObject(response)
-        AliasHierarchyCreateResult(json.optBoolean("ok", false), json.optString("toml_content", ""), json.optString("error_message", ""))
-    } catch (_: Exception) {
-        AliasHierarchyCreateResult(false, message = "Invalid native alias hierarchy response.")
-    }
-
-    fun parseAliasHierarchyValidation(response: String): AliasHierarchyValidationResult = try {
-        val json = JSONObject(response)
-        AliasHierarchyValidationResult(
+        ActivityHierarchyValidationResult(
             ok = json.optBoolean("ok", false),
             message = json.optString("error_message", "")
         )
     } catch (_: Exception) {
-        AliasHierarchyValidationResult(false, "Invalid native alias hierarchy response.")
+        ActivityHierarchyValidationResult(false, "Invalid native activity hierarchy response.")
     }
 
     private fun parseReplacements(values: JSONArray?): List<CanonicalActivityNameReplacement> = buildList {
@@ -210,12 +230,12 @@ internal class NativeTxtRuntimeCodec {
         }
     }
 
-    private fun parseHierarchy(snapshot: JSONObject): AliasHierarchySnapshot = AliasHierarchySnapshot(
+    private fun parseHierarchy(snapshot: JSONObject): ActivityHierarchySnapshot = ActivityHierarchySnapshot(
         parent = snapshot.optString("parent", ""),
         nodes = parseHierarchyNodes(snapshot.optJSONArray("nodes"))
     )
 
-    private fun parseHierarchyNodes(values: JSONArray?): List<AliasHierarchyNode> = buildList {
+    private fun parseHierarchyNodes(values: JSONArray?): List<ActivityHierarchyNode> = buildList {
         for (index in 0 until (values?.length() ?: 0)) {
             val item = values?.optJSONObject(index) ?: continue
             val aliases = buildList {
@@ -224,10 +244,13 @@ internal class NativeTxtRuntimeCodec {
                     add(aliasValues?.optString(aliasIndex).orEmpty())
                 }
             }
-            add(AliasHierarchyNode(
+            add(ActivityHierarchyNode(
                 canonicalKey = item.optString("canonical_key", ""),
                 path = item.optString("path", ""),
-                isGroup = item.optBoolean("is_group", false),
+                kind = ActivityHierarchyNodeKind.fromWireValue(
+                    item.optString("kind", ""),
+                    item.optBoolean("is_group", false)
+                ),
                 aliases = aliases,
                 children = parseHierarchyNodes(item.optJSONArray("children"))
             ))

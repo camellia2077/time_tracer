@@ -27,13 +27,13 @@ internal object RuntimeCanonicalCatalogParser {
         val parent = parsed.getString("parent")?.trim().orEmpty()
         if (parent.isEmpty()) {
             return CanonicalAliasParseResult(
-                errorMessage = "Alias child file must contain a non-empty `parent` string."
+                errorMessage = "Activity hierarchy TOML must contain a non-empty `parent` string."
             )
         }
 
         val aliasesTable = parsed.getTable("aliases")
             ?: return CanonicalAliasParseResult(
-                errorMessage = "Alias child file must contain an `aliases` table."
+                errorMessage = "Activity hierarchy TOML must contain an `aliases` table."
             )
 
         return runCatching {

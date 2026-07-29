@@ -8,8 +8,8 @@ import androidx.compose.runtime.remember
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.tomlj.Toml
 import java.io.File
+import java.util.UUID
 
 @Composable
 internal fun rememberTracerDataFolderImportAction(
@@ -66,9 +66,7 @@ internal fun rememberTracerDataFolderImportAction(
                 importDataFolder(
                     context = context,
                     input = input,
-                    dataViewModel = dataViewModel,
-                    configGateway = configGateway,
-                    configViewModel = configViewModel
+                    configGateway = configGateway
                 )
             },
             formatTransferFailure = { error ->
@@ -97,9 +95,7 @@ private data class DataFolderImportInput(
 private suspend fun importDataFolder(
     context: Context,
     input: DataFolderImportInput,
-    dataViewModel: DataViewModel,
-    configGateway: ConfigGateway,
-    configViewModel: ConfigViewModel
+    configGateway: ConfigGateway
 ): TracerPreparedTransferResult = withContext(Dispatchers.IO) {
     if (input.txtDocuments.isEmpty() && input.tomlDocuments.isEmpty()) {
         return@withContext TracerPreparedTransferResult(
@@ -107,117 +103,65 @@ private suspend fun importDataFolder(
         )
     }
 
-    val errors = mutableListOf<String>()
-    val tomlContents = mutableListOf<Pair<TreeTextDocument, String>>()
-    val aliasDocuments = mutableListOf<AliasHierarchyDocumentInput>()
-    val aliasHierarchyGateway = configGateway as? AliasHierarchyGateway
-    for (document in input.tomlDocuments) {
-        val content = runCatching {
-            readTreeTextDocument(context, document)
-        }.getOrElse { error ->
-            errors += "config/${document.relativePath}: ${error.message ?: "read failed"}"
-            continue
-        }
-        val syntax = Toml.parse(content)
-        if (syntax.hasErrors()) {
-            errors += "config/${document.relativePath}: ${syntax.errors().joinToString("; ")}"
-            continue
-        }
-        if (document.relativePath.startsWith("aliases/") &&
-            document.relativePath != "aliases/_system.toml"
-        ) {
-            val hierarchy = aliasHierarchyGateway?.describeAliasHierarchy(content)
-            if (hierarchy?.ok != true) {
-                errors += "config/${document.relativePath}: ${hierarchy?.message ?: "Alias hierarchy runtime is unavailable."}"
-                continue
+    val snapshotGateway = configGateway as? DataFolderSnapshotGateway
+        ?: return@withContext TracerPreparedTransferResult(
+            statusText = "Data folder import failed: snapshot runtime is unavailable."
+        )
+    val stagedRoot = File(
+        context.cacheDir,
+        "time_tracer/data_folder_import/${UUID.randomUUID()}"
+    )
+    try {
+        stageDataFolderSnapshot(context, input, stagedRoot)
+        val result = snapshotGateway.replaceDataFolderSnapshot(stagedRoot.absolutePath)
+        TracerPreparedTransferResult(
+            statusText = if (result.ok) {
+                "Data folder replaced: TXT ${result.txtFileCount}, TOML ${result.tomlFileCount}."
+            } else {
+                "Data folder import failed: ${result.message}"
             }
-            aliasDocuments += AliasHierarchyDocumentInput(
-                sourceName = document.relativePath,
-                tomlContent = content
-            )
-        }
-        tomlContents += document to content
+        )
+    } catch (error: Exception) {
+        TracerPreparedTransferResult(
+            statusText = "Data folder import failed: ${error.message ?: "unknown error"}"
+        )
+    } finally {
+        stagedRoot.deleteRecursively()
     }
-    if (errors.isEmpty() && aliasDocuments.isNotEmpty()) {
-        val validation = aliasHierarchyGateway?.validateAliasHierarchyDocuments(aliasDocuments)
-        if (validation?.ok != true) {
-            errors += validation?.message ?: "Alias hierarchy runtime is unavailable."
-        }
-    }
-
-    val stagedTxt = mutableListOf<StagedDataTxtImportCandidate>()
-    for (document in input.txtDocuments) {
-        val stagedPath = runCatching {
-            stageSelectedTxtDocument(context, document.documentUri)
-        }.getOrElse { error ->
-            errors += "txt/${document.relativePath}: ${error.message ?: "read failed"}"
-            continue
-        }
-        val candidate = runCatching {
-            val content = CanonicalTextCodec.readFile(File(stagedPath))
-            val header = parseTxtMonthHeader(content)
-                ?: error("TXT is missing valid yYYYY + mMM headers.")
-            StagedDataTxtImportCandidate(document.relativePath, stagedPath, header.monthKey)
-        }.getOrElse { error ->
-            File(stagedPath).delete()
-            errors += "txt/${document.relativePath}: ${error.message ?: "invalid TXT"}"
-            continue
-        }
-        stagedTxt += candidate
-    }
-
-    val duplicateMonths = stagedTxt.groupBy { it.monthKey }.filterValues { it.size > 1 }
-    for ((monthKey, candidates) in duplicateMonths) {
-        val paths = candidates.joinToString(", ") { it.relativePath }
-        errors += "TXT month $monthKey appears more than once: $paths"
-        candidates.forEach { File(it.stagedPath).delete() }
-    }
-
-    if (errors.isNotEmpty()) {
-        stagedTxt.filterNot { duplicateMonths.containsKey(it.monthKey) }
-            .forEach { File(it.stagedPath).delete() }
-        return@withContext buildDataFolderImportResult(0, 0, errors)
-    }
-
-    var configSuccess = 0
-    for ((document, content) in tomlContents) {
-        if (isAliasConfigFilePath(document.relativePath)) {
-            val error = configViewModel.applyImportedAliasToml(document.relativePath, content)
-            if (error == null) configSuccess++ else errors += "config/${document.relativePath}: $error"
-        } else {
-            val result = configGateway.saveConfigTomlFile(document.relativePath, content)
-            if (result.ok) configSuccess++ else errors += "config/${document.relativePath}: ${result.message}"
-        }
-    }
-    var txtSuccess = 0
-    for (candidate in stagedTxt) {
-        try {
-            val result = dataViewModel.ingestSingleTxtReplaceMonthAndGetOperationResult(candidate.stagedPath)
-            if (result.operationOk) txtSuccess++ else errors += "txt/${candidate.relativePath}: ${extractImportFailureSummary(result.statusText)}"
-        } finally {
-            File(candidate.stagedPath).delete()
-        }
-    }
-    buildDataFolderImportResult(txtSuccess, configSuccess, errors)
 }
 
-private data class StagedDataTxtImportCandidate(
-    val relativePath: String,
-    val stagedPath: String,
-    val monthKey: String
-)
+private fun stageDataFolderSnapshot(
+    context: Context,
+    input: DataFolderImportInput,
+    stagedRoot: File
+) {
+    val stagedConfig = File(stagedRoot, "config").apply { mkdirs() }
+    val stagedInput = File(stagedRoot, "input").apply { mkdirs() }
+    for (document in input.tomlDocuments) {
+        copyTreeDocument(context, document, stagedConfig)
+    }
+    for (document in input.txtDocuments) {
+        copyTreeDocument(context, document, stagedInput)
+    }
+}
 
-private fun readTreeTextDocument(context: Context, document: TreeTextDocument): String =
+private fun copyTreeDocument(
+    context: Context,
+    document: TreeTextDocument,
+    targetRoot: File
+) {
+    val target = safeSnapshotTarget(targetRoot, document.relativePath)
+    target.parentFile?.mkdirs()
     context.contentResolver.openInputStream(document.documentUri)?.use { input ->
-        input.reader(Charsets.UTF_8).readText()
-    } ?: error("unable to read selected document")
+        target.outputStream().use { output -> input.copyTo(output) }
+    } ?: error("unable to read selected document: ${document.relativePath}")
+}
 
-private fun buildDataFolderImportResult(
-    txtSuccess: Int,
-    configSuccess: Int,
-    errors: List<String>
-): TracerPreparedTransferResult {
-    val summary = "Data folder import: TXT $txtSuccess, TOML $configSuccess" +
-        if (errors.isEmpty()) " completed." else ". Errors: ${errors.take(3).joinToString(" | ")}"
-    return TracerPreparedTransferResult(statusText = summary)
+private fun safeSnapshotTarget(root: File, relativePath: String): File {
+    val canonicalRoot = root.canonicalFile
+    val target = File(canonicalRoot, relativePath).canonicalFile
+    require(target.toPath().startsWith(canonicalRoot.toPath())) {
+        "invalid imported relative path: $relativePath"
+    }
+    return target
 }

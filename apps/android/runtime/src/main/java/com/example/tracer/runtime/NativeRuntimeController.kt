@@ -66,7 +66,7 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         nativeTxt = runtimeBridge::nativeConfig,
         responseCodec = responseCodec
     )
-    private val aliasHierarchyService = RuntimeAliasHierarchyService(
+    private val aliasHierarchyService = RuntimeActivityHierarchyService(
         initializeRuntimeInternal = coreAdapter::initializeRuntimeInternal,
         nativeConfig = runtimeBridge::nativeConfig,
         codec = txtRuntimeCodec
@@ -153,6 +153,16 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         nativeImportTracerExchange = runtimeBridge::nativeImportTracerExchange,
         nativeInspectTracerExchange = runtimeBridge::nativeInspectTracerExchange,
         setProgressListener = runtimeBridge::setCryptoProgressListener
+    )
+    private val dataFolderSnapshotService = RuntimeDataFolderSnapshotService(
+        ensureRuntimePaths = runtimeSession::ensureRuntimePaths,
+        resetRuntimeCaches = runtimeSession::reset,
+        nativeInit = runtimeBridge::nativeInit,
+        nativeShutdown = runtimeBridge::nativeShutdown,
+        nativeValidateStructure = runtimeBridge::nativeValidateStructure,
+        nativeValidateLogic = runtimeBridge::nativeValidateLogic,
+        nativeIngest = runtimeBridge::nativeIngest,
+        responseCodec = responseCodec
     )
 
     // init
@@ -293,27 +303,32 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         request: AliasEntryMoveMigrationRequest
     ): AliasEntryMoveMigrationResult = aliasMoveMigrationService.apply(request)
 
-    override suspend fun applyAliasHierarchyOperation(
+    override suspend fun applyActivityHierarchyOperation(
         tomlContent: String,
-        operation: AliasHierarchyOperation
-    ): AliasHierarchyOperationResult = aliasHierarchyService.apply(tomlContent, operation)
+        operation: ActivityHierarchyOperation
+    ): ActivityHierarchyOperationResult = aliasHierarchyService.apply(tomlContent, operation)
 
-    override suspend fun rewriteAliasHierarchyDocument(
+    override suspend fun moveActivityHierarchyNodeBetweenDocuments(
+        documents: List<ActivityHierarchyDocumentInput>,
+        sourceName: String,
+        destinationName: String,
+        operation: ActivityHierarchyOperation
+    ): ActivityHierarchyCrossDocumentOperationResult =
+        aliasHierarchyService.moveNodeBetweenDocuments(documents, sourceName, destinationName, operation)
+
+    override suspend fun rewriteActivityHierarchyDocument(
         originalTomlContent: String,
         updatedTomlContent: String
-    ): AliasHierarchyOperationResult =
+    ): ActivityHierarchyOperationResult =
         aliasHierarchyService.rewrite(originalTomlContent, updatedTomlContent)
 
-    override suspend fun describeAliasHierarchy(
+    override suspend fun describeActivityHierarchy(
         tomlContent: String
-    ): AliasHierarchyDescribeResult = aliasHierarchyService.describe(tomlContent)
+    ): ActivityHierarchyDescribeResult = aliasHierarchyService.describe(tomlContent)
 
-    override suspend fun createAliasHierarchyDocument(parent: String): AliasHierarchyCreateResult =
-        aliasHierarchyService.create(parent)
-
-    override suspend fun validateAliasHierarchyDocuments(
-        documents: List<AliasHierarchyDocumentInput>
-    ): AliasHierarchyValidationResult = aliasHierarchyService.validate(documents)
+    override suspend fun validateActivityHierarchyDocuments(
+        documents: List<ActivityHierarchyDocumentInput>
+    ): ActivityHierarchyValidationResult = aliasHierarchyService.validate(documents)
 
     // storage
     override suspend fun listConfigTomlFiles(): ConfigTomlListResult =
@@ -327,6 +342,10 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
 
     override suspend fun deleteConfigTomlFile(relativePath: String): TxtFileContentResult =
         configService.deleteConfigTomlFile(relativePath)
+
+    override suspend fun replaceDataFolderSnapshot(
+        stagedRootPath: String
+    ): DataFolderSnapshotResult = dataFolderSnapshotService.replace(stagedRootPath)
 
     // file crypto
     override suspend fun encryptTxtFile(

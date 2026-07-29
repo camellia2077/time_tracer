@@ -39,12 +39,25 @@ internal class RuntimeAliasMoveMigrationService(
         }
         val textStorage = ensureTextStorage()
         val configStorage = ensureConfigTomlStorage()
-        val originalTomlResult = configStorage.readTomlFile(request.configRelativePath)
-        if (!originalTomlResult.ok && !request.allowMissingConfig) {
-            return AliasEntryMoveMigrationResult(false, originalTomlResult.message)
+        val documentUpdates = if (request.updatedDocuments.isEmpty()) {
+            listOf(ActivityHierarchyDocumentInput(request.configRelativePath, request.updatedTomlContent))
+        } else {
+            request.updatedDocuments
         }
-        val originalTomlContent = if (originalTomlResult.ok) originalTomlResult.content else ""
-        var updatedTomlContent = request.updatedTomlContent
+        val originalTomls = linkedMapOf<String, String>()
+        documentUpdates.forEach { document ->
+            val original = configStorage.readTomlFile(document.sourceName)
+            if (!original.ok && !request.allowMissingConfig) {
+                return AliasEntryMoveMigrationResult(false, original.message)
+            }
+            originalTomls[document.sourceName] = if (original.ok) original.content else ""
+        }
+        val originalTomlContent = originalTomls[request.configRelativePath].orEmpty()
+        var updatedTomlContent = documentUpdates
+            .firstOrNull { it.sourceName == request.configRelativePath }
+            ?.tomlContent
+            ?: request.updatedTomlContent
+        var updatedDocuments = documentUpdates
         var replacements = request.replacements
         val txtOriginals = linkedMapOf<String, String>()
         val txtCandidates = linkedMapOf<String, String>()
@@ -64,6 +77,9 @@ internal class RuntimeAliasMoveMigrationService(
                 }
                 updatedTomlContent = planned.updatedTomlContent
                 replacements = planned.replacements
+                updatedDocuments = listOf(
+                    ActivityHierarchyDocumentInput(request.configRelativePath, updatedTomlContent)
+                )
             }
             for (relativePath in listed.files) {
                 val original = textStorage.readTxtFile(relativePath)
@@ -96,7 +112,7 @@ internal class RuntimeAliasMoveMigrationService(
         try {
             require(transactionRoot.mkdirs()) { "Cannot create migration cache directory." }
             sourcesWritten = true
-            writeSources(configStorage, textStorage, request, updatedTomlContent, txtCandidates)
+            writeSources(configStorage, textStorage, updatedDocuments, txtCandidates)
 
             val candidatePaths = paths.copy(
                 dbPath = File(transactionRoot, "candidate/time_data.sqlite3").absolutePath,
@@ -129,7 +145,7 @@ internal class RuntimeAliasMoveMigrationService(
             runCatching { nativeShutdown() }
             val rollbackProblems = mutableListOf<String>()
             if (sourcesWritten) {
-                rollbackSources(configStorage, textStorage, originalTomlContent, request.configRelativePath, txtOriginals, rollbackProblems)
+                rollbackSources(configStorage, textStorage, originalTomls, txtOriginals, rollbackProblems)
             }
             if (databaseSwapStarted) {
                 runCatching { restoreDatabase(paths.dbPath, transactionRoot) }
@@ -197,7 +213,7 @@ internal class RuntimeAliasMoveMigrationService(
             )
         }
         val payload = JSONObject()
-            .put("action", "apply_alias_hierarchy_operation")
+            .put("action", "apply_activity_hierarchy_operation")
             .put("toml_content", content)
             .put("operation", JSONObject()
                 .put("kind", operationKind)
@@ -209,12 +225,13 @@ internal class RuntimeAliasMoveMigrationService(
     private fun writeSources(
         configStorage: ConfigTomlStorage,
         textStorage: TextStorage,
-        request: AliasEntryMoveMigrationRequest,
-        updatedTomlContent: String,
+        updatedDocuments: List<ActivityHierarchyDocumentInput>,
         txtCandidates: Map<String, String>
     ) {
-        val configWrite = configStorage.writeTomlFile(request.configRelativePath, updatedTomlContent)
-        require(configWrite.ok) { configWrite.message }
+        updatedDocuments.forEach { document ->
+            val configWrite = configStorage.writeTomlFile(document.sourceName, document.tomlContent)
+            require(configWrite.ok) { configWrite.message }
+        }
         txtCandidates.forEach { (relativePath, content) ->
             val write = textStorage.writeTxtFile(relativePath, content)
             require(write.ok) { write.message }
@@ -224,12 +241,14 @@ internal class RuntimeAliasMoveMigrationService(
     private fun rollbackSources(
         configStorage: ConfigTomlStorage,
         textStorage: TextStorage,
-        originalToml: String,
-        configPath: String,
+        originalTomls: Map<String, String>,
         txtOriginals: Map<String, String>,
         problems: MutableList<String>
     ) {
-        configStorage.writeTomlFile(configPath, originalToml).takeIf { !it.ok }?.let { problems += it.message }
+        originalTomls.forEach { (configPath, originalToml) ->
+            configStorage.writeTomlFile(configPath, originalToml)
+                .takeIf { !it.ok }?.let { problems += it.message }
+        }
         txtOriginals.forEach { (relativePath, content) ->
             textStorage.writeTxtFile(relativePath, content).takeIf { !it.ok }?.let { problems += it.message }
         }

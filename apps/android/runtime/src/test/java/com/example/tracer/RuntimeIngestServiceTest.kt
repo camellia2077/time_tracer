@@ -212,7 +212,7 @@ class RuntimeIngestServiceTest {
             parentFile?.mkdirs()
             writeText("")
         }
-        val configToml = File(configRoot, "aliases/_system.toml").apply {
+        val configToml = File(configRoot, "activity_hierarchy/_system.toml").apply {
             parentFile?.mkdirs()
             writeText("dummy=true")
         }

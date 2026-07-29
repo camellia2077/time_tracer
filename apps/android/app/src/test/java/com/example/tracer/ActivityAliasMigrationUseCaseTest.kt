@@ -11,13 +11,13 @@ class ActivityAliasMigrationUseCaseTest {
         val gateway = FakeMigrationGateway()
 
         val outcome = ActivityAliasMigrationUseCase(gateway).applyCoreResult(
-            configRelativePath = "aliases/recreation.toml",
+            configRelativePath = "activity_hierarchy/recreation.toml",
             updatedTomlContent = "parent = \"recreation\"\n",
             replacements = listOf(CanonicalActivityNameReplacement("上网", "网上活动"))
         )
 
         assertTrue(outcome is ActivityAliasMigrationOutcome.Applied)
-        assertEquals("aliases/recreation.toml", gateway.request?.configRelativePath)
+        assertEquals("activity_hierarchy/recreation.toml", gateway.request?.configRelativePath)
         assertEquals("parent = \"recreation\"\n", requireNotNull(gateway.request).updatedTomlContent)
     }
 
@@ -27,7 +27,7 @@ class ActivityAliasMigrationUseCaseTest {
             AliasEntryMoveMigrationResult(ok = false, message = "migration failed")
         )
         val outcome = ActivityAliasMigrationUseCase(gateway).applyCoreResult(
-            configRelativePath = "aliases/recreation.toml",
+            configRelativePath = "activity_hierarchy/recreation.toml",
             updatedTomlContent = "invalid",
             replacements = emptyList()
         )
@@ -41,7 +41,7 @@ class ActivityAliasMigrationUseCaseTest {
         val gateway = FakeMigrationGateway()
 
         ActivityAliasMigrationUseCase(gateway).applyCoreResult(
-            configRelativePath = "aliases/exercise.toml",
+            configRelativePath = "activity_hierarchy/exercise.toml",
             updatedTomlContent = "parent = \"exercise\"\n",
             replacements = emptyList(),
             aliasReplacements = listOf(AliasKeyReplacement("有氧", "有氧aa"))
@@ -50,6 +50,26 @@ class ActivityAliasMigrationUseCaseTest {
         assertEquals(
             AliasKeyReplacement("有氧", "有氧aa"),
             requireNotNull(gateway.request).aliasReplacements.single()
+        )
+    }
+
+    @Test
+    fun cross_document_updates_are_delegated_as_one_migration_request() = runTest {
+        val gateway = FakeMigrationGateway()
+
+        ActivityAliasMigrationUseCase(gateway).applyCoreResult(
+            configRelativePath = "activity_hierarchy/exercise.toml",
+            updatedTomlContent = "source",
+            replacements = listOf(CanonicalActivityNameReplacement("exercise_go", "meal_go")),
+            updatedDocuments = listOf(
+                ActivityHierarchyDocumentInput("activity_hierarchy/exercise.toml", "source"),
+                ActivityHierarchyDocumentInput("activity_hierarchy/meal.toml", "destination")
+            )
+        )
+
+        assertEquals(
+            listOf("activity_hierarchy/exercise.toml", "activity_hierarchy/meal.toml"),
+            requireNotNull(gateway.request).updatedDocuments.map { it.sourceName }
         )
     }
 }
