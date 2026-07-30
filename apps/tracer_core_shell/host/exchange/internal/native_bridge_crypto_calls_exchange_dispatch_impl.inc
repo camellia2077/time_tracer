@@ -9,6 +9,21 @@ auto ResolveActiveTextRootPath(
   return runtime_root / "input";
 }
 
+// Android's config layout is canonicalized to config/user/behavior.toml.
+// Keep exchange operations independent from a stale caller-supplied path
+// (for example config/config.toml from the pre-user-config layout).
+auto ResolveAndroidActiveConverterConfigPath(
+    const fs::path& stored_converter_config_path,
+    const fs::path& output_root) -> fs::path {
+  const fs::path runtime_root = fs::absolute(output_root).parent_path();
+  const fs::path canonical_path =
+      runtime_root / "config/user/behavior.toml";
+  if (fs::exists(canonical_path) && fs::is_regular_file(canonical_path)) {
+    return canonical_path;
+  }
+  return fs::absolute(stored_converter_config_path);
+}
+
 auto WriteAllBytesToFd(int fd, std::span<const std::uint8_t> bytes,
                        std::string& error_message) -> bool {
   std::size_t offset = 0;
@@ -52,7 +67,11 @@ auto WithLockedRuntime(Callback callback) {
   }
 
   ITracerCoreRuntime& runtime = *g_runtime.core_runtime->runtime.runtime_api;
-  return callback(runtime, g_runtime.core_runtime->converter_config_toml_path);
+  const fs::path converter_config_path =
+      ResolveAndroidActiveConverterConfigPath(
+          g_runtime.core_runtime->converter_config_toml_path,
+          g_runtime.core_runtime->output_root);
+  return callback(runtime, converter_config_path);
 }
 
 auto BuildExportTracerExchangeRequest(

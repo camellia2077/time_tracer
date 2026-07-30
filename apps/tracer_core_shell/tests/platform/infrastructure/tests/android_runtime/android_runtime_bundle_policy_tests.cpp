@@ -13,7 +13,7 @@ auto TestAndroidRuntimeRejectsBundleMissingRequiredFile(int& failures) -> void {
       "time_tracer_android_runtime_factory_bundle_missing_required_file_test");
   const std::filesystem::path kConfigRoot = paths.test_root / "config";
   const std::filesystem::path kConverterTomlPath =
-      kConfigRoot / "activity_hierarchy" / "_system.toml";
+      kConfigRoot / "user" / "behavior.toml";
   const std::filesystem::path kBundlePath = BuildBundleTomlPath(kConfigRoot);
 
   RemoveTree(paths.test_root);

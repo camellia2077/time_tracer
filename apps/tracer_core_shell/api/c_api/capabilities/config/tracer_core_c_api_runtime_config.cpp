@@ -271,7 +271,7 @@ extern "C" TT_CORE_API auto tracer_core_runtime_check_environment_json(
     std::vector<fs::path> required_files = {
         kBinDir / kCoreLibraryName,
         kBinDir / kReportsSharedLibraryName,
-        kBinDir / "config" / "config.toml",
+        kBinDir / "config" / "program" / "config.toml",
     };
     if (TT_RUNTIME_REQUIRE_SQLITE_DLL != 0) {
       required_files.emplace_back(kBinDir / kSqliteLibraryName);

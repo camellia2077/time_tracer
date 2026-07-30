@@ -215,7 +215,7 @@ expect_file_contains = [
 ]
 
 [[commands]]
-name = "Chart Export Heatmap Month Html Github Theme"
+name = "Chart Export Heatmap Month Html Configured Palette"
 stage = "query-data"
 args = ["report", "chart", "--from", "20260101", "--to", "20260131", "--root", "study", "--type", "heatmap-month", "--theme", "github", "-o", "{output_dir}/report_chart_study_heatmap_month_github.html", "--db", "{db_path}"]
 expect_exit = 0
@@ -223,7 +223,7 @@ expect_stdout_contains = ["Saved chart heatmap-month HTML:"]
 expect_files = ["{output_dir}/report_chart_study_heatmap_month_github.html"]
 expect_file_contains = [
   "{output_dir}/report_chart_study_heatmap_month_github.html::const chartTheme = 'github'",
-  "{output_dir}/report_chart_study_heatmap_month_github.html::#aceebb",
+  "{output_dir}/report_chart_study_heatmap_month_github.html::#c6dbef",
   "{output_dir}/report_chart_study_heatmap_month_github.html::type: 'heatmap'",
 ]
 
@@ -232,7 +232,7 @@ name = "Chart List Heatmap Palettes"
 stage = "query-data"
 args = ["report", "chart", "--list-heatmap-palettes", "--db", "{db_path}"]
 expect_exit = 0
-expect_stdout_contains = ["Heatmap palettes", "GITHUB_GREEN_LIGHT", "LAVA_RED_LIGHT", "default-light"]
+expect_stdout_contains = ["Heatmap palettes", "GREEN_LIGHT", "LAVA_RED_LIGHT"]
 
 [[commands]]
 name = "Chart Export Heatmap Month Html Blue Palette"

@@ -1,0 +1,61 @@
+schema_version = 2
+
+[localization]
+supported_locales = ["en", "zh", "ja"]
+default_locale = "en"
+
+[palettes]
+GREEN_LIGHT = ["#eff2f5", "#aceebb", "#4ac26b", "#2da44e", "#116329"]
+GREEN_DARK = ["#151b23", "#033a16", "#196c2e", "#2ea043", "#56d364"]
+BLUE_LIGHT = ["#eff2f5", "#c6dbef", "#6baed6", "#2171b5", "#08306b"]
+BROWN_LIGHT = ["#eff2f5", "#d7ccc8", "#bcaaa4", "#8d6e63", "#6d4c41"]
+ORANGE_LIGHT = ["#eff2f5", "#ffe082", "#ffd54f", "#ffb300", "#ff8f00"]
+PINK_LIGHT = ["#eff2f5", "#f8bbd0", "#f48fb1", "#f06292", "#ec407a"]
+PURPLE_LIGHT = ["#eff2f5", "#ce93d8", "#ab47bc", "#8e24aa", "#6a1b9a"]
+RED_BLOOD_LIGHT = ["#eff2f5", "#fee0d2", "#fc9272", "#de2d26", "#a50f15"]
+LAVA_RED_LIGHT = ["#eff2f5", "#ffcdd2", "#ef9a9a", "#e57373", "#ef5350"]
+
+[palette_labels.GREEN_LIGHT]
+en = "Green Light"
+zh = "浅绿色"
+ja = "グリーン（ライト）"
+
+[palette_labels.GREEN_DARK]
+en = "Green Dark"
+zh = "深绿色"
+ja = "グリーン（ダーク）"
+
+[palette_labels.BLUE_LIGHT]
+en = "Blue"
+zh = "蓝色"
+ja = "ブルー"
+
+[palette_labels.BROWN_LIGHT]
+en = "Brown"
+zh = "棕色"
+ja = "ブラウン"
+
+[palette_labels.ORANGE_LIGHT]
+en = "Orange"
+zh = "橙色"
+ja = "オレンジ"
+
+[palette_labels.PINK_LIGHT]
+en = "Pink"
+zh = "粉色"
+ja = "ピンク"
+
+[palette_labels.PURPLE_LIGHT]
+en = "Purple"
+zh = "紫色"
+ja = "パープル"
+
+[palette_labels.RED_BLOOD_LIGHT]
+en = "Blood Red"
+zh = "血红色"
+ja = "ブラッドレッド"
+
+[palette_labels.LAVA_RED_LIGHT]
+en = "Lava Red"
+zh = "熔岩红"
+ja = "ラバレッド"

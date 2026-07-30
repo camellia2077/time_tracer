@@ -55,7 +55,7 @@ auto BuildRuntimeRequest(
 
 auto BuildBundleTomlPath(const std::filesystem::path& config_root)
     -> std::filesystem::path {
-  return config_root / "meta" / "bundle.toml";
+  return config_root / "program" / "meta" / "bundle.toml";
 }
 
 auto BuildRepoRoot() -> std::filesystem::path {
@@ -120,25 +120,32 @@ auto WriteFileWithParents(const std::filesystem::path& target_path,
 auto PrepareAndroidConfigFixture(const std::filesystem::path& target_root)
     -> bool {
   const std::filesystem::path source_root =
-      BuildRepoRoot() / "assets" / "tracer_core" / "config_test";
+      BuildRepoRoot() / "config" / "program";
+  const std::filesystem::path user_source_root =
+      BuildRepoRoot() / "test" / "data" / "user";
+  const std::filesystem::path hierarchy_source_root =
+      BuildRepoRoot() / "test" / "data" / "activity_hierarchy";
   const std::filesystem::path android_bundle_path =
       BuildRepoRoot() / "apps" / "android" / "runtime" / "src" / "main" /
-      "assets" / "tracer_core" / "config" / "meta" / "bundle.toml";
+      "assets" / "config" / "program" / "meta" / "bundle.toml";
 
   const auto copy_required_file = [&](std::string_view relative_path) -> bool {
     return CopyFileWithParents(
         source_root / std::filesystem::path(relative_path),
-        target_root / std::filesystem::path(relative_path));
+        target_root / "program" / std::filesystem::path(relative_path));
   };
 
   return CopyFileWithParents(android_bundle_path,
-                             target_root / "meta" / "bundle.toml") &&
+                             target_root / "program" / "meta" / "bundle.toml") &&
          copy_required_file("config.toml") &&
-         copy_required_file("activity_hierarchy/_system.toml") &&
-         CopyDirectoryTree(source_root / "activity_hierarchy", target_root / "activity_hierarchy") &&
+         CopyFileWithParents(user_source_root / "behavior.toml",
+                             target_root / "user" / "behavior.toml") &&
+         CopyDirectoryTree(hierarchy_source_root,
+                           target_root / "user" / "activity_hierarchy") &&
          copy_required_file("charts/heatmap.toml") &&
+         copy_required_file("charts/pie.toml") &&
          CopyDirectoryTree(source_root / "reports" / "markdown",
-                           target_root / "reports" / "markdown");
+                           target_root / "program" / "reports" / "markdown");
 }
 
 auto ExpectBuildRuntimeThrows(

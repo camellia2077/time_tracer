@@ -160,7 +160,7 @@ auto TestEncryptBytesWriterDecryptToBytesRoundTrip(int& failures) -> void {
   RemoveTree(kPaths.test_root);
 
   const auto kEncryptResult =
-      tracer_core::infrastructure::crypto::EncryptBytesToWriter(
+      tracer_core::infrastructure::crypto::ProtectEncodedBytesToWriter(
           kPlaintextBytes,
           [&kEncrypted, &emitted_ciphertext_size](std::span<const std::uint8_t> bytes)
               -> tracer_core::infrastructure::crypto::FileCryptoResult {
@@ -210,10 +210,10 @@ auto TestEncryptBytesWriterDecryptToBytesRoundTrip(int& failures) -> void {
            .current_output_path =
                kPaths.test_root / "logical_output" / "payload_writer.tracer"});
   Expect(kEncryptResult.ok(),
-         "EncryptBytesToWriter should succeed for valid plaintext bytes.",
+         "ProtectEncodedBytesToWriter should succeed for encoded bytes.",
          failures);
   if (!kEncryptResult.ok()) {
-    std::cerr << "[FAIL] EncryptBytesToWriter error: "
+    std::cerr << "[FAIL] ProtectEncodedBytesToWriter error: "
               << kEncryptResult.error_code << " | "
               << kEncryptResult.error_message << '\n';
     RemoveTree(kPaths.test_root);
@@ -221,10 +221,10 @@ auto TestEncryptBytesWriterDecryptToBytesRoundTrip(int& failures) -> void {
   }
 
   Expect(std::filesystem::exists(kEncrypted),
-         "EncryptBytesToWriter callback should persist the tracer output.",
+         "ProtectEncodedBytesToWriter callback should persist the tracer output.",
          failures);
   Expect(emitted_ciphertext_size > 0,
-         "EncryptBytesToWriter should emit non-empty ciphertext bytes.",
+         "ProtectEncodedBytesToWriter should emit non-empty ciphertext bytes.",
          failures);
 
   const auto [kDecryptResult, kRestoredBytes] =

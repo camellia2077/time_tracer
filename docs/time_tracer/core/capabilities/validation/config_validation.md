@@ -31,6 +31,21 @@ TXT validation depends on config values such as:
 So a TXT file cannot be semantically validated against an invalid or partially
 parsed config snapshot.
 
+## Required Runtime Scope
+
+For candidate TXT validation and ingest, the config snapshot consists of the
+user-owned converter configuration and activity hierarchy:
+
+```text
+config/user/behavior.toml
+config/user/activity_hierarchy/*.toml
+```
+
+The validator does not require `config/program/**`. That directory contains
+program-owned report, chart, and other presentation resources used by the
+complete application Runtime. Hosts must not make those resources a hidden
+dependency of TXT validation or data import.
+
 ## Exchange Import Rule
 
 When importing a `.tracer` package:

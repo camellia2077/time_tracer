@@ -8,8 +8,19 @@
    - 生成正式 Android release keystore。
    - 可选写入 `apps/android/keystore.properties`。
    - 默认拒绝覆盖已有 keystore，避免误替换正式签名。
-2. `sync_android_input_from_test_data.py`
-   - 同步 Android debug 运行时测试输入。
+2. `push_test_data.py`
+   - 通过 ADB 将 TXT 和 `activity_hierarchy` 测试数据注入已安装的 debug 应用。
+### push_test_data.py
+
+```powershell
+python tools/scripts/devtools/android/push_test_data.py `
+  --serial <adb-serial> `
+  --launch
+```
+
+脚本默认读取 `test/data` 和 `test/data/activity_hierarchy`，并通过 `run-as`
+写入应用私有目录。它会停止应用、清理旧测试输入和数据库，然后校验注入的文件数量；
+测试数据不会进入 APK。使用 `--keep-database` 可以保留已有数据库。
 
 ## setup_android_release_signing.py
 

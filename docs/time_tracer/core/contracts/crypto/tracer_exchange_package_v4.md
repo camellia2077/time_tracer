@@ -1,9 +1,9 @@
-# Tracer Exchange Package v4 (`TTPKG`)
+# Tracer Exchange Package v4 (`TTPKG`)（已废弃）
 
 ## 状态
-1. 状态：Active
-2. 适用范围：当前 `tracer exchange` 导出、事务式导入与 inspect 的内层明文 payload。
-3. 目标：定义 `v4` package 的 manifest、严格 payload 布局与事务式导入前提。
+1. 状态：Superseded by `tracer_exchange_package_v6.md`。
+2. 本文仅保留历史契约记录，不再作为当前交换包兼容目标。
+3. 当前统一交换内容契约见 [`tracer_exchange_package_v6.md`](tracer_exchange_package_v6.md)。
 
 ## 1. 关系说明
 1. 本文档定义的是内层 package payload，不是外层 `.tracer` 加密容器。

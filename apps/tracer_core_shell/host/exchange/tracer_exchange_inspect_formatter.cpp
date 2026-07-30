@@ -42,7 +42,7 @@ auto BuildInspectContent(
            << (entry.present ? "present" : "missing") << " ("
            << entry.size_bytes << " bytes)\n";
   }
-  for (const auto& entry : inspect_result.converter_entries) {
+  for (const auto& entry : inspect_result.config_entries) {
     stream << "  " << entry.relative_path << ": "
            << (entry.present ? "present" : "missing") << " ("
            << entry.size_bytes << " bytes)\n";

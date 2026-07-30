@@ -16,6 +16,14 @@ class TracerExchangeApi final : public ITracerExchangeApi {
   explicit TracerExchangeApi(
       TracerExchangeServicePtr tracer_exchange_service = nullptr);
 
+  auto BuildTracerExchangeExportContent(
+      const tracer_core::core::dto::TracerExchangeContentRequest& request)
+      -> tracer_core::core::dto::TracerExchangeContentResult override;
+
+  auto EncodeTracerExchangeExportContent(
+      const tracer_core::core::dto::TracerExchangeExportContent& content)
+      -> tracer_core::core::dto::TracerExchangeContentEncodingResult override;
+
   auto RunTracerExchangeExport(
       const tracer_core::core::dto::TracerExchangeExportRequest& request)
       -> tracer_core::core::dto::TracerExchangeExportResult override;

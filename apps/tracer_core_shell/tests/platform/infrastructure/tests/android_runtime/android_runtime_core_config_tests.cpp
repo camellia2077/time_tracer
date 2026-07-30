@@ -37,12 +37,12 @@ auto PrepareCustomConfigFixture(
     return {};
   }
 
-  const std::filesystem::path aliases_root = config_root / "activity_hierarchy";
+  const std::filesystem::path user_root = config_root / "user";
   if (!CopyFixtureFile(converter_main_fixture_relative_path,
-                       aliases_root / "_system.toml")) {
+                       user_root / "behavior.toml")) {
     return {};
   }
-  return aliases_root / "_system.toml";
+  return user_root / "behavior.toml";
 }
 
 auto TestAndroidRuntimeBootstrapStaysSideEffectFree(int& failures) -> void {
@@ -50,8 +50,7 @@ auto TestAndroidRuntimeBootstrapStaysSideEffectFree(int& failures) -> void {
       BuildTempTestPaths("time_tracer_android_runtime_side_effect_free_test");
   const std::filesystem::path repo_root = BuildRepoRoot();
   const std::filesystem::path config_toml_path =
-      repo_root / "assets" / "tracer_core" / "config_test" /
-      "activity_hierarchy/_system.toml";
+      repo_root / "config" / "user" / "behavior.toml";
 
   RemoveTree(paths.test_root);
 
@@ -136,7 +135,7 @@ auto TestAndroidRuntimeRejectsInvalidUtf8ConverterConfig(int& failures)
   const RuntimeTestPaths paths = BuildTempTestPaths(
       "time_tracer_android_runtime_factory_invalid_utf8_config_test");
   const std::filesystem::path kInvalidConfigPath =
-      paths.test_root / "config" / "activity_hierarchy" / "_system.toml";
+      paths.test_root / "config" / "user" / "behavior.toml";
 
   RemoveTree(paths.test_root);
   if (!PrepareAndroidConfigFixture(paths.test_root / "config")) {
@@ -212,6 +211,49 @@ auto TestAndroidRuntimeBootstrapsWithMinimalCustomConfig(int& failures)
   RemoveTree(paths.test_root);
 }
 
+auto TestAndroidPipelineRuntimeDoesNotRequireProgramConfig(int& failures)
+    -> void {
+  const RuntimeTestPaths paths = BuildTempTestPaths(
+      "time_tracer_android_pipeline_runtime_without_program_test");
+  RemoveTree(paths.test_root);
+
+  const std::filesystem::path config_toml_path = PrepareCustomConfigFixture(
+      paths.test_root / "config",
+      "test/fixtures/config/custom/converter_system.minimal.toml");
+  if (config_toml_path.empty()) {
+    ++failures;
+    std::cerr << "[FAIL] Pipeline runtime test should prepare config fixture "
+                 "tree.\n";
+    RemoveTree(paths.test_root);
+    return;
+  }
+  std::error_code error;
+  std::filesystem::remove_all(paths.test_root / "config" / "program", error);
+  if (error) {
+    ++failures;
+    std::cerr << "[FAIL] Pipeline runtime test could not remove program "
+                 "config.\n";
+    RemoveTree(paths.test_root);
+    return;
+  }
+
+  try {
+    const auto request = BuildRuntimeRequest(paths, config_toml_path);
+    auto runtime = infrastructure::bootstrap::BuildAndroidPipelineRuntime(request);
+    if (!runtime.pipeline_api) {
+      ++failures;
+      std::cerr << "[FAIL] Pipeline runtime without program config should "
+                   "return a valid pipeline API.\n";
+    }
+  } catch (const std::exception& exception) {
+    ++failures;
+    std::cerr << "[FAIL] Pipeline runtime should not require config/program: "
+              << exception.what() << '\n';
+  }
+
+  RemoveTree(paths.test_root);
+}
+
 auto TestReportConfigLoaderRejectsInvalidDailyMarkdown(int& failures) -> void {
   const RuntimeTestPaths paths =
       BuildTempTestPaths("time_tracer_report_config_loader_invalid_test");
@@ -259,6 +301,7 @@ auto RunCoreConfigValidationTests(int& failures) -> void {
   TestAndroidRuntimeRejectsInvalidConverterConfig(failures);
   TestAndroidRuntimeRejectsInvalidUtf8ConverterConfig(failures);
   TestAndroidRuntimeBootstrapsWithMinimalCustomConfig(failures);
+  TestAndroidPipelineRuntimeDoesNotRequireProgramConfig(failures);
   TestReportConfigLoaderRejectsInvalidDailyMarkdown(failures);
 }
 

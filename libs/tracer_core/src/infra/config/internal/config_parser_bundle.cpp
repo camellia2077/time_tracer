@@ -136,7 +136,7 @@ auto TryResolveAndroidBundleConfigPathsImpl(const fs::path& config_dir)
       .config_dir = config_dir,
   };
   ValidateBundleFileList(bundle_tbl, kBundleSource);
-  const fs::path config_path = config_dir / "config.toml";
+  const fs::path config_path = config_dir / "program" / "config.toml";
   if (!fs::exists(config_path)) {
     ThrowConfigFieldError(kBundlePath, "file_list.required",
                           "must include config.toml.");
@@ -151,7 +151,8 @@ auto TryResolveAndroidBundleConfigPathsImpl(const fs::path& config_dir)
   }
 
   AppConfig parsed_config;
-  ParseRuntimeConfigPaths(config_tbl, config_dir, config_path, parsed_config);
+  ParseRuntimeConfigPaths(config_tbl, config_path.parent_path(), config_path,
+                          parsed_config);
 
   AndroidBundleConfigPaths out{};
   out.converter_config_toml_path =

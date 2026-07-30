@@ -24,8 +24,11 @@ Capture the user-visible behavior and core data flow for Data-tab import and exp
 - `Import TOML Folder`
   - selects one folder
   - recursively imports `.toml` files
-  - preserves selected-folder-relative paths when writing config TOML
-  - writes through the config save path without presentation-side TOML syntax validation
+  - preserves selected-folder-relative paths under the imported `config/` root
+  - sends `config/user/activity_hierarchy/*.toml` through Core activity-hierarchy
+    validation/migration
+  - imports mutable TOML under `config/user/`; `config/program/` is not required
+    in the selected folder because it is presentation-owned runtime data
 - `Import Single TRACER`
   - selects one `.tracer` file
   - stages it in app cache
@@ -39,20 +42,37 @@ Capture the user-visible behavior and core data flow for Data-tab import and exp
 - `Export Complete Exchange Package`
   - selects a destination tree
   - collects managed TXT payloads in memory
-  - packages active converter TOML and markdown report TOML under
-    `config/`
+  - packages the active converter main TOML and activity-hierarchy TOML under
+    `config/user/`
   - requests a passphrase
   - exports one complete `.tracer` package through a native fd sink
 - `Export Current TXT ZIP`
   - selects a destination tree
   - writes one unencrypted `.zip`
-  - stores only the currently selected TXT payload
-  - preserves the payload relative path inside the ZIP, for example `2026/2026-01.txt`
+  - writes TXT under `txt/`
+  - exports every TOML under the mutable `config/user/` root, including
+    `behavior.toml`, `charts.toml`, `heatmap.toml`, and all activity-hierarchy
+    TOML files
+  - preserves the canonical user-config paths under `config/user/`, for example
+    `txt/2026/2026-01.txt` and `config/user/activity_hierarchy/study.toml`
+
+## Android directory mapping
+
+| Repository | Android private runtime | Role |
+| --- | --- | --- |
+| `assets/tracer_core/program/**` | `<filesDir>/tracer_core/config/program/**` | Immutable program resources; not exchange data |
+| `assets/tracer_core/defaults/activity_hierarchy/**` | `<filesDir>/tracer_core/config/user/activity_hierarchy/**` on first launch | Distribution seed for user hierarchy |
+| `test/data/**/*.txt` | `<filesDir>/tracer_core/input/**/*.txt` through the ADB helper | Test input, not APK content |
+| `test/data/activity_hierarchy/**` | `<filesDir>/tracer_core/config/user/activity_hierarchy/**` through the ADB helper | Test hierarchy, not APK content |
 
 ## Core Data Flow
 
 - App route helpers own picker flow, SAF target resolution, status updates, and transfer skeleton behavior.
 - Runtime owns exchange import/export execution, payload validation, package assembly, and native output writing.
+- Candidate TXT/config validation uses the Core pipeline-only Runtime. It
+  requires user converter/hierarchy TOML and TXT input, but does not load or
+  copy `config/program/**`; that resource tree is used only after the complete
+  application Runtime starts.
 - Record-side UI state owns crypto progress presentation.
 
 ## First Code Entry Points

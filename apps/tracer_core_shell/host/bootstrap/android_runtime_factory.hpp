@@ -11,6 +11,7 @@
 namespace tracer::core::application::use_cases {
 
 class ITracerCoreRuntime;
+class IPipelineApi;
 
 }  // namespace tracer::core::application::use_cases
 
@@ -34,8 +35,19 @@ struct AndroidRuntime {
   std::shared_ptr<void> runtime_state;
 };
 
+// Runtime used by candidate TXT/config validation and ingest. It deliberately
+// contains only the pipeline capability; report resources are not required.
+struct AndroidPipelineRuntime {
+  std::shared_ptr<tracer::core::application::use_cases::IPipelineApi>
+      pipeline_api;
+  std::shared_ptr<void> runtime_state;
+};
+
 [[nodiscard]] auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
     -> AndroidRuntime;
+
+[[nodiscard]] auto BuildAndroidPipelineRuntime(
+    const AndroidRuntimeRequest& request) -> AndroidPipelineRuntime;
 
 }  // namespace infrastructure::bootstrap
 

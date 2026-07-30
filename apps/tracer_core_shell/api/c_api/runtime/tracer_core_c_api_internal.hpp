@@ -19,6 +19,7 @@ enum class ReportFormat;
 namespace tracer::core::application::use_cases {
 
 class ITracerCoreRuntime;
+class IPipelineApi;
 
 }  // namespace tracer::core::application::use_cases
 
@@ -41,6 +42,7 @@ struct TreeQueryResponse;
 
 struct TtCoreRuntimeHandle {
   infrastructure::bootstrap::AndroidRuntime runtime;
+  infrastructure::bootstrap::AndroidPipelineRuntime pipeline_runtime;
   std::filesystem::path output_root;
   std::filesystem::path converter_config_toml_path;
 };
@@ -121,6 +123,9 @@ void SetLastError(const char* message);
 
 [[nodiscard]] auto RequireRuntime(TtCoreRuntimeHandle* handle)
     -> tracer::core::application::use_cases::ITracerCoreRuntime&;
+
+[[nodiscard]] auto RequirePipelineRuntime(TtCoreRuntimeHandle* handle)
+    -> tracer::core::application::use_cases::IPipelineApi&;
 
 [[nodiscard]] auto ToRequestJsonView(const char* request_json)
     -> std::string_view;

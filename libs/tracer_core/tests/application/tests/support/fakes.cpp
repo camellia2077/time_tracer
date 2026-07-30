@@ -413,6 +413,22 @@ auto FakeProjectRepository::GetAllProjects() -> std::vector<ProjectEntity> {
   return projects;
 }
 
+auto FakeTracerExchangeService::BuildExportContent(
+    const tracer_core::core::dto::TracerExchangeContentRequest& request)
+    -> tracer_core::core::dto::TracerExchangeContentResult {
+  ++content_call_count;
+  last_content_request = request;
+  return {.ok = true, .content = content_result, .error_message = {}};
+}
+
+auto FakeTracerExchangeService::EncodeExportContent(
+    const tracer_core::core::dto::TracerExchangeExportContent& content)
+    -> tracer_core::core::dto::TracerExchangeContentEncodingResult {
+  ++encoding_call_count;
+  last_encoding_content = content;
+  return encoding_result;
+}
+
 auto FakeTracerExchangeService::RunExport(
     const tracer_core::core::dto::TracerExchangeExportRequest& request)
     -> tracer_core::core::dto::TracerExchangeExportResult {

@@ -234,3 +234,47 @@ extern "C" TT_CORE_API void tracer_core_runtime_destroy(
     TtCoreRuntimeHandle* handle) {
   delete handle;
 }
+
+extern "C" TT_CORE_API auto tracer_core_pipeline_runtime_create(
+    const char* db_path, const char* output_root,
+    const char* converter_config_toml_path) -> TtCoreRuntimeHandle* {
+  try {
+    ClearLastError();
+    if (output_root == nullptr || output_root[0] == '\0') {
+      throw std::invalid_argument("output_root must not be empty.");
+    }
+    if (converter_config_toml_path == nullptr ||
+        converter_config_toml_path[0] == '\0') {
+      throw std::invalid_argument(
+          "converter_config_toml_path must not be empty.");
+    }
+
+    infrastructure::bootstrap::AndroidRuntimeRequest request{};
+    if (db_path != nullptr && db_path[0] != '\0') {
+      request.db_path = fs::path(db_path);
+    }
+    request.output_root = fs::path(output_root);
+    request.converter_config_toml_path = fs::path(converter_config_toml_path);
+    request.logger = CreateAbiLoggerAdapter();
+    request.diagnostics_sink = CreateAbiDiagnosticsAdapter();
+
+    auto pipeline_runtime =
+        infrastructure::bootstrap::BuildAndroidPipelineRuntime(request);
+    if (!pipeline_runtime.pipeline_api) {
+      throw std::runtime_error("failed to create core pipeline runtime.");
+    }
+
+    auto* handle = new TtCoreRuntimeHandle();
+    handle->pipeline_runtime = std::move(pipeline_runtime);
+    handle->output_root = fs::absolute(request.output_root);
+    handle->converter_config_toml_path =
+        fs::absolute(request.converter_config_toml_path);
+    return handle;
+  } catch (const std::exception& error) {
+    SetLastError(error.what());
+    return nullptr;
+  } catch (...) {
+    SetLastError("tracer_core_pipeline_runtime_create failed unexpectedly.");
+    return nullptr;
+  }
+}

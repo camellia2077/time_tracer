@@ -32,6 +32,18 @@ Use it when you need to understand:
 4. TXT logic validation
 5. Persistence gate handoff to ingest
 
+## Runtime Configuration Boundary
+
+TXT validation runs in the pipeline-only Runtime when a host is validating a
+candidate import. Its required configuration is the user-owned tree:
+
+- `config/user/behavior.toml`
+- `config/user/activity_hierarchy/**`
+
+`config/program/**` is not a validation dependency. It belongs to the complete
+application Runtime and contains presentation resources such as report and
+chart TOML. A candidate TXT/config import must not require or copy that tree.
+
 ## Not Owned Here
 1. SQLite write-side repository construction
 2. Query/report rendering behavior

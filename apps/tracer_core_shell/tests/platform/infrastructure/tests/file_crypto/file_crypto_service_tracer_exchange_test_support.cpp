@@ -61,27 +61,22 @@ auto BuildValidPackageEntries(
   for (const auto& payload : payloads) {
     manifest.payload_files.push_back(payload.relative_path);
   }
-  manifest.converter_alias_mapping_files.reserve(
-      sorted_alias_child_configs.size());
+  manifest.config_files.reserve(1U + sorted_alias_child_configs.size());
   for (const auto& alias_child : sorted_alias_child_configs) {
-    manifest.converter_alias_mapping_files.push_back(alias_child.relative_path);
+    manifest.config_files.push_back(alias_child.relative_path);
   }
+  manifest.config_files.push_back("config/user/behavior.toml");
 
   std::vector<exchange_pkg::TracerExchangePackageEntry> entries;
   entries.reserve(exchange_pkg::kRequiredPackagePaths.size() +
+                  1U +
                   sorted_alias_child_configs.size() + payloads.size());
   entries.push_back(BuildEntry(exchange_pkg::kManifestPath,
                                exchange_pkg::BuildManifestText(manifest)));
-  entries.push_back(BuildEntry(exchange_pkg::kConverterMainPath, main_config));
-  for (const auto report_path : exchange_pkg::kReportMarkdownPackagePaths) {
-    const fs::path asset_relative =
-        fs::path("assets/tracer_core") / fs::path(report_path);
-    entries.push_back(BuildEntry(
-        report_path, ReadRepoConverterConfig(asset_relative.generic_string())));
-  }
   for (const auto& alias_child : sorted_alias_child_configs) {
     entries.push_back(BuildEntry(alias_child.relative_path, alias_child.text));
   }
+  entries.push_back(BuildEntry("config/user/behavior.toml", main_config));
   for (const auto& payload : payloads) {
     entries.push_back(BuildEntry(payload.relative_path, payload.text));
   }
@@ -151,20 +146,20 @@ auto ReadLegacyRepoConverterConfig(std::string_view relative_path)
 
 auto BuildDefaultAliasChildConfigs() -> std::vector<PayloadFixture> {
   return {{
-      .relative_path = "config/activity_hierarchy/default.toml",
+      .relative_path = "config/user/activity_hierarchy/default.toml",
       .text = "parent = \"study\"\n\n[aliases]\n\"study\" = \"math\"\n",
   }};
 }
 
 auto BuildRepoAliasChildConfigs() -> std::vector<PayloadFixture> {
   const std::vector<std::string> relative_paths = {
-      "assets/tracer_core/config_test/activity_hierarchy/meal.toml",
-      "assets/tracer_core/config_test/activity_hierarchy/recreation.toml",
-      "assets/tracer_core/config_test/activity_hierarchy/routine.toml",
-      "assets/tracer_core/config_test/activity_hierarchy/sleep.toml",
-      "assets/tracer_core/config_test/activity_hierarchy/rest.toml",
-      "assets/tracer_core/config_test/activity_hierarchy/exercise.toml",
-      "assets/tracer_core/config_test/activity_hierarchy/study.toml",
+      "test/data/activity_hierarchy/meal.toml",
+      "test/data/activity_hierarchy/recreation.toml",
+      "test/data/activity_hierarchy/routine.toml",
+      "test/data/activity_hierarchy/sleep.toml",
+      "test/data/activity_hierarchy/rest.toml",
+      "test/data/activity_hierarchy/exercise.toml",
+      "test/data/activity_hierarchy/study.toml",
   };
 
   std::vector<PayloadFixture> entries;
@@ -172,9 +167,9 @@ auto BuildRepoAliasChildConfigs() -> std::vector<PayloadFixture> {
   for (const auto& relative_path : relative_paths) {
     const fs::path relative_fs_path(relative_path);
     entries.push_back({
-        .relative_path =
-            (fs::path("config") / "activity_hierarchy" / relative_fs_path.filename())
-                .generic_string(),
+        .relative_path = (fs::path("config") / "user" /
+                          "activity_hierarchy" / relative_fs_path.filename())
+                             .generic_string(),
         .text = ReadRepoConverterConfig(relative_path),
     });
   }

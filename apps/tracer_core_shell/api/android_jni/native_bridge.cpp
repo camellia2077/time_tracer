@@ -47,6 +47,7 @@ auto DestroyRuntimeLocked() -> void {
     tracer_core_runtime_destroy(g_runtime.core_runtime);
     g_runtime.core_runtime = nullptr;
   }
+  g_runtime.pipeline_only = false;
 }
 
 [[nodiscard]] auto ReadOptionalText(JNIEnv* env, jstring text)

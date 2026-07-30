@@ -51,6 +51,41 @@ struct AndroidRuntimeState {
   std::shared_ptr<ReportCatalog> report_catalog;
 };
 
+struct AndroidPipelineRuntimeState {
+  std::shared_ptr<app_workflow::IWorkflowHandler> workflow_handler;
+};
+
+auto BuildAndroidPipelineState(const fs::path& output_root,
+                               const fs::path& db_path,
+                               const fs::path& converter_config_path)
+    -> std::shared_ptr<AndroidPipelineRuntimeState> {
+  auto processed_data_loader = adapters_runtime::CreateProcessedDataLoader();
+  auto time_sheet_repository =
+      std::make_shared<infra_persistence_write::SqliteTimeSheetRepository>(
+          db_path.string());
+  auto database_health_checker =
+      std::make_shared<infra_persistence_runtime::SqliteDatabaseHealthChecker>(
+          db_path.string());
+  auto converter_config_provider =
+      std::make_shared<FileConverterConfigProvider>(
+          converter_config_path, std::unordered_map<fs::path, fs::path>{});
+  // Fail fast during pipeline bootstrap if converter TOML or the user
+  // activity hierarchy is invalid.
+  static_cast<void>(converter_config_provider->LoadConverterConfig());
+  auto ingest_input_provider = adapters_runtime::CreateTxtIngestInputProvider();
+  auto processed_data_storage = adapters_runtime::CreateProcessedDataStorage();
+  auto validation_issue_reporter =
+      std::make_shared<infra_logging::ValidationIssueReporter>();
+
+  auto state = std::make_shared<AndroidPipelineRuntimeState>();
+  state->workflow_handler = std::make_shared<app_workflow::WorkflowHandler>(
+      output_root, std::move(processed_data_loader),
+      std::move(time_sheet_repository), std::move(database_health_checker),
+      std::move(converter_config_provider), std::move(ingest_input_provider),
+      std::move(processed_data_storage), std::move(validation_issue_reporter));
+  return state;
+}
+
 }  // namespace
 
 namespace infrastructure::bootstrap {
@@ -80,28 +115,9 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
   tracer_core::domain::ports::ClearBufferedDiagnostics();
   tracer_core::domain::ports::ClearDiagnosticsDedup();
 
-  auto processed_data_loader = adapters_runtime::CreateProcessedDataLoader();
-  auto time_sheet_repository =
-      std::make_shared<infra_persistence_write::SqliteTimeSheetRepository>(
-          kDbPath.string());
-  auto database_health_checker =
-      std::make_shared<infra_persistence_runtime::SqliteDatabaseHealthChecker>(
-          kDbPath.string());
-  auto converter_config_provider =
-      std::make_shared<FileConverterConfigProvider>(
-          kConverterConfigTomlPath, std::unordered_map<fs::path, fs::path>{});
-  // Fail fast during runtime bootstrap if converter TOML is invalid.
-  static_cast<void>(converter_config_provider->LoadConverterConfig());
-  auto ingest_input_provider = adapters_runtime::CreateTxtIngestInputProvider();
-  auto processed_data_storage = adapters_runtime::CreateProcessedDataStorage();
-  auto validation_issue_reporter =
-      std::make_shared<infra_logging::ValidationIssueReporter>();
-
-  auto workflow = std::make_shared<app_workflow::WorkflowHandler>(
-      kOutputRoot, std::move(processed_data_loader),
-      std::move(time_sheet_repository), std::move(database_health_checker),
-      std::move(converter_config_provider), std::move(ingest_input_provider),
-      std::move(processed_data_storage), std::move(validation_issue_reporter));
+  auto pipeline_state = BuildAndroidPipelineState(
+      kOutputRoot, kDbPath, kConverterConfigTomlPath);
+  auto workflow = pipeline_state->workflow_handler;
 
   auto platform_clock =
       std::make_shared<infra_platform::AndroidPlatformClock>();
@@ -160,6 +176,31 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
   runtime_state->report_handler = std::move(report);
   runtime_state->report_catalog = std::move(report_catalog);
   runtime.runtime_state = std::move(runtime_state);
+  return runtime;
+}
+
+auto BuildAndroidPipelineRuntime(const AndroidRuntimeRequest& request)
+    -> AndroidPipelineRuntime {
+  const fs::path kOutputRoot =
+      android_runtime_detail::ResolveOutputRoot(request.output_root);
+  const fs::path kDbPath =
+      android_runtime_detail::ResolveDbPath(request.db_path, kOutputRoot);
+  const fs::path kConverterConfigTomlPath =
+      android_runtime_detail::ResolveAndroidPipelineConfigPath(
+          request.converter_config_toml_path);
+
+  tracer_core::application::runtime_bridge::SetLogger(request.logger);
+  tracer_core::domain::ports::SetDiagnosticsSink(request.diagnostics_sink);
+  tracer_core::domain::ports::SetErrorReportWriter(request.error_report_writer);
+  tracer_core::domain::ports::ClearBufferedDiagnostics();
+  tracer_core::domain::ports::ClearDiagnosticsDedup();
+
+  auto pipeline_state = BuildAndroidPipelineState(
+      kOutputRoot, kDbPath, kConverterConfigTomlPath);
+  AndroidPipelineRuntime runtime;
+  runtime.pipeline_api = std::make_shared<app_use_cases::PipelineApi>(
+      *pipeline_state->workflow_handler);
+  runtime.runtime_state = std::move(pipeline_state);
   return runtime;
 }
 

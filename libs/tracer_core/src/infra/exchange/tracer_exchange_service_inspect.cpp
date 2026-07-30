@@ -57,20 +57,9 @@ auto BuildInspectResult(
   for (const auto& payload_path : package.manifest.payload_files) {
     result.payload_entries.push_back(FindEntrySummary(package, payload_path));
   }
-  result.converter_entries = {
-      FindEntrySummary(package, exchange_pkg::kConverterMainPath),
-  };
-  result.converter_entries.reserve(result.converter_entries.size() +
-                                   package.manifest.report_markdown_files
-                                       .size() +
-                                   package.manifest.converter_alias_mapping_files
-                                       .size());
-  for (const auto& report_path : package.manifest.report_markdown_files) {
-    result.converter_entries.push_back(FindEntrySummary(package, report_path));
-  }
-  for (const auto& alias_child_path :
-       package.manifest.converter_alias_mapping_files) {
-    result.converter_entries.push_back(FindEntrySummary(package, alias_child_path));
+  result.config_entries.reserve(package.manifest.config_files.size());
+  for (const auto& config_path : package.manifest.config_files) {
+    result.config_entries.push_back(FindEntrySummary(package, config_path));
   }
   return result;
 }

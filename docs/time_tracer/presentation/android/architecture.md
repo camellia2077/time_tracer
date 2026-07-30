@@ -43,6 +43,11 @@ Provide a thin overview of the Android documentation and code layering.
 - `NativeRuntimeController` is the runtime facade/composition root.
 - `RuntimeCoreAdapter` owns native init/query execution flow.
 - Runtime services own capability-oriented behavior such as diagnostics, ingest, record, and crypto.
+- Android candidate TXT/config imports use the Core pipeline-only Runtime. This
+  path consumes `config/user/behavior.toml` and
+  `config/user/activity_hierarchy/**`; it must not require or copy
+  `config/program/**`. The complete Runtime still loads program resources for
+  reports, charts, and other presentation capabilities.
 
 ## Open Next
 
@@ -50,5 +55,7 @@ Provide a thin overview of the Android documentation and code layering.
   - `docs/time_tracer/presentation/android/specs/STRUCTURE.md`
 - Runtime protocol:
   - `docs/time_tracer/presentation/android/runtime-protocol.md`
+- Core Runtime/pipeline boundary:
+  - `docs/time_tracer/core/architecture/runtime_bootstrap_and_pipeline_scope.md`
 - Behavior reference:
   - `docs/time_tracer/presentation/android/features.md`

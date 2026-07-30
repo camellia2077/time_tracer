@@ -75,7 +75,7 @@ struct TracerExchangeInspectResult {
   std::string source_root_name;
   std::uint64_t payload_file_count = 0;
   std::vector<TracerExchangeInspectEntrySummary> payload_entries;
-  std::vector<TracerExchangeInspectEntrySummary> converter_entries;
+  std::vector<TracerExchangeInspectEntrySummary> config_entries;
   std::string error_message;
 };
 

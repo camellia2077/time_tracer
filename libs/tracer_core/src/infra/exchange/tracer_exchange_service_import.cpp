@@ -8,11 +8,17 @@
 #include <system_error>
 #include <vector>
 
+#include "infra/config/loader/alias_mapping_index_utils.hpp"
+#include "infra/config/loader/toml_loader_utils.hpp"
+
 import tracer.core.infrastructure.exchange;
 
 namespace tracer_core::infrastructure::crypto::tracer_exchange_internal {
 
 namespace {
+
+namespace modalias = tracer::core::infrastructure::config::loader::detail;
+namespace modloader = tracer::core::infrastructure::config::loader;
 
 #include "infra/exchange/detail/tracer_exchange_service_import_payloads_impl.inc"
 
@@ -105,19 +111,14 @@ auto TracerExchangeService::RunImport(
         kInputPath, kTransactionPaths.extracted_root);
 
     WriteDecodedPackageToRoot(kPackage, kTransactionPaths.extracted_root);
-    EmitImportTransactionProgress(
-        request.progress_observer, "validate_converter_config", 3U, kPhaseCount,
-        "converter_config", 0U, 1U, kInputPath, kActiveTextRoot,
-        kTransactionPaths.extracted_root /
-            fs::path(exchange_pkg::kConverterMainPath),
-        request.active_converter_main_config_path);
-    ValidatePackageConverterConfig(kTransactionPaths.extracted_root);
+    const fs::path kPackageAliasRoot =
+        kTransactionPaths.extracted_root / "config/user/activity_hierarchy";
+    static_cast<void>(modalias::LoadAliasMappingDefinition(
+        kPackageAliasRoot, modloader::ReadToml));
     EmitImportTransactionProgress(
         request.progress_observer, "validate_converter_config", 3U, kPhaseCount,
         "converter_config", 1U, 1U, kInputPath, kActiveTextRoot,
-        kTransactionPaths.extracted_root /
-            fs::path(exchange_pkg::kConverterMainPath),
-        request.active_converter_main_config_path);
+        kPackageAliasRoot, request.active_converter_main_config_path);
 
     imported_payloads =
         CollectImportedPayloadFiles(kTransactionPaths.extracted_root);
@@ -153,29 +154,29 @@ auto TracerExchangeService::RunImport(
     BackupManagedTextFiles(kActiveTextRoot, imported_payloads,
                            kManagedMonthFiles,
                            kTransactionPaths.backup_text_root);
+    const fs::path kPackageMainConfigPath =
+        kTransactionPaths.extracted_root / "config/user/behavior.toml";
 
     EmitImportTransactionProgress(
         request.progress_observer, "apply_converter_config", 5U, kPhaseCount,
         "converter_config", 0U, 1U, kInputPath, kActiveTextRoot,
-        kTransactionPaths.extracted_root /
-            fs::path(exchange_pkg::kConverterMainPath),
+        kPackageMainConfigPath,
         request.active_converter_main_config_path);
     config_applied = true;
+    fs::create_directories(kPackageMainConfigPath.parent_path());
+    fs::copy_file(
+        request.active_converter_main_config_path, kPackageMainConfigPath,
+        fs::copy_options::overwrite_existing);
     workflow_handler_.InstallActiveConverterConfig({
         .source_main_config_path =
-            (kTransactionPaths.extracted_root /
-             fs::path(exchange_pkg::kConverterMainPath))
-                .string(),
+            kPackageMainConfigPath.string(),
         .target_main_config_path =
             request.active_converter_main_config_path.string(),
     });
-    InstallPackageMarkdownReportConfig(kTransactionPaths.extracted_root,
-                                       kActivePaths.config_root_path);
     EmitImportTransactionProgress(
         request.progress_observer, "apply_converter_config", 5U, kPhaseCount,
         "converter_config", 1U, 1U, kInputPath, kActiveTextRoot,
-        kTransactionPaths.extracted_root /
-            fs::path(exchange_pkg::kConverterMainPath),
+        kPackageMainConfigPath,
         request.active_converter_main_config_path);
 
     EmitImportTransactionProgress(
@@ -252,14 +253,14 @@ auto TracerExchangeService::RunImport(
     rollback_error_message = TryRollbackImportTransaction(
         workflow_handler_, kActiveTextRoot, kTransactionPaths.backup_text_root,
         kTransactionPaths.backup_config_root,
-        request.active_converter_main_config_path, active_config_root,
+        request.active_converter_main_config_path,
         imported_payloads, text_root_updated, config_applied);
   } catch (...) {
     failure_message = "unexpected tracer exchange import failure";
     rollback_error_message = TryRollbackImportTransaction(
         workflow_handler_, kActiveTextRoot, kTransactionPaths.backup_text_root,
         kTransactionPaths.backup_config_root,
-        request.active_converter_main_config_path, active_config_root,
+        request.active_converter_main_config_path,
         imported_payloads, text_root_updated, config_applied);
   }
 

@@ -4,95 +4,95 @@
 [[commands]]
 name = "Alias Add Uses Core Hierarchy Operation"
 stage = "alias"
-args = ["alias", "add", "--file", "{exe_dir}/config/activity_hierarchy/meal.toml", "--group", "root", "--canonical", "cli-refactor-leaf", "--alias", "cli-refactor-leaf"]
+args = ["alias", "add", "--file", "{exe_dir}/config/user/activity_hierarchy/meal.toml", "--group", "root", "--canonical", "cli-refactor-leaf", "--alias", "cli-refactor-leaf"]
 expect_exit = 0
 expect_stdout_contains = ["Added alias `cli-refactor-leaf`"]
 expect_file_contains = [
-  "{exe_dir}/config/activity_hierarchy/meal.toml::cli-refactor-leaf",
+  "{exe_dir}/config/user/activity_hierarchy/meal.toml::cli-refactor-leaf",
 ]
 
 [[commands]]
 name = "Alias Promote Uses Core Hierarchy Operation"
 stage = "alias"
-args = ["alias", "promote", "--file", "{exe_dir}/config/activity_hierarchy/meal.toml", "--alias", "cli-refactor-leaf"]
+args = ["alias", "promote", "--file", "{exe_dir}/config/user/activity_hierarchy/meal.toml", "--alias", "cli-refactor-leaf"]
 expect_exit = 0
 expect_stdout_contains = ["Promoted alias `cli-refactor-leaf`"]
 expect_file_contains = [
-  "{exe_dir}/config/activity_hierarchy/meal.toml::[aliases.cli-refactor-leaf]",
-  "{exe_dir}/config/activity_hierarchy/meal.toml::group_aliases = [ 'cli-refactor-leaf' ]",
+  "{exe_dir}/config/user/activity_hierarchy/meal.toml::[aliases.cli-refactor-leaf]",
+  "{exe_dir}/config/user/activity_hierarchy/meal.toml::group_aliases = [ 'cli-refactor-leaf' ]",
 ]
 
 [[commands]]
 name = "Alias Add Group Alias Uses Core Hierarchy Operation"
 stage = "alias"
-args = ["alias", "add-group-alias", "--file", "{exe_dir}/config/activity_hierarchy/meal.toml", "--group", "cli-refactor-leaf", "--alias", "cli-refactor-group"]
+args = ["alias", "add-group-alias", "--file", "{exe_dir}/config/user/activity_hierarchy/meal.toml", "--group", "cli-refactor-leaf", "--alias", "cli-refactor-group"]
 expect_exit = 0
 expect_stdout_contains = ["Updated group aliases"]
 expect_file_contains = [
-  "{exe_dir}/config/activity_hierarchy/meal.toml::cli-refactor-group",
+  "{exe_dir}/config/user/activity_hierarchy/meal.toml::cli-refactor-group",
 ]
 
 [[commands]]
 name = "Alias Rename Group Alias Uses Core Hierarchy Operation"
 stage = "alias"
-args = ["alias", "rename-group-alias", "--file", "{exe_dir}/config/activity_hierarchy/meal.toml", "--group", "cli-refactor-leaf", "--old-alias", "cli-refactor-group", "--alias", "cli-refactor-renamed"]
+args = ["alias", "rename-group-alias", "--file", "{exe_dir}/config/user/activity_hierarchy/meal.toml", "--group", "cli-refactor-leaf", "--old-alias", "cli-refactor-group", "--alias", "cli-refactor-renamed"]
 expect_exit = 0
 expect_stdout_contains = ["Updated group aliases"]
 expect_file_contains = [
-  "{exe_dir}/config/activity_hierarchy/meal.toml::cli-refactor-renamed",
+  "{exe_dir}/config/user/activity_hierarchy/meal.toml::cli-refactor-renamed",
 ]
 
 [[commands]]
 name = "Alias Move Config Uses Core Hierarchy Operation Without Migration"
 stage = "alias"
-args = ["alias", "move-config", "--file", "{exe_dir}/config/activity_hierarchy/meal.toml", "--alias", "meal", "--to", "cli-refactor-leaf"]
+args = ["alias", "move-config", "--file", "{exe_dir}/config/user/activity_hierarchy/meal.toml", "--alias", "meal", "--to", "cli-refactor-leaf"]
 expect_exit = 0
 expect_stdout_contains = [
   "TXT files and database were not modified.",
   "Existing TXT using the old canonical may require migration.",
 ]
 expect_file_contains = [
-  "{exe_dir}/config/activity_hierarchy/meal.toml::[aliases.cli-refactor-leaf]",
-  "{exe_dir}/config/activity_hierarchy/meal.toml::dining = [ 'meal', '吃饭', '饭' ]",
+  "{exe_dir}/config/user/activity_hierarchy/meal.toml::[aliases.cli-refactor-leaf]",
+  "{exe_dir}/config/user/activity_hierarchy/meal.toml::dining = [ 'meal', '吃饭', '饭' ]",
 ]
 
 [[commands]]
 name = "Alias Rename Group Migrates From Core Replacements"
 stage = "alias"
-args = ["--db", "{db_path}", "alias", "rename-group", "--file", "{exe_dir}/config/activity_hierarchy/meal.toml", "--group", "cli-refactor-leaf", "--name", "cli-refactor-renamed", "--input", "{exe_dir}/input/full"]
+args = ["--db", "{db_path}", "alias", "rename-group", "--file", "{exe_dir}/config/user/activity_hierarchy/meal.toml", "--group", "cli-refactor-leaf", "--name", "cli-refactor-renamed", "--input", "{exe_dir}/input/full"]
 expect_exit = 0
 expect_stdout_contains = ["Renamed group `cli-refactor-leaf` to `cli-refactor-renamed`; rebuilt database"]
 expect_file_contains = [
-  "{exe_dir}/config/activity_hierarchy/meal.toml::[aliases.cli-refactor-renamed]",
+  "{exe_dir}/config/user/activity_hierarchy/meal.toml::[aliases.cli-refactor-renamed]",
 ]
 
 [[commands]]
 name = "Alias Add Migration Target"
 stage = "alias"
-args = ["alias", "add", "--file", "{exe_dir}/config/activity_hierarchy/meal.toml", "--group", "root", "--canonical", "cli-migration-target", "--alias", "cli-migration-target"]
+args = ["alias", "add", "--file", "{exe_dir}/config/user/activity_hierarchy/meal.toml", "--group", "root", "--canonical", "cli-migration-target", "--alias", "cli-migration-target"]
 expect_exit = 0
 
 [[commands]]
 name = "Alias Promote Migration Target"
 stage = "alias"
-args = ["alias", "promote", "--file", "{exe_dir}/config/activity_hierarchy/meal.toml", "--alias", "cli-migration-target"]
+args = ["alias", "promote", "--file", "{exe_dir}/config/user/activity_hierarchy/meal.toml", "--alias", "cli-migration-target"]
 expect_exit = 0
 
 [[commands]]
 name = "Alias Move Migrates From Core Replacements"
 stage = "alias"
-args = ["--db", "{db_path}", "alias", "move", "--file", "{exe_dir}/config/activity_hierarchy/meal.toml", "--alias", "meal", "--to", "cli-migration-target", "--input", "{exe_dir}/input/full"]
+args = ["--db", "{db_path}", "alias", "move", "--file", "{exe_dir}/config/user/activity_hierarchy/meal.toml", "--alias", "meal", "--to", "cli-migration-target", "--input", "{exe_dir}/input/full"]
 expect_exit = 0
 expect_stdout_contains = ["Moved canonical leaf from `meal_cli-refactor-renamed_dining` to `meal_cli-migration-target_dining`; rebuilt database"]
 expect_file_contains = [
-  "{exe_dir}/config/activity_hierarchy/meal.toml::[aliases.cli-migration-target]",
-  "{exe_dir}/config/activity_hierarchy/meal.toml::dining = [ 'meal', '吃饭', '饭' ]",
+  "{exe_dir}/config/user/activity_hierarchy/meal.toml::[aliases.cli-migration-target]",
+  "{exe_dir}/config/user/activity_hierarchy/meal.toml::dining = [ 'meal', '吃饭', '饭' ]",
 ]
 
 [[commands]]
 name = "Alias Tree Uses Core Hierarchy Renderer"
 stage = "alias"
-args = ["alias", "tree", "--file", "{exe_dir}/config/activity_hierarchy/meal.toml", "--show-aliases"]
+args = ["alias", "tree", "--file", "{exe_dir}/config/user/activity_hierarchy/meal.toml", "--show-aliases"]
 expect_exit = 0
 expect_stdout_contains = [
   "meal",
@@ -103,32 +103,32 @@ expect_stdout_contains = [
 [[commands]]
 name = "Alias Cross-Document Move Migrates TXT And Database"
 stage = "alias"
-args = ["--db", "{db_path}", "alias", "move", "--file", "{exe_dir}/config/activity_hierarchy/exercise.toml", "--to-file", "{exe_dir}/config/activity_hierarchy/meal.toml", "--alias", "游泳", "--to", "root", "--input", "{exe_dir}/input/full"]
+args = ["--db", "{db_path}", "alias", "move", "--file", "{exe_dir}/config/user/activity_hierarchy/exercise.toml", "--to-file", "{exe_dir}/config/user/activity_hierarchy/meal.toml", "--alias", "游泳", "--to", "root", "--input", "{exe_dir}/input/full"]
 expect_exit = 0
 expect_stdout_contains = [
   "Moved canonical leaf from `exercise_cardio_swimming` to `meal_swimming`; rebuilt database",
 ]
 expect_file_contains = [
-  "{exe_dir}/config/activity_hierarchy/meal.toml::swimming = [ '游泳' ]",
+  "{exe_dir}/config/user/activity_hierarchy/meal.toml::swimming = [ '游泳' ]",
 ]
 
 [[commands]]
 name = "Alias Cross-Document Group Move Migrates Descendant Canonicals"
 stage = "alias"
-args = ["--db", "{db_path}", "alias", "move", "--file", "{exe_dir}/config/activity_hierarchy/exercise.toml", "--to-file", "{exe_dir}/config/activity_hierarchy/meal.toml", "--group", "cardio.running", "--to", "root", "--input", "{exe_dir}/input/full"]
+args = ["--db", "{db_path}", "alias", "move", "--file", "{exe_dir}/config/user/activity_hierarchy/exercise.toml", "--to-file", "{exe_dir}/config/user/activity_hierarchy/meal.toml", "--group", "cardio.running", "--to", "root", "--input", "{exe_dir}/input/full"]
 expect_exit = 0
 expect_stdout_contains = [
   "Moved group subtree from `exercise_cardio_running` to `meal_running`; rebuilt database",
 ]
 expect_file_contains = [
-  "{exe_dir}/config/activity_hierarchy/meal.toml::[aliases.running]",
-  "{exe_dir}/config/activity_hierarchy/meal.toml::treadmill = [ '跑步机' ]",
+  "{exe_dir}/config/user/activity_hierarchy/meal.toml::[aliases.running]",
+  "{exe_dir}/config/user/activity_hierarchy/meal.toml::treadmill = [ '跑步机' ]",
 ]
 
 [[commands]]
 name = "Alias Cross-Document Move Config Uses Core Leaf Migration Plan"
 stage = "alias"
-args = ["alias", "move-config", "--file", "{exe_dir}/config/activity_hierarchy/exercise.toml", "--to-file", "{exe_dir}/config/activity_hierarchy/meal.toml", "--alias", "围棋", "--to", "root"]
+args = ["alias", "move-config", "--file", "{exe_dir}/config/user/activity_hierarchy/exercise.toml", "--to-file", "{exe_dir}/config/user/activity_hierarchy/meal.toml", "--alias", "围棋", "--to", "root"]
 expect_exit = 0
 expect_stdout_contains = [
   "TOML only",
@@ -136,7 +136,7 @@ expect_stdout_contains = [
   "New canonical: meal_go",
 ]
 expect_file_contains = [
-  "{exe_dir}/config/activity_hierarchy/meal.toml::go = [ '围棋' ]",
+  "{exe_dir}/config/user/activity_hierarchy/meal.toml::go = [ '围棋' ]",
 ]
 
 [[commands]]
@@ -149,15 +149,15 @@ expect_stdout_contains = ["Appended event to 0301"]
 [[commands]]
 name = "Alias Rename Parent Moves TOML And Migrates Canonicals"
 stage = "alias"
-args = ["--db", "{db_path}", "alias", "rename-parent", "--file", "{exe_dir}/config/activity_hierarchy/exercise.toml", "--name", "training", "--input", "{exe_dir}/input/full"]
+args = ["--db", "{db_path}", "alias", "rename-parent", "--file", "{exe_dir}/config/user/activity_hierarchy/exercise.toml", "--name", "training", "--input", "{exe_dir}/input/full"]
 expect_exit = 0
 expect_stdout_contains = [
   "Renamed activity hierarchy parent `exercise` to `training`; moved TOML, rebuilt database",
 ]
 expect_files = [
-  "{exe_dir}/config/activity_hierarchy/training.toml",
+  "{exe_dir}/config/user/activity_hierarchy/training.toml",
 ]
 expect_file_contains = [
-  "{exe_dir}/config/activity_hierarchy/training.toml::parent = 'training'",
+  "{exe_dir}/config/user/activity_hierarchy/training.toml::parent = 'training'",
   "{exe_dir}/input/full/2026/2026-03.txt::training_cardio_cycling",
 ]

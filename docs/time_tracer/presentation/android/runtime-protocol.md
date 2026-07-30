@@ -87,8 +87,11 @@ Current status:
   month-TXT business semantics in core rather than Kotlin UI helpers.
 - Android must not directly save an alias TOML document. Every alias TOML
   change must use a Core hierarchy operation or
-  `rewrite_activity_hierarchy_document`, then pass the returned TOML and both
-  replacement lists through `RuntimeAliasMoveMigrationService`.
+  `rewrite_activity_hierarchy_document`, then pass the returned TOML and one
+  activity-name replacement plan through `RuntimeActivityHierarchyMigrationService`.
+  The plan has one shared meaning for every entry (`old token` -> `new token`);
+  its canonical and alias namespaces remain separate so each can use the
+  matching Core TXT action.
 - `rename_parent` is the parent-document rename operation. Android sends the
   current TOML content, `operation.new_name`, and should send
   `operation.old_parent` as a stale-content guard. Core returns the updated

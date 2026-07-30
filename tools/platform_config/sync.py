@@ -23,6 +23,16 @@ from .internal.sync_gate import validate_sync_output
 from .internal.sync_report import print_bundle_diff, print_sync_header, print_sync_report
 
 
+def collect_activity_hierarchy_files(root: Path) -> list[str]:
+    if not root.exists():
+        raise FileNotFoundError(f"Activity hierarchy source not found: {root}")
+    return [
+        f"activity_hierarchy/{path.relative_to(root).as_posix()}"
+        for path in sorted(root.rglob("*.toml"))
+        if path.is_file()
+    ]
+
+
 def _hash_file(path: Path) -> str:
     return hash_file_content(path, rel_path=path.name)
 
@@ -36,6 +46,7 @@ def sync_target(
     check: bool,
     show_diff: bool,
     allow_overwrite_source: bool,
+    activity_hierarchy_root: Path | None = None,
 ) -> bool:
     started = time.monotonic()
     resolved_source = source_root.resolve()
@@ -48,8 +59,22 @@ def sync_target(
 
     source_bundle = load_source_bundle(source_root)
     source_config = load_source_config(source_root)
-    model = build_bundle_model(source_bundle, source_config, target)
-    planned_files = collect_plan_files(source_root, model)
+    activity_hierarchy_files = (
+        collect_activity_hierarchy_files(activity_hierarchy_root)
+        if target == "windows" and activity_hierarchy_root is not None
+        else []
+    )
+    model = build_bundle_model(
+        source_bundle,
+        source_config,
+        target,
+        activity_hierarchy_files=activity_hierarchy_files,
+    )
+    planned_files = collect_plan_files(
+        source_root,
+        model,
+        activity_hierarchy_root=activity_hierarchy_root,
+    )
     file_hashes = build_file_hashes(planned_files)
     input_hash = compute_input_hash(target, source_root, file_hashes)
 
@@ -113,7 +138,7 @@ def sync_target(
     )
 
     if show_diff:
-        generated_bundle = planned_files["meta/bundle.toml"].decode("utf-8")
+        generated_bundle = planned_files["program/meta/bundle.toml"].decode("utf-8")
         print_bundle_diff(output_root, generated_bundle)
 
     if check:
@@ -195,6 +220,7 @@ def run_generation(
     check: bool,
     show_diff: bool,
     allow_overwrite_source: bool,
+    activity_hierarchy_root: Path | None = None,
 ) -> int:
     if not source_root.exists():
         print(f"Source root does not exist: {source_root}")
@@ -218,6 +244,7 @@ def run_generation(
                     check=check,
                     show_diff=show_diff,
                     allow_overwrite_source=allow_overwrite_source,
+                    activity_hierarchy_root=activity_hierarchy_root,
                 )
                 or drift_detected
             )

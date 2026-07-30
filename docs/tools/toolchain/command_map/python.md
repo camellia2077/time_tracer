@@ -35,21 +35,31 @@
    - 参数层：`tools/toolchain/cli/handlers/quality/verify.py`
    - 执行层：`tools/toolchain/commands/cmd_quality/verify.py`
 
-5. 调整 Windows CLI Python 构建入口参数（release/runtime sync/icon 覆盖）
+5. Android 编译、安装和测试数据注入流程
+   - 编译：`python tools/run.py android --variant debug`
+   - 编译并安装：`python tools/run.py android --variant debug --install`
+   - 编译、安装并注入测试数据：`python tools/run.py android --variant debug --install --with-test-data`
+   - 安装已有 APK：`python tools/run.py android --variant debug --install-only`
+   - Release 编译与安装：`android --variant release`、`android --variant release --install`
+   - 多设备时追加：`--serial DEVICE_SERIAL`
+   - 参数与设备流程：`tools/toolchain/cli/handlers/android.py`
+   - 测试数据注入：复用 `tools/scripts/devtools/android/push_test_data.py`
+
+6. 调整 Windows CLI Python 构建入口参数（release/runtime sync/icon 覆盖）
    - `tools/toolchain/cli/handlers/build.py`
    - `tools/toolchain/commands/cmd_build/command.py`
    - `tools/toolchain/commands/cmd_build/cargo.py`
 
-6. 调整 clang-tidy 第三方头过滤
+7. 调整 clang-tidy 第三方头过滤
    - 配置优先：`tools/toolchain/config/workflow.toml` -> `[tidy].header_filter_regex`
    - 默认回退：`tools/toolchain/commands/cmd_build/cmake.py`
 
-7. 执行 clang-tidy 批次收口（统一入口）
+8. 执行 clang-tidy 批次收口（统一入口）
    - 命令（C++ 轨）：`python tools/run.py tidy-batch --app tracer_core_shell --batch-id <BATCH_ID> --strict-clean --run-verify --concise --full-every 3 --keep-going`
    - 参数层：`tools/toolchain/cli/handlers/tidy/tidy_batch.py`
    - 执行层：`tools/toolchain/commands/tidy/batch.py`
 
-8. 针对单个 clang-tidy task 做自动 patch / fix / suggest / step
+9. 针对单个 clang-tidy task 做自动 patch / fix / suggest / step
    - 命令：
      - `python tools/run.py tidy-task-patch --task-log <resolved_task_json>`
      - `python tools/run.py tidy-task-fix --task-log <resolved_task_json>`

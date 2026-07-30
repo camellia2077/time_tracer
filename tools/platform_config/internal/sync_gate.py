@@ -23,6 +23,8 @@ def validate_config_keys(config_data: dict[str, Any], target: str) -> None:
     visualization = config_data.get("visualization")
     if not isinstance(visualization, dict) or "heatmap" not in visualization:
         raise ValueError("sync gate failed: config.toml missing visualization.heatmap.")
+    if "pie" not in visualization:
+        raise ValueError("sync gate failed: config.toml missing visualization.pie.")
 
     reports = config_data.get("reports")
     if target == "windows":
@@ -61,7 +63,7 @@ def validate_sync_output(
         if actual != expected:
             raise ValueError(f"sync gate failed: content mismatch after sync: {path}")
 
-    bundle_path = output_root / "meta" / "bundle.toml"
+    bundle_path = output_root / "program" / "meta" / "bundle.toml"
     bundle_data = tomllib.loads(bundle_path.read_text(encoding="utf-8"))
     if int(bundle_data.get("schema_version", -1)) != model.schema_version:
         raise ValueError("sync gate failed: bundle.toml schema_version mismatch.")
@@ -70,7 +72,7 @@ def validate_sync_output(
     if str(bundle_data.get("bundle_name", "")) != model.bundle_name:
         raise ValueError("sync gate failed: bundle.toml bundle_name mismatch.")
 
-    config_data = tomllib.loads((output_root / "config.toml").read_text(encoding="utf-8"))
+    config_data = tomllib.loads((output_root / "program/config.toml").read_text(encoding="utf-8"))
     if not isinstance(config_data, dict):
         raise ValueError("sync gate failed: config.toml root is not a table.")
     validate_config_keys(config_data, target)

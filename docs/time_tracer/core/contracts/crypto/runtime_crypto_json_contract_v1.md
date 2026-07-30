@@ -34,14 +34,11 @@
 4. 每个 `.txt` 都会在导出前执行结构校验和逻辑校验；任一失败则整个导出失败。
 5. 每个 `.txt` 的 basename 必须精确等于 `YYYY-MM.txt`，且文件内容头 `yYYYY + mMM` 必须与文件名一致。
 6. 若多个输入 TXT 解析到同一 `YYYY-MM`，encrypt 失败。
-7. runtime 会读取当前 active 的 3 个 converter TOML，并与：
+7. runtime 会读取当前 active 的 `config/user` 配置树，并与：
    - `manifest.toml`
-   - `config/activity_hierarchy/_system.toml`
-   - `config/activity_hierarchy/*.toml`
-   - `config/activity_hierarchy/*.toml`
-   - `config/activity_hierarchy/*.toml`
+   - `config/user/**` 下的全部普通文件
    - `payload/<year>/YYYY-MM.txt`
-   共同组装为 tracer exchange package `v4`，再交给外层 `.tracer` v2 容器压缩加密。
+   共同组装为 tracer exchange package `v6`，再交给外层 `.tracer` v2 容器压缩加密。
 8. 若 `output_path` 已存在且是目录，则实际输出为：
    - `<output_path>/<input_dir_name>.tracer`
 9. 否则将 `output_path` 的扩展名替换为 `.tracer` 作为最终输出文件。
@@ -49,7 +46,7 @@
 ### 3.3 成功 `content` 文本
 1. 第一行：`Exported complete tracer exchange package: <input_abs> -> <output_abs>`
 2. 第二行：`Included payload TXT files: <count>`
-3. 第三行：`Included converter TOML files: 3`
+3. 第三行：`Included config files: <count>`
 4. 第四行：`Manifest included: yes`
 
 ## 4. Decrypt 接口契约
@@ -64,14 +61,10 @@
 ### 4.2 处理语义
 1. `input_path` 必须是已存在的单个 `.tracer` 文件。
 2. decrypt 的当前业务语义是“事务式完整导入 tracer exchange package”，不是“解包到目录”。
-3. 外层 `.tracer` 解密后，runtime 会解析内层 tracer exchange package `v4`。
-4. runtime 必须先成功加载校验包内：
-   - `config/activity_hierarchy/_system.toml`
-   - `config/activity_hierarchy/*.toml`
-   - `config/activity_hierarchy/*.toml`
-   - `config/activity_hierarchy/*.toml`
+3. 外层 `.tracer` 解密后，runtime 会解析内层 tracer exchange package `v6`。
+4. runtime 必须先成功加载并校验包内 `config/user/**` 的全部配置 entry。
 5. runtime 会备份当前 active converter config 与将被覆盖的本地月份 TXT。
-6. 随后包内 3 个 converter TOML 会覆盖当前 active config。
+6. 随后包内 `config/user/**` 会覆盖当前 active config 中对应的用户配置内容。
 7. runtime 会构造“包内月份覆盖 + 包外月份保留”的有效本地 TXT 视图。
 8. 在新 config 下，runtime 会对全部有效 TXT 先执行结构校验，再执行逻辑校验。
 9. 校验通过后，runtime 才会更新 active text root。
@@ -121,12 +114,12 @@
    - `source_root_name`
    - `payload_file_count`
    - 每个 payload 文件一行：`payload/<year>/YYYY-MM.txt: present|missing (<bytes> bytes)`
-   - 3 个 converter TOML 的 present/missing 与大小
+   - `config/user/**` 下每个 config entry 的 present/missing 与大小
 
 ## 6. Exchange Package 校验语义
 1. decrypt / inspect 成功的前提是：外层 `.tracer` 载荷必须是有效的 tracer exchange package。
 2. 当前 exchange package 载荷契约见：
-   - `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v4.md`
+   - `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v6.md`
 3. 若内层 package 不满足该契约，错误消息通常以：
    - `unsupported/malformed tracer package: ...`
    开头。

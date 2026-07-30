@@ -1,11 +1,11 @@
 #include "infra/exchange/tracer_exchange_service_internal.hpp"
 #include "infra/exchange/tracer_exchange_service_export_support.hpp"
 
-#include <optional>
+#include <algorithm>
+#include <cstdint>
+#include <span>
 #include <stdexcept>
-
-#include "infra/config/loader/alias_mapping_index_utils.hpp"
-#include "infra/config/loader/toml_loader_utils.hpp"
+#include <utility>
 
 import tracer.core.infrastructure.exchange;
 
@@ -13,64 +13,335 @@ namespace tracer_core::infrastructure::crypto::tracer_exchange_internal {
 
 namespace {
 
-using DecodedTracerExchangePackage = exchange_pkg::DecodedTracerExchangePackage;
 using TracerExchangeManifest = exchange_pkg::TracerExchangeManifest;
 using TracerExchangePackageEntry = exchange_pkg::TracerExchangePackageEntry;
 using exchange_pkg::BuildManifestText;
 using exchange_pkg::EncodePackageBytes;
-namespace modalias = tracer::core::infrastructure::config::loader::detail;
-namespace modloader = tracer::core::infrastructure::config::loader;
 
-auto BuildManifestEntry(const TracerExchangeManifest& manifest)
+auto UsesExistingProtection(
+    const app_dto::TracerExchangeProtectionOptions& protection) -> bool {
+  return protection.compression ==
+             app_dto::TracerExchangeCompressionMode::kExisting &&
+         protection.encryption ==
+             app_dto::TracerExchangeEncryptionMode::kExisting;
+}
+
+auto UsesNoProtection(
+    const app_dto::TracerExchangeProtectionOptions& protection) -> bool {
+  return protection.compression ==
+             app_dto::TracerExchangeCompressionMode::kNone &&
+         protection.encryption == app_dto::TracerExchangeEncryptionMode::kNone;
+}
+
+auto EnsureSupportedProtection(
+    const app_dto::TracerExchangeProtectionOptions& protection) -> void {
+  if (!UsesExistingProtection(protection) && !UsesNoProtection(protection)) {
+    throw std::invalid_argument(
+        "Compression and encryption must both select None or both select "
+        "the existing implementation.");
+  }
+}
+
+auto ToPackageManifest(const app_dto::TracerExchangeContentManifest& manifest)
+    -> TracerExchangeManifest {
+  return {
+      .package_type = manifest.package_type,
+      .package_version = manifest.package_version,
+      .producer_platform = manifest.producer_platform,
+      .producer_app = manifest.producer_app,
+      .created_at_utc = manifest.created_at_utc,
+      .source_root_name = manifest.source_root_name,
+      .config_root = manifest.config_root,
+      .config_files = manifest.config_files,
+      .payload_root = manifest.payload_root,
+      .payload_files = manifest.payload_files,
+  };
+}
+
+auto ToPackageEntry(const app_dto::TracerExchangeContentEntry& content_entry)
     -> TracerExchangePackageEntry {
   TracerExchangePackageEntry entry{};
-  entry.relative_path = std::string(exchange_pkg::kManifestPath);
-  const std::string kText = BuildManifestText(manifest);
-  entry.data = CanonicalizePackageTextBytes(kText, exchange_pkg::kManifestPath);
-  entry.entry_flags = exchange_pkg::kStandardEntryFlags;
+  entry.relative_path = content_entry.relative_path;
+  entry.data = content_entry.data;
+  entry.entry_flags =
+      static_cast<std::uint16_t>(content_entry.required ? 0x0001U : 0U) |
+      static_cast<std::uint16_t>(content_entry.text ? 0x0002U : 0U);
   return entry;
 }
 
-auto BuildFileEntry(std::string_view relative_path, const fs::path& source_path)
-    -> TracerExchangePackageEntry {
-  EnsureRegularFileExists(source_path, "Tracer exchange source file");
-  TracerExchangePackageEntry entry{};
-  entry.relative_path = std::string(relative_path);
-  const auto kSourceBytes = ReadFileBytes(source_path);
-  entry.data =
-      IsCanonicalTextPackagePath(relative_path)
-          ? CanonicalizePackageTextBytes(kSourceBytes, source_path.string())
-          : kSourceBytes;
-  entry.entry_flags = exchange_pkg::kStandardEntryFlags;
+auto BuildManifestEntry(const app_dto::TracerExchangeContentManifest& manifest)
+    -> app_dto::TracerExchangeContentEntry {
+  const TracerExchangeManifest package_manifest = ToPackageManifest(manifest);
+  app_dto::TracerExchangeContentEntry entry{};
+  entry.relative_path = std::string(exchange_pkg::kManifestPath);
+  entry.data = CanonicalizePackageTextBytes(
+      BuildManifestText(package_manifest), exchange_pkg::kManifestPath);
+  entry.kind = app_dto::TracerExchangeContentEntryKind::kManifest;
+  entry.required = true;
+  entry.text = true;
   return entry;
+}
+
+auto BuildConfigEntries(
+    const fs::path& config_user_root,
+    std::vector<std::string>& config_files)
+    -> std::vector<app_dto::TracerExchangeContentEntry> {
+  std::vector<app_dto::TracerExchangeContentEntry> entries;
+  if (!fs::exists(config_user_root) || !fs::is_directory(config_user_root)) {
+    throw std::invalid_argument(
+        "config_user_root_path must be an existing directory: " +
+        config_user_root.string());
+  }
+
+  for (const auto& filesystem_entry :
+       fs::recursive_directory_iterator(config_user_root)) {
+    if (!filesystem_entry.is_regular_file()) {
+      continue;
+    }
+
+    const fs::path relative_path =
+        filesystem_entry.path().lexically_relative(config_user_root);
+    if (relative_path.empty() || relative_path == filesystem_entry.path() ||
+        relative_path.string().starts_with("..")) {
+      throw std::runtime_error(
+          "Config file must stay under config/user: " +
+          filesystem_entry.path().string());
+    }
+
+    const std::string package_path =
+        (fs::path("config/user") / relative_path).generic_string();
+    const auto data = ReadFileBytes(filesystem_entry.path());
+    const bool is_text = IsCanonicalTextPackagePath(package_path);
+    entries.push_back({
+        .relative_path = package_path,
+        .data = is_text
+                    ? CanonicalizePackageTextBytes(data, package_path)
+                    : data,
+        .kind = app_dto::TracerExchangeContentEntryKind::kConfig,
+        .required = true,
+        .text = is_text,
+    });
+    config_files.push_back(package_path);
+  }
+
+  std::sort(entries.begin(), entries.end(),
+            [](const auto& left, const auto& right) {
+              return left.relative_path < right.relative_path;
+            });
+  std::sort(config_files.begin(), config_files.end());
+  if (entries.empty()) {
+    throw std::invalid_argument(
+        "config_user_root_path must contain at least one regular file.");
+  }
+  return entries;
 }
 
 auto BuildPayloadEntry(const InputPayloadFile& payload_file)
-    -> TracerExchangePackageEntry {
-  if (!payload_file.source_path.empty()) {
-    return BuildFileEntry(payload_file.relative_package_path,
-                          payload_file.source_path);
+    -> app_dto::TracerExchangeContentEntry {
+  app_dto::TracerExchangeContentEntry entry{};
+  entry.relative_path = payload_file.relative_package_path;
+  entry.data = payload_file.source_path.empty()
+                   ? CanonicalizePackageTextBytes(payload_file.content_bytes,
+                                                  payload_file.source_label)
+                   : CanonicalizePackageTextBytes(
+                         ReadFileBytes(payload_file.source_path),
+                         payload_file.source_path.string());
+  entry.kind = app_dto::TracerExchangeContentEntryKind::kPayload;
+  entry.required = true;
+  entry.text = true;
+  return entry;
+}
+
+auto ResolveUnprotectedOutputName(std::string_view source_root_name,
+                                  std::string_view requested_name)
+    -> fs::path {
+  fs::path output = requested_name.empty()
+                        ? fs::path(std::string(source_root_name) + ".ttpkg")
+                        : fs::path(std::string(requested_name));
+  output.replace_extension(".ttpkg");
+  return output;
+}
+
+auto ResolveUnprotectedOutputPath(const fs::path& input_path,
+                                  std::string_view source_root_name,
+                                  const fs::path& output_arg) -> fs::path {
+  fs::path output = output_arg;
+  if (fs::exists(output) && fs::is_directory(output)) {
+    output /= input_path.empty() ? fs::path(std::string(source_root_name))
+                                 : input_path.filename();
+  }
+  output.replace_extension(".ttpkg");
+  return output;
+}
+
+auto ProtectAndWriteEncodedPackage(
+    std::span<const std::uint8_t> package_bytes,
+    const app_dto::TracerExchangeExportRequest& request,
+    const fs::path& input_path, std::string_view source_root_name,
+    const fs::path& resolved_output) -> void {
+  const bool kHasOutputPath = !request.requested_output_path.empty();
+  if (UsesNoProtection(request.protection)) {
+    if (kHasOutputPath) {
+      WriteFileBytes(resolved_output, package_bytes);
+      return;
+    }
+    std::string error_message;
+    if (request.encrypted_output_writer(package_bytes, error_message)) {
+      return;
+    }
+    throw std::runtime_error(
+        error_message.empty() ? "Failed to write exchange output."
+                              : error_message);
   }
 
-  TracerExchangePackageEntry entry{};
-  entry.relative_path = payload_file.relative_package_path;
-  entry.data = CanonicalizePackageTextBytes(payload_file.content_bytes,
-                                            payload_file.source_label);
-  entry.entry_flags = exchange_pkg::kStandardEntryFlags;
-  return entry;
+  const file_crypto::FileCryptoPathContext kPathContext{
+      .input_root_path = input_path.empty() ? fs::path(source_root_name)
+                                            : input_path,
+      .output_root_path = resolved_output.parent_path(),
+      .current_input_path = input_path.empty()
+                                ? fs::path(source_root_name) / "payload.ttpkg"
+                                : input_path,
+      .current_output_path = resolved_output,
+  };
+  const auto kCryptoOptions =
+      BuildCryptoOptions(request.security_level, request.progress_observer);
+  const auto kEncryptResult =
+      kHasOutputPath
+          ? file_crypto::ProtectEncodedBytesToFile(
+                package_bytes, resolved_output, request.passphrase,
+                kPathContext, kCryptoOptions)
+          : file_crypto::ProtectEncodedBytesToWriter(
+                package_bytes,
+                [&request](std::span<const std::uint8_t> ciphertext_bytes)
+                    -> file_crypto::FileCryptoResult {
+                  std::string error_message;
+                  if (request.encrypted_output_writer(ciphertext_bytes,
+                                                      error_message)) {
+                    return {};
+                  }
+                  return {
+                      .error = file_crypto::FileCryptoError::kOutputWriteFailed,
+                      .error_code = std::string(file_crypto::ToErrorCode(
+                          file_crypto::FileCryptoError::kOutputWriteFailed)),
+                      .error_message =
+                          error_message.empty()
+                              ? std::string("Failed to write encrypted "
+                                            "exchange output.")
+                              : error_message,
+                  };
+                },
+                request.passphrase, kPathContext, kCryptoOptions);
+  EnsureCryptoResultOk(
+      kEncryptResult, "Encrypt",
+      input_path.empty() ? fs::path(source_root_name)
+                         : input_path);
 }
 
 }  // namespace
 
-auto TracerExchangeService::RunExport(
-    const app_dto::TracerExchangeExportRequest& request)
-    -> app_dto::TracerExchangeExportResult {
+auto TracerExchangeService::BuildExportContent(
+    const app_dto::TracerExchangeContentRequest& request)
+    -> app_dto::TracerExchangeContentResult {
   const bool kHasInputRoot = !request.input_text_root_path.empty();
   const bool kHasInputPayloads = !request.input_text_payloads.empty();
   if (kHasInputRoot == kHasInputPayloads) {
     throw std::invalid_argument(
-        "Exactly one export input source is required.");
+        "Exactly one export content input source is required.");
   }
+  if (request.config_user_root_path.empty()) {
+    throw std::invalid_argument("config_user_root_path must not be empty.");
+  }
+  if (request.active_converter_main_config_path.empty()) {
+    throw std::invalid_argument(
+        "active_converter_main_config_path must not be empty.");
+  }
+  if (request.producer_platform.empty() || request.producer_app.empty()) {
+    throw std::invalid_argument(
+        "producer_platform/producer_app must not be empty.");
+  }
+
+  const fs::path kConfigUserRoot =
+      fs::absolute(request.config_user_root_path);
+  const fs::path kMainConfigPath =
+      fs::absolute(request.active_converter_main_config_path);
+  if (kMainConfigPath.parent_path() != kConfigUserRoot) {
+    throw std::invalid_argument(
+        "active_converter_main_config_path must be directly under "
+        "config_user_root_path.");
+  }
+  EnsureRegularFileExists(kMainConfigPath,
+                          "Active converter main config");
+
+  const fs::path kInputPath =
+      kHasInputRoot ? fs::absolute(request.input_text_root_path) : fs::path{};
+  if (kHasInputRoot &&
+      (!fs::exists(kInputPath) || !fs::is_directory(kInputPath))) {
+    throw std::invalid_argument(
+        "Export input path must be an existing directory: " +
+        kInputPath.string());
+  }
+
+  const std::vector<InputPayloadFile> kPayloadFiles =
+      kHasInputRoot
+          ? CollectInputPayloadFilesFromRoot(kInputPath)
+          : CollectInputPayloadFilesFromPayloads(request.input_text_payloads);
+  if (kPayloadFiles.empty()) {
+    throw std::invalid_argument(
+        "Export input must contain at least one TXT payload.");
+  }
+  ValidateInputPayloadsForExport(workflow_handler_, request.date_check_mode,
+                                 kPayloadFiles);
+
+  const std::string kSourceRootName =
+      !request.logical_source_root_name.empty()
+          ? request.logical_source_root_name
+          : (kHasInputRoot
+                 ? (kInputPath.filename().empty()
+                        ? std::string("text_root")
+                        : kInputPath.filename().string())
+                 : std::string("data"));
+
+  app_dto::TracerExchangeExportContent content{};
+  content.manifest.producer_platform = request.producer_platform;
+  content.manifest.producer_app = request.producer_app;
+  content.manifest.created_at_utc = CurrentUtcTimestampRfc3339();
+  content.manifest.source_root_name = kSourceRootName;
+  content.entries = BuildConfigEntries(kConfigUserRoot,
+                                       content.manifest.config_files);
+  content.manifest.payload_files.reserve(kPayloadFiles.size());
+  for (const auto& payload_file : kPayloadFiles) {
+    content.manifest.payload_files.push_back(
+        payload_file.relative_package_path);
+  }
+
+  content.entries.insert(content.entries.begin(),
+                         BuildManifestEntry(content.manifest));
+  for (const auto& payload_file : kPayloadFiles) {
+    content.entries.push_back(BuildPayloadEntry(payload_file));
+  }
+
+  return {.ok = true, .content = std::move(content), .error_message = {}};
+}
+
+auto TracerExchangeService::EncodeExportContent(
+    const app_dto::TracerExchangeExportContent& content)
+    -> app_dto::TracerExchangeContentEncodingResult {
+  std::vector<TracerExchangePackageEntry> package_entries;
+  package_entries.reserve(content.entries.size());
+  for (const auto& content_entry : content.entries) {
+    package_entries.push_back(ToPackageEntry(content_entry));
+  }
+
+  return {
+      .ok = true,
+      .content = {.package_bytes = EncodePackageBytes(package_entries)},
+      .error_message = {},
+  };
+}
+
+auto TracerExchangeService::RunExport(
+    const app_dto::TracerExchangeExportRequest& request)
+    -> app_dto::TracerExchangeExportResult {
   const bool kHasOutputPath = !request.requested_output_path.empty();
   const bool kHasOutputWriter =
       static_cast<bool>(request.encrypted_output_writer);
@@ -83,161 +354,78 @@ auto TracerExchangeService::RunExport(
         "active_converter_main_config_path must not be empty.");
   }
   if (request.passphrase.empty()) {
-    throw std::invalid_argument("Passphrase must not be empty.");
+    if (UsesExistingProtection(request.protection)) {
+      throw std::invalid_argument("Passphrase must not be empty.");
+    }
   }
+  EnsureSupportedProtection(request.protection);
   if (request.producer_platform.empty() || request.producer_app.empty()) {
     throw std::invalid_argument(
         "producer_platform/producer_app must not be empty.");
   }
 
   const fs::path kInputPath =
-      kHasInputRoot ? fs::absolute(request.input_text_root_path) : fs::path{};
-  if (kHasInputRoot && (!fs::exists(kInputPath) || !fs::is_directory(kInputPath))) {
-    throw std::invalid_argument(
-        "Encrypt input path must be an existing directory: " +
-        kInputPath.string());
-  }
-
-  const std::vector<InputPayloadFile> kPayloadFiles =
-      kHasInputRoot
-          ? CollectInputPayloadFilesFromRoot(kInputPath)
-          : CollectInputPayloadFilesFromPayloads(request.input_text_payloads);
-  if (kPayloadFiles.empty()) {
-    throw std::invalid_argument("Export input must contain at least one TXT payload.");
-  }
-
-  const ActiveConverterConfigPaths kConfigPaths =
-      ResolveActiveConverterConfigPaths(
-          request.active_converter_main_config_path);
-  EnsureActiveConverterConfigExists(kConfigPaths);
-  ValidateInputPayloadsForExport(workflow_handler_, request.date_check_mode,
-                                 kPayloadFiles);
+      request.input_text_root_path.empty()
+          ? fs::path{}
+          : fs::absolute(request.input_text_root_path);
   const std::string kSourceRootName =
       !request.logical_source_root_name.empty()
           ? request.logical_source_root_name
-          : (kHasInputRoot ? (kInputPath.filename().empty()
-                                   ? std::string("text_root")
-                                   : kInputPath.filename().string())
-                            : std::string("data"));
+          : (!kInputPath.empty() && !kInputPath.filename().empty()
+                 ? kInputPath.filename().string()
+                 : std::string("data"));
+  const fs::path kConfigUserRoot =
+      fs::absolute(request.active_converter_main_config_path).parent_path();
+
+  const auto content_result = BuildExportContent({
+      .config_user_root_path = kConfigUserRoot,
+      .active_converter_main_config_path =
+          request.active_converter_main_config_path,
+      .input_text_root_path = request.input_text_root_path,
+      .input_text_payloads = request.input_text_payloads,
+      .date_check_mode = request.date_check_mode,
+      .logical_source_root_name = kSourceRootName,
+      .producer_platform = request.producer_platform,
+      .producer_app = request.producer_app,
+  });
+
+  const auto encoding_result = EncodeExportContent(content_result.content);
+  const std::vector<std::uint8_t>& kPackageBytes =
+      encoding_result.content.package_bytes;
+
   const fs::path kResolvedOutput =
-      kHasOutputPath
-          ? ResolveEncryptOutputPath({
-                .input_path =
-                    kInputPath.empty() ? fs::path(kSourceRootName) : kInputPath,
-                .output_arg = fs::absolute(request.requested_output_path),
-            })
-          : fs::path("android_export_sink") /
-                (request.output_display_name.empty()
-                     ? (kSourceRootName + ".tracer")
-                     : request.output_display_name);
+      UsesExistingProtection(request.protection)
+          ? (kHasOutputPath
+                 ? ResolveEncryptOutputPath({
+                       .input_path = kInputPath.empty()
+                                         ? fs::path(kSourceRootName)
+                                         : kInputPath,
+                       .output_arg = fs::absolute(request.requested_output_path),
+                   })
+                 : fs::path("android_export_sink") /
+                       (request.output_display_name.empty()
+                            ? (kSourceRootName + ".tracer")
+                            : request.output_display_name))
+          : (kHasOutputPath
+                 ? ResolveUnprotectedOutputPath(
+                       kInputPath, kSourceRootName,
+                       fs::absolute(request.requested_output_path))
+                 : fs::path("android_export_sink") /
+                       ResolveUnprotectedOutputName(
+                           kSourceRootName, request.output_display_name));
   if (kHasOutputPath) {
     EnsureParentDirectory(kResolvedOutput);
   }
-
-  TracerExchangeManifest manifest{};
-  manifest.producer_platform = request.producer_platform;
-  manifest.producer_app = request.producer_app;
-  manifest.created_at_utc = CurrentUtcTimestampRfc3339();
-  manifest.source_root_name = kSourceRootName;
-  manifest.payload_files.reserve(kPayloadFiles.size());
-  for (const auto& payload_file : kPayloadFiles) {
-    manifest.payload_files.push_back(payload_file.relative_package_path);
-  }
-  auto kAliasDefinition =
-      modalias::LoadAliasMappingDefinition(kConfigPaths.alias_directory_path,
-                                            modloader::ReadToml);
-  // Package layout must be deterministic: manifest validation requires sorted
-  // alias child paths, and cross-host exports should produce stable entry order.
-  std::ranges::sort(
-      kAliasDefinition.child_files,
-      [](const auto& left, const auto& right) {
-        return left.relative_path.generic_string() <
-               right.relative_path.generic_string();
-      });
-  manifest.converter_alias_mapping_files.reserve(
-      kAliasDefinition.child_files.size());
-  for (const auto& child_file : kAliasDefinition.child_files) {
-    // The manifest stores explicit child-file paths so import/inspect can
-    // validate the full alias bundle instead of assuming a single alias file.
-    manifest.converter_alias_mapping_files.push_back(
-        (fs::path("config") / "activity_hierarchy" /
-         child_file.relative_path)
-            .generic_string());
-  }
-
-  std::vector<TracerExchangePackageEntry> entries;
-  entries.reserve(exchange_pkg::kRequiredPackagePaths.size() +
-                  manifest.converter_alias_mapping_files.size() +
-                  kPayloadFiles.size());
-  entries.push_back(BuildManifestEntry(manifest));
-  entries.push_back(BuildFileEntry(exchange_pkg::kConverterMainPath,
-                                   kConfigPaths.main_config_path));
-  for (std::size_t index = 0;
-       index < exchange_pkg::kReportMarkdownPackagePaths.size();
-       ++index) {
-    entries.push_back(BuildFileEntry(
-        exchange_pkg::kReportMarkdownPackagePaths[index],
-        kConfigPaths.report_markdown_paths[index]));
-  }
-  for (std::size_t index = 0; index < kAliasDefinition.child_files.size();
-       ++index) {
-    entries.push_back(BuildFileEntry(
-        manifest.converter_alias_mapping_files[index],
-        kAliasDefinition.child_files[index].absolute_path));
-  }
-  for (const auto& payload_file : kPayloadFiles) {
-    entries.push_back(BuildPayloadEntry(payload_file));
-  }
-  const std::vector<std::uint8_t> kPackageBytes = EncodePackageBytes(entries);
-  const file_crypto::FileCryptoPathContext kPathContext{
-      .input_root_path = kHasInputRoot ? kInputPath : fs::path(kSourceRootName),
-      .output_root_path = kResolvedOutput.parent_path(),
-      .current_input_path = kHasInputRoot
-                                ? kInputPath
-                                : fs::path(kSourceRootName) / "payload.ttpkg",
-      .current_output_path = kResolvedOutput,
-  };
-  const auto kCryptoOptions =
-      BuildCryptoOptions(request.security_level, request.progress_observer);
-  const auto kEncryptResult =
-      kHasOutputPath
-          ? file_crypto::EncryptBytesToFile(kPackageBytes, kResolvedOutput,
-                                            request.passphrase, kPathContext,
-                                            kCryptoOptions)
-          : file_crypto::EncryptBytesToWriter(
-                kPackageBytes,
-                [&request](std::span<const std::uint8_t> ciphertext_bytes)
-                    -> file_crypto::FileCryptoResult {
-                  std::string error_message;
-                  if (request.encrypted_output_writer(ciphertext_bytes,
-                                                      error_message)) {
-                    return {};
-                  }
-                  return {
-                      .error = file_crypto::FileCryptoError::kOutputWriteFailed,
-                      .error_code = std::string(
-                          file_crypto::ToErrorCode(
-                              file_crypto::FileCryptoError::kOutputWriteFailed)),
-                      .error_message = error_message.empty()
-                                           ? std::string(
-                                                 "Failed to write encrypted "
-                                                 "exchange output.")
-                                           : error_message,
-                  };
-                },
-                request.passphrase, kPathContext, kCryptoOptions);
-  EnsureCryptoResultOk(kEncryptResult, "Encrypt",
-                       kHasInputRoot ? kInputPath
-                                      : fs::path(kSourceRootName));
+  ProtectAndWriteEncodedPackage(kPackageBytes, request, kInputPath,
+                                kSourceRootName, kResolvedOutput);
   return {
       .ok = true,
       .resolved_output_tracer_path = kResolvedOutput,
-      .source_root_name = kSourceRootName,
-      .payload_file_count = static_cast<std::uint64_t>(kPayloadFiles.size()),
-      .converter_file_count =
-          static_cast<std::uint64_t>(
-              3U + exchange_pkg::kReportMarkdownPackagePaths.size() +
-              kAliasDefinition.child_files.size()),
+      .source_root_name = content_result.content.manifest.source_root_name,
+      .payload_file_count = static_cast<std::uint64_t>(
+          content_result.content.manifest.payload_files.size()),
+      .converter_file_count = static_cast<std::uint64_t>(
+          content_result.content.manifest.config_files.size()),
       .manifest_included = true,
       .error_message = "",
   };

@@ -30,7 +30,7 @@ ConfigLoader::ConfigLoader(const std::string& exe_path_str) {
   }
 
   config_dir_path_ = exe_path_ / kConfigDirName;
-  main_config_path_ = config_dir_path_ / kConfigFileName;
+  main_config_path_ = config_dir_path_ / "program" / kConfigFileName;
 }
 
 auto ConfigLoader::GetMainConfigPath() const -> std::string {
@@ -62,7 +62,7 @@ auto ConfigLoader::LoadConfiguration() -> AppConfig {
   infra_config_internal::ParseCliDefaults(tbl, exe_path_, main_config_path_,
                                           app_config);
   infra_config_internal::ParseRuntimeConfigPaths(
-      tbl, config_dir_path_, main_config_path_, app_config);
+      tbl, main_config_path_.parent_path(), main_config_path_, app_config);
 
   const bool kBundlePathsLoaded =
       infra_config_internal::TryParseBundlePaths(config_dir_path_, app_config);

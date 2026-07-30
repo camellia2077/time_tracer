@@ -13,6 +13,7 @@ if __package__ in (None, ""):
     from tools.platform_paths import (
         CONFIG_PROFILES,
         android_config_root,
+        tracer_core_activity_hierarchy_root,
         tracer_core_config_root,
         windows_cli_config_root,
     )
@@ -21,6 +22,7 @@ else:
     from tools.platform_paths import (
         CONFIG_PROFILES,
         android_config_root,
+        tracer_core_activity_hierarchy_root,
         tracer_core_config_root,
         windows_cli_config_root,
     )
@@ -52,7 +54,13 @@ def parse_args() -> argparse.Namespace:
         "--source-root",
         type=Path,
         default=None,
-        help="Canonical source config root (overrides --config-profile).",
+        help="Canonical program-resource root (overrides the default program root).",
+    )
+    parser.add_argument(
+        "--activity-hierarchy-root",
+        type=Path,
+        default=None,
+        help="Mutable activity-hierarchy source used only for Windows output.",
     )
     parser.add_argument(
         "--windows-output-root",
@@ -94,6 +102,11 @@ def main() -> int:
     source_root = args.source_root or tracer_core_config_root(
         default_repo_root(), args.config_profile
     )
+    activity_hierarchy_root = args.activity_hierarchy_root
+    if activity_hierarchy_root is None and args.target in ("windows", "both"):
+        activity_hierarchy_root = tracer_core_activity_hierarchy_root(
+            default_repo_root(), args.config_profile
+        )
     return sync.run_generation(
         target=args.target,
         source_root=source_root.resolve(),
@@ -103,6 +116,7 @@ def main() -> int:
         check=args.check,
         show_diff=args.show_diff,
         allow_overwrite_source=args.allow_overwrite_source,
+        activity_hierarchy_root=activity_hierarchy_root,
     )
 
 

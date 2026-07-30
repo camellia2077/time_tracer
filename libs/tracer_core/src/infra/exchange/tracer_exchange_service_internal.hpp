@@ -59,7 +59,6 @@ struct ActiveConverterConfigPaths {
   fs::path main_config_path;
   fs::path alias_directory_path;
   std::vector<fs::path> alias_child_paths;
-  std::vector<fs::path> report_markdown_paths;
 };
 
 class TracerExchangeService final : public app_ports::ITracerExchangeService {
@@ -67,6 +66,13 @@ class TracerExchangeService final : public app_ports::ITracerExchangeService {
   explicit TracerExchangeService(
       app_workflow::IWorkflowHandler& workflow_handler)
       : workflow_handler_(workflow_handler) {}
+
+  auto BuildExportContent(
+      const app_dto::TracerExchangeContentRequest& request)
+      -> app_dto::TracerExchangeContentResult override;
+  auto EncodeExportContent(
+      const app_dto::TracerExchangeExportContent& content)
+      -> app_dto::TracerExchangeContentEncodingResult override;
 
   auto RunExport(const app_dto::TracerExchangeExportRequest& request)
       -> app_dto::TracerExchangeExportResult override;
@@ -120,12 +126,6 @@ auto EnsureActiveConverterConfigExists(
     const ActiveConverterConfigPaths& active_paths) -> void;
 auto BackupActiveConverterConfig(const ActiveConverterConfigPaths& active_paths,
                                  const fs::path& backup_root) -> void;
-auto ValidatePackageConverterConfig(const fs::path& work_root) -> void;
-auto InstallPackageMarkdownReportConfig(const fs::path& package_root,
-                                        const fs::path& active_config_root)
-    -> void;
-auto RestoreMarkdownReportConfig(const fs::path& backup_root,
-                                 const fs::path& active_config_root) -> void;
 auto BuildCryptoOptions(
     app_dto::TracerExchangeSecurityLevel security_level,
     const app_dto::TracerExchangeProgressObserver& progress_observer)

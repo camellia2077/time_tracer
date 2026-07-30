@@ -75,9 +75,8 @@ auto TestWindowsToAndroidCryptoImportInterop(int& failures) -> void {
       ResolveRepoRootForInterop() / "test" / "data" / "2026" / "2026-01.txt";
   const auto kInteropTracer = kPaths.test_root / "windows_export.tracer";
   const auto kAndroidImportTxt = kPaths.test_root / "android_import.txt";
-  const auto kConverterConfigToml = ResolveRepoRootForInterop() / "assets" /
-                                    "tracer_core" / "config_test" /
-                                    "activity_hierarchy/_system.toml";
+  const auto kConverterConfigSource =
+      ResolveRepoRootForInterop() / "config" / "user" / "behavior.toml";
   constexpr std::string_view kPassphrase = "phase3-interop-passphrase";
 
   RemoveTree(kPaths.test_root);
@@ -122,8 +121,30 @@ auto TestWindowsToAndroidCryptoImportInterop(int& failures) -> void {
          failures);
 
   try {
+    const auto kConfigRoot = kPaths.test_root / "config";
+    std::error_code config_error;
+    std::filesystem::create_directories(kConfigRoot / "user", config_error);
+    std::filesystem::copy(
+        ResolveRepoRootForInterop() / "config" / "program",
+        kConfigRoot / "program",
+        std::filesystem::copy_options::recursive |
+            std::filesystem::copy_options::overwrite_existing,
+        config_error);
+    std::filesystem::copy_file(
+        kConverterConfigSource, kConfigRoot / "user" / "behavior.toml",
+        std::filesystem::copy_options::overwrite_existing, config_error);
+    std::filesystem::copy(
+        ResolveRepoRootForInterop() / "test" / "data" / "activity_hierarchy",
+        kConfigRoot / "user" / "activity_hierarchy",
+        std::filesystem::copy_options::recursive |
+            std::filesystem::copy_options::overwrite_existing,
+        config_error);
+    if (config_error) {
+      throw std::runtime_error("Failed to prepare interop config: " +
+                               config_error.message());
+    }
     const auto kRuntimeRequest =
-        BuildRuntimeRequest(kPaths, kConverterConfigToml);
+        BuildRuntimeRequest(kPaths, kConfigRoot / "user" / "behavior.toml");
     auto runtime =
         infrastructure::bootstrap::BuildAndroidRuntime(kRuntimeRequest);
     if (!runtime.runtime_api) {

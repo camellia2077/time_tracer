@@ -36,6 +36,10 @@ struct AndroidRuntimeConfigPaths {
     const std::filesystem::path& requested_converter_config_toml_path)
     -> AndroidRuntimeConfigPaths;
 
+[[nodiscard]] auto ResolveAndroidPipelineConfigPath(
+    const std::filesystem::path& requested_converter_config_toml_path)
+    -> std::filesystem::path;
+
 [[nodiscard]] auto BuildAndroidReportCatalog(
     const std::filesystem::path& output_root,
     const AndroidRuntimeConfigPaths& runtime_config_paths) -> ReportCatalog;

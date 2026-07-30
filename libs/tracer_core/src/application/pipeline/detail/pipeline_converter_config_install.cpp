@@ -14,7 +14,8 @@ auto ResolveConverterConfigPathSet(const std::filesystem::path& main_config_path
 
   const std::filesystem::path kResolvedMainConfigPath =
       std::filesystem::absolute(main_config_path);
-  const std::filesystem::path kAliasDir = kResolvedMainConfigPath.parent_path();
+  const std::filesystem::path kAliasDir =
+      kResolvedMainConfigPath.parent_path() / "activity_hierarchy";
   return {
       .main_config_path = kResolvedMainConfigPath,
       .alias_directory_path = kAliasDir,
@@ -52,7 +53,8 @@ auto CopyConverterConfigFile(const std::filesystem::path& source_path,
 
 auto RemoveConverterAliasDirectory(const std::filesystem::path& target_root)
     -> void {
-  const std::filesystem::path kAliasDir = target_root / "activity_hierarchy";
+  const std::filesystem::path kAliasDir =
+      target_root / "user" / "activity_hierarchy";
   if (!std::filesystem::exists(kAliasDir)) {
     return;
   }

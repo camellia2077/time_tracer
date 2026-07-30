@@ -34,7 +34,7 @@ python tools/test.py -h
 - 默认通过 `python tools/run.py ...` 构建和验证；除非局部规则允许或用户明确要求，不直接调用 CMake、Ninja、Gradle 或 native wrapper。
 - 不回退或覆盖无关的用户修改；重构与功能变更保持分离，除非重构是安全实现功能所必需的。
 - 临时文件放在仓库 `temp/`，除非用户指定其他位置。
-- `assets/tracer_core/config` 是共享 runtime config 的规范来源；应用本地 config 目录是生成快照。
+- `config` 是共享配置源；应用本地 config 目录是生成快照。
 - exchange-format JSON 不得进入 `libs/tracer_core/src/domain/**` 或 `libs/tracer_core/src/application/**`；这些层不得依赖 `nlohmann/json` 或暴露 `nlohmann::json` 应用层公共类型。
 
 ## 按改动范围查文档

@@ -19,7 +19,6 @@ args = ["report", "chart", "--list-heatmap-palettes"]
 expect_exit = 0
 expect_stdout_contains = [
   "Heatmap palettes",
-  "default-light",
 ]
 
 [[commands]]

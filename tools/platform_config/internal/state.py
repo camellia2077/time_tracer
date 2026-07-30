@@ -8,7 +8,7 @@ from typing import Any
 
 
 def state_path(output_root: Path) -> Path:
-    return output_root / "meta" / "sync_state.json"
+    return output_root / "program" / "meta" / "sync_state.json"
 
 
 def compute_input_hash(target: str, source_root: Path, file_hashes: dict[str, str]) -> str:

@@ -25,23 +25,58 @@ def normalize_file_bytes(*, rel_path: str, data: bytes) -> bytes:
     return normalized.encode("utf-8")
 
 
-def collect_plan_files(source_root: Path, model: BundleModel) -> dict[str, bytes]:
-    files_to_copy = dedupe_keep_order([*model.required_files, *model.optional_files])
+def collect_plan_files(
+    source_root: Path,
+    model: BundleModel,
+    activity_hierarchy_root: Path | None = None,
+) -> dict[str, bytes]:
+    files_to_copy = dedupe_keep_order(
+        [
+            *model.required_files,
+            *model.optional_files,
+            "user/behavior.toml",
+            "user/charts.toml",
+            "user/heatmap.toml",
+            *(
+                "user/activity_hierarchy/"
+                + path.relative_to(activity_hierarchy_root).as_posix()
+                for path in sorted(
+                    activity_hierarchy_root.rglob("*.toml")
+                    if activity_hierarchy_root is not None
+                    else []
+                )
+                if activity_hierarchy_root is not None
+                and path.is_file()
+            ),
+        ]
+    )
     plan: dict[str, bytes] = {}
     for rel in files_to_copy:
-        source_path = source_root / rel
+        if rel.startswith("program/"):
+            source_path = source_root / rel.removeprefix("program/")
+        elif rel.startswith("user/"):
+            source_path = source_root.parent / rel
+        else:
+            source_path = source_root / rel
+        if rel.startswith("user/activity_hierarchy/"):
+            if activity_hierarchy_root is None:
+                raise FileNotFoundError(
+                    "Activity hierarchy source is required for generated Windows config: "
+                    f"{rel}"
+                )
+            source_path = activity_hierarchy_root / rel.removeprefix("user/activity_hierarchy/")
         if not source_path.exists() or not source_path.is_file():
             raise FileNotFoundError(f"Required source file missing: {source_path}")
         plan[rel] = normalize_file_bytes(rel_path=rel, data=source_path.read_bytes())
 
     bundle_bytes = render_bundle_toml(model).encode("utf-8")
     if model.profile == "android":
-        plan["config.toml"] = normalize_file_bytes(
-            rel_path="config.toml",
+        plan["program/config.toml"] = normalize_file_bytes(
+            rel_path="program/config.toml",
             data=build_android_config_toml(source_root).encode("utf-8"),
         )
-    plan["meta/bundle.toml"] = normalize_file_bytes(
-        rel_path="meta/bundle.toml",
+    plan["program/meta/bundle.toml"] = normalize_file_bytes(
+        rel_path="program/meta/bundle.toml",
         data=bundle_bytes,
     )
     return plan

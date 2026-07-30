@@ -26,6 +26,8 @@ When tests exercise CLI report targets:
 
 ## Notes
 
+- Android 测试时，TXT 和 `activity_hierarchy/*.toml` 通过
+  `tools/scripts/devtools/android/push_test_data.py` 注入应用私有目录，不会在编译时打进 APK。
 - The runtime database populated by suite setup stores day/month targets in ISO
   forms such as `YYYY-MM-DD` and `YYYY-MM`.
 - If the shared fixture range changes, update this file and the suite-local

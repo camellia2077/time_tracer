@@ -83,10 +83,8 @@ auto TracerExchangeService::RunUnpack(
       .source_root_name = kPackage.manifest.source_root_name,
       .payload_file_count =
           static_cast<std::uint64_t>(kPackage.manifest.payload_files.size()),
-      .converter_file_count =
-          static_cast<std::uint64_t>(
-              2U + kPackage.manifest.report_markdown_files.size() +
-              kPackage.manifest.converter_alias_mapping_files.size()),
+      .converter_file_count = static_cast<std::uint64_t>(
+          kPackage.manifest.config_files.size()),
       .manifest_included = true,
       .error_message = "",
   };

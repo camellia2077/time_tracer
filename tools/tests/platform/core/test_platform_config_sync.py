@@ -12,7 +12,10 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from tools.platform_config.sync import run_generation  # noqa: E402
-from tools.platform_paths import windows_cli_config_root  # noqa: E402
+from tools.platform_paths import (  # noqa: E402
+    tracer_core_activity_hierarchy_root,
+    windows_cli_config_root,
+)
 from tools.toolchain.commands.cmd_build.common.config_sync import (  # noqa: E402
     resolve_platform_config_output_root,
 )
@@ -21,7 +24,8 @@ from tools.toolchain.core.context import Context  # noqa: E402
 
 class TestPlatformConfigSync(TestCase):
     def test_windows_sync_writes_state_and_cache_hit(self):
-        source_root = REPO_ROOT / "assets" / "tracer_core" / "config_test"
+        source_root = REPO_ROOT / "config" / "program"
+        activity_hierarchy_root = tracer_core_activity_hierarchy_root(REPO_ROOT, "test")
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_root = Path(temp_dir)
             windows_out = temp_root / "windows_config"
@@ -36,10 +40,13 @@ class TestPlatformConfigSync(TestCase):
                 check=False,
                 show_diff=False,
                 allow_overwrite_source=False,
+                activity_hierarchy_root=activity_hierarchy_root,
             )
             self.assertEqual(first_ret, 0)
-            self.assertTrue((windows_out / "meta" / "sync_state.json").exists())
-            self.assertTrue((windows_out / "config.toml").exists())
+            self.assertTrue((windows_out / "program/meta/sync_state.json").exists())
+            self.assertTrue((windows_out / "program/config.toml").exists())
+            self.assertTrue((windows_out / "program/charts/pie.toml").exists())
+            self.assertTrue((windows_out / "user/charts.toml").exists())
 
             capture = io.StringIO()
             with redirect_stdout(capture):
@@ -52,6 +59,7 @@ class TestPlatformConfigSync(TestCase):
                     check=False,
                     show_diff=False,
                     allow_overwrite_source=False,
+                    activity_hierarchy_root=activity_hierarchy_root,
                 )
             self.assertEqual(second_ret, 0)
             output = capture.getvalue()
@@ -59,7 +67,8 @@ class TestPlatformConfigSync(TestCase):
             self.assertIn('"cache_hit": true', output.lower())
 
     def test_check_mode_passes_when_output_is_current(self):
-        source_root = REPO_ROOT / "assets" / "tracer_core" / "config_test"
+        source_root = REPO_ROOT / "config" / "program"
+        activity_hierarchy_root = tracer_core_activity_hierarchy_root(REPO_ROOT, "test")
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_root = Path(temp_dir)
             windows_out = temp_root / "windows_config"
@@ -74,6 +83,7 @@ class TestPlatformConfigSync(TestCase):
                 check=False,
                 show_diff=False,
                 allow_overwrite_source=False,
+                activity_hierarchy_root=activity_hierarchy_root,
             )
             self.assertEqual(apply_ret, 0)
 
@@ -88,13 +98,15 @@ class TestPlatformConfigSync(TestCase):
                     check=True,
                     show_diff=False,
                     allow_overwrite_source=False,
+                    activity_hierarchy_root=activity_hierarchy_root,
                 )
 
             self.assertEqual(check_ret, 0)
             self.assertIn("up to date", capture.getvalue().lower())
 
     def test_check_mode_fails_on_drift_without_writing(self):
-        source_root = REPO_ROOT / "assets" / "tracer_core" / "config_test"
+        source_root = REPO_ROOT / "config" / "program"
+        activity_hierarchy_root = tracer_core_activity_hierarchy_root(REPO_ROOT, "test")
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_root = Path(temp_dir)
             windows_out = temp_root / "windows_config"
@@ -109,10 +121,11 @@ class TestPlatformConfigSync(TestCase):
                 check=False,
                 show_diff=False,
                 allow_overwrite_source=False,
+                activity_hierarchy_root=activity_hierarchy_root,
             )
             self.assertEqual(apply_ret, 0)
 
-            config_file = windows_out / "config.toml"
+            config_file = windows_out / "program/config.toml"
             original = config_file.read_text(encoding="utf-8")
             config_file.write_text(original + "\n# drift\n", encoding="utf-8")
 
@@ -127,6 +140,7 @@ class TestPlatformConfigSync(TestCase):
                     check=True,
                     show_diff=False,
                     allow_overwrite_source=False,
+                    activity_hierarchy_root=activity_hierarchy_root,
                 )
 
             self.assertEqual(check_ret, 1)
@@ -134,7 +148,7 @@ class TestPlatformConfigSync(TestCase):
             self.assertTrue(config_file.read_text(encoding="utf-8").endswith("# drift\n"))
 
     def test_check_mode_ignores_toml_line_ending_only_drift(self):
-        source_root = REPO_ROOT / "assets" / "tracer_core" / "config_test"
+        source_root = REPO_ROOT / "config" / "program"
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_root = Path(temp_dir)
             windows_out = temp_root / "windows_config"
@@ -151,8 +165,11 @@ class TestPlatformConfigSync(TestCase):
                 allow_overwrite_source=False,
             )
             self.assertEqual(apply_ret, 0)
+            self.assertFalse((android_out / "activity_hierarchy").exists())
+            self.assertTrue((android_out / "program/charts/pie.toml").exists())
+            self.assertTrue((android_out / "user/charts.toml").exists())
 
-            bundle_file = android_out / "meta" / "bundle.toml"
+            bundle_file = android_out / "program/meta/bundle.toml"
             bundle_text = bundle_file.read_text(encoding="utf-8")
             bundle_file.write_text(
                 bundle_text.replace("\n", "\r\n"),

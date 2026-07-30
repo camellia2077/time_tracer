@@ -54,7 +54,10 @@ def load_source_config(source_root: Path) -> dict[str, Any]:
 
 
 def build_bundle_model(
-    source_bundle: dict[str, Any], source_config: dict[str, Any], target: str
+    source_bundle: dict[str, Any],
+    source_config: dict[str, Any],
+    target: str,
+    activity_hierarchy_files: list[str] | None = None,
 ) -> BundleModel:
     schema_version_raw = source_bundle.get("schema_version")
     if not isinstance(schema_version_raw, int):
@@ -65,6 +68,12 @@ def build_bundle_model(
     file_list = ensure_dict(source_bundle.get("file_list"), "file_list")
     source_required = ensure_list_of_str(file_list.get("required"), "file_list.required")
     source_optional = ensure_list_of_str(file_list.get("optional"), "file_list.optional")
+    source_program_required = [
+        path.removeprefix("program/") for path in source_required
+    ]
+    source_program_optional = [
+        path.removeprefix("program/") for path in source_optional
+    ]
 
     converter_table = ensure_dict(source_config.get("converter"), "converter")
     main_config = normalize_rel_path(
@@ -73,8 +82,14 @@ def build_bundle_model(
     visualization_table = ensure_dict(
         source_config.get("visualization"), "visualization"
     )
-    heatmap_config = normalize_rel_path(
-        ensure_str(visualization_table.get("heatmap"), "visualization.heatmap")
+    def program_path(value: object, field: str) -> str:
+        return "program/" + normalize_rel_path(ensure_str(value, field))
+
+    heatmap_config = program_path(
+        visualization_table.get("heatmap"), "visualization.heatmap"
+    )
+    pie_config = program_path(
+        visualization_table.get("pie"), "visualization.pie"
     )
 
     reports_table = ensure_dict(source_config.get("reports"), "reports")
@@ -82,31 +97,23 @@ def build_bundle_model(
     markdown_root = str(markdown_paths["root"])
     markdown_default_locale = str(markdown_paths["default_locale"])
     localized_markdown_files = [
-        path
-        for path in source_required
+        f"program/{path}"
+        for path in source_program_required
         if path.startswith("reports/markdown/")
         and path.count("/") == 3
     ]
 
     if target == "android":
-        converter_files = dedupe_keep_order(
-            [
-                path
-                for path in source_required + source_optional
-                if path.startswith("activity_hierarchy/")
-            ]
-        )
         required_files = dedupe_keep_order(
             [
-                "config.toml",
+                "program/config.toml",
                 heatmap_config,
-                *converter_files,
-                main_config,
-                f"{markdown_root}/{markdown_default_locale}/day.toml",
-                f"{markdown_root}/{markdown_default_locale}/month.toml",
-                f"{markdown_root}/{markdown_default_locale}/period.toml",
-                f"{markdown_root}/{markdown_default_locale}/week.toml",
-                f"{markdown_root}/{markdown_default_locale}/year.toml",
+                pie_config,
+                f"program/{markdown_root}/{markdown_default_locale}/day.toml",
+                f"program/{markdown_root}/{markdown_default_locale}/month.toml",
+                f"program/{markdown_root}/{markdown_default_locale}/period.toml",
+                f"program/{markdown_root}/{markdown_default_locale}/week.toml",
+                f"program/{markdown_root}/{markdown_default_locale}/year.toml",
                 *localized_markdown_files,
             ]
         )
@@ -116,7 +123,7 @@ def build_bundle_model(
             bundle_name=bundle_name,
             required_files=required_files,
             optional_files=[],
-            converter_main_config=main_config,
+            converter_main_config="user/behavior.toml",
             visualization_heatmap_config=heatmap_config,
             reports={"markdown": markdown_paths},
         )
@@ -131,16 +138,23 @@ def build_bundle_model(
         raise ValueError("Windows bundle generation requires reports.markdown.")
 
     required_files = dedupe_keep_order(
-        ["config.toml", heatmap_config, main_config, *source_required]
+        [
+            "program/config.toml",
+            heatmap_config,
+            pie_config,
+            *(f"program/{path}" for path in source_program_required),
+        ]
     )
-    optional_files = dedupe_keep_order(source_optional)
+    optional_files = dedupe_keep_order(
+        f"program/{path}" for path in source_program_optional
+    )
     return BundleModel(
         schema_version=schema_version_raw,
         profile="windows",
         bundle_name=bundle_name,
         required_files=required_files,
         optional_files=optional_files,
-        converter_main_config=main_config,
+        converter_main_config="user/behavior.toml",
         visualization_heatmap_config=heatmap_config,
         reports=windows_reports,
     )
@@ -149,7 +163,7 @@ def build_bundle_model(
 def render_bundle_toml(model: BundleModel) -> str:
     lines: list[str] = [
         "# Auto-generated by tools/platform_config/run.py.",
-        "# Source of truth: selected assets/tracer_core/config_<profile>",
+        "# Source of truth: selected config/program",
         "",
         f"schema_version = {model.schema_version}",
         f'profile = "{model.profile}"',

@@ -88,8 +88,7 @@ auto FindRepoRoot() -> std::filesystem::path {
   namespace fs = std::filesystem;
   fs::path current = fs::current_path();
   while (!current.empty()) {
-    const fs::path kConfigProbe = current / "assets" / "tracer_core" /
-                                  "config_test" / "activity_hierarchy/_system.toml";
+    const fs::path kConfigProbe = current / "config" / "user" / "behavior.toml";
     if (fs::exists(kConfigProbe)) {
       return current;
     }
@@ -279,9 +278,6 @@ auto main() -> int {
       return 1;
     }
 
-    const std::filesystem::path kConverterConfig =
-        kRepoRoot / "assets" / "tracer_core" / "config_test" /
-        "activity_hierarchy/_system.toml";
     const std::filesystem::path kInputRoot = kRepoRoot / "test" / "data";
     if (!std::filesystem::exists(kInputRoot)) {
       std::cerr << "[FAIL] missing test input root: " << kInputRoot << '\n';
@@ -305,9 +301,35 @@ auto main() -> int {
       return 1;
     }
 
+    const std::filesystem::path kConfigRoot = kTempRoot / "config";
+    std::filesystem::create_directories(kConfigRoot / "user", io_error);
+    std::filesystem::copy(
+        kRepoRoot / "config" / "program", kConfigRoot / "program",
+        std::filesystem::copy_options::recursive |
+            std::filesystem::copy_options::overwrite_existing,
+        io_error);
+    std::filesystem::copy_file(
+        kRepoRoot / "config" / "user" / "behavior.toml",
+        kConfigRoot / "user" / "behavior.toml",
+        std::filesystem::copy_options::overwrite_existing, io_error);
+    std::filesystem::copy(
+        kRepoRoot / "test" / "data" / "activity_hierarchy",
+        kConfigRoot / "user" / "activity_hierarchy",
+        std::filesystem::copy_options::recursive |
+            std::filesystem::copy_options::overwrite_existing,
+        io_error);
+    if (io_error) {
+      std::cerr << "[FAIL] unable to prepare temp config folder: "
+                << io_error.message() << '\n';
+      CloseLibrary(library);
+      return 1;
+    }
+
     TtCoreRuntimeHandle* runtime_handle =
-        kRuntimeCreate(kDbPath.string().c_str(), kOutputRoot.string().c_str(),
-                       kConverterConfig.string().c_str());
+      kRuntimeCreate(kDbPath.string().c_str(), kOutputRoot.string().c_str(),
+                       (kConfigRoot / "user" / "behavior.toml")
+                           .string()
+                           .c_str());
     if (runtime_handle == nullptr) {
       std::cerr << "[FAIL] tracer_core_runtime_create failed: " << kLastError()
                 << '\n';

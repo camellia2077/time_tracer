@@ -48,14 +48,15 @@ constexpr std::string_view kDatabaseFilename = "time_data.sqlite3";
 
 [[nodiscard]] auto ResolveReportConfigRoot(
     const fs::path& converter_config_toml_path) -> fs::path {
-  const fs::path aliases_dir = converter_config_toml_path.parent_path();
-  if (aliases_dir.filename() != "activity_hierarchy") {
+  const fs::path user_config_dir = converter_config_toml_path.parent_path();
+  if (user_config_dir.filename() != "user" ||
+      converter_config_toml_path.filename() != "behavior.toml") {
     throw std::runtime_error(
-        "Converter main config path must be under 'config/activity_hierarchy': " +
+        "Converter main config path must be 'config/user/behavior.toml': " +
         converter_config_toml_path.string());
   }
 
-  const fs::path config_root = aliases_dir.parent_path();
+  const fs::path config_root = user_config_dir.parent_path();
   if (config_root.empty() || !fs::exists(config_root)) {
     throw std::runtime_error("Config root not found for Android runtime: " +
                              config_root.string());

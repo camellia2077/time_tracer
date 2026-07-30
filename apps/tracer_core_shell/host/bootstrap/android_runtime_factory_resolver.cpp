@@ -42,4 +42,24 @@ auto ResolveAndroidRuntimeConfigPaths(
           requested_converter_config_toml_path);
 }
 
+auto ResolveAndroidPipelineConfigPath(
+    const fs::path& requested_converter_config_toml_path) -> fs::path {
+  if (requested_converter_config_toml_path.empty()) {
+    throw std::invalid_argument(
+        "Android runtime converter_config_toml_path must not be empty.");
+  }
+  const fs::path resolved = fs::absolute(requested_converter_config_toml_path);
+  if (resolved.filename() != "behavior.toml" ||
+      resolved.parent_path().filename() != "user") {
+    throw std::runtime_error(
+        "Android pipeline config path must be 'config/user/behavior.toml': " +
+        resolved.string());
+  }
+  if (!fs::exists(resolved)) {
+    throw std::runtime_error("Converter config TOML not found: " +
+                             resolved.string());
+  }
+  return resolved;
+}
+
 }  // namespace infrastructure::bootstrap::android_runtime_detail

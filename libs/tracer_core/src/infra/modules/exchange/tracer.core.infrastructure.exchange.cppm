@@ -24,37 +24,10 @@ export module tracer.core.infrastructure.exchange;
 export namespace tracer::core::infrastructure::crypto::exchange {
 
 inline constexpr std::string_view kManifestPath = "manifest.toml";
-inline constexpr std::string_view kConverterMainPath =
-    "config/activity_hierarchy/_system.toml";
-inline constexpr std::string_view kReportMarkdownDayPath =
-    "config/reports/markdown/en/day.toml";
-inline constexpr std::string_view kReportMarkdownMonthPath =
-    "config/reports/markdown/en/month.toml";
-inline constexpr std::string_view kReportMarkdownPeriodPath =
-    "config/reports/markdown/en/period.toml";
-inline constexpr std::string_view kReportMarkdownWeekPath =
-    "config/reports/markdown/en/week.toml";
-inline constexpr std::string_view kReportMarkdownYearPath =
-    "config/reports/markdown/en/year.toml";
 inline constexpr std::string_view kPayloadRoot = "payload";
 
-inline constexpr std::array<std::string_view, 7> kRequiredPackagePaths = {
-    kManifestPath,
-    kConverterMainPath,
-    kReportMarkdownDayPath,
-    kReportMarkdownMonthPath,
-    kReportMarkdownPeriodPath,
-    kReportMarkdownWeekPath,
-    kReportMarkdownYearPath,
-};
-
-inline constexpr std::array<std::string_view, 5> kReportMarkdownPackagePaths = {
-    kReportMarkdownDayPath,
-    kReportMarkdownMonthPath,
-    kReportMarkdownPeriodPath,
-    kReportMarkdownWeekPath,
-    kReportMarkdownYearPath,
-};
+inline constexpr std::array<std::string_view, 1> kRequiredPackagePaths = {
+    kManifestPath};
 
 inline constexpr std::uint16_t kEntryFlagRequired = 0x0001U;
 inline constexpr std::uint16_t kEntryFlagText = 0x0002U;
@@ -63,24 +36,16 @@ inline constexpr std::uint16_t kStandardEntryFlags =
 
 struct TracerExchangeManifest {
   std::string package_type = "tracer_exchange";
-  // v4 extends the exchange package to include Android markdown report TOML
-  // configs in addition to converter TOML and payload TXT.
-  std::int64_t package_version = 4;
+  // v6 exchanges the complete user configuration tree and TXT payloads.
+  std::int64_t package_version = 6;
   std::string producer_platform;
   std::string producer_app;
   std::string created_at_utc;
   std::string source_root_name;
+  std::string config_root = "config/user";
+  std::vector<std::string> config_files;
   std::string payload_root = std::string(kPayloadRoot);
   std::vector<std::string> payload_files;
-  std::string converter_main_config = std::string(kConverterMainPath);
-  std::vector<std::string> converter_alias_mapping_files;
-  std::vector<std::string> report_markdown_files = {
-      std::string(kReportMarkdownDayPath),
-      std::string(kReportMarkdownMonthPath),
-      std::string(kReportMarkdownPeriodPath),
-      std::string(kReportMarkdownWeekPath),
-      std::string(kReportMarkdownYearPath),
-  };
 };
 
 struct TracerExchangePackageEntry {
@@ -296,43 +261,34 @@ auto ValidateManifestPayloadFiles(const std::vector<std::string>& payload_files)
   }
 }
 
-auto ValidateAliasMappingFiles(
-    const std::vector<std::string>& alias_mapping_files) -> void {
-  if (alias_mapping_files.empty()) {
+[[nodiscard]] auto IsValidConfigPath(std::string_view path) -> bool {
+  return !path.empty() && path.find('\\') == std::string_view::npos &&
+         path.starts_with("config/user/") && path.size() > 12U &&
+         path.find("..") == std::string_view::npos;
+}
+
+auto ValidateConfigFiles(const std::string& config_root,
+                        const std::vector<std::string>& config_files) -> void {
+  if (config_root != "config/user") {
+    ThrowMalformedPackage("manifest config root must be `config/user`.");
+  }
+  if (config_files.empty()) {
     ThrowMalformedPackage(
-        "manifest alias mapping files must be a non-empty array.");
+        "manifest config files must be a non-empty array.");
   }
 
   std::string previous_path;
-  for (const auto& alias_path : alias_mapping_files) {
-    if (!alias_path.starts_with("config/activity_hierarchy/") ||
-        !alias_path.ends_with(".toml")) {
+  for (const auto& config_path : config_files) {
+    if (!IsValidConfigPath(config_path)) {
       ThrowMalformedPackage(
-          "manifest alias mapping files must live under "
-          "`config/activity_hierarchy/` and end with `.toml`.");
+          "manifest config files must live under `config/user/`.");
     }
-    if (!previous_path.empty() && alias_path <= previous_path) {
+    if (!previous_path.empty() && config_path <= previous_path) {
       ThrowMalformedPackage(
-          "manifest alias mapping files must be unique and sorted "
+          "manifest config files must be unique and sorted "
           "lexicographically.");
     }
-    previous_path = alias_path;
-  }
-}
-
-auto ValidateReportMarkdownFiles(
-    const std::vector<std::string>& report_markdown_files) -> void {
-  if (report_markdown_files.size() != kReportMarkdownPackagePaths.size()) {
-    ThrowMalformedPackage(
-        "manifest report markdown files must contain the fixed Android report "
-        "TOML path set.");
-  }
-  for (std::size_t index = 0; index < kReportMarkdownPackagePaths.size();
-       ++index) {
-    if (report_markdown_files[index] != kReportMarkdownPackagePaths[index]) {
-      ThrowMalformedPackage(
-          "manifest report markdown files must match fixed package layout.");
-    }
+    previous_path = config_path;
   }
 }
 
@@ -340,12 +296,11 @@ auto ValidatePackageEntryLayout(
     const std::vector<TracerExchangePackageEntry>& entries,
     const TracerExchangeManifest& manifest) -> void {
   const std::size_t expected_entry_count =
-      kRequiredPackagePaths.size() +
-      manifest.converter_alias_mapping_files.size() + manifest.payload_files.size();
+      kRequiredPackagePaths.size() + manifest.config_files.size() +
+      manifest.payload_files.size();
   if (entries.size() != expected_entry_count) {
     ThrowMalformedPackage(
-        "entry_count does not match manifest payload file "
-        "count.");
+        "entry_count does not match manifest config and payload file count.");
   }
 
   for (std::size_t index = 0; index < kRequiredPackagePaths.size(); ++index) {
@@ -355,38 +310,28 @@ auto ValidatePackageEntryLayout(
   }
 
   for (const auto& entry : entries) {
-    if (entry.entry_flags != kStandardEntryFlags) {
-      ThrowMalformedPackage("entry_flags must be required|text for all files.");
+    const std::uint16_t expected_flags =
+        entry.relative_path.ends_with(".txt") ||
+                entry.relative_path.ends_with(".toml") ||
+                entry.relative_path == kManifestPath
+            ? kStandardEntryFlags
+            : kEntryFlagRequired;
+    if (entry.entry_flags != expected_flags) {
+      ThrowMalformedPackage("entry_flags do not match the entry content type.");
     }
   }
 
-  for (std::size_t index = 0;
-       index < manifest.converter_alias_mapping_files.size(); ++index) {
-    const std::string_view expected_alias_path =
-        manifest.converter_alias_mapping_files[index];
+  for (std::size_t index = 0; index < manifest.config_files.size(); ++index) {
+    const std::string_view expected_config_path = manifest.config_files[index];
     const std::size_t entry_index = kRequiredPackagePaths.size() + index;
-    if (entries[entry_index].relative_path != expected_alias_path) {
+    if (entries[entry_index].relative_path != expected_config_path) {
       ThrowMalformedPackage(
-          "alias child entry set does not match manifest "
-          "converter.alias_mapping_files.");
-    }
-  }
-
-  const std::size_t report_offset = kRequiredPackagePaths.size() -
-                                    kReportMarkdownPackagePaths.size();
-  for (std::size_t index = 0; index < kReportMarkdownPackagePaths.size();
-       ++index) {
-    const std::size_t entry_index = report_offset + index;
-    if (entries[entry_index].relative_path !=
-        manifest.report_markdown_files[index]) {
-      ThrowMalformedPackage(
-          "report markdown entry set does not match manifest "
-          "reports.markdown.files.");
+          "config entry set does not match manifest config.files.");
     }
   }
 
   const std::size_t payload_offset =
-      kRequiredPackagePaths.size() + manifest.converter_alias_mapping_files.size();
+      kRequiredPackagePaths.size() + manifest.config_files.size();
   for (std::size_t index = 0; index < manifest.payload_files.size(); ++index) {
     const std::string_view expected_payload_path = manifest.payload_files[index];
     const std::size_t entry_index = payload_offset + index;
@@ -500,6 +445,15 @@ auto BuildManifestText(const TracerExchangeManifest& manifest) -> std::string {
   table.insert("created_at_utc", manifest.created_at_utc);
   table.insert("source_root_name", manifest.source_root_name);
 
+  toml::table config;
+  config.insert("root", manifest.config_root);
+  toml::array config_files{};
+  for (const auto& path : manifest.config_files) {
+    config_files.push_back(path);
+  }
+  config.insert("files", std::move(config_files));
+  table.insert("config", std::move(config));
+
   toml::table payload;
   payload.insert("root", manifest.payload_root);
   toml::array payload_files{};
@@ -508,25 +462,6 @@ auto BuildManifestText(const TracerExchangeManifest& manifest) -> std::string {
   }
   payload.insert("files", std::move(payload_files));
   table.insert("payload", std::move(payload));
-
-  toml::table converter;
-  converter.insert("main_config", manifest.converter_main_config);
-  toml::array alias_mapping_files{};
-  for (const auto& path : manifest.converter_alias_mapping_files) {
-    alias_mapping_files.push_back(path);
-  }
-  converter.insert("alias_mapping_files", std::move(alias_mapping_files));
-  table.insert("converter", std::move(converter));
-
-  toml::table markdown_reports;
-  toml::array markdown_report_files{};
-  for (const auto& path : manifest.report_markdown_files) {
-    markdown_report_files.push_back(path);
-  }
-  markdown_reports.insert("files", std::move(markdown_report_files));
-  toml::table reports;
-  reports.insert("markdown", std::move(markdown_reports));
-  table.insert("reports", std::move(reports));
 
   std::ostringstream stream;
   stream << table;
@@ -563,44 +498,24 @@ auto ParseManifestText(std::string_view manifest_text)
   manifest.payload_root = ParseExpectedString(*payload_table, "root");
   manifest.payload_files = ParseStringArray(*payload_table, "files");
 
-  const toml::table* converter_table = table["converter"].as_table();
-  if (converter_table == nullptr) {
-    ThrowMalformedPackage("manifest.toml table `[converter]` is required.");
+  const toml::table* config_table = table["config"].as_table();
+  if (config_table == nullptr) {
+    ThrowMalformedPackage("manifest.toml table `[config]` is required.");
   }
-  manifest.converter_main_config =
-      ParseExpectedString(*converter_table, "main_config");
-  manifest.converter_alias_mapping_files =
-      ParseStringArray(*converter_table, "alias_mapping_files");
-
-  const toml::table* reports_table = table["reports"].as_table();
-  if (reports_table == nullptr) {
-    ThrowMalformedPackage("manifest.toml table `[reports]` is required.");
-  }
-  const toml::table* markdown_table = (*reports_table)["markdown"].as_table();
-  if (markdown_table == nullptr) {
-    ThrowMalformedPackage(
-        "manifest.toml table `[reports.markdown]` is required.");
-  }
-  manifest.report_markdown_files =
-      ParseStringArray(*markdown_table, "files");
+  manifest.config_root = ParseExpectedString(*config_table, "root");
+  manifest.config_files = ParseStringArray(*config_table, "files");
 
   if (manifest.package_type != "tracer_exchange") {
     ThrowMalformedPackage("manifest `package_type` must be `tracer_exchange`.");
   }
-  if (manifest.package_version != 4) {
-    ThrowMalformedPackage("manifest `package_version` must be 4.");
+  if (manifest.package_version != 6) {
+    ThrowMalformedPackage("manifest `package_version` must be 6.");
   }
   if (manifest.payload_root != kPayloadRoot) {
     ThrowMalformedPackage("manifest payload root must be `payload`.");
   }
   ValidateManifestPayloadFiles(manifest.payload_files);
-  ValidateAliasMappingFiles(manifest.converter_alias_mapping_files);
-  ValidateReportMarkdownFiles(manifest.report_markdown_files);
-  if (manifest.converter_main_config != kConverterMainPath) {
-    ThrowMalformedPackage(
-        "manifest converter paths must match fixed package "
-        "layout.");
-  }
+  ValidateConfigFiles(manifest.config_root, manifest.config_files);
   return manifest;
 }
 
@@ -645,8 +560,8 @@ auto DecodePackageBytes(std::span<const std::uint8_t> bytes)
 
   if (entry_count < kRequiredPackagePaths.size() + 1U) {
     ThrowMalformedPackage(
-        "entry_count must include manifest, converter files, "
-        "and at least one payload text file.");
+        "entry_count must include manifest, config files, and at least one "
+        "payload text file.");
   }
   if (manifest_index != kManifestIndex) {
     ThrowMalformedPackage("manifest_index must be 0.");
@@ -694,8 +609,13 @@ auto DecodePackageBytes(std::span<const std::uint8_t> bytes)
     std::string relative_path(path_ptr, path_ptr + path_len);
     cursor += path_len;
 
-    if (entry_flags != kStandardEntryFlags) {
-      ThrowMalformedPackage("entry_flags must be required|text for all files.");
+    const std::uint16_t expected_flags =
+        relative_path.ends_with(".txt") || relative_path.ends_with(".toml") ||
+                relative_path == kManifestPath
+            ? kStandardEntryFlags
+            : kEntryFlagRequired;
+    if (entry_flags != expected_flags) {
+      ThrowMalformedPackage("entry_flags do not match the entry content type.");
     }
     if (data_offset + data_size > data_section_size) {
       ThrowMalformedPackage("entry data exceeds data section bounds.");

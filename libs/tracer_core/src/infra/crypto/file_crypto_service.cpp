@@ -305,6 +305,24 @@ auto EncryptBytesToWriter(std::span<const std::uint8_t> plaintext_bytes,
   return {};
 }
 
+auto ProtectEncodedBytesToFile(
+    std::span<const std::uint8_t> encoded_bytes,
+    const std::filesystem::path& output_tracer_path,
+    std::string_view passphrase, const FileCryptoPathContext& path_context,
+    const FileCryptoOptions& options) -> FileCryptoResult {
+  return EncryptBytesToFile(encoded_bytes, output_tracer_path, passphrase,
+                            path_context, options);
+}
+
+auto ProtectEncodedBytesToWriter(
+    std::span<const std::uint8_t> encoded_bytes,
+    const EncodedBytesWriteCallback& write_callback,
+    std::string_view passphrase, const FileCryptoPathContext& path_context,
+    const FileCryptoOptions& options) -> FileCryptoResult {
+  return EncryptBytesToWriter(encoded_bytes, write_callback, passphrase,
+                              path_context, options);
+}
+
 auto DecryptFile(const std::filesystem::path& input_tracer_path,
                  const std::filesystem::path& output_txt_path,
                  std::string_view passphrase) -> FileCryptoResult {

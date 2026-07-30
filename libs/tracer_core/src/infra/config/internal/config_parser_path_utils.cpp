@@ -65,7 +65,7 @@ auto NormalizeConfigRelativePath(const fs::path& config_dir,
 }
 
 auto ResolveBundlePathImpl(const fs::path& config_dir) -> fs::path {
-  return config_dir / "meta" / "bundle.toml";
+  return config_dir / "program" / "meta" / "bundle.toml";
 }
 
 }  // namespace ConfigParserUtils::internal

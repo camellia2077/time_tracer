@@ -14,12 +14,34 @@ auto BuildRuntimeFixture(std::string_view test_name, int& failures)
 
   const std::filesystem::path repo_root = BuildRepoRoot();
   fixture.input_path = repo_root / "test" / "data";
-  fixture.config_toml_path = repo_root / "assets" / "tracer_core" /
-                             "config_test" / "activity_hierarchy" / "_system.toml";
+  fixture.config_toml_path = fixture.paths.test_root / "config" / "user" /
+                             "behavior.toml";
 
   RemoveTree(fixture.paths.test_root);
 
   try {
+    std::error_code io_error;
+    const auto config_root = fixture.paths.test_root / "config";
+    std::filesystem::create_directories(config_root / "user", io_error);
+    std::filesystem::copy(
+        repo_root / "config" / "program", config_root / "program",
+        std::filesystem::copy_options::recursive |
+            std::filesystem::copy_options::overwrite_existing,
+        io_error);
+    std::filesystem::copy_file(
+        repo_root / "config" / "user" / "behavior.toml",
+        fixture.config_toml_path,
+        std::filesystem::copy_options::overwrite_existing, io_error);
+    std::filesystem::copy(
+        repo_root / "test" / "data" / "activity_hierarchy",
+        config_root / "user" / "activity_hierarchy",
+        std::filesystem::copy_options::recursive |
+            std::filesystem::copy_options::overwrite_existing,
+        io_error);
+    if (io_error) {
+      throw std::runtime_error("Failed to prepare Android runtime config: " +
+                               io_error.message());
+    }
     const auto request =
         BuildRuntimeRequest(fixture.paths, fixture.config_toml_path);
     fixture.runtime = infrastructure::bootstrap::BuildAndroidRuntime(request);

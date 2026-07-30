@@ -287,6 +287,12 @@ class FakeProjectRepository final : public IProjectRepository {
 class FakeTracerExchangeService final
     : public tracer_core::application::ports::ITracerExchangeService {
  public:
+  auto BuildExportContent(
+      const tracer_core::core::dto::TracerExchangeContentRequest& request)
+      -> tracer_core::core::dto::TracerExchangeContentResult override;
+  auto EncodeExportContent(
+      const tracer_core::core::dto::TracerExchangeExportContent& content)
+      -> tracer_core::core::dto::TracerExchangeContentEncodingResult override;
   bool throw_on_export = false;
   bool throw_on_import = false;
   bool throw_on_unpack = false;
@@ -324,16 +330,30 @@ class FakeTracerExchangeService final
       .ok = true,
       .input_tracer_path = "out/sample.tracer",
       .package_type = "tracer_exchange",
-      .package_version = 4,
+      .package_version = 6,
       .source_root_name = "data",
       .payload_file_count = 2,
       .error_message = "",
   };
 
+  tracer_core::core::dto::TracerExchangeExportContent content_result{
+      .manifest = {},
+      .entries = {},
+  };
+  tracer_core::core::dto::TracerExchangeContentEncodingResult encoding_result{
+      .ok = true,
+      .content = {},
+      .error_message = "",
+  };
+
+  tracer_core::core::dto::TracerExchangeContentRequest last_content_request;
+  tracer_core::core::dto::TracerExchangeExportContent last_encoding_content;
   tracer_core::core::dto::TracerExchangeExportRequest last_export_request;
   tracer_core::core::dto::TracerExchangeImportRequest last_import_request;
   tracer_core::core::dto::TracerExchangeUnpackRequest last_unpack_request;
   tracer_core::core::dto::TracerExchangeInspectRequest last_inspect_request;
+  int content_call_count = 0;
+  int encoding_call_count = 0;
   int export_call_count = 0;
   int import_call_count = 0;
   int unpack_call_count = 0;

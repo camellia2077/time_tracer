@@ -119,8 +119,21 @@ TT_CORE_API TtCoreRuntimeHandle* tracer_core_runtime_create(
     const char* db_path, const char* output_root,
     const char* converter_config_toml_path);
 
+// Creates a pipeline-only runtime for candidate TXT/config validation and
+// ingest. It does not load Android report resources under config/program.
+TT_CORE_API TtCoreRuntimeHandle* tracer_core_pipeline_runtime_create(
+    const char* db_path, const char* output_root,
+    const char* converter_config_toml_path);
+
 // Destroys a runtime handle created by `tracer_core_runtime_create`.
 TT_CORE_API void tracer_core_runtime_destroy(TtCoreRuntimeHandle* handle);
+
+TT_CORE_API const char* tracer_core_pipeline_runtime_ingest_json(
+    TtCoreRuntimeHandle* handle, const char* request_json);
+TT_CORE_API const char* tracer_core_pipeline_runtime_validate_structure_json(
+    TtCoreRuntimeHandle* handle, const char* request_json);
+TT_CORE_API const char* tracer_core_pipeline_runtime_validate_logic_json(
+    TtCoreRuntimeHandle* handle, const char* request_json);
 
 // Runs ingest/query/report with JSON request payload and returns JSON response.
 // Returned pointer is thread-local and remains valid until the next API call

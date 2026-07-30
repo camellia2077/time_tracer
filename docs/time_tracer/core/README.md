@@ -34,6 +34,8 @@ routing. During the transition, both the new and legacy folders remain valid.
    - Primary entry for persistence docs.
 13. [overview/module_boundaries.md](overview/module_boundaries.md)
    - Engineering contract for owner paths, forbidden edges, and validate entrypoints.
+14. [architecture/runtime_bootstrap_and_pipeline_scope.md](architecture/runtime_bootstrap_and_pipeline_scope.md)
+   - Boundary between complete Runtime resources and pipeline-only TXT/import Runtime.
 
 ## What Lives Here
 1. Domain model, business rules, and application orchestration docs.
@@ -82,6 +84,7 @@ routing. During the transition, both the new and legacy folders remain valid.
    - [capabilities/persistence/runtime_side.md](capabilities/persistence/runtime_side.md)
 9. C ABI or runtime boundary behavior:
    - [shared/c_abi.md](shared/c_abi.md)
+   - [architecture/runtime_bootstrap_and_pipeline_scope.md](architecture/runtime_bootstrap_and_pipeline_scope.md)
    - [../presentation/android/runtime-protocol.md](../presentation/android/runtime-protocol.md)
 10. Core use case, workflow, query tree, or config ownership changes:
    - [specs/AGENT_ONBOARDING.md](specs/AGENT_ONBOARDING.md)

@@ -16,17 +16,20 @@ Describe the path from shared config source to Android runtime consumption.
 
 ## Source of Truth
 
-- Shared config source:
-  - `assets/tracer_core/config_distribution` (new-user distribution)
-  - `assets/tracer_core/config_test` (test/report data)
+- Shared program-resource source:
+  - `assets/tracer_core/program`
+- Distribution activity-hierarchy seed:
+  - `assets/tracer_core/defaults/activity_hierarchy`
+- Test activity-hierarchy source:
+  - `test/data/activity_hierarchy` (not packaged into APK)
 - Android checked-in runtime snapshot:
   - `apps/android/runtime/src/main/assets/tracer_core/config`
 
 Boundary rules:
 
-- The selected shared config directory is canonical for a build.
-- Android build selection defaults to `test`; pass
-  `--config-profile distribution` to build the distribution variant.
+- The selected shared program-resource directory is canonical for a build.
+- Android builds synchronize program TOML from `assets/tracer_core/program`;
+  no build-time profile selects test data for Android.
 - The Android runtime snapshot is generated and consumed by Android builds.
 - Fix the selected shared config source, then refresh the Android snapshot.
 
@@ -36,6 +39,8 @@ Boundary rules:
 2. `RuntimeInitService` calls `RuntimeCoreAdapter.initializeRuntimeInternal()`.
 3. `RuntimeEnvironment.prepareRuntimePaths()` copies assets into app-private files:
    - `<filesDir>/tracer_core/config`
+   - `<filesDir>/tracer_core/config/activity_hierarchy` is seeded from
+     `tracer_core/defaults/activity_hierarchy` when the private files are absent.
 4. `RuntimeEnvironment` validates `meta/bundle.toml`.
 5. Successful validation proceeds to `nativeInit(...)`.
 
@@ -45,6 +50,9 @@ Boundary rules:
   - `<filesDir>/tracer_core/config/activity_hierarchy/_system.toml`
 - Config editor reads and writes under:
   - `<filesDir>/tracer_core/config`
+- Only `<filesDir>/tracer_core/config/activity_hierarchy/*.toml` is user-editable.
+  `config.toml`, `charts/**`, `meta/**`, and `reports/**` are program resources
+  and are read-only in the Android UI.
 - The Config tab exposes structured editing plus an advanced raw TOML mode for
   the user-facing categories: `alias`, `charts`, and `reports`. Alias
   files use the structured canonical-to-alias-list editor; the advanced mode
@@ -71,3 +79,5 @@ Runtime TXT layout:
 - APK assets do not package runtime TXT input files.
 - Runtime TXT content should come only from user-managed import, edit, record,
   or explicit device-side copy flows.
+- Debug fixtures are injected with
+  `tools/scripts/devtools/android/push_test_data.py`; they are not APK assets.

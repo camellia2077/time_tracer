@@ -7,8 +7,11 @@
 #include <functional>
 #include <span>
 #include <string>
+#include <vector>
 
 #include "domain/types/date_check_mode.hpp"
+
+#include "application/dto/exchange_content.hpp"
 
 namespace tracer_core::core::dto {
 
@@ -18,6 +21,23 @@ enum class TracerExchangeSecurityLevel {
   kModerate,
   kHigh,
   kMax,
+};
+
+enum class TracerExchangeCompressionMode {
+  kNone,
+  kExisting,
+};
+
+enum class TracerExchangeEncryptionMode {
+  kNone,
+  kExisting,
+};
+
+struct TracerExchangeProtectionOptions {
+  TracerExchangeCompressionMode compression =
+      TracerExchangeCompressionMode::kExisting;
+  TracerExchangeEncryptionMode encryption =
+      TracerExchangeEncryptionMode::kExisting;
 };
 
 enum class TracerExchangeProgressControl {
@@ -57,20 +77,17 @@ using TracerExchangeProgressObserver =
     std::function<TracerExchangeProgressControl(
         const TracerExchangeProgressSnapshot&)>;
 
-struct TracerExchangeTextPayloadItem {
-  std::string relative_path_hint;
-  std::string content;
-};
-
-using TracerExchangeEncryptedOutputWriter =
+using TracerExchangeOutputWriter =
     std::function<bool(std::span<const std::uint8_t> ciphertext_bytes,
                        std::string& error_message)>;
+
+using TracerExchangeEncryptedOutputWriter = TracerExchangeOutputWriter;
 
 struct TracerExchangeExportRequest {
   std::filesystem::path input_text_root_path;
   std::vector<TracerExchangeTextPayloadItem> input_text_payloads;
   std::filesystem::path requested_output_path;
-  TracerExchangeEncryptedOutputWriter encrypted_output_writer{};
+  TracerExchangeOutputWriter encrypted_output_writer{};
   std::filesystem::path active_converter_main_config_path;
   DateCheckMode date_check_mode = DateCheckMode::kNone;
   std::string passphrase;
@@ -80,6 +97,7 @@ struct TracerExchangeExportRequest {
   std::string producer_app;
   TracerExchangeSecurityLevel security_level =
       TracerExchangeSecurityLevel::kInteractive;
+  TracerExchangeProtectionOptions protection{};
   TracerExchangeProgressObserver progress_observer{};
 };
 

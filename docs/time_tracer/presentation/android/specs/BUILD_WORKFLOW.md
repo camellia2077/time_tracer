@@ -20,7 +20,7 @@ Define the supported Android build, verify, and validation entrypoints.
 Run from repo root unless a section explicitly says otherwise.
 
 - Edit loop:
-  - `python tools/run.py build --app tracer_android --profile android_edit --config-profile test`
+  - `python tools/run.py build --app tracer_android --profile android_edit`
 - Style verify (only when explicitly requested):
   - `python tools/run.py verify --app tracer_android --profile android_style --concise`
 - CI/full verify (explicit request or release/merge readiness only):
@@ -48,7 +48,7 @@ Use direct Gradle only when the Python entrypoints are not enough:
 ```powershell
 cd apps/android
 $env:JAVA_HOME='C:\Program Files\Android\Android Studio\jbr'
-.\gradlew.bat :app:assembleDebug -PtracerConfigProfile=test
+.\gradlew.bat :app:assembleDebug
 ```
 
 Common targeted commands:
@@ -70,7 +70,7 @@ Common targeted commands:
     verification.
   - Run `android_style` only when the user explicitly requests style validation.
 - If the Android host/runtime path is affected, include:
-  - `python tools/run.py build --app tracer_android --profile android_edit --config-profile test`
+  - `python tools/run.py build --app tracer_android --profile android_edit`
 - Do not run `android_ci` by default.
   - Run it only when the user explicitly requests CI/full validation or when
     release/merge readiness is being checked.

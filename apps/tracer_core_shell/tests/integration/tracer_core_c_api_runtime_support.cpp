@@ -147,8 +147,7 @@ auto LoadApi(LibHandle library) -> CoreApiFns {
 auto FindRepoRoot() -> fs::path {
   fs::path current = fs::current_path();
   while (!current.empty()) {
-    const fs::path kProbe = current / "assets" / "tracer_core" / "config_test" /
-                            "activity_hierarchy" / "_system.toml";
+    const fs::path kProbe = current / "config" / "user" / "behavior.toml";
     if (fs::exists(kProbe)) {
       return current;
     }

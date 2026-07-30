@@ -92,7 +92,7 @@ auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int {
   const std::filesystem::path kCopiedConfigRoot =
       kFakeExePath.parent_path() / "config";
   const std::filesystem::path kSourceConfigRoot =
-      BuildRepoRoot() / "assets" / "tracer_core" / "config_test";
+      BuildRepoRoot() / "config" / "program";
   std::filesystem::remove_all(kConfigSmokeDir, cleanup_error);
   std::filesystem::create_directories(kConfigSmokeDir);
   std::filesystem::create_directories(kCopiedConfigRoot.parent_path());
@@ -120,7 +120,7 @@ auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int {
 
   tracer::core::infrastructure::config::FileConverterConfigProvider
       file_provider(
-          kCopiedConfigRoot / "activity_hierarchy" / "_system.toml",
+          kCopiedConfigRoot / "user" / "behavior.toml",
           std::unordered_map<std::filesystem::path, std::filesystem::path>{});
   const ConverterConfig kLoadedFileConfig = file_provider.LoadConverterConfig();
   if (!kLoadedFileConfig.text_mapping.contains("wake")) {
@@ -193,7 +193,7 @@ auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int {
       kFakeExePath.string());
   const AppConfig kLoadedAppConfig = config_loader.LoadConfiguration();
   if (kLoadedAppConfig.pipeline.converter_main_config_path.filename() !=
-          "_system.toml" ||
+          "behavior.toml" ||
       kLoadedAppConfig.loaded_reports.markdown.day.labels.date_label !=
           "Date") {
     return 403;

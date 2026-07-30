@@ -277,7 +277,7 @@ The resulting canonical paths are `recreation_online`,
    receives the updated alias TOML together with `replacements[]` and
    `alias_replacements[]`.
 2. Android passes both replacement lists to the Core TXT actions for every
-   managed TXT file through `RuntimeAliasMoveMigrationService`.
+   managed TXT file through `RuntimeActivityHierarchyMigrationService`.
 3. The service writes candidate TOML and rewritten TXT files, rebuilds an
    isolated database by ingesting the candidate data, and swaps it in only
    after successful ingestion.
@@ -311,7 +311,7 @@ The resulting canonical paths are `recreation_online`,
 1. Android sends the move operation to Core; Core computes the updated TOML and
    all affected canonical replacements (including descendants when a hierarchy
    path changes).
-2. `RuntimeAliasMoveMigrationService` sends those replacements to
+2. `RuntimeActivityHierarchyMigrationService` sends those replacements to
    `replace_canonical_activity_names`, writes the candidate TOML and TXT files,
    and builds an isolated temporary database by full ingest.
 3. On any failure the service restores source files and retains/restores the

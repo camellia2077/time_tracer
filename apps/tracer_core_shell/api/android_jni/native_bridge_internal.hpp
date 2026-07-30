@@ -21,6 +21,7 @@ namespace tt_transport = tracer::transport;
 
 struct RuntimeHolder {
   TtCoreRuntimeHandle* core_runtime = nullptr;
+  bool pipeline_only = false;
 };
 
 extern std::mutex g_runtime_mutex;
@@ -70,6 +71,10 @@ auto ExecuteJniMethod(JNIEnv* env, Fn&& fn) -> jstring {
 
 auto NativeInit(JNIEnv* env, jobject thiz, jstring db_path, jstring output_root,
                 jstring converter_config_toml_path) -> jstring;
+
+auto NativeInitPipeline(JNIEnv* env, jobject thiz, jstring db_path,
+                        jstring output_root,
+                        jstring converter_config_toml_path) -> jstring;
 
 auto NativeShutdown(JNIEnv* env, jobject thiz) -> jstring;
 
@@ -147,7 +152,7 @@ auto NativeQuery(JNIEnv* env, jobject thiz, jint action, jint year, jint month,
 auto NativeReportJson(JNIEnv* env, jobject thiz, jstring request_json)
     -> jstring;
 
-extern const std::array<JNINativeMethod, 20> kNativeMethods;
+extern const std::array<JNINativeMethod, 21> kNativeMethods;
 
 auto TryRegisterNativeMethods(JNIEnv* env, const char* class_name) -> bool;
 

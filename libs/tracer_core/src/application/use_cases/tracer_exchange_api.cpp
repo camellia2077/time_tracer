@@ -34,6 +34,10 @@ namespace tracer::core::application::use_cases {
 
 using tracer_core::core::dto::TracerExchangeExportRequest;
 using tracer_core::core::dto::TracerExchangeExportResult;
+using tracer_core::core::dto::TracerExchangeContentRequest;
+using tracer_core::core::dto::TracerExchangeContentResult;
+using tracer_core::core::dto::TracerExchangeExportContent;
+using tracer_core::core::dto::TracerExchangeContentEncodingResult;
 using tracer_core::core::dto::TracerExchangeImportRequest;
 using tracer_core::core::dto::TracerExchangeImportResult;
 using tracer_core::core::dto::TracerExchangeInspectRequest;
@@ -44,6 +48,42 @@ using tracer_core::core::dto::TracerExchangeUnpackResult;
 TracerExchangeApi::TracerExchangeApi(
     TracerExchangeServicePtr tracer_exchange_service)
     : tracer_exchange_service_(std::move(tracer_exchange_service)) {}
+
+auto TracerExchangeApi::BuildTracerExchangeExportContent(
+    const TracerExchangeContentRequest& request)
+    -> TracerExchangeContentResult {
+  try {
+    if (!tracer_exchange_service_) {
+      return BuildServiceUnavailable<TracerExchangeContentResult>(
+          "BuildTracerExchangeExportContent");
+    }
+    return tracer_exchange_service_->BuildExportContent(request);
+  } catch (const std::exception& exception) {
+    return BuildTracerExchangeFailure<TracerExchangeContentResult>(
+        "BuildTracerExchangeExportContent", exception.what());
+  } catch (...) {
+    return BuildUnexpectedFailure<TracerExchangeContentResult>(
+        "BuildTracerExchangeExportContent");
+  }
+}
+
+auto TracerExchangeApi::EncodeTracerExchangeExportContent(
+    const TracerExchangeExportContent& content)
+    -> TracerExchangeContentEncodingResult {
+  try {
+    if (!tracer_exchange_service_) {
+      return BuildServiceUnavailable<TracerExchangeContentEncodingResult>(
+          "EncodeTracerExchangeExportContent");
+    }
+    return tracer_exchange_service_->EncodeExportContent(content);
+  } catch (const std::exception& exception) {
+    return BuildTracerExchangeFailure<TracerExchangeContentEncodingResult>(
+        "EncodeTracerExchangeExportContent", exception.what());
+  } catch (...) {
+    return BuildUnexpectedFailure<TracerExchangeContentEncodingResult>(
+        "EncodeTracerExchangeExportContent");
+  }
+}
 
 auto TracerExchangeApi::RunTracerExchangeExport(
     const TracerExchangeExportRequest& request) -> TracerExchangeExportResult {

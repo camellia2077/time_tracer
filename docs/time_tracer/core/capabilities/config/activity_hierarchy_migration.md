@@ -7,8 +7,8 @@ an alias moves into a category, and when that structural edit requires TXT and
 database migration.
 
 It applies to every client that edits alias files generated from
-`assets/tracer_core/config_test/activity_hierarchy/` or
-`assets/tracer_core/config_distribution/activity_hierarchy/`.
+`test/data/activity_hierarchy/` or
+`assets/tracer_core/defaults/activity_hierarchy/`.
 
 ## Terms
 
@@ -83,7 +83,7 @@ The resulting canonical paths are unchanged:
 
 Core returns an updated TOML with an empty token replacement plan for this
 operation. The host still commits the document through
-`RuntimeAliasMoveMigrationService`, which validates the candidate configuration
+`RuntimeActivityHierarchyMigrationService`, which validates the candidate configuration
 and database before activation; an empty plan never authorizes a direct TOML
 save.
 
@@ -109,7 +109,7 @@ Because `跑步` changes from `exercise_running` to
 
 1. Android/CLI sends the operation and user input to Core;
 2. Core returns the updated TOML and canonical/alias replacement plan;
-3. `RuntimeAliasMoveMigrationService` replaces matching tokens in TXT files;
+3. `RuntimeActivityHierarchyMigrationService` replaces matching tokens in TXT files;
 4. the service constructs a candidate database from the updated TOML and TXT;
 5. TOML, TXT, and database are atomically activated only after success, and
    restored if any stage fails.

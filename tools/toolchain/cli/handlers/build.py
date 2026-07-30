@@ -22,8 +22,6 @@ def _build_command_text(args: argparse.Namespace) -> str:
     if args.tidy:
         parts.append("--tidy")
     append_profiles_to_command(parts, getattr(args, "profile", None))
-    if getattr(args, "config_profile", None):
-        parts.extend(["--config-profile", args.config_profile])
     if args.build_dir:
         parts.extend(["--build-dir", args.build_dir])
     if args.kill_build_procs and not args.no_kill_build_procs:
@@ -48,15 +46,6 @@ def _build_command_text(args: argparse.Namespace) -> str:
 def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
     parser.add_argument("--tidy", action="store_true")
     add_profile_arg_with_options(parser, defaults, allow_multiple=True)
-    parser.add_argument(
-        "--config-profile",
-        choices=("distribution", "test"),
-        default=None,
-        help=(
-            "Android config source profile. Required for tracer_android; "
-            "choose distribution or test."
-        ),
-    )
     add_build_dir_arg(parser)
     add_kill_build_procs_args(parser)
     add_concise_arg(parser)
@@ -116,12 +105,6 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
                 "(for example `tracer_android`)."
             )
             return 2
-    if args.app == "tracer_android" and not args.config_profile:
-        print_cli_error(
-            "Error: `build --app tracer_android` requires "
-            "`--config-profile distribution|test`."
-        )
-        return 2
     build_dir_error = reject_unsupported_build_dir_override(
         ctx=ctx,
         app_name=args.app,
@@ -133,13 +116,6 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
     kill_build_procs = bool(args.kill_build_procs and not args.no_kill_build_procs)
     cmd = BuildCommand(ctx)
     extra_args = list(args.extra_args or [])
-    if args.app == "tracer_android":
-        extra_args.append(f"-PtracerConfigProfile={args.config_profile}")
-    elif args.config_profile not in (None, "test"):
-        print_cli_error(
-            "Error: `--config-profile` is only supported for `tracer_android`."
-        )
-        return 2
     ret = cmd.build(
         app_name=args.app,
         tidy=args.tidy,

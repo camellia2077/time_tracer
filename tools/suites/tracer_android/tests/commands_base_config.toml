@@ -21,7 +21,7 @@ name = "Android Config Uses Canonical Source Root"
 stage = "base-config"
 args = [
   "/c",
-  "findstr /c:assets/tracer_core/config ..\\..\\..\\..\\apps\\android\\runtime\\src\\main\\assets\\tracer_core\\config\\meta\\bundle.toml >nul && exit /b 0 || (echo Missing canonical source-root marker in bundle.toml && exit /b 1)"
+  "findstr /c:config/program ..\\..\\..\\..\\apps\\android\\runtime\\src\\main\\assets\\tracer_core\\config\\meta\\bundle.toml >nul && exit /b 0 || (echo Missing canonical program-source marker in bundle.toml && exit /b 1)"
 ]
 expect_exit = 0
 
@@ -48,7 +48,7 @@ name = "Converter Interval Uses fixed activity hierarchy directory"
 stage = "base-config"
 args = [
   "/c",
-  "if not exist ..\\..\\..\\..\\assets\\tracer_core\\config_test\\activity_hierarchy\\*.toml (echo Missing activity hierarchy TOML && exit /b 1) else exit /b 0"
+  "if not exist ..\\..\\..\\..\\test\\data\\activity_hierarchy\\*.toml (echo Missing activity hierarchy TOML && exit /b 1) else exit /b 0"
 ]
 expect_exit = 0
 
@@ -57,7 +57,7 @@ name = "Converter Interval Rejects mappings_config_path"
 stage = "base-config"
 args = [
   "/c",
-  "findstr /c:mappings_config_path ..\\..\\..\\..\\assets\\tracer_core\\config_test\\activity_hierarchy\\_system.toml >nul && (echo Unexpected legacy mappings_config_path in activity hierarchy _system.toml && exit /b 1) || exit /b 0"
+  "findstr /c:mappings_config_path ..\\..\\..\\..\\test\\data\\user\\behavior.toml >nul && (echo Unexpected mappings_config_path in user behavior.toml && exit /b 1) || exit /b 0"
 ]
 expect_exit = 0
 
@@ -66,7 +66,7 @@ name = "Alias Mapping Uses Index Includes"
 stage = "base-config"
 args = [
   "/c",
-  "if exist ..\\..\\..\\..\\assets\\tracer_core\\config\\converter\\aliases\\*.toml (exit /b 0) else (echo Missing aliases child files && exit /b 1)"
+  "if exist ..\\..\\..\\..\\test\\data\\activity_hierarchy\\*.toml (exit /b 0) else (echo Missing activity hierarchy child files && exit /b 1)"
 ]
 expect_exit = 0
 

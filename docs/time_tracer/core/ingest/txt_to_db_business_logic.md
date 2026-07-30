@@ -212,8 +212,8 @@ d0102
 
 普通活动名的合法性基于：
 
-`assets/tracer_core/config_test/activity_hierarchy/*.toml` for test/packaging fixtures or
-`assets/tracer_core/config_distribution/activity_hierarchy/*.toml` for distribution
+`test/data/activity_hierarchy/*.toml` for test fixtures or
+`assets/tracer_core/defaults/activity_hierarchy/*.toml` for distribution defaults
 defaults. Generated platform copies are not sources of truth.
 
 这里的核心语义是：
@@ -230,9 +230,12 @@ defaults. Generated platform copies are not sources of truth.
 
 ### 7.1 配置来源
 
-wake 语义只来源于：
+wake 语义只来源于运行时的：
 
-`assets/tracer_core/config/activity_hierarchy/_system.toml`
+`<filesDir>/tracer_core/config/activity_hierarchy/_system.toml`
+
+仓库中的 distribution 默认 seed 位于
+`assets/tracer_core/defaults/activity_hierarchy/_system.toml`。
 
 中的：
 

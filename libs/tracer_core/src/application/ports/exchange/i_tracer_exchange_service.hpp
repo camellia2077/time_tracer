@@ -10,6 +10,14 @@ class ITracerExchangeService {
  public:
   virtual ~ITracerExchangeService() = default;
 
+  virtual auto BuildExportContent(
+      const tracer_core::core::dto::TracerExchangeContentRequest& request)
+      -> tracer_core::core::dto::TracerExchangeContentResult = 0;
+
+  virtual auto EncodeExportContent(
+      const tracer_core::core::dto::TracerExchangeExportContent& content)
+      -> tracer_core::core::dto::TracerExchangeContentEncodingResult = 0;
+
   virtual auto RunExport(
       const tracer_core::core::dto::TracerExchangeExportRequest& request)
       -> tracer_core::core::dto::TracerExchangeExportResult = 0;

@@ -60,7 +60,7 @@ inline auto IsTomlPath(const fs::path& path) -> bool {
 }
 
 inline auto IsAliasChildTomlPath(const fs::path& path) -> bool {
-  return IsTomlPath(path) && path.filename() != "_system.toml";
+  return IsTomlPath(path);
 }
 
 inline auto BuildAliasFieldPath(std::string_view relative_child_path,
@@ -186,8 +186,11 @@ inline auto LoadAliasMappingDefinition(const fs::path& alias_directory_path,
   const fs::path normalized_alias_directory = fs::absolute(alias_directory_path);
   if (!fs::exists(normalized_alias_directory) ||
       !fs::is_directory(normalized_alias_directory)) {
-    throw std::runtime_error("Activity hierarchy directory not found: " +
-                             normalized_alias_directory.string());
+    return AliasMappingDefinition{
+        .alias_directory_path = normalized_alias_directory,
+        .child_files = {},
+        .expanded_entries = {},
+    };
   }
 
   std::vector<fs::path> relative_paths;

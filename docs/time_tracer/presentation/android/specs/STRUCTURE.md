@@ -88,7 +88,10 @@ App-side tests should follow the same rule and avoid implementing `RuntimeGatewa
 
 - UI should not depend on JNI or native-call details.
 - Feature modules should not parse raw native JSON directly.
-- Shared config sources are `assets/tracer_core/config_distribution` and
-  `assets/tracer_core/config_test`; the build selects one and emits the fixed
-  runtime snapshot under `apps/android/runtime/src/main/assets/tracer_core/config`.
+- Shared program-resource source is `assets/tracer_core/program`; distribution
+  activity-hierarchy seed is `assets/tracer_core/defaults/activity_hierarchy`,
+  while test activity-hierarchy data is `test/data/activity_hierarchy`.
+- The build emits the program-resource snapshot under
+  `apps/android/runtime/src/main/assets/tracer_core/config`; Android must not
+  package test activity-hierarchy data.
 - Android runtime config snapshot is not the canonical source.

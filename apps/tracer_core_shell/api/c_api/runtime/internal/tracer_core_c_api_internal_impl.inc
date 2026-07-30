@@ -174,6 +174,14 @@ void SetLastError(const char* message) {
   return *handle->runtime.runtime_api;
 }
 
+[[nodiscard]] auto RequirePipelineRuntime(TtCoreRuntimeHandle* handle)
+    -> tracer::core::application::use_cases::IPipelineApi& {
+  if (handle == nullptr || handle->pipeline_runtime.pipeline_api == nullptr) {
+    throw std::invalid_argument("pipeline runtime handle is null.");
+  }
+  return *handle->pipeline_runtime.pipeline_api;
+}
+
 [[nodiscard]] auto ToRequestJsonView(const char* request_json)
     -> std::string_view {
   return request_json != nullptr ? std::string_view(request_json)

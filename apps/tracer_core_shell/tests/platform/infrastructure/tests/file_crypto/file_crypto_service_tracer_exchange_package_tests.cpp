@@ -19,19 +19,15 @@ auto TestTracerExchangePackageRoundTrip(int& failures) -> void {
 
   Expect(decoded.manifest.package_type == "tracer_exchange",
          "Decoded manifest package_type should be tracer_exchange.", failures);
-  Expect(decoded.manifest.package_version == 4,
-         "Decoded manifest package_version should be 4.", failures);
+  Expect(decoded.manifest.package_version == 6,
+         "Decoded manifest package_version should be 6.", failures);
   Expect(decoded.manifest.source_root_name == "data",
          "Decoded manifest should retain source_root_name.", failures);
   Expect(decoded.manifest.payload_files.size() == payloads.size(),
          "Decoded manifest should retain all payload file paths.", failures);
-  Expect(
-      decoded.manifest.report_markdown_files.size() ==
-          exchange_pkg::kReportMarkdownPackagePaths.size(),
-      "Decoded manifest should retain all markdown report config paths.",
-      failures);
   Expect(decoded.entries.size() ==
-             exchange_pkg::kRequiredPackagePaths.size() + 1U + payloads.size(),
+             exchange_pkg::kRequiredPackagePaths.size() + 1U + 1U +
+                 payloads.size(),
          "Decoded package should contain fixed entries plus all payload files.",
          failures);
 
@@ -78,7 +74,7 @@ auto TestTracerExchangeManifestRejectsPathDrift(int& failures) -> void {
   manifest.created_at_utc = "2026-03-18T12:34:56Z";
   manifest.source_root_name = "data";
   manifest.payload_files = {"payload/2025/2025-01.txt"};
-  manifest.converter_alias_mapping_files = {"config/activity_hierarchy/default.toml"};
+  manifest.config_files = {"config/user/behavior.toml"};
 
   const std::string invalid_manifest =
       ReplaceFirst(exchange_pkg::BuildManifestText(manifest),

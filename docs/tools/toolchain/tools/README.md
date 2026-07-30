@@ -73,6 +73,12 @@ python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle
 
 # Android
 python tools/run.py build --app tracer_android --profile android_edit
+python tools/run.py android --variant debug
+python tools/run.py android --variant debug --install
+python tools/run.py android --variant debug --install --with-test-data
+python tools/run.py android --variant debug --install-only
+python tools/run.py android --variant release
+python tools/run.py android --variant release --install
 python tools/run.py verify --app tracer_android --profile android_style --concise
 python tools/run.py verify --app tracer_android --profile android_ci --concise
 # Android single-invocation merged profiles

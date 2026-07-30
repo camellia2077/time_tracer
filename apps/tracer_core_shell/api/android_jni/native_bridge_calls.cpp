@@ -56,6 +56,50 @@ auto NativeInit(JNIEnv* env, jobject /*thiz*/, jstring db_path,
   });
 }
 
+auto NativeInitPipeline(JNIEnv* env, jobject /*thiz*/, jstring db_path,
+                        jstring output_root,
+                        jstring converter_config_toml_path) -> jstring {
+  return ExecuteJniMethod(env, [&]() -> std::string {
+    const std::string db_path_utf8 = ToUtf8(env, db_path);
+    const std::string output_root_utf8 = ToUtf8(env, output_root);
+    const std::string converter_config_toml_path_utf8 =
+        ToUtf8(env, converter_config_toml_path);
+    if (output_root_utf8.empty()) {
+      return BuildResponseJson(false, "outputRoot must not be empty.",
+                               std::string{});
+    }
+    if (converter_config_toml_path_utf8.empty()) {
+      return BuildResponseJson(
+          false, "converterConfigTomlPath must not be empty.", std::string{});
+    }
+
+    const char* db_path_arg =
+        db_path_utf8.empty() ? nullptr : db_path_utf8.c_str();
+    TtCoreRuntimeHandle* created_runtime =
+        tracer_core_pipeline_runtime_create(
+            db_path_arg, output_root_utf8.c_str(),
+            converter_config_toml_path_utf8.c_str());
+    if (created_runtime == nullptr) {
+      const char* error_message = tracer_core_last_error();
+      const std::string details =
+          (error_message != nullptr && error_message[0] != '\0')
+              ? std::string(error_message)
+              : std::string("Failed to initialize core pipeline runtime.");
+      return BuildResponseJson(false, details, std::string{});
+    }
+
+    {
+      std::scoped_lock lock(g_runtime_mutex);
+      DestroyRuntimeLocked();
+      g_runtime.core_runtime = created_runtime;
+      g_runtime.pipeline_only = false;
+      g_runtime.pipeline_only = true;
+    }
+
+    return BuildResponseJson(true, std::string{}, "pipeline runtime initialized");
+  });
+}
+
 auto NativeShutdown(JNIEnv* env, jobject /*thiz*/) -> jstring {
   return ExecuteJniMethod(env, [&]() -> std::string {
     std::scoped_lock lock(g_runtime_mutex);
@@ -88,10 +132,14 @@ auto NativeIngest(JNIEnv* env, jobject /*thiz*/, jstring input_path,
         return BuildResponseJson(false, "nativeInit must be called first.",
                                  std::string{});
       }
-      response_payload =
-          ParseCoreResponse(tracer_core_runtime_ingest_json(
-                                g_runtime.core_runtime, request_json.c_str()),
-                            "nativeIngest");
+      const char* response_json = g_runtime.pipeline_only
+                                      ? tracer_core_pipeline_runtime_ingest_json(
+                                            g_runtime.core_runtime,
+                                            request_json.c_str())
+                                      : tracer_core_runtime_ingest_json(
+                                            g_runtime.core_runtime,
+                                            request_json.c_str());
+      response_payload = ParseCoreResponse(response_json, "nativeIngest");
     }
 
     if (response_payload.ok) {
@@ -127,10 +175,15 @@ auto NativeIngestSingleTxtReplaceMonth(JNIEnv* env, jobject /*thiz*/,
         return BuildResponseJson(false, "nativeInit must be called first.",
                                  std::string{});
       }
-      response_payload =
-          ParseCoreResponse(tracer_core_runtime_ingest_json(
-                                g_runtime.core_runtime, request_json.c_str()),
-                            "nativeIngest(single_txt_replace_month)");
+      const char* response_json = g_runtime.pipeline_only
+                                      ? tracer_core_pipeline_runtime_ingest_json(
+                                            g_runtime.core_runtime,
+                                            request_json.c_str())
+                                      : tracer_core_runtime_ingest_json(
+                                            g_runtime.core_runtime,
+                                            request_json.c_str());
+      response_payload = ParseCoreResponse(
+          response_json, "nativeIngest(single_txt_replace_month)");
     }
 
     if (response_payload.ok) {
@@ -204,10 +257,14 @@ auto NativeValidateStructure(JNIEnv* env, jobject /*thiz*/, jstring input_path)
         return BuildResponseJson(false, "nativeInit must be called first.",
                                  std::string{});
       }
+      const char* response_json =
+          g_runtime.pipeline_only
+              ? tracer_core_pipeline_runtime_validate_structure_json(
+                    g_runtime.core_runtime, request_json.c_str())
+              : tracer_core_runtime_validate_structure_json(
+                    g_runtime.core_runtime, request_json.c_str());
       response_payload =
-          ParseCoreResponse(tracer_core_runtime_validate_structure_json(
-                                g_runtime.core_runtime, request_json.c_str()),
-                            "nativeValidateStructure");
+          ParseCoreResponse(response_json, "nativeValidateStructure");
     }
 
     if (response_payload.ok) {
@@ -239,10 +296,13 @@ auto NativeValidateLogic(JNIEnv* env, jobject /*thiz*/, jstring input_path,
         return BuildResponseJson(false, "nativeInit must be called first.",
                                  std::string{});
       }
-      response_payload =
-          ParseCoreResponse(tracer_core_runtime_validate_logic_json(
-                                g_runtime.core_runtime, request_json.c_str()),
-                            "nativeValidateLogic");
+      const char* response_json =
+          g_runtime.pipeline_only
+              ? tracer_core_pipeline_runtime_validate_logic_json(
+                    g_runtime.core_runtime, request_json.c_str())
+              : tracer_core_runtime_validate_logic_json(
+                    g_runtime.core_runtime, request_json.c_str());
+      response_payload = ParseCoreResponse(response_json, "nativeValidateLogic");
     }
 
     if (response_payload.ok) {

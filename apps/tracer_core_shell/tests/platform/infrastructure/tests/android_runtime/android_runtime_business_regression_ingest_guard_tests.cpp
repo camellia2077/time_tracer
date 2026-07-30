@@ -15,8 +15,7 @@ auto TestSuccessfulIngestCreatesDbAndPersistsData(int& failures) -> void {
   const RuntimeTestPaths paths =
       BuildTempTestPaths("time_tracer_ingest_success_creates_db_test");
   const std::filesystem::path kConfigTomlPath =
-      BuildRepoRoot() / "assets" / "tracer_core" / "config_test" /
-      "activity_hierarchy/_system.toml";
+      BuildRepoRoot() / "config" / "user" / "behavior.toml";
 
   RemoveTree(paths.test_root);
 
@@ -112,8 +111,7 @@ auto TestInvalidStructureIngestDoesNotCreateDb(int& failures) -> void {
   const RuntimeTestPaths paths =
       BuildTempTestPaths("time_tracer_invalid_structure_no_db_test");
   const std::filesystem::path kConfigTomlPath =
-      BuildRepoRoot() / "assets" / "tracer_core" / "config_test" /
-      "activity_hierarchy/_system.toml";
+      BuildRepoRoot() / "config" / "user" / "behavior.toml";
 
   RemoveTree(paths.test_root);
 
@@ -166,8 +164,7 @@ auto TestInvalidLogicIngestDoesNotCreateDb(int& failures) -> void {
   const RuntimeTestPaths paths =
       BuildTempTestPaths("time_tracer_invalid_logic_no_db_test");
   const std::filesystem::path kConfigTomlPath =
-      BuildRepoRoot() / "assets" / "tracer_core" / "config_test" /
-      "activity_hierarchy/_system.toml";
+      BuildRepoRoot() / "config" / "user" / "behavior.toml";
 
   RemoveTree(paths.test_root);
 
@@ -218,8 +215,7 @@ auto TestReplaceMonthInvalidInputDoesNotCreateDb(int& failures) -> void {
   const RuntimeTestPaths paths =
       BuildTempTestPaths("time_tracer_replace_month_invalid_no_db_test");
   const std::filesystem::path kConfigTomlPath =
-      BuildRepoRoot() / "assets" / "tracer_core" / "config_test" /
-      "activity_hierarchy/_system.toml";
+      BuildRepoRoot() / "config" / "user" / "behavior.toml";
 
   RemoveTree(paths.test_root);
 
@@ -275,8 +271,7 @@ auto TestFailedIngestDoesNotMutateExistingDb(int& failures) -> void {
   const RuntimeTestPaths paths =
       BuildTempTestPaths("time_tracer_failed_ingest_existing_db_test");
   const std::filesystem::path kConfigTomlPath =
-      BuildRepoRoot() / "assets" / "tracer_core" / "config_test" /
-      "activity_hierarchy/_system.toml";
+      BuildRepoRoot() / "config" / "user" / "behavior.toml";
 
   RemoveTree(paths.test_root);
 

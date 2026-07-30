@@ -48,7 +48,8 @@ auto ConverterConfigLoader::LoadMergedToml(const fs::path& main_config_path)
   }
 
   toml::table main_tbl = modloader::ReadToml(main_config_path);
-  const fs::path alias_directory_path = main_config_path.parent_path();
+  const fs::path alias_directory_path =
+      main_config_path.parent_path() / "activity_hierarchy";
 
   if (!MainRule::Validate(main_tbl)) {
     throw std::runtime_error(

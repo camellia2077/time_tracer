@@ -3,7 +3,9 @@
 ## Purpose
 
 This document defines the business rules for converter alias mapping under
-`assets/tracer_core/config/activity_hierarchy/`.
+The canonical test source is `test/data/activity_hierarchy/`; the distribution
+seed is `assets/tracer_core/defaults/activity_hierarchy/`. Runtime consumers
+use the assembled `config/activity_hierarchy/` directory.
 
 It answers:
 
