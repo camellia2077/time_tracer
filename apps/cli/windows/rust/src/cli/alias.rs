@@ -30,7 +30,7 @@ file under an `activity_hierarchy` directory and does not require runtime
 initialization.
 
 Example:
-  time_tracer_cli alias create --file config/activity_hierarchy/study.toml"#
+  time_tracer_cli alias create --file config/user/activity_hierarchy/study.toml"#
     )]
     Create(AliasCreateArgs),
     #[command(
@@ -38,7 +38,7 @@ Example:
         long_about = r#"Add an alias to a canonical leaf in an existing group.
 
 Example:
-  time_tracer_cli alias add --file config/activity_hierarchy/study.toml \
+  time_tracer_cli alias add --file config/user/activity_hierarchy/study.toml \
     --group math.calculus --canonical multiple-integral --alias 重积分
 
 The target group must already exist. Use `promote` to turn the new leaf into a
@@ -54,7 +54,7 @@ group's `group_aliases` entry. This is useful for creating a new hierarchy
 level with `add` followed by `promote`.
 
 Example:
-  time_tracer_cli alias promote --file config/activity_hierarchy/study.toml --alias 重积分"#
+  time_tracer_cli alias promote --file config/user/activity_hierarchy/study.toml --alias 重积分"#
     )]
     Promote(AliasFileArgs),
     #[command(
@@ -71,8 +71,8 @@ Use this when source TXT data and the active database must remain consistent
 with the new TOML hierarchy.
 
 Example:
-  time_tracer_cli alias move --file config/activity_hierarchy/study.toml \
-    --to-file config/activity_hierarchy/meal.toml --alias 二重积分 --to root --input test/data"#
+  time_tracer_cli alias move --file config/user/activity_hierarchy/study.toml \
+    --to-file config/user/activity_hierarchy/meal.toml --alias 二重积分 --to root --input test/data"#
     )]
     Move(AliasMoveArgs),
     #[command(
@@ -86,7 +86,7 @@ then rebuilds and swaps the database after successful ingestion.
 
 Example:
   time_tracer_cli --db data/time_data.sqlite3 alias rename-group \
-    --file config/activity_hierarchy/exercise.toml --group cardio --name conditioning \
+    --file config/user/activity_hierarchy/exercise.toml --group cardio --name conditioning \
     --input test/data"#
     )]
     RenameGroup(AliasRenameGroupArgs),
@@ -102,7 +102,7 @@ then rebuilds and swaps the database after successful ingestion.
 
 Example:
   time_tracer_cli --db data/time_data.sqlite3 alias rename-parent \
-    --file config/activity_hierarchy/exercise.toml --name training \
+    --file config/user/activity_hierarchy/exercise.toml --name training \
     --input test/data"#
     )]
     RenameParent(AliasRenameParentArgs),
@@ -114,7 +114,7 @@ By default only canonical node names are printed. Add `--show-aliases` to show
 normal aliases and recordable group aliases next to their nodes.
 
 Example:
-  time_tracer_cli alias tree --file config/activity_hierarchy/study.toml --show-aliases"#
+  time_tracer_cli alias tree --file config/user/activity_hierarchy/study.toml --show-aliases"#
     )]
     Tree(AliasTreeArgs),
     #[command(
@@ -134,8 +134,8 @@ Use this for configuration editing, inspection, or repair workflows where TXT
 and database migration is intentionally handled later.
 
 Example:
-  time_tracer_cli alias move-config --file config/activity_hierarchy/study.toml \
-    --to-file config/activity_hierarchy/meal.toml --alias 二重积分 --to root"#
+  time_tracer_cli alias move-config --file config/user/activity_hierarchy/study.toml \
+    --to-file config/user/activity_hierarchy/meal.toml --alias 二重积分 --to root"#
     )]
     MoveConfig(AliasMoveConfigArgs),
     #[command(

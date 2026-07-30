@@ -43,10 +43,16 @@ impl CommandHandler<DoctorArgs> for DoctorHandler {
                 "reports_shared_dll",
                 exe_dir.join(libraries.reports_shared_dll),
             ),
-            required_check("config_toml", exe_dir.join("config").join("config.toml")),
+            required_check(
+                "config_toml",
+                exe_dir.join("config").join("program").join("config.toml"),
+            ),
             required_dir_check(
                 "converter_alias_mapping",
-                exe_dir.join("config").join("activity_hierarchy"),
+                exe_dir
+                    .join("config")
+                    .join("user")
+                    .join("activity_hierarchy"),
             ),
             optional_dir_check(
                 "db_parent_dir",

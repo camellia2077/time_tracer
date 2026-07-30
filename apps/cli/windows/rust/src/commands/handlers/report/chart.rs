@@ -72,14 +72,7 @@ fn run_chart_with_query_port(
         let config = load_heatmap_config(&exe_path)?;
         println!("Heatmap palettes:");
         for (name, _colors) in &config.palettes {
-            let mut suffix = String::new();
-            if name == &config.defaults.light_palette {
-                suffix.push_str(" (default-light)");
-            }
-            if name == &config.defaults.dark_palette {
-                suffix.push_str(" (default-dark)");
-            }
-            println!("- {name}{suffix}");
+            println!("- {name}");
         }
         return Ok(());
     }

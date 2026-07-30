@@ -85,7 +85,7 @@ fn check_environment(api: &CoreApi, exe: &Path) -> Result<(), AppError> {
     if payload
         .messages
         .iter()
-        .any(|message| message.contains("config/config.toml"))
+        .any(|message| message.contains("config/program/config.toml"))
     {
         return Err(AppError::Config(detail));
     }

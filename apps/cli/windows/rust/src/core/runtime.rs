@@ -153,11 +153,12 @@ impl CoreApi {
         config_root: &Path,
         date_check_mode: &str,
     ) -> Result<(), AppError> {
-        validate_external_toml_files(config_root)?;
-        let converter_config = config_root.join("activity_hierarchy").join("_system.toml");
+        let user_root = config_root.join("user");
+        validate_external_toml_files(&user_root)?;
+        let converter_config = user_root.join("behavior.toml");
         if !converter_config.is_file() {
             return Err(AppError::Config(format!(
-                "External config is missing activity_hierarchy/_system.toml: {}",
+                "External config is missing user/behavior.toml: {}",
                 converter_config.display()
             )));
         }
@@ -168,8 +169,28 @@ impl CoreApi {
             )));
         }
 
-        let output_root =
-            std::env::temp_dir().join(format!("time_tracer_cli_validate_{}", std::process::id()));
+        let validation_root = std::env::temp_dir().join(format!(
+            "time_tracer_cli_validate_{}",
+            std::process::id()
+        ));
+        let validation_config_root = validation_root.join("config");
+        let runtime_program_root = std::env::current_exe()
+            .map_err(|error| {
+                AppError::Io(format!("Resolve CLI executable path failed: {error}"))
+            })?
+            .parent()
+            .map(|path| path.join("config/program"))
+            .ok_or_else(|| AppError::Config("CLI executable has no parent directory.".into()))?;
+        if !runtime_program_root.is_dir() {
+            return Err(AppError::Config(format!(
+                "CLI runtime program config is missing: {}",
+                runtime_program_root.display()
+            )));
+        }
+        copy_directory(&runtime_program_root, &validation_config_root.join("program"))?;
+        copy_directory(&user_root, &validation_config_root.join("user"))?;
+
+        let output_root = validation_root.join("output");
         fs::create_dir_all(&output_root).map_err(|error| {
             AppError::Io(format!(
                 "Create validation workspace failed ({}): {error}",
@@ -180,7 +201,10 @@ impl CoreApi {
         let paths = ResolvedCliPaths {
             db_path: String::new(),
             runtime_output_root: output_root.to_string_lossy().into_owned(),
-            converter_config_toml_path: converter_config.to_string_lossy().into_owned(),
+            converter_config_toml_path: validation_config_root
+                .join("user/behavior.toml")
+                .to_string_lossy()
+                .into_owned(),
         };
         let runtime = create_runtime(self, &paths)?;
         let result = (|| {
@@ -194,7 +218,7 @@ impl CoreApi {
             }))
         })();
         drop(runtime);
-        let _ = fs::remove_dir_all(&output_root);
+        let _ = fs::remove_dir_all(&validation_root);
         result
     }
 }
@@ -206,10 +230,10 @@ fn validate_external_toml_files(config_root: &Path) -> Result<(), AppError> {
             config_root.display()
         )));
     }
-    let main_config = config_root.join("config.toml");
+    let main_config = config_root.join("behavior.toml");
     if !main_config.is_file() {
         return Err(AppError::Config(format!(
-            "External config is missing config.toml: {}",
+            "External config is missing behavior.toml: {}",
             main_config.display()
         )));
     }
@@ -245,6 +269,39 @@ fn collect_toml_files(root: &Path, files: &mut Vec<PathBuf>) -> std::io::Result<
             collect_toml_files(&path, files)?;
         } else if path.extension().and_then(|value| value.to_str()) == Some("toml") {
             files.push(path);
+        }
+    }
+    Ok(())
+}
+
+fn copy_directory(source: &Path, destination: &Path) -> Result<(), AppError> {
+    fs::create_dir_all(destination).map_err(|error| {
+        AppError::Io(format!(
+            "Create validation directory failed ({}): {error}",
+            destination.display()
+        ))
+    })?;
+    for entry in fs::read_dir(source).map_err(|error| {
+        AppError::Io(format!(
+            "Read validation directory failed ({}): {error}",
+            source.display()
+        ))
+    })? {
+        let entry = entry.map_err(|error| {
+            AppError::Io(format!("Read validation directory entry failed: {error}"))
+        })?;
+        let source_path = entry.path();
+        let destination_path = destination.join(entry.file_name());
+        if source_path.is_dir() {
+            copy_directory(&source_path, &destination_path)?;
+        } else {
+            fs::copy(&source_path, &destination_path).map_err(|error| {
+                AppError::Io(format!(
+                    "Copy validation resource failed ({} -> {}): {error}",
+                    source_path.display(),
+                    destination_path.display()
+                ))
+            })?;
         }
     }
     Ok(())

@@ -17,10 +17,14 @@ pub(crate) fn resolve_heatmap_visuals(
         return Ok(("[]".to_string(), thresholds));
     }
 
-    let palette_name = args
-        .heatmap_palette
-        .clone()
-        .unwrap_or_else(|| config.defaults.light_palette.clone());
+    let palette_name = args.heatmap_palette.clone().unwrap_or_else(|| {
+        config
+            .palettes
+            .keys()
+            .next()
+            .cloned()
+            .unwrap_or_default()
+    });
     let palette = config.palettes.get(&palette_name).ok_or_else(|| {
         AppError::InvalidArguments(format!("Unknown heatmap palette `{palette_name}`"))
     })?;

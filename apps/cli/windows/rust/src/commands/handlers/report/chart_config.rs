@@ -10,7 +10,6 @@ use crate::error::AppError;
 #[derive(Debug, Deserialize)]
 pub(crate) struct HeatmapConfig {
     pub(crate) thresholds: HeatmapThresholds,
-    pub(crate) defaults: HeatmapDefaults,
     pub(crate) palettes: BTreeMap<String, Vec<String>>,
 }
 
@@ -20,46 +19,74 @@ pub(crate) struct HeatmapThresholds {
 }
 
 #[derive(Debug, Deserialize)]
-pub(crate) struct HeatmapDefaults {
-    pub(crate) light_palette: String,
-    pub(crate) dark_palette: String,
+struct HeatmapProgramConfig {
+    palettes: BTreeMap<String, Vec<String>>,
+}
+
+#[derive(Debug, Deserialize)]
+struct HeatmapUserConfig {
+    thresholds: HeatmapThresholds,
 }
 
 pub(crate) fn load_heatmap_config(exe_path: &Path) -> Result<HeatmapConfig, AppError> {
-    let path = resolve_heatmap_config_path(exe_path)?;
-    let content = fs::read_to_string(&path).map_err(|e| {
+    let (program_path, user_path) = resolve_heatmap_config_paths(exe_path)?;
+    let program_content = fs::read_to_string(&program_path).map_err(|e| {
         AppError::Io(format!(
-            "Read heatmap config failed ({}): {e}",
-            path.display()
+            "Read heatmap program config failed ({}): {e}",
+            program_path.display()
         ))
     })?;
-    toml::from_str::<HeatmapConfig>(&content).map_err(|e| {
+    let user_content = fs::read_to_string(&user_path).map_err(|e| {
         AppError::Config(format!(
-            "Parse heatmap config failed ({}): {e}",
-            path.display()
+            "Read heatmap user config failed ({}): {e}",
+            user_path.display()
         ))
+    })?;
+    let program = toml::from_str::<HeatmapProgramConfig>(&program_content).map_err(|e| {
+        AppError::Config(format!(
+            "Parse heatmap program config failed ({}): {e}",
+            program_path.display()
+        ))
+    })?;
+    let user = toml::from_str::<HeatmapUserConfig>(&user_content).map_err(|e| {
+        AppError::Config(format!(
+            "Parse heatmap user config failed ({}): {e}",
+            user_path.display()
+        ))
+    })?;
+    Ok(HeatmapConfig {
+        thresholds: user.thresholds,
+        palettes: program.palettes,
     })
 }
 
-fn resolve_heatmap_config_path(exe_path: &Path) -> Result<PathBuf, AppError> {
-    let mut candidates = Vec::new();
+fn resolve_heatmap_config_paths(exe_path: &Path) -> Result<(PathBuf, PathBuf), AppError> {
+    let mut roots = Vec::new();
     if let Some(exe_dir) = exe_path.parent() {
-        candidates.push(exe_dir.join("config/charts/heatmap.toml"));
-        candidates.push(exe_dir.join("config/heatmap.toml"));
+        roots.push(exe_dir.to_path_buf());
     }
 
     if let Ok(cwd) = env::current_dir() {
-        candidates.push(cwd.join("config/charts/heatmap.toml"));
-        candidates.push(cwd.join("config/heatmap.toml"));
+        roots.push(cwd.clone());
         let mut cursor = Some(cwd.as_path());
         while let Some(dir) = cursor {
-            candidates.push(dir.join("apps/cli/windows/rust/runtime/config/charts/heatmap.toml"));
+            roots.push(dir.join("apps/cli/windows/rust/runtime"));
             cursor = dir.parent();
         }
     }
 
-    candidates
+    roots
         .into_iter()
-        .find(|path| path.exists())
-        .ok_or_else(|| AppError::Config("Unable to locate heatmap.toml".to_string()))
+        .map(|root| {
+            (
+                root.join("config/program/charts/heatmap.toml"),
+                root.join("config/user/heatmap.toml"),
+            )
+        })
+        .find(|(program_path, user_path)| program_path.exists() && user_path.exists())
+        .ok_or_else(|| {
+            AppError::Config(
+                "Unable to locate program and user heatmap configuration files".to_string(),
+            )
+        })
 }

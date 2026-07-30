@@ -123,7 +123,7 @@ mod tests {
             "alias",
             "rename-group",
             "--file",
-            "config/activity_hierarchy/exercise.toml",
+            "config/user/activity_hierarchy/exercise.toml",
             "--group",
             "cardio",
             "--name",
@@ -153,7 +153,7 @@ mod tests {
             "alias",
             "rename-parent",
             "--file",
-            "config/activity_hierarchy/exercise.toml",
+            "config/user/activity_hierarchy/exercise.toml",
             "--name",
             "training",
             "--input",
@@ -164,7 +164,7 @@ mod tests {
         match cli.command {
             Command::Alias(args) => match args.command {
                 AliasCommand::RenameParent(args) => {
-                    assert_eq!(args.file, "config/activity_hierarchy/exercise.toml");
+                    assert_eq!(args.file, "config/user/activity_hierarchy/exercise.toml");
                     assert_eq!(args.name, "training");
                     assert_eq!(args.input, "test/data");
                 }
@@ -489,7 +489,7 @@ mod tests {
         assert_eq!(error.kind(), ErrorKind::DisplayHelp);
         let help = error.to_string();
         assert!(help.contains("without modifying TXT files or the database"));
-        assert!(help.contains("--file config/activity_hierarchy/study.toml"));
+        assert!(help.contains("--file config/user/activity_hierarchy/study.toml"));
     }
 
     #[test]
@@ -499,14 +499,14 @@ mod tests {
             "alias",
             "tree",
             "--file",
-            "config/activity_hierarchy/study.toml",
+            "config/user/activity_hierarchy/study.toml",
             "--show-aliases",
         ])
         .unwrap();
         match cli.command {
             Command::Alias(args) => match args.command {
                 super::AliasCommand::Tree(args) => {
-                    assert_eq!(args.file, "config/activity_hierarchy/study.toml");
+                    assert_eq!(args.file, "config/user/activity_hierarchy/study.toml");
                     assert!(args.show_aliases);
                 }
                 _ => panic!("expected alias tree command"),

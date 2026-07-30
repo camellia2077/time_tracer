@@ -331,7 +331,6 @@ fn collect_alias_documents(
                 .path();
             if path.is_file()
                 && path.extension().and_then(|e| e.to_str()) == Some("toml")
-                && path.file_name().and_then(|n| n.to_str()) != Some("_system.toml")
             {
                 paths.insert(path.canonicalize().map_err(|e| {
                     AppError::Io(format!("Resolve alias TOML {} failed: {e}", path.display()))

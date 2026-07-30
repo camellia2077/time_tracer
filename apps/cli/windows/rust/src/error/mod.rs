@@ -90,7 +90,7 @@ impl AppError {
                 AppExitCode::ConfigError => (
                     "runtime.config_error",
                     "config",
-                    "Check runtime config under config/config.toml.",
+                    "Check runtime config under config/program/config.toml.",
                 ),
                 AppExitCode::DllCompatibilityError => (
                     "runtime.dll_compatibility_error",
@@ -156,7 +156,7 @@ impl AppError {
             AppError::Config(_) => (
                 "runtime.config_error",
                 "config",
-                "Check runtime config under config/config.toml.",
+                "Check runtime config under config/program/config.toml.",
             ),
             AppError::DllCompatibility(_) => (
                 "runtime.dll_compatibility_error",

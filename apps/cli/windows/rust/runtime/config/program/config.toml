@@ -40,10 +40,11 @@ date_check = "none"
 
 [converter]
 # Converter system config and main loader entry point.
-main_config = "activity_hierarchy/_system.toml"
+main_config = "../user/behavior.toml"
 
 [visualization]
 heatmap = "charts/heatmap.toml"
+pie = "charts/pie.toml"
 
 [reports.typst]
 root = "reports/typst"

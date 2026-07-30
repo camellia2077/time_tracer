@@ -96,7 +96,8 @@ time_tracer_cli --db <db_path> alias rename-parent `
 ```
 
 目标 TOML 已存在、parent 名称不安全或候选构建失败时，旧 TOML 路径、TOML
-内容、TXT 和数据库都会保留/恢复。`_system.toml` 不允许重命名。
+内容、TXT 和数据库都会保留/恢复。`user/behavior.toml` 不属于 alias child
+文件，不通过该命令重命名。
 
 ## 其他编辑命令
 

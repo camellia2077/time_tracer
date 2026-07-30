@@ -63,7 +63,7 @@ pub struct PipelineValidateBundleArgs {
     pub txt_path: String,
     #[arg(
         long = "config",
-        help = "Config directory containing config.toml and activity_hierarchy/"
+        help = "Config directory containing user/"
     )]
     pub config_path: String,
     #[arg(long = "date-check", value_enum, conflicts_with = "no_date_check")]
@@ -82,7 +82,7 @@ pub enum PipelineValidateCommand {
     All(PipelineValidateAllArgs),
     #[command(
         about = "Validate an external TXT+TOML bundle without importing it",
-        long_about = "Validate an external data bundle without writing to the database.\n\nThe config directory must contain config.toml and activity_hierarchy/. Core validates the TOML alias schema, TXT structure, business logic, and activity-name references."
+        long_about = "Validate an external data bundle without writing to the database.\n\nThe config directory must contain user/. Program resources are loaded from the running CLI and are not part of the exchange data. Core validates the user TOML files, TXT structure, business logic, and activity-name references."
     )]
     Bundle(PipelineValidateBundleArgs),
 }
