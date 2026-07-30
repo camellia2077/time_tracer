@@ -107,36 +107,6 @@ internal class NativeTxtRuntimeCodec {
             )
         }
 
-    fun parseAliasCanonicalRename(response: String): AliasCanonicalRenameResult =
-        try {
-            val json = JSONObject(response)
-            val replacementsJson = json.optJSONArray("replacements") ?: JSONArray()
-            val replacements = buildList {
-                for (index in 0 until replacementsJson.length()) {
-                    val item = replacementsJson.optJSONObject(index) ?: continue
-                    add(
-                        CanonicalActivityNameReplacement(
-                            oldCanonical = item.optString("old_canonical", ""),
-                            newCanonical = item.optString("new_canonical", "")
-                        )
-                    )
-                }
-            }
-            AliasCanonicalRenameResult(
-                ok = json.optBoolean("ok", false),
-                updatedTomlContent = json.optString("updated_toml_content", ""),
-                replacements = replacements,
-                message = json.optString("error_message", "")
-            )
-        } catch (_: Exception) {
-            AliasCanonicalRenameResult(
-                ok = false,
-                updatedTomlContent = "",
-                replacements = emptyList(),
-                message = "Invalid native alias canonical response."
-            )
-        }
-
     fun parseActivityHierarchyOperation(
         response: String,
         fallbackTomlContent: String
@@ -145,8 +115,10 @@ internal class NativeTxtRuntimeCodec {
         ActivityHierarchyOperationResult(
             ok = json.optBoolean("ok", false),
             updatedTomlContent = json.optString("updated_toml_content", fallbackTomlContent),
-            replacements = parseReplacements(json.optJSONArray("replacements")),
-            aliasReplacements = parseAliasReplacements(json.optJSONArray("alias_replacements")),
+            replacementPlan = ActivityNameReplacementPlan.fromCore(
+                canonical = parseReplacements(json.optJSONArray("replacements")),
+                aliases = parseAliasReplacements(json.optJSONArray("alias_replacements"))
+            ),
             hierarchy = json.optJSONObject("hierarchy")?.let(::parseHierarchy),
             message = json.optString("error_message", "")
         )
@@ -154,7 +126,6 @@ internal class NativeTxtRuntimeCodec {
         ActivityHierarchyOperationResult(
             ok = false,
             updatedTomlContent = fallbackTomlContent,
-            replacements = emptyList(),
             message = "Invalid native activity hierarchy response."
         )
     }
@@ -175,8 +146,10 @@ internal class NativeTxtRuntimeCodec {
                     ))
                 }
             },
-            replacements = parseReplacements(json.optJSONArray("replacements")),
-            aliasReplacements = parseAliasReplacements(json.optJSONArray("alias_replacements")),
+            replacementPlan = ActivityNameReplacementPlan.fromCore(
+                canonical = parseReplacements(json.optJSONArray("replacements")),
+                aliases = parseAliasReplacements(json.optJSONArray("alias_replacements"))
+            ),
             message = json.optString("error_message", "")
         )
     } catch (_: Exception) {

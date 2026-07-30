@@ -65,4 +65,70 @@ class RuntimeDataCleanupTargetsTest {
         assertTrue(cacheTxt.exists())
         assertTrue(outputTxt.exists())
     }
+
+    @Test
+    fun clearEditableData_removesTxtAndHierarchyButPreservesProgramDataAndDatabase() {
+        val root = Files.createTempDirectory("runtime-clean-editable").toFile()
+        val txtFile = root.resolve("input/2026/2026-03.txt").apply {
+            parentFile?.mkdirs()
+            writeText("txt")
+        }
+        val hierarchyFile = root.resolve("config/user/activity_hierarchy/custom.toml").apply {
+            parentFile?.mkdirs()
+            writeText("hierarchy")
+        }
+        val nonTomlHierarchyFile = root.resolve("config/user/activity_hierarchy/notes.txt").apply {
+            writeText("keep")
+        }
+        val marker = root.resolve(DATA_FOLDER_SNAPSHOT_MARKER).apply { writeText("snapshot") }
+        val programFile = root.resolve("config/program/config.toml").apply {
+            parentFile?.mkdirs()
+            writeText("keep")
+        }
+        val databaseFile = root.resolve("db/time_data.sqlite3").apply {
+            parentFile?.mkdirs()
+            writeText("keep")
+        }
+
+        val message = RuntimeDataCleanupTargets.clearEditableData(listOf(root))
+
+        assertFalse(txtFile.exists())
+        assertFalse(hierarchyFile.exists())
+        assertFalse(marker.exists())
+        assertTrue(nonTomlHierarchyFile.exists())
+        assertTrue(programFile.exists())
+        assertTrue(databaseFile.exists())
+        assertTrue(message.contains("1 TXT file(s)"))
+        assertTrue(message.contains("1 activity_hierarchy TOML file(s)"))
+    }
+
+    @Test
+    fun clearAllData_removesEditableDataAndDatabase() {
+        val root = Files.createTempDirectory("runtime-clean-all").toFile()
+        val txtFile = root.resolve("input/current.txt").apply {
+            parentFile?.mkdirs()
+            writeText("activity")
+        }
+        val hierarchyFile = root.resolve("config/user/activity_hierarchy/custom.toml").apply {
+            parentFile?.mkdirs()
+            writeText("category")
+        }
+        val databaseFile = root.resolve("db/time_data.sqlite3").apply {
+            parentFile?.mkdirs()
+            writeText("database")
+        }
+        val programFile = root.resolve("config/program/config.toml").apply {
+            parentFile?.mkdirs()
+            writeText("program")
+        }
+
+        RuntimeDataCleanupTargets.clearEditableData(listOf(root))
+        val databaseResult = RuntimeDataCleanupTargets.clearDatabaseData(listOf(root))
+
+        assertTrue(databaseResult.ok)
+        assertFalse(txtFile.exists())
+        assertFalse(hierarchyFile.exists())
+        assertFalse(databaseFile.exists())
+        assertTrue(programFile.exists())
+    }
 }

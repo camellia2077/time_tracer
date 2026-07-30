@@ -22,17 +22,17 @@ data class ReportHeatmapTomlConfig(
 fun defaultReportHeatmapTomlConfig(): ReportHeatmapTomlConfig =
     ReportHeatmapTomlConfig(
         thresholdsHours = listOf(1.0, 4.0, 7.0, 9.0),
-        defaultLightPalette = "GITHUB_GREEN_LIGHT",
-        defaultDarkPalette = "GITHUB_GREEN_DARK",
+        defaultLightPalette = "GREEN_LIGHT",
+        defaultDarkPalette = "GREEN_DARK",
         palettes = linkedMapOf(
-            "GITHUB_GREEN_LIGHT" to listOf(
+            "GREEN_LIGHT" to listOf(
                 "#eff2f5",
                 "#aceebb",
                 "#4ac26b",
                 "#2da44e",
                 "#116329"
             ),
-            "GITHUB_GREEN_DARK" to listOf(
+            "GREEN_DARK" to listOf(
                 "#151b23",
                 "#033a16",
                 "#196c2e",

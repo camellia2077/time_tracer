@@ -29,8 +29,7 @@ internal data class AliasEntryMovePlan(
     val destinationFilePath: String = "",
     val destinationGroupPath: List<String> = emptyList(),
     val updatedDocuments: List<ActivityHierarchyDocumentOutput> = emptyList(),
-    val replacements: List<CanonicalActivityNameReplacement> = emptyList(),
-    val aliasReplacements: List<AliasKeyReplacement> = emptyList()
+    val replacementPlan: ActivityNameReplacementPlan = ActivityNameReplacementPlan()
 )
 
 internal data class AliasEntryMoveDestination(

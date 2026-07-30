@@ -16,7 +16,7 @@ class RuntimeInitServiceTest {
         )
         val service = RuntimeInitService(
             initializeRuntimeInternal = { expected },
-            clearRuntimeData = { "unused" },
+            clearAllData = { "unused" },
             clearDatabaseData = { ClearDatabaseResult(ok = true, message = "unused") },
             resetRuntimeCaches = {}
         )
@@ -30,7 +30,7 @@ class RuntimeInitServiceTest {
     fun initializeRuntime_exception_returnsFailureEnvelope() = runBlocking {
         val service = RuntimeInitService(
             initializeRuntimeInternal = { throw IllegalStateException("boom") },
-            clearRuntimeData = { "unused" },
+            clearAllData = { "unused" },
             clearDatabaseData = { ClearDatabaseResult(ok = true, message = "unused") },
             resetRuntimeCaches = {}
         )
@@ -54,7 +54,7 @@ class RuntimeInitServiceTest {
                     rawResponse = """{"ok":true}"""
                 )
             },
-            clearRuntimeData = {
+            clearAllData = {
                 callOrder += "clear"
                 "clear -> removed"
             },
@@ -85,7 +85,7 @@ class RuntimeInitServiceTest {
                     rawResponse = """{"ok":true}"""
                 )
             },
-            clearRuntimeData = { throw IllegalArgumentException("cannot delete") },
+            clearAllData = { throw IllegalArgumentException("cannot delete") },
             clearDatabaseData = { ClearDatabaseResult(ok = true, message = "unused") },
             resetRuntimeCaches = {}
         )
@@ -110,7 +110,7 @@ class RuntimeInitServiceTest {
                     rawResponse = """{"ok":true}"""
                 )
             },
-            clearRuntimeData = { "unused" },
+            clearAllData = { "unused" },
             clearDatabaseData = {
                 callOrder += "clear-db"
                 ClearDatabaseResult(ok = true, message = "clear db -> removed database")
@@ -138,7 +138,7 @@ class RuntimeInitServiceTest {
                     rawResponse = """{"ok":true}"""
                 )
             },
-            clearRuntimeData = { "unused" },
+            clearAllData = { "unused" },
             clearDatabaseData = { throw IllegalArgumentException("cannot delete db") },
             resetRuntimeCaches = {
                 resetCalled = true

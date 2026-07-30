@@ -1,0 +1,84 @@
+schema_version = 2
+others = "#94A3B8"
+
+[localization]
+supported_locales = ["en", "zh", "ja"]
+default_locale = "en"
+
+[labels.others]
+en = "Others"
+zh = "其他"
+ja = "その他"
+
+[palettes]
+SOFT = [
+  "#4338CA",
+  "#0F766E",
+  "#BE123C",
+  "#15803D",
+  "#C2410C",
+  "#7E22CE",
+  "#0369A1",
+  "#4F46E5",
+  "#14B8A6",
+  "#C084FC",
+]
+
+EDITORIAL = [
+  "#355070",
+  "#3D7A6B",
+  "#A44A3F",
+  "#6D8F3F",
+  "#7C5C8A",
+  "#B56576",
+  "#B8893C",
+  "#4A6FA5",
+  "#D17A5B",
+  "#5C677D",
+]
+
+VIVID = [
+  "#2563EB",
+  "#10B981",
+  "#EF4444",
+  "#7C3AED",
+  "#F97316",
+  "#06B6D4",
+  "#D946EF",
+  "#84CC16",
+  "#F59E0B",
+  "#14B8A6",
+]
+
+MONO_ACCENT = [
+  "#1E3A8A",
+  "#0F766E",
+  "#1D4ED8",
+  "#475569",
+  "#0EA5A4",
+  "#2563EB",
+  "#64748B",
+  "#0C4A6E",
+  "#3B82F6",
+  "#334155",
+]
+
+[palette_labels.SOFT]
+en = "Soft"
+zh = "柔和"
+ja = "ソフト"
+
+[palette_labels.EDITORIAL]
+en = "Editorial"
+zh = "编辑"
+ja = "エディトリアル"
+
+[palette_labels.VIVID]
+en = "Vivid"
+zh = "鲜艳"
+ja = "ビビッド"
+
+[palette_labels.MONO_ACCENT]
+en = "Mono Accent"
+zh = "单色强调"
+ja = "モノアクセント"

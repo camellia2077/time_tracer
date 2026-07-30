@@ -220,7 +220,7 @@ class RuntimeTracerExchangeServiceTest {
                         .put("input_path", "/resolved/bundle.tracer")
                         .put("source_root_name", "data")
                         .put("payload_file_count", 5)
-                        .put("package_version", 4)
+                        .put("package_version", 6)
                         .put("producer_platform", "android")
                         .put("producer_app", "time_tracer_android")
                         .put("created_at_utc", "2026-03-20T08:00:00Z")

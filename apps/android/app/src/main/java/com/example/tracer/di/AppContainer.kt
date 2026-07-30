@@ -2,6 +2,8 @@ package com.example.tracer.di
 
 import android.content.Context
 import com.example.tracer.ConfigGateway
+import com.example.tracer.ActivityHierarchyGateway
+import com.example.tracer.ActivityHierarchyMigrationGateway
 import com.example.tracer.NativeRuntimeController
 import com.example.tracer.QueryGateway
 import com.example.tracer.RecordGateway
@@ -33,6 +35,12 @@ class AppContainer(private val appContext: Context) {
         get() = nativeRuntimeController
 
     val configGateway: ConfigGateway
+        get() = nativeRuntimeController
+
+    val activityHierarchyGateway: ActivityHierarchyGateway
+        get() = nativeRuntimeController
+
+    val activityHierarchyMigrationGateway: ActivityHierarchyMigrationGateway
         get() = nativeRuntimeController
 
     val tracerExchangeGateway: TracerExchangeGateway

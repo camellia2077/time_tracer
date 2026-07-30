@@ -117,50 +117,6 @@ abstract class VerifyPlatformConfigSnapshotTask @Inject constructor(
     }
 }
 
-abstract class SyncAndroidInputAssetsTask @Inject constructor(
-    private val execOperations: ExecOperations,
-) : DefaultTask() {
-    @get:Input
-    abstract val pythonExecutable: Property<String>
-
-    @get:InputFile
-    @get:PathSensitive(PathSensitivity.NONE)
-    abstract val syncScript: RegularFileProperty
-
-    @get:InputDirectory
-    @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val sourceRoot: DirectoryProperty
-
-    @get:OutputDirectory
-    abstract val outputDirectory: DirectoryProperty
-
-    @TaskAction
-    fun sync() {
-        val scriptFile = syncScript.get().asFile
-        val sourceDir = sourceRoot.get().asFile
-        val outputDir = outputDirectory.get().asFile
-        require(scriptFile.exists()) {
-            "Missing Android input sync script: ${scriptFile.absolutePath}"
-        }
-        require(sourceDir.exists()) {
-            "Missing Android input source root: ${sourceDir.absolutePath}"
-        }
-
-        execOperations.exec {
-            commandLine(
-                pythonExecutable.get(),
-                scriptFile.absolutePath,
-                "--source-root",
-                sourceDir.absolutePath,
-                "--android-input-root",
-                outputDir.resolve("tracer_core/input").absolutePath,
-                "--prune-managed-years",
-                "--apply",
-            )
-        }.assertNormalExitValue()
-    }
-}
-
 val repoRootDir =
     rootProject.projectDir.parentFile?.parentFile
         ?: throw GradleException(
@@ -172,24 +128,9 @@ val timeTracerDisableNativeOptimization =
         .orNull
         ?.trim()
         ?.equals("true", ignoreCase = true) == true
-val timeTracerConfigProfile =
-    providers.gradleProperty("tracerConfigProfile")
-        .orElse("test")
-        .map { it.trim().lowercase() }
-val timeTracerConfigProfileName = timeTracerConfigProfile.get()
-val timeTracerSourceConfigRoot = timeTracerConfigProfile.map { profile ->
-    require(profile == "distribution" || profile == "test") {
-        "Unsupported tracerConfigProfile `$profile`; expected `distribution` or `test`."
-    }
-    repoRootDir.resolve("assets/tracer_core/config_$profile")
-}
-val timeTracerConfigRootFile = projectDir.resolve("src/main/assets/tracer_core/config")
+val timeTracerSourceConfigRoot = repoRootDir.resolve("config/program")
+val timeTracerConfigRootFile = projectDir.resolve("src/main/assets/config")
 val platformConfigRunner = repoRootDir.resolve("tools/platform_config/run.py")
-val androidInputSyncScript =
-    repoRootDir.resolve("tools/scripts/devtools/android/sync_android_input_from_test_data.py")
-val androidTestDataRoot = repoRootDir.resolve("test/data")
-val androidTestInputAssetsRoot =
-    layout.buildDirectory.dir("generated/tracer/runtime/$timeTracerConfigProfileName/assets")
 val pythonExecutableCommand =
     if (System.getProperty("os.name").lowercase().contains("windows")) {
         "python"
@@ -197,7 +138,7 @@ val pythonExecutableCommand =
         "python3"
     }
 
-val timeTracerSourceConfigRootPath = timeTracerSourceConfigRoot.get().absolutePath
+val timeTracerSourceConfigRootPath = timeTracerSourceConfigRoot.absolutePath
 val timeTracerConfigRootPath = timeTracerConfigRootFile.absolutePath
 val platformConfigRunnerPath = platformConfigRunner.absolutePath
 
@@ -223,28 +164,6 @@ val verifyTracerCoreConfigSnapshot by tasks.register<VerifyPlatformConfigSnapsho
     syncScript.set(file(platformConfigRunnerPath))
     sourceRoot.set(file(timeTracerSourceConfigRootPath))
     snapshotRoot.set(file(timeTracerConfigRootPath))
-}
-
-if (timeTracerConfigProfileName == "test") {
-    val syncTracerCoreTestInputAssets = tasks.register<SyncAndroidInputAssetsTask>(
-        "syncTracerCoreTestInputAssets",
-    ) {
-        group = "tracer_core"
-        description = "Sync test/data TXT input assets for the test config profile."
-        pythonExecutable.set(pythonExecutableCommand)
-        syncScript.set(file(androidInputSyncScript))
-        sourceRoot.set(file(androidTestDataRoot))
-        outputDirectory.set(androidTestInputAssetsRoot)
-    }
-
-    androidComponents {
-        onVariants { variant ->
-            variant.sources.assets?.addGeneratedSourceDirectory(
-                syncTracerCoreTestInputAssets,
-                SyncAndroidInputAssetsTask::outputDirectory,
-            )
-        }
-    }
 }
 
 android {

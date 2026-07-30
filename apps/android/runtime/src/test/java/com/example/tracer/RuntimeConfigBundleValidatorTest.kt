@@ -32,12 +32,12 @@ class RuntimeConfigBundleValidatorTest {
         try {
             writeBundleToml(configRoot, profile = "android")
             writeRequiredFiles(configRoot)
-            File(configRoot, "reports/markdown/en/year.toml").delete()
+            File(configRoot, "program/reports/markdown/en/year.toml").delete()
 
             val result = validateRuntimeConfigBundle(configRoot)
 
             assertFalse(result.ok)
-            assertTrue(result.missingFiles.contains("reports/markdown/en/year.toml"))
+            assertTrue(result.missingFiles.contains("program/reports/markdown/en/year.toml"))
         } finally {
             configRoot.deleteRecursively()
         }
@@ -64,7 +64,7 @@ class RuntimeConfigBundleValidatorTest {
     fun validateRuntimeConfigBundle_invalidUtf8_returnsFailure() {
         val configRoot = Files.createTempDirectory("runtime-config-invalid-utf8").toFile()
         try {
-            val bundleFile = File(configRoot, "meta/bundle.toml")
+            val bundleFile = File(configRoot, "program/meta/bundle.toml")
             bundleFile.parentFile?.mkdirs()
             bundleFile.writeBytes(byteArrayOf(0xFF.toByte()))
 
@@ -78,7 +78,7 @@ class RuntimeConfigBundleValidatorTest {
     }
 
     private fun writeBundleToml(configRoot: File, profile: String) {
-        val bundleFile = File(configRoot, "meta/bundle.toml")
+        val bundleFile = File(configRoot, "program/meta/bundle.toml")
         bundleFile.parentFile?.mkdirs()
         bundleFile.writeText(
             """
@@ -88,13 +88,14 @@ class RuntimeConfigBundleValidatorTest {
             
             [file_list]
             required = [
-              "config.toml",
-              "activity_hierarchy/_system.toml",
-              "reports/markdown/en/day.toml",
-              "reports/markdown/en/month.toml",
-              "reports/markdown/en/period.toml",
-              "reports/markdown/en/week.toml",
-              "reports/markdown/en/year.toml",
+              "program/config.toml",
+              "program/charts/heatmap.toml",
+              "program/charts/pie.toml",
+              "program/reports/markdown/en/day.toml",
+              "program/reports/markdown/en/month.toml",
+              "program/reports/markdown/en/period.toml",
+              "program/reports/markdown/en/week.toml",
+              "program/reports/markdown/en/year.toml",
             ]
             """.trimIndent()
         )
@@ -102,13 +103,14 @@ class RuntimeConfigBundleValidatorTest {
 
     private fun writeRequiredFiles(configRoot: File) {
         val requiredFiles = listOf(
-            "config.toml",
-            "activity_hierarchy/_system.toml",
-            "reports/markdown/en/day.toml",
-            "reports/markdown/en/month.toml",
-            "reports/markdown/en/period.toml",
-            "reports/markdown/en/week.toml",
-            "reports/markdown/en/year.toml"
+            "program/config.toml",
+            "program/charts/heatmap.toml",
+            "program/charts/pie.toml",
+            "program/reports/markdown/en/day.toml",
+            "program/reports/markdown/en/month.toml",
+            "program/reports/markdown/en/period.toml",
+            "program/reports/markdown/en/week.toml",
+            "program/reports/markdown/en/year.toml"
         )
         for (relativePath in requiredFiles) {
             val file = File(configRoot, relativePath)

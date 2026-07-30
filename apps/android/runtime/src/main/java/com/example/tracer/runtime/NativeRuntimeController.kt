@@ -56,15 +56,17 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         nativeTxt = runtimeBridge::nativeConfig,
         codec = txtRuntimeCodec
     )
-    private val aliasMoveMigrationService = RuntimeAliasMoveMigrationService(
+    private val activityHierarchyMigrationService = RuntimeActivityHierarchyMigrationService(
         ensureRuntimePaths = runtimeSession::ensureRuntimePaths,
         ensureTextStorage = runtimeSession::ensureTextStorage,
         ensureConfigTomlStorage = runtimeSession::ensureConfigTomlStorage,
         nativeInit = runtimeBridge::nativeInit,
+        nativeInitPipeline = runtimeBridge::nativeInitPipeline,
         nativeShutdown = runtimeBridge::nativeShutdown,
         nativeIngest = runtimeBridge::nativeIngest,
         nativeTxt = runtimeBridge::nativeConfig,
-        responseCodec = responseCodec
+        responseCodec = responseCodec,
+        txtCodec = txtRuntimeCodec
     )
     private val aliasHierarchyService = RuntimeActivityHierarchyService(
         initializeRuntimeInternal = coreAdapter::initializeRuntimeInternal,
@@ -104,7 +106,7 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
 
     private val initService = RuntimeInitService(
         initializeRuntimeInternal = coreAdapter::initializeRuntimeInternal,
-        clearRuntimeData = runtimeEnvironment::clearRuntimeData,
+        clearAllData = runtimeEnvironment::clearAllData,
         clearDatabaseData = runtimeEnvironment::clearDatabaseData,
         resetRuntimeCaches = runtimeSession::reset,
         executeAfterInit = coreAdapter::executeAfterInit,
@@ -158,6 +160,7 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         ensureRuntimePaths = runtimeSession::ensureRuntimePaths,
         resetRuntimeCaches = runtimeSession::reset,
         nativeInit = runtimeBridge::nativeInit,
+        nativeInitPipeline = runtimeBridge::nativeInitPipeline,
         nativeShutdown = runtimeBridge::nativeShutdown,
         nativeValidateStructure = runtimeBridge::nativeValidateStructure,
         nativeValidateLogic = runtimeBridge::nativeValidateLogic,
@@ -299,9 +302,9 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     override suspend fun clearTxt(): ClearTxtResult =
         recordService.clearTxt()
 
-    override suspend fun applyAliasEntryMoveMigration(
-        request: AliasEntryMoveMigrationRequest
-    ): AliasEntryMoveMigrationResult = aliasMoveMigrationService.apply(request)
+    override suspend fun applyActivityHierarchyMigration(
+        request: ActivityHierarchyMigrationRequest
+    ): ActivityHierarchyMigrationResult = activityHierarchyMigrationService.apply(request)
 
     override suspend fun applyActivityHierarchyOperation(
         tomlContent: String,

@@ -47,6 +47,7 @@ set(TIME_TRACKER_ANDROID_BRIDGE_SOURCES
     "${TRACER_CORE_C_API_DIR}/capabilities/config/activity_hierarchy_operation_bridge.cpp"
     "${TRACER_CORE_C_API_DIR}/capabilities/config/tracer_core_c_api_runtime_config.cpp"
     "${TRACER_CORE_C_API_DIR}/capabilities/pipeline/tracer_core_c_api_pipeline.cpp"
+    "${TRACER_CORE_C_API_DIR}/capabilities/pipeline/tracer_core_c_api_pipeline_runtime.cpp"
     "${TRACER_CORE_C_API_DIR}/capabilities/txt/tracer_core_c_api_txt.cpp"
     "${TRACER_CORE_C_API_DIR}/capabilities/query/tracer_core_c_api_query.cpp"
     "${TRACER_CORE_C_API_DIR}/capabilities/reporting/tracer_core_c_api_reporting.cpp"

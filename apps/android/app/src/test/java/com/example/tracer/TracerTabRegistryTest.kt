@@ -297,15 +297,15 @@ class TracerTabRegistryTest {
 
         viewModel.clearDataAndReinitialize(
             DestructiveActionStatusText(
-                running = "Clearing all data...",
-                success = "All data cleared.",
-                failure = "Could not clear all data."
+                running = "Clearing activity data...",
+                success = "Activity data cleared.",
+                failure = "Could not clear activity data."
             )
         )
         advanceUntilIdle()
 
         assertTrue(viewModel.uiState.initialized)
-        assertEquals("All data cleared.", viewModel.uiState.statusText)
+        assertEquals("Activity data cleared.", viewModel.uiState.statusText)
     }
 
     @Test
@@ -323,14 +323,14 @@ class TracerTabRegistryTest {
 
         viewModel.clearDataAndReinitialize(
             DestructiveActionStatusText(
-                running = "Clearing all data...",
-                success = "All data cleared.",
-                failure = "Could not clear all data."
+                running = "Clearing activity data...",
+                success = "Activity data cleared.",
+                failure = "Could not clear activity data."
             )
         )
         advanceUntilIdle()
 
-        assertEquals("Could not clear all data.", viewModel.uiState.statusText)
+        assertEquals("Could not clear activity data.", viewModel.uiState.statusText)
     }
 
     @Test

@@ -12,7 +12,7 @@ class ConfigTomlStorageTest {
     fun readTomlFile_canonicalizesLegacyUtf8Text() {
         val root = Files.createTempDirectory("config-toml-storage").toFile()
         try {
-            val target = File(root, "meta/bundle.toml")
+            val target = File(root, "program/meta/bundle.toml")
             target.parentFile?.mkdirs()
             target.writeBytes(
                 byteArrayOf(
@@ -42,7 +42,7 @@ class ConfigTomlStorageTest {
                 )
             )
 
-            val result = ConfigTomlStorage(root.absolutePath).readTomlFile("meta/bundle.toml")
+            val result = ConfigTomlStorage(root.absolutePath).readTomlFile("program/meta/bundle.toml")
 
             assertTrue(result.ok)
             assertEquals("schema_version = 1\n", result.content)
@@ -52,15 +52,15 @@ class ConfigTomlStorageTest {
     }
 
     @Test
-    fun writeTomlFile_rewritesContentAsCanonicalUtf8() {
+    fun writeTomlFile_rewritesMutableHierarchyContentAsCanonicalUtf8() {
         val root = Files.createTempDirectory("config-toml-storage-write").toFile()
         try {
-            val target = File(root, "meta/bundle.toml")
+            val target = File(root, "user/activity_hierarchy/custom.toml")
             target.parentFile?.mkdirs()
             target.writeText("seed")
 
             val result = ConfigTomlStorage(root.absolutePath).writeTomlFile(
-                relativePath = "meta/bundle.toml",
+                relativePath = "user/activity_hierarchy/custom.toml",
                 content = "\uFEFFprofile = \"android\"\r\n"
             )
 
@@ -75,10 +75,10 @@ class ConfigTomlStorageTest {
     fun writeTomlFile_createsMissingTomlFileUnderConfigRoot() {
         val root = Files.createTempDirectory("config-toml-storage-create").toFile()
         try {
-            val target = File(root, "activity_hierarchy/custom.toml")
+            val target = File(root, "user/activity_hierarchy/custom.toml")
 
             val result = ConfigTomlStorage(root.absolutePath).writeTomlFile(
-                relativePath = "activity_hierarchy/custom.toml",
+                relativePath = "user/activity_hierarchy/custom.toml",
                 content = "name = \"custom\"\r\n"
             )
 
@@ -90,14 +90,57 @@ class ConfigTomlStorageTest {
     }
 
     @Test
+    fun writeTomlFile_rejectsProgramResourcePaths() {
+        val root = Files.createTempDirectory("config-toml-storage-program-read-only").toFile()
+        try {
+            val target = File(root, "program/charts/heatmap.toml").apply {
+                parentFile?.mkdirs()
+                writeText("seed")
+            }
+
+            val result = ConfigTomlStorage(root.absolutePath).writeTomlFile(
+                relativePath = "program/charts/heatmap.toml",
+                content = "changed = true"
+            )
+
+            assertFalse(result.ok)
+            assertTrue(result.message.contains("read-only"))
+            assertEquals("seed", target.readText())
+        } finally {
+            root.deleteRecursively()
+        }
+    }
+
+    @Test
+    fun deleteTomlFile_rejectsProgramResourcePaths() {
+        val root = Files.createTempDirectory("config-toml-storage-program-delete").toFile()
+        try {
+            val target = File(root, "program/reports/markdown/en/day.toml").apply {
+                parentFile?.mkdirs()
+                writeText("seed")
+            }
+
+            val result = ConfigTomlStorage(root.absolutePath).deleteTomlFile(
+                relativePath = "program/reports/markdown/en/day.toml"
+            )
+
+            assertFalse(result.ok)
+            assertTrue(result.message.contains("read-only"))
+            assertTrue(target.exists())
+        } finally {
+            root.deleteRecursively()
+        }
+    }
+
+    @Test
     fun readTomlFile_invalidUtf8ReturnsFailure() {
         val root = Files.createTempDirectory("config-toml-storage-invalid").toFile()
         try {
-            val target = File(root, "meta/bundle.toml")
+            val target = File(root, "program/meta/bundle.toml")
             target.parentFile?.mkdirs()
             target.writeBytes(byteArrayOf(0xFF.toByte()))
 
-            val result = ConfigTomlStorage(root.absolutePath).readTomlFile("meta/bundle.toml")
+            val result = ConfigTomlStorage(root.absolutePath).readTomlFile("program/meta/bundle.toml")
 
             assertFalse(result.ok)
             assertTrue(result.message.contains("Invalid UTF-8"))
@@ -110,25 +153,39 @@ class ConfigTomlStorageTest {
     fun listTomlFiles_separates_alias_chart_and_report_categories() {
         val root = Files.createTempDirectory("config-toml-storage-list").toFile()
         try {
-            File(root, "config.toml").writeText("root = true\n")
-            File(root, "meta/bundle.toml").apply {
+            File(root, "program/config.toml").apply {
+                parentFile?.mkdirs()
+                writeText("root = true\n")
+            }
+            File(root, "program/meta/bundle.toml").apply {
                 parentFile?.mkdirs()
                 writeText("meta = true\n")
             }
-            File(root, "activity_hierarchy/_system.toml").apply {
+            File(root, "user/activity_hierarchy/custom.toml").apply {
                 parentFile?.mkdirs()
                 writeText("alias = true\n")
             }
-            File(root, "activity_hierarchy/study.toml").apply {
+            File(root, "user/activity_hierarchy/study.toml").apply {
                 parentFile?.mkdirs()
                 writeText("legacy_alias = true\n")
             }
-            File(root, "break.toml").writeText("legacy_alias = true\n")
-            File(root, "charts/heatmap.toml").apply {
+            File(root, "user/behavior.toml").apply {
+                parentFile?.mkdirs()
+                writeText("behavior = true\n")
+            }
+            File(root, "user/charts.toml").apply {
+                parentFile?.mkdirs()
+                writeText("charts = true\n")
+            }
+            File(root, "user/heatmap.toml").apply {
+                parentFile?.mkdirs()
+                writeText("thresholds = true\n")
+            }
+            File(root, "program/charts/heatmap.toml").apply {
                 parentFile?.mkdirs()
                 writeText("chart = true\n")
             }
-            File(root, "reports/markdown/en/day.toml").apply {
+            File(root, "program/reports/markdown/en/day.toml").apply {
                 parentFile?.mkdirs()
                 writeText("report = true\n")
             }
@@ -139,11 +196,36 @@ class ConfigTomlStorageTest {
             assertEquals(
                 listOf(
                     ConfigTomlFileEntry(
-                        relativePath = "activity_hierarchy/_system.toml",
-                        displayName = "_system.toml"
+                        relativePath = "user/activity_hierarchy/custom.toml",
+                        displayName = "user/activity_hierarchy/custom.toml"
                     ),
                     ConfigTomlFileEntry(
-                        relativePath = "activity_hierarchy/study.toml",
+                        relativePath = "user/activity_hierarchy/study.toml",
+                        displayName = "user/activity_hierarchy/study.toml"
+                    ),
+                    ConfigTomlFileEntry(
+                        relativePath = "user/behavior.toml",
+                        displayName = "user/behavior.toml"
+                    ),
+                    ConfigTomlFileEntry(
+                        relativePath = "user/charts.toml",
+                        displayName = "user/charts.toml"
+                    ),
+                    ConfigTomlFileEntry(
+                        relativePath = "user/heatmap.toml",
+                        displayName = "user/heatmap.toml"
+                    )
+                ),
+                result.userFiles
+            )
+            assertEquals(
+                listOf(
+                    ConfigTomlFileEntry(
+                        relativePath = "user/activity_hierarchy/custom.toml",
+                        displayName = "custom.toml"
+                    ),
+                    ConfigTomlFileEntry(
+                        relativePath = "user/activity_hierarchy/study.toml",
                         displayName = "study.toml"
                     )
                 ),
@@ -152,7 +234,7 @@ class ConfigTomlStorageTest {
             assertEquals(
                 listOf(
                     ConfigTomlFileEntry(
-                        relativePath = "charts/heatmap.toml",
+                        relativePath = "program/charts/heatmap.toml",
                         displayName = "heatmap.toml"
                     )
                 ),
@@ -161,12 +243,12 @@ class ConfigTomlStorageTest {
             assertEquals(
                 listOf(
                     ConfigTomlFileEntry(
-                        relativePath = "config.toml",
-                        displayName = "config.toml"
+                        relativePath = "program/config.toml",
+                        displayName = "program/config.toml"
                     ),
                     ConfigTomlFileEntry(
-                        relativePath = "meta/bundle.toml",
-                        displayName = "meta/bundle.toml"
+                        relativePath = "program/meta/bundle.toml",
+                        displayName = "program/meta/bundle.toml"
                     )
                 ),
                 result.metaFiles
@@ -174,7 +256,7 @@ class ConfigTomlStorageTest {
             assertEquals(
                 listOf(
                     ConfigTomlFileEntry(
-                        relativePath = "reports/markdown/en/day.toml",
+                        relativePath = "program/reports/markdown/en/day.toml",
                         displayName = "markdown/en/day.toml"
                     )
                 ),

@@ -5,7 +5,7 @@ import kotlinx.coroutines.withContext
 
 internal class RuntimeInitService(
     private val initializeRuntimeInternal: () -> NativeCallResult,
-    private val clearRuntimeData: () -> String,
+    private val clearAllData: () -> String,
     private val clearDatabaseData: () -> ClearDatabaseResult,
     private val resetRuntimeCaches: () -> Unit,
     private val executeAfterInit: (
@@ -35,7 +35,7 @@ internal class RuntimeInitService(
 
     suspend fun clearAndReinitialize(): ClearAndInitResult = withContext(Dispatchers.IO) {
         try {
-            val clearMessage = clearRuntimeData()
+            val clearMessage = clearAllData()
             resetRuntimeCaches()
             val initResult = initializeRuntimeInternal()
             ClearAndInitResult(

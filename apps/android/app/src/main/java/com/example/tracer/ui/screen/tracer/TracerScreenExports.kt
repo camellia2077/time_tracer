@@ -162,8 +162,6 @@ internal fun rememberTracerExportActions(
     val onExportAllMonthsTracer: () -> Unit = {
         if (isTracerExportInProgress) {
             recordViewModel.setStatusText(context.getString(R.string.tracer_export_already_in_progress))
-        } else if (recordUiState.availableMonths.isEmpty()) {
-            recordViewModel.setStatusText(context.getString(R.string.tracer_export_all_failed_no_months))
         } else {
             isTracerExportInProgress = true
             recordViewModel.setStatusText(context.getString(R.string.tracer_export_select_tracer_destination))

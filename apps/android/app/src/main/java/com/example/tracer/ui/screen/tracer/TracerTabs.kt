@@ -157,7 +157,10 @@ internal object TracerTabRegistry {
                     modifier = modifier,
                     onImportDataFolder = args.onImportDataFolder,
                     onImportSingleTracer = args.onImportSingleTracer,
-                    canExportAllMonthsTracer = args.recordUiState.availableMonths.isNotEmpty(),
+                    // Export performs its own authoritative TXT inspection when started.
+                    // Do not gate it on RecordViewModel's lazy TXT-tab cache: entering the
+                    // TXT tab should not be required before exporting from the Data tab.
+                    canExportAllMonthsTracer = true,
                     canExportCurrentTxtTracer = true,
                     onExportAllMonthsTracer = args.onExportAllMonthsTracer,
                     onExportCurrentTxtTracer = args.onExportCurrentTxtTracer,
@@ -356,7 +359,6 @@ internal object TracerTabRegistry {
                     aliasEntryMovePlan = args.configUiState.aliasEntryMovePlan,
                     aliasEntryMoveDestinations = args.configUiState.aliasEntryMoveDestinations,
                     aliasEntryMoveDestinationsLoading = args.configUiState.aliasEntryMoveDestinationsLoading,
-                    aliasParentOptions = args.configUiState.aliasParentOptions,
                     aliasAdvancedTomlDraft = args.configUiState.aliasAdvancedTomlDraft,
                     aliasEditorErrorMessage = args.configUiState.aliasEditorErrorMessage,
                     autoSaveStatus = args.configUiState.autoSaveStatus,
@@ -369,6 +371,7 @@ internal object TracerTabRegistry {
                     onOpenFile = args.configViewModel::openFile,
                     onCreateAliasTomlFile = args.configViewModel::createAliasTomlFile,
                     onDeleteAliasTomlFile = args.configViewModel::deleteCurrentAliasTomlFile,
+                    onRenameAliasCategory = args.configViewModel::renameAliasCategory,
                     onCopyDiagnosticsPayload = args.onCopyDiagnosticsPayload,
                     onEditableContentChange = args.configViewModel::onEditableContentChange,
                     onSelectAliasStructuredMode = {
@@ -377,7 +380,6 @@ internal object TracerTabRegistry {
                     onSelectAliasAdvancedMode = {
                         args.configViewModel.selectAliasEditorMode(AliasEditorMode.ADVANCED)
                     },
-                    onAliasParentChange = args.configViewModel::updateAliasParent,
                     onAliasAdvancedTomlChange = args.configViewModel::onAliasAdvancedTomlChange,
                     onAddAliasGroup = args.configViewModel::addAliasGroup,
                     onDeleteAliasGroup = args.configViewModel::deleteAliasGroup,

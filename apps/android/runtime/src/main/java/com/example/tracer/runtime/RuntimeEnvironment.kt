@@ -7,16 +7,9 @@ internal const val DATA_FOLDER_SNAPSHOT_MARKER = ".data_folder_snapshot"
 
 internal class RuntimeEnvironment(private val context: Context) {
     private companion object {
-        const val RUNTIME_ROOT_DIR_NAME = "tracer_core"
-        const val LEGACY_RUNTIME_ROOT_DIR_NAME = "time_tracer"
-        const val RUNTIME_ASSET_ROOT = "tracer_core"
+        const val RUNTIME_ASSET_ROOT = "config"
     }
 
-    private val rootResolver = RuntimeRootDirectoryResolver(
-        filesDir = context.filesDir,
-        runtimeRootDirName = RUNTIME_ROOT_DIR_NAME,
-        legacyRuntimeRootDirName = LEGACY_RUNTIME_ROOT_DIR_NAME
-    )
     private val assetBootstrapper = RuntimeAssetBootstrapper(
         assetManager = context.assets,
         runtimeAssetRoot = RUNTIME_ASSET_ROOT
@@ -28,12 +21,25 @@ internal class RuntimeEnvironment(private val context: Context) {
     fun lastConfigBundleStatus(): RuntimeConfigBundleStatus = lastConfigBundleStatus
 
     fun prepareRuntimePaths(): RuntimePaths {
-        val rootDir = rootResolver.resolveRuntimeRootDir()
-        if (!File(rootDir, DATA_FOLDER_SNAPSHOT_MARKER).isFile) {
+        val rootDir = context.filesDir
+        // Program config is an APK-owned runtime resource, not exchange data.
+        // Re-bootstrap when a data-folder replacement or an older installation
+        // left the marker behind but the immutable program bundle is missing.
+        val programBundleFile = File(rootDir, "config/program/meta/bundle.toml")
+        if (!File(rootDir, DATA_FOLDER_SNAPSHOT_MARKER).isFile ||
+            !programBundleFile.isFile
+        ) {
             assetBootstrapper.bootstrap(rootDir)
         }
 
         val configRootDir = File(rootDir, "config")
+        val programRootDir = File(configRootDir, "program")
+        val userRootDir = File(configRootDir, "user")
+        userRootDir.mkdirs()
+        // The hierarchy is mutable user configuration. Keep the canonical
+        // directory present even when an older data snapshot or a minimal
+        // installation has not supplied any hierarchy documents yet.
+        File(userRootDir, "activity_hierarchy").mkdirs()
         val configBundleStatus = validateRuntimeConfigBundle(configRootDir)
         lastConfigBundleStatus = configBundleStatus
         if (!configBundleStatus.ok) {
@@ -48,16 +54,19 @@ internal class RuntimeEnvironment(private val context: Context) {
             outputRoot.mkdirs()
         }
 
-        val configToml = File(configRootDir, "activity_hierarchy/_system.toml")
+        val configToml = File(userRootDir, "behavior.toml")
         if (!configToml.exists()) {
-            throw IllegalStateException("Missing config TOML: ${configToml.absolutePath}")
+            throw IllegalStateException(
+                "Missing mutable user behavior TOML: ${configToml.absolutePath}. " +
+                    "Populate the private config/user directory before runtime initialization."
+            )
         }
 
         val inputRoot = File(rootDir, "input")
         if (!inputRoot.exists()) {
             inputRoot.mkdirs()
         }
-        val cacheRoot = File(rootDir, "cache")
+        val cacheRoot = File(outputRoot, "cache")
         if (!cacheRoot.exists()) {
             cacheRoot.mkdirs()
         }
@@ -72,16 +81,21 @@ internal class RuntimeEnvironment(private val context: Context) {
         )
     }
 
-    fun clearRuntimeData(): String {
-        return rootResolver.clearRuntimeData()
+    fun clearAllData(): String {
+        val roots = listOf(context.filesDir)
+        val editableMessage = RuntimeDataCleanupTargets.clearEditableData(roots)
+        val databaseResult = RuntimeDataCleanupTargets.clearDatabaseData(roots)
+        if (!databaseResult.ok) {
+            throw IllegalStateException(databaseResult.message)
+        }
+        return "$editableMessage; ${databaseResult.message}"
     }
 
     fun clearDatabaseData(): ClearDatabaseResult {
-        return RuntimeDataCleanupTargets.clearDatabaseData(rootResolver.candidateRuntimeRoots())
+        return RuntimeDataCleanupTargets.clearDatabaseData(listOf(context.filesDir))
     }
 
     fun clearTxtData(): ClearTxtResult {
-        rootResolver.resolveRuntimeRootDir()
-        return RuntimeDataCleanupTargets.clearTxtData(rootResolver.candidateRuntimeRoots())
+        return RuntimeDataCleanupTargets.clearTxtData(listOf(context.filesDir))
     }
 }

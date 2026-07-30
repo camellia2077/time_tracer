@@ -155,7 +155,7 @@ internal fun findConfigFileEntry(
 
 internal fun isAliasConfigFilePath(path: String): Boolean =
     // `_system.toml` is an alias system config, not a structured alias file.
-    path.startsWith("activity_hierarchy/") &&
+    path.startsWith("user/activity_hierarchy/") &&
         !path.endsWith("/_system.toml", ignoreCase = true) &&
         path.endsWith(".toml", ignoreCase = true)
 
@@ -176,7 +176,7 @@ internal fun newAliasTomlPath(
     } else {
         "$requestedName.toml"
     }
-    return "activity_hierarchy/$normalizedFileName"
+    return "user/activity_hierarchy/$normalizedFileName"
 }
 
 internal fun newActivityHierarchyToml(parent: String): String {

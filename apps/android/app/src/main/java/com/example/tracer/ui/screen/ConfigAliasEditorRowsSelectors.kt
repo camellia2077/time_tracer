@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 internal fun AliasPathBar(
+    rootLabel: String,
     breadcrumbs: List<AliasBreadcrumbSegment>,
     onNavigateToBreadcrumb: (String?) -> Unit
 ) {
@@ -60,7 +61,7 @@ internal fun AliasPathBar(
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp)
             ) {
                 Text(
-                    text = stringResource(R.string.config_alias_path_root),
+                    text = rootLabel,
                     style = MaterialTheme.typography.labelLarge
                 )
             }

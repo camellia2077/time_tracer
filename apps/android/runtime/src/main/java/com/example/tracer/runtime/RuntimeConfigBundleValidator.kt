@@ -33,7 +33,7 @@ internal fun validateRuntimeConfigBundle(
     expectedProfile: String = "android",
     nowMs: Long = System.currentTimeMillis()
 ): RuntimeConfigBundleStatus {
-    val bundleFile = File(configRoot, "meta/bundle.toml")
+    val bundleFile = File(configRoot, "program/meta/bundle.toml")
     if (!bundleFile.exists() || !bundleFile.isFile) {
         return RuntimeConfigBundleStatus(
             ok = false,

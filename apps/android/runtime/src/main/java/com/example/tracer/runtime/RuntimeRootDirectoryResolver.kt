@@ -19,25 +19,6 @@ internal class RuntimeRootDirectoryResolver(
         return runtimeRootDir
     }
 
-    fun clearRuntimeData(): String {
-        val existingRoots = candidateRuntimeRoots().filter { it.exists() }
-        if (existingRoots.isEmpty()) {
-            return "clear -> no runtime data to remove"
-        }
-
-        val failedRoots = mutableListOf<String>()
-        for (root in existingRoots) {
-            if (!root.deleteRecursively()) {
-                failedRoots += root.absolutePath
-            }
-        }
-        return if (failedRoots.isEmpty()) {
-            "clear -> removed ${existingRoots.joinToString { it.absolutePath }}"
-        } else {
-            "clear -> failed to remove ${failedRoots.joinToString()}"
-        }
-    }
-
     private fun migrateLegacyRuntimeRootIfNeeded(runtimeRootDir: File) {
         if (runtimeRootDir.exists()) {
             return

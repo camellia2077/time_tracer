@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import android.util.Log
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.time.Clock
 import java.time.ZonedDateTime
@@ -127,6 +128,7 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
         logicalDayZoneId = recordUseCases.logicalDayClock.zone
     )
     private var txtPreviewRequestVersion: Long = 0L
+    private var canonicalCatalogLoadJob: Job? = null
     private var hasAppliedInitialPersistedRecordInput: Boolean = false
 
     val hasAppliedInitialPersistedRecordInputForUi: Boolean
@@ -378,17 +380,22 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
     }
 
     private fun openCanonicalCatalog(target: CanonicalBrowserTarget) {
+        canonicalCatalogLoadJob?.cancel()
         uiState = intentHandler.showCanonicalCatalogLoading(uiState, target)
-        viewModelScope.launch {
+        canonicalCatalogLoadJob = viewModelScope.launch {
             uiState = intentHandler.loadCanonicalCatalog(uiState)
         }
     }
 
     fun dismissCanonicalCatalog() {
+        canonicalCatalogLoadJob?.cancel()
+        canonicalCatalogLoadJob = null
         uiState = intentHandler.hideCanonicalCatalog(uiState)
     }
 
     fun applyCanonicalCatalogEntry(token: String) {
+        canonicalCatalogLoadJob?.cancel()
+        canonicalCatalogLoadJob = null
         uiState = intentHandler.applyCanonicalCatalogEntry(uiState, token)
         persistRecordInputState()
     }

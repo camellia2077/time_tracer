@@ -5,31 +5,24 @@ import org.junit.Test
 
 class TracerScreenExportTracerTest {
     @Test
-    fun buildConfigTomlExportEntries_normalizesAndDeduplicatesAliasFiles() {
+    fun buildConfigTomlExportEntries_exportsAllUserConfigFiles() {
         val result = buildConfigTomlExportEntries(
             listOf(
-                "break.toml",
-                "activity_hierarchy/break.toml",
-                "activity_hierarchy/study.toml",
-                "activity_hierarchy/study.toml",
-                "charts/heatmap.toml",
-                "meta/bundle.toml",
-                "reports/markdown/en/day.toml",
-                "config.toml"
+                "user/behavior.toml",
+                "user/activity_hierarchy/study.toml",
+                "user/charts.toml",
+                "user/heatmap.toml",
+                "user/heatmap.toml",
+                "program/charts/heatmap.toml"
             )
         )
 
         assertEquals(
             listOf(
-                ConfigTomlExportEntry("activity_hierarchy/break.toml", "activity_hierarchy/break.toml"),
-                ConfigTomlExportEntry("activity_hierarchy/study.toml", "activity_hierarchy/study.toml"),
-                ConfigTomlExportEntry("charts/heatmap.toml", "charts/heatmap.toml"),
-                ConfigTomlExportEntry("config.toml", "config.toml"),
-                ConfigTomlExportEntry("meta/bundle.toml", "meta/bundle.toml"),
-                ConfigTomlExportEntry(
-                    "reports/markdown/en/day.toml",
-                    "reports/markdown/en/day.toml"
-                )
+                ConfigTomlExportEntry("user/activity_hierarchy/study.toml", "user/activity_hierarchy/study.toml"),
+                ConfigTomlExportEntry("user/behavior.toml", "user/behavior.toml"),
+                ConfigTomlExportEntry("user/charts.toml", "user/charts.toml"),
+                ConfigTomlExportEntry("user/heatmap.toml", "user/heatmap.toml")
             ),
             result
         )

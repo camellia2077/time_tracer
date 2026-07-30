@@ -54,6 +54,12 @@ object NativeBridge {
         converterConfigTomlPath: String
     ): String
 
+    external fun nativeInitPipeline(
+        dbPath: String,
+        outputRoot: String,
+        converterConfigTomlPath: String
+    ): String
+
     external fun nativeShutdown(): String
 
     external fun nativeIngest(

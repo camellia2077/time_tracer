@@ -17,19 +17,13 @@ internal data class ConfigTomlExportEntry(
     val exportPath: String
 )
 
-/** ConfigTomlStorage returns canonical paths under the flattened config layout. */
+/** ConfigTomlStorage returns canonical paths under config/user. */
 internal fun buildConfigTomlExportEntries(relativePaths: Iterable<String>): List<ConfigTomlExportEntry> {
     return relativePaths
         .map { it.replace('\\', '/').trim('/') }
         .filter { it.isNotBlank() }
         .mapNotNull { sourcePath ->
-            if (
-                sourcePath == "config.toml" ||
-                sourcePath.startsWith("activity_hierarchy/") ||
-                sourcePath.startsWith("charts/") ||
-                sourcePath.startsWith("meta/") ||
-                sourcePath.startsWith("reports/")
-            ) {
+            if (sourcePath.startsWith("user/") && sourcePath.endsWith(".toml")) {
                 ConfigTomlExportEntry(sourcePath = sourcePath, exportPath = sourcePath)
             } else {
                 null
@@ -37,13 +31,7 @@ internal fun buildConfigTomlExportEntries(relativePaths: Iterable<String>): List
         }
         .groupBy { it.exportPath }
         .values
-        .map { entries ->
-            entries.sortedWith(
-                compareBy<ConfigTomlExportEntry> {
-                    !it.sourcePath.startsWith("activity_hierarchy/")
-                }.thenBy { it.sourcePath }
-            ).first()
-        }
+        .map { entries -> entries.minBy { it.sourcePath } }
         .sortedBy { it.exportPath }
 }
 
@@ -101,6 +89,11 @@ internal suspend fun exportAllMonthsTracerToTree(
         )
         val validItems = exportItems.items.filterNotNull()
         if (validItems.isEmpty()) {
+            val errors = if (exportItems.errors.isEmpty()) {
+                listOf(context.getString(R.string.tracer_export_all_failed_no_months))
+            } else {
+                exportItems.errors
+            }
             progressStatusText = failedText
             return@runCatching buildTracerExchangeExportSummary(
                 context = context,
@@ -108,7 +101,7 @@ internal suspend fun exportAllMonthsTracerToTree(
                 totalTxtCount = exportItems.totalCount,
                 converterFileCount = 0,
                 manifestFileCount = 0,
-                errors = exportItems.errors
+                errors = errors
             )
         }
 
@@ -279,12 +272,7 @@ internal suspend fun exportCurrentTxtZipToTree(
             )
         }
         val configPaths = buildConfigTomlExportEntries(
-            (
-                configListResult.aliasFiles +
-                configListResult.chartFiles +
-                configListResult.metaFiles +
-                configListResult.reportFiles
-            ).map { it.relativePath }
+            configListResult.userFiles.map { it.relativePath }
         )
 
         if (txtPaths.isEmpty() && configPaths.isEmpty()) {

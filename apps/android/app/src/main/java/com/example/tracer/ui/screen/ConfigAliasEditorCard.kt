@@ -1,6 +1,7 @@
 package com.example.tracer
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,7 +13,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -38,6 +42,7 @@ import kotlinx.coroutines.delay
 
 @Composable
 internal fun ConfigAliasEditorCard(
+    aliasFiles: List<ConfigTomlFileEntry>,
     selectedFileDisplayName: String,
     selectedFileContent: String,
     mode: AliasEditorMode,
@@ -45,14 +50,14 @@ internal fun ConfigAliasEditorCard(
     movePlan: AliasEntryMovePlan?,
     moveDestinations: List<AliasEntryMoveDestinationDocument>,
     moveDestinationsLoading: Boolean,
-    parentOptions: List<String>,
     advancedTomlDraft: String,
     errorMessage: String,
     onCreateAliasTomlFile: (String) -> Unit,
+    onSelectAliasFile: (String) -> Unit,
     onDeleteAliasTomlFile: () -> Unit,
+    onRenameCategory: (String) -> Unit,
     onSelectStructuredMode: () -> Unit,
     onSelectAdvancedMode: () -> Unit,
-    onParentChange: (String) -> Unit,
     onAdvancedTomlChange: (String) -> Unit,
     onAddGroup: (parentGroupId: String?, name: String) -> Unit,
     onDeleteGroup: (groupId: String) -> Unit,
@@ -74,6 +79,11 @@ internal fun ConfigAliasEditorCard(
 ) {
     var dialogState by remember { mutableStateOf<AliasEditorDialogState?>(null) }
     var showDeleteAliasTomlDialog by remember { mutableStateOf(false) }
+    var showRenameCategoryDialog by remember { mutableStateOf(false) }
+    var showAliasFileMenu by remember { mutableStateOf(false) }
+    val categoryName = document?.parent
+        ?.takeIf { it.isNotBlank() }
+        ?: selectedFileDisplayName.removeSuffix(".toml")
     var currentPathGroupIds by remember(selectedFileDisplayName) {
         mutableStateOf(emptyList<String>())
     }
@@ -94,23 +104,59 @@ internal fun ConfigAliasEditorCard(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(
-                text = stringResource(R.string.config_title_editor_file, selectedFileDisplayName),
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            if (mode == AliasEditorMode.STRUCTURED && document != null) {
-                AliasParentSelector(
-                    parent = document.parent,
-                    parentOptions = parentOptions,
-                    onParentChange = onParentChange
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.config_title_editor_categories),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1
                 )
+                Text(
+                    text = categoryName,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = 1
+                )
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    OutlinedButton(
+                        onClick = { showAliasFileMenu = true },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = selectedFileDisplayName,
+                            maxLines = 1
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = showAliasFileMenu,
+                        onDismissRequest = { showAliasFileMenu = false }
+                    ) {
+                        aliasFiles.forEach { entry ->
+                            DropdownMenuItem(
+                                text = { Text(entry.displayName) },
+                                onClick = {
+                                    showAliasFileMenu = false
+                                    onSelectAliasFile(entry.relativePath)
+                                }
+                            )
+                        }
+                    }
+                }
             }
 
             ConfigEditorFileControls(
                 onCreateAliasTomlFile = onCreateAliasTomlFile
             )
+
+            Button(
+                onClick = { showRenameCategoryDialog = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(stringResource(R.string.config_alias_action_rename_category))
+            }
 
             OutlinedButton(
                 onClick = { showDeleteAliasTomlDialog = true },
@@ -223,7 +269,7 @@ internal fun ConfigAliasEditorCard(
 
                 AliasEditorMode.ADVANCED -> {
                     Text(
-                        text = stringResource(R.string.config_label_toml_content),
+                        text = stringResource(R.string.config_label_advanced_content),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -441,6 +487,18 @@ internal fun ConfigAliasEditorCard(
             }
         )
     }
+
+    if (showRenameCategoryDialog) {
+        AliasGroupNameDialog(
+            title = stringResource(R.string.config_alias_dialog_rename_category_title),
+            initialName = selectedFileDisplayName.removeSuffix(".toml"),
+            onDismiss = { showRenameCategoryDialog = false },
+            onConfirm = { name ->
+                showRenameCategoryDialog = false
+                onRenameCategory(name)
+            }
+        )
+    }
 }
 
 private const val CONFIG_ALIAS_EDITOR_AUTO_SAVE_DELAY_MS = 600L
@@ -472,11 +530,11 @@ private fun AliasEntryMovePlanPreview(
                     Text(
                         text = stringResource(
                             R.string.config_alias_move_plan_location,
-                            plan.sourceFilePath.removePrefix("activity_hierarchy/"),
+                            plan.sourceFilePath.removePrefix("user/activity_hierarchy/"),
                             plan.sourceGroupPath.joinToString(" / ").ifBlank {
                                 stringResource(R.string.config_alias_move_target_root)
                             },
-                            plan.destinationFilePath.removePrefix("activity_hierarchy/"),
+                            plan.destinationFilePath.removePrefix("user/activity_hierarchy/"),
                             plan.destinationGroupPath.joinToString(" / ").ifBlank {
                                 stringResource(R.string.config_alias_move_target_root)
                             }
@@ -516,6 +574,9 @@ private fun AliasStructuredEditorContent(
     onRequestEditEntry: (AliasTomlEntry) -> Unit
 ) {
     AliasPathBar(
+        rootLabel = document.parent.ifBlank {
+            stringResource(R.string.config_alias_path_root)
+        },
         breadcrumbs = layer.breadcrumbs,
         onNavigateToBreadcrumb = onNavigateToBreadcrumb
     )

@@ -1,8 +1,6 @@
 package com.example.tracer
 
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.StandardCopyOption
 import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
@@ -14,96 +12,111 @@ import org.json.JSONObject
 // The source files are deliberately changed before candidate ingestion: core
 // validates exactly the config/TXT pair that will become active. The old DB is
 // never touched until that candidate database has been built successfully.
-internal class RuntimeAliasMoveMigrationService(
+internal class RuntimeActivityHierarchyMigrationService(
     private val ensureRuntimePaths: () -> RuntimePaths,
     private val ensureTextStorage: () -> TextStorage,
     private val ensureConfigTomlStorage: () -> ConfigTomlStorage,
     private val nativeInit: (RuntimePaths) -> String,
+    private val nativeInitPipeline: (RuntimePaths) -> String,
     private val nativeShutdown: () -> String,
     private val nativeIngest: (String, Int, Boolean) -> String,
     private val nativeTxt: (String) -> String,
-    private val responseCodec: NativeResponseCodec
+    private val responseCodec: NativeResponseCodec,
+    private val txtCodec: NativeTxtRuntimeCodec = NativeTxtRuntimeCodec(),
+    private val databaseSwap: RuntimeSqliteDatabaseSwap = RuntimeSqliteDatabaseSwap()
 ) {
     private val mutex = Mutex()
 
-    suspend fun apply(request: AliasEntryMoveMigrationRequest): AliasEntryMoveMigrationResult =
+    suspend fun apply(request: ActivityHierarchyMigrationRequest): ActivityHierarchyMigrationResult =
         withContext(Dispatchers.IO) {
             mutex.withLock { applyLocked(request) }
         }
 
-    private fun applyLocked(request: AliasEntryMoveMigrationRequest): AliasEntryMoveMigrationResult {
+    private fun applyLocked(request: ActivityHierarchyMigrationRequest): ActivityHierarchyMigrationResult {
         val paths = try {
             ensureRuntimePaths()
         } catch (error: Exception) {
-            return AliasEntryMoveMigrationResult(false, formatNativeFailure("prepare alias move migration failed", error))
+            return ActivityHierarchyMigrationResult(false, formatNativeFailure("prepare activity hierarchy migration failed", error))
         }
         val textStorage = ensureTextStorage()
         val configStorage = ensureConfigTomlStorage()
-        val documentUpdates = if (request.updatedDocuments.isEmpty()) {
+        val baseDocumentUpdates = if (request.updatedDocuments.isEmpty()) {
             listOf(ActivityHierarchyDocumentInput(request.configRelativePath, request.updatedTomlContent))
         } else {
             request.updatedDocuments
         }
-        val originalTomls = linkedMapOf<String, String>()
-        documentUpdates.forEach { document ->
-            val original = configStorage.readTomlFile(document.sourceName)
-            if (!original.ok && !request.allowMissingConfig) {
-                return AliasEntryMoveMigrationResult(false, original.message)
+        val documentUpdates = request.configFileRename?.let { rename ->
+            baseDocumentUpdates.map { document ->
+                if (document.sourceName == rename.oldSourceName) {
+                    document.copy(sourceName = rename.newSourceName)
+                } else {
+                    document
+                }
             }
-            originalTomls[document.sourceName] = if (original.ok) original.content else ""
+        } ?: baseDocumentUpdates
+        val originalConfigPaths = buildList {
+            addAll(documentUpdates.map { it.sourceName })
+            request.configFileRename?.oldSourceName?.let(::add)
+        }.distinct()
+        val originalTomls = linkedMapOf<String, String?>()
+        originalConfigPaths.forEach { sourceName ->
+            val original = configStorage.readTomlFile(sourceName)
+            val expectedMissingTarget = request.configFileRename?.newSourceName == sourceName && !original.ok
+            if (request.configFileRename?.oldSourceName == sourceName && !original.ok) {
+                return ActivityHierarchyMigrationResult(false, original.message)
+            }
+            if (!original.ok && !request.allowMissingConfig && !expectedMissingTarget) {
+                return ActivityHierarchyMigrationResult(false, original.message)
+            }
+            if (request.configFileRename?.newSourceName == sourceName && original.ok) {
+                return ActivityHierarchyMigrationResult(false, "Target activity category already exists: $sourceName")
+            }
+            originalTomls[sourceName] = original.content.takeIf { original.ok }
         }
-        val originalTomlContent = originalTomls[request.configRelativePath].orEmpty()
+        val updatedConfigPath = request.configFileRename?.newSourceName ?: request.configRelativePath
         var updatedTomlContent = documentUpdates
-            .firstOrNull { it.sourceName == request.configRelativePath }
+            .firstOrNull { it.sourceName == updatedConfigPath }
             ?.tomlContent
             ?: request.updatedTomlContent
-        var updatedDocuments = documentUpdates
-        var replacements = request.replacements
+        val updatedDocuments = documentUpdates
+        val replacementPlan = request.replacementPlan
         val txtOriginals = linkedMapOf<String, String>()
         val txtCandidates = linkedMapOf<String, String>()
         val listed = textStorage.listTxtFiles()
         if (!listed.ok) {
-            return AliasEntryMoveMigrationResult(false, listed.message)
+            return ActivityHierarchyMigrationResult(false, listed.message)
         }
         try {
             val init = responseCodec.parse(nativeInit(paths))
             if (!init.ok) {
-                return AliasEntryMoveMigrationResult(false, init.errorMessage.ifBlank { "native init failed." })
-            }
-            request.canonicalRename?.let { rename ->
-                val planned = planCanonicalRename(originalTomlContent, rename)
-                if (!planned.ok) {
-                    return AliasEntryMoveMigrationResult(false, planned.message)
-                }
-                updatedTomlContent = planned.updatedTomlContent
-                replacements = planned.replacements
-                updatedDocuments = listOf(
-                    ActivityHierarchyDocumentInput(request.configRelativePath, updatedTomlContent)
-                )
+                return ActivityHierarchyMigrationResult(false, init.errorMessage.ifBlank { "native init failed." })
             }
             for (relativePath in listed.files) {
                 val original = textStorage.readTxtFile(relativePath)
                 if (!original.ok) {
-                    return AliasEntryMoveMigrationResult(false, original.message)
+                    return ActivityHierarchyMigrationResult(false, original.message)
                 }
                 txtOriginals[relativePath] = original.content
-                val canonicalReplaced = replaceCanonicalNames(original.content, replacements)
+                val canonicalReplaced = replaceCanonicalNames(
+                    original.content,
+                    replacementPlan.canonical
+                )
                 if (!canonicalReplaced.ok) {
-                    return AliasEntryMoveMigrationResult(false, canonicalReplaced.message)
+                    return ActivityHierarchyMigrationResult(false, canonicalReplaced.message)
                 }
                 val replaced = replaceAliasNames(
                     canonicalReplaced.updatedContent,
-                    request.aliasReplacements
+                    replacementPlan.aliases
                 )
                 if (!replaced.ok) {
-                    return AliasEntryMoveMigrationResult(false, replaced.message)
+                    return ActivityHierarchyMigrationResult(false, replaced.message)
                 }
                 if (replaced.updatedContent != original.content) {
                     txtCandidates[relativePath] = replaced.updatedContent
                 }
             }
         } catch (error: Exception) {
-            return AliasEntryMoveMigrationResult(false, formatNativeFailure("build TXT migration plan failed", error))
+            return ActivityHierarchyMigrationResult(false, formatNativeFailure("build TXT migration plan failed", error))
         }
 
         val transactionRoot = File(paths.cacheRootPath, "alias-move-${UUID.randomUUID()}")
@@ -112,7 +125,15 @@ internal class RuntimeAliasMoveMigrationService(
         try {
             require(transactionRoot.mkdirs()) { "Cannot create migration cache directory." }
             sourcesWritten = true
-            writeSources(configStorage, textStorage, updatedDocuments, txtCandidates)
+            writeSources(
+                configStorage = configStorage,
+                textStorage = textStorage,
+                updatedDocuments = updatedDocuments,
+                removedTomlPaths = request.configFileRename
+                    ?.let { listOf(it.oldSourceName) }
+                    .orEmpty(),
+                txtCandidates = txtCandidates
+            )
 
             val candidatePaths = paths.copy(
                 dbPath = File(transactionRoot, "candidate/time_data.sqlite3").absolutePath,
@@ -121,7 +142,7 @@ internal class RuntimeAliasMoveMigrationService(
             )
             File(candidatePaths.outputRoot).mkdirs()
             File(candidatePaths.cacheRootPath).mkdirs()
-            val candidateInit = responseCodec.parse(nativeInit(candidatePaths))
+            val candidateInit = responseCodec.parse(nativeInitPipeline(candidatePaths))
             require(candidateInit.ok) { candidateInit.errorMessage.ifBlank { "candidate native init failed." } }
             val ingest = responseCodec.parse(
                 nativeIngest(paths.inputRootPath, NativeBridge.DATE_CHECK_CONTINUITY, false)
@@ -131,15 +152,16 @@ internal class RuntimeAliasMoveMigrationService(
             require(shutdown.ok) { shutdown.errorMessage.ifBlank { "candidate runtime shutdown failed." } }
 
             databaseSwapStarted = true
-            replaceDatabase(paths.dbPath, candidatePaths.dbPath, transactionRoot)
+            databaseSwap.replace(paths.dbPath, candidatePaths.dbPath, transactionRoot)
             val activeInit = responseCodec.parse(nativeInit(paths))
             require(activeInit.ok) { activeInit.errorMessage.ifBlank { "active runtime init failed." } }
             transactionRoot.deleteRecursively()
-            return AliasEntryMoveMigrationResult(
+            return ActivityHierarchyMigrationResult(
                 ok = true,
-                message = "Applied alias migration and rebuilt database.",
+                message = "Applied activity hierarchy migration and rebuilt database.",
                 updatedTxtFileCount = txtCandidates.size,
-                updatedTomlContent = updatedTomlContent
+                updatedTomlContent = updatedTomlContent,
+                updatedConfigRelativePath = updatedConfigPath
             )
         } catch (error: Exception) {
             runCatching { nativeShutdown() }
@@ -148,7 +170,7 @@ internal class RuntimeAliasMoveMigrationService(
                 rollbackSources(configStorage, textStorage, originalTomls, txtOriginals, rollbackProblems)
             }
             if (databaseSwapStarted) {
-                runCatching { restoreDatabase(paths.dbPath, transactionRoot) }
+                runCatching { databaseSwap.restore(paths.dbPath, transactionRoot) }
                     .onFailure { rollbackProblems += it.message ?: "database restore failed" }
             }
             val restoreInit = responseCodec.parse(nativeInit(paths))
@@ -156,7 +178,7 @@ internal class RuntimeAliasMoveMigrationService(
                 rollbackProblems += restoreInit.errorMessage.ifBlank { "old runtime reinitialization failed" }
             }
             val suffix = if (rollbackProblems.isEmpty()) "" else " Rollback issues: ${rollbackProblems.joinToString("; ")}" 
-            return AliasEntryMoveMigrationResult(false, (error.message ?: "Alias move migration failed.") + suffix)
+            return ActivityHierarchyMigrationResult(false, (error.message ?: "Activity hierarchy migration failed.") + suffix)
         }
     }
 
@@ -174,7 +196,7 @@ internal class RuntimeAliasMoveMigrationService(
                         .put("new_canonical", replacement.newCanonical))
                 }
             })
-        return NativeTxtRuntimeCodec().parseCanonicalActivityReplacement(
+        return txtCodec.parseCanonicalActivityReplacement(
             nativeTxt(payload.toString()), content
         )
     }
@@ -193,45 +215,28 @@ internal class RuntimeAliasMoveMigrationService(
                         .put("new_alias", replacement.newAlias))
                 }
             })
-        return NativeTxtRuntimeCodec().parseCanonicalActivityReplacement(
+        return txtCodec.parseCanonicalActivityReplacement(
             nativeTxt(payload.toString()), content
         )
-    }
-
-    private fun planCanonicalRename(
-        content: String,
-        request: AliasCanonicalRenameRequest
-    ): AliasCanonicalRenameResult {
-        val operationKind = when (request.targetType) {
-            "group" -> "rename_group_canonical"
-            "leaf" -> "rename_leaf_canonical"
-            else -> return AliasCanonicalRenameResult(
-                ok = false,
-                updatedTomlContent = "",
-                replacements = emptyList(),
-                message = "Unsupported canonical rename target type: ${request.targetType}"
-            )
-        }
-        val payload = JSONObject()
-            .put("action", "apply_activity_hierarchy_operation")
-            .put("toml_content", content)
-            .put("operation", JSONObject()
-                .put("kind", operationKind)
-                .put("target_path", request.targetPath)
-                .put("new_name", request.newName))
-        return NativeTxtRuntimeCodec().parseAliasCanonicalRename(nativeTxt(payload.toString()))
     }
 
     private fun writeSources(
         configStorage: ConfigTomlStorage,
         textStorage: TextStorage,
         updatedDocuments: List<ActivityHierarchyDocumentInput>,
+        removedTomlPaths: List<String>,
         txtCandidates: Map<String, String>
     ) {
         updatedDocuments.forEach { document ->
             val configWrite = configStorage.writeTomlFile(document.sourceName, document.tomlContent)
             require(configWrite.ok) { configWrite.message }
         }
+        removedTomlPaths
+            .filter { oldPath -> updatedDocuments.none { it.sourceName == oldPath } }
+            .forEach { oldPath ->
+                val configDelete = configStorage.deleteTomlFile(oldPath)
+                require(configDelete.ok) { configDelete.message }
+            }
         txtCandidates.forEach { (relativePath, content) ->
             val write = textStorage.writeTxtFile(relativePath, content)
             require(write.ok) { write.message }
@@ -241,54 +246,25 @@ internal class RuntimeAliasMoveMigrationService(
     private fun rollbackSources(
         configStorage: ConfigTomlStorage,
         textStorage: TextStorage,
-        originalTomls: Map<String, String>,
+        originalTomls: Map<String, String?>,
         txtOriginals: Map<String, String>,
         problems: MutableList<String>
     ) {
         originalTomls.forEach { (configPath, originalToml) ->
-            configStorage.writeTomlFile(configPath, originalToml)
-                .takeIf { !it.ok }?.let { problems += it.message }
+            if (originalToml == null) {
+                val current = configStorage.readTomlFile(configPath)
+                if (current.ok) {
+                    configStorage.deleteTomlFile(configPath)
+                        .takeIf { !it.ok }?.let { problems += it.message }
+                }
+            } else {
+                configStorage.writeTomlFile(configPath, originalToml)
+                    .takeIf { !it.ok }?.let { problems += it.message }
+            }
         }
         txtOriginals.forEach { (relativePath, content) ->
             textStorage.writeTxtFile(relativePath, content).takeIf { !it.ok }?.let { problems += it.message }
         }
     }
 
-    private fun replaceDatabase(activePath: String, candidatePath: String, transactionRoot: File) {
-        val active = File(activePath)
-        val candidate = File(candidatePath)
-        require(candidate.isFile) { "Candidate database was not created." }
-        val backupRoot = File(transactionRoot, "backup")
-        require(backupRoot.mkdirs()) { "Cannot create database backup directory." }
-        moveSqliteFiles(active, backupRoot, replaceExisting = true)
-        moveSqliteFiles(candidate, active.parentFile ?: error("Database directory is unavailable"), replaceExisting = true)
-    }
-
-    private fun restoreDatabase(activePath: String, transactionRoot: File) {
-        val active = File(activePath)
-        deleteSqliteFiles(active)
-        val backupDatabase = File(transactionRoot, "backup/${active.name}")
-        if (backupDatabase.exists()) {
-            moveSqliteFiles(backupDatabase, active.parentFile ?: error("Database directory is unavailable"), replaceExisting = true)
-        }
-    }
-
-    private fun moveSqliteFiles(sourceDatabase: File, targetDirectory: File, replaceExisting: Boolean) {
-        targetDirectory.mkdirs()
-        listOf(sourceDatabase, File(sourceDatabase.path + "-wal"), File(sourceDatabase.path + "-shm"))
-            .filter(File::exists)
-            .forEach { source ->
-                val target = File(targetDirectory, source.name)
-                if (replaceExisting) {
-                    Files.move(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING)
-                } else {
-                    Files.move(source.toPath(), target.toPath())
-                }
-            }
-    }
-
-    private fun deleteSqliteFiles(database: File) {
-        listOf(database, File(database.path + "-wal"), File(database.path + "-shm"))
-            .forEach { Files.deleteIfExists(it.toPath()) }
-    }
 }

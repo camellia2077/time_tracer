@@ -10,7 +10,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class RuntimeAliasMoveMigrationServiceTest {
+class RuntimeActivityHierarchyMigrationServiceTest {
     @Test
     fun cross_toml_leaf_and_group_moves_rewrite_txt_and_rebuild_database() = runBlocking {
         val scenarios = listOf(
@@ -75,8 +75,8 @@ class RuntimeAliasMoveMigrationServiceTest {
                 val result = fixture.service.apply(fixture.request)
 
                 assertTrue(scenario.name, result.ok)
-                assertEquals(scenario.updatedSourceToml, fixture.config.read("activity_hierarchy/exercise.toml"))
-                assertEquals(scenario.updatedDestinationToml, fixture.config.read("activity_hierarchy/meal.toml"))
+                assertEquals(scenario.updatedSourceToml, fixture.config.read("user/activity_hierarchy/exercise.toml"))
+                assertEquals(scenario.updatedDestinationToml, fixture.config.read("user/activity_hierarchy/meal.toml"))
                 assertEquals(
                     "2026-01-01|${scenario.newCanonical}|remark",
                     fixture.text.files["2026/2026-01.txt"]
@@ -106,8 +106,105 @@ class RuntimeAliasMoveMigrationServiceTest {
             val result = fixture.service.apply(fixture.request)
 
             assertFalse(result.ok)
-            assertEquals(fixture.scenario.sourceToml, fixture.config.read("activity_hierarchy/exercise.toml"))
-            assertEquals(fixture.scenario.destinationToml, fixture.config.read("activity_hierarchy/meal.toml"))
+            assertEquals(fixture.scenario.sourceToml, fixture.config.read("user/activity_hierarchy/exercise.toml"))
+            assertEquals(fixture.scenario.destinationToml, fixture.config.read("user/activity_hierarchy/meal.toml"))
+            assertEquals("2026-01-01|exercise_go|remark", fixture.text.files["2026/2026-01.txt"])
+            assertEquals("active-db", fixture.db.readText())
+        } finally {
+            fixture.root.deleteRecursively()
+        }
+    }
+
+    @Test
+    fun category_rename_moves_toml_rewrites_txt_and_rebuilds_database() = runBlocking {
+        val fixture = MigrationFixture(
+            MoveScenario(
+                name = "category rename",
+                sourceToml = "parent = \"exercise\"\n\"go\" = [\"围棋\"]",
+                destinationToml = "parent = \"meal\"\n\"eat\" = [\"吃饭\"]",
+                updatedSourceToml = "parent = \"fitness\"\n\"go\" = [\"围棋\"]",
+                updatedDestinationToml = "parent = \"meal\"\n\"eat\" = [\"吃饭\"]",
+                oldCanonical = "exercise_go",
+                newCanonical = "fitness_go"
+            ),
+            configRename = ActivityHierarchyDocumentRename(
+                oldSourceName = "user/activity_hierarchy/exercise.toml",
+                newSourceName = "user/activity_hierarchy/fitness.toml"
+            )
+        )
+        try {
+            val result = fixture.service.apply(fixture.request)
+
+            assertTrue(result.ok)
+            assertEquals(
+                fixture.scenario.updatedSourceToml,
+                fixture.config.read("user/activity_hierarchy/fitness.toml")
+            )
+            assertFalse(File(fixture.config.root, "user/activity_hierarchy/exercise.toml").exists())
+            assertEquals(
+                "2026-01-01|${fixture.scenario.newCanonical}|remark",
+                fixture.text.files["2026/2026-01.txt"]
+            )
+            assertEquals("candidate-db", fixture.db.readText())
+        } finally {
+            fixture.root.deleteRecursively()
+        }
+    }
+
+    @Test
+    fun canonical_and_alias_replacements_are_both_applied_to_txt() = runBlocking {
+        val fixture = MigrationFixture(
+            MoveScenario(
+                name = "combined replacement plan",
+                sourceToml = "parent = \"exercise\"\n\"go\" = [\"旧名称\"]",
+                destinationToml = "parent = \"meal\"\n\"eat\" = [\"吃饭\"]",
+                updatedSourceToml = "parent = \"meal\"\n\"go\" = [\"新名称\"]",
+                updatedDestinationToml = "parent = \"meal\"\n\"eat\" = [\"吃饭\"]",
+                oldCanonical = "exercise_go",
+                newCanonical = "meal_go"
+            )
+        )
+        try {
+            fixture.text.files["2026/2026-01.txt"] = "2026-01-01|exercise_go|旧名称 remark"
+            val result = fixture.service.apply(
+                fixture.request.copy(
+                    replacementPlan = fixture.request.replacementPlan.copy(
+                        aliases = listOf(AliasKeyReplacement("旧名称", "新名称"))
+                    )
+                )
+            )
+
+            assertTrue(result.ok)
+            assertEquals("2026-01-01|meal_go|新名称 remark", fixture.text.files["2026/2026-01.txt"])
+        } finally {
+            fixture.root.deleteRecursively()
+        }
+    }
+
+    @Test
+    fun category_rename_failure_restores_old_toml_and_removes_new_toml() = runBlocking {
+        val fixture = MigrationFixture(
+            MoveScenario(
+                name = "failed category rename",
+                sourceToml = "parent = \"exercise\"\n\"go\" = [\"围棋\"]",
+                destinationToml = "parent = \"meal\"\n\"eat\" = [\"吃饭\"]",
+                updatedSourceToml = "parent = \"fitness\"\n\"go\" = [\"围棋\"]",
+                updatedDestinationToml = "parent = \"meal\"\n\"eat\" = [\"吃饭\"]",
+                oldCanonical = "exercise_go",
+                newCanonical = "fitness_go"
+            ),
+            failCandidateIngest = true,
+            configRename = ActivityHierarchyDocumentRename(
+                oldSourceName = "user/activity_hierarchy/exercise.toml",
+                newSourceName = "user/activity_hierarchy/fitness.toml"
+            )
+        )
+        try {
+            val result = fixture.service.apply(fixture.request)
+
+            assertFalse(result.ok)
+            assertEquals(fixture.scenario.sourceToml, fixture.config.read("user/activity_hierarchy/exercise.toml"))
+            assertFalse(File(fixture.config.root, "user/activity_hierarchy/fitness.toml").exists())
             assertEquals("2026-01-01|exercise_go|remark", fixture.text.files["2026/2026-01.txt"])
             assertEquals("active-db", fixture.db.readText())
         } finally {
@@ -129,12 +226,13 @@ private data class MoveScenario(
 
 private class MigrationFixture(
     val scenario: MoveScenario,
-    private val failCandidateIngest: Boolean = false
+    private val failCandidateIngest: Boolean = false,
+    private val configRename: ActivityHierarchyDocumentRename? = null
 ) {
     val root = Files.createTempDirectory("alias-move-migration-").toFile()
     val config = FixtureConfigStorage(File(root, "config")).also {
-        it.write("activity_hierarchy/exercise.toml", scenario.sourceToml)
-        it.write("activity_hierarchy/meal.toml", scenario.destinationToml)
+        it.write("user/activity_hierarchy/exercise.toml", scenario.sourceToml)
+        it.write("user/activity_hierarchy/meal.toml", scenario.destinationToml)
     }
     val text = FixtureTextStorage(
         linkedMapOf("2026/2026-01.txt" to "2026-01-01|${scenario.oldCanonical}|remark")
@@ -153,23 +251,32 @@ private class MigrationFixture(
     )
     private var initializedPaths = paths
 
-    val request = AliasEntryMoveMigrationRequest(
-        configRelativePath = "activity_hierarchy/exercise.toml",
+    val request = ActivityHierarchyMigrationRequest(
+        configRelativePath = "user/activity_hierarchy/exercise.toml",
         updatedTomlContent = scenario.updatedSourceToml,
-        replacements = listOf(
-            CanonicalActivityNameReplacement(scenario.oldCanonical, scenario.newCanonical)
-        ) + scenario.extraReplacements,
+        replacementPlan = ActivityNameReplacementPlan(
+            canonical = listOf(
+                CanonicalActivityNameReplacement(scenario.oldCanonical, scenario.newCanonical)
+            ) + scenario.extraReplacements
+        ),
         updatedDocuments = listOf(
-            ActivityHierarchyDocumentInput("activity_hierarchy/exercise.toml", scenario.updatedSourceToml),
-            ActivityHierarchyDocumentInput("activity_hierarchy/meal.toml", scenario.updatedDestinationToml)
-        )
+            ActivityHierarchyDocumentInput("user/activity_hierarchy/exercise.toml", scenario.updatedSourceToml),
+            ActivityHierarchyDocumentInput("user/activity_hierarchy/meal.toml", scenario.updatedDestinationToml)
+        ),
+        configFileRename = configRename
     )
 
-    val service = RuntimeAliasMoveMigrationService(
+    val service = RuntimeActivityHierarchyMigrationService(
         ensureRuntimePaths = { paths },
         ensureTextStorage = { text },
         ensureConfigTomlStorage = { ConfigTomlStorage(config.root.absolutePath) },
         nativeInit = { candidatePaths ->
+            initializedPaths = candidatePaths
+            File(candidatePaths.outputRoot).mkdirs()
+            File(candidatePaths.cacheRootPath).mkdirs()
+            """{"ok":true}"""
+        },
+        nativeInitPipeline = { candidatePaths ->
             initializedPaths = candidatePaths
             File(candidatePaths.outputRoot).mkdirs()
             File(candidatePaths.cacheRootPath).mkdirs()

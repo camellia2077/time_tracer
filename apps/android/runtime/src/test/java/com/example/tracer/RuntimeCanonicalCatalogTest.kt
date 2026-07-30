@@ -61,7 +61,7 @@ class RuntimeCanonicalCatalogTest {
         try {
             writeAliasToml(
                 root = root,
-                relativePath = "activity_hierarchy/meal.toml",
+                relativePath = "user/activity_hierarchy/meal.toml",
                 content = """
                     parent = "meal"
 
@@ -72,7 +72,7 @@ class RuntimeCanonicalCatalogTest {
             )
             writeAliasToml(
                 root = root,
-                relativePath = "activity_hierarchy/study.toml",
+                relativePath = "user/activity_hierarchy/study.toml",
                 content = """
                     parent = "study"
 
@@ -126,7 +126,7 @@ class RuntimeCanonicalCatalogTest {
         try {
             writeAliasToml(
                 root = root,
-                relativePath = "activity_hierarchy/_system.toml",
+                relativePath = "user/behavior.toml",
                 content = """
                     [sleep_inference]
                     wake_keywords = ["起床"]
@@ -134,7 +134,7 @@ class RuntimeCanonicalCatalogTest {
             )
             writeAliasToml(
                 root = root,
-                relativePath = "activity_hierarchy/other.toml",
+                relativePath = "user/activity_hierarchy/other.toml",
                 content = """
                     parent = "other"
 
@@ -160,7 +160,7 @@ class RuntimeCanonicalCatalogTest {
         try {
             writeAliasToml(
                 root = root,
-                relativePath = "activity_hierarchy/broken.toml",
+                relativePath = "user/activity_hierarchy/broken.toml",
                 content = """
                     [aliases]
                     "dining" = ["meal"]

@@ -12,6 +12,41 @@ internal object RuntimeDataCleanupTargets {
         "$DatabaseFileName-journal"
     )
     private val TxtWhitelistRoots = listOf("input")
+    private const val ActivityHierarchyRoot = "config/user/activity_hierarchy"
+
+    fun clearEditableData(roots: List<File>): String {
+        val existingRoots = roots.filter { it.exists() }
+        if (existingRoots.isEmpty()) {
+            return "clear -> no editable data to remove"
+        }
+
+        val txtFiles = existingRoots.flatMap(::txtFilesFor).distinctBy { it.absolutePath }
+        val hierarchyFiles = existingRoots
+            .flatMap(::activityHierarchyTomlFilesFor)
+            .distinctBy { it.absolutePath }
+        val markerFiles = existingRoots
+            .map { File(it, DATA_FOLDER_SNAPSHOT_MARKER) }
+            .filter { it.exists() && it.isFile }
+
+        val failedPaths = mutableListOf<String>()
+        var removedCount = 0
+        (txtFiles + hierarchyFiles + markerFiles).forEach { file ->
+            if (file.delete()) {
+                removedCount += 1
+            } else {
+                failedPaths += file.absolutePath
+            }
+        }
+
+        if (failedPaths.isNotEmpty()) {
+            val preview = failedPaths.take(3).joinToString(" | ")
+            val suffix = if (failedPaths.size > 3) " | ...(${failedPaths.size} failed)" else ""
+            return "clear -> removed $removedCount file(s). failed: $preview$suffix"
+        }
+
+        return "clear -> removed ${txtFiles.size} TXT file(s) and " +
+            "${hierarchyFiles.size} activity_hierarchy TOML file(s)"
+    }
 
     fun clearDatabaseData(roots: List<File>): ClearDatabaseResult {
         val existingRoots = roots.filter { it.exists() }
@@ -138,5 +173,15 @@ internal object RuntimeDataCleanupTargets {
                     .toList()
             }
         }
+    }
+
+    private fun activityHierarchyTomlFilesFor(root: File): List<File> {
+        val hierarchyRoot = File(root, ActivityHierarchyRoot)
+        if (!hierarchyRoot.exists() || !hierarchyRoot.isDirectory) {
+            return emptyList()
+        }
+        return hierarchyRoot.walkTopDown()
+            .filter { it.isFile && it.extension.equals("toml", ignoreCase = true) }
+            .toList()
     }
 }

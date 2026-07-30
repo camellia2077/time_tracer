@@ -20,6 +20,7 @@ internal class RuntimeDataFolderSnapshotService(
     private val ensureRuntimePaths: () -> RuntimePaths,
     private val resetRuntimeCaches: () -> Unit,
     private val nativeInit: (RuntimePaths) -> String,
+    private val nativeInitPipeline: (RuntimePaths) -> String,
     private val nativeShutdown: () -> String,
     private val nativeValidateStructure: (String) -> String,
     private val nativeValidateLogic: (String, Int) -> String,
@@ -34,7 +35,7 @@ internal class RuntimeDataFolderSnapshotService(
     private fun replaceLocked(stagedRoot: File): DataFolderSnapshotResult {
         val stagedConfig = File(stagedRoot, "config")
         val stagedInput = File(stagedRoot, "input")
-        val stagedConfigToml = File(stagedConfig, "activity_hierarchy/_system.toml")
+        val stagedConfigToml = File(stagedConfig, "user/behavior.toml")
         val txtFiles = stagedInput.walkTopDown()
             .filter { it.isFile && it.extension.equals("txt", ignoreCase = true) }
             .toList()
@@ -44,7 +45,7 @@ internal class RuntimeDataFolderSnapshotService(
         require(stagedConfig.isDirectory) { "Staged data folder is missing config/." }
         require(stagedInput.isDirectory) { "Staged data folder is missing input/." }
         require(stagedConfigToml.isFile) {
-            "Staged data folder is missing config/activity_hierarchy/_system.toml."
+            "Staged data folder is missing config/user/behavior.toml."
         }
 
         val activePaths = ensureRuntimePaths()
@@ -56,7 +57,7 @@ internal class RuntimeDataFolderSnapshotService(
             configRootPath = stagedConfig.absolutePath,
             configTomlPath = stagedConfigToml.absolutePath,
             inputRootPath = stagedInput.absolutePath,
-            cacheRootPath = File(stagedRoot, "cache").absolutePath
+            cacheRootPath = File(stagedRoot, "output/cache").absolutePath
         )
         File(candidatePaths.outputRoot).mkdirs()
         File(candidatePaths.cacheRootPath).mkdirs()
@@ -64,7 +65,10 @@ internal class RuntimeDataFolderSnapshotService(
 
         try {
             checkNativeOk(nativeShutdown(), "native shutdown failed")
-            checkNativeOk(nativeInit(candidatePaths), "candidate native init failed")
+            checkNativeOk(
+                nativeInitPipeline(candidatePaths),
+                "candidate pipeline runtime init failed"
+            )
             for (txtFile in txtFiles) {
                 checkNativeOk(
                     nativeValidateStructure(txtFile.absolutePath),
@@ -132,4 +136,5 @@ internal class RuntimeDataFolderSnapshotService(
             StandardCopyOption.REPLACE_EXISTING
         )
     }
+
 }

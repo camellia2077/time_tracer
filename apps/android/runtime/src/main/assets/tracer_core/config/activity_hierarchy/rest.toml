@@ -1,4 +1,0 @@
-parent = "rest"
-
-[aliases]
-"rest" = ["rest", "休息", "r"]

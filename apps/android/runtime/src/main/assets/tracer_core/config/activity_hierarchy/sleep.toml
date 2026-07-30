@@ -1,6 +1,0 @@
-parent = "sleep"
-
-[aliases]
-"insomnia" = ["失眠"]
-"day" = ["睡觉", "白天睡觉"]
-"getup" = ["wake", "w", "起床", "醒", "新的一天开始了"]

@@ -51,7 +51,7 @@ class RuntimeDiagnosticsServiceTest {
             schemaVersion = 1,
             profile = "android",
             bundleName = "main",
-            requiredFiles = listOf("activity_hierarchy/a.toml"),
+            requiredFiles = listOf("user/activity_hierarchy/a.toml"),
             missingFiles = emptyList(),
             bundlePath = "/tmp/bundle.toml",
             message = "bundle ok",
@@ -85,7 +85,7 @@ class RuntimeDiagnosticsServiceTest {
             parentFile?.mkdirs()
             writeText("")
         }
-        val configToml = File(configRoot, "activity_hierarchy/_system.toml").apply {
+        val configToml = File(configRoot, "user/activity_hierarchy/_system.toml").apply {
             parentFile?.mkdirs()
             writeText("dummy=true")
         }

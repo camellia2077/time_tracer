@@ -9,6 +9,6 @@ interface RuntimeGateway :
     ConfigGateway,
     DataFolderSnapshotGateway,
     ActivityHierarchyGateway,
-    AliasMoveMigrationGateway,
+    ActivityHierarchyMigrationGateway,
     FileCryptoGateway,
     TracerExchangeGateway

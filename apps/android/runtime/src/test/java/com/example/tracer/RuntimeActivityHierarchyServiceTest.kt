@@ -37,13 +37,13 @@ class RuntimeActivityHierarchyServiceTest {
 
         val result = service.moveNodeBetweenDocuments(
             documents = listOf(
-                ActivityHierarchyDocumentInput("activity_hierarchy/exercise.toml", "source"),
-                ActivityHierarchyDocumentInput("activity_hierarchy/meal.toml", "destination")
+                ActivityHierarchyDocumentInput("user/activity_hierarchy/exercise.toml", "source"),
+                ActivityHierarchyDocumentInput("user/activity_hierarchy/meal.toml", "destination")
             ),
-            sourceName = "activity_hierarchy/exercise.toml",
-            destinationName = "activity_hierarchy/meal.toml",
+            sourceName = "user/activity_hierarchy/exercise.toml",
+            destinationName = "user/activity_hierarchy/meal.toml",
             operation = ActivityHierarchyOperation(
-                kind = "move_group",
+                kind = ActivityHierarchyOperationKind.MOVE_GROUP,
                 targetPath = "cardio",
                 destinationPath = "root"
             )
@@ -82,7 +82,7 @@ class RuntimeActivityHierarchyServiceTest {
         val result = service.apply(
             tomlContent = "parent = exercise",
             operation = ActivityHierarchyOperation(
-                kind = "rename_parent",
+                kind = ActivityHierarchyOperationKind.RENAME_PARENT,
                 oldParent = "exercise",
                 newName = "training"
             )

@@ -59,7 +59,6 @@ internal fun ConfigSection(
     aliasEntryMovePlan: AliasEntryMovePlan?,
     aliasEntryMoveDestinations: List<AliasEntryMoveDestinationDocument>,
     aliasEntryMoveDestinationsLoading: Boolean,
-    aliasParentOptions: List<String>,
     aliasAdvancedTomlDraft: String,
     aliasEditorErrorMessage: String,
     autoSaveStatus: ConfigAutoSaveStatus,
@@ -72,11 +71,11 @@ internal fun ConfigSection(
     onOpenFile: (String) -> Unit,
     onCreateAliasTomlFile: (String) -> Unit,
     onDeleteAliasTomlFile: () -> Unit,
+    onRenameAliasCategory: (String) -> Unit,
     onCopyDiagnosticsPayload: () -> Unit,
     onEditableContentChange: (String) -> Unit,
     onSelectAliasStructuredMode: () -> Unit,
     onSelectAliasAdvancedMode: () -> Unit,
-    onAliasParentChange: (String) -> Unit,
     onAliasAdvancedTomlChange: (String) -> Unit,
     onAddAliasGroup: (String?, String) -> Unit,
     onDeleteAliasGroup: (String) -> Unit,
@@ -150,6 +149,7 @@ internal fun ConfigSection(
         if (visibleFiles.isNotEmpty()) {
             if (usesAliasStructuredEditor) {
                 ConfigAliasEditorCard(
+                    aliasFiles = visibleFiles,
                     selectedFileDisplayName = scopedSelectedFileDisplayName,
                     selectedFileContent = selectedFileContent,
                     mode = aliasEditorMode,
@@ -157,14 +157,14 @@ internal fun ConfigSection(
                     movePlan = aliasEntryMovePlan,
                     moveDestinations = aliasEntryMoveDestinations,
                     moveDestinationsLoading = aliasEntryMoveDestinationsLoading,
-                    parentOptions = aliasParentOptions,
                     advancedTomlDraft = aliasAdvancedTomlDraft,
                     errorMessage = aliasEditorErrorMessage,
                     onCreateAliasTomlFile = onCreateAliasTomlFile,
+                    onSelectAliasFile = onOpenFile,
                     onDeleteAliasTomlFile = onDeleteAliasTomlFile,
+                    onRenameCategory = onRenameAliasCategory,
                     onSelectStructuredMode = onSelectAliasStructuredMode,
                     onSelectAdvancedMode = onSelectAliasAdvancedMode,
-                    onParentChange = onAliasParentChange,
                     onAdvancedTomlChange = onAliasAdvancedTomlChange,
                     onAddGroup = onAddAliasGroup,
                     onDeleteGroup = onDeleteAliasGroup,
@@ -191,7 +191,8 @@ internal fun ConfigSection(
                     editableContent = editableContent,
                     autoSaveStatus = autoSaveStatus,
                     onEditableContentChange = onEditableContentChange,
-                    onSaveCurrentFile = onSaveCurrentFile
+                    onSaveCurrentFile = onSaveCurrentFile,
+                    readOnly = selectedCategory != ConfigCategory.ALIAS
                 )
             }
         } else if (selectedCategory == ConfigCategory.ALIAS) {
@@ -248,14 +249,14 @@ private fun String.removeCurrentScopePrefix(
     selectedCategory: ConfigCategory
 ): String {
     return if (selectedCategory == ConfigCategory.ALIAS) {
-        removePrefix("activity_hierarchy/")
+        removePrefix("user/activity_hierarchy/")
     } else {
         this
     }
 }
 
 private fun String.isAliasFilePathForConfigScreen(): Boolean =
-        startsWith("activity_hierarchy/") &&
+        startsWith("user/activity_hierarchy/") &&
         !endsWith("/_system.toml", ignoreCase = true) &&
         endsWith(".toml", ignoreCase = true)
 

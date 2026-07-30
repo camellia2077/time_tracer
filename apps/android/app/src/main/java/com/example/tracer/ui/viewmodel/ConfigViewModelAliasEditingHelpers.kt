@@ -7,12 +7,11 @@ internal fun switchAliasEditorToAdvanced(state: ConfigUiState): ConfigUiState = 
 
 internal suspend fun validateAliasKeyUniqueness(
     configGateway: ConfigGateway,
+    activityHierarchyGateway: ActivityHierarchyGateway,
     aliasFiles: List<ConfigTomlFileEntry>,
     currentFilePath: String,
     currentTomlContent: String
 ): String? {
-    val gateway = configGateway as? ActivityHierarchyGateway
-        ?: return "Activity hierarchy runtime is unavailable."
     val documents = mutableListOf(
         ActivityHierarchyDocumentInput(currentFilePath, currentTomlContent)
     )
@@ -24,7 +23,7 @@ internal suspend fun validateAliasKeyUniqueness(
         }
         documents += ActivityHierarchyDocumentInput(entry.relativePath, readResult.content)
     }
-    return gateway.validateActivityHierarchyDocuments(documents)
+    return activityHierarchyGateway.validateActivityHierarchyDocuments(documents)
         .takeIf { !it.ok }
         ?.message
         ?.ifBlank { "Activity hierarchy validation failed." }
@@ -32,21 +31,21 @@ internal suspend fun validateAliasKeyUniqueness(
 
 internal suspend fun resolveAliasParentOptions(
     configGateway: ConfigGateway,
+    activityHierarchyGateway: ActivityHierarchyGateway,
     aliasFiles: List<ConfigTomlFileEntry>,
     selectedFilePath: String,
     selectedFileContent: String
 ): List<String> {
     if (!isAliasConfigFilePath(selectedFilePath)) return emptyList()
-    val gateway = configGateway as? ActivityHierarchyGateway ?: return emptyList()
     val options = linkedSetOf<String>()
-    val selectedParent = gateway.describeActivityHierarchy(selectedFileContent).hierarchy?.parent
+    val selectedParent = activityHierarchyGateway.describeActivityHierarchy(selectedFileContent).hierarchy?.parent
     selectedParent?.trim()?.takeIf { it.isNotEmpty() }?.let(options::add)
     for (entry in aliasFiles.filter { isAliasConfigFilePath(it.relativePath) }) {
         entry.parentCandidateFromDisplayName()?.let(options::add)
         val parent = if (entry.relativePath == selectedFilePath) selectedParent else {
             configGateway.readConfigTomlFile(entry.relativePath)
                 .takeIf { it.ok }
-                ?.let { gateway.describeActivityHierarchy(it.content).hierarchy?.parent }
+                ?.let { activityHierarchyGateway.describeActivityHierarchy(it.content).hierarchy?.parent }
         }
         parent?.trim()?.takeIf { it.isNotEmpty() }?.let(options::add)
     }
@@ -55,6 +54,7 @@ internal suspend fun resolveAliasParentOptions(
 
 internal suspend fun resolveAliasFilePathForParent(
     configGateway: ConfigGateway,
+    activityHierarchyGateway: ActivityHierarchyGateway,
     aliasFiles: List<ConfigTomlFileEntry>,
     currentFilePath: String,
     currentAliasDocument: AliasTomlDocument?,
@@ -62,7 +62,6 @@ internal suspend fun resolveAliasFilePathForParent(
 ): String? {
     val normalizedParent = parent.trim()
     if (normalizedParent.isEmpty()) return null
-    val gateway = configGateway as? ActivityHierarchyGateway
     val aliasEntries = aliasFiles.filter { isAliasConfigFilePath(it.relativePath) }
     for (entry in aliasEntries) {
         val currentParent = if (entry.relativePath == currentFilePath) {
@@ -70,7 +69,7 @@ internal suspend fun resolveAliasFilePathForParent(
         } else {
             configGateway.readConfigTomlFile(entry.relativePath)
                 .takeIf { it.ok }
-                ?.let { gateway?.describeActivityHierarchy(it.content)?.hierarchy?.parent }
+                ?.let { activityHierarchyGateway.describeActivityHierarchy(it.content).hierarchy?.parent }
         }
         if (currentParent?.trim() == normalizedParent) return entry.relativePath
     }
@@ -80,7 +79,7 @@ internal suspend fun resolveAliasFilePathForParent(
 }
 
 private fun ConfigTomlFileEntry.parentCandidateFromDisplayName(): String? =
-    displayName.removePrefix("activity_hierarchy/")
+    displayName.removePrefix("user/activity_hierarchy/")
         .takeIf { it.endsWith(".toml", ignoreCase = true) }
         ?.removeSuffix(".toml")
         ?.trim()

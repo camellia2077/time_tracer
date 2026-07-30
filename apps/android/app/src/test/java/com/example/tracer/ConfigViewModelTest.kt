@@ -9,6 +9,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -30,21 +31,6 @@ class ConfigViewModelTest {
     }
 
     @Test
-    fun alias_category_ignores_system_file_when_choosing_editable_files() {
-        val state = ConfigUiState(
-            aliasFiles = listOf(
-                ConfigTomlFileEntry(
-                    relativePath = "activity_hierarchy/_system.toml",
-                    displayName = "activity_hierarchy/_system.toml"
-                )
-            )
-        )
-
-        assertTrue(configFilesForCategory(state, ConfigCategory.ALIAS).isEmpty())
-        assertEquals("", preferredConfigFilePath(state, emptyList()))
-    }
-
-    @Test
     fun alias_category_is_selected_by_default() = runTest(dispatcher) {
         val gateway = FakeConfigRuntime()
         val quickActivitiesGateway = FakeQuickActivitiesPreferenceGateway()
@@ -54,7 +40,7 @@ class ConfigViewModelTest {
 
         assertEquals(ConfigCategory.ALIAS, viewModel.uiState.selectedCategory)
         assertEquals("meal.toml", viewModel.uiState.selectedFileDisplayName)
-        assertEquals("activity_hierarchy/meal.toml", viewModel.uiState.selectedFilePath)
+        assertEquals("user/activity_hierarchy/meal.toml", viewModel.uiState.selectedFilePath)
         assertEquals(AliasEditorMode.STRUCTURED, viewModel.uiState.aliasEditorMode)
         assertNotNull(viewModel.uiState.aliasDocumentDraft)
 
@@ -82,13 +68,13 @@ class ConfigViewModelTest {
         val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
         advanceUntilIdle()
 
-        assertEquals("activity_hierarchy/meal.toml", viewModel.uiState.selectedFilePath)
+        assertEquals("user/activity_hierarchy/meal.toml", viewModel.uiState.selectedFilePath)
 
         // Contract: choosing parent means switching to the corresponding alias file.
         viewModel.updateAliasParent("recreation")
         advanceUntilIdle()
 
-        assertEquals("activity_hierarchy/recreation.toml", viewModel.uiState.selectedFilePath)
+        assertEquals("user/activity_hierarchy/recreation.toml", viewModel.uiState.selectedFilePath)
         assertEquals("recreation", viewModel.uiState.aliasDocumentDraft?.parent)
         assertTrue(viewModel.uiState.selectedFileContent.contains("[aliases.online-platforms]"))
     }
@@ -127,7 +113,7 @@ class ConfigViewModelTest {
         advanceUntilIdle()
 
         assertTrue(viewModel.uiState.aliasEditorErrorMessage.contains("Duplicate alias key"))
-        assertTrue(gateway.lastMoveMigrationRequest == null)
+        assertTrue(gateway.lastMigrationRequest == null)
     }
 
     @Test
@@ -139,22 +125,7 @@ class ConfigViewModelTest {
         viewModel.addAliasEntry(parentGroupId = null, canonicalLeaf = "dining", aliases = listOf("吃饭", "饭"))
         advanceUntilIdle()
 
-        assertTrue(gateway.lastMoveMigrationRequest != null)
-    }
-
-    @Test
-    fun alias_system_file_keeps_plain_toml_editor_state() = runTest(dispatcher) {
-        val runtime = FakeConfigRuntime()
-        val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
-        advanceUntilIdle()
-
-        viewModel.openFile("activity_hierarchy/_system.toml")
-        advanceUntilIdle()
-
-        assertEquals("activity_hierarchy/_system.toml", viewModel.uiState.selectedFilePath)
-        assertNull(viewModel.uiState.aliasDocumentDraft)
-        assertEquals("", viewModel.uiState.aliasAdvancedTomlDraft)
-        assertTrue(viewModel.uiState.editableContent.contains("sleep_inference"))
+        assertTrue(gateway.lastMigrationRequest != null)
     }
 
     @Test
@@ -166,12 +137,12 @@ class ConfigViewModelTest {
         viewModel.createAliasTomlFile("study")
         advanceUntilIdle()
 
-        assertTrue(runtime.hasConfigFile("activity_hierarchy/study.toml"))
+        assertTrue(runtime.hasConfigFile("user/activity_hierarchy/study.toml"))
         assertEquals(
             "parent = \"study\"\n\n[aliases]\n",
-            runtime.configContent("activity_hierarchy/study.toml")
+            runtime.configContent("user/activity_hierarchy/study.toml")
         )
-        assertEquals("activity_hierarchy/study.toml", viewModel.uiState.selectedFilePath)
+        assertEquals("user/activity_hierarchy/study.toml", viewModel.uiState.selectedFilePath)
         assertEquals(AliasEditorMode.STRUCTURED, viewModel.uiState.aliasEditorMode)
         assertEquals("study", viewModel.uiState.aliasDocumentDraft?.parent)
     }
@@ -198,27 +169,8 @@ class ConfigViewModelTest {
         viewModel.deleteCurrentAliasTomlFile()
         advanceUntilIdle()
 
-        assertTrue(!runtime.hasConfigFile("activity_hierarchy/meal.toml"))
-        assertTrue(viewModel.uiState.aliasFiles.none { it.relativePath == "activity_hierarchy/meal.toml" })
-    }
-
-    @Test
-    fun switching_plain_toml_files_restores_unsaved_draft_when_returning() = runTest(dispatcher) {
-        val runtime = FakeConfigRuntime()
-        val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
-        advanceUntilIdle()
-
-        viewModel.openFile("activity_hierarchy/_system.toml")
-        advanceUntilIdle()
-        viewModel.onEditableContentChange("unsaved alias system draft")
-
-        viewModel.openFile("activity_hierarchy/meal.toml")
-        advanceUntilIdle()
-        viewModel.openFile("activity_hierarchy/_system.toml")
-        advanceUntilIdle()
-
-        assertEquals("activity_hierarchy/_system.toml", viewModel.uiState.selectedFilePath)
-        assertEquals("unsaved alias system draft", viewModel.uiState.editableContent)
+        assertTrue(!runtime.hasConfigFile("user/activity_hierarchy/meal.toml"))
+        assertTrue(viewModel.uiState.aliasFiles.none { it.relativePath == "user/activity_hierarchy/meal.toml" })
     }
 
     @Test
@@ -230,12 +182,12 @@ class ConfigViewModelTest {
         viewModel.selectAliasEditorMode(AliasEditorMode.ADVANCED)
         viewModel.onAliasAdvancedTomlChange("parent = \"meal\"\n\n[aliases.breakfast]\n\"draft\" = [\"早餐\"]")
 
-        viewModel.openFile("activity_hierarchy/recreation.toml")
+        viewModel.openFile("user/activity_hierarchy/recreation.toml")
         advanceUntilIdle()
-        viewModel.openFile("activity_hierarchy/meal.toml")
+        viewModel.openFile("user/activity_hierarchy/meal.toml")
         advanceUntilIdle()
 
-        assertEquals("activity_hierarchy/meal.toml", viewModel.uiState.selectedFilePath)
+        assertEquals("user/activity_hierarchy/meal.toml", viewModel.uiState.selectedFilePath)
         assertEquals(AliasEditorMode.ADVANCED, viewModel.uiState.aliasEditorMode)
         assertTrue(viewModel.uiState.aliasAdvancedTomlDraft.contains("\"draft\""))
     }
@@ -266,13 +218,80 @@ class ConfigViewModelTest {
         viewModel.saveCurrentFile()
         advanceUntilIdle()
 
-        assertEquals("activity_hierarchy/meal.toml", runtime.lastMoveMigrationRequest?.configRelativePath)
+        assertEquals("user/activity_hierarchy/meal.toml", runtime.lastMigrationRequest?.configRelativePath)
         assertEquals(
             AliasKeyReplacement("早餐", "早饭"),
-            runtime.lastMoveMigrationRequest?.aliasReplacements?.single()
+            runtime.lastMigrationRequest?.replacementPlan?.aliases?.single()
         )
         assertEquals(listOf("早饭", "晚饭", "study/math"), quickActivitiesGateway.quickActivities)
         assertEquals(1L, viewModel.uiState.txtReloadRequestVersion)
+    }
+
+    @Test
+    fun renaming_activity_category_sends_core_result_with_file_rename() = runTest(dispatcher) {
+        val runtime = FakeConfigRuntime()
+        val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
+        advanceUntilIdle()
+
+        viewModel.renameAliasCategory("daily")
+        advanceUntilIdle()
+
+        val request = requireNotNull(runtime.lastMigrationRequest)
+        assertEquals("user/activity_hierarchy/meal.toml", request.configRelativePath)
+        assertEquals(
+            ActivityHierarchyDocumentRename(
+                oldSourceName = "user/activity_hierarchy/meal.toml",
+                newSourceName = "user/activity_hierarchy/daily.toml"
+            ),
+            request.configFileRename
+        )
+        assertEquals("meal", request.replacementPlan.canonical.firstOrNull()?.oldCanonical?.substringBefore('_'))
+        assertTrue(!runtime.hasConfigFile("user/activity_hierarchy/meal.toml"))
+        assertTrue(runtime.hasConfigFile("user/activity_hierarchy/daily.toml"))
+        assertEquals("user/activity_hierarchy/daily.toml", viewModel.uiState.selectedFilePath)
+        assertEquals("daily", viewModel.uiState.aliasDocumentDraft?.parent)
+    }
+
+    @Test
+    fun renaming_default_activity_category_updates_the_new_toml_name_and_content() = runTest(dispatcher) {
+        val runtime = FakeConfigRuntime()
+        val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
+        advanceUntilIdle()
+
+        assertEquals("user/activity_hierarchy/meal.toml", viewModel.uiState.selectedFilePath)
+        assertEquals("meal", viewModel.uiState.aliasDocumentDraft?.parent)
+
+        viewModel.renameAliasCategory("daily")
+        advanceUntilIdle()
+
+        assertFalse(runtime.hasConfigFile("user/activity_hierarchy/meal.toml"))
+        assertTrue(runtime.hasConfigFile("user/activity_hierarchy/daily.toml"))
+        assertTrue(runtime.configContent("user/activity_hierarchy/daily.toml").contains("parent = \"daily\""))
+        assertTrue(runtime.configContent("user/activity_hierarchy/daily.toml").contains("\"breakfast\" = [\"早餐\"]"))
+        assertEquals("daily.toml", viewModel.uiState.selectedFileDisplayName)
+        assertEquals("user/activity_hierarchy/daily.toml", viewModel.uiState.selectedFilePath)
+        assertEquals("daily", viewModel.uiState.aliasDocumentDraft?.parent)
+    }
+
+    @Test
+    fun failed_activity_category_rename_keeps_the_original_editor_state() = runTest(dispatcher) {
+        val runtime = FakeConfigRuntime(
+            migrationFailure = ActivityHierarchyMigrationResult(
+                ok = false,
+                message = "candidate database rebuild failed"
+            )
+        )
+        val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
+        advanceUntilIdle()
+
+        viewModel.renameAliasCategory("daily")
+        advanceUntilIdle()
+
+        assertEquals("user/activity_hierarchy/meal.toml", viewModel.uiState.selectedFilePath)
+        assertEquals("meal", viewModel.uiState.aliasDocumentDraft?.parent)
+        assertFalse(runtime.hasConfigFile("user/activity_hierarchy/daily.toml"))
+        assertEquals(ConfigAutoSaveStatus.FAILED, viewModel.uiState.autoSaveStatus)
+        assertEquals("candidate database rebuild failed", viewModel.uiState.aliasEditorErrorMessage)
     }
 
     @Test
@@ -320,9 +339,9 @@ class ConfigViewModelTest {
         viewModel.confirmAliasEntryMovePlan()
         advanceUntilIdle()
 
-        val request = requireNotNull(runtime.lastMoveMigrationRequest)
-        assertEquals("meal_breakfast_breakfast", request.replacements.single().oldCanonical)
-        assertEquals("meal_dinner_breakfast", request.replacements.single().newCanonical)
+        val request = requireNotNull(runtime.lastMigrationRequest)
+        assertEquals("meal_breakfast_breakfast", request.replacementPlan.canonical.single().oldCanonical)
+        assertEquals("meal_dinner_breakfast", request.replacementPlan.canonical.single().newCanonical)
         assertTrue(request.updatedTomlContent.contains("[aliases.dinner]"))
         assertNull(viewModel.uiState.aliasEntryMovePlan)
         assertEquals(ConfigAutoSaveStatus.SAVED, viewModel.uiState.autoSaveStatus)
@@ -346,7 +365,7 @@ class ConfigViewModelTest {
             .nodes.filterIsInstance<AliasTomlGroup>().single()
         assertEquals(listOf("早餐"), category.groupAliases)
         assertTrue(category.nodes.isEmpty())
-        assertTrue(runtime.lastMoveMigrationRequest != null)
+        assertTrue(runtime.lastMigrationRequest != null)
     }
 
     @Test
@@ -366,10 +385,10 @@ class ConfigViewModelTest {
         viewModel.renameGroupAlias(category.id, "早餐", "早饭")
         advanceUntilIdle()
 
-        val request = requireNotNull(runtime.lastMoveMigrationRequest)
-        assertTrue(request.replacements.isEmpty())
-        assertEquals("早餐", request.aliasReplacements.single().oldAlias)
-        assertEquals("早饭", request.aliasReplacements.single().newAlias)
+        val request = requireNotNull(runtime.lastMigrationRequest)
+        assertTrue(request.replacementPlan.canonical.isEmpty())
+        assertEquals("早餐", request.replacementPlan.aliases.single().oldAlias)
+        assertEquals("早饭", request.replacementPlan.aliases.single().newAlias)
         assertTrue(request.updatedTomlContent.contains("group_aliases = [\"早饭\"]"))
     }
 
@@ -389,8 +408,8 @@ class ConfigViewModelTest {
         viewModel.updateGroupAliases(category.id, listOf("晚饭", "晚餐"))
         advanceUntilIdle()
 
-        val request = requireNotNull(runtime.lastMoveMigrationRequest)
-        assertTrue(request.replacements.isEmpty())
+        val request = requireNotNull(runtime.lastMigrationRequest)
+        assertTrue(request.replacementPlan.canonical.isEmpty())
         assertTrue(request.updatedTomlContent.contains("group_aliases = [\"晚饭\", \"晚餐\"]"))
     }
 
@@ -408,23 +427,20 @@ class ConfigViewModelTest {
         val updated = requireNotNull(viewModel.uiState.aliasDocumentDraft).nodes
             .filterIsInstance<AliasTomlGroup>().first { it.name == "breakfast" }
         assertEquals(listOf("早餐记录"), updated.groupAliases)
-        assertTrue(runtime.lastMoveMigrationRequest != null)
+        assertTrue(runtime.lastMigrationRequest != null)
     }
 }
 
-private class FakeConfigRuntime :
+private class FakeConfigRuntime(
+    private val migrationFailure: ActivityHierarchyMigrationResult? = null
+) :
     ConfigGateway,
     ActivityHierarchyGateway,
     TxtStorageGateway,
-    AliasMoveMigrationGateway {
+    ActivityHierarchyMigrationGateway {
 
     private val fileContents = linkedMapOf(
-        "activity_hierarchy/_system.toml" to """
-            [sleep_inference]
-            wake_keywords = ["wake"]
-            sleep_project_path = "sleep_night"
-        """.trimIndent(),
-        "activity_hierarchy/meal.toml" to """
+        "user/activity_hierarchy/meal.toml" to """
             parent = "meal"
 
             [aliases.breakfast]
@@ -433,7 +449,7 @@ private class FakeConfigRuntime :
             [aliases.dinner]
             "dinner" = ["晚饭"]
         """.trimIndent(),
-        "activity_hierarchy/recreation.toml" to """
+        "user/activity_hierarchy/recreation.toml" to """
             parent = "recreation"
 
             [aliases.online-platforms]
@@ -455,14 +471,27 @@ private class FakeConfigRuntime :
 
     fun hasConfigFile(relativePath: String): Boolean = fileContents.containsKey(relativePath)
     val savedTxtWrites = linkedMapOf<String, String>()
-    var lastMoveMigrationRequest: AliasEntryMoveMigrationRequest? = null
+    var lastMigrationRequest: ActivityHierarchyMigrationRequest? = null
 
-    override suspend fun applyAliasEntryMoveMigration(
-        request: AliasEntryMoveMigrationRequest
-    ): AliasEntryMoveMigrationResult {
-        lastMoveMigrationRequest = request
-        fileContents[request.configRelativePath] = request.updatedTomlContent
-        return AliasEntryMoveMigrationResult(ok = true, message = "ok", updatedTxtFileCount = 2)
+    override suspend fun applyActivityHierarchyMigration(
+        request: ActivityHierarchyMigrationRequest
+    ): ActivityHierarchyMigrationResult {
+        lastMigrationRequest = request
+        migrationFailure?.let { return it }
+        val rename = request.configFileRename
+        if (rename == null) {
+            fileContents[request.configRelativePath] = request.updatedTomlContent
+        } else {
+            fileContents.remove(rename.oldSourceName)
+            fileContents[rename.newSourceName] = request.updatedTomlContent
+        }
+        return ActivityHierarchyMigrationResult(
+            ok = true,
+            message = "ok",
+            updatedTxtFileCount = 2,
+            updatedTomlContent = request.updatedTomlContent,
+            updatedConfigRelativePath = rename?.newSourceName.orEmpty()
+        )
     }
 
     override suspend fun describeActivityHierarchy(
@@ -482,55 +511,62 @@ private class FakeConfigRuntime :
         tomlContent: String,
         operation: ActivityHierarchyOperation
     ): ActivityHierarchyOperationResult {
-        if (operation.kind == "add_leaf" && operation.aliases.contains("zhihu")) {
+        if (operation.kind == ActivityHierarchyOperationKind.ADD_LEAF && operation.aliases.contains("zhihu")) {
             return ActivityHierarchyOperationResult(
                 ok = false,
                 updatedTomlContent = tomlContent,
-                replacements = emptyList(),
                 message = "Duplicate alias key: zhihu"
             )
         }
         val updatedContent = when (operation.kind) {
-            "rename_parent" -> tomlContent.replace(
+            ActivityHierarchyOperationKind.RENAME_PARENT -> tomlContent.replace(
                 Regex("parent\\s*=\\s*\"[^\"]*\""),
                 "parent = \"${operation.newName}\""
             )
-            "append_leaf_alias" -> tomlContent + "\n\"${operation.canonicalKey}\" = [\"${operation.aliases.firstOrNull().orEmpty()}\"]\n"
-            "set_leaf_aliases" -> tomlContent +
+            ActivityHierarchyOperationKind.APPEND_LEAF_ALIAS -> tomlContent + "\n\"${operation.canonicalKey}\" = [\"${operation.aliases.firstOrNull().orEmpty()}\"]\n"
+            ActivityHierarchyOperationKind.SET_LEAF_ALIASES -> tomlContent +
                 "\n\"${operation.targetPath.substringAfterLast('.') }\" = [\"${operation.aliases.joinToString("\", \"")}\"]\n"
-            "set_group_aliases", "rename_group_alias", "append_group_alias" -> tomlContent +
+            ActivityHierarchyOperationKind.SET_GROUP_ALIASES,
+            ActivityHierarchyOperationKind.RENAME_GROUP_ALIAS,
+            ActivityHierarchyOperationKind.APPEND_GROUP_ALIAS -> tomlContent +
                 "\ngroup_aliases = [\"${operation.aliases.joinToString("\", \"").ifBlank { operation.newName }}\"]\n"
             else -> tomlContent
         }
         val hierarchy = when (operation.kind) {
-            "promote_leaf" -> snapshotForPromotedBreakfast()
-            "add_leaf" -> snapshotForAddedLeaf(operation.canonicalKey, operation.aliases)
-            "set_group_aliases", "rename_group_alias", "append_group_alias" -> snapshotForGroupAliasUpdate(
+            ActivityHierarchyOperationKind.PROMOTE_LEAF -> snapshotForPromotedBreakfast()
+            ActivityHierarchyOperationKind.ADD_LEAF -> snapshotForAddedLeaf(operation.canonicalKey, operation.aliases)
+            ActivityHierarchyOperationKind.SET_GROUP_ALIASES,
+            ActivityHierarchyOperationKind.RENAME_GROUP_ALIAS,
+            ActivityHierarchyOperationKind.APPEND_GROUP_ALIAS -> snapshotForGroupAliasUpdate(
                 operation.aliases.firstOrNull() ?: operation.newName
             )
-            "rename_parent" -> snapshotFor(updatedContent)
+            ActivityHierarchyOperationKind.RENAME_PARENT -> snapshotFor(updatedContent)
             else -> snapshotFor(tomlContent)
         }
         return ActivityHierarchyOperationResult(
             ok = true,
             updatedTomlContent = updatedContent,
-            replacements = if (operation.kind == "move_leaf") {
-                listOf(CanonicalActivityNameReplacement(
-                    "meal_breakfast_breakfast",
-                    "meal_dinner_breakfast"
-                ))
-            } else {
-                emptyList()
-            },
-            aliasReplacements = when (operation.kind) {
-                "set_leaf_aliases" -> listOf(
+            replacementPlan = ActivityNameReplacementPlan(
+                canonical = if (operation.kind == ActivityHierarchyOperationKind.RENAME_PARENT) {
+                    listOf(CanonicalActivityNameReplacement("meal_breakfast", "${operation.newName}_breakfast"))
+                } else if (operation.kind == ActivityHierarchyOperationKind.MOVE_LEAF) {
+                    listOf(CanonicalActivityNameReplacement(
+                        "meal_breakfast_breakfast",
+                        "meal_dinner_breakfast"
+                    ))
+                } else {
+                    emptyList()
+                },
+                aliases = when (operation.kind) {
+                ActivityHierarchyOperationKind.SET_LEAF_ALIASES -> listOf(
                     AliasKeyReplacement("早餐", operation.aliases.firstOrNull().orEmpty())
                 ).filter { it.newAlias.isNotBlank() && it.oldAlias != it.newAlias }
-                "rename_group_alias" -> listOf(
+                ActivityHierarchyOperationKind.RENAME_GROUP_ALIAS -> listOf(
                     AliasKeyReplacement(operation.oldAlias, operation.newName)
                 )
                 else -> emptyList()
-            },
+                }
+            ),
             hierarchy = hierarchy,
             message = "ok"
         )
@@ -552,7 +588,6 @@ private class FakeConfigRuntime :
     ): ActivityHierarchyOperationResult = ActivityHierarchyOperationResult(
         ok = true,
         updatedTomlContent = updatedTomlContent,
-        replacements = emptyList(),
         hierarchy = snapshotFor(updatedTomlContent),
         message = "ok"
     )
@@ -666,7 +701,7 @@ private class FakeConfigRuntime :
 
     override suspend fun listConfigTomlFiles(): ConfigTomlListResult = ConfigTomlListResult(
         ok = true,
-        aliasFiles = fileEntriesUnder("activity_hierarchy/"),
+        aliasFiles = fileEntriesUnder("user/activity_hierarchy/"),
         chartFiles = fileEntriesUnder("charts/"),
         metaFiles = fileEntriesUnder("meta/"),
         reportFiles = fileEntriesUnder("reports/"),
@@ -790,7 +825,7 @@ private class FakeConfigRuntime :
             ConfigTomlFileEntry(
                 relativePath = path,
                 displayName = when {
-                    path.startsWith("activity_hierarchy/") -> path.removePrefix("activity_hierarchy/")
+                    path.startsWith("user/activity_hierarchy/") -> path.removePrefix("user/activity_hierarchy/")
                     path.startsWith("charts/") -> path.removePrefix("charts/")
                     path.startsWith("reports/") -> path.removePrefix("reports/")
                     else -> path

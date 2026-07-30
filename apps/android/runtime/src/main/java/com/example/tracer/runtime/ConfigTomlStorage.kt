@@ -12,7 +12,8 @@ internal class ConfigTomlStorage(private val configRootPath: String) {
                 chartFiles = emptyList(),
                 metaFiles = emptyList(),
                 reportFiles = emptyList(),
-                message = "No config directory."
+                message = "No config directory.",
+                userFiles = emptyList()
             )
         }
 
@@ -26,17 +27,20 @@ internal class ConfigTomlStorage(private val configRootPath: String) {
         val chartFiles = mutableListOf<ConfigTomlFileEntry>()
         val metaFiles = mutableListOf<ConfigTomlFileEntry>()
         val reportFiles = mutableListOf<ConfigTomlFileEntry>()
+        val userFiles = mutableListOf<ConfigTomlFileEntry>()
         for (path in allTomlFiles) {
-            if (path.startsWith("reports/")) {
-                reportFiles += path.toConfigTomlFileEntry(prefixToTrim = "reports/")
-            } else if (path.startsWith("charts/")) {
-                chartFiles += path.toConfigTomlFileEntry(prefixToTrim = "charts/")
-            } else if (path == "config.toml" || path.startsWith("meta/")) {
-                metaFiles += path.toConfigTomlFileEntry(prefixToTrim = null)
-            } else if (path.startsWith("activity_hierarchy/")) {
-                aliasFiles += path.toConfigTomlFileEntry(prefixToTrim = "activity_hierarchy/")
+            if (path.startsWith("user/")) {
+                userFiles += path.toConfigTomlFileEntry(prefixToTrim = null)
             }
-            // Other root-level TOML files are outside the canonical config layout.
+            if (path.startsWith("program/reports/")) {
+                reportFiles += path.toConfigTomlFileEntry(prefixToTrim = "program/reports/")
+            } else if (path.startsWith("program/charts/")) {
+                chartFiles += path.toConfigTomlFileEntry(prefixToTrim = "program/charts/")
+            } else if (path == "program/config.toml" || path.startsWith("program/meta/")) {
+                metaFiles += path.toConfigTomlFileEntry(prefixToTrim = null)
+            } else if (path.startsWith("user/activity_hierarchy/")) {
+                aliasFiles += path.toConfigTomlFileEntry(prefixToTrim = "user/activity_hierarchy/")
+            }
         }
 
         return ConfigTomlListResult(
@@ -45,7 +49,8 @@ internal class ConfigTomlStorage(private val configRootPath: String) {
             chartFiles = chartFiles,
             metaFiles = metaFiles,
             reportFiles = reportFiles,
-            message = "Found ${allTomlFiles.size} TOML file(s)."
+            message = "Found ${allTomlFiles.size} TOML file(s).",
+            userFiles = userFiles
         )
     }
 
@@ -106,6 +111,15 @@ internal class ConfigTomlStorage(private val configRootPath: String) {
                 message = "TOML file path is invalid."
             )
 
+        if (!isMutableUserConfigPath(requested)) {
+            return TxtFileContentResult(
+                ok = false,
+                filePath = requested,
+                content = "",
+                message = "Program TOML resources are read-only; only user TOML files can be modified."
+            )
+        }
+
         val root = File(configRootPath).canonicalFile
         val target = File(root, requested).canonicalFile
         val relative = target.relativeToOrNull(root)
@@ -163,6 +177,14 @@ internal class ConfigTomlStorage(private val configRootPath: String) {
                 content = "",
                 message = "TOML file path is invalid."
             )
+        if (!isMutableUserConfigPath(requested)) {
+            return TxtFileContentResult(
+                ok = false,
+                filePath = requested,
+                content = "",
+                message = "Program TOML resources are read-only; only user TOML files can be deleted."
+            )
+        }
         val root = File(configRootPath).canonicalFile
         val target = File(root, requested).canonicalFile
         val relative = target.relativeToOrNull(root)
@@ -208,6 +230,9 @@ internal class ConfigTomlStorage(private val configRootPath: String) {
         }
         return trimmed
     }
+
+    private fun isMutableUserConfigPath(relativePath: String): Boolean =
+        relativePath.startsWith("user/")
 
     private fun String.toConfigTomlFileEntry(prefixToTrim: String?): ConfigTomlFileEntry {
         // Read/write must keep the canonical relative path because config references

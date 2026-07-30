@@ -124,16 +124,6 @@ val androidVersionProperties =
     loadOptionalProperties(rootProject.file("meta/version.properties"))
 val tracerCoreVersionHeader = rootProject.file("../../libs/tracer_core/src/shared/types/version.hpp")
 val tracerCoreVersion = readTracerCoreVersion(tracerCoreVersionHeader)
-val tracerConfigProfile =
-    providers.gradleProperty("tracerConfigProfile")
-        .orElse("test")
-        .map { it.trim().lowercase() }
-        .get()
-        .also { profile ->
-            require(profile == "distribution" || profile == "test") {
-                "Unsupported tracerConfigProfile `$profile`; expected `distribution` or `test`."
-            }
-        }
 val androidAppVersionCode =
     androidVersionProperties.getProperty("VERSION_CODE")?.toIntOrNull()
         ?: throw GradleException("Invalid or missing VERSION_CODE in meta/version.properties")
@@ -308,8 +298,7 @@ fun registerPackagedAssetsPolicyTask(variant: String): TaskProvider<Task> {
         )
     return tasks.register("verify${taskSuffix}PackagedAssetsPolicy") {
         group = "verification"
-        description =
-            "Verify packaged assets policy for $variant and config profile $tracerConfigProfile."
+        description = "Verify packaged assets policy for $variant."
         dependsOn("assemble$taskSuffix")
         doLast {
             val candidateApks =
@@ -341,30 +330,6 @@ fun registerPackagedAssetsPolicyTask(variant: String): TaskProvider<Task> {
                     )
                 }
 
-                val bundledTxtEntries = mutableListOf<String>()
-                val entries = zipFile.entries()
-                while (entries.hasMoreElements()) {
-                    val entry = entries.nextElement()
-                    if (
-                        !entry.isDirectory &&
-                        entry.name.startsWith("assets/tracer_core/input/") &&
-                        entry.name.endsWith(".txt", ignoreCase = true)
-                    ) {
-                        bundledTxtEntries += entry.name
-                    }
-                }
-
-                if (tracerConfigProfile == "test" && bundledTxtEntries.isEmpty()) {
-                    throw GradleException(
-                        "APK ${targetApk.name} is missing test runtime TXT fixtures for config profile test.",
-                    )
-                }
-                if (tracerConfigProfile == "distribution" && bundledTxtEntries.isNotEmpty()) {
-                    throw GradleException(
-                        "APK ${targetApk.name} unexpectedly packaged runtime TXT fixtures: " +
-                            bundledTxtEntries.take(5).joinToString(),
-                    )
-                }
             }
         }
     }

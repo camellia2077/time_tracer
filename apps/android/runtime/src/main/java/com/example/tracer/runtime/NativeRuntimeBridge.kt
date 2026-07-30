@@ -14,6 +14,13 @@ internal class NativeRuntimeBridge {
             converterConfigTomlPath = paths.configTomlPath
         )
 
+    fun nativeInitPipeline(paths: RuntimePaths): String =
+        NativeBridge.nativeInitPipeline(
+            dbPath = paths.dbPath,
+            outputRoot = paths.outputRoot,
+            converterConfigTomlPath = paths.configTomlPath
+        )
+
     fun nativeShutdown(): String = NativeBridge.nativeShutdown()
 
     fun nativeIngest(

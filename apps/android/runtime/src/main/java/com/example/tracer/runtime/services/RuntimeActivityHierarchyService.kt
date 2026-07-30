@@ -52,7 +52,6 @@ internal class RuntimeActivityHierarchyService(
             return@withContext ActivityHierarchyOperationResult(
                 ok = false,
                 updatedTomlContent = tomlContent,
-                replacements = emptyList(),
                 message = "native init failed"
             )
         }
@@ -60,7 +59,7 @@ internal class RuntimeActivityHierarchyService(
             .put("action", "apply_activity_hierarchy_operation")
             .put("toml_content", tomlContent)
             .put("operation", JSONObject()
-                .put("kind", operation.kind)
+                .put("kind", operation.kind.wireValue)
                 .put("target_path", operation.targetPath)
                 .put("destination_path", operation.destinationPath)
                 .put("canonical_key", operation.canonicalKey)
@@ -97,7 +96,7 @@ internal class RuntimeActivityHierarchyService(
             .put("destination_name", destinationName)
             .put("documents", encodedDocuments)
             .put("operation", JSONObject()
-                .put("kind", operation.kind)
+                .put("kind", operation.kind.wireValue)
                 .put("target_path", operation.targetPath)
                 .put("destination_path", operation.destinationPath)
                 .put("target_alias", operation.targetAlias))
@@ -113,7 +112,6 @@ internal class RuntimeActivityHierarchyService(
             return@withContext ActivityHierarchyOperationResult(
                 ok = false,
                 updatedTomlContent = updatedTomlContent,
-                replacements = emptyList(),
                 message = "native init failed"
             )
         }

@@ -1,0 +1,31 @@
+{
+  "target": "android",
+  "source_root": "C:\\code\\time_tracer\\config\\program",
+  "input_hash": "2f7c0154ad76505d0b3c8e50f5448dfa87738df846dd684435fe9b4854c9fad4",
+  "planned_file_count": 22,
+  "file_hashes": {
+    "program/charts/heatmap.toml": "1295f5bbec03547f5ace005abb9071c5ad9025efbe5fc4f4cfac87b5b1ce7e6c",
+    "program/charts/pie.toml": "15e29252ab0364129230577795772adc557940fd0756c3678b6f98b25ee8b1ae",
+    "program/config.toml": "dad32989ca88069cfd962997e555dce7ff38727d646baf2e1d7d7af0cced5690",
+    "program/meta/bundle.toml": "5f381154aeea057d30263b77d20ef38600b3ca93465af9344ecff7b7baf5a5e7",
+    "program/reports/markdown/en/day.toml": "84ccf9d956238999218aa6ed3d8af73a0247ac5b511866f31bd1be5f0656415c",
+    "program/reports/markdown/en/month.toml": "a6f1c1370ffdd65a3dd73214740fe0a80ad9cfd1c1482bcd7ad320e7d685ca86",
+    "program/reports/markdown/en/period.toml": "e386c4949778a558455260fe9b7eebdd054108d0c833087615bad4717b02f2a5",
+    "program/reports/markdown/en/week.toml": "30fb5830443199959108d8eae891b96fb6822927cb2732efc37c293b814a59c2",
+    "program/reports/markdown/en/year.toml": "69bc14571b9c038e82ced436dc626d3a6d38e7c58d1e6b7080895dbe3e0521b2",
+    "program/reports/markdown/ja/day.toml": "2b8978fb64fd13d7c1953aaa1ef5ef302ac07a5dfa0579037ade3e1a6fc94ab0",
+    "program/reports/markdown/ja/month.toml": "eff8afe1a104a99084c6f24a968a47307eea8717c421dbafefb9e9931fd6bb85",
+    "program/reports/markdown/ja/period.toml": "3b4248c1175c3f13597dab97702ce9dac46eecc73b89d0738492c5a5af4f493b",
+    "program/reports/markdown/ja/week.toml": "275124629abf3b60348fc1ec44354fd986629a1386ac9ccc997d6e99dae0bbeb",
+    "program/reports/markdown/ja/year.toml": "f2c2cf7f4aa4398da34cd619a551b8d327e9aa46f61ffc0383774af46b780e9e",
+    "program/reports/markdown/zh/day.toml": "d46e88d65edd68e94aa765f3813d61316072d24be31fa343e693cccbdddca0b5",
+    "program/reports/markdown/zh/month.toml": "373b07440d3831105fa89537579ff43df02007847bf18f26a4995503c4d3581d",
+    "program/reports/markdown/zh/period.toml": "9633140235101e86fbcae4d7bc90d0ab51d86089afe28e5c2dc6d589c3cbb9a2",
+    "program/reports/markdown/zh/week.toml": "2f1555950fbac62f4f22f4f454f9947c86a0f97405921ea2240a4753c32d30ae",
+    "program/reports/markdown/zh/year.toml": "9e914ba80ff7eb846bab2aa7343fd61c5b73cc3b6100fb2b46209214ab534caa",
+    "user/behavior.toml": "b90692bb2fd5a7d237efbfa5c92d29fcc44ee2934cc0c41d13dd6711c17ac1fa",
+    "user/charts.toml": "f865ac796e999afddf0c6b96819a33d44f7506ec88bfff3c648fca7926a69bd6",
+    "user/heatmap.toml": "f0be3ba9e8f15570c5c2f11edd1870c3e54a1e838296f3cf8d880a7fec51bd9f"
+  },
+  "generated_at_utc": "2026-07-30T05:14:07.609445+00:00"
+}

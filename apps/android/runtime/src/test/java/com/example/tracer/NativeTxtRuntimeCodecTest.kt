@@ -92,28 +92,6 @@ class NativeTxtRuntimeCodecTest {
     }
 
     @Test
-    fun parseAliasCanonicalRename_readsTomlAndMigrationPlan() {
-        val payload = codec.parseAliasCanonicalRename(
-            """
-                {
-                  "ok": true,
-                  "updated_toml_content": "parent = exercise",
-                  "replacements": [
-                    {"old_canonical":"exercise_cardio","new_canonical":"exercise_conditioning"}
-                  ],
-                  "error_message": ""
-                }
-            """.trimIndent()
-        )
-
-        assertTrue(payload.ok)
-        assertEquals("parent = exercise", payload.updatedTomlContent)
-        assertEquals(1, payload.replacements.size)
-        assertEquals("exercise_cardio", payload.replacements.single().oldCanonical)
-        assertEquals("exercise_conditioning", payload.replacements.single().newCanonical)
-    }
-
-    @Test
     fun parseAliasCrossDocumentMove_readsUpdatedDocumentsAndReplacements() {
         val payload = codec.parseActivityHierarchyCrossDocumentOperation(
             """
@@ -121,11 +99,11 @@ class NativeTxtRuntimeCodecTest {
                   "ok": true,
                   "updated_documents": [
                     {
-                      "source_name": "activity_hierarchy/exercise.toml",
+                      "source_name": "user/activity_hierarchy/exercise.toml",
                       "updated_toml_content": "parent = exercise"
                     },
                     {
-                      "source_name": "activity_hierarchy/meal.toml",
+                      "source_name": "user/activity_hierarchy/meal.toml",
                       "updated_toml_content": "parent = meal"
                     }
                   ],
@@ -140,8 +118,8 @@ class NativeTxtRuntimeCodecTest {
 
         assertTrue(payload.ok)
         assertEquals(2, payload.updatedDocuments.size)
-        assertEquals("activity_hierarchy/meal.toml", payload.updatedDocuments[1].sourceName)
-        assertEquals("meal_go", payload.replacements.single().newCanonical)
+        assertEquals("user/activity_hierarchy/meal.toml", payload.updatedDocuments[1].sourceName)
+        assertEquals("meal_go", payload.replacementPlan.canonical.single().newCanonical)
     }
 
     @Test

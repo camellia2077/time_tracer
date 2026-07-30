@@ -5,7 +5,7 @@ import org.tomlj.TomlArray
 import org.tomlj.TomlTable
 
 internal object ReportHeatmapTomlLoader {
-    private const val HeatmapConfigPath = "charts/heatmap.toml"
+    private const val HeatmapConfigPath = "program/charts/heatmap.toml"
     private val HexColorPattern = Regex("^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$")
     private val SectionHeaderPattern = Regex("""^\s*\[[^\]]+\]\s*$""")
 

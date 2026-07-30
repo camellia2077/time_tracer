@@ -20,6 +20,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tracer.PersistedRecordInputSnapshot
+import com.example.tracer.data.ReportChartPaletteUserConfigStore
 import com.example.tracer.data.UserPreferencesRecordInputPersistence
 import kotlinx.coroutines.launch
 
@@ -31,6 +32,8 @@ fun TracerScreen(
     reportGateway: ReportGateway,
     queryGateway: QueryGateway,
     configGateway: ConfigGateway,
+    activityHierarchyGateway: ActivityHierarchyGateway,
+    activityHierarchyMigrationGateway: ActivityHierarchyMigrationGateway,
     tracerExchangeGateway: TracerExchangeGateway,
     userPreferencesRepository: com.example.tracer.data.UserPreferencesRepository,
     themeConfig: com.example.tracer.data.ThemeConfig,
@@ -86,9 +89,17 @@ fun TracerScreen(
         }
     )
     val configViewModel: ConfigViewModel = viewModel(
-        factory = remember(configGateway, txtStorageGateway, quickActivitiesPreferenceGateway) {
+        factory = remember(
+            configGateway,
+            activityHierarchyGateway,
+            activityHierarchyMigrationGateway,
+            txtStorageGateway,
+            quickActivitiesPreferenceGateway
+        ) {
             ConfigViewModelFactory(
                 configGateway = configGateway,
+                activityHierarchyGateway = activityHierarchyGateway,
+                activityHierarchyMigrationGateway = activityHierarchyMigrationGateway,
                 txtStorageGateway = txtStorageGateway,
                 quickActivitiesPreferenceGateway = quickActivitiesPreferenceGateway
             )
@@ -134,9 +145,14 @@ fun TracerScreen(
     val persistedRecordInput by userPreferencesRepository.recordPersistedInput.collectAsState(
         initial = null as PersistedRecordInputSnapshot?
     )
-    val reportPiePalettePreset by userPreferencesRepository.reportPiePalettePreset.collectAsState(
-        initial = com.example.tracer.data.UserPreferencesRepository.DEFAULT_REPORT_PIE_PALETTE_PRESET
-    )
+    var reportPiePalettePreset by remember {
+        mutableStateOf(com.example.tracer.data.UserPreferencesRepository.DEFAULT_REPORT_PIE_PALETTE_PRESET)
+    }
+    LaunchedEffect(configGateway) {
+        ReportChartPaletteUserConfigStore.load(configGateway).piePalettePreset?.let {
+            reportPiePalettePreset = it
+        }
+    }
     val reportHeatmapState = rememberTracerScreenReportHeatmapState(
         selectedTab = selectedTab,
         configGateway = configGateway
@@ -294,8 +310,9 @@ fun TracerScreen(
         onThemeEvent = onThemeEvent,
         reportPiePalettePreset = reportPiePalettePreset,
         onReportPiePalettePresetChange = { value ->
+            reportPiePalettePreset = value
             coroutineScope.launch {
-                userPreferencesRepository.setReportPiePalettePreset(value)
+                ReportChartPaletteUserConfigStore.savePiePalette(configGateway, value)
             }
         },
         reportChartShowAverageLine = reportChartShowAverageLine,

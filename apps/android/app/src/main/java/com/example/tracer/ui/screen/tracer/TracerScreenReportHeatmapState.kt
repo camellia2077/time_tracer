@@ -11,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.example.tracer.data.ReportChartPaletteUserConfigStore
 
 internal data class TracerScreenReportHeatmapState(
     val config: ReportHeatmapTomlConfig,
@@ -40,9 +41,17 @@ internal fun rememberTracerScreenReportHeatmapState(
             val loadedConfig = withContext(Dispatchers.IO) {
                 ReportHeatmapTomlLoader.load(configGateway)
             }
+            val userConfig = withContext(Dispatchers.IO) {
+                ReportChartPaletteUserConfigStore.load(configGateway)
+            }
             reportHeatmapTomlConfig = loadedConfig
-            reportHeatmapStylePreference =
-                ReportHeatmapTomlLoader.deriveStylePreference(loadedConfig)
+            val selectedPalette = userConfig.heatmapPaletteName
+                ?.takeIf { it in loadedConfig.palettes }
+                ?: loadedConfig.paletteNames().firstOrNull().orEmpty()
+            reportHeatmapStylePreference = ReportHeatmapStylePreference(
+                themePolicy = ReportHeatmapThemePolicy.PALETTE,
+                paletteName = selectedPalette,
+            )
             reportHeatmapApplyMessage = ""
         }
     }
@@ -53,7 +62,7 @@ internal fun rememberTracerScreenReportHeatmapState(
         reportHeatmapApplyMessage = ""
         reportHeatmapAutoApplyJob = coroutineScope.launch {
             val applyResult = withContext(Dispatchers.IO) {
-                applyHeatmapStyleToToml(
+                applyHeatmapStyleToUserConfig(
                     configGateway = configGateway,
                     config = targetConfig,
                     style = nextStyle
@@ -116,56 +125,32 @@ private data class HeatmapTomlApplyResult(
     val updatedStyle: ReportHeatmapStylePreference? = null
 )
 
-private suspend fun applyHeatmapStyleToToml(
+private suspend fun applyHeatmapStyleToUserConfig(
     configGateway: ConfigGateway,
     config: ReportHeatmapTomlConfig,
     style: ReportHeatmapStylePreference
 ): HeatmapTomlApplyResult {
-    val configPath = ReportHeatmapTomlLoader.configPath()
-    val readResult = configGateway.readConfigTomlFile(configPath)
-    if (!readResult.ok) {
+    if (style.themePolicy != ReportHeatmapThemePolicy.PALETTE || style.paletteName.isBlank()) {
         return HeatmapTomlApplyResult(
-            ok = false,
-            message = readResult.message.ifBlank {
-                "Apply failed: cannot read $configPath."
-            }
+            ok = true,
+            message = "",
+            updatedStyle = style,
         )
     }
-
-    val (nextLightPalette, nextDarkPalette) = ReportHeatmapTomlLoader
-        .resolveDefaultPalettesForStyle(
-            config = config,
-            stylePreference = style
-        )
-    val rewrittenContent = ReportHeatmapTomlLoader.rewriteDefaults(
-        rawToml = readResult.content,
-        lightPalette = nextLightPalette,
-        darkPalette = nextDarkPalette
+    val saved = ReportChartPaletteUserConfigStore.saveHeatmapPalette(
+        configGateway = configGateway,
+        paletteName = style.paletteName,
     )
-    if (rewrittenContent == null) {
+    if (!saved) {
         return HeatmapTomlApplyResult(
             ok = false,
-            message = "Apply failed: missing [defaults] section in $configPath."
+            message = "Apply failed: cannot save user/charts.toml.",
         )
     }
-
-    val saveResult = configGateway.saveConfigTomlFile(configPath, rewrittenContent)
-    if (!saveResult.ok) {
-        return HeatmapTomlApplyResult(
-            ok = false,
-            message = saveResult.message.ifBlank {
-                "Apply failed: cannot save $configPath."
-            }
-        )
-    }
-
-    val updatedConfig = ReportHeatmapTomlLoader.parse(rewrittenContent)
     return HeatmapTomlApplyResult(
         ok = true,
-        message = saveResult.message.ifBlank {
-            "Applied heatmap style to $configPath."
-        },
-        updatedConfig = updatedConfig,
-        updatedStyle = ReportHeatmapTomlLoader.deriveStylePreference(updatedConfig)
+        message = "",
+        updatedConfig = config,
+        updatedStyle = style,
     )
 }

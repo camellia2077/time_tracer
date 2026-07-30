@@ -22,15 +22,18 @@ internal fun ConfigEditorCard(
     editableContent: String,
     autoSaveStatus: ConfigAutoSaveStatus,
     onEditableContentChange: (String) -> Unit,
-    onSaveCurrentFile: () -> Unit
+    onSaveCurrentFile: () -> Unit,
+    readOnly: Boolean = false
 ) {
-    LaunchedEffect(editableContent, selectedFileContent) {
-        if (editableContent == selectedFileContent) {
-            return@LaunchedEffect
-        }
-        delay(CONFIG_EDITOR_AUTO_SAVE_DELAY_MS)
-        if (editableContent != selectedFileContent) {
-            onSaveCurrentFile()
+    if (!readOnly) {
+        LaunchedEffect(editableContent, selectedFileContent) {
+            if (editableContent == selectedFileContent) {
+                return@LaunchedEffect
+            }
+            delay(CONFIG_EDITOR_AUTO_SAVE_DELAY_MS)
+            if (editableContent != selectedFileContent) {
+                onSaveCurrentFile()
+            }
         }
     }
 
@@ -51,6 +54,14 @@ internal fun ConfigEditorCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
+            if (readOnly) {
+                Text(
+                    text = stringResource(R.string.config_program_resource_read_only),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
             ConfigAutoSaveStatusText(
                 autoSaveStatus = autoSaveStatus,
                 modifier = Modifier.fillMaxWidth()
@@ -61,7 +72,8 @@ internal fun ConfigEditorCard(
                 onValueChange = onEditableContentChange,
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 12,
-                monospace = true
+                monospace = true,
+                readOnly = readOnly
             )
         }
     }
