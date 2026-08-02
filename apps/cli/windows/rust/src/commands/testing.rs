@@ -16,20 +16,16 @@ use super::handler::CommandContext;
 pub(crate) fn sample_cli_config() -> CliConfig {
     CliConfig {
         default_save_processed_output: false,
-        default_date_check_mode: Some("none".to_string()),
         defaults: CliDefaults {
             default_format: Some("md".to_string()),
         },
         command_defaults: CliCommandDefaults {
             export_format: Some("md".to_string()),
             query_format: Some("md".to_string()),
-            convert_date_check_mode: Some("continuity".to_string()),
             convert_save_processed_output: Some(true),
             convert_validate_logic: Some(true),
             convert_validate_structure: Some(true),
-            ingest_date_check_mode: Some("full".to_string()),
             ingest_save_processed_output: Some(false),
-            validate_logic_date_check_mode: Some("continuity".to_string()),
         },
     }
 }

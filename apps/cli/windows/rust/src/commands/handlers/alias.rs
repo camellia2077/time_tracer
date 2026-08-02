@@ -6,7 +6,8 @@ use serde_json::json;
 
 use crate::cli::{
     AliasAddArgs, AliasArgs, AliasCommand, AliasCreateArgs, AliasFileArgs, AliasGroupArgs,
-    AliasMoveArgs, AliasMoveConfigArgs, AliasRenameGroupArgs, AliasRenameParentArgs, AliasTreeArgs,
+    AliasMoveArgs, AliasMoveConfigArgs, AliasRenameGroupArgs,
+    AliasRenameParentArgs, AliasTreeArgs,
 };
 use crate::commands::handler::{CommandContext, CommandHandler};
 use crate::core::runtime::{ActivityHierarchyNodeKind, ActivityHierarchyTreeNode, CoreApi};
@@ -69,7 +70,7 @@ fn create_alias(args: AliasCreateArgs) -> Result<(), AppError> {
         ))
     })?;
     let content = format!(
-        "parent = \"{}\"\n\n[aliases]\n",
+        "parent = \"{}\"\n\n[canonical]\n",
         escape_toml_basic_string(file_name)
     );
     let mut output = OpenOptions::new()
@@ -108,7 +109,7 @@ fn render_tree(args: AliasTreeArgs, ctx: &CommandContext) -> Result<(), AppError
     let path = PathBuf::from(&args.file);
     let toml_content = fs::read_to_string(&path).map_err(|error| {
         AppError::Io(format!(
-            "Read alias TOML {} failed: {error}",
+            "Read canonical TOML {} failed: {error}",
             path.display()
         ))
     })?;
@@ -214,7 +215,7 @@ fn add_alias(args: AliasAddArgs, ctx: &CommandContext) -> Result<(), AppError> {
     Ok(())
 }
 
-fn plan_hierarchy_operation(
+pub(crate) fn plan_hierarchy_operation(
     toml_content: &str,
     ctx: &CommandContext,
     operation: serde_json::Value,
@@ -274,13 +275,13 @@ fn plan_cross_document_node_move(
 ) -> Result<crate::core::runtime::ActivityHierarchyCrossDocumentOperationOutput, AppError> {
     let source_path = source_path
         .canonicalize()
-        .map_err(|e| AppError::Io(format!("Resolve source alias TOML failed: {e}")))?;
+        .map_err(|e| AppError::Io(format!("Resolve source canonical TOML failed: {e}")))?;
     let destination_path = destination_path
         .canonicalize()
-        .map_err(|e| AppError::Io(format!("Resolve destination alias TOML failed: {e}")))?;
+        .map_err(|e| AppError::Io(format!("Resolve destination canonical TOML failed: {e}")))?;
     if source_path == destination_path {
         return Err(AppError::InvalidArguments(
-            "Source and destination alias TOML files must be different.".into(),
+            "Source and destination canonical TOML files must be different.".into(),
         ));
     }
     let documents = collect_alias_documents(&source_path, &destination_path)?;
@@ -319,21 +320,21 @@ fn collect_alias_documents(
     for file in [source_path, destination_path] {
         let parent = file.parent().ok_or_else(|| {
             AppError::InvalidArguments(format!(
-                "Alias TOML has no parent directory: {}",
+                "Canonical TOML has no parent directory: {}",
                 file.display()
             ))
         })?;
         let entries = fs::read_dir(parent)
-            .map_err(|e| AppError::Io(format!("List alias TOML directory failed: {e}")))?;
+            .map_err(|e| AppError::Io(format!("List canonical TOML directory failed: {e}")))?;
         for entry in entries {
             let path = entry
-                .map_err(|e| AppError::Io(format!("Read alias TOML entry failed: {e}")))?
+                .map_err(|e| AppError::Io(format!("Read canonical TOML entry failed: {e}")))?
                 .path();
             if path.is_file()
                 && path.extension().and_then(|e| e.to_str()) == Some("toml")
             {
                 paths.insert(path.canonicalize().map_err(|e| {
-                    AppError::Io(format!("Resolve alias TOML {} failed: {e}", path.display()))
+                    AppError::Io(format!("Resolve canonical TOML {} failed: {e}", path.display()))
                 })?);
             }
         }
@@ -344,7 +345,7 @@ fn collect_alias_documents(
     let mut documents = Vec::with_capacity(paths.len());
     for path in paths {
         let content = fs::read_to_string(&path)
-            .map_err(|e| AppError::Io(format!("Read alias TOML {} failed: {e}", path.display())))?;
+            .map_err(|e| AppError::Io(format!("Read canonical TOML {} failed: {e}", path.display())))?;
         documents.push((path.clone(), path.to_string_lossy().into_owned(), content));
     }
     Ok(documents)
@@ -357,14 +358,14 @@ fn apply_hierarchy_operation(
 ) -> Result<crate::core::runtime::ActivityHierarchyOperationOutput, AppError> {
     let toml_content = fs::read_to_string(path).map_err(|error| {
         AppError::Io(format!(
-            "Read alias TOML {} failed: {error}",
+            "Read canonical TOML {} failed: {error}",
             path.display()
         ))
     })?;
     let result = plan_hierarchy_operation(&toml_content, ctx, operation)?;
     fs::write(path, &result.updated_toml_content).map_err(|error| {
         AppError::Io(format!(
-            "Write alias TOML {} failed: {error}",
+            "Write canonical TOML {} failed: {error}",
             path.display()
         ))
     })?;
@@ -470,12 +471,12 @@ fn move_config_cross_document(
     })?;
     let source_name = source_path
         .canonicalize()
-        .map_err(|e| AppError::Io(format!("Resolve source alias TOML failed: {e}")))?
+        .map_err(|e| AppError::Io(format!("Resolve source canonical TOML failed: {e}")))?
         .to_string_lossy()
         .into_owned();
     let destination_name = destination_path
         .canonicalize()
-        .map_err(|e| AppError::Io(format!("Resolve destination alias TOML failed: {e}")))?
+        .map_err(|e| AppError::Io(format!("Resolve destination canonical TOML failed: {e}")))?
         .to_string_lossy()
         .into_owned();
     let originals = vec![
@@ -483,13 +484,13 @@ fn move_config_cross_document(
             PathBuf::from(&source_name),
             source_name.clone(),
             fs::read_to_string(&source_name)
-                .map_err(|e| AppError::Io(format!("Read source alias TOML failed: {e}")))?,
+                .map_err(|e| AppError::Io(format!("Read source canonical TOML failed: {e}")))?,
         ),
         (
             PathBuf::from(&destination_name),
             destination_name.clone(),
             fs::read_to_string(&destination_name)
-                .map_err(|e| AppError::Io(format!("Read destination alias TOML failed: {e}")))?,
+                .map_err(|e| AppError::Io(format!("Read destination canonical TOML failed: {e}")))?,
         ),
     ];
     let updated = updated_cross_document_files(&originals, &result)?;
@@ -526,7 +527,7 @@ fn move_alias(args: AliasMoveArgs, ctx: &CommandContext) -> Result<(), AppError>
     })?;
     let path = PathBuf::from(&args.file);
     let original_toml = fs::read_to_string(&path)
-        .map_err(|e| AppError::Io(format!("Read alias TOML failed: {e}")))?;
+        .map_err(|e| AppError::Io(format!("Read canonical TOML failed: {e}")))?;
     let input_root = PathBuf::from(&args.input);
     let planned = plan_hierarchy_operation(
         &original_toml,
@@ -543,6 +544,7 @@ fn move_alias(args: AliasMoveArgs, ctx: &CommandContext) -> Result<(), AppError>
         &planned.updated_toml_content,
         &input_root,
         &planned.replacements,
+        &[],
         ctx,
     )?;
     let replacement = planned.replacements.first().ok_or_else(|| {
@@ -578,12 +580,12 @@ fn move_alias_cross_document(args: AliasMoveArgs, ctx: &CommandContext) -> Resul
     };
     let source_name = source_path
         .canonicalize()
-        .map_err(|e| AppError::Io(format!("Resolve source alias TOML failed: {e}")))?
+        .map_err(|e| AppError::Io(format!("Resolve source canonical TOML failed: {e}")))?
         .to_string_lossy()
         .into_owned();
     let destination_name = destination_path
         .canonicalize()
-        .map_err(|e| AppError::Io(format!("Resolve destination alias TOML failed: {e}")))?
+        .map_err(|e| AppError::Io(format!("Resolve destination canonical TOML failed: {e}")))?
         .to_string_lossy()
         .into_owned();
     let originals = vec![
@@ -591,13 +593,13 @@ fn move_alias_cross_document(args: AliasMoveArgs, ctx: &CommandContext) -> Resul
             PathBuf::from(&source_name),
             source_name,
             fs::read_to_string(&source_path)
-                .map_err(|e| AppError::Io(format!("Read source alias TOML failed: {e}")))?,
+                .map_err(|e| AppError::Io(format!("Read source canonical TOML failed: {e}")))?,
         ),
         (
             PathBuf::from(&destination_name),
             destination_name,
             fs::read_to_string(&destination_path)
-                .map_err(|e| AppError::Io(format!("Read destination alias TOML failed: {e}")))?,
+                .map_err(|e| AppError::Io(format!("Read destination canonical TOML failed: {e}")))?,
         ),
     ];
     let updated = updated_cross_document_files(&originals, &planned)?;
@@ -631,7 +633,7 @@ fn move_alias_cross_document(args: AliasMoveArgs, ctx: &CommandContext) -> Resul
 fn rename_group(args: AliasRenameGroupArgs, ctx: &CommandContext) -> Result<(), AppError> {
     let path = PathBuf::from(&args.file);
     let original_toml = fs::read_to_string(&path)
-        .map_err(|e| AppError::Io(format!("Read alias TOML failed: {e}")))?;
+        .map_err(|e| AppError::Io(format!("Read canonical TOML failed: {e}")))?;
     let planned = plan_hierarchy_operation(
         &original_toml,
         ctx,
@@ -649,6 +651,7 @@ fn rename_group(args: AliasRenameGroupArgs, ctx: &CommandContext) -> Result<(), 
         &planned.updated_toml_content,
         &input_root,
         &planned.replacements,
+        &[],
         ctx,
     )?;
     println!(
@@ -778,18 +781,26 @@ fn validate_parent_file_name(name: &str) -> Result<(), AppError> {
     Ok(())
 }
 
-fn migrate_alias_sources(
+pub(crate) fn migrate_alias_sources(
     path: &Path,
     original_toml: &str,
     updated_toml: &str,
     input_root: &Path,
     replacements: &[crate::core::runtime::ActivityHierarchyCanonicalReplacement],
+    alias_replacements: &[crate::core::runtime::AliasKeyReplacement],
     ctx: &CommandContext,
 ) -> Result<usize, AppError> {
     let name = path.to_string_lossy().into_owned();
     let originals = vec![(path.to_path_buf(), name.clone(), original_toml.to_string())];
     let updated = vec![(path.to_path_buf(), name, updated_toml.to_string())];
-    migrate_alias_document_sources(&originals, &updated, replacements, &[], input_root, ctx)
+    migrate_alias_document_sources(
+        &originals,
+        &updated,
+        replacements,
+        alias_replacements,
+        input_root,
+        ctx,
+    )
 }
 
 fn updated_cross_document_files(
@@ -803,7 +814,7 @@ fn updated_cross_document_files(
             .find(|(_, name, _)| name == &document.source_name)
             .ok_or_else(|| {
                 AppError::Logic(format!(
-                    "Core returned an unknown updated alias TOML: {}",
+                    "Core returned an unknown updated canonical TOML: {}",
                     document.source_name
                 ))
             })?;
@@ -843,7 +854,7 @@ fn write_alias_toml_candidates(
         if let Err(error) = fs::write(path, content) {
             rollback_alias_tomls(originals, updated);
             return Err(AppError::Io(format!(
-                "Write alias TOML {} failed: {error}",
+                "Write canonical TOML {} failed: {error}",
                 path.display()
             )));
         }
@@ -884,7 +895,7 @@ fn migrate_alias_document_sources(
     originals: &[(PathBuf, String, String)],
     updated: &[(PathBuf, String, String)],
     replacements: &[crate::core::runtime::ActivityHierarchyCanonicalReplacement],
-    _alias_replacements: &[crate::core::runtime::AliasKeyReplacement],
+    alias_replacements: &[crate::core::runtime::AliasKeyReplacement],
     input_root: &Path,
     ctx: &CommandContext,
 ) -> Result<usize, AppError> {
@@ -906,14 +917,28 @@ fn migrate_alias_document_sources(
             })
         })
         .collect();
+    let alias_replacement_values: Vec<serde_json::Value> = alias_replacements
+        .iter()
+        .map(|replacement| {
+            json!({
+                "old_alias": replacement.old_alias,
+                "new_alias": replacement.new_alias,
+            })
+        })
+        .collect();
     let mut txt_candidates = Vec::new();
     for file in &txt_files {
         let content = fs::read_to_string(file)
             .map_err(|e| AppError::Io(format!("Read TXT {} failed: {e}", file.display())))?;
-        let replaced = active.txt().replace_canonical_activity_names(&json!({
+        let canonical_replaced = active.txt().replace_canonical_activity_names(&json!({
             "action": "replace_canonical_activity_names",
             "content": content,
             "replacements": replacement_values.clone(),
+        }))?;
+        let replaced = active.txt().replace_alias_activity_names(&json!({
+            "action": "replace_alias_activity_names",
+            "content": canonical_replaced.updated_content,
+            "replacements": alias_replacement_values.clone(),
         }))?;
         if replaced.updated_content != content {
             txt_candidates.push((file.clone(), content, replaced.updated_content));
@@ -1064,7 +1089,7 @@ mod tests {
     #[test]
     fn promote_preserves_record_name_and_canonical_leaf() {
         let path = fixture_path("promote");
-        fs::write(&path, "parent = \"exercise\"\n\n[aliases]\n\"cardio\" = [\"有氧运动\"]\n\"running\" = [\"跑步\"]\n").unwrap();
+        fs::write(&path, "parent = \"exercise\"\n\n[canonical]\n\"cardio\" = [\"有氧运动\"]\n\"running\" = [\"跑步\"]\n").unwrap();
         promote(
             AliasFileArgs {
                 file: path.to_string_lossy().into_owned(),
@@ -1074,10 +1099,10 @@ mod tests {
         )
         .unwrap();
         let text = fs::read_to_string(&path).unwrap();
-        assert!(text.contains("[aliases]\n"));
-        assert!(text.contains("[aliases.cardio]"));
-        assert!(text.contains("group_aliases = [\"有氧运动\"]"));
-        assert!(text.contains("running = [\"跑步\"]"));
+        assert!(text.contains("[canonical]\n"));
+        assert!(text.contains("[canonical.cardio]"));
+        assert!(text.contains("group_aliases = [ '有氧运动' ]"));
+        assert!(text.contains("running = [ '跑步' ]"));
         let _ = fs::remove_file(path);
     }
 
@@ -1099,7 +1124,7 @@ mod tests {
 
         assert_eq!(
             fs::read_to_string(&path).unwrap(),
-            "parent = \"study\"\n\n[aliases]\n"
+            "parent = \"study\"\n\n[canonical]\n"
         );
         let _ = fs::remove_dir_all(root);
     }
@@ -1160,7 +1185,7 @@ mod tests {
         let path = fixture_path("root-alias");
         fs::write(
             &path,
-            "parent = \"exercise\"\n\n[aliases.cardio]\ngroup_aliases = [\"有氧运动\"]\n",
+            "parent = \"exercise\"\n\n[canonical.cardio]\ngroup_aliases = [\"有氧运动\"]\n",
         )
         .unwrap();
         add_alias(
@@ -1174,7 +1199,7 @@ mod tests {
         )
         .unwrap();
         let text = fs::read_to_string(&path).unwrap();
-        assert!(text.contains("yoga = [\"瑜伽\"]"));
+        assert!(text.contains("yoga = [ '瑜伽' ]"));
         let _ = fs::remove_file(path);
     }
 
@@ -1183,7 +1208,7 @@ mod tests {
         let path = fixture_path("group-alias");
         fs::write(
             &path,
-            "parent = \"exercise\"\n\n[aliases.cardio]\ngroup_aliases = [\"有氧运动\"]\n",
+            "parent = \"exercise\"\n\n[canonical.cardio]\ngroup_aliases = [\"有氧运动\"]\n",
         )
         .unwrap();
         group_alias(
@@ -1242,7 +1267,7 @@ mod tests {
         let path = fixture_path("nested-promote");
         fs::write(
             &path,
-            "parent = \"exercise\"\n\n[aliases.cardio]\n\"running\" = [\"跑步\"]\n",
+            "parent = \"exercise\"\n\n[canonical.cardio]\n\"running\" = [\"跑步\"]\n",
         )
         .unwrap();
         promote(
@@ -1254,8 +1279,8 @@ mod tests {
         )
         .unwrap();
         let text = fs::read_to_string(&path).unwrap();
-        assert!(text.contains("[aliases.cardio.running]"));
-        assert!(text.contains("group_aliases = [\"跑步\"]"));
+        assert!(text.contains("[canonical.cardio.running]"));
+        assert!(text.contains("group_aliases = [ '跑步' ]"));
         let _ = fs::remove_file(path);
     }
 
@@ -1264,7 +1289,7 @@ mod tests {
         let path = fixture_path("move-config");
         fs::write(
             &path,
-            "parent = \"study\"\n\n[aliases.math.calculus]\n\"double-integral\" = [\"二重积分\", \"高等数学二重积分\"]\n\n[aliases.math.calculus.multiple-integral]\ngroup_aliases = [\"重积分\"]\n",
+            "parent = \"study\"\n\n[canonical.math.calculus]\n\"double-integral\" = [\"二重积分\", \"高等数学二重积分\"]\n\n[canonical.math.calculus.multiple-integral]\ngroup_aliases = [\"重积分\"]\n",
         )
         .unwrap();
 
@@ -1281,7 +1306,7 @@ mod tests {
         .unwrap();
 
         let text = fs::read_to_string(&path).unwrap();
-        assert!(text.contains("[aliases.math.calculus.multiple-integral]"));
+        assert!(text.contains("[canonical.math.calculus.multiple-integral]"));
         assert!(text.contains("double-integral = [ '二重积分', '高等数学二重积分' ]"));
         let _ = fs::remove_file(path);
     }

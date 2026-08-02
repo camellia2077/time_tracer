@@ -234,6 +234,8 @@ mod tests {
             ExchangeExportArgs {
                 input: ".".to_string(),
                 security_level: None,
+                date_check: None,
+                no_date_check: false,
             },
             &default_context(),
             &port,
@@ -263,6 +265,8 @@ mod tests {
             ExchangeExportArgs {
                 input: ".".to_string(),
                 security_level: Some(SecurityLevel::High),
+                date_check: None,
+                no_date_check: false,
             },
             &ctx,
             &port,

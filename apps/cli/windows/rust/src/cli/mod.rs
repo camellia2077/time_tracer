@@ -1,6 +1,7 @@
 use clap::{ArgAction, Parser, Subcommand};
 
 mod about;
+mod activity;
 mod alias;
 mod chart;
 mod doctor;
@@ -13,9 +14,11 @@ mod system;
 mod txt;
 
 pub use about::{AboutArgs, AboutCommand};
+pub use activity::{ActivityArgs, ActivityCommand, ActivityMergeArgs};
 pub use alias::{
     AliasAddArgs, AliasArgs, AliasCommand, AliasCreateArgs, AliasFileArgs, AliasGroupArgs,
-    AliasMoveArgs, AliasMoveConfigArgs, AliasRenameGroupArgs, AliasRenameParentArgs, AliasTreeArgs,
+    AliasMoveArgs, AliasMoveConfigArgs, AliasRenameGroupArgs,
+    AliasRenameParentArgs, AliasTreeArgs,
 };
 pub use chart::{ChartArgs, ChartTheme, ChartType};
 pub use doctor::DoctorArgs;
@@ -80,6 +83,8 @@ pub struct Cli {
 
 #[derive(Debug, Subcommand)]
 pub enum Command {
+    #[command(about = "Merge canonical leaf activities and migrate TXT/database")]
+    Activity(ActivityArgs),
     #[command(about = "Edit activity hierarchy TOML and migrate canonical activity paths")]
     Alias(AliasArgs),
     #[command(about = "Run semantic data and tree queries")]
@@ -103,7 +108,7 @@ mod tests {
     use clap::{error::ErrorKind, Parser};
 
     use super::{
-        AboutCommand, AliasCommand, Cli, Command, DataOutputMode, DateCheckMode, ExchangeCommand,
+        AboutCommand, ActivityCommand, AliasCommand, Cli, Command, DataOutputMode, DateCheckMode, ExchangeCommand,
         PipelineCommand, PipelineValidateCommand, ReportCommand, ReportExportPeriod,
         ReportRenderPeriod, SystemCommand, TxtCommand,
     };
@@ -171,6 +176,35 @@ mod tests {
                 _ => panic!("expected alias rename-parent command"),
             },
             _ => panic!("expected alias command"),
+        }
+    }
+
+    #[test]
+    fn activity_merge_parses_leaf_paths_and_txt_input() {
+        let cli = Cli::try_parse_from([
+            "time_tracer_cli",
+            "activity",
+            "merge",
+            "--file",
+            "config/user/activity_hierarchy/exercise.toml",
+            "--from",
+            "cardio.running.treadmill",
+            "--into",
+            "cardio.running.track-running",
+            "--input",
+            "test/data",
+        ])
+        .unwrap();
+
+        match cli.command {
+            Command::Activity(args) => match args.command {
+                ActivityCommand::Merge(args) => {
+                    assert_eq!(args.from, "cardio.running.treadmill");
+                    assert_eq!(args.into, "cardio.running.track-running");
+                    assert_eq!(args.input, "test/data");
+                }
+            },
+            _ => panic!("expected activity command"),
         }
     }
 
@@ -382,6 +416,31 @@ mod tests {
         ])
         .unwrap_err();
         assert_eq!(error.kind(), ErrorKind::ArgumentConflict);
+    }
+
+    #[test]
+    fn pipeline_convert_parses_explicit_date_check_mode() {
+        let cli = Cli::try_parse_from([
+            "time_tracer_cli",
+            "pipeline",
+            "convert",
+            "input.txt",
+            "--date-check",
+            "full",
+        ])
+        .unwrap();
+
+        match cli.command {
+            Command::Pipeline(args) => match args.command {
+                PipelineCommand::Convert(args) => {
+                    assert_eq!(args.path, "input.txt");
+                    assert!(matches!(args.date_check, Some(DateCheckMode::Full)));
+                    assert!(!args.no_date_check);
+                }
+                _ => panic!("expected pipeline convert command"),
+            },
+            _ => panic!("expected pipeline command"),
+        }
     }
 
     #[test]

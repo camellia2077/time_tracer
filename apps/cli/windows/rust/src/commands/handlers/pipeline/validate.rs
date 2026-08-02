@@ -59,9 +59,7 @@ pub(crate) fn run_logic_with_port(
     ctx: &CommandContext,
     port: &dyn PipelineSessionPort,
 ) -> Result<(), AppError> {
-    let cli_config = port.load_cli_config("validate-logic", ctx)?;
-    let request =
-        build_validate_logic_request(&args.path, &cli_config, args.date_check, args.no_date_check);
+    let request = build_validate_logic_request(&args.path, args.date_check, args.no_date_check);
     port.validate_logic("validate-logic", ctx, &request)
 }
 
@@ -72,8 +70,7 @@ pub(crate) fn run_all_with_port(
 ) -> Result<(), AppError> {
     let structure_request = build_validate_structure_request(&args.path);
     port.validate_structure("validate-structure", ctx, &structure_request)?;
-    let cli_config = port.load_cli_config("validate-logic", ctx)?;
     let logic_request =
-        build_validate_logic_request(&args.path, &cli_config, args.date_check, args.no_date_check);
+        build_validate_logic_request(&args.path, args.date_check, args.no_date_check);
     port.validate_logic("validate-logic", ctx, &logic_request)
 }

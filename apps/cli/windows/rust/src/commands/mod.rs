@@ -5,6 +5,7 @@ pub mod testing;
 
 use crate::cli::{Cli, Command};
 use crate::commands::handler::{CommandContext, CommandHandler};
+use crate::commands::handlers::activity::ActivityHandler;
 use crate::commands::handlers::alias::AliasHandler;
 use crate::commands::handlers::doctor::DoctorHandler;
 use crate::commands::handlers::exchange::ExchangeHandler;
@@ -24,6 +25,7 @@ pub fn execute(cli: Cli) -> Result<(), AppError> {
     };
 
     match cli.command {
+        Command::Activity(args) => ActivityHandler.handle(args, &ctx),
         Command::Alias(args) => AliasHandler.handle(args, &ctx),
         Command::Query(args) => QueryHandler.handle(args, &ctx),
         Command::Pipeline(args) => PipelineHandler.handle(args, &ctx),

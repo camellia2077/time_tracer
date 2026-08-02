@@ -402,6 +402,27 @@ pub(crate) fn run_txt_replace_canonical_activity_names(
     })
 }
 
+pub(crate) fn run_txt_replace_alias_activity_names(
+    runtime: &CoreRuntime,
+    request: &Value,
+) -> Result<TxtCanonicalReplaceOutput, AppError> {
+    let run_start = Instant::now();
+    let request_json = to_request_json(request)?;
+    let raw =
+        unsafe { (runtime.api.symbols.runtime_config)(runtime.handle, request_json.as_ptr()) };
+    let payload = read_c_json::<TxtReplaceResponse>(raw, "txt")?;
+    log_timing("runtime.txt", run_start.elapsed());
+    if !payload.ok {
+        return Err(map_runtime_text_error(
+            payload.error_message,
+            &payload.error_contract,
+        ));
+    }
+    Ok(TxtCanonicalReplaceOutput {
+        updated_content: payload.updated_content,
+    })
+}
+
 pub(crate) fn run_activity_hierarchy_operation(
     runtime: &CoreRuntime,
     request: &Value,

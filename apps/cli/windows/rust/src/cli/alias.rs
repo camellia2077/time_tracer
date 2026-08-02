@@ -11,7 +11,7 @@ use clap::{Args, Subcommand};
 
 Canonical paths are derived from parent, group path, and leaf name. Moving a
 leaf or group move therefore changes canonical paths. Add --to-file to move
-between two existing alias TOMLs; use --group for a complete group subtree.
+between two existing canonical TOMLs; use --group for a complete group subtree.
 Omit --to-file for the legacy same-file leaf move."#)]
 pub struct AliasArgs {
     #[command(subcommand)]
@@ -65,7 +65,7 @@ file under `--input`, ingests a candidate database, and swaps
 the database only after the candidate succeeds.
 
 Use `--alias` for a leaf or `--group` for a group subtree. Add `--to-file` to
-move to another existing alias TOML. Group moves require `--to-file`.
+move to another existing canonical TOML. Group moves require `--to-file`.
 
 Use this when source TXT data and the active database must remain consistent
 with the new TOML hierarchy.
@@ -107,8 +107,8 @@ Example:
     )]
     RenameParent(AliasRenameParentArgs),
     #[command(
-        about = "Render an alias TOML hierarchy as plaintext",
-        long_about = r#"Render the hierarchy from one alias TOML file as plaintext.
+        about = "Render a canonical TOML hierarchy as plaintext",
+        long_about = r#"Render the hierarchy from one canonical TOML file as plaintext.
 
 By default only canonical node names are printed. Add `--show-aliases` to show
 normal aliases and recordable group aliases next to their nodes.
@@ -158,12 +158,12 @@ pub struct AliasCreateArgs {
 
 #[derive(Debug, Args)]
 pub struct AliasAddArgs {
-    #[arg(long, value_name = "PATH", help = "Alias TOML file")]
+    #[arg(long, value_name = "PATH", help = "Canonical TOML file")]
     pub file: String,
     #[arg(
         long,
         value_name = "GROUP",
-        help = "Target group path, e.g. cardio or cardio.running; use root for [aliases]"
+        help = "Target group path, e.g. cardio or cardio.running; use root for [canonical]"
     )]
     pub group: String,
     #[arg(long, value_name = "ALIAS", help = "Alias key")]
@@ -174,7 +174,7 @@ pub struct AliasAddArgs {
 
 #[derive(Debug, Args)]
 pub struct AliasFileArgs {
-    #[arg(long, value_name = "PATH", help = "Alias TOML file")]
+    #[arg(long, value_name = "PATH", help = "Canonical TOML file")]
     pub file: String,
     #[arg(long, value_name = "ALIAS", help = "Alias key")]
     pub alias: String,
@@ -182,7 +182,7 @@ pub struct AliasFileArgs {
 
 #[derive(Debug, Args)]
 pub struct AliasMoveArgs {
-    #[arg(long, value_name = "PATH", help = "Source alias TOML file")]
+    #[arg(long, value_name = "PATH", help = "Source canonical TOML file")]
     pub file: String,
     #[arg(
         long,
@@ -206,7 +206,7 @@ pub struct AliasMoveArgs {
         help = "Target group path, e.g. cardio or math.calculus"
     )]
     pub to: String,
-    #[arg(long, value_name = "PATH", help = "Destination alias TOML file")]
+    #[arg(long, value_name = "PATH", help = "Destination canonical TOML file")]
     pub to_file: Option<String>,
     #[arg(long, value_name = "PATH", help = "TXT input directory to rebuild")]
     pub input: String,
@@ -214,7 +214,7 @@ pub struct AliasMoveArgs {
 
 #[derive(Debug, Args)]
 pub struct AliasRenameGroupArgs {
-    #[arg(long, value_name = "PATH", help = "Alias TOML file")]
+    #[arg(long, value_name = "PATH", help = "Canonical TOML file")]
     pub file: String,
     #[arg(
         long,
@@ -230,7 +230,7 @@ pub struct AliasRenameGroupArgs {
 
 #[derive(Debug, Args)]
 pub struct AliasMoveConfigArgs {
-    #[arg(long, value_name = "PATH", help = "Alias TOML file")]
+    #[arg(long, value_name = "PATH", help = "Canonical TOML file")]
     pub file: String,
     #[arg(
         long,
@@ -254,7 +254,7 @@ pub struct AliasMoveConfigArgs {
         help = "Target group path, e.g. cardio or math.calculus"
     )]
     pub to: String,
-    #[arg(long, value_name = "PATH", help = "Destination alias TOML file")]
+    #[arg(long, value_name = "PATH", help = "Destination canonical TOML file")]
     pub to_file: Option<String>,
 }
 
@@ -274,7 +274,7 @@ pub struct AliasRenameParentArgs {
 
 #[derive(Debug, Args)]
 pub struct AliasTreeArgs {
-    #[arg(long, value_name = "PATH", help = "Alias TOML file to render")]
+    #[arg(long, value_name = "PATH", help = "Canonical TOML file to render")]
     pub file: String,
     #[arg(
         long,
@@ -285,7 +285,7 @@ pub struct AliasTreeArgs {
 
 #[derive(Debug, Args)]
 pub struct AliasGroupArgs {
-    #[arg(long, value_name = "PATH", help = "Alias TOML file")]
+    #[arg(long, value_name = "PATH", help = "Canonical TOML file")]
     pub file: String,
     #[arg(
         long,

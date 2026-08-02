@@ -44,8 +44,6 @@ pub struct QueryDataArgs {
     pub root: Option<String>,
     #[arg(long = "cross-midnight-activity", action = ArgAction::SetTrue)]
     pub cross_midnight_activity: bool,
-    #[arg(long = "missing-wake-anchor", action = ArgAction::SetTrue)]
-    pub missing_wake_anchor: bool,
     #[arg(long)]
     pub exercise: Option<i32>,
     #[arg(long)]

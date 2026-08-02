@@ -10,6 +10,10 @@ pub enum DateCheckMode {
 #[derive(Debug, Args)]
 pub struct PipelineConvertArgs {
     pub path: String,
+    #[arg(long = "date-check", value_enum, conflicts_with = "no_date_check")]
+    pub date_check: Option<DateCheckMode>,
+    #[arg(long = "no-date-check", action = ArgAction::SetTrue)]
+    pub no_date_check: bool,
 }
 
 #[derive(Debug, Args)]

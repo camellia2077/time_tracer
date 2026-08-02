@@ -1,6 +1,6 @@
 use serde_json::json;
 
-use crate::cli::ExchangeExportArgs;
+use crate::cli::{DateCheckMode, ExchangeExportArgs};
 use crate::commands::handler::{CommandContext, CommandHandler};
 use crate::error::AppError;
 
@@ -37,11 +37,15 @@ pub(crate) fn run_export_with_port(
 
     let output = require_output_path_for(ctx.output_path.as_deref(), "exchange export")?;
     let passphrase = prompts.prompt_export_passphrase()?;
-    let cli_config = port.load_cli_config("crypto", ctx)?;
-    let date_check_mode = cli_config
-        .default_date_check_mode
-        .clone()
-        .unwrap_or_else(|| "none".to_string());
+    let date_check_mode = if args.no_date_check {
+        "none"
+    } else {
+        match args.date_check.unwrap_or(DateCheckMode::None) {
+            DateCheckMode::None => "none",
+            DateCheckMode::Continuity => "continuity",
+            DateCheckMode::Full => "full",
+        }
+    };
 
     let request = json!({
         "input_path": input.to_string_lossy().to_string(),

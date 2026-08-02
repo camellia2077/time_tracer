@@ -1,4 +1,6 @@
-use clap::{Args, Subcommand, ValueEnum};
+use clap::{ArgAction, Args, Subcommand, ValueEnum};
+
+use super::pipeline::DateCheckMode;
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
 pub enum SecurityLevel {
@@ -19,6 +21,10 @@ pub struct ExchangeExportArgs {
         help = "Encryption KDF profile: min|interactive|moderate|high|max"
     )]
     pub security_level: Option<SecurityLevel>,
+    #[arg(long = "date-check", value_enum, conflicts_with = "no_date_check")]
+    pub date_check: Option<DateCheckMode>,
+    #[arg(long = "no-date-check", action = ArgAction::SetTrue)]
+    pub no_date_check: bool,
 }
 
 #[derive(Debug, Args)]

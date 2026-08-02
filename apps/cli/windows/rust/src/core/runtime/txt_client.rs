@@ -45,6 +45,13 @@ impl<'runtime> TxtClient<'runtime> {
     ) -> Result<TxtCanonicalReplaceOutput, AppError> {
         invoke::run_txt_replace_canonical_activity_names(self.runtime, request)
     }
+
+    pub fn replace_alias_activity_names(
+        &self,
+        request: &Value,
+    ) -> Result<TxtCanonicalReplaceOutput, AppError> {
+        invoke::run_txt_replace_alias_activity_names(self.runtime, request)
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

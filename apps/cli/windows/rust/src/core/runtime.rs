@@ -58,19 +58,15 @@ pub struct CliDefaults {
 pub struct CliCommandDefaults {
     pub export_format: Option<String>,
     pub query_format: Option<String>,
-    pub convert_date_check_mode: Option<String>,
     pub convert_save_processed_output: Option<bool>,
     pub convert_validate_logic: Option<bool>,
     pub convert_validate_structure: Option<bool>,
-    pub ingest_date_check_mode: Option<String>,
     pub ingest_save_processed_output: Option<bool>,
-    pub validate_logic_date_check_mode: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct CliConfig {
     pub default_save_processed_output: bool,
-    pub default_date_check_mode: Option<String>,
     pub defaults: CliDefaults,
     pub command_defaults: CliCommandDefaults,
 }

@@ -247,6 +247,8 @@ mod tests {
         run_convert_with_port(
             PipelineConvertArgs {
                 path: "input.txt".to_string(),
+                date_check: Some(crate::cli::DateCheckMode::Continuity),
+                no_date_check: false,
             },
             &default_context(),
             &port,
@@ -285,7 +287,7 @@ mod tests {
         assert_eq!(recorded.command_names(), vec!["ingest".to_string()]);
         let request = recorded.requests().remove(0);
         assert_eq!(request["input_path"], "source_dir");
-        assert_eq!(request["date_check_mode"], "full");
+        assert_eq!(request["date_check_mode"], "none");
         assert_eq!(request["save_processed_output"], false);
     }
 

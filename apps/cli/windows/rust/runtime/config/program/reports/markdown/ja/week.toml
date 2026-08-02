@@ -2,7 +2,6 @@ title_template = "{range_label}週間サマリー（{start_date} から {end_dat
 project_breakdown_label = "プロジェクト内訳"
 actual_days_label = "記録のある日数"
 status_days_label = "ステータスが True の日数"
-wake_anchor_days_label = "起床アンカーが True の日数"
 exercise_days_label = "運動が True の日数"
 cardio_days_label = "有酸素運動が True の日数"
 anaerobic_days_label = "無酸素運動が True の日数"
