@@ -85,7 +85,7 @@ internal class RuntimeInitService(
             executeAfterInit("native_ingest_rebuild_database") { paths ->
                 nativeIngest(
                     paths.inputRootPath,
-                    NativeBridge.DATE_CHECK_CONTINUITY,
+                    NativeBridge.DATE_CHECK_NONE,
                     false
                 )
             }

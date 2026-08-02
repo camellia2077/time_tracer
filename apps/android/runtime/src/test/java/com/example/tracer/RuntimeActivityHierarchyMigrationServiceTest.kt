@@ -26,27 +26,27 @@ class RuntimeActivityHierarchyMigrationServiceTest {
             MoveScenario(
                 name = "leaf to other TOML group",
                 sourceToml = "\"go\" = [\"围棋\"]",
-                destinationToml = "[aliases.breakfast]\n\"eat\" = [\"吃饭\"]",
+                destinationToml = "[canonical.breakfast]\n\"eat\" = [\"吃饭\"]",
                 updatedSourceToml = "",
-                updatedDestinationToml = "[aliases.breakfast]\n\"eat\" = [\"吃饭\"]\n\"go\" = [\"围棋\"]",
+                updatedDestinationToml = "[canonical.breakfast]\n\"eat\" = [\"吃饭\"]\n\"go\" = [\"围棋\"]",
                 oldCanonical = "exercise_go",
                 newCanonical = "meal_breakfast_go"
             ),
             MoveScenario(
                 name = "leaf to other TOML group subtree",
                 sourceToml = "\"go\" = [\"围棋\"]",
-                destinationToml = "[aliases.breakfast.morning]\n\"eat\" = [\"吃饭\"]",
+                destinationToml = "[canonical.breakfast.morning]\n\"eat\" = [\"吃饭\"]",
                 updatedSourceToml = "",
-                updatedDestinationToml = "[aliases.breakfast.morning]\n\"eat\" = [\"吃饭\"]\n\"go\" = [\"围棋\"]",
+                updatedDestinationToml = "[canonical.breakfast.morning]\n\"eat\" = [\"吃饭\"]\n\"go\" = [\"围棋\"]",
                 oldCanonical = "exercise_go",
                 newCanonical = "meal_breakfast_morning_go"
             ),
             MoveScenario(
                 name = "group subtree to other TOML root",
-                sourceToml = "[aliases.cardio]\n\"swimming\" = [\"游泳\"]\n[aliases.cardio.running]\n\"track-running\" = [\"操场跑\"]",
+                sourceToml = "[canonical.cardio]\n\"swimming\" = [\"游泳\"]\n[canonical.cardio.running]\n\"track-running\" = [\"操场跑\"]",
                 destinationToml = "\"eat\" = [\"吃饭\"]",
                 updatedSourceToml = "",
-                updatedDestinationToml = "\"eat\" = [\"吃饭\"]\n[aliases.cardio]\n\"swimming\" = [\"游泳\"]\n[aliases.cardio.running]\n\"track-running\" = [\"操场跑\"]",
+                updatedDestinationToml = "\"eat\" = [\"吃饭\"]\n[canonical.cardio]\n\"swimming\" = [\"游泳\"]\n[canonical.cardio.running]\n\"track-running\" = [\"操场跑\"]",
                 oldCanonical = "exercise_cardio",
                 newCanonical = "meal_cardio",
                 extraReplacements = listOf(
@@ -56,10 +56,10 @@ class RuntimeActivityHierarchyMigrationServiceTest {
             ),
             MoveScenario(
                 name = "group subtree to other TOML group subtree",
-                sourceToml = "[aliases.cardio]\n\"swimming\" = [\"游泳\"]\n[aliases.cardio.running]\n\"track-running\" = [\"操场跑\"]",
-                destinationToml = "[aliases.fitness.deep]\n\"stretch\" = [\"拉伸\"]",
+                sourceToml = "[canonical.cardio]\n\"swimming\" = [\"游泳\"]\n[canonical.cardio.running]\n\"track-running\" = [\"操场跑\"]",
+                destinationToml = "[canonical.fitness.deep]\n\"stretch\" = [\"拉伸\"]",
                 updatedSourceToml = "",
-                updatedDestinationToml = "[aliases.fitness.deep]\n\"stretch\" = [\"拉伸\"]\n[aliases.fitness.deep.cardio]\n\"swimming\" = [\"游泳\"]\n[aliases.fitness.deep.cardio.running]\n\"track-running\" = [\"操场跑\"]",
+                updatedDestinationToml = "[canonical.fitness.deep]\n\"stretch\" = [\"拉伸\"]\n[canonical.fitness.deep.cardio]\n\"swimming\" = [\"游泳\"]\n[canonical.fitness.deep.cardio.running]\n\"track-running\" = [\"操场跑\"]",
                 oldCanonical = "exercise_cardio",
                 newCanonical = "meal_fitness_deep_cardio",
                 extraReplacements = listOf(

@@ -34,7 +34,8 @@ private fun logDebug(tag: String, message: String) {
 
 enum class CanonicalBrowserTarget {
     RECORD_INPUT,
-    QUICK_ACCESS
+    QUICK_ACCESS,
+    REPORT_STATUS_PARENT
 }
 
 data class RecordSuggestedActivity(
@@ -379,6 +380,10 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
         openCanonicalCatalog(CanonicalBrowserTarget.QUICK_ACCESS)
     }
 
+    fun openDailyStatusParentCatalog() {
+        openCanonicalCatalog(CanonicalBrowserTarget.REPORT_STATUS_PARENT)
+    }
+
     private fun openCanonicalCatalog(target: CanonicalBrowserTarget) {
         canonicalCatalogLoadJob?.cancel()
         uiState = intentHandler.showCanonicalCatalogLoading(uiState, target)
@@ -471,15 +476,33 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
     }
 
     fun recordNow() {
+        Log.i(
+            "TimeTracerRecord",
+            "ui.record_now.click activity=${uiState.recordContent.trim()} " +
+                "logicalDayTarget=${uiState.logicalDayTarget} attributionDate=${uiState.attributionDateIso}"
+        )
         viewModelScope.launch {
             uiState = intentHandler.recordNow(uiState)
+            Log.i(
+                "TimeTracerRecord",
+                "ui.record_now.result status=${uiState.statusText.lineSequence().firstOrNull()}"
+            )
             persistRecordInputState()
         }
     }
 
     fun recordInterval() {
+        Log.i(
+            "TimeTracerRecord",
+            "ui.record_interval.click activity=${uiState.recordContent.trim()} " +
+                "start=${uiState.intervalStart} end=${uiState.intervalEnd}"
+        )
         viewModelScope.launch {
             uiState = intentHandler.recordInterval(uiState)
+            Log.i(
+                "TimeTracerRecord",
+                "ui.record_interval.result status=${uiState.statusText.lineSequence().firstOrNull()}"
+            )
             persistRecordInputState()
         }
     }
@@ -492,14 +515,14 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
         private val HHMMSS_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("HHmmss")
     }
 
-    fun refreshHistory() {
+    fun refreshHistory(): Job {
         logDebug(
             TXT_TAB_LOG_TAG,
             "history load start inspectionCount=${uiState.txtInspectionEntries.size} " +
                 "selectedFile=${uiState.selectedHistoryFile} selectedMonth=${uiState.selectedMonth}"
         )
         uiState = uiState.copy(txtHistoryLoaded = false)
-        txtNavigationCoordinator.launch(TxtNavigationRequest.Refresh)
+        return txtNavigationCoordinator.launch(TxtNavigationRequest.Refresh)
     }
 
     fun openHistoryFile(path: String) {
@@ -583,6 +606,7 @@ class RecordViewModelFactory(
     private val recordGateway: RecordGateway,
     private val txtStorageGateway: TxtStorageGateway,
     private val queryGateway: QueryGateway,
+    private val reportGateway: ReportGateway = UnavailableRecordReportGateway,
     private val initialPersistedRecordInput: PersistedRecordInputSnapshot = PersistedRecordInputSnapshot(),
     private val recordInputPersistence: RecordInputPersistence = NoOpRecordInputPersistence,
     private val textProvider: RecordTextProvider = DefaultRecordTextProvider,
@@ -596,6 +620,7 @@ class RecordViewModelFactory(
                     recordGateway = recordGateway,
                     txtStorageGateway = txtStorageGateway,
                     queryGateway = queryGateway,
+                    reportGateway = reportGateway,
                     recordInputPersistence = recordInputPersistence,
                     textProvider = textProvider,
                     clock = clock

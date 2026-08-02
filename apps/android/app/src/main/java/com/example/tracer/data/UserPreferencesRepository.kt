@@ -17,6 +17,7 @@ import com.example.tracer.RecordLogicalDayTarget
 import com.example.tracer.RecordSuggestionOutputMode
 import com.example.tracer.ReportChartSemanticMode
 import com.example.tracer.ReportChartVisualMode
+import com.example.tracer.ReportAverageDayBasis
 import com.example.tracer.ReportParameterSection
 import com.example.tracer.ReportPiePalettePreset
 import com.example.tracer.ReportResultDisplayMode
@@ -41,6 +42,7 @@ enum class ThemePalette(val supportsLightDarkMode: Boolean) {
 }
 
 enum class AppLanguage {
+    System,
     Chinese,
     English,
     Japanese
@@ -86,6 +88,9 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         const val DEFAULT_REPORT_TIME_PARAMETERS_EXPANDED: Boolean = true
         val DEFAULT_REPORT_PIE_PALETTE_PRESET: ReportPiePalettePreset =
             defaultReportPiePalettePreset()
+        val DEFAULT_REPORT_AVERAGE_DAY_BASIS: ReportAverageDayBasis =
+            ReportAverageDayBasis.ACTIVE_DAYS
+        const val DEFAULT_REPORT_CHART_TREND_ROOT: String = ""
         private const val MIN_RECORD_SUGGEST_LOOKBACK_DAYS: Int = 0
         private const val MAX_RECORD_SUGGEST_LOOKBACK_DAYS: Int = 60
         private const val MIN_RECORD_SUGGEST_TOP_N: Int = 0
@@ -138,6 +143,8 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         val REPORT_PARAMETER_SECTION = stringPreferencesKey("report_parameter_section")
         val REPORT_TIME_PARAMETERS_EXPANDED = booleanPreferencesKey("report_time_parameters_expanded")
         val REPORT_PIE_PALETTE_PRESET = stringPreferencesKey("report_pie_palette_preset")
+        val REPORT_AVERAGE_DAY_BASIS = stringPreferencesKey("report_average_day_basis")
+        val REPORT_CHART_TREND_ROOT = stringPreferencesKey("report_chart_trend_root")
     }
 
     val themeConfig: Flow<ThemeConfig> = dataStore.data.map { preferences ->
@@ -155,8 +162,8 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
     }
 
     val appLanguage: Flow<AppLanguage> = dataStore.data.map { preferences ->
-        val languageName = preferences[PreferencesKeys.APP_LANGUAGE] ?: AppLanguage.English.name
-        runCatching { AppLanguage.valueOf(languageName) }.getOrDefault(AppLanguage.English)
+        val languageName = preferences[PreferencesKeys.APP_LANGUAGE] ?: AppLanguage.System.name
+        runCatching { AppLanguage.valueOf(languageName) }.getOrDefault(AppLanguage.System)
     }
 
     val recordSuggestionPreferences: Flow<RecordSuggestionPreferences> = dataStore.data.map { preferences ->
@@ -263,6 +270,15 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             ?: DEFAULT_REPORT_PIE_PALETTE_PRESET.name
         runCatching { ReportPiePalettePreset.valueOf(rawValue) }
             .getOrDefault(DEFAULT_REPORT_PIE_PALETTE_PRESET)
+    }
+
+    val reportAverageDayBasis: Flow<ReportAverageDayBasis> = dataStore.data.map { preferences ->
+        runCatching {
+            ReportAverageDayBasis.valueOf(
+                preferences[PreferencesKeys.REPORT_AVERAGE_DAY_BASIS]
+                    ?: DEFAULT_REPORT_AVERAGE_DAY_BASIS.name
+            )
+        }.getOrDefault(DEFAULT_REPORT_AVERAGE_DAY_BASIS)
     }
 
     suspend fun setAppLanguage(language: AppLanguage) {
@@ -425,6 +441,17 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         }
     }
 
+    val reportChartTrendRoot: Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.REPORT_CHART_TREND_ROOT]
+            ?: DEFAULT_REPORT_CHART_TREND_ROOT
+    }
+
+    suspend fun setReportAverageDayBasis(value: ReportAverageDayBasis) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.REPORT_AVERAGE_DAY_BASIS] = value.name
+        }
+    }
+
     private fun normalizeLookbackDays(value: Int): Int {
         return value.coerceIn(MIN_RECORD_SUGGEST_LOOKBACK_DAYS, MAX_RECORD_SUGGEST_LOOKBACK_DAYS)
     }
@@ -479,6 +506,12 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
     suspend fun setReportChartVisualMode(value: ReportChartVisualMode) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.REPORT_CHART_VISUAL_MODE] = value.name
+        }
+    }
+
+    suspend fun setReportChartTrendRoot(value: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.REPORT_CHART_TREND_ROOT] = value.trim()
         }
     }
 

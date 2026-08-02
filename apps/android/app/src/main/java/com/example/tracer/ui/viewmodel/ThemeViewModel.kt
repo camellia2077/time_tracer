@@ -22,7 +22,7 @@ class ThemeViewModel(private val repository: UserPreferencesRepository) : ViewMo
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = AppLanguage.English
+            initialValue = AppLanguage.System
         )
 
     fun onThemeEvent(event: ThemeEvent) {

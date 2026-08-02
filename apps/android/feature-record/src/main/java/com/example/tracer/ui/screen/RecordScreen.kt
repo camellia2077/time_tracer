@@ -84,7 +84,7 @@ fun RecordSection(
     onCanonicalCatalogDisplayModeChange: (RecordSuggestionOutputMode) -> Unit,
     onCollapsedCanonicalRootPathsChange: (Set<String>) -> Unit,
     onOrderedCanonicalRootPathsChange: (List<String>) -> Unit,
-    onCanonicalCatalogEntryClick: (CanonicalBrowserTarget, String) -> Boolean,
+    onCanonicalCatalogEntryClick: (CanonicalBrowserTarget, CanonicalCatalogEntry) -> Boolean,
     canonicalBrowserTarget: CanonicalBrowserTarget?,
     onOpenTxtPreview: () -> Unit,
     onStartIntervalRecording: () -> Unit,
@@ -209,9 +209,9 @@ fun RecordSection(
             onDisplayModeChange = onCanonicalCatalogDisplayModeChange,
             onCollapsedRootPathsChange = onCollapsedCanonicalRootPathsChange,
             onOrderedRootPathsChange = onOrderedCanonicalRootPathsChange,
-            onCanonicalPathClick = { token ->
+            onCanonicalEntryClick = { entry ->
                 canonicalBrowserTarget?.let { target ->
-                    if (onCanonicalCatalogEntryClick(target, token)) {
+                    if (onCanonicalCatalogEntryClick(target, entry)) {
                         onDismissCanonicalCatalog()
                     }
                 }

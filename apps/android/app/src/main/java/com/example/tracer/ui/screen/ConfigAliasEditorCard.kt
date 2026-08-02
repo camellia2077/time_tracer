@@ -64,6 +64,7 @@ internal fun ConfigAliasEditorCard(
     onRenameGroup: (groupId: String, name: String) -> Unit,
     onAddEntry: (parentGroupId: String?, canonicalLeaf: String, aliases: List<String>) -> Unit,
     onUpdateEntry: (entryId: String, canonicalLeaf: String, aliases: List<String>) -> Unit,
+    onMergeEntry: (sourceEntryId: String, destinationEntryId: String) -> Unit,
     onPromoteEntry: (entryId: String) -> Unit,
     onRenameGroupAlias: (groupId: String, oldAlias: String, newAlias: String) -> Unit,
     onAddGroupAlias: (groupId: String, alias: String) -> Unit,
@@ -379,6 +380,9 @@ internal fun ConfigAliasEditorCard(
                 onEditAlias = {
                     dialogState = AliasEditorDialogState.EditEntryAliases(activeDialog.entry)
                 },
+                onMerge = {
+                    dialogState = AliasEditorDialogState.MergeEntry(activeDialog.entry)
+                },
                 onPromote = { dialogState = AliasEditorDialogState.ConfirmPromote(activeDialog.entry) },
                 onMove = {
                     onPrepareEntryMove(activeDialog.entry.id)
@@ -445,6 +449,19 @@ internal fun ConfigAliasEditorCard(
                 onConfirm = {
                     dialogState = null
                     onPromoteEntry(activeDialog.entry.id)
+                }
+            )
+        }
+
+        is AliasEditorDialogState.MergeEntry -> {
+            AliasEntryMergeTargetDialog(
+                source = activeDialog.entry,
+                tomlDisplayName = selectedFileDisplayName,
+                document = document,
+                onDismiss = { dialogState = null },
+                onConfirm = { targetId ->
+                    dialogState = null
+                    onMergeEntry(activeDialog.entry.id, targetId)
                 }
             )
         }
@@ -691,6 +708,7 @@ internal sealed interface AliasEditorDialogState {
     data class EditEntryName(val entry: AliasTomlEntry) : AliasEditorDialogState
     data class GroupActions(val group: AliasTomlGroup) : AliasEditorDialogState
     data class EntryActions(val entry: AliasTomlEntry) : AliasEditorDialogState
+    data class MergeEntry(val entry: AliasTomlEntry) : AliasEditorDialogState
     data class PlanEntryMove(val entry: AliasTomlEntry) : AliasEditorDialogState
     data class PlanGroupMove(val group: AliasTomlGroup) : AliasEditorDialogState
     data class ConfirmPromote(val entry: AliasTomlEntry) : AliasEditorDialogState

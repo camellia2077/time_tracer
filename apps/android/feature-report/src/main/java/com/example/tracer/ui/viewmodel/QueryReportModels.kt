@@ -47,6 +47,7 @@ enum class ReportResultDisplayMode {
 }
 
 data class QueryReportUiState(
+    val averageDayBasis: ReportAverageDayBasis = ReportAverageDayBasis.ACTIVE_DAYS,
     val reportMode: ReportMode = ReportMode.DAY,
     val reportDate: String = currentDateDigits(),
     val reportMonth: String = currentMonthDigits(),

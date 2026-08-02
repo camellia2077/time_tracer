@@ -410,9 +410,11 @@ private fun RecordCanonicalCatalogSection(
     orderedRootPaths: List<String>,
     onCollapsedRootPathsChange: (Set<String>) -> Unit,
     onOrderedRootPathsChange: (List<String>) -> Unit,
-    onCanonicalPathClick: (String) -> Unit,
+    onCanonicalEntryClick: (CanonicalCatalogEntry) -> Unit,
+    onCanonicalParentClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val parentSelectionEnabled = target == CanonicalBrowserTarget.REPORT_STATUS_PARENT
     val orderedRoots = remember(roots, orderedRootPaths) {
         roots.orderCanonicalRoots(orderedRootPaths)
     }
@@ -493,6 +495,8 @@ private fun RecordCanonicalCatalogSection(
             text = stringResource(
                 if (target == CanonicalBrowserTarget.QUICK_ACCESS) {
                     R.string.record_canonical_catalog_quick_access_title
+                } else if (target == CanonicalBrowserTarget.REPORT_STATUS_PARENT) {
+                    R.string.record_canonical_catalog_parent_title
                 } else {
                     R.string.record_canonical_catalog_title
                 }
@@ -504,6 +508,8 @@ private fun RecordCanonicalCatalogSection(
             text = stringResource(
                 if (target == CanonicalBrowserTarget.QUICK_ACCESS) {
                     R.string.record_canonical_catalog_quick_access_description
+                } else if (target == CanonicalBrowserTarget.REPORT_STATUS_PARENT) {
+                    R.string.record_canonical_catalog_parent_description
                 } else {
                     R.string.record_canonical_catalog_description
                 }
@@ -538,6 +544,7 @@ private fun RecordCanonicalCatalogSection(
                         displayMode = displayMode,
                         collapsedRootPaths = collapsedRootPaths,
                         onCollapsedRootPathsChange = onCollapsedRootPathsChange,
+                        parentSelectionEnabled = parentSelectionEnabled,
                         modifier = Modifier
                             .fillMaxWidth()
                             .testTag(canonicalCatalogRootTestTag(root.path))
@@ -589,7 +596,8 @@ private fun RecordCanonicalCatalogSection(
                                     }
                                 )
                             },
-                        onCanonicalPathClick = onCanonicalPathClick
+                        onCanonicalEntryClick = onCanonicalEntryClick,
+                        onCanonicalParentClick = onCanonicalParentClick
                     )
                     if (showDropPreviewAfter(index)) {
                         CanonicalRootDropPreview()
@@ -628,7 +636,7 @@ private fun CanonicalRootDropPreview(modifier: Modifier = Modifier) {
 }
 
 @Composable
-internal fun RecordCanonicalCatalogScreen(
+fun RecordCanonicalCatalogScreen(
     isLoading: Boolean,
     roots: List<CanonicalPathNode>,
     statusText: String,
@@ -640,7 +648,8 @@ internal fun RecordCanonicalCatalogScreen(
     onDisplayModeChange: (RecordSuggestionOutputMode) -> Unit,
     onCollapsedRootPathsChange: (Set<String>) -> Unit,
     onOrderedRootPathsChange: (List<String>) -> Unit,
-    onCanonicalPathClick: (String) -> Unit
+    onCanonicalEntryClick: (CanonicalCatalogEntry) -> Unit,
+    onCanonicalParentClick: (String) -> Unit = {}
 ) {
     Dialog(
         onDismissRequest = onDismissRequest,
@@ -666,6 +675,8 @@ internal fun RecordCanonicalCatalogScreen(
                             text = stringResource(
                                 if (target == CanonicalBrowserTarget.QUICK_ACCESS) {
                                     R.string.record_canonical_catalog_quick_access_title
+                                } else if (target == CanonicalBrowserTarget.REPORT_STATUS_PARENT) {
+                                    R.string.record_canonical_catalog_parent_title
                                 } else {
                                     R.string.record_canonical_catalog_title
                                 }
@@ -760,7 +771,8 @@ internal fun RecordCanonicalCatalogScreen(
                         orderedRootPaths = orderedRootPaths,
                         onCollapsedRootPathsChange = onCollapsedRootPathsChange,
                         onOrderedRootPathsChange = onOrderedRootPathsChange,
-                        onCanonicalPathClick = onCanonicalPathClick,
+                        onCanonicalEntryClick = onCanonicalEntryClick,
+                        onCanonicalParentClick = onCanonicalParentClick,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 24.dp)
@@ -777,7 +789,9 @@ private fun CanonicalPathNodeCard(
     displayMode: RecordSuggestionOutputMode,
     collapsedRootPaths: Set<String>,
     onCollapsedRootPathsChange: (Set<String>) -> Unit,
-    onCanonicalPathClick: (String) -> Unit,
+    onCanonicalEntryClick: (CanonicalCatalogEntry) -> Unit,
+    onCanonicalParentClick: (String) -> Unit,
+    parentSelectionEnabled: Boolean,
     modifier: Modifier = Modifier,
     depth: Int = 0
 ) {
@@ -821,6 +835,11 @@ private fun CanonicalPathNodeCard(
                         MaterialTheme.colorScheme.onSurface
                     }
                 )
+                if (parentSelectionEnabled) {
+                    TextButton(onClick = { onCanonicalParentClick(node.path) }) {
+                        Text(stringResource(R.string.record_action_select_parent))
+                    }
+                }
                 if (hasCollapsibleContent) {
                     IconButton(
                         onClick = {
@@ -851,10 +870,9 @@ private fun CanonicalPathNodeCard(
                     verticalGap = 8.dp
                 ) {
                     node.entries.forEach { entry ->
-                        val displayToken = entry.displayToken(displayMode)
                         val displayLabel = entry.displayLabel(displayMode)
                         SuggestionChip(
-                            onClick = { onCanonicalPathClick(displayToken) },
+                            onClick = { onCanonicalEntryClick(entry) },
                             label = {
                                 Text(
                                     text = displayLabel,
@@ -873,7 +891,9 @@ private fun CanonicalPathNodeCard(
                         displayMode = displayMode,
                         collapsedRootPaths = collapsedRootPaths,
                         onCollapsedRootPathsChange = onCollapsedRootPathsChange,
-                        onCanonicalPathClick = onCanonicalPathClick,
+                        onCanonicalEntryClick = onCanonicalEntryClick,
+                        onCanonicalParentClick = onCanonicalParentClick,
+                        parentSelectionEnabled = parentSelectionEnabled,
                         modifier = Modifier,
                         depth = depth + 1
                     )

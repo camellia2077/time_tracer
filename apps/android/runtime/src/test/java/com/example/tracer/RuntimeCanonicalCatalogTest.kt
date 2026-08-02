@@ -15,10 +15,10 @@ class RuntimeCanonicalCatalogTest {
             """
                 parent = "study"
 
-                [aliases.math]
+                [canonical.math]
                 "calculus-overview" = ["高等数学"]
 
-                [aliases.math.calculus]
+                [canonical.math.calculus]
                 "double-integral" = ["高等数学二重积分"]
             """.trimIndent()
         )
@@ -42,7 +42,7 @@ class RuntimeCanonicalCatalogTest {
             """
                 parent = "recreation"
 
-                [aliases.online]
+                [canonical.online]
                 group_aliases = ["上网"]
                 "bilibili" = ["哔哩哔哩"]
             """.trimIndent()
@@ -65,7 +65,7 @@ class RuntimeCanonicalCatalogTest {
                 content = """
                     parent = "meal"
 
-                    [aliases]
+                    [canonical]
                     "dining" = ["meal", "吃饭"]
                     "breakfast" = ["早餐"]
                 """.trimIndent() + "\n"
@@ -76,10 +76,10 @@ class RuntimeCanonicalCatalogTest {
                 content = """
                     parent = "study"
 
-                    [aliases.math]
+                    [canonical.math]
                     "calculus-overview" = ["高等数学"]
 
-                    [aliases.math.calculus]
+                    [canonical.math.calculus]
                     "double-integral" = ["高等数学二重积分"]
                 """.trimIndent() + "\n"
             )
@@ -138,7 +138,7 @@ class RuntimeCanonicalCatalogTest {
                 content = """
                     parent = "other"
 
-                    [aliases]
+                    [canonical]
                     "looking-for" = ["找东西"]
                 """.trimIndent()
             )
@@ -162,7 +162,7 @@ class RuntimeCanonicalCatalogTest {
                 root = root,
                 relativePath = "user/activity_hierarchy/broken.toml",
                 content = """
-                    [aliases]
+                    [canonical]
                     "dining" = ["meal"]
                 """.trimIndent() + "\n"
             )

@@ -6,6 +6,7 @@ import com.example.tracer.ActivityHierarchyGateway
 import com.example.tracer.ActivityHierarchyMigrationGateway
 import com.example.tracer.NativeRuntimeController
 import com.example.tracer.QueryGateway
+import com.example.tracer.QuickAccessGateway
 import com.example.tracer.RecordGateway
 import com.example.tracer.ReportGateway
 import com.example.tracer.RuntimeInitializer
@@ -35,6 +36,9 @@ class AppContainer(private val appContext: Context) {
         get() = nativeRuntimeController
 
     val configGateway: ConfigGateway
+        get() = nativeRuntimeController
+
+    val quickAccessGateway: QuickAccessGateway
         get() = nativeRuntimeController
 
     val activityHierarchyGateway: ActivityHierarchyGateway

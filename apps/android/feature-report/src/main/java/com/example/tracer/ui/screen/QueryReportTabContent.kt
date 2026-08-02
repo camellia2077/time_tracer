@@ -32,6 +32,9 @@ fun QueryReportTabContent(
     onPreferredChartSemanticModeChange: (ReportChartSemanticMode) -> Unit,
     preferredChartVisualMode: ReportChartVisualMode,
     onPreferredChartVisualModeChange: (ReportChartVisualMode) -> Unit,
+    preferredTrendChartRoot: String,
+    onPreferredTrendChartRootChange: (String) -> Unit,
+    preferredAverageDayBasis: ReportAverageDayBasis,
     chartShowAverageLine: Boolean,
     piePalettePreset: ReportPiePalettePreset,
     onChartShowAverageLineChange: (Boolean) -> Unit,
@@ -41,20 +44,25 @@ fun QueryReportTabContent(
     onHeatmapPaletteNameChange: (String) -> Unit,
     heatmapApplyMessage: String,
     isAppDarkThemeActive: Boolean,
+    onEditDailyStatuses: () -> Unit = {},
     bottomContentPadding: Dp = 0.dp
 ) {
     LaunchedEffect(
         preferredReportMode,
         preferredChartSemanticMode,
+        preferredTrendChartRoot,
         preferredResultDisplayMode,
-        preferredParameterSection
+        preferredParameterSection,
+        preferredAverageDayBasis
     ) {
         // These four DataStore values form one report presentation selection. Applying them
         // independently can launch a default text report before the persisted Chart mode has
         // arrived, whose late result overwrites the chart during cold start.
+        queryReportViewModel.applyReportAverageDayBasis(preferredAverageDayBasis)
         queryReportViewModel.applyPersistedReportPresentation(
             reportMode = preferredReportMode,
             chartSemanticMode = preferredChartSemanticMode,
+            trendChartSelectedRoot = preferredTrendChartRoot,
             resultDisplayMode = preferredResultDisplayMode,
             parameterSection = preferredParameterSection
         )
@@ -204,11 +212,15 @@ fun QueryReportTabContent(
                 heatmapApplyMessage = heatmapApplyMessage,
                 isAppDarkThemeActive = isAppDarkThemeActive,
                 onCompositionVisualModeChange = queryReportViewModel::onCompositionVisualModeChange,
-                onChartRootChange = queryReportViewModel::onChartRootChange,
+                onChartRootChange = { root ->
+                    queryReportViewModel.onChartRootChange(root)
+                    onPreferredTrendChartRootChange(root)
+                },
                 onChartShowAverageLineChange = onChartShowAverageLineChange,
                 onChartVisualModeChange = onPreferredChartVisualModeChange,
                 onUpdateActivityRemark = queryReportViewModel::updateActivityRemark,
-                onUpdateDayRemark = queryReportViewModel::updateDayRemark
+                onUpdateDayRemark = queryReportViewModel::updateDayRemark,
+                onEditDailyStatuses = onEditDailyStatuses
             )
         }
     }

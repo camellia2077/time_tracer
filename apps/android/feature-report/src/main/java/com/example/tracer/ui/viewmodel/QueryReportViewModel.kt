@@ -166,7 +166,8 @@ class QueryReportViewModel(
         reportMode: ReportMode,
         chartSemanticMode: ReportChartSemanticMode,
         resultDisplayMode: ReportResultDisplayMode,
-        parameterSection: ReportParameterSection
+        parameterSection: ReportParameterSection,
+        trendChartSelectedRoot: String = ""
     ) {
         // Treat the persisted display, period, semantic mode, and parameter section as one
         // selection. Applying them in separate Compose effects briefly leaves the ViewModel in
@@ -184,7 +185,8 @@ class QueryReportViewModel(
             uiState.preferredChartSemanticMode != chartSemanticMode ||
             uiState.chartSemanticMode != normalizedChartSemanticMode ||
             uiState.resultDisplayMode != resultDisplayMode ||
-            uiState.parameterSection != normalizedParameterSection
+            uiState.parameterSection != normalizedParameterSection ||
+            uiState.trendChartSelectedRoot != trendChartSelectedRoot.trim()
         reportPresentationPreferencesApplied = true
         if (!firstPreferenceApplication && !changed) {
             // This effect can be launched from the chart's loading composition. Its snapshot
@@ -201,7 +203,8 @@ class QueryReportViewModel(
             preferredChartSemanticMode = chartSemanticMode,
             chartSemanticMode = normalizedChartSemanticMode,
             resultDisplayMode = resultDisplayMode,
-            parameterSection = normalizedParameterSection
+            parameterSection = normalizedParameterSection,
+            trendChartSelectedRoot = trendChartSelectedRoot.trim()
         )
         // A request that was already loading belongs to the pre-restoration selection. Clear
         // its loading flag along with its data so the fully restored chart can start its own
@@ -219,6 +222,16 @@ class QueryReportViewModel(
             loadTree(reportMode.toDataTreePeriod(), uiState.treeLevel)
         } else {
             reportCurrentSelection()
+        }
+    }
+
+    fun applyReportAverageDayBasis(value: ReportAverageDayBasis) {
+        if (uiState.averageDayBasis != value) {
+            invalidateInFlightChartRequests("average day basis")
+            uiState = uiState.copy(averageDayBasis = value).invalidateChartState()
+            if (uiState.resultDisplayMode == ReportResultDisplayMode.CHART) {
+                refreshCurrentChart()
+            }
         }
     }
 

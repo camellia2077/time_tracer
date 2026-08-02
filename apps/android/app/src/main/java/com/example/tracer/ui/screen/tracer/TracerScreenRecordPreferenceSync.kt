@@ -8,6 +8,7 @@ import com.example.tracer.data.RecordSuggestionPreferences
 @Composable
 internal fun SyncTracerScreenRecordPreferences(
     recordSuggestionPreferences: RecordSuggestionPreferences,
+    quickActivities: List<String>,
     persistedRecordInput: PersistedRecordInputSnapshot?,
     recordViewModel: RecordViewModel
 ) {
@@ -16,7 +17,7 @@ internal fun SyncTracerScreenRecordPreferences(
         recordSuggestionPreferences.topN,
         recordSuggestionPreferences.outputMode,
         recordSuggestionPreferences.canonicalCatalogDisplayMode,
-        recordSuggestionPreferences.quickActivities,
+        quickActivities,
         recordSuggestionPreferences.quickAccessCardExpanded,
         recordSuggestionPreferences.assistSettingsExpanded,
         recordSuggestionPreferences.collapsedCanonicalRootPaths,
@@ -30,7 +31,7 @@ internal fun SyncTracerScreenRecordPreferences(
         recordViewModel.updateCanonicalCatalogDisplayMode(
             recordSuggestionPreferences.canonicalCatalogDisplayMode
         )
-        recordViewModel.updateQuickActivities(recordSuggestionPreferences.quickActivities)
+        recordViewModel.updateQuickActivities(quickActivities)
         recordViewModel.updateQuickAccessCardExpanded(
             recordSuggestionPreferences.quickAccessCardExpanded
         )

@@ -18,7 +18,8 @@ internal fun rememberTracerDataFolderImportAction(
     dataViewModel: DataViewModel,
     configGateway: ConfigGateway,
     configViewModel: ConfigViewModel,
-    recordViewModel: RecordViewModel
+    recordViewModel: RecordViewModel,
+    onQuickAccessReload: suspend () -> Unit
 ): () -> Unit {
     val transferCoordinator = rememberTracerScreenTransferCoordinator(
         context = context,
@@ -74,15 +75,21 @@ internal fun rememberTracerDataFolderImportAction(
                     statusText = "Data folder import failed: ${error.message ?: "unknown error"}"
                 )
             },
-            afterTransfer = { _, _ ->
-                recordViewModel.refreshHistory()
+            afterTransfer = { _, result ->
+                // Wait for the asynchronous history refresh before reloading Quick Access.
+                // The refresh publishes a full RecordUiState snapshot; if it finishes after
+                // Quick Access is updated, its stale pre-import snapshot can overwrite the
+                // newly imported aliases. Keeping this order makes the final state consistent.
+                recordViewModel.refreshHistory().join()
                 configViewModel.refreshConfigFiles()
+                if (result.succeeded) {
+                    onQuickAccessReload()
+                }
             }
         )
     }
 
     return {
-        dataViewModel.setStatusText("Select a folder containing txt/ and config/.")
         launcher.launch(null)
     }
 }
@@ -119,7 +126,8 @@ private suspend fun importDataFolder(
                 "Data folder replaced: TXT ${result.txtFileCount}, TOML ${result.tomlFileCount}."
             } else {
                 "Data folder import failed: ${result.message}"
-            }
+            },
+            succeeded = result.ok
         )
     } catch (error: Exception) {
         TracerPreparedTransferResult(

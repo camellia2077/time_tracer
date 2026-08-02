@@ -48,9 +48,16 @@ internal fun QueryReportParameterCards(
     onTreeLevelChange: (String) -> Unit
 ) {
     val availableSections = if (reportMode == ReportMode.DAY) {
-        ReportParameterSection.entries
+        listOf(
+            ReportParameterSection.TIMELINE,
+            ReportParameterSection.ACTIVITY_HIERARCHY,
+            ReportParameterSection.DAY
+        )
     } else {
-        ReportParameterSection.entries.filter { it != ReportParameterSection.TIMELINE }
+        listOf(
+            ReportParameterSection.ACTIVITY_HIERARCHY,
+            ReportParameterSection.DAY
+        )
     }
     val effectiveSelectedSection = if (selectedSection in availableSections) {
         selectedSection

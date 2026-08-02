@@ -128,36 +128,6 @@ class RuntimeCoreAdapterTest {
         assertEquals(true, capturedRequest?.crossMidnightActivity)
     }
 
-    @Test
-    fun executeNativeDataQuery_preservesMissingWakeAnchorRequestField() {
-        val paths = createPaths(Files.createTempDirectory("core-adapter-missing-wake").toFile())
-        var capturedRequest: DataQueryRequest? = null
-        val adapter = RuntimeCoreAdapter(
-            ensureRuntimePaths = { paths },
-            runtimePathsProvider = { paths },
-            nativeInit = { """{"ok":true,"content":"","error_message":""}""" },
-            nativeQuery = { request ->
-                capturedRequest = request
-                """{"ok":true,"content":"query-ok","error_message":""}"""
-            },
-            responseCodec = NativeResponseCodec(),
-            reportTranslator = NativeReportTranslator(NativeResponseCodec()),
-            diagnosticsRecorder = RuntimeDiagnosticsRecorder(runtimePathsProvider = { paths }),
-            nextOperationId = { stage -> "op-$stage" },
-            errorMapper = RuntimeErrorMapper()
-        )
-
-        val result = adapter.executeNativeDataQuery(
-            request = DataQueryRequest(
-                action = NativeBridge.QUERY_ACTION_DAYS,
-                missingWakeAnchor = true
-            )
-        )
-
-        assertTrue(result.operationOk)
-        assertEquals(true, capturedRequest?.missingWakeAnchor)
-    }
-
     private fun createPaths(root: File): RuntimePaths {
         val input = File(root, "input").apply { mkdirs() }
         val cache = File(root, "cache").apply { mkdirs() }
@@ -167,7 +137,7 @@ class RuntimeCoreAdapterTest {
             parentFile?.mkdirs()
             writeText("")
         }
-        val configToml = File(configRoot, "user/activity_hierarchy/_system.toml").apply {
+        val configToml = File(configRoot, "user/behavior.toml").apply {
             parentFile?.mkdirs()
             writeText("dummy=true")
         }

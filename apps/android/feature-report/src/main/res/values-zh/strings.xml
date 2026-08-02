@@ -11,9 +11,9 @@
 
     <string name="report_title_mode_parameters">日期选择</string>
     <string name="report_parameter_section_day">日期</string>
-    <string name="report_parameter_section_tree">活动层级</string>
+    <string name="report_parameter_section_tree">时间明细</string>
     <string name="report_parameter_section_timeline">时间线</string>
-    <string name="report_parameter_section_markdown">md</string>
+    <string name="report_parameter_section_markdown">文本</string>
     <string name="report_title_report_date">报表日期</string>
     <string name="report_title_report_day">报表日</string>
     <string name="report_title_report_month">报表月份</string>
@@ -26,8 +26,8 @@
 
     <string name="report_action_loading">加载中...</string>
 
-    <string name="report_title_project_tree_parameters">活动层级</string>
-    <string name="report_section_tree">活动层级</string>
+    <string name="report_title_project_tree_parameters">时间明细</string>
+    <string name="report_section_tree">时间明细</string>
     <string name="report_label_tree_level">显示层级</string>
     <string name="report_tree_level_all">全部层级</string>
     <string name="report_tree_level_number">第 %1$d 层</string>
@@ -37,7 +37,7 @@
     <string name="report_chart_semantic_trend">趋势</string>
     <string name="report_chart_semantic_composition">构成</string>
     <string name="report_label_chart_root">顶层活动</string>
-    <string name="report_chart_root_all">全部顶层活动</string>
+    <string name="report_chart_root_all">活动总时间</string>
     <string name="report_chart_composition_scope_hint">活动分布包含所选时间范围内的全部顶层活动。</string>
     <string name="report_label_chart_lookback_days">最近天数 (N)</string>
     <string name="report_label_chart_date_filter_mode">日期筛选方式</string>
@@ -101,6 +101,17 @@
     <string name="report_chart_composition_summary">所选时间范围内的顶层活动分布。</string>
     <string name="report_chart_composition_selected_detail">已选中：%1$s · %2$s (%3$.1f%%)</string>
     <string name="report_chart_composition_selected_frequency_detail">已选中：%1$s · %2$d 次 (%3$.1f%%)</string>
+    <string name="report_chart_composition_selected_stats">总时长：%1$s · 记录：%2$d 次 · 占比：%3$.1f%%</string>
+    <string name="report_chart_composition_selected_average_stats">日均时长：%1$s · 日均记录：%2$.1f 次</string>
+    <string name="report_chart_composition_average_summary">日均时长：%1$s · 日均记录：%2$.1f 次</string>
+    <string name="report_chart_composition_total_duration">总时长：%1$s</string>
+    <string name="report_chart_composition_total_records">总记录：%1$d 次</string>
+    <string name="report_chart_composition_average_duration">日均：%1$s</string>
+    <string name="report_chart_composition_average_records">日均记录：%1$.1f 次</string>
+    <string name="report_chart_legend_total">总计</string>
+    <string name="report_chart_legend_average">平均</string>
+    <string name="report_chart_composition_selected_average_duration">日均时长：%1$s</string>
+    <string name="report_chart_composition_selected_average_records">日均记录：%1$.1f 次</string>
 
     <string name="report_title_section_day">%1$s日期</string>
     <string name="report_title_section_month">%1$s月份</string>
@@ -119,12 +130,13 @@
     <string name="report_save_day_remark">保存</string>
     <string name="report_cancel_day_remark">取消</string>
     <string name="report_activity_timeline_empty">这一天没有记录活动。</string>
+    <string name="report_activity_timeline_end_only_time">截至 %1$s</string>
     <string name="report_edit_activity_remark">编辑备注</string>
     <string name="report_activity_remark_label">活动备注</string>
     <string name="report_save_activity_remark">保存</string>
     <string name="report_cancel_activity_remark">取消</string>
 
-    <string name="report_subject_tree">活动层级</string>
+    <string name="report_subject_tree">时间明细</string>
 
     <string name="report_status_native_report_running">nativeReportJson(%1$s, md) 运行中...</string>
     <string name="report_status_native_report_result">nativeReportJson(%1$s, md) -&gt; OK=%2$s</string>
@@ -147,7 +159,7 @@
     <string name="report_result_title_report_window_summary">%1$s窗口摘要</string>
     <string name="report_result_title_chart">图表结果</string>
     <string name="report_result_title_analysis_error">分析错误</string>
-    <string name="report_result_title_tree">%1$s活动层级</string>
+    <string name="report_result_title_tree">%1$s时间明细</string>
     <string name="report_summary_missing_target_body">所选%1$s目标没有对应的报表数据。</string>
     <string name="report_summary_no_data_body">这一天没有记录活动。</string>
     <string name="report_summary_error_code">错误码：%1$s</string>
@@ -160,7 +172,7 @@
     <string name="report_summary_matched_days">匹配天数：%1$d</string>
     <string name="report_summary_matched_records">匹配记录数：%1$d</string>
 
-    <string name="report_error_tree_level_min">活动层级必须 &gt;= -1。</string>
+    <string name="report_error_tree_level_min">时间明细层级必须 &gt;= -1。</string>
     <string name="report_error_chart_payload_invalid">图表数据载荷无效。</string>
     <string name="report_error_composition_payload_invalid">分布数据载荷无效。</string>
     <string name="report_error_period_argument_required">%1$s 参数在 %2$s 周期下必填。</string>

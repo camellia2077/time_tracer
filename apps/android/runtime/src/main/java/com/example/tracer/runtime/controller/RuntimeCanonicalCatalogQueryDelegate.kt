@@ -6,10 +6,6 @@ import kotlinx.coroutines.withContext
 internal class RuntimeCanonicalCatalogQueryDelegate(
     private val ensureConfigTomlStorage: () -> ConfigTomlStorage
 ) {
-    private companion object {
-        const val SYSTEM_ALIAS_CONFIG_PATH = "user/behavior.toml"
-    }
-
     suspend fun listCanonicalCatalog(): CanonicalCatalogResult =
         withContext(Dispatchers.IO) {
             try {
@@ -27,7 +23,7 @@ internal class RuntimeCanonicalCatalogQueryDelegate(
                 val aliasFiles = listResult.aliasFiles
                     .filter { entry ->
                         entry.relativePath.startsWith("user/activity_hierarchy/") &&
-                            entry.relativePath != SYSTEM_ALIAS_CONFIG_PATH
+                            entry.relativePath.endsWith(".toml", ignoreCase = true)
                     }
                     .sortedBy { it.relativePath }
                 if (aliasFiles.isEmpty()) {
@@ -35,7 +31,7 @@ internal class RuntimeCanonicalCatalogQueryDelegate(
                         ok = false,
                         roots = emptyList(),
                         entries = emptyList(),
-                        message = "Canonical catalog query failed: no alias files."
+                        message = "Canonical catalog query failed: no canonical files."
                     )
                 }
 

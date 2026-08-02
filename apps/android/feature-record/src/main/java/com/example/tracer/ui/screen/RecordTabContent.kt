@@ -190,7 +190,14 @@ fun RecordTabContent(
         onToggleSuggestions = recordViewModel::toggleSuggestions,
         onDismissSuggestions = recordViewModel::dismissSuggestions,
         onSuggestedActivityClick = { activity ->
-            if (updateQuickActivities(recordUiState.quickActivities + activity)) {
+            val alias = recordUiState.suggestedActivities
+                .firstOrNull { suggestion ->
+                    suggestion.canonicalToken == activity || suggestion.aliasToken == activity
+                }
+                ?.aliasToken
+                ?.trim()
+                ?.takeIf { it.isNotEmpty() }
+            if (alias != null && updateQuickActivities(recordUiState.quickActivities + alias)) {
                 recordViewModel.dismissSuggestions()
             }
         },
@@ -209,16 +216,36 @@ fun RecordTabContent(
             recordViewModel.updateOrderedCanonicalRootPaths(paths)
             onPersistOrderedCanonicalRootPaths(paths)
         },
-        onCanonicalCatalogEntryClick = { target, token ->
+        onCanonicalCatalogEntryClick = { target, entry ->
             when (target) {
                 CanonicalBrowserTarget.RECORD_INPUT -> {
-                    recordViewModel.applyCanonicalCatalogEntry(token)
+                    val displayToken = if (
+                        recordUiState.canonicalCatalogDisplayMode == RecordSuggestionOutputMode.ALIAS
+                    ) {
+                        entry.aliases.firstOrNull { it.isNotBlank() }?.trim()
+                            ?: entry.canonicalPath.trim()
+                    } else {
+                        entry.canonicalPath.trim()
+                    }
+                    recordViewModel.applyCanonicalCatalogEntry(
+                        displayToken
+                    )
                     true
                 }
 
                 CanonicalBrowserTarget.QUICK_ACCESS -> {
-                    updateQuickActivities(recordUiState.quickActivities + token)
+                    val alias = entry.aliases.firstOrNull { it.isNotBlank() }?.trim()
+                    if (alias == null) {
+                        recordViewModel.setStatusText(
+                            quickActivitiesSaveFailedEmptyValidationText
+                        )
+                        false
+                    } else {
+                        updateQuickActivities(recordUiState.quickActivities + alias)
+                    }
                 }
+
+                CanonicalBrowserTarget.REPORT_STATUS_PARENT -> false
             }
         },
         onOpenTxtPreview = recordViewModel::openTxtPreview,

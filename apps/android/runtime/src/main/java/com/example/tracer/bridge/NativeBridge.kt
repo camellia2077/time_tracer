@@ -11,6 +11,9 @@ import java.util.concurrent.atomic.AtomicReference
 object NativeBridge {
     const val UNSET_INT = -1
 
+    // Android user data may contain intentionally unrecorded days. Production
+    // Android flows therefore pass DATE_CHECK_NONE explicitly; continuity and
+    // full remain available only for callers that deliberately request them.
     const val DATE_CHECK_NONE = 0
     const val DATE_CHECK_CONTINUITY = 1
     const val DATE_CHECK_FULL = 2
@@ -167,7 +170,6 @@ object NativeBridge {
         exercise: Int,
         status: Int,
         crossMidnightActivity: Boolean,
-        missingWakeAnchor: Boolean,
         reverse: Boolean,
         limit: Int,
         topN: Int,
@@ -177,7 +179,8 @@ object NativeBridge {
         treePeriod: String,
         treePeriodArgument: String,
         treeMaxDepth: Int,
-        outputMode: String
+        outputMode: String,
+        averageDayBasis: String
     ): String
 
     external fun nativeReportJson(

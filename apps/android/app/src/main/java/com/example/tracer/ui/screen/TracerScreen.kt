@@ -23,6 +23,7 @@ import com.example.tracer.PersistedRecordInputSnapshot
 import com.example.tracer.data.ReportChartPaletteUserConfigStore
 import com.example.tracer.data.UserPreferencesRecordInputPersistence
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 @Composable
 fun TracerScreen(
@@ -32,6 +33,7 @@ fun TracerScreen(
     reportGateway: ReportGateway,
     queryGateway: QueryGateway,
     configGateway: ConfigGateway,
+    quickAccessGateway: QuickAccessGateway,
     activityHierarchyGateway: ActivityHierarchyGateway,
     activityHierarchyMigrationGateway: ActivityHierarchyMigrationGateway,
     tracerExchangeGateway: TracerExchangeGateway,
@@ -44,6 +46,7 @@ fun TracerScreen(
     var selectedTab by rememberSaveable(stateSaver = tracerTabSaver) {
         mutableStateOf(DefaultTracerTab)
     }
+    var isDailyStatusEditorVisible by rememberSaveable { mutableStateOf(false) }
     var validAuthorableEventTokens by remember { mutableStateOf<Set<String>>(emptySet()) }
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -65,6 +68,11 @@ fun TracerScreen(
     LaunchedEffect(appLanguage) {
         queryReportViewModel.onReportLocaleChange(
             when (appLanguage) {
+                com.example.tracer.data.AppLanguage.System -> when (Locale.getDefault().language) {
+                    "zh" -> "zh"
+                    "ja" -> "ja"
+                    else -> "en"
+                }
                 com.example.tracer.data.AppLanguage.Chinese -> "zh"
                 com.example.tracer.data.AppLanguage.English -> "en"
                 com.example.tracer.data.AppLanguage.Japanese -> "ja"
@@ -74,14 +82,25 @@ fun TracerScreen(
     val recordInputPersistence = remember(userPreferencesRepository) {
         UserPreferencesRecordInputPersistence(userPreferencesRepository)
     }
-    val quickActivitiesPreferenceGateway = remember(userPreferencesRepository) {
-        UserPreferencesQuickActivitiesGateway(userPreferencesRepository)
+    val quickActivitiesPreferenceGateway = remember(quickAccessGateway) {
+        RuntimeQuickActivitiesGateway(quickAccessGateway)
+    }
+    val quickActivities by quickActivitiesPreferenceGateway.quickActivities.collectAsState()
+    LaunchedEffect(quickAccessGateway) {
+        runCatching { quickActivitiesPreferenceGateway.getQuickActivities() }
     }
     val recordViewModel: RecordViewModel = viewModel(
-        factory = remember(recordGateway, txtStorageGateway, queryGateway, recordInputPersistence) {
+        factory = remember(
+            recordGateway,
+            txtStorageGateway,
+            reportGateway,
+            queryGateway,
+            recordInputPersistence
+        ) {
             RecordViewModelFactory(
                 recordGateway = recordGateway,
                 txtStorageGateway = txtStorageGateway,
+                reportGateway = reportGateway,
                 queryGateway = queryGateway,
                 recordInputPersistence = recordInputPersistence,
                 textProvider = AndroidRecordTextProvider(context)
@@ -133,6 +152,12 @@ fun TracerScreen(
     val reportChartVisualMode by userPreferencesRepository.reportChartVisualMode.collectAsState(
         initial = null
     )
+    val reportChartTrendRoot by userPreferencesRepository.reportChartTrendRoot.collectAsState(
+        initial = null
+    )
+    val reportAverageDayBasis by userPreferencesRepository.reportAverageDayBasis.collectAsState(
+        initial = null
+    )
     val reportMode by userPreferencesRepository.reportMode.collectAsState(initial = null)
     val reportResultDisplayMode by userPreferencesRepository.reportResultDisplayMode.collectAsState(
         initial = null
@@ -171,10 +196,12 @@ fun TracerScreen(
     if (persistedRecordInput == null ||
         reportChartSemanticMode == null ||
         reportChartVisualMode == null ||
+        reportChartTrendRoot == null ||
         reportMode == null ||
         reportResultDisplayMode == null ||
         reportParameterSection == null ||
         reportTimeParametersExpanded == null
+        || reportAverageDayBasis == null
     ) {
         return
     }
@@ -182,10 +209,12 @@ fun TracerScreen(
     val loadedPersistedRecordInput = requireNotNull(persistedRecordInput)
     val loadedReportChartSemanticMode = requireNotNull(reportChartSemanticMode)
     val loadedReportChartVisualMode = requireNotNull(reportChartVisualMode)
+    val loadedReportChartTrendRoot = requireNotNull(reportChartTrendRoot)
     val loadedReportMode = requireNotNull(reportMode)
     val loadedReportResultDisplayMode = requireNotNull(reportResultDisplayMode)
     val loadedReportParameterSection = requireNotNull(reportParameterSection)
     val loadedReportTimeParametersExpanded = requireNotNull(reportTimeParametersExpanded)
+    val loadedReportAverageDayBasis = requireNotNull(reportAverageDayBasis)
 
     val displayedRecordUiState = if (!recordViewModel.hasAppliedInitialPersistedRecordInputForUi) {
         recordUiState.copy(
@@ -198,6 +227,7 @@ fun TracerScreen(
 
     SyncTracerScreenRecordPreferences(
         recordSuggestionPreferences = recordSuggestionPreferences,
+        quickActivities = quickActivities,
         persistedRecordInput = persistedRecordInput,
         recordViewModel = recordViewModel
     )
@@ -242,7 +272,16 @@ fun TracerScreen(
         recordViewModel = recordViewModel,
         dataViewModel = dataViewModel,
         configGateway = configGateway,
-        configViewModel = configViewModel
+        configViewModel = configViewModel,
+        onQuickAccessReload = {
+            val importedQuickActivities = runCatching {
+                quickActivitiesPreferenceGateway.getQuickActivities()
+            }.getOrElse {
+                quickActivitiesPreferenceGateway.clearCachedQuickActivities()
+                emptyList()
+            }
+            recordViewModel.updateQuickActivities(importedQuickActivities)
+        }
     )
     val importSingleTracerAction = rememberTracerSingleTracerImportAction(
         context = context,
@@ -268,7 +307,8 @@ fun TracerScreen(
         coroutineScope = coroutineScope,
         configGateway = configGateway,
         configViewModel = configViewModel,
-        userPreferencesRepository = userPreferencesRepository
+        userPreferencesRepository = userPreferencesRepository,
+        quickActivitiesPreferenceGateway = quickActivitiesPreferenceGateway
     )
 
     StatusSnackbarEffect(
@@ -333,6 +373,16 @@ fun TracerScreen(
                 userPreferencesRepository.setReportChartVisualMode(value)
             }
         },
+        reportChartTrendRoot = loadedReportChartTrendRoot,
+        onReportChartTrendRootChange = { value ->
+            coroutineScope.launch {
+                userPreferencesRepository.setReportChartTrendRoot(value)
+            }
+        },
+        reportAverageDayBasis = loadedReportAverageDayBasis,
+        onReportAverageDayBasisChange = { value ->
+            coroutineScope.launch { userPreferencesRepository.setReportAverageDayBasis(value) }
+        },
         reportMode = loadedReportMode,
         onReportModeChange = { value ->
             coroutineScope.launch {
@@ -367,6 +417,7 @@ fun TracerScreen(
         onSetAppLanguage = onSetAppLanguage,
         validAuthorableEventTokens = validAuthorableEventTokens,
         onPersistRecordQuickActivities = actions.onPersistRecordQuickActivities,
+        onClearQuickAccessCache = quickActivitiesPreferenceGateway::clearCachedQuickActivities,
         onPersistRecordQuickAccessCardExpanded =
             actions.onPersistRecordQuickAccessCardExpanded,
         onPersistRecordAssistSettingsExpanded = actions.onPersistRecordAssistSettingsExpanded,
@@ -386,8 +437,19 @@ fun TracerScreen(
         isTracerExportInProgress = exportActions.isTracerExportInProgress,
         selectedTracerSecurityLevel = exportActions.selectedTracerSecurityLevel,
         onTracerSecurityLevelChange = exportActions.onTracerSecurityLevelChange,
-        onCopyDiagnosticsPayload = actions.onCopyDiagnosticsPayload
+        onCopyDiagnosticsPayload = actions.onCopyDiagnosticsPayload,
+        onEditDailyStatuses = { isDailyStatusEditorVisible = true }
     )
+
+    if (isDailyStatusEditorVisible) {
+        DailyStatusEditorDialog(
+            configGateway = configGateway,
+            statusValues = queryUiState.dayTimeline?.statuses.orEmpty(),
+            recordUiState = recordUiState,
+            recordViewModel = recordViewModel,
+            onDismissRequest = { isDailyStatusEditorVisible = false }
+        )
+    }
 }
 
 private val tracerTabSaver = Saver<TracerTab, String>(

@@ -30,8 +30,8 @@ internal fun mapCorePayloadToDomainModel(payload: ReportChartData): DomainChartM
     val resolvedActiveDays = payload.activeDays?.coerceAtLeast(0) ?: fallbackActiveDays
     val resolvedRangeDays = payload.rangeDays?.coerceAtLeast(0) ?: fallbackRangeDays
     val resolvedAverage = payload.averageDurationSeconds?.coerceAtLeast(0L)
-        ?: if (resolvedRangeDays > 0) {
-            resolvedTotal / resolvedRangeDays
+        ?: if (resolvedActiveDays > 0) {
+            resolvedTotal / resolvedActiveDays
         } else {
             0L
         }
@@ -107,7 +107,12 @@ internal fun mapCorePayloadToCompositionRenderModel(
     return CompositionChartRenderModel(
         totalDurationSeconds = payload.totalDurationSeconds.coerceAtLeast(0L),
         activeRootCount = payload.activeRootCount.coerceAtLeast(0),
+        activeDays = payload.activeDays.coerceAtLeast(0),
         rangeDays = payload.rangeDays.coerceAtLeast(0),
+        averageDayBasis = payload.averageDayBasis,
+        averageDenominatorDays = payload.averageDenominatorDays.coerceAtLeast(0),
+        displayLevel = payload.displayLevel.coerceAtLeast(0),
+        displayPath = payload.displayPath.map(String::trim).filter(String::isNotEmpty),
         tree = normalizeCompositionTree(payload.tree)
     )
 }
@@ -124,6 +129,12 @@ private fun normalizeCompositionTree(nodes: List<TreeNode>): List<TreeNode> = no
             path = node.path.trim(),
             durationSeconds = durationSeconds,
             occurrenceCount = node.occurrenceCount?.coerceAtLeast(0L),
+            averageDurationSeconds = node.averageDurationSeconds?.coerceAtLeast(0L),
+            averageOccurrenceCount = node.averageOccurrenceCount
+                ?.takeIf { it.isFinite() }
+                ?.coerceAtLeast(0.0),
+            averageOccurrenceRatio = node.averageOccurrenceRatio
+                ?.coerceIn(0.0, 1.0),
             children = normalizeCompositionTree(node.children)
         )
     }

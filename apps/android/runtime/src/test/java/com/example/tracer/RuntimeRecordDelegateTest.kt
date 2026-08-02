@@ -303,7 +303,6 @@ class RuntimeRecordDelegateTest {
                 )
             )
             assertFalse(result.message.contains("Warning: overnight"))
-            assertFalse(result.message.contains("missing wake anchor"))
             assertFalse(
                 result.message.contains(
                     "Warning: this day currently has fewer than 2 authored events, so some intervals may not be computable yet."
@@ -384,15 +383,17 @@ class RuntimeRecordDelegateTest {
     }
 
     @Test
-    fun recordInterval_usesDayBlockReplaceAndSaveSyncPath() = runBlocking {
+    fun recordInterval_onFirstRecordedDayOfMonth_doesNotRequireMonthStart() = runBlocking {
         val root = Files.createTempDirectory("runtime-record-delegate-interval").toFile()
         try {
             val paths = createPaths(root)
-            val targetFile = File(paths.inputRootPath, "2026/2026-03.txt").apply {
+            val targetFile = File(paths.inputRootPath, "2026/2026-07.txt").apply {
                 parentFile?.mkdirs()
-                writeText("y2026\nm03\nd0329\n0700w\n")
+                writeText("y2026\nm07\nd0731\n0700w\n")
             }
             val writes = mutableListOf<Pair<String, String>>()
+            val logicValidationModes = mutableListOf<Int>()
+            val ingestModes = mutableListOf<Int>()
             val storage = object : TextStorage {
                 override fun listTxtFiles(): TxtHistoryListResult = TxtHistoryListResult(
                     ok = true,
@@ -427,27 +428,27 @@ class RuntimeRecordDelegateTest {
                     ActivityMappingNamesResult(ok = true, names = listOf("w", "wake"), message = "ok")
                 },
                 defaultTxtDayMarker = { _, _ ->
-                    TxtDayMarkerResult(ok = true, normalizedDayMarker = "0329", message = "ok")
+                    TxtDayMarkerResult(ok = true, normalizedDayMarker = "0731", message = "ok")
                 },
                 resolveTxtDayBlock = { content, _, _ ->
                     TxtDayBlockResolveResult(
                         ok = true,
-                        normalizedDayMarker = "0329",
+                        normalizedDayMarker = "0731",
                         found = true,
                         isMarkerValid = true,
                         canSave = true,
-                        dayBody = content.substringAfter("d0329\n"),
-                        dayContentIsoDate = "2026-03-29",
+                        dayBody = content.substringAfter("d0731\n"),
+                        dayContentIsoDate = "2026-07-31",
                         message = "ok"
                     )
                 },
                 replaceTxtDayBlock = { content, _, editedDayBody ->
                     TxtDayBlockReplaceResult(
                         ok = true,
-                        normalizedDayMarker = "0329",
+                        normalizedDayMarker = "0731",
                         found = true,
                         isMarkerValid = true,
-                        updatedContent = "y2026\nm03\nd0329\n$editedDayBody",
+                        updatedContent = "y2026\nm07\nd0731\n$editedDayBody",
                         message = "ok"
                     )
                 },
@@ -466,9 +467,15 @@ class RuntimeRecordDelegateTest {
                     )
                 },
                 nativeValidateStructure = { """{"ok":true}""" },
-                nativeValidateLogic = { _, _ -> """{"ok":true}""" },
+                nativeValidateLogic = { _, dateCheckMode ->
+                    logicValidationModes += dateCheckMode
+                    """{"ok":true}"""
+                },
                 nativeRecordActivityAtomically = { _, _, _, _, _, _ -> """{"ok":true}""" },
-                nativeIngestSingleTxtReplaceMonth = { _, _, _ -> """{"ok":true}""" },
+                nativeIngestSingleTxtReplaceMonth = { _, dateCheckMode, _ ->
+                    ingestModes += dateCheckMode
+                    """{"ok":true}"""
+                },
                 nativeClearTxtIngestSyncStatus = { """{"ok":true}""" }
             )
 
@@ -477,13 +484,15 @@ class RuntimeRecordDelegateTest {
                 startTime = "0900",
                 endTime = "1030",
                 remark = "focus",
-                targetDateIso = "2026-03-29",
-                preferredTxtPath = "2026/2026-03.txt"
+                targetDateIso = "2026-07-31",
+                preferredTxtPath = "2026/2026-07.txt"
             )
 
             assertTrue(result.ok)
             assertEquals(1, writes.size)
             assertTrue(writes.single().second.contains("090000-103000study // focus"))
+            assertEquals(listOf(NativeBridge.DATE_CHECK_NONE), logicValidationModes)
+            assertEquals(listOf(NativeBridge.DATE_CHECK_NONE), ingestModes)
         } finally {
             root.deleteRecursively()
         }
@@ -588,7 +597,7 @@ class RuntimeRecordDelegateTest {
             parentFile?.mkdirs()
             writeText("")
         }
-        val configToml = File(configRoot, "user/activity_hierarchy/_system.toml").apply {
+        val configToml = File(configRoot, "user/behavior.toml").apply {
             parentFile?.mkdirs()
             writeText("dummy=true")
         }

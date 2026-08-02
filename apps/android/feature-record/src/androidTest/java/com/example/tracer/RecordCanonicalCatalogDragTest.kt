@@ -42,7 +42,7 @@ class RecordCanonicalCatalogDragTest {
                     onDisplayModeChange = {},
                     onCollapsedRootPathsChange = {},
                     onOrderedRootPathsChange = { reorderCalls += it },
-                    onCanonicalPathClick = {}
+                    onCanonicalEntryClick = {}
                 )
             }
         }

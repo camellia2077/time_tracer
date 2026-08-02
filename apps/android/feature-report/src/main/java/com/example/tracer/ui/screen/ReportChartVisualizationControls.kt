@@ -77,7 +77,6 @@ internal fun ReportChartVisualizationHintSection(
             ReportChartHeatmapSettings(
                 heatmapTomlConfig = heatmapTomlConfig,
                 heatmapStylePreference = heatmapStylePreference,
-                onHeatmapThemePolicyChange = onHeatmapThemePolicyChange,
                 onHeatmapPaletteNameChange = onHeatmapPaletteNameChange,
                 heatmapApplyMessage = heatmapApplyMessage
             )

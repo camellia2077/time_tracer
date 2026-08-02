@@ -82,6 +82,7 @@ internal fun ConfigSection(
     onRenameAliasGroup: (String, String) -> Unit,
     onAddAliasEntry: (String?, String, List<String>) -> Unit,
     onUpdateAliasEntry: (String, String, List<String>) -> Unit,
+    onMergeAliasEntry: (String, String) -> Unit,
     onPromoteAliasEntry: (String) -> Unit,
     onRenameGroupAlias: (String, String, String) -> Unit,
     onAddGroupAlias: (String, String) -> Unit,
@@ -97,13 +98,13 @@ internal fun ConfigSection(
     onThemeEvent: (com.example.tracer.ui.viewmodel.ThemeEvent) -> Unit,
     reportPiePalettePreset: ReportPiePalettePreset,
     onReportPiePalettePresetChange: (ReportPiePalettePreset) -> Unit,
+    reportAverageDayBasis: ReportAverageDayBasis,
+    onReportAverageDayBasisChange: (ReportAverageDayBasis) -> Unit,
     appLanguage: com.example.tracer.data.AppLanguage,
     onSetAppLanguage: (com.example.tracer.data.AppLanguage) -> Unit
 ) {
     var showAboutPage by rememberSaveable { mutableStateOf(false) }
     val visibleFiles = when (selectedCategory) {
-        // `_system.toml` has no structured editor and must not hide the empty
-        // activity-hierarchy creation surface on a fresh installation.
         ConfigCategory.ALIAS -> aliasFiles.filter { isAliasConfigFilePath(it.relativePath) }
         ConfigCategory.CHARTS -> chartFiles
         ConfigCategory.META -> metaFiles
@@ -135,6 +136,10 @@ internal fun ConfigSection(
             onReportPiePalettePresetChange = onReportPiePalettePresetChange,
             appLanguage = appLanguage,
             onSetAppLanguage = onSetAppLanguage
+        )
+        ConfigReportAverageDayBasisCard(
+            selected = reportAverageDayBasis,
+            onSelected = onReportAverageDayBasisChange
         )
 
         ConfigCategorySwitchCard(
@@ -171,6 +176,7 @@ internal fun ConfigSection(
                     onRenameGroup = onRenameAliasGroup,
                     onAddEntry = onAddAliasEntry,
                     onUpdateEntry = onUpdateAliasEntry,
+                    onMergeEntry = onMergeAliasEntry,
                     onPromoteEntry = onPromoteAliasEntry,
                     onRenameGroupAlias = onRenameGroupAlias,
                     onAddGroupAlias = onAddGroupAlias,
@@ -257,7 +263,6 @@ private fun String.removeCurrentScopePrefix(
 
 private fun String.isAliasFilePathForConfigScreen(): Boolean =
         startsWith("user/activity_hierarchy/") &&
-        !endsWith("/_system.toml", ignoreCase = true) &&
         endsWith(".toml", ignoreCase = true)
 
 @Composable

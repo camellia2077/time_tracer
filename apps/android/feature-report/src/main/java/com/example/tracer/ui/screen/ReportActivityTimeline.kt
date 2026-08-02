@@ -1,20 +1,11 @@
 package com.example.tracer
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedTextField
@@ -27,11 +18,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.Dp
 import com.example.tracer.feature.report.R
 import kotlinx.coroutines.launch
 
@@ -99,119 +88,19 @@ internal fun ReportActivityTimeline(
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            report.activities.forEach { activity ->
-                val intervalHeight = timelineIntervalHeight(activity.durationSeconds)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = intervalHeight),
-                    verticalAlignment = Alignment.Top
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .width(64.dp)
-                            .height(intervalHeight),
-                        horizontalAlignment = Alignment.End,
-                        verticalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = activity.startTime,
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = activity.endTime,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    Column(
-                        modifier = Modifier
-                            .width(28.dp)
-                            .height(intervalHeight),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        // The filled node is the activity start; it must stay at the
-                        // top of the duration interval rather than in its center.
-                        Box(
-                            modifier = Modifier
-                                .size(12.dp)
-                                .background(colors.node, CircleShape)
-                        )
-                        // This flexible segment represents the activity duration.
-                        // Its parent row height is derived from durationSeconds.
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .width(2.dp)
-                                .background(colors.track)
-                        )
-                        // The hollow node marks the activity end at the bottom of
-                        // the same interval.
-                        Box(
-                            modifier = Modifier
-                                .size(12.dp)
-                                .border(
-                                    width = 2.dp,
-                                    color = colors.node,
-                                    shape = CircleShape
-                                )
-                                .background(MaterialTheme.colorScheme.surface, CircleShape)
-                        )
-                    }
-                    Surface(
-                        modifier = Modifier
-                            .weight(1f)
-                            .heightIn(min = intervalHeight),
-                        tonalElevation = 1.dp,
-                        shape = MaterialTheme.shapes.medium
-                    ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            val nameParts = splitTimelineActivityName(activity.activityName)
-                            // The first underscore is the product-level project/category
-                            // boundary: keep that primary category on its own prominent line.
-                            Text(
-                                text = nameParts.primary,
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            nameParts.secondary?.let { secondaryName ->
-                                Text(
-                                    // Remaining underscores represent nested activity folders;
-                                    // render them as a readable hierarchy and let Compose wrap
-                                    // the path when the timeline card is narrow.
-                                    text = secondaryName.replace("_", " > "),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            Text(
-                                text = formatTimelineDuration(activity.durationSeconds),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = colors.progress
-                            )
-                            TextButton(
-                                onClick = {
-                                    editingActivity = activity
-                                    draftRemark = activity.remark.orEmpty()
-                                    editError = ""
-                                },
-                                modifier = Modifier.padding(top = 2.dp)
-                            ) {
-                                Text(stringResource(R.string.report_edit_activity_remark))
-                            }
-                            activity.remark?.takeIf { it.isNotBlank() }?.let { remark ->
-                                Spacer(modifier = Modifier.height(6.dp))
-                                Text(
-                                    text = remark,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
+            report.activities
+                .map(ActivityTimelineItem::toReportTimelineEntry)
+                .forEach { entry ->
+                    ReportTimelineEntryRow(
+                        entry = entry,
+                        colors = colors,
+                        onEditRemark = { activity ->
+                            editingActivity = activity
+                            draftRemark = activity.remark.orEmpty()
+                            editError = ""
                         }
-                    }
+                    )
                 }
-            }
         }
     }
 
@@ -313,41 +202,5 @@ internal fun ReportActivityTimeline(
                 }
             }
         )
-    }
-}
-
-private data class TimelineActivityNameParts(
-    val primary: String,
-    val secondary: String?
-)
-
-private fun splitTimelineActivityName(activityName: String): TimelineActivityNameParts {
-    val separatorIndex = activityName.indexOf('_')
-    if (separatorIndex <= 0 || separatorIndex == activityName.lastIndex) {
-        return TimelineActivityNameParts(primary = activityName, secondary = null)
-    }
-    return TimelineActivityNameParts(
-        primary = activityName.substring(0, separatorIndex),
-        secondary = activityName.substring(separatorIndex + 1)
-    )
-}
-
-private fun timelineIntervalHeight(durationSeconds: Long): Dp {
-    val durationMinutes = durationSeconds.coerceAtLeast(1L) / 60f
-    // Keep enough room for the category, sub-path, duration, and multiline remark;
-    // longer activities still grow beyond this minimum according to their duration.
-    val heightInDp = (durationMinutes * 2f).coerceIn(128f, 240f)
-    return heightInDp.dp
-}
-
-private fun formatTimelineDuration(durationSeconds: Long): String {
-    val totalSeconds = durationSeconds.coerceAtLeast(0L)
-    val hours = totalSeconds / 3600
-    val minutes = (totalSeconds % 3600) / 60
-    val seconds = totalSeconds % 60
-    return when {
-        hours > 0 -> "${hours}h ${minutes}m"
-        minutes > 0 -> "${minutes}m ${seconds}s"
-        else -> "${seconds}s"
     }
 }

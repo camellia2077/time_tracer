@@ -108,6 +108,7 @@ internal fun rememberTracerScreenReportHeatmapState(
         },
         onPaletteNameChange = { value ->
             val nextStyle = reportHeatmapStylePreference.copy(
+                themePolicy = ReportHeatmapThemePolicy.PALETTE,
                 paletteName = value.trim()
             )
             if (nextStyle != reportHeatmapStylePreference) {

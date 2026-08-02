@@ -62,7 +62,7 @@ class RuntimeDiagnosticsRecorderTest {
             parentFile?.mkdirs()
             writeText("")
         }
-        val configToml = File(configRoot, "user/activity_hierarchy/_system.toml").apply {
+        val configToml = File(configRoot, "user/behavior.toml").apply {
             parentFile?.mkdirs()
             writeText("dummy=true")
         }

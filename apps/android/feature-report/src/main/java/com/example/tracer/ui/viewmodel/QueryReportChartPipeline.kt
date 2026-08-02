@@ -5,7 +5,8 @@ private data class ChartQueryCacheKey(
     val reportMode: ReportMode,
     val lookbackDays: Int,
     val fromDateIso: String,
-    val toDateIso: String
+    val toDateIso: String,
+    val averageDayBasis: ReportAverageDayBasis
 )
 
 internal class QueryReportChartUseCase(
@@ -43,7 +44,8 @@ internal class QueryReportChartUseCase(
             reportMode = params.reportMode,
             lookbackDays = params.lookbackDays,
             fromDateIso = params.fromDateIso.orEmpty(),
-            toDateIso = params.toDateIso.orEmpty()
+            toDateIso = params.toDateIso.orEmpty(),
+            averageDayBasis = currentState.averageDayBasis
         )
         val operationId = nextOperationId()
         val parameterHash = computeParameterHash(cacheKey)
@@ -80,7 +82,8 @@ internal class QueryReportChartUseCase(
                 root = requestedRoot.ifBlank { null },
                 lookbackDays = params.lookbackDays,
                 fromDateIso = params.fromDateIso,
-                toDateIso = params.toDateIso
+                toDateIso = params.toDateIso,
+                averageDayBasis = currentState.averageDayBasis
             )
         )
         val elapsedMs = (nowMs() - startedAt).coerceAtLeast(0L)
@@ -174,7 +177,7 @@ internal class QueryReportChartUseCase(
 
     private fun computeParameterHash(key: ChartQueryCacheKey): String {
         val raw = "${key.root}|${key.reportMode}|${key.lookbackDays}|" +
-            "${key.fromDateIso}|${key.toDateIso}"
+            "${key.fromDateIso}|${key.toDateIso}|${key.averageDayBasis}"
         return raw.hashCode().toUInt().toString(16).padStart(8, '0')
     }
 }
@@ -183,7 +186,8 @@ private data class CompositionQueryCacheKey(
     val reportMode: ReportMode,
     val lookbackDays: Int,
     val fromDateIso: String,
-    val toDateIso: String
+    val toDateIso: String,
+    val averageDayBasis: ReportAverageDayBasis
 )
 
 internal class QueryReportCompositionUseCase(
@@ -219,7 +223,8 @@ internal class QueryReportCompositionUseCase(
             reportMode = params.reportMode,
             lookbackDays = params.lookbackDays,
             fromDateIso = params.fromDateIso.orEmpty(),
-            toDateIso = params.toDateIso.orEmpty()
+            toDateIso = params.toDateIso.orEmpty(),
+            averageDayBasis = currentState.averageDayBasis
         )
         val operationId = nextOperationId()
         val parameterHash = computeParameterHash(cacheKey)
@@ -253,7 +258,8 @@ internal class QueryReportCompositionUseCase(
             ReportCompositionQueryParams(
                 lookbackDays = params.lookbackDays,
                 fromDateIso = params.fromDateIso,
-                toDateIso = params.toDateIso
+                toDateIso = params.toDateIso,
+                averageDayBasis = currentState.averageDayBasis
             )
         )
         val elapsedMs = (nowMs() - startedAt).coerceAtLeast(0L)
@@ -333,7 +339,8 @@ internal class QueryReportCompositionUseCase(
     }
 
     private fun computeParameterHash(key: CompositionQueryCacheKey): String {
-        val raw = "${key.reportMode}|${key.lookbackDays}|${key.fromDateIso}|${key.toDateIso}"
+        val raw = "${key.reportMode}|${key.lookbackDays}|${key.fromDateIso}|" +
+            "${key.toDateIso}|${key.averageDayBasis}"
         return raw.hashCode().toUInt().toString(16).padStart(8, '0')
     }
 }

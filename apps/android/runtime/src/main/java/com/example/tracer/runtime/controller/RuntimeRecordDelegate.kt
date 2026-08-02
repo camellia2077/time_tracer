@@ -5,12 +5,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 private const val REMARK_UPDATE_LOG_TAG = "TimeTracerRemarkUpdate"
+private const val RECORD_LOG_TAG = "TimeTracerRecord"
 
 internal class RuntimeRecordDelegate(
     private val ensureRuntimePaths: () -> RuntimePaths,
     private val ensureTextStorage: () -> TextStorage,
     private val rawRecordStore: InputRecordStore,
     private val loadWakeKeywords: suspend () -> ActivityMappingNamesResult,
+    private val ensureActivityHierarchyEntry: suspend (String) -> ActivityHierarchyAutoRegistrationResult = {
+        ActivityHierarchyAutoRegistrationResult(ok = true)
+    },
     private val defaultTxtDayMarker: suspend (selectedMonth: String, targetDateIso: String) -> TxtDayMarkerResult,
     private val resolveTxtDayBlock: suspend (
         content: String,
@@ -140,6 +144,22 @@ internal class RuntimeRecordDelegate(
         timeOrderMode: RecordTimeOrderMode
     ): RecordActionResult = withContext(Dispatchers.IO) {
         try {
+            Log.i(
+                RECORD_LOG_TAG,
+                "record.start activity=${activityName.trim()} targetDate=$targetDateIso " +
+                    "preferredTxtPath=$preferredTxtPath timeOrderMode=$timeOrderMode"
+            )
+            val registration = ensureActivityHierarchyEntry(activityName)
+            Log.i(
+                RECORD_LOG_TAG,
+                "record.hierarchy_registration ok=${registration.ok} message=${registration.message}"
+            )
+            if (!registration.ok) {
+                return@withContext buildRecordActionFailure(
+                    prefix = "Register activity hierarchy entry failed",
+                    error = IllegalStateException(registration.message)
+                )
+            }
             atomicFlow.recordNow(
                 activityName = activityName,
                 remark = remark,
@@ -170,7 +190,7 @@ internal class RuntimeRecordDelegate(
                     logicalId,
                     remark,
                     preferredTxtPath,
-                    NativeBridge.DATE_CHECK_CONTINUITY
+                    NativeBridge.DATE_CHECK_NONE
                 )
             }
             val payload = responseCodec.parse(response.rawResponse)
@@ -206,7 +226,7 @@ internal class RuntimeRecordDelegate(
                     targetDateIso,
                     remark,
                     preferredTxtPath,
-                    NativeBridge.DATE_CHECK_CONTINUITY
+                    NativeBridge.DATE_CHECK_NONE
                 )
             }
             val payload = responseCodec.parse(response.rawResponse)
@@ -247,6 +267,14 @@ internal class RuntimeRecordDelegate(
                 return@withContext RecordActionResult(
                     ok = false,
                     message = "Record blocked: activity token is required."
+                )
+            }
+
+            val registration = ensureActivityHierarchyEntry(normalizedActivity)
+            if (!registration.ok) {
+                return@withContext RecordActionResult(
+                    ok = false,
+                    message = "Record blocked: ${registration.message}"
                 )
             }
 

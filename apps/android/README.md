@@ -37,9 +37,9 @@ Notes:
   `config/user_config`
 - Test activity-hierarchy source, not packaged into APK:
   `test/data/activity_hierarchy`
-- Android runtime config snapshot:
-  `apps/android/runtime/src/main/assets/tracer_core/config`
-- Android APK builds use `config/program` for immutable program
+- Android runtime config assets are generated during Gradle builds under:
+  `apps/android/runtime/build/generated/tracer/assets/config/program`
+- Android APK builds use the root `config/program` for immutable program
   resources. Test TXT and hierarchy data are injected separately through the
   ADB helper; they are not selected at build time.
 - Android app version source: `apps/android/meta/version.properties`

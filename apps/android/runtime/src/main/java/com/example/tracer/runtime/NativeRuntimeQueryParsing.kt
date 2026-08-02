@@ -33,6 +33,11 @@ internal fun parseReportChartContent(content: String): ReportChartData? {
         val totalDurationSeconds = payload.optNullableLong("total_duration_seconds")
         val activeDays = payload.optNullableInt("active_days")
         val rangeDays = payload.optNullableInt("range_days")
+        val averageDayBasis = when (payload.optString("average_day_basis", "active_days")) {
+            "calendar_days" -> ReportAverageDayBasis.CALENDAR_DAYS
+            else -> ReportAverageDayBasis.ACTIVE_DAYS
+        }
+        val averageDenominatorDays = payload.optNullableInt("average_denominator_days")
         val seriesArray = payload.optJSONArray("series")
         val points = mutableListOf<ReportChartPoint>()
         if (seriesArray != null) {
@@ -68,8 +73,19 @@ internal fun parseReportChartContent(content: String): ReportChartData? {
         val resolvedActiveDays = activeDays?.coerceAtLeast(0) ?: fallbackActiveDays
         val resolvedRangeDays = rangeDays?.coerceAtLeast(0) ?: fallbackRangeDays
         val resolvedAverageDurationSeconds =
-            averageDurationSeconds?.coerceAtLeast(0L) ?: if (resolvedRangeDays > 0) {
-                resolvedTotalDurationSeconds / resolvedRangeDays
+            averageDurationSeconds?.coerceAtLeast(0L) ?: if ((averageDenominatorDays
+                    ?: if (averageDayBasis == ReportAverageDayBasis.CALENDAR_DAYS) {
+                        resolvedRangeDays
+                    } else {
+                        resolvedActiveDays
+                    }) > 0
+            ) {
+                resolvedTotalDurationSeconds / (averageDenominatorDays
+                    ?: if (averageDayBasis == ReportAverageDayBasis.CALENDAR_DAYS) {
+                        resolvedRangeDays
+                    } else {
+                        resolvedActiveDays
+                    })
             } else {
                 0L
             }
@@ -83,6 +99,8 @@ internal fun parseReportChartContent(content: String): ReportChartData? {
             totalDurationSeconds = resolvedTotalDurationSeconds,
             activeDays = resolvedActiveDays,
             rangeDays = resolvedRangeDays,
+            averageDayBasis = averageDayBasis,
+            averageDenominatorDays = averageDenominatorDays,
             usesLegacyStatsFallback = !hasCoreStats,
             schemaVersion = schemaVersion,
             usesSchemaVersionFallback = usesSchemaVersionFallback
@@ -102,7 +120,15 @@ internal fun parseReportCompositionContent(content: String): ReportCompositionDa
         val payload = JSONObject(content)
         val totalDurationSeconds = payload.optLong("total_duration_seconds", 0L).coerceAtLeast(0L)
         val activeRootCount = payload.optInt("active_root_count", 0).coerceAtLeast(0)
+        val activeDays = payload.optInt("active_days", 0).coerceAtLeast(0)
         val rangeDays = payload.optInt("range_days", 0).coerceAtLeast(0)
+        val averageDayBasis = when (payload.optString("average_day_basis", "active_days")) {
+            "calendar_days" -> ReportAverageDayBasis.CALENDAR_DAYS
+            else -> ReportAverageDayBasis.ACTIVE_DAYS
+        }
+        val averageDenominatorDays = payload.optInt("average_denominator_days", 0)
+        val displayLevel = payload.optInt("display_level", 0).coerceAtLeast(0)
+        val displayPath = parseStringArray(payload.optJSONArray("display_path"))
         val tree = parseTreeNodes(payload.optJSONArray("tree") ?: return null)
 
         val occurrenceFieldNodeCount = tree.countNodes { it.occurrenceCount != null }
@@ -119,7 +145,12 @@ internal fun parseReportCompositionContent(content: String): ReportCompositionDa
         ReportCompositionData(
             totalDurationSeconds = totalDurationSeconds,
             activeRootCount = activeRootCount,
+            activeDays = activeDays,
             rangeDays = rangeDays,
+            averageDayBasis = averageDayBasis,
+            averageDenominatorDays = averageDenominatorDays,
+            displayLevel = displayLevel,
+            displayPath = displayPath,
             tree = tree
         )
     } catch (error: Exception) {
@@ -312,6 +343,13 @@ private fun parseTreeNode(node: JSONObject, parentPath: String): TreeNode? {
     }
     val durationSeconds = node.optNullableLong("duration_seconds")
     val occurrenceCount = node.optNullableLong("occurrence_count")
+    val averageDurationSeconds = node.optNullableLong("average_duration_seconds")
+    val averageOccurrenceCount = node.optNullableDouble("average_occurrence_count")
+        ?.takeIf { it.isFinite() }
+        ?.coerceAtLeast(0.0)
+    val averageOccurrenceRatio = node.optNullableDouble("average_occurrence_ratio")
+        ?.takeIf { it.isFinite() }
+        ?.coerceIn(0.0, 1.0)
     val parentDurationPercent = node.optNullableDouble("parent_duration_percent")
         ?.toFloat()
         ?.takeIf { it.isFinite() }
@@ -321,6 +359,9 @@ private fun parseTreeNode(node: JSONObject, parentPath: String): TreeNode? {
         path = path,
         durationSeconds = durationSeconds,
         occurrenceCount = occurrenceCount,
+        averageDurationSeconds = averageDurationSeconds,
+        averageOccurrenceCount = averageOccurrenceCount,
+        averageOccurrenceRatio = averageOccurrenceRatio,
         parentDurationPercent = parentDurationPercent,
         children = children
     )

@@ -244,7 +244,7 @@ class NativeRuntimeQueryOpsTest {
     }
 
     @Test
-    fun parseReportChartContent_missingStats_usesRangeDaysAsAverageDenominator() {
+    fun parseReportChartContent_missingStats_usesActiveDaysAsAverageDenominator() {
         val content = """
             {
               "roots": ["study"],
@@ -264,7 +264,7 @@ class NativeRuntimeQueryOpsTest {
         assertEquals(3600L, data.totalDurationSeconds)
         assertEquals(1, data.activeDays)
         assertEquals(2, data.rangeDays)
-        assertEquals(1800L, data.averageDurationSeconds)
+        assertEquals(3600L, data.averageDurationSeconds)
     }
 
     @Test
@@ -273,14 +273,22 @@ class NativeRuntimeQueryOpsTest {
             {
               "total_duration_seconds": 9000,
               "active_root_count": 3,
+              "active_days": 4,
               "range_days": 7,
+              "display_level": 1,
+              "display_path": ["study"],
               "tree": [
                 {
                   "name": "study",
                   "duration_seconds": 5400,
                   "occurrence_count": 3,
+                  "average_duration_seconds": 1350,
+                  "average_occurrence_count": 0.75,
+                  "average_occurrence_ratio": 0.75,
                   "children": [
-                    {"name": "math", "duration_seconds": 5400, "occurrence_count": 3, "children": []}
+                    {"name": "math", "duration_seconds": 5400, "occurrence_count": 3,
+                     "average_duration_seconds": 1350, "average_occurrence_ratio": 1.0,
+                     "children": []}
                   ]
                 },
                 {"name": "sleep", "duration_seconds": 3600, "children": []}
@@ -294,10 +302,16 @@ class NativeRuntimeQueryOpsTest {
 
         assertEquals(9000L, data.totalDurationSeconds)
         assertEquals(3, data.activeRootCount)
+        assertEquals(4, data.activeDays)
         assertEquals(7, data.rangeDays)
+        assertEquals(1, data.displayLevel)
+        assertEquals(listOf("study"), data.displayPath)
         assertEquals(2, data.tree.size)
         assertEquals("study", data.tree.first().name)
         assertEquals(3L, data.tree.first().occurrenceCount)
+        assertEquals(1_350L, data.tree.first().averageDurationSeconds)
+        assertEquals(0.75, data.tree.first().averageOccurrenceCount)
+        assertEquals(0.75, data.tree.first().averageOccurrenceRatio)
         assertEquals("math", data.tree.first().children.single().name)
     }
 }

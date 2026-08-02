@@ -57,6 +57,9 @@ internal data class AliasEntryMoveTarget(
 internal fun AliasTomlDocument.findAliasEntry(entryId: String): AliasTomlEntry? =
     nodes.entryLocations().firstOrNull { it.entry.id == entryId }?.entry
 
+internal fun AliasTomlDocument.allAliasEntries(): List<AliasTomlEntry> =
+    nodes.entryLocations().map { it.entry }
+
 internal fun AliasTomlDocument.findAliasGroup(groupId: String): AliasTomlGroup? =
     nodes.groupLocations().firstOrNull { it.group.id == groupId }?.group
 

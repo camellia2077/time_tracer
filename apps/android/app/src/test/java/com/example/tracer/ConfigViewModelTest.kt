@@ -59,7 +59,7 @@ class ConfigViewModelTest {
 
         assertEquals(AliasEditorMode.ADVANCED, viewModel.uiState.aliasEditorMode)
         assertTrue(viewModel.uiState.aliasAdvancedTomlDraft.contains("parent = \"meal-updated\""))
-        assertTrue(viewModel.uiState.aliasAdvancedTomlDraft.contains("[aliases.breakfast]"))
+        assertTrue(viewModel.uiState.aliasAdvancedTomlDraft.contains("[canonical.breakfast]"))
     }
 
     @Test
@@ -70,13 +70,13 @@ class ConfigViewModelTest {
 
         assertEquals("user/activity_hierarchy/meal.toml", viewModel.uiState.selectedFilePath)
 
-        // Contract: choosing parent means switching to the corresponding alias file.
+        // Contract: choosing parent means switching to the corresponding canonical file.
         viewModel.updateAliasParent("recreation")
         advanceUntilIdle()
 
         assertEquals("user/activity_hierarchy/recreation.toml", viewModel.uiState.selectedFilePath)
         assertEquals("recreation", viewModel.uiState.aliasDocumentDraft?.parent)
-        assertTrue(viewModel.uiState.selectedFileContent.contains("[aliases.online-platforms]"))
+        assertTrue(viewModel.uiState.selectedFileContent.contains("[canonical.online-platforms]"))
     }
 
     @Test
@@ -139,7 +139,7 @@ class ConfigViewModelTest {
 
         assertTrue(runtime.hasConfigFile("user/activity_hierarchy/study.toml"))
         assertEquals(
-            "parent = \"study\"\n\n[aliases]\n",
+            "parent = \"study\"\n\n[canonical]\n",
             runtime.configContent("user/activity_hierarchy/study.toml")
         )
         assertEquals("user/activity_hierarchy/study.toml", viewModel.uiState.selectedFilePath)
@@ -180,7 +180,7 @@ class ConfigViewModelTest {
         advanceUntilIdle()
 
         viewModel.selectAliasEditorMode(AliasEditorMode.ADVANCED)
-        viewModel.onAliasAdvancedTomlChange("parent = \"meal\"\n\n[aliases.breakfast]\n\"draft\" = [\"早餐\"]")
+        viewModel.onAliasAdvancedTomlChange("parent = \"meal\"\n\n[canonical.breakfast]\n\"draft\" = [\"早餐\"]")
 
         viewModel.openFile("user/activity_hierarchy/recreation.toml")
         advanceUntilIdle()
@@ -342,7 +342,7 @@ class ConfigViewModelTest {
         val request = requireNotNull(runtime.lastMigrationRequest)
         assertEquals("meal_breakfast_breakfast", request.replacementPlan.canonical.single().oldCanonical)
         assertEquals("meal_dinner_breakfast", request.replacementPlan.canonical.single().newCanonical)
-        assertTrue(request.updatedTomlContent.contains("[aliases.dinner]"))
+        assertTrue(request.updatedTomlContent.contains("[canonical.dinner]"))
         assertNull(viewModel.uiState.aliasEntryMovePlan)
         assertEquals(ConfigAutoSaveStatus.SAVED, viewModel.uiState.autoSaveStatus)
         assertEquals(1L, viewModel.uiState.txtReloadRequestVersion)
@@ -443,19 +443,19 @@ private class FakeConfigRuntime(
         "user/activity_hierarchy/meal.toml" to """
             parent = "meal"
 
-            [aliases.breakfast]
+            [canonical.breakfast]
             "breakfast" = ["早餐"]
 
-            [aliases.dinner]
+            [canonical.dinner]
             "dinner" = ["晚饭"]
         """.trimIndent(),
         "user/activity_hierarchy/recreation.toml" to """
             parent = "recreation"
 
-            [aliases.online-platforms]
+            [canonical.online-platforms]
             "zhihu" = ["zhihu"]
 
-            [aliases.game]
+            [canonical.game]
             "minecraft" = ["minecraft"]
         """.trimIndent(),
     )
@@ -498,7 +498,7 @@ private class FakeConfigRuntime(
         tomlContent: String
     ): ActivityHierarchyDescribeResult {
         if (tomlContent.trimEnd().endsWith("parent =")) {
-            return ActivityHierarchyDescribeResult(ok = false, message = "invalid alias TOML")
+            return ActivityHierarchyDescribeResult(ok = false, message = "invalid canonical TOML")
         }
         return ActivityHierarchyDescribeResult(ok = true, hierarchy = snapshotFor(tomlContent), message = "ok")
     }

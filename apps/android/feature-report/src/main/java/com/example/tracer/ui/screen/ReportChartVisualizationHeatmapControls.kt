@@ -3,7 +3,6 @@ package com.example.tracer
 import android.graphics.Color as AndroidColor
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -19,9 +18,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,95 +34,30 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.report.R
 import com.example.tracer.ui.components.TracerOutlinedTextFieldDefaults
-import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
 
 @Composable
 internal fun ReportChartHeatmapSettings(
     heatmapTomlConfig: ReportHeatmapTomlConfig,
     heatmapStylePreference: ReportHeatmapStylePreference,
-    onHeatmapThemePolicyChange: (ReportHeatmapThemePolicy) -> Unit,
     onHeatmapPaletteNameChange: (String) -> Unit,
     heatmapApplyMessage: String
 ) {
-    val isSystemDark = isSystemInDarkTheme()
     Text(
         text = stringResource(R.string.report_chart_heatmap_hint),
         style = MaterialTheme.typography.labelSmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant
     )
-    HeatmapThemePolicySelector(
-        selectedPolicy = heatmapStylePreference.themePolicy,
-        onPolicyChange = { nextPolicy ->
-            onHeatmapThemePolicyChange(nextPolicy)
-            if (nextPolicy == ReportHeatmapThemePolicy.PALETTE &&
-                heatmapStylePreference.paletteName.isBlank()
-            ) {
-                val candidatePaletteName = when {
-                    isSystemDark && heatmapTomlConfig.defaultDarkPalette.isNotBlank() ->
-                        heatmapTomlConfig.defaultDarkPalette
-                    heatmapTomlConfig.defaultLightPalette.isNotBlank() ->
-                        heatmapTomlConfig.defaultLightPalette
-                    else -> heatmapTomlConfig.paletteNames().firstOrNull().orEmpty()
-                }
-                if (candidatePaletteName.isNotBlank()) {
-                    onHeatmapPaletteNameChange(candidatePaletteName)
-                }
-            }
-        }
+    HeatmapPaletteSelector(
+        palettes = heatmapTomlConfig.palettes,
+        selectedPaletteName = heatmapStylePreference.paletteName,
+        onPaletteSelected = onHeatmapPaletteNameChange
     )
-    if (heatmapStylePreference.themePolicy == ReportHeatmapThemePolicy.PALETTE) {
-        HeatmapPaletteSelector(
-            palettes = heatmapTomlConfig.palettes,
-            selectedPaletteName = heatmapStylePreference.paletteName,
-            onPaletteSelected = onHeatmapPaletteNameChange
-        )
-    }
     if (heatmapApplyMessage.isNotBlank()) {
         Text(
             text = heatmapApplyMessage,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.error
         )
-    }
-}
-
-@Composable
-private fun HeatmapThemePolicySelector(
-    selectedPolicy: ReportHeatmapThemePolicy,
-    onPolicyChange: (ReportHeatmapThemePolicy) -> Unit
-) {
-    val options = ReportHeatmapThemePolicy.entries
-    Text(
-        text = stringResource(R.string.report_chart_heatmap_theme_policy_label),
-        style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant
-    )
-    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-        options.forEachIndexed { index, option ->
-            val selected = selectedPolicy == option
-            SegmentedButton(
-                shape = SegmentedButtonDefaults.itemShape(
-                    index = index,
-                    count = options.size
-                ),
-                onClick = { onPolicyChange(option) },
-                selected = selected,
-                colors = TracerSegmentedButtonDefaults.colors(),
-                label = {
-                    Text(
-                        text = stringResource(option.labelRes()),
-                        maxLines = 1,
-                        softWrap = false,
-                        overflow = TextOverflow.Ellipsis,
-                        fontWeight = if (selected) {
-                            TracerSegmentedButtonDefaults.activeLabelFontWeight
-                        } else {
-                            TracerSegmentedButtonDefaults.inactiveLabelFontWeight
-                        }
-                    )
-                }
-            )
-        }
     }
 }
 

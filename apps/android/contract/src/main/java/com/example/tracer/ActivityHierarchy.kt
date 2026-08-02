@@ -3,7 +3,7 @@ package com.example.tracer
 import java.util.UUID
 
 /**
- * Shared, in-memory representation of one alias TOML file.
+ * Shared, in-memory representation of one canonical TOML file.
  *
  * A category can have child aliases and its own record names. Category record
  * names resolve to the category's canonical path; child aliases resolve below

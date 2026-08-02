@@ -20,6 +20,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.example.tracer.feature.report.R
+import androidx.compose.ui.res.stringResource
 
 @Composable
 internal fun ReportCompositionBarChart(
@@ -28,6 +30,9 @@ internal fun ReportCompositionBarChart(
     selectedIndex: Int,
     onItemSelected: (Int) -> Unit,
     valueLabel: (Long) -> String = ::formatDurationHoursMinutes,
+    showAverage: Boolean = true,
+    showAverageRecords: Boolean = false,
+    showFrequency: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val sliceColors = rememberCompositionSliceColors(
@@ -74,24 +79,11 @@ internal fun ReportCompositionBarChart(
                     .padding(horizontal = 12.dp, vertical = 10.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = slice.root,
-                        modifier = Modifier.weight(1f),
-                        style = MaterialTheme.typography.bodyMedium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = "${valueLabel(slice.durationSeconds)}  ${formatPercent(slice.percent)}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                CompositionLegendRow(
+                    slice = slice,
+                    showAverage = showAverage,
+                    showFrequency = showFrequency
+                )
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

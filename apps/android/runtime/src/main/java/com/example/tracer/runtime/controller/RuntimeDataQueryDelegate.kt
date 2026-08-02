@@ -181,7 +181,8 @@ internal class RuntimeDataQueryDelegate(
                         root = root,
                         lookbackDays = params.lookbackDays,
                         fromDateIso = fromDateIso,
-                        toDateIso = toDateIso
+                        toDateIso = toDateIso,
+                        averageDayBasis = params.averageDayBasis.wireValue
                     )
                 )
 
@@ -272,7 +273,8 @@ internal class RuntimeDataQueryDelegate(
                     outputMode = DataQueryOutputMode.SEMANTIC_JSON,
                     lookbackDays = params.lookbackDays,
                     fromDateIso = fromDateIso,
-                    toDateIso = toDateIso
+                    toDateIso = toDateIso,
+                    averageDayBasis = params.averageDayBasis.wireValue
                 )
             )
 

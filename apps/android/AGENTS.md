@@ -43,8 +43,8 @@ host/runtime integration; shared business semantics remain in `tracer_core`.
 
 ## Local Invariants
 
-- Generated Android config snapshot:
-  `apps/android/runtime/src/main/assets/tracer_core/config`.
+- Android `config/program` assets are generated during Gradle builds from the
+  repository root `config/program`; generated output is not checked in.
 - Android version source: `apps/android/meta/version.properties`.
 - Core version source: `libs/tracer_core/src/shared/types/version.hpp`.
 - Never run Gradle-backed commands concurrently in this workspace.

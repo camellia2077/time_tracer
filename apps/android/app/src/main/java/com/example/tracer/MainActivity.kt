@@ -4,7 +4,6 @@ import android.app.LocaleManager
 import android.os.Build
 import android.os.LocaleList
 import android.os.Bundle
-import java.util.Locale
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -64,6 +63,7 @@ class MainActivity : ComponentActivity() {
                             reportGateway = reportGateway,
                             queryGateway = queryGateway,
                             configGateway = configGateway,
+                            quickAccessGateway = appContainer.quickAccessGateway,
                             activityHierarchyGateway = activityHierarchyGateway,
                             activityHierarchyMigrationGateway = activityHierarchyMigrationGateway,
                             tracerExchangeGateway = tracerExchangeGateway,
@@ -87,6 +87,7 @@ class MainActivity : ComponentActivity() {
 
     private fun applyAppLanguage(language: AppLanguage) {
         val localeTag = when (language) {
+            AppLanguage.System -> ""
             AppLanguage.Chinese -> "zh"
             AppLanguage.English -> "en"
             AppLanguage.Japanese -> "ja"
@@ -100,10 +101,14 @@ class MainActivity : ComponentActivity() {
             return
         }
 
-        val locale = Locale.forLanguageTag(localeTag)
+        val locales = if (language == AppLanguage.System) {
+            LocaleList.getDefault()
+        } else {
+            LocaleList.forLanguageTags(localeTag)
+        }
         val configuration = resources.configuration
-        if (configuration.locales.isEmpty() || configuration.locales[0] != locale) {
-            configuration.setLocale(locale)
+        if (configuration.locales != locales) {
+            configuration.setLocales(locales)
             @Suppress("DEPRECATION")
             resources.updateConfiguration(configuration, resources.displayMetrics)
             recreate()

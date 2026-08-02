@@ -106,6 +106,13 @@ class QueryReportResultDisplayRobolectricTest {
                         activityName = "study_math_is_this",
                         durationSeconds = 3_600,
                         remark = "整理错题"
+                    ),
+                    ActivityTimelineItem(
+                        startTime = "",
+                        endTime = "17:40:30",
+                        activityName = "study_math_checkpoint",
+                        durationSeconds = 0,
+                        kind = ActivityTimelineRecordKind.END_ONLY
                     )
                 )
             ),
@@ -120,9 +127,16 @@ class QueryReportResultDisplayRobolectricTest {
             context.getString(R.string.report_day_remark_label)
         ).assertIsDisplayed()
         composeRule.onNodeWithText("今天状态不错\n完成了主要计划").assertIsDisplayed()
-        composeRule.onNodeWithText("study").assertIsDisplayed()
+        composeRule.onAllNodesWithText("study").assertCountEquals(2)
         composeRule.onNodeWithText("math > is > this").assertIsDisplayed()
         composeRule.onNodeWithText("1h 0m").assertIsDisplayed()
+        composeRule.onNodeWithText(
+            context.getString(
+                R.string.report_activity_timeline_end_only_time,
+                "17:40:30"
+            )
+        ).assertExists()
+        composeRule.onAllNodesWithText("0s").assertCountEquals(0)
         composeRule.onAllNodesWithText("整理错题").assertCountEquals(1)
     }
 

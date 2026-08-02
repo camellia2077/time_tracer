@@ -7,6 +7,7 @@ class RecordUseCases(
     private val recordGateway: RecordGateway,
     private val txtStorageGateway: TxtStorageGateway,
     private val queryGateway: QueryGateway,
+    private val reportGateway: ReportGateway = UnavailableRecordReportGateway,
     internal val recordInputPersistence: RecordInputPersistence = NoOpRecordInputPersistence,
     private val textProvider: RecordTextProvider = DefaultRecordTextProvider,
     private val clock: Clock = Clock.systemDefaultZone()
@@ -52,9 +53,13 @@ class RecordUseCases(
         if (!result.ok) {
             return state.copy(statusText = result.message)
         }
+        val durationClockText = queryDatabaseDurationText(
+            targetDateIso = targetDateIso,
+            rawActivityToken = state.recordContent
+        )
         val successSummary = buildRecordSuccessSummary(
             rawActivityToken = state.recordContent,
-            durationClockText = parseGapFromPrevious(result.message)
+            durationClockText = durationClockText
         )
         val preferredMonth = datePolicy.resolvePreferredMonthForRecord(targetDateIso)
         // Clear the previous activity/remark only after a successful write. Failed writes keep
@@ -102,11 +107,13 @@ class RecordUseCases(
         if (!result.ok) {
             return state.copy(statusText = result.message)
         }
-        val durationSeconds = calculateTimeDurationSeconds(normalizedStart, normalizedEnd)
+        val durationClockText = queryDatabaseDurationText(
+            targetDateIso = targetDateIso,
+            rawActivityToken = state.recordContent
+        )
         val successSummary = buildRecordSuccessSummary(
             rawActivityToken = state.recordContent,
-            durationClockText = durationSeconds?.let(::formatDurationClock)
-                ?: textProvider.unavailableDuration()
+            durationClockText = durationClockText
         )
         val preferredMonth = datePolicy.resolvePreferredMonthForRecord(targetDateIso)
         val stateAfterRecord = state.copy(
@@ -553,48 +560,54 @@ class RecordUseCases(
         )
     }
 
-    private fun parseGapFromPrevious(message: String): String {
-        val gap = message
-            .lineSequence()
-            .map { it.trim() }
-            .firstOrNull { it.startsWith("gap_from_previous:") }
-            ?.substringAfter(':')
-            ?.trim()
-            .orEmpty()
-        return if (isValidClockDuration(gap)) {
-            gap
-        } else {
-            textProvider.unavailableDuration()
+    private suspend fun queryDatabaseDurationText(
+        targetDateIso: String,
+        rawActivityToken: String
+    ): String {
+        val tokenSummary = resolveActivityTokenSummary(rawActivityToken)
+        val reportResult = runCatching {
+            reportGateway.reportStructured(
+                TemporalReportQueryRequest(
+                    displayMode = ReportDisplayMode.DAY,
+                    selection = TemporalSelectionPayload(
+                        kind = TemporalSelectionKind.SINGLE_DAY,
+                        date = targetDateIso
+                    )
+                )
+            )
+        }.getOrNull()
+        val report = reportResult?.report
+        if (reportResult?.operationOk != true || report == null) {
+            return textProvider.unavailableDuration()
         }
-    }
 
-    private fun calculateTimeDurationSeconds(startTime: String, endTime: String): Int? {
-        val startSeconds = timeToSeconds(startTime) ?: return null
-        val endSeconds = timeToSeconds(endTime) ?: return null
-        return if (endSeconds >= startSeconds) {
-            endSeconds - startSeconds
+        val wakeKeywords = runCatching {
+            queryGateway.listWakeKeywords()
+        }.getOrNull()
+        val isWakeKeyword = wakeKeywords?.ok == true && wakeKeywords.names.any {
+            it.trim().equals(rawActivityToken.trim(), ignoreCase = true)
+        }
+        val candidateNames = if (isWakeKeyword) {
+            // Wake is a point event; the user-facing duration is the inferred
+            // sleep activity created by Core, not the wake token itself.
+            listOf("sleep_night")
         } else {
-            endSeconds + SECONDS_PER_DAY - startSeconds
+            listOf(tokenSummary.canonicalToken.trim())
         }
-    }
-
-    private fun timeToSeconds(value: String): Int? {
-        if (!isValidTime(value)) {
-            return null
-        }
-        val hours = value.substring(0, 2).toInt()
-        val minutes = value.substring(2, 4).toInt()
-        val seconds = if (value.length == 6) value.substring(4, 6).toInt() else 0
-        return hours * SECONDS_PER_HOUR + minutes * SECONDS_PER_MINUTE + seconds
+        val durationSeconds = report.activities
+            .asSequence()
+            .filter { activity -> activity.activityName.trim() in candidateNames }
+            .maxByOrNull { it.logicalId }
+            ?.durationSeconds
+            ?.takeIf { it > 0L }
+            ?: return textProvider.unavailableDuration()
+        return formatDurationClock(durationSeconds.coerceAtMost(Int.MAX_VALUE.toLong()).toInt())
     }
 
     private fun formatClockDuration(value: String): String? {
         val seconds = clockDurationToSeconds(value) ?: return null
-        return formatDurationHoursMinutes(seconds / SECONDS_PER_MINUTE)
+        return formatDurationUnits(seconds)
     }
-
-    private fun isValidClockDuration(value: String): Boolean =
-        clockDurationToSeconds(value) != null
 
     private fun clockDurationToSeconds(value: String): Int? {
         val parts = value.split(":")
@@ -622,15 +635,16 @@ class RecordUseCases(
         }
     }
 
-    private fun formatDurationHoursMinutes(minutes: Int): String {
-        val boundedMinutes = minutes.coerceAtLeast(0)
-        val hours = boundedMinutes / MINUTES_PER_HOUR
-        val remainingMinutes = boundedMinutes % MINUTES_PER_HOUR
-        return when {
-            hours > 0 && remainingMinutes > 0 -> "${hours}h ${remainingMinutes}m"
-            hours > 0 -> "${hours}h"
-            else -> "${remainingMinutes}m"
-        }
+    private fun formatDurationUnits(totalSeconds: Int): String {
+        val boundedSeconds = totalSeconds.coerceAtLeast(0)
+        val hours = boundedSeconds / SECONDS_PER_HOUR
+        val minutes = (boundedSeconds % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE
+        val seconds = boundedSeconds % SECONDS_PER_MINUTE
+        return buildList {
+            if (hours > 0) add("${hours}h")
+            if (minutes > 0) add("${minutes}m")
+            if (seconds > 0 || isEmpty()) add("${seconds}s")
+        }.joinToString(" ")
     }
 
     private fun logActivitySuggestionsRequestStart(
@@ -753,9 +767,17 @@ class RecordUseCases(
     private companion object {
         private val MONTH_KEY_REGEX = Regex("""\d{4}-\d{2}""")
         private const val SUGGESTION_LOG_TAG = "TimeTracerSuggestions"
-        private const val MINUTES_PER_HOUR = 60
         private const val SECONDS_PER_MINUTE = 60
         private const val SECONDS_PER_HOUR = 60 * SECONDS_PER_MINUTE
-        private const val SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR
     }
+}
+
+internal object UnavailableRecordReportGateway : ReportGateway {
+    override suspend fun reportMarkdown(request: TemporalReportQueryRequest): ReportCallResult =
+        ReportCallResult(
+            initialized = false,
+            operationOk = false,
+            outputText = "",
+            rawResponse = ""
+        )
 }

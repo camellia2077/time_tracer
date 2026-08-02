@@ -80,7 +80,11 @@ class RecordUseCasesTest {
                     "2026/2026-03.txt" to txtReadResult("2026/2026-03.txt")
                 )
             ),
-            queryGateway = FakeQueryGateway()
+            queryGateway = FakeQueryGateway(),
+            reportGateway = FakeReportGateway(
+                activityName = "coding",
+                durationSeconds = 1500L
+            )
         )
 
         val result = useCases.recordNow(
@@ -93,6 +97,49 @@ class RecordUseCasesTest {
         assertEquals("coding\n25m", result.statusText)
         assertEquals("coding", result.lastRecordedActivityAlias)
         assertEquals("00:25", result.lastRecordedDuration)
+    }
+
+    @Test
+    fun recordNow_wakeUsesDatabaseSleepDuration() = runTest {
+        val useCases = RecordUseCases(
+            recordGateway = FakeRecordGateway(
+                recordNowResult = RecordActionResult(
+                    ok = true,
+                    message = "record: ok\ngap_from_previous: 34:00"
+                )
+            ),
+            txtStorageGateway = FakeTxtStorageGateway(
+                inspectionResult = TxtInspectionResult(
+                    ok = true,
+                    entries = listOf(inspectionEntry("2026/2026-08.txt", "2026-08")),
+                    message = "ok"
+                ),
+                readResults = mapOf(
+                    "2026/2026-08.txt" to txtReadResult("2026/2026-08.txt")
+                )
+            ),
+            queryGateway = FakeQueryGateway(
+                wakeKeywordsResult = ActivityMappingNamesResult(
+                    ok = true,
+                    names = listOf("w"),
+                    message = "ok"
+                )
+            ),
+            reportGateway = FakeReportGateway(
+                activityName = "sleep_night",
+                durationSeconds = 9 * 60 * 60L
+            )
+        )
+
+        val result = useCases.recordNow(
+            RecordUiState(
+                recordContent = "w",
+                selectedMonth = "2026-08"
+            )
+        )
+
+        assertEquals("w\n9h", result.statusText)
+        assertEquals("09:00", result.lastRecordedDuration)
     }
 
     @Test
@@ -218,6 +265,10 @@ class RecordUseCasesTest {
                     entries = listOf(ActivityAliasMappingEntry("学习", "study")),
                     message = "ok"
                 )
+            ),
+            reportGateway = FakeReportGateway(
+                activityName = "study",
+                durationSeconds = 5400L
             )
         )
 
@@ -234,6 +285,45 @@ class RecordUseCasesTest {
         assertEquals("study\n1h 30m", result.statusText)
         assertEquals("学习", result.lastRecordedActivityAlias)
         assertEquals("01:30", result.lastRecordedDuration)
+    }
+
+    @Test
+    fun recordInterval_successStatusKeepsMinutesAndSeconds() = runTest {
+        val useCases = RecordUseCases(
+            recordGateway = FakeRecordGateway(
+                recordIntervalResult = RecordActionResult(
+                    ok = true,
+                    message = "record: ok\nsync: ok"
+                )
+            ),
+            txtStorageGateway = FakeTxtStorageGateway(
+                inspectionResult = TxtInspectionResult(
+                    ok = true,
+                    entries = listOf(inspectionEntry("2026/2026-03.txt", "2026-03")),
+                    message = "ok"
+                ),
+                readResults = mapOf(
+                    "2026/2026-03.txt" to txtReadResult("2026/2026-03.txt")
+                )
+            ),
+            queryGateway = FakeQueryGateway(),
+            reportGateway = FakeReportGateway(
+                activityName = "study",
+                durationSeconds = 125L
+            )
+        )
+
+        val result = useCases.recordInterval(
+            RecordUiState(
+                authoringMode = RecordAuthoringMode.INTERVAL,
+                recordContent = "study",
+                intervalStart = "090001",
+                intervalEnd = "090206"
+            )
+        )
+
+        assertEquals("study\n2m 5s", result.statusText)
+        assertEquals("00:02:05", result.lastRecordedDuration)
     }
 
     @Test
@@ -1277,6 +1367,11 @@ private class FakeQueryGateway(
         ),
         entries = emptyList(),
         message = "ok"
+    ),
+    private val wakeKeywordsResult: ActivityMappingNamesResult = ActivityMappingNamesResult(
+        ok = false,
+        names = emptyList(),
+        message = "not implemented"
     )
 ) : QueryGateway {
     var lastAnchorDateIso: String? = null
@@ -1304,11 +1399,48 @@ private class FakeQueryGateway(
     override suspend fun listActivityMappingNames(): ActivityMappingNamesResult =
         ActivityMappingNamesResult(ok = true, names = emptyList(), message = "ok")
 
+    override suspend fun listWakeKeywords(): ActivityMappingNamesResult =
+        wakeKeywordsResult
+
     override suspend fun listActivityAliasMappings(): ActivityAliasMappingListResult =
         aliasMappingsResult
 
     override suspend fun listCanonicalCatalog(): CanonicalCatalogResult =
         canonicalCatalogResult
+}
+
+private class FakeReportGateway(
+    private val activityName: String,
+    private val durationSeconds: Long
+) : ReportGateway {
+    override suspend fun reportMarkdown(request: TemporalReportQueryRequest): ReportCallResult =
+        ReportCallResult(
+            initialized = true,
+            operationOk = true,
+            outputText = "",
+            rawResponse = ""
+        )
+
+    override suspend fun reportStructured(
+        request: TemporalReportQueryRequest
+    ): StructuredReportCallResult = StructuredReportCallResult(
+        initialized = true,
+        operationOk = true,
+        report = StructuredDailyReport(
+            date = request.selection.date.orEmpty(),
+            totalDurationSeconds = durationSeconds,
+            activities = listOf(
+                ActivityTimelineItem(
+                    logicalId = 1L,
+                    startTime = "09:00:00",
+                    endTime = "10:30:00",
+                    activityName = activityName,
+                    durationSeconds = durationSeconds
+                )
+            )
+        ),
+        rawResponse = ""
+    )
 }
 
 private fun inspectionEntry(relativePath: String, month: String): TxtInspectionEntry =

@@ -56,6 +56,12 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         nativeTxt = runtimeBridge::nativeConfig,
         codec = txtRuntimeCodec
     )
+    private val quickAccessService = RuntimeQuickAccessService(
+        ensureConfigTomlStorage = runtimeSession::ensureConfigTomlStorage,
+        initializeRuntimeInternal = coreAdapter::initializeRuntimeInternal,
+        nativeConfig = runtimeBridge::nativeConfig,
+        codec = txtRuntimeCodec
+    )
     private val activityHierarchyMigrationService = RuntimeActivityHierarchyMigrationService(
         ensureRuntimePaths = runtimeSession::ensureRuntimePaths,
         ensureTextStorage = runtimeSession::ensureTextStorage,
@@ -73,11 +79,21 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         nativeConfig = runtimeBridge::nativeConfig,
         codec = txtRuntimeCodec
     )
+    private val activityHierarchyAutoRegistrar = RuntimeActivityHierarchyAutoRegistrar(
+        context = context,
+        ensureConfigTomlStorage = runtimeSession::ensureConfigTomlStorage,
+        catalogQuery = RuntimeCanonicalCatalogQueryDelegate(
+            ensureConfigTomlStorage = runtimeSession::ensureConfigTomlStorage
+        ),
+        loadWakeKeywords = queryDelegate::listWakeKeywords,
+        hierarchyService = aliasHierarchyService
+    )
     private val recordDelegate = RuntimeRecordDelegate(
         ensureRuntimePaths = runtimeSession::ensureRuntimePaths,
         ensureTextStorage = runtimeSession::ensureTextStorage,
         rawRecordStore = inputRecordStore,
         loadWakeKeywords = queryDelegate::listWakeKeywords,
+        ensureActivityHierarchyEntry = activityHierarchyAutoRegistrar::ensureRegistered,
         defaultTxtDayMarker = txtDayBlockService::defaultTxtDayMarker,
         resolveTxtDayBlock = txtDayBlockService::resolveTxtDayBlock,
         replaceTxtDayBlock = txtDayBlockService::replaceTxtDayBlock,
@@ -345,6 +361,12 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
 
     override suspend fun deleteConfigTomlFile(relativePath: String): TxtFileContentResult =
         configService.deleteConfigTomlFile(relativePath)
+
+    override suspend fun readQuickAccess(): QuickAccessResult =
+        quickAccessService.readQuickAccess()
+
+    override suspend fun writeQuickAccess(aliases: List<String>): QuickAccessResult =
+        quickAccessService.writeQuickAccess(aliases)
 
     override suspend fun replaceDataFolderSnapshot(
         stagedRootPath: String

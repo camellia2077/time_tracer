@@ -51,7 +51,7 @@ internal class LiveRawRecordParsing(
     ): String? {
         for (index in (blockEnd - 1) downTo (blockStart + 1)) {
             val time = extractEventTimeToken(lines[index]) ?: continue
-            if (parseTimeToMinutes(time) != null) {
+            if (parseTimeToSeconds(time) != null) {
                 return time
             }
         }
@@ -59,9 +59,9 @@ internal class LiveRawRecordParsing(
     }
 
     fun isStrictlyAfter(eventTime: String, baselineTime: String): Boolean {
-        val eventMinutes = parseTimeToMinutes(eventTime) ?: return false
-        val baselineMinutes = parseTimeToMinutes(baselineTime) ?: return false
-        return eventMinutes > baselineMinutes
+        val eventSeconds = parseTimeToSeconds(eventTime) ?: return false
+        val baselineSeconds = parseTimeToSeconds(baselineTime) ?: return false
+        return eventSeconds > baselineSeconds
     }
 
     fun extractEventTimeToken(line: String): String? {
@@ -126,17 +126,21 @@ internal class LiveRawRecordParsing(
             trimmed.drop(1).all { it.isDigit() }
     }
 
-    fun parseTimeToMinutes(time: String): Int? {
+    fun parseTimeToSeconds(time: String): Int? {
         if ((time.length != 4 && time.length != 6) || !time.all { it.isDigit() }) {
             return null
         }
         val hours = time.substring(0, 2).toIntOrNull() ?: return null
         val minutes = time.substring(2, 4).toIntOrNull() ?: return null
-        val seconds = if (time.length == 6) time.substring(4, 6).toIntOrNull() else 0
+        val seconds = if (time.length == 6) {
+            time.substring(4, 6).toIntOrNull() ?: return null
+        } else {
+            0
+        }
         if (hours !in 0..23 || minutes !in 0..59 || seconds !in 0..59) {
             return null
         }
-        return hours * 60 + minutes
+        return (hours * 60 + minutes) * 60 + seconds
     }
 
     private fun authoredTimeLength(line: String): Int? {

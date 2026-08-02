@@ -47,7 +47,8 @@ internal fun rememberTracerScreenActions(
     coroutineScope: kotlinx.coroutines.CoroutineScope,
     configGateway: ConfigGateway,
     configViewModel: ConfigViewModel,
-    userPreferencesRepository: com.example.tracer.data.UserPreferencesRepository
+    userPreferencesRepository: com.example.tracer.data.UserPreferencesRepository,
+    quickActivitiesPreferenceGateway: QuickActivitiesPreferenceGateway
 ): TracerScreenActions {
     val diagnosticsActions = rememberTracerScreenDiagnosticsActions(
         coroutineScope = coroutineScope,
@@ -56,7 +57,8 @@ internal fun rememberTracerScreenActions(
     )
     val preferenceActions = rememberTracerScreenPreferenceActions(
         coroutineScope = coroutineScope,
-        userPreferencesRepository = userPreferencesRepository
+        userPreferencesRepository = userPreferencesRepository,
+        quickActivitiesPreferenceGateway = quickActivitiesPreferenceGateway
     )
     return TracerScreenActions(
         onCoordinatorEvent = { event ->
@@ -125,12 +127,13 @@ private fun rememberTracerScreenDiagnosticsActions(
 @Composable
 private fun rememberTracerScreenPreferenceActions(
     coroutineScope: kotlinx.coroutines.CoroutineScope,
-    userPreferencesRepository: com.example.tracer.data.UserPreferencesRepository
+    userPreferencesRepository: com.example.tracer.data.UserPreferencesRepository,
+    quickActivitiesPreferenceGateway: QuickActivitiesPreferenceGateway
 ): TracerScreenPreferenceActions {
     return TracerScreenPreferenceActions(
         onPersistRecordQuickActivities = { activities ->
             coroutineScope.launch {
-                userPreferencesRepository.setRecordQuickActivities(activities)
+                quickActivitiesPreferenceGateway.setQuickActivities(activities)
             }
         },
         onPersistRecordQuickAccessCardExpanded = { value ->

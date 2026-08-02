@@ -110,6 +110,7 @@
     <string name="config_theme_mode_fixed_hint">This palette uses a fixed appearance and does not follow system light or dark mode.</string>
 
     <string name="config_title_language">Language</string>
+    <string name="config_language_system">System</string>
     <string name="config_language_chinese">中文</string>
     <string name="config_language_english">English</string>
     <string name="config_language_japanese">日本語</string>
@@ -184,6 +185,8 @@
     <string name="config_alias_dialog_rename_category_title">Rename Activity Category</string>
     <string name="config_alias_action_rename">Edit Activity Name</string>
     <string name="config_alias_action_edit_alias">Edit alias</string>
+    <string name="config_alias_action_merge">Merge into…</string>
+    <string name="config_alias_action_confirm_merge">Merge</string>
     <string name="config_alias_action_edit_group_name">Edit Folder Name</string>
     <string name="config_alias_action_edit_entry_name">Edit activity name</string>
     <string name="config_alias_action_delete">Delete</string>
@@ -191,6 +194,9 @@
     <string name="config_alias_delete_group_message">Delete folder “%1$s” and all of its contents?</string>
     <string name="config_alias_delete_entry_title">Delete alias?</string>
     <string name="config_alias_delete_entry_message">Delete alias “%1$s”?</string>
+    <string name="config_alias_merge_title">Merge activity</string>
+    <string name="config_alias_merge_message">Merge “%1$s” into another leaf activity. Its aliases and history will be migrated.</string>
+    <string name="config_alias_merge_no_target">No destination leaf activity is available.</string>
     <string name="config_alias_dialog_add_group_title">Add Folder</string>
     <string name="config_alias_dialog_add_entry_title">Add Alias Entry</string>
     <string name="config_alias_dialog_edit_entry_title">Edit Alias Entry</string>
@@ -240,4 +246,20 @@
     <string name="config_open_source_licenses_unavailable">Open source licenses are temporarily unavailable.</string>
     <string name="config_action_back">Back</string>
     <string name="config_action_copy_diagnostics">Copy Diagnostics Payload</string>
+    <string name="config_title_report_average_day_basis">Report average denominator</string>
+    <string name="config_report_average_day_basis_description">Choose which days are used when calculating averages.</string>
+    <string name="config_report_average_day_basis_active">Days with activity records</string>
+    <string name="config_report_average_day_basis_calendar">All calendar days in the selected range</string>
+    <string name="report_daily_status_editor_title">Daily statuses</string>
+    <string name="report_daily_status_editor_description">Choose the activity parents used to calculate the Daily report status fields.</string>
+    <string name="report_daily_status_editor_loading">Loading Daily status configuration…</string>
+    <string name="report_daily_status_editor_empty">No Daily statuses configured.</string>
+    <string name="report_daily_status_saving">Saving…</string>
+    <string name="report_daily_status_add">Add status</string>
+    <string name="report_daily_status_edit">Edit status</string>
+    <string name="report_daily_status_delete">Delete status</string>
+    <string name="report_daily_status_edit_title">Edit Daily status</string>
+    <string name="report_daily_status_choose_parent">Choose activity parent</string>
+    <string name="report_daily_status_parent">Parent: %1$s</string>
+    <string name="daily_status_action_close">Close</string>
 </resources>

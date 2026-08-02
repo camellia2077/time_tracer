@@ -75,12 +75,12 @@ internal class RuntimeDataFolderSnapshotService(
                     "TXT structure validation failed: ${txtFile.name}"
                 )
                 checkNativeOk(
-                    nativeValidateLogic(txtFile.absolutePath, NativeBridge.DATE_CHECK_CONTINUITY),
+                    nativeValidateLogic(txtFile.absolutePath, NativeBridge.DATE_CHECK_NONE),
                     "TXT logic validation failed: ${txtFile.name}"
                 )
             }
             checkNativeOk(
-                nativeIngest(candidatePaths.inputRootPath, NativeBridge.DATE_CHECK_CONTINUITY, false),
+                nativeIngest(candidatePaths.inputRootPath, NativeBridge.DATE_CHECK_NONE, false),
                 "candidate TXT ingest failed"
             )
             checkNativeOk(nativeShutdown(), "candidate native shutdown failed")

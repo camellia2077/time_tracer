@@ -147,7 +147,7 @@
     <plurals name="record_status_quick_activities_exceed_limit">
         <item quantity="other">クイック活動は %1$d 件を超えられません。</item>
     </plurals>
-    <string name="record_status_invalid_quick_activities">無効なクイック活動: %1$s。設定された入力可能イベントトークン（alias key、canonical token、または wake keyword）に一致する必要があります。</string>
+    <string name="record_status_invalid_quick_activities">無効なクイック活動: %1$s。設定された alias key に一致する必要があります。</string>
     <string name="record_status_quick_activities_saved">クイック活動を保存しました (%1$d)。</string>
     <string name="record_status_invalid_suggested_activity">無効な提案活動: %1$s。設定された入力可能イベントトークン（alias key、canonical token、または wake keyword）に一致する必要があります。</string>
     <string name="record_duration_unavailable">なし</string>

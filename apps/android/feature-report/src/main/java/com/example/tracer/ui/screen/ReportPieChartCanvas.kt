@@ -84,24 +84,16 @@ fun ReportPieChart(
             return@Canvas
         }
         val plot = buildPieChartPlot(durationHours = durationHours, size = size)
-        val diameter = plot.radius * 2f
-
         plot.slices.forEachIndexed { index, slice ->
             if (slice.sweepAngle <= 0f) {
                 return@forEachIndexed
             }
             val isSelected = index == selectedIndex
-            val explodeDistance = if (isSelected) 8.dp.toPx() else 0f
-            val midAngleRad = Math.toRadians((slice.startAngle + slice.sweepAngle / 2f).toDouble())
-            val explodeOffset = Offset(
-                x = cos(midAngleRad).toFloat() * explodeDistance,
-                y = sin(midAngleRad).toFloat() * explodeDistance
-            )
             val topLeft = Offset(
-                x = plot.center.x - plot.radius + explodeOffset.x,
-                y = plot.center.y - plot.radius + explodeOffset.y
+                x = plot.center.x - plot.radius,
+                y = plot.center.y - plot.radius
             )
-            val drawSize = Size(diameter, diameter)
+            val drawSize = Size(plot.radius * 2f, plot.radius * 2f)
             val sliceColor = resolvedSliceColors.getOrElse(index) {
                 resolvePieSliceColor(slices[index], palettePreset)
             }
@@ -138,7 +130,7 @@ fun ReportPieChart(
                 label = slices[index].root,
                 slice = slice,
                 sliceCount = plot.slices.size,
-                center = plot.center + explodeOffset,
+                center = plot.center,
                 radius = plot.radius,
                 fillColor = sliceColor
             )

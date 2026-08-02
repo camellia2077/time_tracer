@@ -31,16 +31,16 @@ internal object RuntimeCanonicalCatalogParser {
             )
         }
 
-        val aliasesTable = parsed.getTable("aliases")
+        val canonicalTable = parsed.getTable("canonical")
             ?: return CanonicalAliasParseResult(
-                errorMessage = "Activity hierarchy TOML must contain an `aliases` table."
+                errorMessage = "Activity hierarchy TOML must contain a `canonical` table."
             )
 
         return runCatching {
             CanonicalAliasParseResult(
                 document = CanonicalAliasDocument(
                     parent = parent,
-                    nodes = parseNodes(aliasesTable)
+                    nodes = parseNodes(canonicalTable)
                 )
             )
         }.getOrElse { error ->

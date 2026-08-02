@@ -13,6 +13,7 @@ internal object RuntimeDataCleanupTargets {
     )
     private val TxtWhitelistRoots = listOf("input")
     private const val ActivityHierarchyRoot = "config/user/activity_hierarchy"
+    private const val QuickAccessFile = "config/user/quick_access.toml"
 
     fun clearEditableData(roots: List<File>): String {
         val existingRoots = roots.filter { it.exists() }
@@ -24,13 +25,16 @@ internal object RuntimeDataCleanupTargets {
         val hierarchyFiles = existingRoots
             .flatMap(::activityHierarchyTomlFilesFor)
             .distinctBy { it.absolutePath }
+        val quickAccessFiles = existingRoots
+            .map { File(it, QuickAccessFile) }
+            .filter { it.exists() && it.isFile }
         val markerFiles = existingRoots
             .map { File(it, DATA_FOLDER_SNAPSHOT_MARKER) }
             .filter { it.exists() && it.isFile }
 
         val failedPaths = mutableListOf<String>()
         var removedCount = 0
-        (txtFiles + hierarchyFiles + markerFiles).forEach { file ->
+        (txtFiles + hierarchyFiles + quickAccessFiles + markerFiles).forEach { file ->
             if (file.delete()) {
                 removedCount += 1
             } else {
@@ -45,7 +49,8 @@ internal object RuntimeDataCleanupTargets {
         }
 
         return "clear -> removed ${txtFiles.size} TXT file(s) and " +
-            "${hierarchyFiles.size} activity_hierarchy TOML file(s)"
+            "${hierarchyFiles.size} activity_hierarchy TOML file(s) and " +
+            "${quickAccessFiles.size} Quick Access TOML file(s)"
     }
 
     fun clearDatabaseData(roots: List<File>): ClearDatabaseResult {

@@ -2,6 +2,7 @@ package com.example.tracer
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Row
@@ -247,6 +248,66 @@ private fun ActivityHierarchyMoveTargetDialog(
     }
     var expandedPaths by remember(destinations) { mutableStateOf(emptySet<String>()) }
 
+    ActivityHierarchyTargetSelectionDialog(
+        subjectDescription = subjectDescription,
+        title = title,
+        loading = loading,
+        emptyMessage = stringResource(R.string.config_alias_move_no_destination),
+        hasContent = destinations.isNotEmpty(),
+        confirmLabel = stringResource(R.string.config_alias_action_preview_move),
+        confirmEnabled = selectedTarget != null,
+        onDismiss = onDismiss,
+        onConfirm = { selectedTarget?.let(onConfirm) }
+    ) {
+        destinations.forEach { destination ->
+            Text(
+                text = destination.displayName,
+                style = MaterialTheme.typography.titleSmall
+            )
+            if (destination.rootSelectable) {
+                val target = AliasEntryMoveTarget(destination.sourceName, emptyList())
+                AliasMoveTargetRow(
+                    label = stringResource(R.string.config_alias_move_target_root),
+                    selected = selectedTarget == target,
+                    depth = 0,
+                    expandable = false,
+                    expanded = false,
+                    onExpand = {},
+                    onSelect = { selectedTarget = target }
+                )
+            }
+            destination.document.nodes
+                .filterIsInstance<AliasTomlGroup>()
+                .forEach { group ->
+                    AliasMoveTargetGroupTree(
+                        sourceName = destination.sourceName,
+                        group = group,
+                        groupPath = emptyList(),
+                        excludedGroupPath = destination.excludedGroupPath,
+                        excludeDescendants = destination.excludeDescendants,
+                        expandedPaths = expandedPaths,
+                        selectedTarget = selectedTarget,
+                        onExpandedPathsChange = { expandedPaths = it },
+                        onSelect = { selectedTarget = it }
+                    )
+                }
+        }
+    }
+}
+
+@Composable
+private fun ActivityHierarchyTargetSelectionDialog(
+    subjectDescription: String,
+    title: String,
+    loading: Boolean,
+    emptyMessage: String,
+    hasContent: Boolean,
+    confirmLabel: String,
+    confirmEnabled: Boolean,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+    content: @Composable ColumnScope.() -> Unit
+) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
@@ -266,9 +327,9 @@ private fun ActivityHierarchyMoveTargetDialog(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodySmall
                     )
-                } else if (destinations.isEmpty()) {
+                } else if (!hasContent) {
                     Text(
-                        text = stringResource(R.string.config_alias_move_no_destination),
+                        text = emptyMessage,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodySmall
                     )
@@ -277,51 +338,18 @@ private fun ActivityHierarchyMoveTargetDialog(
                         modifier = Modifier
                             .heightIn(max = 360.dp)
                             .verticalScroll(rememberScrollState()),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        destinations.forEach { destination ->
-                            Text(
-                                text = destination.displayName,
-                                style = MaterialTheme.typography.titleSmall
-                            )
-                            if (destination.rootSelectable) {
-                                val target = AliasEntryMoveTarget(destination.sourceName, emptyList())
-                                AliasMoveTargetRow(
-                                    label = stringResource(R.string.config_alias_move_target_root),
-                                    selected = selectedTarget == target,
-                                    depth = 0,
-                                    expandable = false,
-                                    expanded = false,
-                                    onExpand = {},
-                                    onSelect = { selectedTarget = target }
-                                )
-                            }
-                            destination.document.nodes
-                                .filterIsInstance<AliasTomlGroup>()
-                                .forEach { group ->
-                                    AliasMoveTargetGroupTree(
-                                        sourceName = destination.sourceName,
-                                        group = group,
-                                        groupPath = emptyList(),
-                                        excludedGroupPath = destination.excludedGroupPath,
-                                        excludeDescendants = destination.excludeDescendants,
-                                        expandedPaths = expandedPaths,
-                                        selectedTarget = selectedTarget,
-                                        onExpandedPathsChange = { expandedPaths = it },
-                                        onSelect = { selectedTarget = it }
-                                    )
-                                }
-                        }
-                    }
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        content = content
+                    )
                 }
             }
         },
         confirmButton = {
             TextButton(
-                enabled = selectedTarget != null && !loading,
-                onClick = { selectedTarget?.let(onConfirm) }
+                enabled = confirmEnabled && !loading,
+                onClick = onConfirm
             ) {
-                Text(stringResource(R.string.config_alias_action_preview_move))
+                Text(confirmLabel)
             }
         },
         dismissButton = {
@@ -606,6 +634,7 @@ internal fun AliasEntryActionsDialog(
     onDismiss: () -> Unit,
     onEditName: () -> Unit,
     onEditAlias: () -> Unit,
+    onMerge: () -> Unit,
     onPromote: () -> Unit,
     onMove: () -> Unit,
     onDelete: () -> Unit
@@ -620,6 +649,9 @@ internal fun AliasEntryActionsDialog(
                 }
                 TextButton(onClick = onEditAlias, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.config_alias_action_edit_alias))
+                }
+                TextButton(onClick = onMerge, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.config_alias_action_merge))
                 }
                 TextButton(onClick = onPromote, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.config_alias_action_promote_to_group))
@@ -639,6 +671,50 @@ internal fun AliasEntryActionsDialog(
             TextButton(onClick = onDismiss) { Text(stringResource(android.R.string.cancel)) }
         }
     )
+}
+
+@Composable
+internal fun AliasEntryMergeTargetDialog(
+    source: AliasTomlEntry,
+    tomlDisplayName: String,
+    document: AliasTomlDocument?,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit
+) {
+    val targets = document?.allAliasEntries()
+        ?.filter { it.id != source.id }
+        .orEmpty()
+    var selected by remember(targets) { mutableStateOf(targets.firstOrNull()) }
+    ActivityHierarchyTargetSelectionDialog(
+        subjectDescription = stringResource(
+            R.string.config_alias_merge_message,
+            source.canonicalLeaf
+        ),
+        title = stringResource(R.string.config_alias_merge_title),
+        loading = false,
+        emptyMessage = stringResource(R.string.config_alias_merge_no_target),
+        hasContent = targets.isNotEmpty(),
+        confirmLabel = stringResource(R.string.config_alias_action_confirm_merge),
+        confirmEnabled = selected != null,
+        onDismiss = onDismiss,
+        onConfirm = { selected?.let { onConfirm(it.id) } }
+    ) {
+        Text(
+            text = tomlDisplayName,
+            style = MaterialTheme.typography.titleSmall
+        )
+        targets.forEach { target ->
+            AliasMoveTargetRow(
+                label = target.aliasKey,
+                selected = selected?.id == target.id,
+                depth = 0,
+                expandable = false,
+                expanded = false,
+                onExpand = {},
+                onSelect = { selected = target }
+            )
+        }
+    }
 }
 
 @Composable

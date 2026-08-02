@@ -42,7 +42,7 @@ internal class RuntimeIngestService(
                 val logicCheckResult = executeAfterInit("native_validate_logic") {
                     nativeValidateLogic(
                         validationCandidateFile.absolutePath,
-                        NativeBridge.DATE_CHECK_CONTINUITY
+                        NativeBridge.DATE_CHECK_NONE
                     )
                 }
                 if (!logicCheckResult.initialized || !logicCheckResult.operationOk) {
@@ -56,7 +56,7 @@ internal class RuntimeIngestService(
                 executeAfterInit("native_ingest_single_txt_replace_month") {
                     nativeIngestSingleTxtReplaceMonth(
                         managedInputPath,
-                        NativeBridge.DATE_CHECK_CONTINUITY,
+                        NativeBridge.DATE_CHECK_NONE,
                         // Android build disables processed JSON output in core
                         // (TT_ENABLE_PROCESSED_JSON_IO=OFF).
                         false

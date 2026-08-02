@@ -3,7 +3,30 @@ package com.example.tracer
 import org.json.JSONArray
 import org.json.JSONObject
 
+internal data class NativeQuickAccessResult(
+    val ok: Boolean,
+    val aliases: List<String> = emptyList(),
+    val tomlContent: String = "",
+    val message: String = ""
+)
+
 internal class NativeTxtRuntimeCodec {
+    fun parseQuickAccess(response: String): NativeQuickAccessResult =
+        try {
+            val json = JSONObject(response)
+            NativeQuickAccessResult(
+                ok = json.optBoolean("ok", false),
+                aliases = parseStringArray(json.optJSONArray("quick_access")),
+                tomlContent = json.optString("toml_content", ""),
+                message = json.optString("error_message", "")
+            )
+        } catch (_: Exception) {
+            NativeQuickAccessResult(
+                ok = false,
+                message = "Invalid native Quick Access response."
+            )
+        }
+
     fun parseDayMarker(response: String): TxtDayMarkerResult =
         try {
             val json = JSONObject(response)
@@ -128,6 +151,13 @@ internal class NativeTxtRuntimeCodec {
             updatedTomlContent = fallbackTomlContent,
             message = "Invalid native activity hierarchy response."
         )
+    }
+
+    private fun parseStringArray(values: JSONArray?): List<String> = buildList {
+        for (index in 0 until (values?.length() ?: 0)) {
+            val value = values?.opt(index)
+            if (value is String) add(value)
+        }
     }
 
     fun parseActivityHierarchyCrossDocumentOperation(

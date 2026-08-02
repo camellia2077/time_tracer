@@ -58,6 +58,10 @@ internal data class TracerTabRouteArgs(
     val onReportChartSemanticModeChange: (ReportChartSemanticMode) -> Unit,
     val reportChartVisualMode: ReportChartVisualMode,
     val onReportChartVisualModeChange: (ReportChartVisualMode) -> Unit,
+    val reportChartTrendRoot: String,
+    val onReportChartTrendRootChange: (String) -> Unit,
+    val reportAverageDayBasis: ReportAverageDayBasis,
+    val onReportAverageDayBasisChange: (ReportAverageDayBasis) -> Unit,
     val reportMode: ReportMode,
     val onReportModeChange: (ReportMode) -> Unit,
     val reportResultDisplayMode: ReportResultDisplayMode,
@@ -76,6 +80,7 @@ internal data class TracerTabRouteArgs(
     val onSetAppLanguage: (AppLanguage) -> Unit,
     val validAuthorableEventTokens: Set<String>,
     val onPersistRecordQuickActivities: (List<String>) -> Unit,
+    val onClearQuickAccessCache: () -> Unit,
     val onPersistRecordQuickAccessCardExpanded: (Boolean) -> Unit,
     val onPersistRecordAssistSettingsExpanded: (Boolean) -> Unit,
     val onPersistRecordCanonicalCatalogDisplayMode: (RecordSuggestionOutputMode) -> Unit,
@@ -91,7 +96,8 @@ internal data class TracerTabRouteArgs(
     val isTracerExportInProgress: Boolean,
     val selectedTracerSecurityLevel: FileCryptoSecurityLevel,
     val onTracerSecurityLevelChange: (FileCryptoSecurityLevel) -> Unit,
-    val onCopyDiagnosticsPayload: () -> Unit
+    val onCopyDiagnosticsPayload: () -> Unit,
+    val onEditDailyStatuses: () -> Unit
 )
 
 internal data class TracerTabLifecycleArgs(
@@ -187,6 +193,7 @@ internal object TracerTabRegistry {
                         args.dataViewModel.rebuildDatabase(rebuildDatabaseStatusText)
                     },
                     onClearData = {
+                        args.onClearQuickAccessCache()
                         args.dataViewModel.clearDataAndReinitialize(clearAllDataStatusText)
                     }
                 )
@@ -232,6 +239,9 @@ internal object TracerTabRegistry {
                     onPreferredChartSemanticModeChange = args.onReportChartSemanticModeChange,
                     preferredChartVisualMode = args.reportChartVisualMode,
                     onPreferredChartVisualModeChange = args.onReportChartVisualModeChange,
+                    preferredTrendChartRoot = args.reportChartTrendRoot,
+                    onPreferredTrendChartRootChange = args.onReportChartTrendRootChange,
+                    preferredAverageDayBasis = args.reportAverageDayBasis,
                     chartShowAverageLine = args.reportChartShowAverageLine,
                     piePalettePreset = args.reportPiePalettePreset,
                     onChartShowAverageLineChange = args.onReportChartShowAverageLineChange,
@@ -241,6 +251,7 @@ internal object TracerTabRegistry {
                     onHeatmapPaletteNameChange = args.onReportHeatmapPaletteNameChange,
                     heatmapApplyMessage = args.reportHeatmapApplyMessage,
                     isAppDarkThemeActive = args.isAppDarkThemeActive,
+                    onEditDailyStatuses = args.onEditDailyStatuses,
                     bottomContentPadding = floatingBottomNavScrollPadding()
                 )
             }
@@ -386,6 +397,7 @@ internal object TracerTabRegistry {
                     onRenameAliasGroup = args.configViewModel::renameAliasGroup,
                     onAddAliasEntry = args.configViewModel::addAliasEntry,
                     onUpdateAliasEntry = args.configViewModel::updateAliasEntry,
+                    onMergeAliasEntry = args.configViewModel::mergeAliasEntry,
                     onPromoteAliasEntry = args.configViewModel::promoteAliasEntryToGroup,
                     onRenameGroupAlias = args.configViewModel::renameGroupAlias,
                     onAddGroupAlias = args.configViewModel::addGroupAlias,
@@ -401,6 +413,8 @@ internal object TracerTabRegistry {
                     onThemeEvent = args.onThemeEvent,
                     reportPiePalettePreset = args.reportPiePalettePreset,
                     onReportPiePalettePresetChange = args.onReportPiePalettePresetChange,
+                    reportAverageDayBasis = args.reportAverageDayBasis,
+                    onReportAverageDayBasisChange = args.onReportAverageDayBasisChange,
                     appLanguage = args.appLanguage,
                     onSetAppLanguage = args.onSetAppLanguage
                 )
@@ -435,7 +449,7 @@ private const val ActivityAuthorableTokenValidationUnavailablePrefix =
     "Activity authorable token validation unavailable:"
 
 private suspend fun refreshRecordMappingValidation(args: TracerTabLifecycleArgs) {
-    val mappingResult = args.queryGateway.listAuthorableEventTokens()
+    val mappingResult = args.queryGateway.listActivityAliasKeys()
     if (mappingResult.ok) {
         args.onValidAuthorableEventTokensChanged(mappingResult.names.toSet())
         if (args.recordStatusText().startsWith(ActivityAuthorableTokenValidationUnavailablePrefix)) {

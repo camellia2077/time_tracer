@@ -114,8 +114,30 @@ class QueryReportChartPipelineTest {
         assertEquals(3600L, domain.totalDurationSeconds)
         assertEquals(1, domain.activeDays)
         assertEquals(2, domain.rangeDays)
-        assertEquals(1800L, domain.averageDurationSeconds)
+        assertEquals(3600L, domain.averageDurationSeconds)
         assertEquals(true, domain.usesLegacyStatsFallback)
+    }
+
+    @Test
+    fun mapCorePayloadToCompositionRenderModel_preservesAverageOccurrenceCount() {
+        val model = mapCorePayloadToCompositionRenderModel(
+            ReportCompositionData(
+                tree = listOf(
+                    TreeNode(
+                        name = "study",
+                        durationSeconds = 3_600L,
+                        occurrenceCount = 4L,
+                        averageOccurrenceCount = 2.0
+                    )
+                ),
+                totalDurationSeconds = 3_600L,
+                activeRootCount = 1,
+                activeDays = 2,
+                rangeDays = 7
+            )
+        )
+
+        assertEquals(2.0, model.tree.single().averageOccurrenceCount ?: -1.0, 0.0)
     }
 }
 

@@ -69,7 +69,7 @@ internal class RuntimeTxtSaveAndSyncFlow(
                 }
 
                 val logicCheckResult = executeAfterInit("native_validate_logic") {
-                    nativeValidateLogic(validationCandidateFile.absolutePath, NativeBridge.DATE_CHECK_CONTINUITY)
+                    nativeValidateLogic(validationCandidateFile.absolutePath, NativeBridge.DATE_CHECK_NONE)
                 }
                 extractNativeStageFailure(
                     result = logicCheckResult,
@@ -97,7 +97,7 @@ internal class RuntimeTxtSaveAndSyncFlow(
                 val syncResult = executeAfterInit("native_reimport_txt") {
                     nativeIngestSingleTxtReplaceMonth(
                         targetInputPath,
-                        NativeBridge.DATE_CHECK_CONTINUITY,
+                        NativeBridge.DATE_CHECK_NONE,
                         false
                     )
                 }
@@ -153,4 +153,3 @@ internal class RuntimeTxtSaveAndSyncFlow(
         }
     }
 }
-

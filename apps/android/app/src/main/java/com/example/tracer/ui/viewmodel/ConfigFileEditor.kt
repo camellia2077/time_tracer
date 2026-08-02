@@ -119,7 +119,7 @@ internal class ConfigFileEditor(
     ): ConfigUiState {
         val targetFilePath = newAliasTomlPath(fileName)
             ?: return state.copy(
-                statusText = "Alias file name must be a single non-empty file name."
+                statusText = "Canonical file name must be a single non-empty file name."
             )
         val listResult = configGateway.listConfigTomlFiles()
         if (!listResult.ok) return state.copy(statusText = listResult.message)

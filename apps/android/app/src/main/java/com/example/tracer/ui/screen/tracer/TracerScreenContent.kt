@@ -30,6 +30,10 @@ internal fun TracerScreenContent(
     onReportChartSemanticModeChange: (ReportChartSemanticMode) -> Unit,
     reportChartVisualMode: ReportChartVisualMode,
     onReportChartVisualModeChange: (ReportChartVisualMode) -> Unit,
+    reportChartTrendRoot: String,
+    onReportChartTrendRootChange: (String) -> Unit,
+    reportAverageDayBasis: ReportAverageDayBasis,
+    onReportAverageDayBasisChange: (ReportAverageDayBasis) -> Unit,
     reportMode: ReportMode,
     onReportModeChange: (ReportMode) -> Unit,
     reportResultDisplayMode: ReportResultDisplayMode,
@@ -48,6 +52,7 @@ internal fun TracerScreenContent(
     onSetAppLanguage: (com.example.tracer.data.AppLanguage) -> Unit,
     validAuthorableEventTokens: Set<String>,
     onPersistRecordQuickActivities: (List<String>) -> Unit,
+    onClearQuickAccessCache: () -> Unit,
     onPersistRecordQuickAccessCardExpanded: (Boolean) -> Unit,
     onPersistRecordAssistSettingsExpanded: (Boolean) -> Unit,
     onPersistRecordCanonicalCatalogDisplayMode: (RecordSuggestionOutputMode) -> Unit,
@@ -63,7 +68,8 @@ internal fun TracerScreenContent(
     isTracerExportInProgress: Boolean,
     selectedTracerSecurityLevel: FileCryptoSecurityLevel,
     onTracerSecurityLevelChange: (FileCryptoSecurityLevel) -> Unit,
-    onCopyDiagnosticsPayload: () -> Unit
+    onCopyDiagnosticsPayload: () -> Unit,
+    onEditDailyStatuses: () -> Unit
 ) {
     TracerBottomNavShell(
         selectedTab = selectedTab,
@@ -99,6 +105,10 @@ internal fun TracerScreenContent(
                 onReportChartSemanticModeChange = onReportChartSemanticModeChange,
                 reportChartVisualMode = reportChartVisualMode,
                 onReportChartVisualModeChange = onReportChartVisualModeChange,
+                reportChartTrendRoot = reportChartTrendRoot,
+                onReportChartTrendRootChange = onReportChartTrendRootChange,
+                reportAverageDayBasis = reportAverageDayBasis,
+                onReportAverageDayBasisChange = onReportAverageDayBasisChange,
                 reportMode = reportMode,
                 onReportModeChange = onReportModeChange,
                 reportResultDisplayMode = reportResultDisplayMode,
@@ -117,6 +127,7 @@ internal fun TracerScreenContent(
                 onSetAppLanguage = onSetAppLanguage,
                 validAuthorableEventTokens = validAuthorableEventTokens,
                 onPersistRecordQuickActivities = onPersistRecordQuickActivities,
+                onClearQuickAccessCache = onClearQuickAccessCache,
                 onPersistRecordQuickAccessCardExpanded =
                     onPersistRecordQuickAccessCardExpanded,
                 onPersistRecordAssistSettingsExpanded = onPersistRecordAssistSettingsExpanded,
@@ -136,7 +147,8 @@ internal fun TracerScreenContent(
                 isTracerExportInProgress = isTracerExportInProgress,
                 selectedTracerSecurityLevel = selectedTracerSecurityLevel,
                 onTracerSecurityLevelChange = onTracerSecurityLevelChange,
-                onCopyDiagnosticsPayload = onCopyDiagnosticsPayload
+                onCopyDiagnosticsPayload = onCopyDiagnosticsPayload,
+                onEditDailyStatuses = onEditDailyStatuses
             )
         }
     }

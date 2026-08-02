@@ -107,6 +107,7 @@
     <string name="config_theme_mode_fixed_hint">この配色は固定の外観で、システムのライト/ダークモードには追従しません。</string>
 
     <string name="config_title_language">言語</string>
+    <string name="config_language_system">システムに従う</string>
     <string name="config_language_chinese">中文</string>
     <string name="config_language_english">English</string>
     <string name="config_language_japanese">日本語</string>
@@ -181,6 +182,8 @@
     <string name="config_alias_dialog_rename_category_title">活動カテゴリ名を変更</string>
     <string name="config_alias_action_rename">活動名を編集</string>
     <string name="config_alias_action_edit_alias">Alias を編集</string>
+    <string name="config_alias_action_merge">統合先…</string>
+    <string name="config_alias_action_confirm_merge">統合</string>
     <string name="config_alias_action_edit_group_name">フォルダ名を編集</string>
     <string name="config_alias_action_edit_entry_name">アクティビティ名を編集</string>
     <string name="config_alias_action_delete">削除</string>
@@ -188,6 +191,9 @@
     <string name="config_alias_delete_group_message">フォルダ「%1$s」とその内容をすべて削除しますか？</string>
     <string name="config_alias_delete_entry_title">Alias を削除しますか？</string>
     <string name="config_alias_delete_entry_message">Alias「%1$s」を削除しますか？</string>
+    <string name="config_alias_merge_title">アクティビティを統合</string>
+    <string name="config_alias_merge_message">「%1$s」を別のアクティビティに統合します。Alias と履歴も移行されます。</string>
+    <string name="config_alias_merge_no_target">統合先のアクティビティがありません。</string>
     <string name="config_alias_dialog_add_group_title">フォルダを追加</string>
     <string name="config_alias_dialog_add_entry_title">Alias エントリを追加</string>
     <string name="config_alias_dialog_edit_entry_title">Alias エントリを編集</string>

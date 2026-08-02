@@ -39,7 +39,12 @@ data class ChartRenderModel(
 data class CompositionChartRenderModel(
     val totalDurationSeconds: Long,
     val activeRootCount: Int,
+    val activeDays: Int = 0,
     val rangeDays: Int,
+    val averageDayBasis: ReportAverageDayBasis = ReportAverageDayBasis.ACTIVE_DAYS,
+    val averageDenominatorDays: Int = 0,
+    val displayLevel: Int = 0,
+    val displayPath: List<String> = emptyList(),
     val tree: List<TreeNode>
 )
 

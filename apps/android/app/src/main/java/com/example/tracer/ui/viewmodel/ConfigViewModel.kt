@@ -10,7 +10,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 
 internal enum class ConfigCategory {
-    // Alias files live under `user/activity_hierarchy/*.toml`.
+    // Canonical files live under `user/activity_hierarchy/*.toml`.
     ALIAS,
     // Charts = `charts/*.toml`
     CHARTS,
@@ -497,6 +497,19 @@ internal class ConfigViewModel(
         applyCoreActivityHierarchyOperation(ActivityHierarchyOperation(ActivityHierarchyOperationKind.PROMOTE_LEAF, targetPath = path))
     }
 
+    fun mergeAliasEntry(sourceEntryId: String, destinationEntryId: String) {
+        val document = uiState.aliasDocumentDraft ?: return
+        val sourcePath = document.canonicalTargetPathForEntry(sourceEntryId) ?: return
+        val destinationPath = document.canonicalTargetPathForEntry(destinationEntryId) ?: return
+        applyCoreActivityHierarchyOperation(
+            ActivityHierarchyOperation(
+                kind = ActivityHierarchyOperationKind.MERGE_LEAF_CANONICAL,
+                targetPath = sourcePath,
+                destinationPath = destinationPath
+            )
+        )
+    }
+
     fun renameGroupAlias(groupId: String, oldAlias: String, newAlias: String) {
         val trimmedAlias = newAlias.trim()
         val document = uiState.aliasDocumentDraft ?: return
@@ -557,7 +570,12 @@ internal class ConfigViewModel(
             ?.split('.')
             ?.dropLast(1)
             .orEmpty()
-        prepareAliasMoveDestinations(sourcePath, sourceParentPath, excludeDescendants = false)
+        prepareAliasMoveDestinations(
+            sourcePath,
+            sourceParentPath,
+            excludeDescendants = false,
+            onlyCurrentDocument = false
+        )
     }
 
     fun prepareAliasGroupMove(groupId: String) {
@@ -568,13 +586,19 @@ internal class ConfigViewModel(
             ?.filter(String::isNotEmpty)
             ?: return
         if (sourcePath.isBlank() || sourceDocument.findAliasGroup(groupId) == null) return
-        prepareAliasMoveDestinations(sourcePath, groupPath, excludeDescendants = true)
+        prepareAliasMoveDestinations(
+            sourcePath,
+            groupPath,
+            excludeDescendants = true,
+            onlyCurrentDocument = true
+        )
     }
 
     private fun prepareAliasMoveDestinations(
         sourcePath: String,
         excludedGroupPath: List<String>,
-        excludeDescendants: Boolean
+        excludeDescendants: Boolean,
+        onlyCurrentDocument: Boolean
     ) {
         uiState = uiState.copy(
             aliasEntryMoveDestinations = emptyList(),
@@ -586,7 +610,8 @@ internal class ConfigViewModel(
                 state = uiState,
                 sourcePath = sourcePath,
                 excludedGroupPath = excludedGroupPath,
-                excludeDescendants = excludeDescendants
+                excludeDescendants = excludeDescendants,
+                onlyCurrentDocument = onlyCurrentDocument
             )
             uiState = when (outcome) {
                 is ActivityHierarchyMoveDestinationsOutcome.Ready -> uiState.copy(
@@ -763,7 +788,7 @@ internal class ConfigViewModel(
     fun deleteCurrentAliasTomlFile() {
         val targetFilePath = uiState.selectedFilePath
         if (!isAliasConfigFilePath(targetFilePath)) {
-            uiState = uiState.copy(statusText = "Select an alias TOML file to delete.")
+            uiState = uiState.copy(statusText = "Select a canonical TOML file to delete.")
             return
         }
         viewModelScope.launch {
@@ -777,7 +802,7 @@ internal class ConfigViewModel(
                 return@launch
             }
             refreshConfigFiles(showStatus = false)
-            uiState = uiState.copy(statusText = "deleted alias toml -> $targetFilePath")
+            uiState = uiState.copy(statusText = "deleted canonical toml -> $targetFilePath")
         }
     }
 
@@ -786,7 +811,7 @@ internal class ConfigViewModel(
         return if (reloadResult.initialized) {
             null
         } else {
-            "Alias TOML was saved but runtime reload failed."
+            "Canonical TOML was saved but runtime reload failed."
         }
     }
 
@@ -847,7 +872,7 @@ internal class ConfigViewModel(
         // Structured operations are already persisted by
         // applyCoreActivityHierarchyOperation through the migration service.
         // This button only clears presentation drafts; it must never write
-        // alias TOML directly from Android.
+        // canonical TOML directly from Android.
         return uiState.copy(
             aliasEditorMode = AliasEditorMode.STRUCTURED,
             aliasStructuredDraftsByFile = uiState.aliasStructuredDraftsByFile - selectedFile,
@@ -855,13 +880,13 @@ internal class ConfigViewModel(
             aliasEditorModeByFile = uiState.aliasEditorModeByFile + (selectedFile to AliasEditorMode.STRUCTURED),
             aliasEditorErrorMessage = "",
             autoSaveStatus = ConfigAutoSaveStatus.SAVED,
-            statusText = "alias TOML already persisted by core"
+            statusText = "canonical TOML already persisted by core"
         )
     }
 
-    /** Import path for alias TOML; persistence still goes through Core + migration. */
+    /** Import path for canonical TOML; persistence still goes through Core + migration. */
     suspend fun applyImportedAliasToml(relativePath: String, updatedTomlContent: String): String? {
-        if (!isAliasConfigFilePath(relativePath)) return "Not an alias TOML path: $relativePath"
+        if (!isAliasConfigFilePath(relativePath)) return "Not a canonical TOML path: $relativePath"
         val original = configGateway.readConfigTomlFile(relativePath)
         val result = activityHierarchyGateway.rewriteActivityHierarchyDocument(
             originalTomlContent = if (original.ok) original.content else updatedTomlContent,
@@ -956,7 +981,7 @@ internal class ConfigViewModel(
             aliasEditorErrorMessage = "",
             autoSaveStatus = ConfigAutoSaveStatus.SAVED,
             txtReloadRequestVersion = uiState.txtReloadRequestVersion + 1,
-            statusText = "save alias TOML through core migration"
+            statusText = "save canonical TOML through core migration"
         )
     }
 

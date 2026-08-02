@@ -1,5 +1,9 @@
 package com.example.tracer
 
+import android.util.Log
+
+private const val RECORD_LOG_TAG = "TimeTracerRecord"
+
 internal class RuntimeRecordAtomicFlow(
     private val responseCodec: NativeResponseCodec,
     private val atomicRecordCodec: NativeAtomicRecordCodec,
@@ -31,6 +35,11 @@ internal class RuntimeRecordAtomicFlow(
             )
         }
         val logicalDate = logicalDateResult.date
+        Log.i(
+            RECORD_LOG_TAG,
+            "record.atomic.start activity=${activityName.trim()} logicalDate=$logicalDate " +
+                "preferredTxtPath=$preferredTxtPath timeOrderMode=$timeOrderMode"
+        )
 
         val atomicResult = executeAfterInit("native_record_activity_atomically") {
             nativeRecordActivityAtomically(
@@ -48,6 +57,12 @@ internal class RuntimeRecordAtomicFlow(
             ?.takeIf { it.isNotBlank() }
             ?: payload.errorMessage.takeIf { it.isNotBlank() }
             ?: if (atomicResult.operationOk) "record: ok\nsync: ok" else "Record failed."
+        Log.i(
+            RECORD_LOG_TAG,
+            "record.atomic.result initialized=${atomicResult.initialized} " +
+                "operationOk=${atomicResult.operationOk} payloadOk=${atomicPayload?.ok} " +
+                "operationId=${atomicResult.operationId} message=${baseMessage.lineSequence().firstOrNull()}"
+        )
 
         if (!atomicResult.initialized || !atomicResult.operationOk) {
             return RecordActionResult(
@@ -68,4 +83,3 @@ internal class RuntimeRecordAtomicFlow(
         )
     }
 }
-

@@ -240,7 +240,7 @@ class RuntimeTracerExchangeServiceTest {
         assertEquals("/resolved/bundle.tracer", result.inputPath)
         assertEquals("data", result.sourceRootName)
         assertEquals(5, result.payloadFileCount)
-        assertEquals(4, result.packageVersion)
+        assertEquals(6, result.packageVersion)
         assertEquals("android", result.producerPlatform)
         assertEquals("time_tracer_android", result.producerApp)
         assertEquals("2026-03-20T08:00:00Z", result.createdAtUtc)

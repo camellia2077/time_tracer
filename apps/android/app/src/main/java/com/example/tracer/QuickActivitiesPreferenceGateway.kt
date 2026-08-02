@@ -1,22 +1,37 @@
 package com.example.tracer
 
-import com.example.tracer.data.UserPreferencesRepository
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 internal interface QuickActivitiesPreferenceGateway {
     suspend fun getQuickActivities(): List<String>
 
     suspend fun setQuickActivities(values: List<String>)
+
+    fun clearCachedQuickActivities() = Unit
 }
 
-internal class UserPreferencesQuickActivitiesGateway(
-    private val repository: UserPreferencesRepository
+internal class RuntimeQuickActivitiesGateway(
+    private val gateway: QuickAccessGateway
 ) : QuickActivitiesPreferenceGateway {
+    private val _quickActivities = MutableStateFlow<List<String>>(emptyList())
+    val quickActivities: StateFlow<List<String>> = _quickActivities.asStateFlow()
+
     override suspend fun getQuickActivities(): List<String> {
-        return repository.recordSuggestionPreferences.first().quickActivities
+        val result = gateway.readQuickAccess()
+        check(result.ok) { result.message.ifBlank { "Cannot read Quick Access." } }
+        _quickActivities.value = result.aliases
+        return result.aliases
     }
 
     override suspend fun setQuickActivities(values: List<String>) {
-        repository.setRecordQuickActivities(values)
+        val result = gateway.writeQuickAccess(values)
+        check(result.ok) { result.message.ifBlank { "Cannot save Quick Access." } }
+        _quickActivities.value = result.aliases
+    }
+
+    override fun clearCachedQuickActivities() {
+        _quickActivities.value = emptyList()
     }
 }

@@ -14,7 +14,6 @@ internal data class DataQueryRequest(
     val exercise: Int? = null,
     val status: Int? = null,
     val crossMidnightActivity: Boolean = false,
-    val missingWakeAnchor: Boolean = false,
     val reverse: Boolean = false,
     val limit: Int? = null,
     val topN: Int? = null,
@@ -23,7 +22,8 @@ internal data class DataQueryRequest(
     val scoreByDuration: Boolean = false,
     val treePeriod: String? = null,
     val treePeriodArgument: String? = null,
-    val treeMaxDepth: Int? = null
+    val treeMaxDepth: Int? = null,
+    val averageDayBasis: String? = null
 )
 
 internal object DataQueryOutputMode {

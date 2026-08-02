@@ -77,6 +77,13 @@ class RuntimeDataCleanupTargetsTest {
             parentFile?.mkdirs()
             writeText("hierarchy")
         }
+        val quickAccessFile = root.resolve("config/user/quick_access.toml").apply {
+            parentFile?.mkdirs()
+            writeText("quick_access = [\"study\"]")
+        }
+        val behaviorFile = root.resolve("config/user/behavior.toml").apply {
+            writeText("keep")
+        }
         val nonTomlHierarchyFile = root.resolve("config/user/activity_hierarchy/notes.txt").apply {
             writeText("keep")
         }
@@ -94,12 +101,15 @@ class RuntimeDataCleanupTargetsTest {
 
         assertFalse(txtFile.exists())
         assertFalse(hierarchyFile.exists())
+        assertFalse(quickAccessFile.exists())
         assertFalse(marker.exists())
         assertTrue(nonTomlHierarchyFile.exists())
         assertTrue(programFile.exists())
         assertTrue(databaseFile.exists())
+        assertTrue(behaviorFile.exists())
         assertTrue(message.contains("1 TXT file(s)"))
         assertTrue(message.contains("1 activity_hierarchy TOML file(s)"))
+        assertTrue(message.contains("1 Quick Access TOML file(s)"))
     }
 
     @Test
@@ -112,6 +122,10 @@ class RuntimeDataCleanupTargetsTest {
         val hierarchyFile = root.resolve("config/user/activity_hierarchy/custom.toml").apply {
             parentFile?.mkdirs()
             writeText("category")
+        }
+        val quickAccessFile = root.resolve("config/user/quick_access.toml").apply {
+            parentFile?.mkdirs()
+            writeText("quick_access = [\"study\"]")
         }
         val databaseFile = root.resolve("db/time_data.sqlite3").apply {
             parentFile?.mkdirs()
@@ -128,6 +142,7 @@ class RuntimeDataCleanupTargetsTest {
         assertTrue(databaseResult.ok)
         assertFalse(txtFile.exists())
         assertFalse(hierarchyFile.exists())
+        assertFalse(quickAccessFile.exists())
         assertFalse(databaseFile.exists())
         assertTrue(programFile.exists())
     }

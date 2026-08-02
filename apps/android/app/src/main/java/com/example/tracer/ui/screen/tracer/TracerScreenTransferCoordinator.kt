@@ -30,7 +30,8 @@ internal data class TracerCryptoTransferResult(
 )
 
 internal data class TracerPreparedTransferResult(
-    val statusText: String? = null
+    val statusText: String? = null,
+    val succeeded: Boolean = false
 )
 
 @Composable

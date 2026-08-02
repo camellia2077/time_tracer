@@ -20,6 +20,20 @@ import kotlin.io.path.createTempDirectory
 
 class UserPreferencesRepositoryTest {
     @Test
+    fun appLanguage_defaultsToSystem_andPersistsSelection() = runTest {
+        val repository = buildRepository(
+            testName = "persist_app_language",
+            scope = backgroundScope
+        )
+
+        assertEquals(AppLanguage.System, repository.appLanguage.first())
+
+        repository.setAppLanguage(AppLanguage.Japanese)
+
+        assertEquals(AppLanguage.Japanese, repository.appLanguage.first())
+    }
+
+    @Test
     fun recordSuggestionPreferences_usesEmptyQuickActivities_whenQuickActivitiesNotConfigured() = runTest {
         val repository = buildRepository(
             testName = "missing_quick_activities",
@@ -176,6 +190,20 @@ class UserPreferencesRepositoryTest {
             ReportChartSemanticMode.TREND,
             repository.reportChartSemanticMode.first()
         )
+    }
+
+    @Test
+    fun reportChartTrendRoot_defaultsToAllActivities_andPersistsSelection() = runTest {
+        val repository = buildRepository(
+            testName = "persist_chart_trend_root",
+            scope = backgroundScope
+        )
+
+        assertEquals("", repository.reportChartTrendRoot.first())
+
+        repository.setReportChartTrendRoot(" study ")
+
+        assertEquals("study", repository.reportChartTrendRoot.first())
     }
 
     @Test

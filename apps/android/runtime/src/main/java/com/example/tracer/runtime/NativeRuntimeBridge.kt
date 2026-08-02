@@ -186,7 +186,6 @@ internal class NativeRuntimeBridge {
         exercise = request.exercise ?: NativeBridge.UNSET_INT,
         status = request.status ?: NativeBridge.UNSET_INT,
         crossMidnightActivity = request.crossMidnightActivity,
-        missingWakeAnchor = request.missingWakeAnchor,
         reverse = request.reverse,
         limit = request.limit ?: NativeBridge.UNSET_INT,
         topN = request.topN ?: NativeBridge.UNSET_INT,
@@ -196,7 +195,8 @@ internal class NativeRuntimeBridge {
         treePeriod = request.treePeriod.orEmpty(),
         treePeriodArgument = request.treePeriodArgument.orEmpty(),
         treeMaxDepth = request.treeMaxDepth ?: NativeBridge.UNSET_INT,
-        outputMode = request.outputMode.orEmpty()
+        outputMode = request.outputMode.orEmpty(),
+        averageDayBasis = request.averageDayBasis.orEmpty()
     )
 
     fun nativeReportJson(requestJson: String): String =

@@ -54,7 +54,7 @@ internal class RuntimeRecordSyncFlow(
             lastResult = executeAfterInit("native_ingest_single_txt_replace_month") {
                 nativeIngestSingleTxtReplaceMonth(
                     targetInputPath,
-                    NativeBridge.DATE_CHECK_CONTINUITY,
+                    NativeBridge.DATE_CHECK_NONE,
                     false
                 )
             }
@@ -66,4 +66,3 @@ internal class RuntimeRecordSyncFlow(
         return lastResult
     }
 }
-

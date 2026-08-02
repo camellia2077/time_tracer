@@ -91,6 +91,30 @@ class LiveRawRecordPersistenceTest {
         assertEquals("study", parsing.extractActivityName("090000-103000study // focus"))
     }
 
+    @Test
+    fun insertEventIntoDayBlock_acceptsLaterSecondWithinSameMinute() {
+        val root = Files.createTempDirectory("runtime-persistence-seconds").toFile()
+        try {
+            val target = File(root, "input/2026/2026-07.txt").apply {
+                parentFile?.mkdirs()
+                writeText("y2026\nm07\n\nd0703\n110600first\n")
+            }
+            val persistence = createPersistence()
+
+            persistence.insertEventIntoDayBlock(
+                monthFile = target,
+                dayMarker = "0703",
+                eventLine = "110608second",
+                eventTime = "110608",
+                normalizedActivity = "second"
+            ) { _, _ -> true }
+
+            assertTrue(target.readText().contains("110608second"))
+        } finally {
+            root.deleteRecursively()
+        }
+    }
+
     private fun createPersistence(): LiveRawRecordPersistence {
         val normalization = LiveRawRecordNormalization()
         val parsing = LiveRawRecordParsing(normalization)

@@ -20,6 +20,7 @@ import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -79,7 +80,9 @@ internal fun ReportCompositionVisualizationSection(
         return
     }
 
-    val rootSlices = renderModel?.tree.orEmpty().toReportCompositionSlices()
+    val rootSlices = renderModel?.tree.orEmpty().toReportCompositionSlices(
+        averageDenominatorDays = renderModel?.averageDenominatorDays ?: 0
+    )
     if (rootSlices.isEmpty()) {
         Text(
             text = if (reportMode == ReportMode.RANGE) {
@@ -95,13 +98,16 @@ internal fun ReportCompositionVisualizationSection(
 
     val effectiveVisualMode = compositionVisualMode
     var compositionMeasure by remember { mutableStateOf(ReportCompositionMeasure.DURATION) }
-    var drilldownPath by remember(renderModel?.tree, reportMode) {
-        mutableStateOf(emptyList<String>())
+    var drilldownPath by remember(renderModel?.tree, renderModel?.displayPath, reportMode) {
+        mutableStateOf(renderModel?.displayPath.orEmpty())
     }
     val drilldownNodes = remember(renderModel?.tree, drilldownPath) {
         resolveCompositionDrilldownNodes(renderModel?.tree.orEmpty(), drilldownPath)
     }
-    val visibleSlices = drilldownNodes.toReportCompositionSlices(compositionMeasure)
+    val visibleSlices = drilldownNodes.toReportCompositionSlices(
+        compositionMeasure = compositionMeasure,
+        averageDenominatorDays = renderModel?.averageDenominatorDays ?: 0
+    )
     val nodesWithOccurrences = drilldownNodes.count {
         (it.occurrenceCount ?: 0L) > 0L
     }
@@ -194,6 +200,21 @@ internal fun ReportCompositionVisualizationSection(
         }
     }
 
+    Text(
+        text = when (compositionMeasure) {
+            ReportCompositionMeasure.DURATION -> stringResource(
+                R.string.report_chart_total_duration,
+                formatDurationHoursMinutes(visibleSlices.sumOf { it.durationSeconds })
+            )
+            ReportCompositionMeasure.FREQUENCY -> stringResource(
+                R.string.report_chart_total_frequency,
+                visibleSlices.sumOf { it.durationSeconds }
+            )
+        },
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.primary
+    )
+
     when (effectiveVisualMode) {
         ReportCompositionVisualMode.HORIZONTAL_BAR -> {
             ReportCompositionBarChart(
@@ -202,6 +223,9 @@ internal fun ReportCompositionVisualizationSection(
                 selectedIndex = selectedItemIndex,
                 onItemSelected = onVisibleSliceSelected,
                 valueLabel = compositionValueLabel,
+                showAverage = reportMode != ReportMode.DAY,
+                showAverageRecords = compositionMeasure == ReportCompositionMeasure.FREQUENCY,
+                showFrequency = compositionMeasure == ReportCompositionMeasure.FREQUENCY,
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(MaterialTheme.shapes.medium)
@@ -229,6 +253,9 @@ internal fun ReportCompositionVisualizationSection(
                 parentPath = drilldownPath,
                 nodes = drilldownNodes,
                 valueLabel = treemapValueLabel,
+                showAverage = reportMode != ReportMode.DAY,
+                showAverageRecords = compositionMeasure == ReportCompositionMeasure.FREQUENCY,
+                showFrequency = compositionMeasure == ReportCompositionMeasure.FREQUENCY,
                 onSliceSelected = onVisibleSliceSelected
             )
         }
@@ -251,72 +278,14 @@ internal fun ReportCompositionVisualizationSection(
                 parentPath = drilldownPath,
                 nodes = drilldownNodes,
                 valueLabel = compositionValueLabel,
+                showAverage = reportMode != ReportMode.DAY,
+                showAverageRecords = compositionMeasure == ReportCompositionMeasure.FREQUENCY,
+                showFrequency = compositionMeasure == ReportCompositionMeasure.FREQUENCY,
                 onSliceSelected = onVisibleSliceSelected
             )
         }
     }
 
-    Text(
-        text = stringResource(R.string.report_chart_pie_drilldown_summary),
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.primary
-    )
-    Text(
-        text = when (compositionMeasure) {
-            ReportCompositionMeasure.DURATION -> stringResource(
-                R.string.report_chart_total_duration,
-                formatDurationHoursMinutes(renderModel?.totalDurationSeconds ?: 0L)
-            )
-            ReportCompositionMeasure.FREQUENCY -> stringResource(
-                R.string.report_chart_total_frequency,
-                visibleSlices.sumOf { it.durationSeconds }
-            )
-        },
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.primary
-    )
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = stringResource(
-                R.string.report_chart_active_roots,
-                renderModel?.activeRootCount ?: 0
-            ),
-            style = MaterialTheme.typography.bodySmall
-        )
-        Text(
-            text = stringResource(
-                R.string.report_chart_range_days,
-                renderModel?.rangeDays ?: 0
-            ),
-            style = MaterialTheme.typography.bodySmall
-        )
-    }
-
-    val selectedSlice = visibleSlices.getOrNull(selectedItemIndex)
-    if (selectedSlice != null) {
-        Text(
-            text = when (compositionMeasure) {
-                ReportCompositionMeasure.DURATION -> stringResource(
-                    R.string.report_chart_composition_selected_detail,
-                    selectedSlice.root,
-                    formatDurationHoursMinutes(selectedSlice.durationSeconds),
-                    selectedSlice.percent
-                )
-                ReportCompositionMeasure.FREQUENCY -> stringResource(
-                    R.string.report_chart_composition_selected_frequency_detail,
-                    selectedSlice.root,
-                    selectedSlice.durationSeconds,
-                    selectedSlice.percent
-                )
-            },
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.primary
-        )
-    }
 }
 
 @Composable
@@ -326,6 +295,9 @@ private fun CompositionSliceLegend(
     parentPath: List<String>,
     nodes: List<TreeNode>,
     valueLabel: (Long) -> String,
+    showAverage: Boolean,
+    showAverageRecords: Boolean,
+    showFrequency: Boolean,
     onSliceSelected: (Int) -> Unit
 ) {
     Column(
@@ -349,20 +321,12 @@ private fun CompositionSliceLegend(
                             shape = CircleShape
                         )
                 )
-                Text(
-                    text = (parentPath + slice.root).joinToString(" › "),
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 8.dp),
-                    style = MaterialTheme.typography.bodySmall,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = "${valueLabel(slice.durationSeconds)} · " +
-                        String.format("%.1f%%", slice.percent),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                CompositionLegendRow(
+                    slice = slice,
+                    showAverage = showAverage,
+                    showFrequency = showFrequency,
+                    label = (parentPath + slice.root).joinToString(" › "),
+                    modifier = Modifier.weight(1f).padding(start = 8.dp)
                 )
                 if (nodes.firstOrNull { it.name == slice.root }?.children?.isNotEmpty() == true) {
                     Icon(
@@ -390,7 +354,8 @@ internal fun resolveCompositionDrilldownNodes(
 }
 
 internal fun List<TreeNode>.toReportCompositionSlices(
-    compositionMeasure: ReportCompositionMeasure = ReportCompositionMeasure.DURATION
+    compositionMeasure: ReportCompositionMeasure = ReportCompositionMeasure.DURATION,
+    averageDenominatorDays: Int = 0
 ): List<ReportCompositionSlice> {
     val totalValue = sumOf { node ->
         when (compositionMeasure) {
@@ -413,7 +378,17 @@ internal fun List<TreeNode>.toReportCompositionSlices(
                 value.toFloat() * 100f / totalValue.toFloat()
             } else {
                 0f
-            }
+            },
+            totalDurationSeconds = node.durationSeconds,
+            occurrenceCount = node.occurrenceCount,
+            averageDurationSeconds = node.averageDurationSeconds ?:
+                if (averageDenominatorDays > 0) {
+                    (node.durationSeconds ?: 0L) / averageDenominatorDays
+                } else {
+                    null
+                },
+            averageOccurrenceCount = node.averageOccurrenceCount,
+            averageOccurrenceRatio = node.averageOccurrenceRatio
         )
     }.sortedWith(
         compareByDescending<ReportCompositionSlice> { it.durationSeconds }

@@ -8,6 +8,7 @@ import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
+import org.gradle.api.tasks.Sync
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.register
 import org.gradle.process.ExecOperations
@@ -65,58 +66,6 @@ abstract class SyncPlatformConfigSnapshotTask @Inject constructor(
     }
 }
 
-abstract class VerifyPlatformConfigSnapshotTask @Inject constructor(
-    private val execOperations: ExecOperations,
-) : DefaultTask() {
-    @get:Input
-    abstract val pythonExecutable: Property<String>
-
-    @get:Input
-    abstract val target: Property<String>
-
-    @get:InputFile
-    @get:PathSensitive(PathSensitivity.NONE)
-    abstract val syncScript: RegularFileProperty
-
-    @get:InputDirectory
-    @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val sourceRoot: DirectoryProperty
-
-    @get:InputDirectory
-    @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val snapshotRoot: DirectoryProperty
-
-    @TaskAction
-    fun verify() {
-        val scriptFile = syncScript.get().asFile
-        val sourceDir = sourceRoot.get().asFile
-        val outputDir = snapshotRoot.get().asFile
-        require(scriptFile.exists()) {
-            "Missing platform config generator: ${scriptFile.absolutePath}"
-        }
-        require(sourceDir.exists()) {
-            "Missing source config root: ${sourceDir.absolutePath}"
-        }
-        require(outputDir.exists()) {
-            "Missing Android config snapshot root: ${outputDir.absolutePath}"
-        }
-
-        execOperations.exec {
-            commandLine(
-                pythonExecutable.get(),
-                scriptFile.absolutePath,
-                "--target",
-                target.get(),
-                "--source-root",
-                sourceDir.absolutePath,
-                "--android-output-root",
-                outputDir.absolutePath,
-                "--check",
-            )
-        }.assertNormalExitValue()
-    }
-}
-
 val repoRootDir =
     rootProject.projectDir.parentFile?.parentFile
         ?: throw GradleException(
@@ -129,7 +78,10 @@ val timeTracerDisableNativeOptimization =
         ?.trim()
         ?.equals("true", ignoreCase = true) == true
 val timeTracerSourceConfigRoot = repoRootDir.resolve("config/program")
-val timeTracerConfigRootFile = projectDir.resolve("src/main/assets/config")
+val timeTracerGeneratedAssetsRoot =
+    layout.buildDirectory.dir("generated/tracer/assets")
+val timeTracerGeneratedConfigRoot =
+    layout.buildDirectory.dir("generated/tracer/config")
 val platformConfigRunner = repoRootDir.resolve("tools/platform_config/run.py")
 val pythonExecutableCommand =
     if (System.getProperty("os.name").lowercase().contains("windows")) {
@@ -139,35 +91,39 @@ val pythonExecutableCommand =
     }
 
 val timeTracerSourceConfigRootPath = timeTracerSourceConfigRoot.absolutePath
-val timeTracerConfigRootPath = timeTracerConfigRootFile.absolutePath
 val platformConfigRunnerPath = platformConfigRunner.absolutePath
 
-val syncTracerCoreConfigSnapshot by tasks.register<SyncPlatformConfigSnapshotTask>("syncTracerCoreConfigSnapshot") {
+val generateTracerCoreConfigAssets by tasks.register<SyncPlatformConfigSnapshotTask>(
+    "generateTracerCoreConfigAssets"
+) {
     group = "tracer_core"
-    description = "Refresh the checked-in Android tracer_core config snapshot from canonical source config."
+    description = "Generate Android config/program assets from the canonical source config."
     pythonExecutable.set(pythonExecutableCommand)
     target.set("android")
     syncScript.set(file(platformConfigRunnerPath))
     sourceRoot.set(file(timeTracerSourceConfigRootPath))
-    outputDirectory.set(file(timeTracerConfigRootPath))
+    outputDirectory.set(timeTracerGeneratedConfigRoot)
+}
+
+val stageTracerCoreConfigAssets by tasks.register<Sync>("stageTracerCoreConfigAssets") {
+    group = "tracer_core"
+    description = "Stage generated config/program assets for the Android APK."
+    dependsOn(generateTracerCoreConfigAssets)
+    from(timeTracerGeneratedConfigRoot.map { it.dir("program") })
+    into(timeTracerGeneratedAssetsRoot.map { it.dir("config/program") })
 }
 
 tasks.matching { it.name == "preBuild" }.configureEach {
-    dependsOn(syncTracerCoreConfigSnapshot)
-}
-
-val verifyTracerCoreConfigSnapshot by tasks.register<VerifyPlatformConfigSnapshotTask>("verifyTracerCoreConfigSnapshot") {
-    group = "verification"
-    description = "Fail when the checked-in Android tracer_core config snapshot drifts from canonical source config."
-    pythonExecutable.set(pythonExecutableCommand)
-    target.set("android")
-    syncScript.set(file(platformConfigRunnerPath))
-    sourceRoot.set(file(timeTracerSourceConfigRootPath))
-    snapshotRoot.set(file(timeTracerConfigRootPath))
+    dependsOn(stageTracerCoreConfigAssets)
 }
 
 android {
     namespace = "com.example.tracer.runtime"
+
+    sourceSets {
+        getByName("main").assets.srcDir(timeTracerGeneratedAssetsRoot.get().asFile)
+    }
+
     compileSdk = 36
     ndkVersion = "29.0.14206865"
 

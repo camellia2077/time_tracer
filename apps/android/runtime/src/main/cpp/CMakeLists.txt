@@ -51,6 +51,7 @@ set(TIME_TRACKER_ANDROID_BRIDGE_SOURCES
     "${TRACER_CORE_C_API_DIR}/capabilities/txt/tracer_core_c_api_txt.cpp"
     "${TRACER_CORE_C_API_DIR}/capabilities/query/tracer_core_c_api_query.cpp"
     "${TRACER_CORE_C_API_DIR}/capabilities/reporting/tracer_core_c_api_reporting.cpp"
+    "${TRACER_CORE_C_API_DIR}/capabilities/reporting/tracer_core_c_api_structured_report_serializer.cpp"
     "${TRACER_CORE_C_API_DIR}/capabilities/reporting/tracer_core_c_api_reporting_response.cpp"
     "${TRACER_CORE_C_API_DIR}/capabilities/exchange/tracer_core_c_api_exchange.cpp"
 )

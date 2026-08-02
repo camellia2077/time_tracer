@@ -111,6 +111,9 @@
     <string name="record_canonical_catalog_description">Browse canonical activity paths and tap one to fill the input.</string>
     <string name="record_canonical_catalog_quick_access_title">Add Quick Access Activity</string>
     <string name="record_canonical_catalog_quick_access_description">Browse the activity tree and tap one to add it to Quick Access.</string>
+    <string name="record_canonical_catalog_parent_title">Select activity parent</string>
+    <string name="record_canonical_catalog_parent_description">Select a group node. The Daily status will be true when activity exists under this parent.</string>
+    <string name="record_action_select_parent">Use as parent</string>
     <string name="record_canonical_catalog_loading">Loading canonical catalog...</string>
     <string name="record_canonical_catalog_empty">No canonical paths are available.</string>
     <string name="record_canonical_catalog_display_mode_canonical">Browser display: canonical token</string>
@@ -148,7 +151,7 @@
         <item quantity="one">Quick activities cannot exceed %1$d entry.</item>
         <item quantity="other">Quick activities cannot exceed %1$d entries.</item>
     </plurals>
-    <string name="record_status_invalid_quick_activities">Invalid quick activities: %1$s. Must match a configured authorable event token (alias key, canonical token, or wake keyword).</string>
+    <string name="record_status_invalid_quick_activities">Invalid quick activities: %1$s. Must match a configured alias key.</string>
     <string name="record_status_quick_activities_saved">Quick activities saved (%1$d).</string>
     <string name="record_status_invalid_suggested_activity">Invalid suggested activity: %1$s. Must match a configured authorable event token (alias key, canonical token, or wake keyword).</string>
     <string name="record_duration_unavailable">n/a</string>

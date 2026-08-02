@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -65,7 +66,8 @@ internal fun QueryReportResultDisplay(
     },
     onUpdateDayRemark: suspend (String) -> RecordActionResult = {
         RecordActionResult(ok = false, message = "Day remark editing is unavailable.")
-    }
+    },
+    onEditDailyStatuses: () -> Unit = {}
 ) {
     val clipboard = LocalClipboard.current
     val clipboardScope = rememberCoroutineScope()
@@ -144,6 +146,7 @@ internal fun QueryReportResultDisplay(
                             MarkdownResultHeader(
                                 title = stringResource(R.string.report_result_title_report),
                                 markdown = activeResult.text,
+                                showDailyStatusEditor = reportMode == ReportMode.DAY,
                                 onCopyMarkdown = {
                                     clipboardScope.launch {
                                         clipboard.setClipEntry(
@@ -155,7 +158,8 @@ internal fun QueryReportResultDisplay(
                                             )
                                         )
                                     }
-                                }
+                                },
+                                onEditDailyStatuses = onEditDailyStatuses
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             ReportMarkdownText(
@@ -231,7 +235,9 @@ internal fun QueryReportResultDisplay(
 private fun MarkdownResultHeader(
     title: String,
     markdown: String,
-    onCopyMarkdown: () -> Unit
+    showDailyStatusEditor: Boolean,
+    onCopyMarkdown: () -> Unit,
+    onEditDailyStatuses: () -> Unit = {}
 ) {
     Row(modifier = Modifier.fillMaxWidth()) {
         Text(
@@ -248,6 +254,14 @@ private fun MarkdownResultHeader(
                 imageVector = Icons.Default.ContentCopy,
                 contentDescription = stringResource(R.string.report_cd_copy_markdown)
             )
+        }
+        if (showDailyStatusEditor) {
+            IconButton(onClick = onEditDailyStatuses) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = stringResource(R.string.report_cd_edit_daily_statuses)
+                )
+            }
         }
     }
 }

@@ -34,20 +34,39 @@ data class ReportCallResult(
     val reportWindowMetadata: ReportWindowMetadata? = null
 )
 
+enum class ActivityTimelineRecordKind(val wireValue: String) {
+    INTERVAL("interval"),
+    END_ONLY("end_only");
+
+    companion object {
+        fun fromWireValue(value: String): ActivityTimelineRecordKind =
+            entries.firstOrNull { it.wireValue == value }
+                ?: error("Unknown structured report record_kind: $value")
+    }
+}
+
 data class ActivityTimelineItem(
     val logicalId: Long = 0L,
     val startTime: String,
     val endTime: String,
     val activityName: String,
     val durationSeconds: Long,
-    val remark: String? = null
+    val remark: String? = null,
+    val kind: ActivityTimelineRecordKind = ActivityTimelineRecordKind.INTERVAL
 )
 
 data class StructuredDailyReport(
     val date: String,
     val totalDurationSeconds: Long,
     val dayRemark: String = "",
+    val statuses: List<DailyStatusValue> = emptyList(),
     val activities: List<ActivityTimelineItem> = emptyList()
+)
+
+data class DailyStatusValue(
+    val id: String,
+    val label: String,
+    val value: Boolean
 )
 
 data class StructuredReportCallResult(
@@ -277,6 +296,7 @@ enum class ActivityHierarchyOperationKind(val wireValue: String) {
     SET_LEAF_ALIASES("set_leaf_aliases"),
     APPEND_LEAF_ALIAS("append_leaf_alias"),
     MOVE_LEAF("move_leaf"),
+    MERGE_LEAF_CANONICAL("merge_leaf_canonical"),
     PROMOTE_LEAF("promote_leaf"),
     RENAME_PARENT("rename_parent")
 }
@@ -458,8 +478,17 @@ data class TreeNode(
     val path: String = "",
     val durationSeconds: Long? = null,
     val occurrenceCount: Long? = null,
+    val averageDurationSeconds: Long? = null,
+    val averageOccurrenceCount: Double? = null,
+    val averageOccurrenceRatio: Double? = null,
     val parentDurationPercent: Float? = null,
     val children: List<TreeNode> = emptyList()
+)
+
+data class QuickAccessResult(
+    val ok: Boolean,
+    val aliases: List<String> = emptyList(),
+    val message: String = ""
 )
 
 data class TreeQueryResult(
@@ -487,11 +516,17 @@ data class ReportCalendarAvailabilityResult(
     val operationId: String = ""
 )
 
+enum class ReportAverageDayBasis(val wireValue: String) {
+    ACTIVE_DAYS("active_days"),
+    CALENDAR_DAYS("calendar_days")
+}
+
 data class ReportChartQueryParams(
     val root: String? = null,
     val lookbackDays: Int = 7,
     val fromDateIso: String? = null,
-    val toDateIso: String? = null
+    val toDateIso: String? = null,
+    val averageDayBasis: ReportAverageDayBasis = ReportAverageDayBasis.ACTIVE_DAYS
 )
 
 data class ReportChartPoint(
@@ -509,6 +544,8 @@ data class ReportChartData(
     val totalDurationSeconds: Long? = null,
     val activeDays: Int? = null,
     val rangeDays: Int? = null,
+    val averageDayBasis: ReportAverageDayBasis = ReportAverageDayBasis.ACTIVE_DAYS,
+    val averageDenominatorDays: Int? = null,
     val usesLegacyStatsFallback: Boolean = false,
     val schemaVersion: Int? = null,
     val usesSchemaVersionFallback: Boolean = false
@@ -524,19 +561,30 @@ data class ReportChartQueryResult(
 data class ReportCompositionQueryParams(
     val lookbackDays: Int = 7,
     val fromDateIso: String? = null,
-    val toDateIso: String? = null
+    val toDateIso: String? = null,
+    val averageDayBasis: ReportAverageDayBasis = ReportAverageDayBasis.ACTIVE_DAYS
 )
 
 data class ReportCompositionSlice(
     val root: String,
     val durationSeconds: Long,
-    val percent: Float
+    val percent: Float,
+    val totalDurationSeconds: Long? = null,
+    val occurrenceCount: Long? = null,
+    val averageDurationSeconds: Long? = null,
+    val averageOccurrenceCount: Double? = null,
+    val averageOccurrenceRatio: Double? = null
 )
 
 data class ReportCompositionData(
     val totalDurationSeconds: Long,
     val activeRootCount: Int,
+    val activeDays: Int = 0,
     val rangeDays: Int,
+    val averageDayBasis: ReportAverageDayBasis = ReportAverageDayBasis.ACTIVE_DAYS,
+    val averageDenominatorDays: Int = 0,
+    val displayLevel: Int = 0,
+    val displayPath: List<String> = emptyList(),
     // The weighted activity tree is the sole composition representation.
     val tree: List<TreeNode>
 )

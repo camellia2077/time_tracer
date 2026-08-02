@@ -30,6 +30,8 @@ class TxtEditorContentCardTest {
                     currentDay = LocalDate.of(2026, 4, 1),
                     outputMode = TxtOutputMode.DAY,
                     onOutputModeChange = {},
+                    activityNameTargetMode = TxtActivityNameTargetMode.CANONICAL,
+                    onActivityNameTargetModeChange = {},
                     dayBlockEditorState = TxtDayBlockResolveResult(
                         ok = true,
                         normalizedDayMarker = dayMarkerInput,

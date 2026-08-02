@@ -130,7 +130,7 @@ internal object RecordStateReducer {
             .filter { it.isNotEmpty() }
             .distinct()
         // Allow an empty quick-access list so users can clear default chips that do not match
-        // the currently imported alias config before rebuilding their own list.
+        // the currently imported canonical config before rebuilding their own list.
         if (state.quickActivities == normalized) {
             return state
         }

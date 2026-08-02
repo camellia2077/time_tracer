@@ -1,7 +1,10 @@
 package com.example.tracer
 
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+
+private const val MAPPING_QUERY_RECORD_TAG = "TimeTracerRecord"
 
 internal class RuntimeMappingQueryDelegate(
     private val runDataQuery: (DataQueryRequest) -> DataQueryTextResult
@@ -164,7 +167,8 @@ internal class RuntimeMappingQueryDelegate(
             action = NativeBridge.QUERY_ACTION_MAPPING_ALIAS_KEYS,
             failurePrefix = "mapping alias keys query failed",
             emptyNamesMessage = "mapping alias keys query failed: empty alias keys.",
-            successMessageTemplate = "Loaded %d mapping alias keys."
+            successMessageTemplate = "Loaded %d mapping alias keys.",
+            allowEmptyNames = true
         )
     }
 
@@ -181,12 +185,26 @@ internal class RuntimeMappingQueryDelegate(
         action: Int,
         failurePrefix: String,
         emptyNamesMessage: String,
-        successMessageTemplate: String
+        successMessageTemplate: String,
+        allowEmptyNames: Boolean = false
     ): ActivityMappingNamesResult {
+        Log.i(
+            MAPPING_QUERY_RECORD_TAG,
+            "mapping.query.start action=$action outputMode=${DataQueryOutputMode.SEMANTIC_JSON}"
+        )
         val queryResult = runDataQuery(
             DataQueryRequest(
-                action = action
+                action = action,
+                // Core's mapping-name parser returns JSON. Without this mode
+                // Core renders the names as newline-delimited text, which
+                // makes wake_keywords appear empty to Android.
+                outputMode = DataQueryOutputMode.SEMANTIC_JSON
             )
+        )
+        Log.i(
+            MAPPING_QUERY_RECORD_TAG,
+            "mapping.query.response action=$action ok=${queryResult.ok} " +
+                "outputLength=${queryResult.outputText.length} message=${queryResult.message}"
         )
         if (!queryResult.ok) {
             return ActivityMappingNamesResult(
@@ -201,7 +219,12 @@ internal class RuntimeMappingQueryDelegate(
         }
 
         val names = parseMappingNamesContent(queryResult.outputText).sorted()
-        if (names.isEmpty()) {
+        Log.i(
+            MAPPING_QUERY_RECORD_TAG,
+            "mapping.query.parsed action=$action count=${names.size} " +
+                "containsW=${names.contains("w")} sample=${names.take(8).joinToString(",")}"
+        )
+        if (names.isEmpty() && !allowEmptyNames) {
             return ActivityMappingNamesResult(
                 ok = false,
                 names = emptyList(),

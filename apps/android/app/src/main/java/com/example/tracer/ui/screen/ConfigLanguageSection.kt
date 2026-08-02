@@ -28,6 +28,7 @@ internal fun LanguageSection(
 ) {
     var showLanguageSheet by rememberSaveable { mutableStateOf(false) }
     val appLanguages = listOf(
+        AppLanguage.System to stringResource(R.string.config_language_system),
         AppLanguage.Chinese to stringResource(R.string.config_language_chinese),
         AppLanguage.English to stringResource(R.string.config_language_english),
         AppLanguage.Japanese to stringResource(R.string.config_language_japanese)

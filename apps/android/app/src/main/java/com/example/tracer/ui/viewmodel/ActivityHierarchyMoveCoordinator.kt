@@ -34,10 +34,14 @@ internal class ActivityHierarchyMoveCoordinator(
         state: ConfigUiState,
         sourcePath: String,
         excludedGroupPath: List<String>,
-        excludeDescendants: Boolean
+        excludeDescendants: Boolean,
+        onlyCurrentDocument: Boolean = false
     ): ActivityHierarchyMoveDestinationsOutcome {
         val documents = mutableListOf<AliasEntryMoveDestinationDocument>()
-        for (file in state.aliasFiles.filter { isAliasConfigFilePath(it.relativePath) }) {
+        val files = state.aliasFiles
+            .filter { isAliasConfigFilePath(it.relativePath) }
+            .filter { !onlyCurrentDocument || it.relativePath == sourcePath }
+        for (file in files) {
             val content = when (val read = readContent(state, file.relativePath, sourcePath)) {
                 is MoveContentReadOutcome.Ready -> read.content
                 is MoveContentReadOutcome.Failed -> return ActivityHierarchyMoveDestinationsOutcome.Failed(
@@ -74,12 +78,12 @@ internal class ActivityHierarchyMoveCoordinator(
         entryId: String,
         targetGroupId: String
     ): ActivityHierarchyMovePreviewOutcome {
-        val document = state.aliasDocumentDraft ?: return failure("Alias document is unavailable.")
+        val document = state.aliasDocumentDraft ?: return failure("Canonical document is unavailable.")
         val entry = document.findAliasEntry(entryId) ?: return failure("Alias entry is unavailable.")
         val sourcePath = document.canonicalTargetPathForEntry(entryId)
             ?: return failure("Alias entry path is unavailable.")
         val destinationPath = document.canonicalTargetPathForGroup(targetGroupId)
-            ?: return failure("Alias destination group is unavailable.")
+            ?: return failure("Canonical destination group is unavailable.")
         val content = currentContent(state)
         val result = activityHierarchyGateway.applyActivityHierarchyOperation(
             content,
@@ -116,7 +120,7 @@ internal class ActivityHierarchyMoveCoordinator(
         entryId: String,
         target: AliasEntryMoveTarget
     ): ActivityHierarchyMovePreviewOutcome {
-        val document = state.aliasDocumentDraft ?: return failure("Alias document is unavailable.")
+        val document = state.aliasDocumentDraft ?: return failure("Canonical document is unavailable.")
         val entry = document.findAliasEntry(entryId) ?: return failure("Alias entry is unavailable.")
         val sourcePath = state.selectedFilePath
         val sourceCanonicalPath = document.canonicalTargetPathForEntry(entryId)
@@ -164,7 +168,7 @@ internal class ActivityHierarchyMoveCoordinator(
         groupId: String,
         target: AliasEntryMoveTarget
     ): ActivityHierarchyMovePreviewOutcome {
-        val document = state.aliasDocumentDraft ?: return failure("Alias document is unavailable.")
+        val document = state.aliasDocumentDraft ?: return failure("Canonical document is unavailable.")
         val group = document.findAliasGroup(groupId) ?: return failure("Alias group is unavailable.")
         val sourcePath = state.selectedFilePath
         val sourceCanonicalPath = document.canonicalTargetPathForGroup(groupId)

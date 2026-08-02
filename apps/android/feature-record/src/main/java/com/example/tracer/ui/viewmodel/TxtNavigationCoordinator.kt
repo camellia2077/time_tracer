@@ -2,6 +2,7 @@ package com.example.tracer
 
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -39,9 +40,9 @@ internal class TxtNavigationCoordinator(
     private val mutex = Mutex()
     private var nextRequestId: Long = 0L
 
-    fun launch(request: TxtNavigationRequest) {
+    fun launch(request: TxtNavigationRequest): Job {
         val requestId = ++nextRequestId
-        scope.launch {
+        return scope.launch {
             mutex.withLock {
                 val before = stateProvider()
                 log(

@@ -145,7 +145,7 @@ internal class RuntimeActivityHierarchyMigrationService(
             val candidateInit = responseCodec.parse(nativeInitPipeline(candidatePaths))
             require(candidateInit.ok) { candidateInit.errorMessage.ifBlank { "candidate native init failed." } }
             val ingest = responseCodec.parse(
-                nativeIngest(paths.inputRootPath, NativeBridge.DATE_CHECK_CONTINUITY, false)
+                nativeIngest(paths.inputRootPath, NativeBridge.DATE_CHECK_NONE, false)
             )
             require(ingest.ok) { ingest.errorMessage.ifBlank { "candidate database ingest failed." } }
             val shutdown = responseCodec.parse(nativeShutdown())

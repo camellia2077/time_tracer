@@ -62,6 +62,10 @@ internal fun TracerTabRouteContent(
     onReportChartSemanticModeChange: (ReportChartSemanticMode) -> Unit,
     reportChartVisualMode: ReportChartVisualMode,
     onReportChartVisualModeChange: (ReportChartVisualMode) -> Unit,
+    reportChartTrendRoot: String,
+    onReportChartTrendRootChange: (String) -> Unit,
+    reportAverageDayBasis: ReportAverageDayBasis,
+    onReportAverageDayBasisChange: (ReportAverageDayBasis) -> Unit,
     reportMode: ReportMode,
     onReportModeChange: (ReportMode) -> Unit,
     reportResultDisplayMode: ReportResultDisplayMode,
@@ -80,6 +84,7 @@ internal fun TracerTabRouteContent(
     onSetAppLanguage: (com.example.tracer.data.AppLanguage) -> Unit,
     validAuthorableEventTokens: Set<String>,
     onPersistRecordQuickActivities: (List<String>) -> Unit,
+    onClearQuickAccessCache: () -> Unit,
     onPersistRecordQuickAccessCardExpanded: (Boolean) -> Unit,
     onPersistRecordAssistSettingsExpanded: (Boolean) -> Unit,
     onPersistRecordCanonicalCatalogDisplayMode: (RecordSuggestionOutputMode) -> Unit,
@@ -95,7 +100,8 @@ internal fun TracerTabRouteContent(
     isTracerExportInProgress: Boolean,
     selectedTracerSecurityLevel: FileCryptoSecurityLevel,
     onTracerSecurityLevelChange: (FileCryptoSecurityLevel) -> Unit,
-    onCopyDiagnosticsPayload: () -> Unit
+    onCopyDiagnosticsPayload: () -> Unit,
+    onEditDailyStatuses: () -> Unit
 ) {
     val args = TracerTabRouteArgs(
         dataViewModel = dataViewModel,
@@ -116,6 +122,10 @@ internal fun TracerTabRouteContent(
         onReportChartSemanticModeChange = onReportChartSemanticModeChange,
         reportChartVisualMode = reportChartVisualMode,
         onReportChartVisualModeChange = onReportChartVisualModeChange,
+        reportChartTrendRoot = reportChartTrendRoot,
+        onReportChartTrendRootChange = onReportChartTrendRootChange,
+        reportAverageDayBasis = reportAverageDayBasis,
+        onReportAverageDayBasisChange = onReportAverageDayBasisChange,
         reportMode = reportMode,
         onReportModeChange = onReportModeChange,
         reportResultDisplayMode = reportResultDisplayMode,
@@ -134,6 +144,7 @@ internal fun TracerTabRouteContent(
         onSetAppLanguage = onSetAppLanguage,
         validAuthorableEventTokens = validAuthorableEventTokens,
         onPersistRecordQuickActivities = onPersistRecordQuickActivities,
+        onClearQuickAccessCache = onClearQuickAccessCache,
         onPersistRecordQuickAccessCardExpanded = onPersistRecordQuickAccessCardExpanded,
         onPersistRecordAssistSettingsExpanded = onPersistRecordAssistSettingsExpanded,
         onPersistRecordCanonicalCatalogDisplayMode = onPersistRecordCanonicalCatalogDisplayMode,
@@ -149,7 +160,8 @@ internal fun TracerTabRouteContent(
         isTracerExportInProgress = isTracerExportInProgress,
         selectedTracerSecurityLevel = selectedTracerSecurityLevel,
         onTracerSecurityLevelChange = onTracerSecurityLevelChange,
-        onCopyDiagnosticsPayload = onCopyDiagnosticsPayload
+        onCopyDiagnosticsPayload = onCopyDiagnosticsPayload,
+        onEditDailyStatuses = onEditDailyStatuses
     )
     TracerTabRegistry.entry(selectedTab).content(modifier, args)
 }
