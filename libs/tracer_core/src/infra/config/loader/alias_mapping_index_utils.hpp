@@ -68,7 +68,7 @@ inline auto BuildAliasFieldPath(std::string_view relative_child_path,
                                 std::string_view leaf_key) -> std::string {
   std::string field = "activity hierarchy TOML file `" +
                       std::string(relative_child_path) +
-                      "` field `aliases";
+                      "` field `canonical";
   for (const auto& group : groups) {
     field += ".";
     field += group;
@@ -148,7 +148,7 @@ inline auto BuildAliasChildParseHint(const fs::path& relative_path,
 
   return message +
          " | Activity hierarchy TOML files are encoded as TOML table paths such as "
-         "`[aliases.study.math]`. In TOML table headers, unquoted path "
+         "`[canonical.study.math]`. In TOML table headers, unquoted path "
          "segments cannot contain spaces. This is a TOML syntax requirement, "
          "not an alias-timing or database rule. If a canonical path segment "
          "currently contains spaces, rewrite that segment with a TOML-safe "
@@ -258,9 +258,9 @@ inline auto LoadAliasMappingDefinition(const fs::path& alias_directory_path,
 
     // Read a child file as:
     //   parent -> top-level canonical segment
-    //   aliases.<group path> -> middle canonical segments
+    //   canonical.<group path> -> middle canonical segments
     //   canonical leaf key -> user-authored alias string array
-    // `parent` owns the top-level segment; nested alias tables contribute the
+    // `parent` owns the top-level segment; nested canonical tables contribute the
     // middle path segments before the string leaf becomes the canonical tail.
     // Child files therefore define the top-level ownership boundary, while the
     // written order of alias entries inside the same file/group remains

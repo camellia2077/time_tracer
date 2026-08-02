@@ -61,7 +61,6 @@ struct QueryRequestPayload {
   std::optional<int> exercise;
   std::optional<int> status;
   std::optional<bool> cross_midnight_activity;
-  std::optional<bool> missing_wake_anchor;
   std::optional<bool> reverse;
   std::optional<int> limit;
   std::optional<int> top_n;
@@ -72,6 +71,7 @@ struct QueryRequestPayload {
   std::optional<std::string> tree_period;
   std::optional<std::string> tree_period_argument;
   std::optional<int> tree_max_depth;
+  std::optional<std::string> average_day_basis;
 };
 
 struct TemporalReportRequestPayload {

@@ -17,6 +17,7 @@ namespace {
 
 struct StackFrame {
   int indent = 0;
+  std::int64_t parent_duration = 0;
   std::vector<const std::pair<const std::string, ProjectNode>*> sorted_children;
   size_t current_child_index = 0;
   bool list_started = false;
@@ -68,7 +69,8 @@ auto ProjectTreeFormatter::FormatProjectTree(const ProjectTree& tree,
 
     output += m_strategy_->FormatCategoryHeader(
         category_name, TimeFormatDuration(category_node.duration, avg_days),
-        CalculatePercentage(category_node.duration, total_duration));
+        CalculatePercentage(category_node.duration, total_duration),
+        category_node.duration, category_node.occurrence_count, avg_days);
 
     GenerateSortedOutput(output, category_node, 0, avg_days);
   }
@@ -89,6 +91,7 @@ void ProjectTreeFormatter::GenerateSortedOutput(std::string& output,
   std::stack<StackFrame> stack;
   StackFrame root_frame{};
   root_frame.indent = root_indent;
+  root_frame.parent_duration = root_node.duration;
 
   using ChildPair = std::pair<const std::string, ProjectNode>;
   root_frame.sorted_children.reserve(root_node.children.size());
@@ -121,12 +124,14 @@ void ProjectTreeFormatter::GenerateSortedOutput(std::string& output,
       }
 
       output += m_strategy_->FormatTreeNode(
-          name, TimeFormatDuration(child_node.duration, avg_days),
-          frame.indent);
+          name, TimeFormatDuration(child_node.duration), frame.indent,
+          CalculatePercentage(child_node.duration, frame.parent_duration),
+          child_node.duration, child_node.occurrence_count, avg_days);
 
       if (!child_node.children.empty()) {
         StackFrame child_frame{};
         child_frame.indent = frame.indent + 1;
+        child_frame.parent_duration = child_node.duration;
 
         child_frame.sorted_children.reserve(child_node.children.size());
         for (const auto& child_pair : child_node.children) {

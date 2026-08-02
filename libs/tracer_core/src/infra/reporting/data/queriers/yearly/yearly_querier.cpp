@@ -179,37 +179,8 @@ auto BatchYearDataFetcher::FetchAllData()
   reports::data::batch::FinalizeGroupedAggregation(results, project_agg,
                                                    distinct_dates, name_cache);
 
-  sqlite3_stmt* flag_stmt = nullptr;
-  const std::string kFlagSql = std::format(
-      "SELECT strftime('%Y', {0}) as yy, "
-      "SUM(CASE WHEN {1} != 0 THEN 1 ELSE 0 END) "
-      "FROM {2} "
-      "GROUP BY yy;",
-      schema::day::db::kDate, schema::day::db::kWakeAnchor,
-      schema::day::db::kTable);
-  std::map<std::string, int> sleep_day_counts;
-
-  if (sqlite3_prepare_v2(db_, kFlagSql.c_str(), -1, &flag_stmt, nullptr) ==
-      SQLITE_OK) {
-    while (sqlite3_step(flag_stmt) == SQLITE_ROW) {
-      const unsigned char* yy_ptr = sqlite3_column_text(flag_stmt, 0);
-      if (yy_ptr == nullptr) {
-        continue;
-      }
-      std::string year_str = reinterpret_cast<const char*>(yy_ptr);
-      sleep_day_counts[year_str] = sqlite3_column_int(flag_stmt, 1);
-    }
-  } else {
-    sqlite3_finalize(flag_stmt);
-    throw std::runtime_error("Failed to prepare statement for yearly flags.");
-  }
-  sqlite3_finalize(flag_stmt);
-
   for (auto& [year_label, data] : results) {
     data.status_true_days = static_cast<int>(status_dates[year_label].size());
-    const auto sleep_it = sleep_day_counts.find(year_label);
-    data.wake_anchor_days =
-        (sleep_it != sleep_day_counts.end()) ? sleep_it->second : 0;
     data.exercise_true_days =
         static_cast<int>(exercise_dates[year_label].size());
     data.cardio_true_days = static_cast<int>(cardio_dates[year_label].size());

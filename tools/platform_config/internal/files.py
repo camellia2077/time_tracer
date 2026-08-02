@@ -37,6 +37,7 @@ def collect_plan_files(
             "user/behavior.toml",
             "user/charts.toml",
             "user/heatmap.toml",
+            "user/report.toml",
             *(
                 "user/activity_hierarchy/"
                 + path.relative_to(activity_hierarchy_root).as_posix()

@@ -11,6 +11,7 @@ set(TRACER_CORE_C_API_SOURCES
     "capabilities/txt/tracer_core_c_api_txt.cpp"
     "capabilities/query/tracer_core_c_api_query.cpp"
     "capabilities/reporting/tracer_core_c_api_reporting.cpp"
+    "capabilities/reporting/tracer_core_c_api_structured_report_serializer.cpp"
     "capabilities/reporting/tracer_core_c_api_reporting_response.cpp"
     "capabilities/exchange/tracer_core_c_api_exchange.cpp"
     "${PROJECT_SOURCE_DIR}/host/exchange/crypto_progress_bridge.cpp"
@@ -30,6 +31,7 @@ set_source_files_properties(
     "capabilities/txt/tracer_core_c_api_txt.cpp"
     "capabilities/query/tracer_core_c_api_query.cpp"
     "capabilities/reporting/tracer_core_c_api_reporting.cpp"
+    "capabilities/reporting/tracer_core_c_api_structured_report_serializer.cpp"
     "${PROJECT_SOURCE_DIR}/host/bootstrap/android_runtime_config_bridge.cpp"
     "${PROJECT_SOURCE_DIR}/host/bootstrap/android_runtime_factory.cpp"
     PROPERTIES

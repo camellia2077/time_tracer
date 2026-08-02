@@ -6,6 +6,8 @@ class ReportConfigLoader {
       -> DailyTypConfig;
   static auto LoadDailyMdConfig(const std::filesystem::path& path)
       -> DailyMdConfig;
+  static auto LoadDailyStatusConfig(const std::filesystem::path& path)
+      -> DailyStatusConfig;
 
   static auto LoadMonthlyTexConfig(const std::filesystem::path& path)
       -> MonthlyTexConfig;

@@ -18,7 +18,6 @@ class REPORTS_SHARED_API MonthBaseConfig {
   [[nodiscard]] auto GetTitleTemplate() const -> const std::string&;
   [[nodiscard]] auto GetActualDaysLabel() const -> const std::string&;
   [[nodiscard]] auto GetStatusDaysLabel() const -> const std::string&;
-  [[nodiscard]] auto GetWakeAnchorDaysLabel() const -> const std::string&;
   [[nodiscard]] auto GetExerciseDaysLabel() const -> const std::string&;
   [[nodiscard]] auto GetCardioDaysLabel() const -> const std::string&;
   [[nodiscard]] auto GetAnaerobicDaysLabel() const -> const std::string&;
@@ -35,7 +34,6 @@ class REPORTS_SHARED_API MonthBaseConfig {
   std::string title_template_;
   std::string actual_days_label_;
   std::string status_days_label_;
-  std::string wake_anchor_days_label_;
   std::string exercise_days_label_;
   std::string cardio_days_label_;
   std::string anaerobic_days_label_;

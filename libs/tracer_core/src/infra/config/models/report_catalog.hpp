@@ -38,6 +38,7 @@ struct LoadedReportConfigs {
 
 struct ReportCatalog {
   LoadedReportConfigs loaded_reports;
+  DailyStatusConfig daily_statuses;
 };
 
 #endif  // INFRASTRUCTURE_CONFIG_MODELS_REPORT_CATALOG_H_

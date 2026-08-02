@@ -499,6 +499,22 @@ if(BUILD_TESTING)
             COMMAND tc_config_infra_smoke_tests
         )
 
+        add_executable(tc_quick_access_toml_store_tests
+            "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/modules_smoke/quick_access_toml_store_test_main.cpp"
+            "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/modules_smoke/quick_access_toml_store.cpp"
+        )
+        setup_app_target(tc_quick_access_toml_store_tests NO_PCH)
+        target_include_directories(tc_quick_access_toml_store_tests PRIVATE
+            "${TRACER_CORE_LIB_TESTS_ROOT}"
+        )
+        target_link_libraries(tc_quick_access_toml_store_tests PRIVATE
+            tc_infra_full_lib
+        )
+        add_test(
+            NAME tc_quick_access_toml_store_tests
+            COMMAND tc_quick_access_toml_store_tests
+        )
+
         add_executable(tc_persistence_runtime_infra_smoke_tests
             "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/infrastructure_modules_smoke_persistence_runtime_main.cpp"
             "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/modules_smoke/persistence_runtime.cpp"

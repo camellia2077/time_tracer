@@ -29,14 +29,14 @@ def _write_custom_alias_child(aliases_root: Path) -> None:
     custom_child_path = aliases_root / CUSTOM_CHILD_FILE
     custom_child_path.parent.mkdir(parents=True, exist_ok=True)
     custom_child_path.write_text(
-        'parent = "zzdemo"\n\n[aliases]\n"only" = ["cliimportalias"]\n',
+        'parent = "zzdemo"\n\n[canonical]\n"only" = ["cliimportalias"]\n',
         encoding="utf-8",
     )
 
 
 def _build_custom_txt(target_txt_path: Path) -> None:
     # Keep this regression fixture independent from the full canonical dataset:
-    # the test only needs one valid activity to prove the imported alias config
+    # the test only needs one valid activity to prove the imported canonical config
     # is applied during the replace-all rebuild.
     content = "y2026\nm03\n\nd0301\n0600wake\n0610cliimportalias\n"
     target_txt_path.parent.mkdir(parents=True, exist_ok=True)

@@ -12,6 +12,7 @@ import tracer.core.domain;
 namespace {
 
 using tracer::core::domain::model::BaseActivityRecord;
+using tracer::core::domain::model::ActivityRecordKind;
 using tracer::core::domain::model::DailyLog;
 using tracer::core::domain::model::RawEvent;
 using tracer::core::domain::model::SourceSpan;
@@ -65,9 +66,6 @@ void TestConverterBridge(int& failures) {
   day_to_process.date = "2026-03-02";
   day_to_process.getupTime = "07:00";
   processor.Process(previous_day, day_to_process);
-  Expect(day_to_process.hasWakeAnchor,
-         "DayProcessor should mark wake anchor when getup time exists.",
-         failures);
 
   std::map<std::string, std::vector<DailyLog>> data_map;
   DailyLog first_day;
@@ -80,8 +78,6 @@ void TestConverterBridge(int& failures) {
   linker.LinkFirstDayWithExternalPreviousEvent(data_map,
                                                external_previous_event);
   const DailyLog& linked_day = data_map["2026-03"].front();
-  Expect(linked_day.hasWakeAnchor,
-         "LogLinker should preserve wake anchor for first day.", failures);
   Expect(!linked_day.processedActivities.empty(),
          "Linked day should contain generated sleep activity.", failures);
 
@@ -218,6 +214,42 @@ void TestStructureValidatorBridge(int& failures) {
   Expect(ok, "StructValidator should pass for valid activity data.", failures);
   Expect(diagnostics.empty(),
          "StructValidator diagnostics should be empty for valid sample.",
+         failures);
+
+  DailyLog end_only_day;
+  end_only_day.date = "2026-03-02";
+  BaseActivityRecord end_only_activity =
+      BaseActivityRecord::MakeEndOnly("09:00:00", "study");
+  end_only_day.processedActivities.push_back(end_only_activity);
+
+  std::vector<DailyLog> end_only_days{end_only_day};
+  std::vector<Diagnostic> end_only_diagnostics;
+  const bool end_only_ok = struct_validator.Validate(
+      "module-smoke.txt", end_only_days, end_only_diagnostics);
+  Expect(end_only_ok,
+         "StructValidator should allow an end-only activity.", failures);
+  Expect(end_only_diagnostics.empty(),
+         "End-only activity should not report zero-duration diagnostics.",
+         failures);
+
+  DailyLog invalid_end_only_day;
+  invalid_end_only_day.date = "2026-03-03";
+  invalid_end_only_day.processedActivities.push_back(
+      BaseActivityRecord::MakeEndOnly("", "study"));
+  std::vector<Diagnostic> invalid_end_only_diagnostics;
+  const bool invalid_end_only_ok = struct_validator.Validate(
+      "module-smoke.txt", {invalid_end_only_day},
+      invalid_end_only_diagnostics);
+  Expect(!invalid_end_only_ok,
+         "StructValidator should reject an end-only activity without an end.",
+         failures);
+  Expect(std::ranges::any_of(
+             invalid_end_only_diagnostics,
+             [](const Diagnostic& diagnostic) {
+               return diagnostic.code ==
+                      "activity.record.invalid_boundary_shape";
+             }),
+         "Invalid end-only shape should have a dedicated diagnostic.",
          failures);
 
   DailyLog interval_gap_day;

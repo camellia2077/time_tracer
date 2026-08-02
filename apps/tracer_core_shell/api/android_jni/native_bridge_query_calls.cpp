@@ -10,17 +10,16 @@ auto NativeQuery(JNIEnv* env, jobject /*thiz*/, jint action, jint year,
                  jint month, jstring from_date, jstring to_date, jstring remark,
                  jstring day_remark, jstring project, jstring root,
                  jint exercise, jint status, jboolean cross_midnight_activity,
-                 jboolean missing_wake_anchor, jboolean reverse, jint limit,
+                 jboolean reverse, jint limit,
                  jint top_n, jint lookback_days, jstring anchor_date,
                  jboolean score_by_duration, jstring tree_period,
                  jstring tree_period_argument, jint tree_max_depth,
-                 jstring output_mode) -> jstring {
+                 jstring output_mode, jstring average_day_basis) -> jstring {
   return ExecuteJniMethod(env, [&]() -> std::string {
     tt_transport::QueryRequestPayload request_payload{};
     request_payload.action = ParseDataQueryAction(action);
     request_payload.cross_midnight_activity =
         (cross_midnight_activity == JNI_TRUE);
-    request_payload.missing_wake_anchor = (missing_wake_anchor == JNI_TRUE);
     request_payload.reverse = (reverse == JNI_TRUE);
     request_payload.activity_score_by_duration =
         (score_by_duration == JNI_TRUE);
@@ -89,6 +88,11 @@ auto NativeQuery(JNIEnv* env, jobject /*thiz*/, jint action, jint year,
     if (const auto output_mode_value = ReadOptionalText(env, output_mode);
         output_mode_value.has_value()) {
       request_payload.output_mode = *output_mode_value;
+    }
+    if (const auto average_day_basis_value =
+            ReadOptionalText(env, average_day_basis);
+        average_day_basis_value.has_value()) {
+      request_payload.average_day_basis = *average_day_basis_value;
     }
 
     const std::string request_json =

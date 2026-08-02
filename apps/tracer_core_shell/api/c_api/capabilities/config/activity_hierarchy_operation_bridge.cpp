@@ -118,6 +118,9 @@ namespace config = tracer::core::application::config;
   if (kind == "move_group") {
     return Kind::kMoveGroup;
   }
+  if (kind == "merge_leaf_canonical") {
+    return Kind::kMergeLeafCanonical;
+  }
   if (kind == "set_group_aliases") {
     return Kind::kSetGroupAliases;
   }

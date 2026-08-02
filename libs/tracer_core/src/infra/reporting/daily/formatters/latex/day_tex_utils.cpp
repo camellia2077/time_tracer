@@ -27,16 +27,15 @@ void DisplayHeader(std::string& report_stream, const DailyReportData& data,
       {config->GetDateLabel(), TexUtils::EscapeLatex(data.date)},
       {config->GetTotalTimeLabel(),
        TexUtils::EscapeLatex(TimeFormatDuration(data.total_duration))},
-      {config->GetActivityCountLabel(), std::to_string(data.activity_count)},
-      {config->GetStatusLabel(),
-       TexUtils::EscapeLatex(BoolToString(data.metadata.status))},
-      {config->GetWakeAnchorLabel(),
-       TexUtils::EscapeLatex(BoolToString(data.metadata.wake_anchor))},
-      {config->GetExerciseLabel(),
-       TexUtils::EscapeLatex(BoolToString(data.metadata.exercise))},
-      {config->GetGetupTimeLabel(),
-       TexUtils::EscapeLatex(data.metadata.getup_time)},
-      {config->GetRemarkLabel(), formatted_remark}};
+      {config->GetActivityCountLabel(), std::to_string(data.activity_count)}};
+
+  for (const auto& status : data.metadata.statuses) {
+    items.emplace_back(status.label, status.value ? "true" : "false");
+  }
+
+  items.emplace_back(config->GetGetupTimeLabel(),
+                     TexUtils::EscapeLatex(data.metadata.getup_time));
+  items.emplace_back(config->GetRemarkLabel(), formatted_remark);
 
   // 3. 渲染列表
   TexCommonUtils::RenderSummaryList(report_stream, items,
@@ -67,8 +66,8 @@ void DisplayDetailedActivities(std::string& report_stream,
     std::string project_path =
         ReplaceAll(record.project_path, "_", config->GetActivityConnector());
     std::string base_string =
-        TexUtils::EscapeLatex(record.start_time) + " - " +
-        TexUtils::EscapeLatex(record.end_time) + " (" +
+        TexUtils::EscapeLatex(FormatClockTime(record.start_time)) + " - " +
+        TexUtils::EscapeLatex(FormatClockTime(record.end_time)) + " (" +
         TexUtils::EscapeLatex(TimeFormatDuration(record.duration_seconds)) +
         "): " + TexUtils::EscapeLatex(project_path);
 

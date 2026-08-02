@@ -19,11 +19,11 @@ struct DayData {
 
   int year;
   int month;
-  int wake_anchor;
   int activity_count = 0;
 };
 
 struct TimeRecordInternal {
+  ActivityRecordKind kind = ActivityRecordKind::kInterval;
   long long logical_id = 0;
   long long start_timestamp = 0;
   long long end_timestamp = 0;

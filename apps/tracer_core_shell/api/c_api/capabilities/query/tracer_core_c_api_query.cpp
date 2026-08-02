@@ -16,6 +16,8 @@ using tracer_core::core::c_api::internal::BuildTextResponse;
 using tracer_core::core::c_api::internal::BuildTreeResponse;
 using tracer_core::core::c_api::internal::ClearLastError;
 using tracer_core::core::c_api::internal::ParseDataQueryOutputMode;
+using tracer_core::core::c_api::internal::ParseReportAverageDayBasis;
+using tracer_core::core::c_api::internal::ParseReportAverageDayBasis;
 using tracer_core::core::c_api::internal::ParseQueryAction;
 using tracer_core::core::c_api::internal::RequireRuntime;
 using tracer_core::core::c_api::internal::ToRequestJsonView;
@@ -53,11 +55,12 @@ extern "C" TT_CORE_API auto tracer_core_runtime_query_json(
     request.tree_period = kPayload.tree_period;
     request.tree_period_argument = kPayload.tree_period_argument;
     request.tree_max_depth = kPayload.tree_max_depth;
+    if (kPayload.average_day_basis.has_value()) {
+      request.average_day_basis =
+          ParseReportAverageDayBasis(*kPayload.average_day_basis);
+    }
     if (kPayload.cross_midnight_activity.has_value()) {
       request.cross_midnight_activity = *kPayload.cross_midnight_activity;
-    }
-    if (kPayload.missing_wake_anchor.has_value()) {
-      request.missing_wake_anchor = *kPayload.missing_wake_anchor;
     }
     if (kPayload.reverse.has_value()) {
       request.reverse = *kPayload.reverse;

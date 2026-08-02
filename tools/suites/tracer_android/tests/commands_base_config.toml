@@ -3,7 +3,7 @@ name = "Android Config Bundle Exists"
 stage = "base-config"
 args = [
   "/c",
-  "if exist ..\\..\\..\\..\\apps\\android\\runtime\\src\\main\\assets\\tracer_core\\config\\meta\\bundle.toml (exit /b 0) else (echo Missing assets config bundle.toml && exit /b 1)"
+  "if exist ..\\..\\..\\..\\config\\program\\meta\\bundle.toml (exit /b 0) else (echo Missing canonical config bundle.toml && exit /b 1)"
 ]
 expect_exit = 0
 
@@ -12,7 +12,7 @@ name = "Android Config Uses Android Profile"
 stage = "base-config"
 args = [
   "/c",
-  "findstr /c:profile ..\\..\\..\\..\\apps\\android\\runtime\\src\\main\\assets\\tracer_core\\config\\meta\\bundle.toml | findstr /c:android >nul && exit /b 0 || (echo Missing profile=android in bundle.toml && exit /b 1)"
+  "findstr /c:profile ..\\..\\..\\..\\config\\program\\meta\\bundle.toml | findstr /c:shared >nul && exit /b 0 || (echo Missing profile=shared in canonical bundle.toml && exit /b 1)"
 ]
 expect_exit = 0
 
@@ -21,7 +21,7 @@ name = "Android Config Uses Canonical Source Root"
 stage = "base-config"
 args = [
   "/c",
-  "findstr /c:config/program ..\\..\\..\\..\\apps\\android\\runtime\\src\\main\\assets\\tracer_core\\config\\meta\\bundle.toml >nul && exit /b 0 || (echo Missing canonical program-source marker in bundle.toml && exit /b 1)"
+  "findstr /c:program/ ..\\..\\..\\..\\config\\program\\meta\\bundle.toml >nul && exit /b 0 || (echo Missing program file list in canonical bundle.toml && exit /b 1)"
 ]
 expect_exit = 0
 

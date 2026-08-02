@@ -1,18 +1,18 @@
 # 多端 Config 分发机制（Windows CLI / Android）
 
-本文说明当前项目如何把程序资源和可变 activity hierarchy 数据分开，再分发到各表现层运行时目录。alias TOML 只使用 canonical-key-first 格式，canonical key 位于左侧，alias 位于右侧字符串数组中；旧的 `alias = "canonical"` 格式不再使用。
+本文说明当前项目如何把程序资源和可变 activity hierarchy 数据分开，再分发到各表现层运行时目录。canonical TOML 只使用 canonical-key-first 格式，canonical key 位于左侧，alias 位于右侧字符串数组中；旧的 `alias = "canonical"` 格式不再使用。
 
 ## 0. 目录职责边界
 
-1. Program source：`assets/tracer_core/program`
-2. Distribution activity-hierarchy seed：`assets/tracer_core/defaults/activity_hierarchy`
+1. Program source：`config/program`
+2. Distribution activity-hierarchy seed：`config/user/activity_hierarchy`
 3. Test activity-hierarchy source：`test/data/activity_hierarchy`
 4. Generated runtime copy：
    - `apps/cli/windows/rust/runtime/config`
-   - `apps/android/runtime/src/main/assets/tracer_core/config`
+   - `apps/android/runtime/src/main/assets/config/program`
 4. 维护规则：
-   - 程序资源只修改 `assets/tracer_core/program`
-   - distribution 初始层级数据只修改 `assets/tracer_core/defaults/activity_hierarchy`
+   - 程序资源只修改 `config/program`
+   - distribution 初始层级数据只修改 `config/user/activity_hierarchy`
    - 测试层级数据只修改 `test/data/activity_hierarchy`
    - 不修改 generated runtime copy
    - app 内 runtime config 目录只允许由同步流程刷新，不应手工作为源头维护
@@ -21,7 +21,7 @@
 
 ## 1. 单一事实来源
 
-1. 程序资源统一来自 `assets/tracer_core/program`
+1. 程序资源统一来自 `config/program`
 2. Windows 目标额外接收 profile 对应的 activity-hierarchy source；Android 目标不接收该 source
 3. 分发入口模块：`tools.platform_config.run`
 4. 构建链路触发点：`tools/run.py build|configure` -> `tools/toolchain/commands/cmd_build/common/config_sync.py`
@@ -29,7 +29,7 @@
 ## 2. 目标目录（当前）
 
 1. Windows CLI generated copy：`apps/cli/windows/rust/runtime/config`
-2. Android Runtime APK snapshot：`apps/android/runtime/src/main/assets/tracer_core/config`
+2. Android Runtime APK snapshot：`apps/android/runtime/src/main/assets/config/program`
 3. Android private mutable hierarchy：`<filesDir>/tracer_core/config/activity_hierarchy`
 
 ## 3. 触发策略
@@ -61,7 +61,7 @@
 3. 强校验门禁
    - 校验所有计划文件存在且字节一致
    - 校验 `meta/bundle.toml` 的 `schema_version/profile/bundle_name`
-   - Windows 输出校验 alias TOML 全部为 canonical key + alias 数组格式；
+   - Windows 输出校验 activity hierarchy TOML 全部为 `[canonical]` 根表下的 canonical key + alias 数组格式；
      Android 输出不包含 activity hierarchy TOML；层级只在运行时进入私有目录
    - 校验 `config.toml` 关键键（如 `defaults.*`、`converter.main_config`、
      `reports.markdown.root/default_locale/supported_locales` 以及 Typst/LaTeX

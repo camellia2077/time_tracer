@@ -58,10 +58,10 @@ The activity directory behaves like a folder tree. A normal alias maps input to 
 ```toml
 parent = "exercise"
 
-[aliases.strength-training]
+[canonical.strength-training]
 group_aliases = ["strength training"]
 
-[aliases.strength-training.squat]
+[canonical.strength-training.squat]
 group_aliases = ["squat"]
 "front squat" = "front-squat"
 ```
@@ -82,7 +82,7 @@ Yes. The CLI and Android configuration flows support structural edits:
 * A leaf alias can be moved into an existing category. Its canonical path then changes, for example from `exercise_running` to `exercise_cardio_running`.
 * A group record name can be renamed, or an additional record name can be added.
 
-Moving a leaf or renaming a group record name affects historical data. The system updates the alias TOML, replaces the corresponding canonical activity tokens in TXT, and rebuilds the database; the active data is replaced only after all steps succeed. Adding a group record name affects future input only, so historical TXT and the database do not need to change. Moving a group together with all of its descendants is not currently supported as one operation.
+Moving a leaf or renaming a group record name affects historical data. The system updates the canonical TOML, replaces the corresponding canonical activity tokens in TXT, and rebuilds the database; the active data is replaced only after all steps succeed. Adding a group record name affects future input only, so historical TXT and the database do not need to change. Moving a group together with all of its descendants is not currently supported as one operation.
 
 ## How Data Is Displayed
 

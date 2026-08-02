@@ -50,11 +50,8 @@ void DayBaseConfig::LoadBaseConfig(const DailyReportLabels& labels) {
   date_label_ = labels.date_label;
   total_time_label_ = labels.total_time_label;
   activity_count_label_ = labels.activity_count_label;
-  status_label_ = labels.status_label;
-  wake_anchor_label_ = labels.wake_anchor_label;
   getup_time_label_ = labels.getup_time_label;
   remark_label_ = labels.remark_label;
-  exercise_label_ = labels.exercise_label;
   no_records_ = labels.no_records_message;
   statistics_label_ = labels.statistics_label;
   all_activities_label_ = labels.all_activities_label;
@@ -75,20 +72,11 @@ auto DayBaseConfig::GetTotalTimeLabel() const -> const std::string& {
 auto DayBaseConfig::GetActivityCountLabel() const -> const std::string& {
   return activity_count_label_;
 }
-auto DayBaseConfig::GetStatusLabel() const -> const std::string& {
-  return status_label_;
-}
-auto DayBaseConfig::GetWakeAnchorLabel() const -> const std::string& {
-  return wake_anchor_label_;
-}
 auto DayBaseConfig::GetGetupTimeLabel() const -> const std::string& {
   return getup_time_label_;
 }
 auto DayBaseConfig::GetRemarkLabel() const -> const std::string& {
   return remark_label_;
-}
-auto DayBaseConfig::GetExerciseLabel() const -> const std::string& {
-  return exercise_label_;
 }
 auto DayBaseConfig::GetNoRecords() const -> const std::string& {
   return no_records_;

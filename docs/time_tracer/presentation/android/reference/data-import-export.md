@@ -60,7 +60,7 @@ Capture the user-visible behavior and core data flow for Data-tab import and exp
 
 | Repository | Android private runtime | Role |
 | --- | --- | --- |
-| `assets/tracer_core/program/**` | `<filesDir>/tracer_core/config/program/**` | Immutable program resources; not exchange data |
+| `config/program/**` | `<filesDir>/tracer_core/config/program/**` | Immutable program resources; generated into APK assets during Gradle build; not exchange data |
 | `assets/tracer_core/defaults/activity_hierarchy/**` | `<filesDir>/tracer_core/config/user/activity_hierarchy/**` on first launch | Distribution seed for user hierarchy |
 | `test/data/**/*.txt` | `<filesDir>/tracer_core/input/**/*.txt` through the ADB helper | Test input, not APK content |
 | `test/data/activity_hierarchy/**` | `<filesDir>/tracer_core/config/user/activity_hierarchy/**` through the ADB helper | Test hierarchy, not APK content |

@@ -55,12 +55,6 @@ args = ["query", "data", "days", "--cross-midnight-activity", "--db", "{db_path}
 expect_exit = 0
 
 [[commands]]
-name = "Query Data Days Missing Wake Anchor"
-stage = "query-data"
-args = ["query", "data", "days", "--missing-wake-anchor", "--db", "{db_path}"]
-expect_exit = 0
-
-[[commands]]
 name = "Query Data Days Stats Day Root"
 stage = "query-data"
 args = ["query", "data", "days-stats", "--period", "day", "--period-arg", "20260103", "--root", "study", "--top", "5", "--db", "{db_path}"]

@@ -7,7 +7,6 @@
 + *Activity Count:* 8 (average: 1.14/day)
 + *Actual Days with Records:* 4
 + *Status Days:* 3 (75.00%)
-+ *Wake Anchor Days:* 2 (50.00%)
 + *Exercise Days:* 2 (50.00%)
 + *Cardio Days:* 1 (25.00%)
 + *Anaerobic Days:* 1 (25.00%)

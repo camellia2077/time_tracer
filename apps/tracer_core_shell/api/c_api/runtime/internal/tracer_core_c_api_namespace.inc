@@ -130,27 +130,6 @@ auto CreateAbiDiagnosticsAdapter()
   return std::make_shared<AbiDiagnosticsCallbackSink>();
 }
 
-[[nodiscard]] auto ToDateCheckModeString(DateCheckMode mode)
-    -> std::string_view {
-  switch (mode) {
-    case DateCheckMode::kNone:
-      return "none";
-    case DateCheckMode::kContinuity:
-      return "continuity";
-    case DateCheckMode::kFull:
-      return "full";
-  }
-  return "none";
-}
-
-[[nodiscard]] auto ToDateCheckModeJson(const std::optional<DateCheckMode>& mode)
-    -> json {
-  if (!mode.has_value()) {
-    return nullptr;
-  }
-  return std::string(ToDateCheckModeString(*mode));
-}
-
 [[nodiscard]] auto ToStringJson(const std::optional<std::string>& value)
     -> json {
   if (!value.has_value()) {
@@ -165,8 +144,6 @@ auto CreateAbiDiagnosticsAdapter()
   return json{
       {"default_save_processed_output",
        cli_config.default_save_processed_output},
-      {"default_date_check_mode",
-       std::string(ToDateCheckModeString(cli_config.default_date_check_mode))},
       {"defaults",
        {{"default_format", ToStringJson(cli_config.defaults.default_format)}}},
       {"command_defaults",
@@ -174,9 +151,6 @@ auto CreateAbiDiagnosticsAdapter()
          ToStringJson(cli_config.command_defaults.export_format)},
         {"query_format",
          ToStringJson(cli_config.command_defaults.query_format)},
-        {"convert_date_check_mode",
-         ToDateCheckModeJson(
-             cli_config.command_defaults.convert_date_check_mode)},
         {"convert_save_processed_output",
          cli_config.command_defaults.convert_save_processed_output.has_value()
              ? json(*cli_config.command_defaults.convert_save_processed_output)
@@ -189,16 +163,11 @@ auto CreateAbiDiagnosticsAdapter()
          cli_config.command_defaults.convert_validate_structure.has_value()
              ? json(*cli_config.command_defaults.convert_validate_structure)
              : json(nullptr)},
-        {"ingest_date_check_mode",
-         ToDateCheckModeJson(
-             cli_config.command_defaults.ingest_date_check_mode)},
         {"ingest_save_processed_output",
          cli_config.command_defaults.ingest_save_processed_output.has_value()
              ? json(*cli_config.command_defaults.ingest_save_processed_output)
              : json(nullptr)},
-        {"validate_logic_date_check_mode",
-         ToDateCheckModeJson(
-             cli_config.command_defaults.validate_logic_date_check_mode)}}}};
+        }}};
 }
 
 [[nodiscard]] auto BuildFailureJsonResponse(

@@ -5,5 +5,9 @@ auto main() -> int {
   if (config_smoke != 0) {
     return config_smoke;
   }
-  return RunActivityHierarchyCharacterizationTests();
+  const int hierarchy_smoke = RunActivityHierarchyCharacterizationTests();
+  if (hierarchy_smoke != 0) {
+    return hierarchy_smoke;
+  }
+  return 0;
 }

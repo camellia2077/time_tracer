@@ -81,9 +81,6 @@ void MonthMdFormatter::FormatHeaderContent(
       FormatBooleanCountLabel(config_->GetStatusDaysLabel(), data.status_true_days),
       FormatRatio(data.status_true_days, data.actual_days));
   report_stream += BuildMarkdownItemLine(
-      FormatBooleanCountLabel(config_->GetWakeAnchorDaysLabel(), data.wake_anchor_days),
-      FormatRatio(data.wake_anchor_days, data.actual_days));
-  report_stream += BuildMarkdownItemLine(
       FormatBooleanCountLabel(config_->GetExerciseDaysLabel(), data.exercise_true_days),
       FormatRatio(data.exercise_true_days, data.actual_days));
   report_stream += BuildMarkdownItemLine(

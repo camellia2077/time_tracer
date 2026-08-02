@@ -294,6 +294,59 @@ auto TestReportConfigLoaderRejectsInvalidDailyMarkdown(int& failures) -> void {
   RemoveTree(paths.test_root);
 }
 
+auto TestReportConfigLoaderLoadsDailyParentStatuses(int& failures) -> void {
+  const RuntimeTestPaths paths =
+      BuildTempTestPaths("time_tracer_report_config_loader_status_test");
+  const std::filesystem::path config_path = paths.test_root / "report.toml";
+
+  RemoveTree(paths.test_root);
+  std::filesystem::create_directories(paths.test_root);
+  {
+    std::ofstream file(config_path);
+    file << "schema_version = 1\n\n"
+            "[daily_statuses.parent_present.status]\n"
+            "parent = \"study\"\n"
+            "label = \"Study\"\n\n"
+            "[daily_statuses.parent_present.exercise]\n"
+            "parent = \"exercise\"\n"
+            "label = \"Exercise\"\n";
+  }
+
+  try {
+    const DailyStatusConfig config =
+        ReportConfigLoader::LoadDailyStatusConfig(config_path);
+    if (config.schema_version != 1 || config.statuses.size() != 2U) {
+      ++failures;
+      std::cerr << "[FAIL] Daily status config should load two statuses.\n";
+    } else {
+      bool status_ok = false;
+      bool exercise_ok = false;
+      for (const auto& status : config.statuses) {
+        if (status.id == "status") {
+          status_ok = status.label == "Study" && status.parent == "study" &&
+                      status.type == DailyStatusType::kParentPresent;
+        } else if (status.id == "exercise") {
+          exercise_ok = status.label == "Exercise" &&
+                        status.parent == "exercise" &&
+                        status.type == DailyStatusType::kParentPresent;
+        }
+      }
+      if (!status_ok || !exercise_ok) {
+        ++failures;
+        std::cerr << "[FAIL] Daily parent_present status fields were not "
+                     "parsed correctly.\n";
+      }
+    }
+  } catch (const std::exception& exception) {
+    ++failures;
+    std::cerr << "[FAIL] LoadDailyStatusConfig should accept the structured "
+                 "parent_present format: "
+              << exception.what() << '\n';
+  }
+
+  RemoveTree(paths.test_root);
+}
+
 }  // namespace
 
 auto RunCoreConfigValidationTests(int& failures) -> void {
@@ -303,6 +356,7 @@ auto RunCoreConfigValidationTests(int& failures) -> void {
   TestAndroidRuntimeBootstrapsWithMinimalCustomConfig(failures);
   TestAndroidPipelineRuntimeDoesNotRequireProgramConfig(failures);
   TestReportConfigLoaderRejectsInvalidDailyMarkdown(failures);
+  TestReportConfigLoaderLoadsDailyParentStatuses(failures);
 }
 
 }  // namespace android_runtime_tests

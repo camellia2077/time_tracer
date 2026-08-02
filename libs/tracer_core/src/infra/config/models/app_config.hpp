@@ -8,7 +8,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "domain/types/date_check_mode.hpp"
 #include "infra/config/models/report_catalog.hpp"
 
 namespace fs = std::filesystem;
@@ -50,13 +49,10 @@ struct GlobalDefaults {
 struct CommandDefaults {
   std::optional<std::string> export_format;
   std::optional<std::string> query_format;
-  std::optional<DateCheckMode> convert_date_check_mode;
   std::optional<bool> convert_save_processed_output;
   std::optional<bool> convert_validate_logic;
   std::optional<bool> convert_validate_structure;
-  std::optional<DateCheckMode> ingest_date_check_mode;
   std::optional<bool> ingest_save_processed_output;
-  std::optional<DateCheckMode> validate_logic_date_check_mode;
 };
 
 struct AppConfig {
@@ -65,8 +61,6 @@ struct AppConfig {
   std::optional<fs::path> kExportPath;
 
   bool default_save_processed_output = false;
-  DateCheckMode default_date_check_mode = DateCheckMode::kNone;
-
   PipelineConfig pipeline;
   ReportConfigPaths reports;
   GlobalDefaults defaults;

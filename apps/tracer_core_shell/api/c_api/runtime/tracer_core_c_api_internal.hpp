@@ -27,6 +27,7 @@ namespace tracer_core::core::dto {
 
 enum class DataQueryAction;
 enum class DataQueryOutputMode;
+enum class ReportAverageDayBasis;
 enum class ReportDisplayMode;
 enum class ReportExportScope;
 enum class ReportOperationKind;
@@ -63,13 +64,10 @@ struct CliGlobalDefaultsContext {
 struct CliCommandDefaultsContext {
   std::optional<std::string> export_format;
   std::optional<std::string> query_format;
-  std::optional<DateCheckMode> convert_date_check_mode;
   std::optional<bool> convert_save_processed_output;
   std::optional<bool> convert_validate_logic;
   std::optional<bool> convert_validate_structure;
-  std::optional<DateCheckMode> ingest_date_check_mode;
   std::optional<bool> ingest_save_processed_output;
-  std::optional<DateCheckMode> validate_logic_date_check_mode;
 };
 
 struct CliConfigContext {
@@ -77,7 +75,6 @@ struct CliConfigContext {
   std::optional<std::filesystem::path> export_path;
   std::filesystem::path converter_config_toml_path;
   bool default_save_processed_output = false;
-  DateCheckMode default_date_check_mode = DateCheckMode::kNone;
   CliGlobalDefaultsContext defaults;
   CliCommandDefaultsContext command_defaults;
 };
@@ -139,6 +136,8 @@ void SetLastError(const char* message);
     -> tracer_core::core::dto::DataQueryAction;
 [[nodiscard]] auto ParseDataQueryOutputMode(const std::string& value)
     -> tracer_core::core::dto::DataQueryOutputMode;
+[[nodiscard]] auto ParseReportAverageDayBasis(const std::string& value)
+    -> tracer_core::core::dto::ReportAverageDayBasis;
 [[nodiscard]] auto ParseReportDisplayMode(const std::string& value)
     -> tracer_core::core::dto::ReportDisplayMode;
 [[nodiscard]] auto ParseReportExportScope(const std::string& value)

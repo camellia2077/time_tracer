@@ -4,7 +4,7 @@ from tempfile import TemporaryDirectory
 from unittest import TestCase
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
-TEST_FRAMEWORK_DIR = REPO_ROOT / "test" / "framework"
+TEST_FRAMEWORK_DIR = REPO_ROOT / "tools" / "test_framework"
 
 if str(TEST_FRAMEWORK_DIR) not in sys.path:
     sys.path.insert(0, str(TEST_FRAMEWORK_DIR))

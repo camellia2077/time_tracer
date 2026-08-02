@@ -32,6 +32,21 @@ auto RequireString(const toml::table& tbl, const fs::path& path,
   }
 }
 
+auto RequireNonEmptyString(const toml::table& tbl, const fs::path& path,
+                           std::string_view key) -> std::string {
+  const toml::node_view<const toml::node> kNode = RequireNode(tbl, path, key);
+  if (!kNode.is_string()) {
+    ThrowInvalidConfig(path,
+                       "key '" + std::string(key) + "' must be a string.");
+  }
+  const auto kValue = kNode.value<std::string>();
+  if (!kValue || kValue->empty()) {
+    ThrowInvalidConfig(path,
+                       "key '" + std::string(key) + "' must not be empty.");
+  }
+  return *kValue;
+}
+
 auto ValidateOptionalStringIfPresent(const toml::table& tbl,
                                      const fs::path& path, std::string_view key)
     -> void {
@@ -158,7 +173,6 @@ auto ValidateRequiredPeriodLabels(const toml::table& tbl, const fs::path& path)
   RequireString(tbl, path, "title_template");
   RequireString(tbl, path, "actual_days_label");
   RequireString(tbl, path, "status_days_label");
-  RequireString(tbl, path, "wake_anchor_days_label");
   RequireString(tbl, path, "exercise_days_label");
   RequireString(tbl, path, "cardio_days_label");
   RequireString(tbl, path, "anaerobic_days_label");
@@ -174,9 +188,6 @@ auto ValidateDailyLabels(const toml::table& tbl, const fs::path& path,
   RequireString(tbl, path, title_key);
   RequireString(tbl, path, "date_label");
   RequireString(tbl, path, "total_time_label");
-  RequireString(tbl, path, "status_label");
-  RequireString(tbl, path, "wake_anchor_label");
-  RequireString(tbl, path, "exercise_label");
   RequireString(tbl, path, "getup_time_label");
   RequireString(tbl, path, "remark_label");
   if (require_statistics) {

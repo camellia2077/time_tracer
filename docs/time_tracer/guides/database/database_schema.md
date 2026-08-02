@@ -77,10 +77,17 @@
 | `date` | TEXT | NOT NULL, FK -> `days.date` | 日期 |
 | `start` | TEXT | NOT NULL | 开始时间（`HH:MM`） |
 | `end` | TEXT | NOT NULL | 结束时间（`HH:MM`） |
+| `record_kind` | TEXT | NOT NULL DEFAULT `'interval'` | 记录类型：`interval` 或 `end_only` |
 | `project_id` | INTEGER | NOT NULL, FK -> `projects.id` | 项目节点 ID |
 | `duration` | INTEGER | NOT NULL, CHECK `>= 0` | 时长（秒） |
 | `project_path_snapshot` | TEXT | NOT NULL DEFAULT `''` | 写入时的完整路径快照（`_` 分隔） |
 | `activity_remark` | TEXT |  | 活动备注（可空） |
+
+说明：
+- `record_kind = 'interval'` 表示普通区间记录。
+- `record_kind = 'end_only'` 表示只有可靠结束时间的活动事实；数据库兼容存储使用 `start_timestamp = 0`、`start = ''`、`duration = 0`，业务查询应以 `record_kind` 判断其没有开始边界，不应把它计入时长。
+- `end_only` 仍然是一条活动明细，会计入 `days.activity_count`、活动次数和活跃天数。
+- 旧数据库打开时会通过加列迁移补充 `record_kind`，既有记录默认为 `interval`。
 
 ## 4. 索引设计（当前实现）
 

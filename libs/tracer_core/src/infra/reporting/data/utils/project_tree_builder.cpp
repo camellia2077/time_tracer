@@ -23,11 +23,13 @@ void BuildProjectTreeFromRecords(
 
     std::string top_level_category_key = parts[0];
     tree[top_level_category_key].duration += duration;
+    ++tree[top_level_category_key].occurrence_count;
 
     reporting::ProjectNode* current_node = &tree[top_level_category_key];
 
     for (size_t i = 1; i < parts.size(); ++i) {
       current_node->children[parts[i]].duration += duration;
+      ++current_node->children[parts[i]].occurrence_count;
       current_node = &current_node->children[parts[i]];
     }
   }
@@ -56,11 +58,13 @@ void BuildProjectTreeFromIds(
     // 3. 构建树
     std::string top_level_category_key = parts[0];
     tree[top_level_category_key].duration += duration;
+    ++tree[top_level_category_key].occurrence_count;
 
     reporting::ProjectNode* current_node = &tree[top_level_category_key];
 
     for (size_t i = 1; i < parts.size(); ++i) {
       current_node->children[parts[i]].duration += duration;
+      ++current_node->children[parts[i]].occurrence_count;
       current_node = &current_node->children[parts[i]];
     }
   }

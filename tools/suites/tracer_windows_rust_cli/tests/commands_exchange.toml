@@ -31,7 +31,7 @@ expect_stdout_contains = [
   "producer_app: time_tracer_cli",
   "created_at_utc: ",
   "source_root_name: data",
-  "payload_file_count: 24",
+  "payload_file_count: 23",
   "payload/2025/2025-01.txt: present",
   "payload/2026/2026-12.txt: present",
   "config/user/activity_hierarchy/meal.toml: present",
@@ -47,9 +47,9 @@ expect_stdout_contains = [
   "Imported complete tracer exchange package:",
   "Updated active text root:",
   "Applied converter config: yes",
-  "Replaced months: 24",
+  "Replaced months: 23",
   "Preserved local months: 0",
-  "Rebuilt months: 24",
+  "Rebuilt months: 23",
   "Database rebuilt: yes",
 ]
 expect_files = [

@@ -4,6 +4,7 @@ import tracer.core.application.use_cases.interface;
 #include <string>
 
 #include "api/c_api/capabilities/reporting/tracer_core_c_api_reporting_internal.hpp"
+#include "api/c_api/capabilities/reporting/tracer_core_c_api_structured_report_serializer.hpp"
 #include "api/c_api/tracer_core_c_api.h"
 #include "api/c_api/runtime/tracer_core_c_api_internal.hpp"
 #include "application/dto/reporting_requests.hpp"
@@ -28,6 +29,7 @@ using tracer_core::core::c_api::internal::ParseTemporalSelectionKind;
 using tracer_core::core::c_api::internal::RequireRuntime;
 using tracer_core::core::c_api::internal::ToRequestJsonView;
 using tracer_core::core::c_api::reporting::BuildReportTextResponse;
+using tracer_core::core::c_api::reporting::SerializeTemporalStructuredReport;
 using tracer_core::core::dto::PeriodBatchQueryRequest;
 using tracer_core::core::dto::ReportOperationKind;
 using tracer_core::core::dto::TemporalReportExportRequest;
@@ -127,150 +129,6 @@ auto BuildTemporalExportRequest(
   return request;
 }
 
-auto ToWireValue(tracer_core::core::dto::ReportDisplayMode display_mode)
-    -> std::string {
-  using tracer_core::core::dto::ReportDisplayMode;
-  switch (display_mode) {
-    case ReportDisplayMode::kDay:
-      return "day";
-    case ReportDisplayMode::kWeek:
-      return "week";
-    case ReportDisplayMode::kMonth:
-      return "month";
-    case ReportDisplayMode::kYear:
-      return "year";
-    case ReportDisplayMode::kRange:
-      return "range";
-    case ReportDisplayMode::kRecent:
-      return "recent";
-  }
-  return "day";
-}
-
-auto ToWireValue(tracer_core::core::dto::TemporalSelectionKind selection_kind)
-    -> std::string {
-  using tracer_core::core::dto::TemporalSelectionKind;
-  switch (selection_kind) {
-    case TemporalSelectionKind::kSingleDay:
-      return "single_day";
-    case TemporalSelectionKind::kDateRange:
-      return "date_range";
-    case TemporalSelectionKind::kRecentDays:
-      return "recent_days";
-  }
-  return "single_day";
-}
-
-auto EncodeProjectNode(const reporting::ProjectNode& node) -> json {
-  json children = json::object();
-  for (const auto& [name, child] : node.children) {
-    children[name] = EncodeProjectNode(child);
-  }
-  return json{{"duration", node.duration}, {"children", std::move(children)}};
-}
-
-auto EncodeProjectTree(const reporting::ProjectTree& tree) -> json {
-  json out = json::object();
-  for (const auto& [name, node] : tree) {
-    out[name] = EncodeProjectNode(node);
-  }
-  return out;
-}
-
-auto EncodeProjectStats(
-    const std::vector<std::pair<std::int64_t, std::int64_t>>& stats) -> json {
-  json out = json::array();
-  for (const auto& [start, duration] : stats) {
-    out.push_back(json{{"start", start}, {"duration", duration}});
-  }
-  return out;
-}
-
-auto EncodeDailyReport(const DailyReportData& report) -> json {
-  json records = json::array();
-  for (const auto& record : report.detailed_records) {
-    records.push_back(json{
-        {"logical_id", record.logical_id},
-        {"start_time", record.start_time},
-        {"end_time", record.end_time},
-        {"project_path", record.project_path},
-        {"duration_seconds", record.duration_seconds},
-        {"activity_remark", record.activityRemark.value_or("")},
-    });
-  }
-
-  json stats = json::object();
-  for (const auto& [name, duration] : report.stats) {
-    stats[name] = duration;
-  }
-
-  return json{
-      {"date", report.date},
-      {"metadata",
-       {{"status", report.metadata.status},
-        {"wake_anchor", report.metadata.wake_anchor},
-        {"remark", report.metadata.remark},
-        {"getup_time", report.metadata.getup_time},
-        {"exercise", report.metadata.exercise}}},
-      {"total_duration", report.total_duration},
-      {"project_stats", EncodeProjectStats(report.project_stats)},
-      {"detailed_records", std::move(records)},
-      {"stats", std::move(stats)},
-      {"project_tree", EncodeProjectTree(report.project_tree)},
-  };
-}
-
-auto EncodePeriodReport(const PeriodReportData& report) -> json {
-  return json{
-      {"range_label", report.range_label},
-      {"start_date", report.start_date},
-      {"end_date", report.end_date},
-      {"requested_days", report.requested_days},
-      {"has_records", report.has_records},
-      {"matched_day_count", report.matched_day_count},
-      {"matched_record_count", report.matched_record_count},
-      {"total_duration", report.total_duration},
-      {"actual_days", report.actual_days},
-      {"status_true_days", report.status_true_days},
-      {"wake_anchor_days", report.wake_anchor_days},
-      {"exercise_true_days", report.exercise_true_days},
-      {"cardio_true_days", report.cardio_true_days},
-      {"anaerobic_true_days", report.anaerobic_true_days},
-      {"is_valid", report.is_valid},
-      {"project_stats", EncodeProjectStats(report.project_stats)},
-      {"project_tree", EncodeProjectTree(report.project_tree)},
-  };
-}
-
-auto BuildTemporalStructuredReportResponse(
-    const TemporalStructuredReportOutput& output) -> const char* {
-  json payload = {
-      {"ok", output.ok},
-      {"display_mode", ToWireValue(output.display_mode)},
-      {"selection_kind", ToWireValue(output.selection_kind)},
-      {"error_message", output.error_message},
-      {"error_code", output.error_contract.error_code},
-      {"error_category", output.error_contract.error_category},
-      {"hints", output.error_contract.hints},
-  };
-
-  if (output.ok) {
-    if (const auto* daily = std::get_if<DailyReportData>(&output.report);
-        daily != nullptr) {
-      payload["report_kind"] = "day";
-      payload["report"] = EncodeDailyReport(*daily);
-    } else if (const auto* period =
-                   std::get_if<PeriodReportData>(&output.report);
-               period != nullptr) {
-      payload["report_kind"] = "period";
-      payload["report"] = EncodePeriodReport(*period);
-    }
-  }
-
-  tracer_core::core::c_api::internal::g_last_response = payload.dump();
-  return tracer_core::core::c_api::internal::g_last_response.c_str();
-}
-
 }  // namespace
 
 extern "C" TT_CORE_API auto tracer_core_runtime_temporal_report_json(
@@ -289,9 +147,12 @@ extern "C" TT_CORE_API auto tracer_core_runtime_temporal_report_json(
             runtime.report().RunTemporalReportQuery(
                 BuildTemporalQueryRequest(payload)));
       case ReportOperationKind::kStructuredQuery:
-        return BuildTemporalStructuredReportResponse(
-            runtime.report().RunTemporalStructuredReportQuery(
-                BuildTemporalStructuredQueryRequest(payload)));
+        tracer_core::core::c_api::internal::g_last_response =
+            SerializeTemporalStructuredReport(
+                runtime.report().RunTemporalStructuredReportQuery(
+                    BuildTemporalStructuredQueryRequest(payload)))
+                .dump();
+        return tracer_core::core::c_api::internal::g_last_response.c_str();
       case ReportOperationKind::kTargets:
         return BuildReportTargetsResponse(runtime.report().RunTemporalReportTargetsQuery(
             BuildTemporalTargetsRequest(payload)));

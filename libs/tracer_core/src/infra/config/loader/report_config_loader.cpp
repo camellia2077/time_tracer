@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 import tracer.core.infrastructure.config.loader.toml_loader_utils;
@@ -71,6 +72,49 @@ auto ReportConfigLoader::LoadDailyMdConfig(const fs::path& path)
 
   DailyMdConfig config;
   modloader::FillDailyLabels(tbl, config.labels);
+  config.end_only_time_format =
+      tbl["end_only_time_format"].value_or("As of {end_time}");
+  return config;
+}
+
+auto ReportConfigLoader::LoadDailyStatusConfig(const fs::path& path)
+    -> DailyStatusConfig {
+  toml::table tbl = modloader::ReadToml(path);
+  const auto kSchemaVersion = tbl["schema_version"].value<int>();
+  if (!kSchemaVersion || *kSchemaVersion != 1) {
+    ThrowInvalidConfig(path, "key 'schema_version' must be integer 1.");
+  }
+
+  const toml::node_view<const toml::node> kStatusesNode =
+      RequireNode(tbl, path, "daily_statuses");
+  if (!kStatusesNode.is_table()) {
+    ThrowInvalidConfig(path, "key 'daily_statuses' must be a table.");
+  }
+  const toml::table& kStatuses = *kStatusesNode.as_table();
+  const toml::node_view<const toml::node> kParentPresentNode =
+      RequireNode(kStatuses, path, "parent_present");
+  if (!kParentPresentNode.is_table()) {
+    ThrowInvalidConfig(
+        path, "key 'daily_statuses.parent_present' must be a table.");
+  }
+
+  DailyStatusConfig config;
+  config.schema_version = *kSchemaVersion;
+  for (const auto& [id_node, status_node] :
+       *kParentPresentNode.as_table()) {
+    const std::string kId = std::string(id_node.str());
+    if (!status_node.is_table()) {
+      ThrowInvalidConfig(path, "daily_statuses.parent_present." + kId +
+                               " must be a table.");
+    }
+    const toml::table& kStatus = *status_node.as_table();
+    DailyStatusDefinition definition;
+    definition.id = kId;
+    definition.label = RequireNonEmptyString(kStatus, path, "label");
+    definition.parent = RequireNonEmptyString(kStatus, path, "parent");
+    definition.type = DailyStatusType::kParentPresent;
+    config.statuses.push_back(std::move(definition));
+  }
   return config;
 }
 

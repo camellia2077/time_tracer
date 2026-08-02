@@ -1,24 +1,24 @@
 parent = "study"
 
-[aliases]
+[canonical]
 
-[aliases.computer]
+[canonical.computer]
 data_structure = ["数据结构"]
 
-[aliases.computer.data-structure]
+[canonical.computer.data-structure]
 graphs = ["数据结构图"]
 trees = ["数据结构二叉树"]
 
-[aliases.english]
+[canonical.english]
 article = ["英语文章"]
 listening = ["英语听力"]
 words = ["英语单词"]
 writing = ["英语写作"]
 
-[aliases.math.calculus]
+[canonical.math.calculus]
 group_aliases = ["高等数学"]
 
-[aliases.math.calculus.multiple-integral]
+[canonical.math.calculus.multiple-integral]
 double-integral = [
     "高等数学二重积分",
     "二重积分",
@@ -26,10 +26,10 @@ double-integral = [
 group_aliases = ["重积分"]
 triple-integral = ["三重积分"]
 
-[aliases.math.linear-algebra]
+[canonical.math.linear-algebra]
 group_aliases = ["线性代数"]
 
-[aliases.math.linear-algebra.matrix]
+[canonical.math.linear-algebra.matrix]
 determinant = ["行列式"]
 eigenvalue-and-eigenvector = ["特征值与特征向量"]
 group_aliases = [
@@ -39,22 +39,22 @@ group_aliases = [
 linear-equations = ["线性方程组"]
 matrix-operations = ["矩阵运算"]
 
-[aliases.math.probability-theory]
+[canonical.math.probability-theory]
 group_aliases = ["概率统计"]
 
-[aliases.math.probability-theory.probability-basics]
+[canonical.math.probability-theory.probability-basics]
 conditional-probability = ["条件概率"]
 group_aliases = ["概率基础"]
 probability-operations = ["概率运算"]
 random-events = ["随机事件"]
 
-[aliases.math.probability-theory.probability-distribution]
+[canonical.math.probability-theory.probability-distribution]
 binomial-distribution = ["二项分布"]
 group_aliases = ["概率分布"]
 normal-distribution = ["正态分布"]
 poisson-distribution = ["泊松分布"]
 
-[aliases.math.probability-theory.random-variable]
+[canonical.math.probability-theory.random-variable]
 continuous-random-variable = ["连续型随机变量"]
 discrete-random-variable = ["离散型随机变量"]
 group_aliases = ["随机变量"]

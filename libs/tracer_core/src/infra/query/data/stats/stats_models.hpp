@@ -17,6 +17,7 @@ struct ReportChartAggregateStats {
   long long average_duration_seconds = 0;
   int active_days = 0;
   int range_days = 0;
+  int average_denominator_days = 0;
 };
 
 struct ReportChartSeriesResult {

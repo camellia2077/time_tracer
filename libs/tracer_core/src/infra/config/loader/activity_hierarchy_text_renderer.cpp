@@ -18,11 +18,11 @@ auto RenderActivityHierarchyText(
   const auto path = std::filesystem::absolute(activity_hierarchy_toml_path);
   if (!std::filesystem::exists(path) ||
       !std::filesystem::is_regular_file(path)) {
-    throw std::runtime_error("Alias TOML file not found: " + path.string());
+    throw std::runtime_error("Canonical TOML file not found: " + path.string());
   }
   std::ifstream input(path);
   if (!input) {
-    throw std::runtime_error("Read alias TOML file failed: " + path.string());
+    throw std::runtime_error("Read canonical TOML file failed: " + path.string());
   }
   const std::string content((std::istreambuf_iterator<char>(input)),
                             std::istreambuf_iterator<char>());

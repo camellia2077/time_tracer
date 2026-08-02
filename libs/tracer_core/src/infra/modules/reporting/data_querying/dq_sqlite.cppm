@@ -10,6 +10,7 @@ module;
 
 #include "application/ports/reporting/i_platform_clock.hpp"
 #include "application/ports/reporting/i_report_data_query_service.hpp"
+#include "infra/config/models/report_config_models.hpp"
 
 export module tracer.core.infrastructure.reporting.data_querying
     .sqlite_report_data_query_service;
@@ -21,7 +22,8 @@ class SqliteReportDataQueryService final
   SqliteReportDataQueryService(
       sqlite3* db_connection,
       std::shared_ptr<tracer_core::application::ports::IPlatformClock>
-          platform_clock);
+          platform_clock,
+      DailyStatusConfig status_config = {});
 
   auto QueryDaily(std::string_view date) -> DailyReportData override;
   auto QueryMonthly(std::string_view month) -> MonthlyReportData override;
@@ -47,6 +49,7 @@ class SqliteReportDataQueryService final
   sqlite3* db_connection_;
   std::shared_ptr<tracer_core::application::ports::IPlatformClock>
       platform_clock_;
+  DailyStatusConfig status_config_;
 };
 
 }  // namespace tracer::core::infrastructure::reports

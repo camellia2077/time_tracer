@@ -4,5 +4,6 @@
 
 auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int;
 auto RunActivityHierarchyCharacterizationTests() -> int;
+auto RunQuickAccessTomlStoreTests() -> int;
 
 #endif  // TRACER_CORE_TESTS_INFRASTRUCTURE_MODULES_SMOKE_CONFIG_HPP_

@@ -21,6 +21,7 @@ inline constexpr std::string_view kSupportedDataQueryActions =
 struct DayDurationRow {
   std::string date;
   long long total_seconds = 0;
+  long long record_count = 0;
 };
 
 struct DayDurationStats {

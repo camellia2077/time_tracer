@@ -37,10 +37,6 @@
 5. `text/invalid/2026-01.bad_time_range.txt`
    - 结构合法但包含同分钟冲突事件
    - 适合测逻辑校验失败路径
-6. `config/legacy/alias_mapping.legacy.toml`
-   - 最小 legacy alias mapping 样本
-   - 适合测 compat / fallback 场景
-
 ## 边界
 
 1. 不把整年 canonical TXT 数据放进这里

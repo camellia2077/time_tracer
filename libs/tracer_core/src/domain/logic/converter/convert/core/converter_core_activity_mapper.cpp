@@ -179,22 +179,21 @@ auto ActivityMapper::AppendActivity(
     DailyLog& day, const RawEvent& raw_event, const TimeRange& time_range,
     std::string_view mapped_description,
     const std::optional<SourceSpan>& start_span) const -> void {
-  if (time_range.start_hhmm.empty()) {
-    return;
-  }
-
   std::vector<std::string> parts =
       SplitString(std::string(mapped_description), '_');
   if (parts.empty()) {
     return;
   }
 
-  BaseActivityRecord activity;
-  activity.start_time_str = std::string(time_range.start_hhmm);
-  activity.end_time_str = std::string(time_range.end_hhmm);
-
   ApplyTopParentMapping(parts);
-  activity.project_path = BuildProjectPath(parts);
+  const std::string kProjectPath = BuildProjectPath(parts);
+  BaseActivityRecord activity =
+      time_range.start_hhmm.empty()
+          ? BaseActivityRecord::MakeEndOnly(std::string(time_range.end_hhmm),
+                                            kProjectPath)
+          : BaseActivityRecord::MakeInterval(
+                std::string(time_range.start_hhmm),
+                std::string(time_range.end_hhmm), kProjectPath);
   if (!raw_event.remark.empty()) {
     activity.remark = raw_event.remark;
   }

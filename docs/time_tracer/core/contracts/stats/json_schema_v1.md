@@ -107,7 +107,7 @@
 ```
 
 说明：
-1. `average_duration_seconds` 按 `range_days` 计算。
+1. `average_duration_seconds` 按 `active_days` 计算；没有任何活动记录的日期不计入分母。
 2. 空数据时 `series` 可为空，统计字段为 0。
 3. `series[].epoch_day` 为可选字段，用于端侧优化 x 轴渲染。
 
@@ -154,14 +154,21 @@
   "output_mode": "semantic_json",
   "total_duration_seconds": 7200,
   "active_root_count": 1,
+  "active_days": 2,
   "range_days": 7,
   "tree": [
     {
       "name": "study",
       "duration_seconds": 7200,
       "occurrence_count": 2,
+      "average_duration_seconds": 3600,
+      "average_occurrence_count": 1.0,
+      "average_occurrence_ratio": 1.0,
       "children": [
-        { "name": "cpp", "duration_seconds": 3600, "occurrence_count": 1, "children": [] }
+        { "name": "cpp", "duration_seconds": 3600, "occurrence_count": 1,
+          "average_duration_seconds": 1800, "average_occurrence_count": 0.5,
+          "average_occurrence_ratio": 1.0,
+          "children": [] }
       ]
     }
   ]
@@ -171,6 +178,7 @@
 说明：
 1. `tree` 是唯一的分布数据源，始终保留未折叠的完整加权活动树。
 2. 端侧从根节点或当前节点的 `children` 逐层构建分布图和下钻路径；可按 `duration_seconds` 或 `occurrence_count` 统计分布。
+3. `average_duration_seconds` 和 `average_occurrence_count` 使用 `active_days` 作为分母；`average_occurrence_ratio` 是当前层级的记录次数占比。
 
 ## 兼容性规则
 1. `text` 模式不受此文档约束。

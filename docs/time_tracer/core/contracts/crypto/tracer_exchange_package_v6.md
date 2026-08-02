@@ -29,7 +29,6 @@ source_root_name = "data"
 [config]
 root = "config/user"
 files = [
-  "config/user/activity_hierarchy/_system.toml",
   "config/user/behavior.toml",
 ]
 

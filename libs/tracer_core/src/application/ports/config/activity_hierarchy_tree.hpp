@@ -12,8 +12,8 @@ enum class ActivityHierarchyNodeKind {
   kGroup,
 };
 
-// Stable Core-owned representation of one alias TOML node. `path` is the
-// canonical path relative to the document's [aliases] table. The vector
+// Stable Core-owned representation of one canonical TOML node. `path` is the
+// canonical path relative to the document's [canonical] table. The vector
 // order is the source TOML order; consumers may sort for presentation.
 struct ActivityHierarchyTreeNode {
   std::string canonical_key;
@@ -27,7 +27,7 @@ struct ActivityHierarchyTreeNode {
   }
 };
 
-// Stable Core-owned representation of one alias TOML document. `parent` is
+// Stable Core-owned representation of one canonical TOML document. `parent` is
 // the document-level canonical prefix and is intentionally not a selectable
 // node; selectable nodes are in `nodes` and their descendants.
 struct ActivityHierarchyTree {

@@ -75,7 +75,10 @@ python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle
 python tools/run.py build --app tracer_android --profile android_edit
 python tools/run.py android --variant debug
 python tools/run.py android --variant debug --install
+# 注入测试数据后自动通过 ADB 重建 Android 数据库
 python tools/run.py android --variant debug --install --with-test-data
+# 对已安装的 Debug APK 单独重建数据库
+python tools/run.py android --variant debug --install-only --rebuild-database
 python tools/run.py android --variant debug --install-only
 python tools/run.py android --variant release
 python tools/run.py android --variant release --install

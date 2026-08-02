@@ -9,6 +9,7 @@ module;
 #include <vector>
 
 #include "application/pipeline/importer/model/import_models.hpp"
+#include "infra/schema/sqlite_schema.hpp"
 
 module tracer.core.infrastructure.persistence.write.importer.sqlite.writer;
 
@@ -19,10 +20,9 @@ namespace {
 constexpr int kDayIdxDate = 1;
 constexpr int kDayIdxYear = 2;
 constexpr int kDayIdxMonth = 3;
-constexpr int kDayIdxWakeAnchor = 4;
-constexpr int kDayIdxRemark = 5;
-constexpr int kDayIdxGetupTime = 6;
-constexpr int kDayIdxActivityCount = 7;
+constexpr int kDayIdxRemark = 4;
+constexpr int kDayIdxGetupTime = 5;
+constexpr int kDayIdxActivityCount = 6;
 
 // Record Table Bind Indices
 constexpr int kRecordIdxLogicalId = 1;
@@ -31,10 +31,18 @@ constexpr int kRecordIdxEndTimestamp = 3;
 constexpr int kRecordIdxDate = 4;
 constexpr int kRecordIdxStartTimeStr = 5;
 constexpr int kRecordIdxEndTimeStr = 6;
-constexpr int kRecordIdxProjectId = 7;
-constexpr int kRecordIdxDuration = 8;
-constexpr int kRecordIdxProjectPathSnapshot = 9;
-constexpr int kRecordIdxRemark = 10;
+constexpr int kRecordIdxRecordKind = 7;
+constexpr int kRecordIdxProjectId = 8;
+constexpr int kRecordIdxDuration = 9;
+constexpr int kRecordIdxProjectPathSnapshot = 10;
+constexpr int kRecordIdxRemark = 11;
+
+auto RecordKindToDbValue(ActivityRecordKind kind) -> const char* {
+  const auto& kValue = kind == ActivityRecordKind::kEndOnly
+                           ? schema::time_records::db::kEndOnlyRecordKind
+                           : schema::time_records::db::kIntervalRecordKind;
+  return kValue.data();
+}
 }  // namespace
 
 namespace tracer::core::infrastructure::persistence::importer::sqlite {
@@ -59,7 +67,6 @@ auto Writer::InsertDays(const std::vector<DayData>& days) -> void {
                       SQLITE_TRANSIENT);
     sqlite3_bind_int(stmt_insert_day_, kDayIdxYear, day_data.year);
     sqlite3_bind_int(stmt_insert_day_, kDayIdxMonth, day_data.month);
-    sqlite3_bind_int(stmt_insert_day_, kDayIdxWakeAnchor, day_data.wake_anchor);
     sqlite3_bind_text(stmt_insert_day_, kDayIdxRemark, day_data.remark.c_str(),
                       -1, SQLITE_TRANSIENT);
 
@@ -109,6 +116,9 @@ auto Writer::InsertRecords(const std::vector<TimeRecordInternal>& records)
                       record_data.start_time_str.c_str(), -1, SQLITE_TRANSIENT);
     sqlite3_bind_text(stmt_insert_record_, kRecordIdxEndTimeStr,
                       record_data.end_time_str.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt_insert_record_, kRecordIdxRecordKind,
+                      RecordKindToDbValue(record_data.kind), -1,
+                      SQLITE_TRANSIENT);
 
     sqlite3_bind_int64(stmt_insert_record_, kRecordIdxProjectId, project_id);
     sqlite3_bind_int(stmt_insert_record_, kRecordIdxDuration,

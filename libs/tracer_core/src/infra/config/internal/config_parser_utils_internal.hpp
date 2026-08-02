@@ -107,9 +107,6 @@ auto EnsureFieldAbsent(const toml::table& tbl, std::string_view key,
                        std::string_view field_prefix,
                        std::string_view replacement_hint) -> void;
 
-auto ParseDateCheckMode(std::string_view mode_str, const fs::path& source_path,
-                        const std::string& field_path) -> DateCheckMode;
-
 auto LoadReportPathsFromTable(const toml::table& section,
                               const ReportPathSource& source,
                               std::string_view section_field_path,
@@ -134,10 +131,6 @@ auto ParseQueryDefaults(const toml::table& query_tbl,
 
 auto ParseIngestDefaults(const toml::table& ingest_tbl,
                          const fs::path& source_path, AppConfig& config)
-    -> void;
-
-auto ParseValidateLogicDefaults(const toml::table& validate_logic_tbl,
-                                const fs::path& source_path, AppConfig& config)
     -> void;
 
 auto ParseRuntimeConfigPaths(const toml::table& config_tbl,

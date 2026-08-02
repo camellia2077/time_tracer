@@ -107,6 +107,9 @@ d0102
 1. “只有 1 条点事件”通常表示合法但未完成
 2. “只有 1 条完整区间事件”可以表示合法且已具备统计意义
 
+如果唯一的点事件缺少可靠前置边界，它应转换为合法的 end-only 活动事实：
+计入活动次数、活动明细和 active day，但不计入活动时长。
+
 ## 3. 阶段归属
 
 为避免把 `wake` 语义、合法性校验、自动补睡眠三件事混为一谈，本文约定以下阶段职责：
@@ -236,8 +239,9 @@ d0102
 以下情况属于“合法但不完整”：
 
 1. 新一天目前只有 1 条点事件
-2. 当天首条活动为 wake，但缺少上一天上下文，暂时无法补 `sleep_night`
-3. 当天首条活动非 wake，且缺少上一天上下文，导致最前面的跨日片段暂不可解
+2. 当天首条点事件缺少上下文并生成 end-only
+3. 当天首条活动为 wake，但缺少上一天上下文，暂时无法补 `sleep_night`
+4. 当天首条活动非 wake，且缺少上一天上下文，导致最前面的跨日片段暂不可解
 
 此外，引入区间事件后还要明确：
 
@@ -282,7 +286,8 @@ import 的阻断条件：
 3. authored events 的计数只看 TXT 中用户写下的事件行：
    1. 不含日备注行
    2. 不含自动生成的 `sleep_night`
-4. 引入区间事件后，warning 规则需要从“只看事件条数”升级为“区分点事件未闭合与区间事件已自洽”
+4. 引入区间事件和 end-only 后，warning 规则需要从“只看事件条数”升级为
+   “区分点事件未闭合、end-only 与区间事件已自洽”
 
 这些 `warning` 的作用是提醒“统计暂不完整”，而不是阻止用户继续记录。
 
@@ -312,7 +317,7 @@ import 的阻断条件：
 为消除“alias key”和“wake keyword”之间的歧义，当前实现约定：
 
 1. `listActivityAliasKeys()` 继续只表示 aliases child files 中的 alias key
-2. `listWakeKeywords()` 只表示 `activity_hierarchy/_system.toml` 中 `sleep_inference.wake_keywords`
+2. `listWakeKeywords()` 只表示 `user/behavior.toml` 中 `sleep_inference.wake_keywords`
 3. `listAuthorableEventTokens()` 表示 `alias_mapping.keys ∪ wake_keywords`
 4. `Record Input`、`Quick Access`、core atomic record 活动名校验统一使用第 3 条口径
 

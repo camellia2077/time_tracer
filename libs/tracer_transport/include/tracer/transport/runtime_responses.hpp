@@ -59,18 +59,14 @@ struct CliGlobalDefaultsPayload {
 struct CliCommandDefaultsPayload {
   std::optional<std::string> export_format;
   std::optional<std::string> query_format;
-  std::optional<std::string> convert_date_check_mode;
   std::optional<bool> convert_save_processed_output;
   std::optional<bool> convert_validate_logic;
   std::optional<bool> convert_validate_structure;
-  std::optional<std::string> ingest_date_check_mode;
   std::optional<bool> ingest_save_processed_output;
-  std::optional<std::string> validate_logic_date_check_mode;
 };
 
 struct CliConfigPayload {
   bool default_save_processed_output = false;
-  std::optional<std::string> default_date_check_mode;
   CliGlobalDefaultsPayload defaults;
   CliCommandDefaultsPayload command_defaults;
 };

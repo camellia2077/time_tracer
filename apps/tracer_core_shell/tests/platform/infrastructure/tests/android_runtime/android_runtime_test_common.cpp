@@ -46,10 +46,24 @@ auto BuildRuntimeRequest(
     const RuntimeTestPaths& paths,
     const std::filesystem::path& converter_config_toml_path)
     -> infrastructure::bootstrap::AndroidRuntimeRequest {
+  std::filesystem::path resolved_converter_config =
+      converter_config_toml_path;
+  const std::filesystem::path repo_converter_config =
+      BuildRepoRoot() / "config" / "user" / "behavior.toml";
+  if (std::filesystem::absolute(converter_config_toml_path) ==
+      std::filesystem::absolute(repo_converter_config)) {
+    const std::filesystem::path test_config_root = paths.test_root / "config";
+    if (!PrepareAndroidConfigFixture(test_config_root)) {
+      throw std::runtime_error(
+          "Failed to prepare Android runtime test config fixture");
+    }
+    resolved_converter_config = test_config_root / "user" / "behavior.toml";
+  }
+
   infrastructure::bootstrap::AndroidRuntimeRequest request;
   request.output_root = paths.output_root;
   request.db_path = paths.db_path;
-  request.converter_config_toml_path = converter_config_toml_path;
+  request.converter_config_toml_path = resolved_converter_config;
   return request;
 }
 
@@ -128,6 +142,9 @@ auto PrepareAndroidConfigFixture(const std::filesystem::path& target_root)
   const std::filesystem::path android_bundle_path =
       BuildRepoRoot() / "apps" / "android" / "runtime" / "src" / "main" /
       "assets" / "config" / "program" / "meta" / "bundle.toml";
+  const std::filesystem::path android_config_path =
+      BuildRepoRoot() / "apps" / "android" / "runtime" / "src" / "main" /
+      "assets" / "config" / "program" / "config.toml";
 
   const auto copy_required_file = [&](std::string_view relative_path) -> bool {
     return CopyFileWithParents(
@@ -137,9 +154,13 @@ auto PrepareAndroidConfigFixture(const std::filesystem::path& target_root)
 
   return CopyFileWithParents(android_bundle_path,
                              target_root / "program" / "meta" / "bundle.toml") &&
-         copy_required_file("config.toml") &&
+         CopyFileWithParents(android_config_path,
+                             target_root / "program" / "config.toml") &&
          CopyFileWithParents(user_source_root / "behavior.toml",
                              target_root / "user" / "behavior.toml") &&
+         CopyFileWithParents(BuildRepoRoot() / "config" / "user" /
+                                 "report.toml",
+                             target_root / "user" / "report.toml") &&
          CopyDirectoryTree(hierarchy_source_root,
                            target_root / "user" / "activity_hierarchy") &&
          copy_required_file("charts/heatmap.toml") &&

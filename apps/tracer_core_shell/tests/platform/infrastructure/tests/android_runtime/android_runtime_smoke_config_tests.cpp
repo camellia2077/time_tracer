@@ -42,6 +42,11 @@ auto RunConfigSmokeSection(int& failures) -> void {
       std::cerr << "[FAIL] Android report catalog should load Chinese Markdown "
                    "labels.\n";
     }
+    if (report_catalog.daily_statuses.statuses.size() != 2U) {
+      ++failures;
+      std::cerr << "[FAIL] Android report catalog should load the configured "
+                   "daily parent statuses.\n";
+    }
 
     tracer_core::core::dto::DataQueryRequest chart_empty_request;
     chart_empty_request.action =

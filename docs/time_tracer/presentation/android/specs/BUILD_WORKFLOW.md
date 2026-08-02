@@ -53,8 +53,7 @@ $env:JAVA_HOME='C:\Program Files\Android\Android Studio\jbr'
 
 Common targeted commands:
 
-- `.\gradlew.bat :runtime:syncTracerCoreConfigSnapshot`
-- `.\gradlew.bat :runtime:verifyTracerCoreConfigSnapshot`
+- `.\gradlew.bat :runtime:generateTracerCoreConfigAssets`
 - `.\gradlew.bat :runtime:testDebugUnitTest`
 - `.\gradlew.bat :app:check`
 - `.\gradlew.bat :app:qaRelease`
@@ -66,7 +65,7 @@ Common targeted commands:
   - For Android UI changes, run the smallest relevant targeted compile or unit
     test, plus focused state/render coverage when applicable.
   - For runtime, contracts, or build behavior changes, run the smallest
-    relevant targeted build or unit check and any affected snapshot/config
+    relevant targeted build or unit check and any affected generated-config
     verification.
   - Run `android_style` only when the user explicitly requests style validation.
 - If the Android host/runtime path is affected, include:

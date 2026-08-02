@@ -95,7 +95,8 @@ auto WriteCanonicalTextFile(const fs::path& path, std::string_view content)
 
 [[nodiscard]] auto ResolveRecordTargetPaths(
     const fs::path& output_root, const ParsedIsoDate& logical_date,
-    std::string_view preferred_txt_path) -> ResolvedRecordPaths {
+    std::string_view preferred_txt_path,
+    bool allow_missing_preferred_txt_path = false) -> ResolvedRecordPaths {
   ResolvedRecordPaths paths = BuildRuntimeRoots(output_root);
   const std::string default_relative =
       std::format("{0:04d}/{0:04d}-{1:02d}.txt", logical_date.year,
@@ -109,7 +110,9 @@ auto WriteCanonicalTextFile(const fs::path& path, std::string_view content)
           "preferred_txt_path month does not match target_date_iso month " +
           logical_date.month_key + ".");
     }
-    if (!fs::exists(canonical_target) || !fs::is_regular_file(canonical_target)) {
+    const bool target_exists = fs::exists(canonical_target);
+    if ((!allow_missing_preferred_txt_path || target_exists) &&
+        (!target_exists || !fs::is_regular_file(canonical_target))) {
       throw std::invalid_argument(
           "preferred_txt_path does not exist as a regular TXT file.");
     }
@@ -177,6 +180,32 @@ auto CleanupTransactionWorkspace(const fs::path& root) -> void {
   }
   std::error_code io_error;
   fs::remove_all(root, io_error);
+}
+
+[[nodiscard]] auto FindPreviousMonthLastEvent(
+    const fs::path& input_root, const ParsedIsoDate& logical_date)
+    -> std::optional<PreviousEventContext> {
+  int year = logical_date.year;
+  int month = logical_date.month - 1;
+  if (month == 0) {
+    month = 12;
+    --year;
+  }
+  const fs::path previous_path =
+      input_root / std::format("{:04d}/{:04d}-{:02d}.txt", year, year, month);
+  if (!fs::exists(previous_path) || !fs::is_regular_file(previous_path)) {
+    return std::nullopt;
+  }
+  try {
+    const std::string content = ReadCanonicalTextFile(previous_path);
+    const std::vector<std::string> lines = SplitLines(content);
+    return FindLastEventBefore(lines, static_cast<int>(lines.size()), year,
+                               month);
+  } catch (...) {
+    // A stale or malformed previous-month file must not prevent recording the
+    // current wake event; it only makes the optional display metric unavailable.
+    return std::nullopt;
+  }
 }
 
 [[nodiscard]] auto BuildRecordSuccessMessage(
@@ -312,7 +341,8 @@ auto RunRecordActivityAtomicallySupport(
         NormalizeRemarkForRecord(request.remark);
 
     ResolvedRecordPaths resolved_paths = ResolveRecordTargetPaths(
-        output_root_path, logical_date, request.preferred_txt_path);
+        output_root_path, logical_date, request.preferred_txt_path,
+        /*allow_missing_preferred_txt_path=*/true);
     std::error_code io_error;
     fs::create_directories(resolved_paths.input_root, io_error);
     if (io_error) {
@@ -332,12 +362,16 @@ auto RunRecordActivityAtomicallySupport(
                                           resolved_paths.target_txt_path);
     }
 
+    const auto previous_month_last_event =
+        FindPreviousMonthLastEvent(resolved_paths.input_root, logical_date);
+
     // Upper layer chooses explicit time_order_mode. This layer only applies
     // generic mode semantics and must not infer/override mode on its own.
     CandidateRecordBuildResult candidate_build = BuildCandidateRecordContent(
         official_content, logical_date, record_activity_name,
         normalized_remark, request.time_order_mode,
-        converter_config.sleep_inference.wake_keywords);
+        converter_config.sleep_inference.wake_keywords,
+        previous_month_last_event);
     candidate_build.month_file_created = !target_previously_existed;
 
     AtomicTransactionWorkspace workspace =

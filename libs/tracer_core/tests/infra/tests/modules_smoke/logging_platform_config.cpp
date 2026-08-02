@@ -140,7 +140,7 @@ auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int {
   const std::filesystem::path kLegacyAliasFile =
       kLegacyAliasDir / "legacy.toml";
   WriteSmokeFile(kLegacyAliasFile,
-                 "parent = \"legacy\"\n\n[aliases]\n"
+                 "parent = \"legacy\"\n\n[canonical]\n"
                  "\"old-alias\" = \"activity\"\n");
   bool rejected_legacy_shape = false;
   try {
@@ -159,9 +159,9 @@ auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int {
   const std::filesystem::path kDuplicateGroupAliasDir =
       kConfigSmokeDir / "duplicate_group_aliases";
   WriteSmokeFile(kDuplicateGroupAliasDir / "duplicate.toml",
-                 "parent = \"exercise\"\n\n[aliases.cardio]\n"
+                 "parent = \"exercise\"\n\n[canonical.cardio]\n"
                  "group_aliases = [\"有氧训练\", \"有氧\"]\n\n"
-                 "[aliases.other]\n"
+                 "[canonical.other]\n"
                  "group_aliases = [\"有氧\"]\n");
   bool rejected_duplicate_group_alias = false;
   std::string duplicate_group_alias_error;

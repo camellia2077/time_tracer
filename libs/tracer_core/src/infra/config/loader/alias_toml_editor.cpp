@@ -61,10 +61,10 @@ auto CollectMatches(
   return parts;
 }
 
-[[nodiscard]] auto FindTable(toml::table& aliases,
+[[nodiscard]] auto FindTable(toml::table& canonical,
                              const std::vector<std::string>& groups)
     -> toml::table* {
-  toml::table* current = &aliases;
+  toml::table* current = &canonical;
   for (const auto& group : groups) {
     auto* child = current->get(group);
     if (child == nullptr || !child->is_table()) {
@@ -85,7 +85,7 @@ auto ValidateNewKey(std::string_view new_name) -> void {
 }
 
 auto RenameOne(
-    const Replacement& replacement, toml::table& aliases,
+    const Replacement& replacement, toml::table& canonical,
     const tracer::core::infrastructure::config::loader::detail::AliasDocument&
         document) -> void {
   std::map<std::string, Match> matches;
@@ -122,7 +122,7 @@ auto RenameOne(
 
   std::vector<std::string> parent_path = source->second.path;
   parent_path.pop_back();
-  toml::table* source_parent = FindTable(aliases, parent_path);
+  toml::table* source_parent = FindTable(canonical, parent_path);
   if (source_parent == nullptr) {
     throw std::invalid_argument("Canonical not found: " +
                                 replacement.old_canonical);
@@ -412,7 +412,7 @@ auto ApplyActivityHierarchyOperationImpl(
     const config::ActivityHierarchyOperationRequest& request)
     -> config::ActivityHierarchyOperationResult {
   if (toml_content.empty()) {
-    throw std::invalid_argument("Alias TOML content must not be empty.");
+    throw std::invalid_argument("Canonical TOML content must not be empty.");
   }
 
   toml::table document = toml::parse(toml_content);
@@ -421,7 +421,7 @@ auto ApplyActivityHierarchyOperationImpl(
           document);
   tracer::core::infrastructure::config::loader::detail::
       ValidateAliasDocumentAliasUniqueness(alias_document);
-  toml::table* aliases = document["aliases"].as_table();
+  toml::table* canonical = document["canonical"].as_table();
   config::ActivityHierarchyOperationResult result;
 
   const auto collect_alias_replacements = [&]() {
@@ -470,7 +470,7 @@ auto ApplyActivityHierarchyOperationImpl(
 
   const auto mutable_parent = [&](const std::vector<std::string>& path)
       -> toml::table* {
-    toml::table* parent = FindTable(*aliases, path);
+    toml::table* parent = FindTable(*canonical, path);
     if (parent == nullptr) {
       throw std::invalid_argument("Alias group not found.");
     }
@@ -594,6 +594,38 @@ auto ApplyActivityHierarchyOperationImpl(
       });
       break;
     }
+    case config::ActivityHierarchyOperationKind::kMergeLeafCanonical: {
+      const auto source_path =
+          ParseHierarchyPath(request.target_path, false, "Source leaf path");
+      const auto destination_path = ParseHierarchyPath(
+          request.destination_path, false, "Destination leaf path");
+      if (PathsEqual(source_path, destination_path)) {
+        throw std::invalid_argument(
+            "Source and destination canonical leaves must differ.");
+      }
+
+      const auto source = RequireCanonicalNode(
+          alias_document, source_path, AliasDocumentNodeKind::kLeaf, "source leaf");
+      const auto destination = RequireCanonicalNode(
+          alias_document, destination_path, AliasDocumentNodeKind::kLeaf,
+          "destination leaf");
+      if (destination.node->aliases.empty()) {
+        throw std::invalid_argument(
+            "Destination canonical leaf must contain at least one alias.");
+      }
+
+      auto source_parent_path = source_path;
+      const std::string source_key = source_parent_path.back();
+      source_parent_path.pop_back();
+      mutable_parent(source_parent_path)->erase(source_key);
+
+      result.replacements.push_back({source.canonical, destination.canonical});
+      for (const auto& alias : source.node->aliases) {
+        result.alias_replacements.push_back(
+            {alias.value, destination.node->aliases.front().value});
+      }
+      break;
+    }
     case config::ActivityHierarchyOperationKind::kSetGroupAliases: {
       const auto path =
           ParseHierarchyPath(request.target_path, false, "Group path");
@@ -611,7 +643,7 @@ auto ApplyActivityHierarchyOperationImpl(
       if (!request.old_parent.empty() &&
           request.old_parent != alias_document.parent) {
         throw std::invalid_argument(
-            "Old parent does not match the alias TOML parent: " +
+            "Old parent does not match the canonical TOML parent: " +
             request.old_parent + " != " + alias_document.parent);
       }
       ValidateParentName(request.new_name);
@@ -658,7 +690,7 @@ auto ApplyActivityHierarchyOperationImpl(
                                       request.new_name);
       result.replacements = CollectRenamedCanonicalReplacements(
           alias_document, path, request.new_name);
-      RenameOne({source.canonical, new_canonical}, *aliases, alias_document);
+      RenameOne({source.canonical, new_canonical}, *canonical, alias_document);
       if (!group && !request.aliases.empty()) {
         toml::table* parent = mutable_parent(parent_path);
         parent->erase(request.new_name);
@@ -765,11 +797,11 @@ auto MoveActivityHierarchyNodeBetweenDocuments(
     const ActivityHierarchyOperationRequest& request)
     -> ActivityHierarchyCrossDocumentOperationResult {
   if (documents.empty()) {
-    throw std::invalid_argument("Alias TOML document set must not be empty.");
+    throw std::invalid_argument("Canonical TOML document set must not be empty.");
   }
   if (source_name.empty() || destination_name.empty()) {
     throw std::invalid_argument(
-        "Source and destination alias TOML names must not be empty.");
+        "Source and destination canonical TOML names must not be empty.");
   }
   if (source_name == destination_name) {
     throw std::invalid_argument(
@@ -787,7 +819,7 @@ auto MoveActivityHierarchyNodeBetweenDocuments(
   for (std::size_t index = 0U; index < documents.size(); ++index) {
     if (documents[index].source_name == source_name) {
       if (source_index != documents.size()) {
-        throw std::invalid_argument("Duplicate source alias TOML name: " +
+        throw std::invalid_argument("Duplicate source canonical TOML name: " +
                                     std::string(source_name));
       }
       source_index = index;
@@ -795,7 +827,7 @@ auto MoveActivityHierarchyNodeBetweenDocuments(
     if (documents[index].source_name == destination_name) {
       if (destination_index != documents.size()) {
         throw std::invalid_argument(
-            "Duplicate destination alias TOML name: " +
+            "Duplicate destination canonical TOML name: " +
             std::string(destination_name));
       }
       destination_index = index;
@@ -806,11 +838,11 @@ auto MoveActivityHierarchyNodeBetweenDocuments(
             tables.back()));
   }
   if (source_index == documents.size()) {
-    throw std::invalid_argument("Source alias TOML not found: " +
+    throw std::invalid_argument("Source canonical TOML not found: " +
                                 std::string(source_name));
   }
   if (destination_index == documents.size()) {
-    throw std::invalid_argument("Destination alias TOML not found: " +
+    throw std::invalid_argument("Destination canonical TOML not found: " +
                                 std::string(destination_name));
   }
 
@@ -848,15 +880,18 @@ auto MoveActivityHierarchyNodeBetweenDocuments(
         AliasDocumentNodeKind::kGroup, "destination group"));
   }
 
-  toml::table* source_aliases = tables[source_index]["aliases"].as_table();
-  toml::table* destination_aliases =
-      tables[destination_index]["aliases"].as_table();
-  if (source_aliases == nullptr || destination_aliases == nullptr) {
-    throw std::invalid_argument("Alias TOML must contain an `aliases` table.");
+  toml::table* source_canonical =
+      tables[source_index]["canonical"].as_table();
+  toml::table* destination_canonical =
+      tables[destination_index]["canonical"].as_table();
+  if (source_canonical == nullptr || destination_canonical == nullptr) {
+    throw std::invalid_argument(
+        "Canonical TOML must contain a `canonical` table.");
   }
-  toml::table* source_parent = FindTable(*source_aliases, source_parent_path);
+  toml::table* source_parent =
+      FindTable(*source_canonical, source_parent_path);
   toml::table* destination_parent =
-      FindTable(*destination_aliases, destination_path);
+      FindTable(*destination_canonical, destination_path);
   if (source_parent == nullptr || destination_parent == nullptr) {
     throw std::invalid_argument("Alias group not found.");
   }
@@ -936,7 +971,7 @@ auto RewriteActivityHierarchyDocument(
     std::string_view original_toml_content,
     std::string_view updated_toml_content) -> ActivityHierarchyOperationResult {
   if (original_toml_content.empty() || updated_toml_content.empty()) {
-    throw std::invalid_argument("Alias TOML content must not be empty.");
+    throw std::invalid_argument("Canonical TOML content must not be empty.");
   }
   const toml::table original_table = toml::parse(original_toml_content);
   const toml::table updated_table = toml::parse(updated_toml_content);
@@ -977,7 +1012,7 @@ auto ValidateActivityHierarchyDocuments(
   std::map<std::string, std::string> alias_sources;
   for (const auto& input : documents) {
     if (input.source_name.empty()) {
-      throw std::invalid_argument("Alias document source name must not be empty.");
+      throw std::invalid_argument("Canonical document source name must not be empty.");
     }
     const toml::table parsed = toml::parse(input.toml_content);
     const AliasDocument document =
@@ -993,7 +1028,7 @@ auto ValidateActivityHierarchyDocuments(
         if (!inserted) {
           throw std::runtime_error(
               "Duplicate alias key `" + alias.value +
-              "` across alias documents: " + existing->second + " and " +
+              "` across canonical documents: " + existing->second + " and " +
               input.source_name + ".");
         }
       }

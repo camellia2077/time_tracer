@@ -147,7 +147,7 @@ auto ReadLegacyRepoConverterConfig(std::string_view relative_path)
 auto BuildDefaultAliasChildConfigs() -> std::vector<PayloadFixture> {
   return {{
       .relative_path = "config/user/activity_hierarchy/default.toml",
-      .text = "parent = \"study\"\n\n[aliases]\n\"study\" = \"math\"\n",
+      .text = "parent = \"study\"\n\n[canonical]\n\"study\" = \"math\"\n",
   }};
 }
 

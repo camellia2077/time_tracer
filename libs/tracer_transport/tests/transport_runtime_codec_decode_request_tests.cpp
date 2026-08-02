@@ -60,7 +60,7 @@ void TestDecodeIngestRequest(int& failures) {
 
 void TestDecodeQueryRequest(int& failures) {
   const auto request = DecodeQueryRequest(
-      R"({"action":"days_duration","output_mode":"semantic_json","year":2026,"month":1,"from_date":"2026-01-01","to_date":"2026-01-31","remark":"x","day_remark":"y","project":"study","root":"study","exercise":1,"status":0,"cross_midnight_activity":false,"missing_wake_anchor":true,"reverse":true,"limit":7,"top_n":3,"lookback_days":14,"anchor_date":"2026-01-31","activity_prefix":"st","activity_score_by_duration":true,"tree_period":"recent","tree_period_argument":"7","tree_max_depth":2})");
+      R"({"action":"days_duration","output_mode":"semantic_json","year":2026,"month":1,"from_date":"2026-01-01","to_date":"2026-01-31","remark":"x","day_remark":"y","project":"study","root":"study","exercise":1,"status":0,"cross_midnight_activity":false,"reverse":true,"limit":7,"top_n":3,"lookback_days":14,"anchor_date":"2026-01-31","activity_prefix":"st","activity_score_by_duration":true,"tree_period":"recent","tree_period_argument":"7","tree_max_depth":2})");
 
   Expect(request.action == "days_duration",
          "DecodeQueryRequest action mismatch.", failures);
@@ -83,9 +83,6 @@ void TestDecodeQueryRequest(int& failures) {
          "DecodeQueryRequest score flag mismatch.", failures);
   Expect(request.root.has_value() && *request.root == "study",
          "DecodeQueryRequest root mismatch.", failures);
-  Expect(request.missing_wake_anchor.has_value() &&
-             *request.missing_wake_anchor,
-         "DecodeQueryRequest missing_wake_anchor mismatch.", failures);
 
   ExpectInvalidArgument([] { (void)DecodeQueryRequest(R"({"action":1})"); },
                         "field `action` must be a string.",
@@ -94,13 +91,6 @@ void TestDecodeQueryRequest(int& failures) {
       [] { (void)DecodeQueryRequest(R"({"action":"days","output_mode":1})"); },
       "field `output_mode` must be a string.",
       "DecodeQueryRequest bad output_mode type", failures);
-  ExpectInvalidArgument(
-      [] {
-        (void)DecodeQueryRequest(
-            R"({"action":"days","missing_wake_anchor":"yes"})");
-      },
-      "field `missing_wake_anchor` must be a boolean.",
-      "DecodeQueryRequest bad missing_wake_anchor type", failures);
 }
 
 void TestDecodeWorkflowRequests(int& failures) {

@@ -25,11 +25,6 @@ auto RebuildDerivedFlags(DailyLog& day) -> void {
   day.activityCount = static_cast<int>(day.processedActivities.size());
   day.hasStudyActivity = false;
   day.hasExerciseActivity = false;
-  // headers.wake_anchor is a day-level semantic flag: valid getup anchor +
-  // not a continuation day. It is intentionally independent from whether a
-  // generated sleep_night activity exists in processedActivities.
-  day.hasWakeAnchor =
-      !day.isContinuation && !day.getupTime.empty() && day.getupTime != "00:00";
 
   for (const auto& activity : day.processedActivities) {
     if (activity.project_path.starts_with("study")) {
@@ -57,14 +52,6 @@ auto SerializeLogToJsonObject(const DailyLog& day) -> nlohmann::json {
 
   nlohmann::json headers_obj;
   headers_obj[json_keys::kDate] = day.date;
-  // Persist the public wake-anchor header from day semantics rather than from
-  // sleep activity presence. Auto-generated sleep activities affect the fact
-  // set and time stats, but not this header's meaning.
-  headers_obj[json_keys::kWakeAnchor] =
-      (!day.isContinuation && !day.getupTime.empty() &&
-       day.getupTime != "00:00")
-          ? 1
-          : 0;
   headers_obj[json_keys::kCardio] =
       stats_aggregator.HasCardioActivity() ? 1 : 0;
   headers_obj[json_keys::kAnaerobic] =

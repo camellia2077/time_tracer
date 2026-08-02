@@ -1,0 +1,3 @@
+[sleep_inference]
+wake_keywords = ["wake"]
+sleep_project_path = "sleep_night"

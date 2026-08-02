@@ -13,6 +13,7 @@ namespace tracer_core::core::dto {
 
 enum class DataQueryAction;
 enum class DataQueryOutputMode;
+enum class ReportAverageDayBasis;
 enum class ReportDisplayMode;
 enum class ReportExportScope;
 enum class ReportOperationKind;
@@ -33,6 +34,8 @@ namespace tracer_core::shell::c_api_bridge {
     -> tracer_core::core::dto::DataQueryAction;
 [[nodiscard]] auto ParseDataQueryOutputMode(const std::string& value)
     -> tracer_core::core::dto::DataQueryOutputMode;
+[[nodiscard]] auto ParseReportAverageDayBasis(const std::string& value)
+    -> tracer_core::core::dto::ReportAverageDayBasis;
 [[nodiscard]] auto ParseReportDisplayMode(const std::string& value)
     -> tracer_core::core::dto::ReportDisplayMode;
 [[nodiscard]] auto ParseReportExportScope(const std::string& value)

@@ -212,6 +212,11 @@ void SetLastError(const char* message) {
   return tracer_core::shell::c_api_bridge::ParseDataQueryOutputMode(value);
 }
 
+[[nodiscard]] auto ParseReportAverageDayBasis(const std::string& value)
+    -> tracer_core::core::dto::ReportAverageDayBasis {
+  return tracer_core::shell::c_api_bridge::ParseReportAverageDayBasis(value);
+}
+
 [[nodiscard]] auto ParseReportDisplayMode(const std::string& value)
     -> tracer_core::core::dto::ReportDisplayMode {
   return tracer_core::shell::c_api_bridge::ParseReportDisplayMode(value);

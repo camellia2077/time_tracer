@@ -10,7 +10,6 @@ struct QueryFilters {
   std::optional<int> exercise;
   std::optional<int> status;
   bool cross_midnight_activity = false;
-  bool missing_wake_anchor = false;
   bool reverse = false;
   std::optional<int> limit;
 };

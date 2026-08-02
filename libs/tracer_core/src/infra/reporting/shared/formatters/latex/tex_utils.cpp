@@ -50,6 +50,15 @@ auto FormatOneDecimal(double value) -> std::string {
   return output;
 }
 
+auto FormatAverageOccurrenceCount(std::int64_t occurrence_count,
+                                  int avg_days) -> std::string {
+  if (avg_days <= 0) {
+    return "0.00";
+  }
+  return FormatCompactNumber(static_cast<double>(occurrence_count) /
+                             static_cast<double>(avg_days));
+}
+
 class LatexFormattingStrategy : public reporting::IFormattingStrategy {
  public:
   // NOLINTBEGIN(bugprone-easily-swappable-parameters)
@@ -95,6 +104,26 @@ class LatexFormattingStrategy : public reporting::IFormattingStrategy {
     return output;
   }
 
+  [[nodiscard]] auto FormatCategoryHeader(
+      const std::string& category_name, const std::string& /*formatted_duration*/,
+      double percentage, std::int64_t duration_seconds,
+      std::int64_t occurrence_count, int avg_days) const
+      -> std::string override {
+    std::string output = FormatCategoryHeader(
+        category_name, TimeFormatDuration(duration_seconds), percentage);
+    if (occurrence_count > 0) {
+      output += "\\textit{Average: ";
+      output += TexUtils::EscapeLatex(TimeFormatDuration(
+          avg_days > 0 ? duration_seconds / avg_days : duration_seconds));
+      output += "/day \\textperiodcentered ";
+      output += std::to_string(occurrence_count);
+      output += " times \\textperiodcentered ";
+      output += FormatAverageOccurrenceCount(occurrence_count, avg_days);
+      output += " times/day}\\par\n";
+    }
+    return output;
+  }
+
   [[nodiscard]] auto FormatTreeNode(const std::string& project_name,
                                     const std::string& formatted_duration,
                                     int /*indent_level*/) const
@@ -102,6 +131,28 @@ class LatexFormattingStrategy : public reporting::IFormattingStrategy {
     // indent_level is not used in LaTeX as itemize handles nesting
     return "    \\item " + TexUtils::EscapeLatex(project_name) + ": " +
            TexUtils::EscapeLatex(formatted_duration) + "\n";
+  }
+
+  [[nodiscard]] auto FormatTreeNode(
+      const std::string& project_name, const std::string& formatted_duration,
+      int /*indent_level*/, double percentage, std::int64_t duration_seconds,
+      std::int64_t occurrence_count, int avg_days) const
+      -> std::string override {
+    std::string output = "    \\item " +
+                         TexUtils::EscapeLatex(project_name) + ": " +
+                         TexUtils::EscapeLatex(formatted_duration) + " (" +
+                         FormatOneDecimal(percentage) + "\\%)\n";
+    if (occurrence_count > 0) {
+      output += "        \\textit{Average: ";
+      output += TexUtils::EscapeLatex(TimeFormatDuration(
+          avg_days > 0 ? duration_seconds / avg_days : duration_seconds));
+      output += "/day \\textperiodcentered ";
+      output += std::to_string(occurrence_count);
+      output += " times \\textperiodcentered ";
+      output += FormatAverageOccurrenceCount(occurrence_count, avg_days);
+      output += " times/day}\\par\n";
+    }
+    return output;
   }
 
   [[nodiscard]] auto StartChildrenList() const -> std::string override {

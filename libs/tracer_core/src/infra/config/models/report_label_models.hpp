@@ -10,9 +10,6 @@ struct DailyReportLabels {
   std::string date_label;
   std::string total_time_label;
   std::string activity_count_label;
-  std::string status_label;
-  std::string wake_anchor_label;
-  std::string exercise_label;
   std::string getup_time_label;
   std::string remark_label;
   std::string no_records_message;
@@ -31,7 +28,6 @@ struct RangeReportLabels {
   std::string activity_count_label;
   std::string actual_days_label;
   std::string status_days_label;
-  std::string wake_anchor_days_label;
   std::string exercise_days_label;
   std::string cardio_days_label;
   std::string anaerobic_days_label;

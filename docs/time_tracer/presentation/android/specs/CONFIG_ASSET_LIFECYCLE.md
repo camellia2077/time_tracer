@@ -6,7 +6,8 @@ Describe the path from shared config source to Android runtime consumption.
 
 ## When To Open
 
-- Open this when the task touches config snapshots, runtime bootstrap, or diagnostics/config access.
+- Open this when the task touches generated config assets, runtime bootstrap,
+  or diagnostics/config access.
 
 ## What This Doc Does Not Cover
 
@@ -17,21 +18,24 @@ Describe the path from shared config source to Android runtime consumption.
 ## Source of Truth
 
 - Shared program-resource source:
-  - `assets/tracer_core/program`
+  - `config/program`
 - Distribution activity-hierarchy seed:
   - `assets/tracer_core/defaults/activity_hierarchy`
 - Test activity-hierarchy source:
   - `test/data/activity_hierarchy` (not packaged into APK)
-- Android checked-in runtime snapshot:
-  - `apps/android/runtime/src/main/assets/tracer_core/config`
+- Android generated runtime assets:
+  - `apps/android/runtime/build/generated/tracer/assets/config/program`
 
 Boundary rules:
 
 - The selected shared program-resource directory is canonical for a build.
-- Android builds synchronize program TOML from `assets/tracer_core/program`;
+- Android builds generate program TOML from `config/program`;
   no build-time profile selects test data for Android.
-- The Android runtime snapshot is generated and consumed by Android builds.
-- Fix the selected shared config source, then refresh the Android snapshot.
+- The generated assets are consumed by Android builds and are not checked in.
+- Fix the canonical source config, then rerun the Gradle generation task.
+- Date continuity/fullness is not a shared program-config setting. Android uses
+  `DATE_CHECK_NONE` for user data flows; CLI callers select `none`, `continuity`,
+  or `full` through command arguments.
 
 ## Runtime Consumption Path
 
@@ -47,10 +51,11 @@ Boundary rules:
 ## Runtime Access Paths
 
 - Native init config TOML:
-  - `<filesDir>/tracer_core/config/activity_hierarchy/_system.toml`
+  - `<filesDir>/tracer_core/config/user/behavior.toml`
 - Config editor reads and writes under:
   - `<filesDir>/tracer_core/config`
-- Only `<filesDir>/tracer_core/config/activity_hierarchy/*.toml` is user-editable.
+- Only `<filesDir>/tracer_core/config/user/*.toml` and
+  `<filesDir>/tracer_core/config/user/activity_hierarchy/*.toml` are user-editable.
   `config.toml`, `charts/**`, `meta/**`, and `reports/**` are program resources
   and are read-only in the Android UI.
 - The Config tab exposes structured editing plus an advanced raw TOML mode for

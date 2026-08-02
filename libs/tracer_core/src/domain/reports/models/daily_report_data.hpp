@@ -8,9 +8,11 @@
 #include <string>
 #include <vector>
 
+#include "domain/model/time_data_models.hpp"
 #include "domain/reports/models/project_tree.hpp"
 
 struct TimeRecord {
+  ActivityRecordKind kind = ActivityRecordKind::kInterval;
   std::int64_t logical_id = 0;
   std::string start_time;
   std::string end_time;
@@ -19,12 +21,16 @@ struct TimeRecord {
   std::optional<std::string> activityRemark;
 };
 
+struct DailyStatusValue {
+  std::string id;
+  std::string label;
+  bool value = false;
+};
+
 struct DayMetadata {
-  std::string status = "N/A";
-  std::string wake_anchor = "N/A";
   std::string remark = "N/A";
   std::string getup_time = "N/A";
-  std::string exercise = "N/A";
+  std::vector<DailyStatusValue> statuses;
 };
 
 struct DailyReportData {

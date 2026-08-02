@@ -48,6 +48,32 @@ void RunReportingChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
               kReportResponse.value("content", std::string{}),
           "baseline runtime report content should be stable for same request");
 
+  const json kStructuredReportResponse = ParseResponse(
+      api.runtime_report(
+          runtime,
+          json{{"operation_kind", "structured_query"},
+               {"display_mode", "day"},
+               {"selection_kind", "single_day"},
+               {"date", "2025-01-03"}}
+              .dump()
+              .c_str()),
+      "structured runtime report");
+  Require(kStructuredReportResponse.value("ok", false),
+          "structured runtime report should return ok=true");
+  Require(kStructuredReportResponse.value("report_kind", std::string{}) ==
+              "day",
+          "structured runtime report should identify day report kind");
+  const auto& kStructuredMetadata =
+      kStructuredReportResponse.at("report").at("metadata");
+  Require(kStructuredMetadata.contains("statuses") &&
+              kStructuredMetadata.at("statuses").is_array(),
+          "structured day metadata should expose statuses array");
+  Require(kStructuredMetadata.at("statuses").size() == 2U,
+          "structured day metadata should expose configured statuses");
+  Require(!kStructuredMetadata.contains("status") &&
+              !kStructuredMetadata.contains("exercise"),
+          "structured day metadata should not expose fixed status fields");
+
   const json kReportBatchResponse = ParseResponse(
       api.runtime_report_batch(
           runtime,

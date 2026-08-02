@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <ctime>
 #include <string>
+#include <string_view>
 
 namespace {
 constexpr std::int64_t kSecondsInHour = 3600;
@@ -16,6 +17,10 @@ constexpr int kDayOffset = 8;
 constexpr int kTmYearBase = 1900;
 constexpr int kYearWidth = 4;
 constexpr int kMonthDayWidth = 2;
+constexpr std::size_t kClockTimeLength = 8U;
+constexpr std::size_t kClockMinuteLength = 5U;
+constexpr std::size_t kSecondsOffset = 6U;
+constexpr std::size_t kSecondsLength = 2U;
 }  // namespace
 
 namespace {
@@ -23,6 +28,7 @@ namespace {
 auto BuildDurationText(std::int64_t total_seconds) -> std::string {
   std::int64_t hours = total_seconds / kSecondsInHour;
   std::int64_t minutes = (total_seconds % kSecondsInHour) / kSecondsInMinute;
+  std::int64_t seconds = total_seconds % kSecondsInMinute;
 
   std::string output;
   output.reserve(kDurationBufferSize);
@@ -30,6 +36,11 @@ auto BuildDurationText(std::int64_t total_seconds) -> std::string {
   output += "h ";
   output += std::to_string(minutes);
   output += "m";
+  if (seconds != 0) {
+    output += " ";
+    output += std::to_string(seconds);
+    output += "s";
+  }
   return output;
 }
 
@@ -73,6 +84,15 @@ auto TimeFormatDuration(std::int64_t total_seconds, int avg_days) -> std::string
     main_duration_str += " (average: " + avg_duration_str + "/day)";
   }
   return main_duration_str;
+}
+
+auto FormatClockTime(std::string_view time_text) -> std::string {
+  if (time_text.size() == kClockTimeLength && time_text[2] == ':' &&
+      time_text[5] == ':' &&
+      time_text.substr(kSecondsOffset, kSecondsLength) == "00") {
+    return std::string(time_text.substr(0, kClockMinuteLength));
+  }
+  return std::string(time_text);
 }
 
 auto AddDaysToDateStr(std::string date_str, int days) -> std::string {

@@ -24,17 +24,27 @@ auto BuildMarkdownItemLine(const std::string& label, const std::string& value)
 }
 
 auto BuildActivityLine(const TimeRecord& record,
-                       const std::string& project_path) -> std::string {
+                       const std::string& project_path,
+                       const std::string& end_only_time_format) -> std::string {
   std::string line;
-  line.reserve(record.start_time.size() + record.end_time.size() +
+  const std::string start_time = FormatClockTime(record.start_time);
+  const std::string end_time = FormatClockTime(record.end_time);
+  line.reserve(start_time.size() + end_time.size() +
                project_path.size() + kActivityLinePadding);
   line += "- ";
-  line += record.start_time;
-  line += " - ";
-  line += record.end_time;
-  line += " (";
-  line += TimeFormatDuration(record.duration_seconds);
-  line += "): ";
+  if (record.kind == ActivityRecordKind::kEndOnly) {
+    line += ReplaceAll(end_only_time_format, "{end_time}", end_time);
+  } else {
+    line += start_time;
+    line += " - ";
+    line += end_time;
+    line += " (";
+    line += TimeFormatDuration(record.duration_seconds);
+    line += "): ";
+  }
+  if (record.kind == ActivityRecordKind::kEndOnly) {
+    line += ": ";
+  }
   line += project_path;
   line += "\n";
   return line;
@@ -42,13 +52,18 @@ auto BuildActivityLine(const TimeRecord& record,
 }  // namespace
 
 DayMdConfig::DayMdConfig(const DailyMdConfig& config)
-    : DayBaseConfig(config.labels, {}) {}
+    : DayBaseConfig(config.labels, {}),
+      end_only_time_format_(config.end_only_time_format) {}
+
+auto DayMdConfig::GetEndOnlyTimeFormat() const -> const std::string& {
+  return end_only_time_format_;
+}
 
 DayMdFormatter::DayMdFormatter(std::shared_ptr<DayMdConfig> config)
     : BaseMdFormatter(std::move(config)) {}
 
 auto DayMdFormatter::IsEmptyData(const DailyReportData& data) const -> bool {
-  return data.total_duration == 0;
+  return data.activity_count == 0 && data.detailed_records.empty();
 }
 
 auto DayMdFormatter::GetAvgDays(const DailyReportData& /*data*/) const -> int {
@@ -71,12 +86,10 @@ void DayMdFormatter::FormatHeaderContent(std::string& report_stream,
       config_->GetTotalTimeLabel(), TimeFormatDuration(data.total_duration));
   report_stream += BuildMarkdownItemLine(
       config_->GetActivityCountLabel(), std::to_string(data.activity_count));
-  report_stream += BuildMarkdownItemLine(config_->GetStatusLabel(),
-                                         BoolToString(data.metadata.status));
-  report_stream += BuildMarkdownItemLine(
-      config_->GetWakeAnchorLabel(), BoolToString(data.metadata.wake_anchor));
-  report_stream += BuildMarkdownItemLine(config_->GetExerciseLabel(),
-                                         BoolToString(data.metadata.exercise));
+  for (const auto& status : data.metadata.statuses) {
+    report_stream += BuildMarkdownItemLine(
+        status.label, status.value ? "true" : "false");
+  }
   report_stream += BuildMarkdownItemLine(config_->GetGetupTimeLabel(),
                                          data.metadata.getup_time);
 
@@ -103,7 +116,8 @@ void DayMdFormatter::DisplayDetailedActivities(
   for (const auto& record : data.detailed_records) {
     std::string project_path =
         ReplaceAll(record.project_path, "_", config_->GetActivityConnector());
-    report_stream += BuildActivityLine(record, project_path);
+    report_stream += BuildActivityLine(record, project_path,
+                                       config_->GetEndOnlyTimeFormat());
     if (record.activityRemark.has_value()) {
       // Keep the label on its own line so the layout stays readable for both
       // single-line and multiline remarks. <br> is intentional: a raw source

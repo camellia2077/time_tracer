@@ -4,17 +4,26 @@
 
 #include <cstdint>
 #include <string>
+#include <string_view>
 
 #include "infra/reporting/shared/api/shared_api.hpp"
 
 /**
- * @brief 将总秒数格式化为 "XhYYm" 或 "YYm" 的字符串，并可选择计算平均值。
+ * @brief 将总秒数格式化为 "Xh Ym" 的字符串；非零秒数追加 "Zs"，并可选择计算平均值。
  * @param total_seconds 总秒数。
  * @param avg_days 用于计算平均值的天数，默认为1。
  * @return 格式化后的时长字符串。
  */
 REPORTS_SHARED_API auto TimeFormatDuration(std::int64_t total_seconds,
                                            int avg_days = 1) -> std::string;
+
+/**
+ * @brief 格式化时钟时间；秒为零时省略秒部分。
+ * @param time_text 格式为 HH:MM 或 HH:MM:SS 的时间字符串。
+ * @return 秒非零时保留 HH:MM:SS，否则返回 HH:MM。
+ */
+REPORTS_SHARED_API auto FormatClockTime(std::string_view time_text)
+    -> std::string;
 
 /**
  * @brief 为指定的日期字符串增加或减少天数。

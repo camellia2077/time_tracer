@@ -41,6 +41,7 @@ Do not store UI preferences in the runtime SQLite database.
 - Report chart preference:
   - show average line
   - preferred chart semantic mode (Breakdown or Trend)
+  - preferred Trend top-level activity
 
 ## Ownership
 

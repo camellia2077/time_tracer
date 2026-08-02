@@ -29,7 +29,8 @@ auto DailyReportService::GenerateAllReports(ReportFormat format)
   ProjectNameCache name_cache =
       ::reports::services::CreateProjectNameCache(db_);
 
-  BatchDayDataFetcher fetcher(db_, name_cache);
+  BatchDayDataFetcher fetcher(db_, name_cache,
+                              &report_catalog_.daily_statuses);
   BatchDataResult batch_data = fetcher.FetchAllData();
 
   auto formatter =

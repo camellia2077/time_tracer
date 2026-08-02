@@ -31,9 +31,9 @@ auto BuildActivityLine(const TimeRecord& record,
 
   std::string base_line;
   base_line.reserve(project_path.size() + kActivityBaseLinePadding);
-  base_line += record.start_time;
+  base_line += FormatClockTime(record.start_time);
   base_line += " - ";
-  base_line += record.end_time;
+  base_line += FormatClockTime(record.end_time);
   base_line += " (";
   base_line += TimeFormatDuration(record.duration_seconds);
   base_line += "): ";
@@ -91,15 +91,11 @@ void DisplayHeader(std::string& report_stream, const DailyReportData& data,
   report_stream += BuildBulletLine(config->GetActivityCountLabel(),
                                    std::to_string(data.activity_count));
   report_stream += "\n";
-  report_stream += BuildBulletLine(config->GetStatusLabel(),
-                                   BoolToString(data.metadata.status));
-  report_stream += "\n";
-  report_stream += BuildBulletLine(config->GetWakeAnchorLabel(),
-                                   BoolToString(data.metadata.wake_anchor));
-  report_stream += "\n";
-  report_stream += BuildBulletLine(config->GetExerciseLabel(),
-                                   BoolToString(data.metadata.exercise));
-  report_stream += "\n";
+  for (const auto& status : data.metadata.statuses) {
+    report_stream += BuildBulletLine(status.label,
+                                     status.value ? "true" : "false");
+    report_stream += "\n";
+  }
   report_stream +=
       BuildBulletLine(config->GetGetupTimeLabel(), data.metadata.getup_time);
   report_stream += "\n";

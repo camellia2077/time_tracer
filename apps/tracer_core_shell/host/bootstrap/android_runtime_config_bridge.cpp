@@ -159,6 +159,14 @@ auto BuildAndroidReportCatalogBridge(
     const AndroidRuntimeConfigPaths& runtime_config_paths) -> ReportCatalog {
   ReportCatalog catalog;
 
+  const fs::path report_status_config_path =
+      runtime_config_paths.converter_config_toml_path.parent_path() /
+      "report.toml";
+  if (fs::exists(report_status_config_path)) {
+    catalog.daily_statuses =
+        ReportConfigLoader::LoadDailyStatusConfig(report_status_config_path);
+  }
+
   catalog.loaded_reports.markdown.day =
       ReportConfigLoader::LoadDailyMdConfig(runtime_config_paths.markdown.day);
   catalog.loaded_reports.markdown.month =

@@ -3,22 +3,6 @@
 
 namespace ConfigParserUtils::internal {
 
-auto ParseDateCheckMode(std::string_view mode_str, const fs::path& source_path,
-                        const std::string& field_path) -> DateCheckMode {
-  if (mode_str == "none") {
-    return DateCheckMode::kNone;
-  }
-  if (mode_str == "continuity") {
-    return DateCheckMode::kContinuity;
-  }
-  if (mode_str == "full") {
-    return DateCheckMode::kFull;
-  }
-  ThrowConfigFieldError(source_path, field_path,
-                        "has unsupported value '" + std::string(mode_str) +
-                            "'. Supported values: none, continuity, full.");
-}
-
 auto ParseGlobalDefaults(const toml::table& defaults_tbl,
                          const ConfigParseSource& source, AppConfig& config)
     -> void {
@@ -53,11 +37,6 @@ auto ParseConvertDefaults(const toml::table& convert_tbl,
                           const fs::path& source_path, AppConfig& config)
     -> void {
   constexpr std::string_view kSection = "commands.convert";
-  if (const auto kValue = TryReadTypedField<std::string>(
-          convert_tbl, "date_check", source_path, kSection, "a string")) {
-    config.command_defaults.convert_date_check_mode = ParseDateCheckMode(
-        *kValue, source_path, JoinFieldPath(kSection, "date_check"));
-  }
   if (const auto kValue =
           TryReadTypedField<bool>(convert_tbl, "save_processed_output",
                                   source_path, kSection, "a boolean")) {
@@ -88,27 +67,10 @@ auto ParseIngestDefaults(const toml::table& ingest_tbl,
                          const fs::path& source_path, AppConfig& config)
     -> void {
   constexpr std::string_view kSection = "commands.ingest";
-  if (const auto kValue = TryReadTypedField<std::string>(
-          ingest_tbl, "date_check", source_path, kSection, "a string")) {
-    config.command_defaults.ingest_date_check_mode = ParseDateCheckMode(
-        *kValue, source_path, JoinFieldPath(kSection, "date_check"));
-  }
   if (const auto kValue =
           TryReadTypedField<bool>(ingest_tbl, "save_processed_output",
                                   source_path, kSection, "a boolean")) {
     config.command_defaults.ingest_save_processed_output = kValue;
-  }
-}
-
-auto ParseValidateLogicDefaults(const toml::table& validate_logic_tbl,
-                                const fs::path& source_path, AppConfig& config)
-    -> void {
-  constexpr std::string_view kSection = "commands.validate-logic";
-  if (const auto kValue =
-          TryReadTypedField<std::string>(validate_logic_tbl, "date_check",
-                                         source_path, kSection, "a string")) {
-    config.command_defaults.validate_logic_date_check_mode = ParseDateCheckMode(
-        *kValue, source_path, JoinFieldPath(kSection, "date_check"));
   }
 }
 
@@ -137,12 +99,6 @@ void ParseSystemSettingsImpl(const toml::table& tbl, const fs::path& exe_path,
                                 source_config_path, section_key, "a boolean")
             .value_or(false);
 
-    const bool kCheck =
-        TryReadTypedField<bool>(section, "date_check_continuity",
-                                source_config_path, section_key, "a boolean")
-            .value_or(false);
-    config.default_date_check_mode =
-        kCheck ? DateCheckMode::kContinuity : DateCheckMode::kNone;
   };
 
   if (const toml::table* system_tbl =
@@ -192,10 +148,6 @@ void ParseCliDefaultsImpl(const toml::table& tbl, const fs::path& exe_path,
     ParseIngestDefaults(*sub_tbl, source_config_path, config);
   }
 
-  if (const toml::table* sub_tbl = TryReadTableField(
-          *commands_tbl, "validate-logic", source_config_path, "commands")) {
-    ParseValidateLogicDefaults(*sub_tbl, source_config_path, config);
-  }
 }
 
 auto ParseRuntimeConfigPaths(const toml::table& config_tbl,

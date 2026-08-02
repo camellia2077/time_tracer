@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from tools.platform_paths import tracer_core_config_root
+from tools.platform_paths import android_config_root, tracer_core_config_root
 
 from ...core.context import Context
 
@@ -19,17 +19,7 @@ def resolve_config_root(ctx: Context, app_name: str, config_root_arg: str | None
     if app_name in {"tracer_core", "tracer_core_shell", "tracer_windows_rust_cli"}:
         return tracer_core_config_root(ctx.repo_root).resolve()
     if app_name == "tracer_android":
-        return (
-            ctx.repo_root
-            / "apps"
-            / "android"
-            / "runtime"
-            / "src"
-            / "main"
-            / "assets"
-            / "tracer_core"
-            / "config"
-        ).resolve()
+        return android_config_root(ctx.repo_root).resolve()
 
     fallback = (ctx.get_app_dir(app_name) / "config").resolve()
     if fallback.exists():

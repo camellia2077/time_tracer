@@ -58,14 +58,12 @@ Connection::Connection(const std::string& db_path) {
         "{1} TEXT PRIMARY KEY, "
         "{2} INTEGER, "
         "{3} INTEGER, "
-        "{4} INTEGER, "
+        "{4} TEXT, "
         "{5} TEXT, "
-        "{6} TEXT, "
-        "{7} INTEGER NOT NULL DEFAULT 0);",
+        "{6} INTEGER NOT NULL DEFAULT 0);",
         schema::day::db::kTable, schema::day::db::kDate, schema::day::db::kYear,
-        schema::day::db::kMonth, schema::day::db::kWakeAnchor,
-        schema::day::db::kRemark, schema::day::db::kGetupTime,
-        schema::day::db::kActivityCount);
+        schema::day::db::kMonth, schema::day::db::kRemark,
+        schema::day::db::kGetupTime, schema::day::db::kActivityCount);
     ExecuteSql(db_, kCreateDaysSql, "Create days table");
 
     // Upgrade databases created before activity_count became a persisted day
@@ -137,18 +135,20 @@ Connection::Connection(const std::string& db_path) {
         "{4} TEXT NOT NULL, "
         "{5} TEXT NOT NULL, "
         "{6} TEXT NOT NULL, "
-        "{7} INTEGER NOT NULL, "
-        "{8} INTEGER NOT NULL CHECK ({8} >= 0), "
-        "{9} TEXT NOT NULL DEFAULT '', "
-        "{10} TEXT, "
-        "FOREIGN KEY ({4}) REFERENCES {11}({12}), "
-        "FOREIGN KEY ({7}) REFERENCES {13}({14}));",
+        "{7} TEXT NOT NULL DEFAULT '{8}', "
+        "{9} INTEGER NOT NULL, "
+        "{10} INTEGER NOT NULL CHECK ({10} >= 0), "
+        "{11} TEXT NOT NULL DEFAULT '', "
+        "{12} TEXT, "
+        "FOREIGN KEY ({4}) REFERENCES {13}({14}), "
+        "FOREIGN KEY ({9}) REFERENCES {15}({16}));",
         schema::time_records::db::kTable, schema::time_records::db::kLogicalId,
         schema::time_records::db::kStartTimestamp,
         schema::time_records::db::kEndTimestamp,
         schema::time_records::db::kDate, schema::time_records::db::kStart,
-        schema::time_records::db::kEnd, schema::time_records::db::kProjectId,
-        schema::time_records::db::kDuration,
+        schema::time_records::db::kEnd, schema::time_records::db::kRecordKind,
+        schema::time_records::db::kIntervalRecordKind,
+        schema::time_records::db::kProjectId, schema::time_records::db::kDuration,
         schema::time_records::db::kProjectPathSnapshot,
         schema::time_records::db::kActivityRemark, schema::day::db::kTable,
         schema::day::db::kDate, schema::projects::db::kTable,

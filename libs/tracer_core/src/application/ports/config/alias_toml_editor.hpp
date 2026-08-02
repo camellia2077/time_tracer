@@ -29,6 +29,7 @@ enum class ActivityHierarchyOperationKind {
   kPromoteLeaf,
   kMoveLeaf,
   kMoveGroup,
+  kMergeLeafCanonical,
   kSetGroupAliases,
   kRenameParent,
   kRenameGroupCanonical,
@@ -38,10 +39,10 @@ enum class ActivityHierarchyOperationKind {
   kRenameGroupAlias,
 };
 
-// Paths are relative to [aliases] and use dot-separated canonical keys.
+// Paths are relative to [canonical] and use dot-separated canonical keys.
 // A root-level parent path is represented by `root` for add-group/add-leaf.
 // `target_path` identifies the edited group or leaf; `destination_path` is
-// used only by kMoveLeaf/kMoveGroup. `canonical_key` is used by add operations,
+// used by kMoveLeaf/kMoveGroup/kMergeLeafCanonical. `canonical_key` is used by add operations,
 // `new_name` by rename operations, and `old_parent` optionally guards
 // kRenameParent against a stale TOML document.
 struct ActivityHierarchyOperationRequest {
@@ -75,7 +76,7 @@ struct ActivityHierarchyCrossDocumentOperationResult {
 
 struct ActivityHierarchyDocumentInput;
 
-// One in-memory alias TOML document participating in a cross-file validation.
+// One in-memory canonical TOML document participating in a cross-file validation.
 // `source_name` is diagnostic-only and is never read from the filesystem.
 struct ActivityHierarchyDocumentInput {
   std::string source_name;
@@ -89,7 +90,7 @@ auto ApplyActivityHierarchyOperation(
     std::string_view toml_content,
     const ActivityHierarchyOperationRequest& request) -> ActivityHierarchyOperationResult;
 
-// Moves one leaf or one complete group subtree from one existing alias TOML
+// Moves one leaf or one complete group subtree from one existing canonical TOML
 // document to another. The complete document set is supplied so Core can
 // validate global alias uniqueness after the move. The operation kind selects
 // `kMoveLeaf` or `kMoveGroup`.
@@ -113,11 +114,11 @@ auto RewriteActivityHierarchyDocument(
     std::string_view updated_toml_content) -> ActivityHierarchyOperationResult;
 
 // Returns the core-validated hierarchy view for presentation. Node paths are
-// dot-separated canonical keys relative to [aliases].
+// dot-separated canonical keys relative to [canonical].
 auto DescribeActivityHierarchy(std::string_view toml_content)
     -> ActivityHierarchySnapshot;
 
-// Validates each supplied alias document and rejects alias keys duplicated
+// Validates each supplied canonical document and rejects alias keys duplicated
 // across the document set. This is in-memory only; callers retain ownership of
 // file reads and persistence.
 auto ValidateActivityHierarchyDocuments(

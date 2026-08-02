@@ -10,6 +10,7 @@ import tracer.core.application.use_cases.interface;
 #include "nlohmann/json.hpp"
 #include "application/dto/pipeline_requests.hpp"
 #include "application/ports/config/alias_toml_editor.hpp"
+#include "application/ports/config/quick_access_toml_store.hpp"
 #include "api/c_api/capabilities/config/activity_hierarchy_operation_bridge.hpp"
 #include "application/ports/config/activity_hierarchy_text_renderer.hpp"
 #include "api/c_api/tracer_core_c_api.h"
@@ -68,6 +69,27 @@ auto BuildTxtSuccessResponse(Builder&& builder) -> const char* {
   return it->get<std::string>();
 }
 
+[[nodiscard]] auto RequireStringArrayField(const json& payload,
+                                           std::string_view field_name)
+    -> std::vector<std::string> {
+  const auto it = payload.find(std::string(field_name));
+  if (it == payload.end() || !it->is_array()) {
+    throw std::invalid_argument("field `" + std::string(field_name) +
+                                "` must be an array.");
+  }
+
+  std::vector<std::string> values;
+  values.reserve(it->size());
+  for (const auto& value : *it) {
+    if (!value.is_string()) {
+      throw std::invalid_argument("each `" + std::string(field_name) +
+                                  "` item must be a string.");
+    }
+    values.push_back(value.get<std::string>());
+  }
+  return values;
+}
+
 }  // namespace
 
 extern "C" TT_CORE_API auto tracer_core_runtime_config_json(
@@ -83,6 +105,35 @@ extern "C" TT_CORE_API auto tracer_core_runtime_config_json(
     }
 
     const std::string action = RequireStringField(payload, "action");
+    if (action == "read_quick_access") {
+      try {
+        const auto config = tracer::core::application::config::ParseQuickAccessToml(
+            RequireStringField(payload, "toml_content"));
+        return BuildTxtSuccessResponse([&]() -> json {
+          return json{{"quick_access", config.aliases}};
+        });
+      } catch (const std::exception& error) {
+        return BuildFailureResponse(error.what(), "config.quick_access.failed",
+                                    "config", {});
+      }
+    }
+
+    if (action == "write_quick_access") {
+      try {
+        const tracer::core::application::config::QuickAccessConfig config{
+            .aliases = RequireStringArrayField(payload, "quick_access")};
+        const auto toml_content =
+            tracer::core::application::config::RenderQuickAccessToml(config);
+        return BuildTxtSuccessResponse([&]() -> json {
+          return json{{"quick_access", config.aliases},
+                      {"toml_content", toml_content}};
+        });
+      } catch (const std::exception& error) {
+        return BuildFailureResponse(error.what(), "config.quick_access.failed",
+                                    "config", {});
+      }
+    }
+
     if (action == "default_day_marker") {
       const auto response = runtime.pipeline().RunDefaultTxtDayMarker(
           {.selected_month = ReadOptionalStringField(payload, "selected_month"),
@@ -240,7 +291,7 @@ extern "C" TT_CORE_API auto tracer_core_runtime_config_json(
       } catch (const std::exception& error) {
         return BuildFailureResponse(error.what(), "config.activity_hierarchy.failed",
                                     "config",
-                                    {"Inspect the original and updated alias TOML."});
+                                    {"Inspect the original and updated canonical TOML."});
       }
     }
 
@@ -283,7 +334,7 @@ extern "C" TT_CORE_API auto tracer_core_runtime_config_json(
     return BuildFailureResponse(
         "Unsupported runtime config action: " + action,
         "runtime.invalid_request", "runtime",
-        {"Use action=default_day_marker|resolve_day_block|replace_day_block|convert_activity_names|replace_canonical_activity_names|replace_alias_activity_names|apply_activity_hierarchy_operation|move_activity_hierarchy_leaf_between_documents|move_activity_hierarchy_node_between_documents|rewrite_activity_hierarchy_document|describe_activity_hierarchy|validate_activity_hierarchy_documents|render_activity_hierarchy_text."});
+        {"Use action=read_quick_access|write_quick_access|default_day_marker|resolve_day_block|replace_day_block|convert_activity_names|replace_canonical_activity_names|replace_alias_activity_names|apply_activity_hierarchy_operation|move_activity_hierarchy_leaf_between_documents|move_activity_hierarchy_node_between_documents|rewrite_activity_hierarchy_document|describe_activity_hierarchy|validate_activity_hierarchy_documents|render_activity_hierarchy_text."});
   } catch (const std::exception& error) {
     return BuildFailureResponse(error.what());
   } catch (...) {

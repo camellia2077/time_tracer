@@ -143,6 +143,20 @@ namespace tracer_core::shell::c_api_bridge {
       "field `output_mode` must be one of: text|semantic_json.");
 }
 
+[[nodiscard]] auto ParseReportAverageDayBasis(const std::string& value)
+    -> tracer_core::core::dto::ReportAverageDayBasis {
+  using tracer_core::core::dto::ReportAverageDayBasis;
+  const std::string normalized = ToLowerAscii(value);
+  if (normalized == "active_days" || normalized == "active-days") {
+    return ReportAverageDayBasis::kActiveDays;
+  }
+  if (normalized == "calendar_days" || normalized == "calendar-days") {
+    return ReportAverageDayBasis::kCalendarDays;
+  }
+  throw std::invalid_argument(
+      "field `average_day_basis` must be one of: active_days|calendar_days.");
+}
+
 [[nodiscard]] auto ParseReportDisplayMode(const std::string& value)
     -> tracer_core::core::dto::ReportDisplayMode {
   using tracer_core::core::dto::ReportDisplayMode;

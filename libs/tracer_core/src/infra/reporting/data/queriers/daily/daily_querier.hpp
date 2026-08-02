@@ -11,11 +11,13 @@
 
 #include "domain/reports/interfaces/i_project_info_provider.hpp"
 #include "domain/reports/models/daily_report_data.hpp"
+#include "infra/config/models/report_config_models.hpp"
 #include "infra/reporting/data/queriers/base_querier.hpp"
 
 class DayQuerier : public BaseQuerier<DailyReportData, std::string_view> {
  public:
-  explicit DayQuerier(sqlite3* sqlite_db, std::string_view date);
+  explicit DayQuerier(sqlite3* sqlite_db, std::string_view date,
+                      const DailyStatusConfig* status_config = nullptr);
 
   [[nodiscard]] auto FetchData() -> DailyReportData override;
 
@@ -28,6 +30,7 @@ class DayQuerier : public BaseQuerier<DailyReportData, std::string_view> {
   void FetchMetadata(DailyReportData& data);
   void FetchDetailedRecords(DailyReportData& data,
                             const IProjectInfoProvider& provider);
+  const DailyStatusConfig* status_config_ = nullptr;
 };
 
 struct BatchDataResult {
@@ -38,13 +41,15 @@ struct BatchDataResult {
 class BatchDayDataFetcher {
  public:
   explicit BatchDayDataFetcher(sqlite3* sqlite_db,
-                               IProjectInfoProvider& provider);
+                               IProjectInfoProvider& provider,
+                               const DailyStatusConfig* status_config = nullptr);
 
   [[nodiscard]] auto FetchAllData() -> BatchDataResult;
 
  private:
   sqlite3* db_;
   IProjectInfoProvider& provider_;
+  const DailyStatusConfig* status_config_ = nullptr;
 
   void FetchDaysMetadata(BatchDataResult& result);
   void FetchTimeRecords(BatchDataResult& result);

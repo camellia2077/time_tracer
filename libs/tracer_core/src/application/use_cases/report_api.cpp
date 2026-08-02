@@ -114,7 +114,6 @@ auto CopyRangeFields(const RangeReportData& source, RangeReportData& target)
   target.total_duration = source.total_duration;
   target.actual_days = source.actual_days;
   target.status_true_days = source.status_true_days;
-  target.wake_anchor_days = source.wake_anchor_days;
   target.exercise_true_days = source.exercise_true_days;
   target.cardio_true_days = source.cardio_true_days;
   target.anaerobic_true_days = source.anaerobic_true_days;

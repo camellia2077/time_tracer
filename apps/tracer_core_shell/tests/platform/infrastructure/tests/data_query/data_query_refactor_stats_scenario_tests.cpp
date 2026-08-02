@@ -258,7 +258,7 @@ auto CheckReportChartOrchestratorSemanticSnapshot(sqlite3* database,
   using tracer_core::core::dto::DataQueryAction;
   using tracer_core::core::dto::DataQueryRequest;
   constexpr long long kExpectedTotalDurationSeconds = 5400LL;
-  constexpr long long kExpectedAverageDurationSeconds = 1800LL;
+  constexpr long long kExpectedAverageDurationSeconds = 2700LL;
 
   DataQueryRequest report_chart_request;
   report_chart_request.action = DataQueryAction::kReportChart;
@@ -387,8 +387,19 @@ auto CheckReportCompositionOrchestratorSemanticSnapshot(sqlite3* database,
   Expect(kCompositionPayload.value("total_duration_seconds", -1LL) == 5400LL,
          "report-composition orchestrator should keep total duration.",
          failures);
+  Expect(kCompositionPayload.value("active_days", -1) == 2,
+         "report-composition should count days containing records.", failures);
   Expect(kCompositionPayload.value("range_days", -1) == 3,
          "report-composition orchestrator should keep range_days.", failures);
+  Expect(kCompositionPayload.value("display_level", -1) == 1,
+         "single active root should request one-level chart drill-down.",
+         failures);
+  const auto kDisplayPathIt = kCompositionPayload.find("display_path");
+  Expect(kDisplayPathIt != kCompositionPayload.end() &&
+             kDisplayPathIt->is_array() && kDisplayPathIt->size() == 1U &&
+             (*kDisplayPathIt)[0] == "study",
+         "single active root should expose its path as chart display path.",
+         failures);
   const auto kTreeIt = kCompositionPayload.find("tree");
   const bool kHasTree =
       kTreeIt != kCompositionPayload.end() && kTreeIt->is_array();
@@ -406,11 +417,54 @@ auto CheckReportCompositionOrchestratorSemanticSnapshot(sqlite3* database,
       Expect((*kTreeIt)[0].value("duration_seconds", -1LL) == 5400LL,
              "report-composition tree root should keep study duration.",
              failures);
+      Expect((*kTreeIt)[0].value("average_duration_seconds", -1LL) == 2700LL,
+             "report-composition tree root should expose active-day average duration.",
+             failures);
+      Expect((*kTreeIt)[0].value("average_occurrence_count", -1.0) == 1.0,
+             "report-composition tree root should expose active-day average occurrences.",
+             failures);
+      Expect((*kTreeIt)[0].value("average_occurrence_ratio", -1.0) == 1.0,
+             "report-composition tree root should expose current-level occurrence ratio.",
+             failures);
       Expect((*kTreeIt)[0].contains("occurrence_count") &&
                  (*kTreeIt)[0]["occurrence_count"].is_number_integer(),
              "report-composition tree root should include occurrence count.",
              failures);
+      const auto kChildren = (*kTreeIt)[0].value("children", json::array());
+      if (kChildren.is_array() && !kChildren.empty()) {
+        Expect(kChildren[0].value("average_duration_seconds", -1LL) == 2700LL,
+               "report-composition child should expose active-day average duration.",
+               failures);
+        Expect(kChildren[0].value("average_occurrence_ratio", -1.0) == 1.0,
+               "report-composition child should expose current-level occurrence ratio.",
+               failures);
+      }
     }
+  }
+
+  Expect(ExecuteSql(
+             database,
+             "INSERT INTO time_records(date, start, end, duration, "
+             "project_path_snapshot, activity_remark) VALUES "
+             "('2026-02-02', '09:00', '10:00', 3600, 'sleep_nap', '');"),
+         "report-composition guard fixture should add a second active root.",
+         failures);
+  const auto kMultipleRootOutput =
+      data_query_orchestrators::HandleReportCompositionQuery(
+          database, report_composition_request,
+          DataQueryOutputMode::kSemanticJson);
+  Expect(kMultipleRootOutput.ok,
+         "report-composition multiple-root guard query should succeed.",
+         failures);
+  if (kMultipleRootOutput.ok) {
+    const auto kMultipleRootPayload = json::parse(kMultipleRootOutput.content);
+    Expect(kMultipleRootPayload.value("display_level", -1) == 0,
+           "multiple active roots should keep chart at root level.",
+           failures);
+    Expect(kMultipleRootPayload.value("display_path", json::array()) ==
+               json::array(),
+           "multiple active roots should not request automatic drill-down.",
+           failures);
   }
   return true;
 }
@@ -558,36 +612,14 @@ auto TestCrossMidnightActivityFilterUsesTimeline(int& failures) -> void {
       kDatabase.get(), cross_midnight_activity_filters);
   Expect(kCrossMidnightActivityDurations.size() == 1U &&
              kCrossMidnightActivityDurations.front().date == "2026-02-01",
-         "cross-midnight activity duration query should ignore missing sleep and missing wake-anchor metadata.",
+         "cross-midnight activity duration query should ignore generated sleep metadata.",
          failures);
   if (kCrossMidnightActivityDurations.size() == 1U) {
     Expect(kCrossMidnightActivityDurations.front().total_seconds == 14580,
-           "cross-midnight activity duration query should return only recorded activity duration, not missing wake-anchor or sleep proxy duration.",
+           "cross-midnight activity duration query should return only recorded activity duration, not sleep proxy duration.",
            failures);
   }
 
-  QueryFilters missing_wake_anchor_filters;
-  missing_wake_anchor_filters.missing_wake_anchor = true;
-  const auto kMissingWakeAnchorDates =
-      data_query::QueryDatesByFilters(kDatabase.get(),
-                                      missing_wake_anchor_filters);
-  Expect(kMissingWakeAnchorDates.size() == 3U &&
-             kMissingWakeAnchorDates[0] == "2026-02-01" &&
-             kMissingWakeAnchorDates[1] == "2026-02-03" &&
-             kMissingWakeAnchorDates[2] == "2026-02-04",
-         "missing_wake_anchor filter should match only days without a valid wake anchor.",
-         failures);
-
-  QueryFilters missing_wake_anchor_cross_midnight_filters;
-  missing_wake_anchor_cross_midnight_filters.missing_wake_anchor = true;
-  missing_wake_anchor_cross_midnight_filters.cross_midnight_activity = true;
-  const auto kMissingWakeAnchorCrossMidnightDates =
-      data_query::QueryDatesByFilters(
-          kDatabase.get(), missing_wake_anchor_cross_midnight_filters);
-  Expect(kMissingWakeAnchorCrossMidnightDates.size() == 1U &&
-             kMissingWakeAnchorCrossMidnightDates.front() == "2026-02-01",
-         "missing_wake_anchor and cross_midnight_activity should compose as separate filters.",
-         failures);
 }
 
 auto TestSingleDayCompositionKeepsAllRoots(int& failures) -> void {

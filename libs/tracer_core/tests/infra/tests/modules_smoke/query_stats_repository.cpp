@@ -4,7 +4,9 @@ import tracer.core.infrastructure.query.data.repository;
 import tracer.core.infrastructure.query.data.stats;
 
 #include <filesystem>
+#include <optional>
 
+#include "application/pipeline/importer/model/import_models.hpp"
 #include "application/dto/query_requests.hpp"
 #include "infra/tests/modules_smoke/query.hpp"
 
@@ -43,15 +45,16 @@ auto RunInfrastructureModuleQueryStatsRepositorySmoke() -> int {
     return 6;
   }
 
-  const std::vector<tracer::core::infrastructure::query::data::DayDurationRow>
+      const std::vector<tracer::core::infrastructure::query::data::DayDurationRow>
       kRows = {
-          {.date = "2026-02-01", .total_seconds = 3600},
-          {.date = "2026-02-03", .total_seconds = 7200},
+          {.date = "2026-02-01", .total_seconds = 3600, .record_count = 1},
+          {.date = "2026-02-02", .total_seconds = 0, .record_count = 1},
+          {.date = "2026-02-03", .total_seconds = 7200, .record_count = 1},
       };
   const auto kStats =
       tracer::core::infrastructure::query::data::stats::ComputeDayDurationStats(
           kRows);
-  if (kStats.count != 2 || kStats.min_seconds != 3600.0 ||
+  if (kStats.count != 3 || kStats.min_seconds != 0.0 ||
       kStats.max_seconds != 7200.0) {
     return 7;
   }
@@ -62,7 +65,7 @@ auto RunInfrastructureModuleQueryStatsRepositorySmoke() -> int {
   if (kSeries.series.size() != 3U ||
       kSeries.series.front().date != "2026-02-01" ||
       kSeries.series.back().date != "2026-02-03" ||
-      kSeries.stats.active_days != 2 ||
+      kSeries.stats.active_days != 3 ||
       kSeries.stats.total_duration_seconds != 10800) {
     return 8;
   }
@@ -81,7 +84,7 @@ auto RunInfrastructureModuleQueryStatsRepositorySmoke() -> int {
           "days_duration", kRows,
           tracer_core::core::dto::DataQueryOutputMode::kText);
   if (kTextOutput.find("2026-02-01") == std::string::npos ||
-      kTextOutput.find("Total: 2") == std::string::npos) {
+      kTextOutput.find("Total: 3") == std::string::npos) {
     return 10;
   }
 
@@ -125,6 +128,44 @@ auto RunInfrastructureModuleQueryStatsRepositorySmoke() -> int {
              connection.GetDb())
              .empty()) {
       return 15;
+    }
+
+    tracer::core::infrastructure::persistence::importer::sqlite::Statement
+        statement(connection.GetDb());
+    tracer::core::infrastructure::persistence::importer::sqlite::Writer
+        writer(connection.GetDb(), statement.GetInsertDayStmt(),
+               statement.GetInsertRecordStmt(), statement.GetInsertProjectStmt());
+    writer.InsertDays({DayData{.date = "2026-02-02",
+                               .remark = "",
+                               .getup_time = std::nullopt,
+                               .year = 2026,
+                               .month = 2,
+                               .activity_count = 1}});
+    writer.InsertRecords(
+        {TimeRecordInternal{.kind = ActivityRecordKind::kEndOnly,
+                             .logical_id = 7,
+                             .start_timestamp = 0,
+                             .end_timestamp = 1770000000,
+                             .start_time_str = "",
+                             .end_time_str = "12:00",
+                             .project_path = "work",
+                             .duration_seconds = 0,
+                             .remark = std::nullopt,
+                             .date = "2026-02-02"}});
+
+    const auto kPersistedRows =
+        tracer::core::infrastructure::query::data::QueryDayDurations(
+            connection.GetDb(), filters);
+    if (kPersistedRows.size() != 1U || kPersistedRows.front().total_seconds != 0 ||
+        kPersistedRows.front().record_count != 1) {
+      return 16;
+    }
+    const auto kRootRows = tracer::core::infrastructure::query::data::
+        QueryDayDurationsByRootInDateRange(connection.GetDb(), "work",
+                                           "2026-02-02", "2026-02-02");
+    if (kRootRows.size() != 1U || kRootRows.front().total_seconds != 0 ||
+        kRootRows.front().record_count != 1) {
+      return 17;
     }
   } catch (...) {
     return 11;

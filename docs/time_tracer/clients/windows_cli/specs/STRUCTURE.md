@@ -32,6 +32,8 @@ Describe the stable responsibility split for the Windows Rust CLI.
   - passphrase/input/output handling for tracer exchange flows
 - `src/commands/handlers/alias.rs`
   - activity hierarchy TOML edits and Core-backed canonical migration orchestration
+- `src/commands/handlers/activity.rs`
+  - leaf activity merge orchestration using Core's canonical replacement plan
 - `src/commands/handlers/report/chart*.rs`
   - `report chart` presenter logic
 - `src/core/runtime.rs`

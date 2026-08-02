@@ -10,7 +10,6 @@ void MonthBaseConfig::LoadBaseConfig(const MonthlyReportLabels& labels) {
   title_template_ = labels.title_template;
   actual_days_label_ = labels.actual_days_label;
   status_days_label_ = labels.status_days_label;
-  wake_anchor_days_label_ = labels.wake_anchor_days_label;
   exercise_days_label_ = labels.exercise_days_label;
   cardio_days_label_ = labels.cardio_days_label;
   anaerobic_days_label_ = labels.anaerobic_days_label;
@@ -32,9 +31,6 @@ auto MonthBaseConfig::GetActualDaysLabel() const -> const std::string& {
 }
 auto MonthBaseConfig::GetStatusDaysLabel() const -> const std::string& {
   return status_days_label_;
-}
-auto MonthBaseConfig::GetWakeAnchorDaysLabel() const -> const std::string& {
-  return wake_anchor_days_label_;
 }
 auto MonthBaseConfig::GetExerciseDaysLabel() const -> const std::string& {
   return exercise_days_label_;

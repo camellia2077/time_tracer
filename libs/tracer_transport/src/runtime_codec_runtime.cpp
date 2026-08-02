@@ -48,29 +48,20 @@ auto ParseCliCommandDefaults(const json& payload) -> CliCommandDefaultsPayload {
 
   const auto kExportFormat = TryReadStringField(payload, "export_format");
   const auto kQueryFormat = TryReadStringField(payload, "query_format");
-  const auto kConvertDateCheckMode =
-      TryReadStringField(payload, "convert_date_check_mode");
   const auto kConvertSaveProcessedOutput =
       TryReadBoolField(payload, "convert_save_processed_output");
   const auto kConvertValidateLogic =
       TryReadBoolField(payload, "convert_validate_logic");
   const auto kConvertValidateStructure =
       TryReadBoolField(payload, "convert_validate_structure");
-  const auto kIngestDateCheckMode =
-      TryReadStringField(payload, "ingest_date_check_mode");
   const auto kIngestSaveProcessedOutput =
       TryReadBoolField(payload, "ingest_save_processed_output");
-  const auto kValidateLogicDateCheckMode =
-      TryReadStringField(payload, "validate_logic_date_check_mode");
 
   if (kExportFormat.HasError()) {
     throw std::invalid_argument(kExportFormat.error.message);
   }
   if (kQueryFormat.HasError()) {
     throw std::invalid_argument(kQueryFormat.error.message);
-  }
-  if (kConvertDateCheckMode.HasError()) {
-    throw std::invalid_argument(kConvertDateCheckMode.error.message);
   }
   if (kConvertSaveProcessedOutput.HasError()) {
     throw std::invalid_argument(kConvertSaveProcessedOutput.error.message);
@@ -81,25 +72,16 @@ auto ParseCliCommandDefaults(const json& payload) -> CliCommandDefaultsPayload {
   if (kConvertValidateStructure.HasError()) {
     throw std::invalid_argument(kConvertValidateStructure.error.message);
   }
-  if (kIngestDateCheckMode.HasError()) {
-    throw std::invalid_argument(kIngestDateCheckMode.error.message);
-  }
   if (kIngestSaveProcessedOutput.HasError()) {
     throw std::invalid_argument(kIngestSaveProcessedOutput.error.message);
-  }
-  if (kValidateLogicDateCheckMode.HasError()) {
-    throw std::invalid_argument(kValidateLogicDateCheckMode.error.message);
   }
 
   out.export_format = kExportFormat.value;
   out.query_format = kQueryFormat.value;
-  out.convert_date_check_mode = kConvertDateCheckMode.value;
   out.convert_save_processed_output = kConvertSaveProcessedOutput.value;
   out.convert_validate_logic = kConvertValidateLogic.value;
   out.convert_validate_structure = kConvertValidateStructure.value;
-  out.ingest_date_check_mode = kIngestDateCheckMode.value;
   out.ingest_save_processed_output = kIngestSaveProcessedOutput.value;
-  out.validate_logic_date_check_mode = kValidateLogicDateCheckMode.value;
   return out;
 }
 
@@ -108,16 +90,10 @@ auto ParseCliConfig(const json& payload) -> CliConfigPayload {
 
   const auto kDefaultSave =
       TryReadBoolField(payload, "default_save_processed_output");
-  const auto kDefaultDateMode =
-      TryReadStringField(payload, "default_date_check_mode");
   if (kDefaultSave.HasError()) {
     throw std::invalid_argument(kDefaultSave.error.message);
   }
-  if (kDefaultDateMode.HasError()) {
-    throw std::invalid_argument(kDefaultDateMode.error.message);
-  }
   out.default_save_processed_output = kDefaultSave.value.value_or(false);
-  out.default_date_check_mode = kDefaultDateMode.value;
 
   if (const auto kDefaultsIt = payload.find("defaults");
       kDefaultsIt != payload.end() && !kDefaultsIt->is_null()) {

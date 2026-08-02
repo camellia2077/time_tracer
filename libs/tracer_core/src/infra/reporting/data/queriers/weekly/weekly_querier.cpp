@@ -78,14 +78,6 @@ using tracer::core::infrastructure::reports::data::stats::IsCardioProjectPath;
 using tracer::core::infrastructure::reports::data::stats::IsExerciseProjectPath;
 using tracer::core::infrastructure::reports::data::stats::IsStudyProjectPath;
 
-struct DayFlagCounts {
-  int status_true_days = 0;
-  int wake_anchor_days = 0;
-  int exercise_true_days = 0;
-  int cardio_true_days = 0;
-  int anaerobic_true_days = 0;
-};
-
 struct WeekRow {
   std::string date;
   IsoWeek week;
@@ -97,8 +89,6 @@ constexpr int kDaysInWeek = 7;
 constexpr int kDateColumn = 0;
 constexpr int kProjectIdColumn = 1;
 constexpr int kDurationColumn = 2;
-
-constexpr int kFlagWakeAnchorColumn = 1;
 
 auto ParseWeekRow(const unsigned char* date_ptr) -> std::optional<WeekRow> {
   if (date_ptr == nullptr) {
@@ -114,36 +104,6 @@ auto ParseWeekRow(const unsigned char* date_ptr) -> std::optional<WeekRow> {
   return row;
 }
 
-auto LoadWeeklyFlagCounts(sqlite3* sqlite_db)
-    -> std::map<std::string, DayFlagCounts> {
-  sqlite3_stmt* flag_stmt = nullptr;
-  const std::string kFlagSql =
-      std::format("SELECT {0}, {1} FROM {2};", schema::day::db::kDate,
-                  schema::day::db::kWakeAnchor, schema::day::db::kTable);
-  std::map<std::string, DayFlagCounts> flag_counts;
-
-  if (sqlite3_prepare_v2(sqlite_db, kFlagSql.c_str(), -1, &flag_stmt,
-                         nullptr) != SQLITE_OK) {
-    sqlite3_finalize(flag_stmt);
-    throw std::runtime_error(
-        "Failed to prepare statement for weekly sleep flags.");
-  }
-
-  while (sqlite3_step(flag_stmt) == SQLITE_ROW) {
-    auto week_row = ParseWeekRow(sqlite3_column_text(flag_stmt, kDateColumn));
-    if (!week_row.has_value()) {
-      continue;
-    }
-
-    auto& counts = flag_counts[week_row->week_label];
-    if (sqlite3_column_int(flag_stmt, kFlagWakeAnchorColumn) != 0) {
-      counts.wake_anchor_days++;
-    }
-  }
-
-  sqlite3_finalize(flag_stmt);
-  return flag_counts;
-}
 }  // namespace
 
 BatchWeekDataFetcher::BatchWeekDataFetcher(sqlite3* sqlite_db)
@@ -230,15 +190,8 @@ auto BatchWeekDataFetcher::FetchAllData()
   reports::data::batch::FinalizeGroupedAggregation(results, project_agg,
                                                    distinct_dates, name_cache);
 
-  auto flag_counts = LoadWeeklyFlagCounts(db_);
-
   for (auto& [week_label, data] : results) {
-    auto flag_it = flag_counts.find(week_label);
-    if (flag_it == flag_counts.end()) {
-      continue;
-    }
     data.status_true_days = static_cast<int>(status_dates[week_label].size());
-    data.wake_anchor_days = flag_it->second.wake_anchor_days;
     data.exercise_true_days =
         static_cast<int>(exercise_dates[week_label].size());
     data.cardio_true_days = static_cast<int>(cardio_dates[week_label].size());

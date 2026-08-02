@@ -16,6 +16,17 @@ python tools/run.py build --app tracer_core --profile release_bundle --build-dir
 python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --runtime-platform windows
 ```
 
+### user activity hierarchy
+
+`config/user/activity_hierarchy/**` is a repository-side user-configuration
+entry and is excluded from Android and Windows CLI compilation outputs. It is
+kept to document the runtime-owned activity hierarchy business. User hierarchy
+TOML files are imported or created in the application's private user-data
+directory at runtime.
+
+The canonical examples used by tests are kept separately under
+`test/data/activity_hierarchy` and are not copied into release artifacts.
+
 ## release + lto (explicit opt-in)
 
 ### core

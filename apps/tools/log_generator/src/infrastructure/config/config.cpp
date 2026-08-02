@@ -61,7 +61,7 @@ auto ConfigLoader::_parse_mapping_keys(
     return true;
 
   } catch (const toml::parse_error& e) {
-    std::cerr << "TOML Parse Error in alias config: "
+    std::cerr << "TOML Parse Error in canonical config: "
               << e.description() << "\n";
     return false;
   } catch (const std::runtime_error& e) {

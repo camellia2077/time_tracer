@@ -93,13 +93,16 @@ txt
       2. 当前活动区间由“上一边界 -> 当前事件时间”得到。
    3. 在目标混用语义下：
       1. 点事件继续使用“最后已知时间边界 -> 当前点时间”
-      2. 区间事件直接使用显式 `start -> end`
-      3. 区间事件完成后，应把最后已知时间边界推进到显式结束时间
-      4. 两个已记录区间之间允许存在未记录时间缺口
+      2. 如果不存在可靠的最后已知时间边界，当前点事件生成 end-only 活动事实，
+         只保留结束时间，不生成伪造的开始时间或 duration
+      3. end-only 的结束时间仍然推进最后已知时间边界，后续点事件可以从该边界起算
+      4. 区间事件直接使用显式 `start -> end`
+      5. 区间事件完成后，应把最后已知时间边界推进到显式结束时间
+      6. 两个已记录区间之间允许存在未记录时间缺口
    4. `description` 先经过 `text_mapping` / `text_duration_mapping` 映射。
    5. 计算时长（分钟）后应用 `duration_mappings` 规则二次映射。
    6. 项目路径按 `_` 分层，应用 `top_parent_mapping` / `initial_top_parents` 后重组。
-   7. 生成 `BaseActivityRecord`（含 `start/end/project_path/remark/source_span`）。
+   7. 生成 `BaseActivityRecord`（完整区间或 end-only，含 `end/project_path/remark/source_span`）。
 2. 同日跨天睡眠补全
    1. 若 `previous_day` 存在末事件且 `current_day` 有有效 `getupTime`，在当天头部插入 `sleep_night`。
 3. 续写日修复
@@ -117,6 +120,7 @@ txt
    1. `YYYYMMDD * 1_000_000 + sequence`，同一天内顺序递增。
 2. `duration_seconds`
    1. 由 `HH:MM` 计算；若终点小于起点视为跨午夜，自动 +24h。
+   2. end-only 没有可计算的 duration，不得伪造成零时长活动参与统计。
    2. 这是 activity 级时长，不会因为“单日报表已经超过 `24h`”而自动视为错误。
 3. `start_timestamp/end_timestamp`
    1. 基于 `date + HH:MM` 转时间戳；跨日结束时间自动补一天。
@@ -179,4 +183,5 @@ txt
 2. 跨日/跨月睡眠自动补链：同月在 `DayProcessor`，跨月在 `LogLinker`。
 3. 路径协议固定：数据库内部层级分隔符统一 `_`。
 4. 容错策略明确：日期不可解析的日数据在 `MemoryParser` 被过滤并记录告警。
-5. 目标混用语义下，允许未记录时间缺口；查询和报表只统计最终生成的标准 record facts。
+5. 目标混用语义下，允许未记录时间缺口；查询和报表显示最终生成的完整区间及
+   end-only activities，但只有完整区间参与 duration 聚合。

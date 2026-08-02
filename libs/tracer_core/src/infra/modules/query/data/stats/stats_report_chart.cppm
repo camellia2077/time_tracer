@@ -8,6 +8,15 @@ export module tracer.core.infrastructure.query.data.stats
 export namespace tracer::core::infrastructure::query::data::stats {
 
 using ::tracer::core::infrastructure::query::data::stats::
+    CalculateInclusiveDateRangeDays;
+using ::tracer::core::infrastructure::query::data::stats::
+    BuildReportCompositionTreeView;
+using ::tracer::core::infrastructure::query::data::stats::
+    ReportCompositionStats;
+
+using ::tracer::core::infrastructure::query::data::stats::
     BuildReportChartSeries;
+using ::tracer::core::infrastructure::query::data::stats::
+    BuildReportCompositionStats;
 
 }  // namespace tracer::core::infrastructure::query::data::stats

@@ -14,6 +14,22 @@
 // 最终配置对象 (Config Objects)
 // ==========================================
 
+enum class DailyStatusType {
+  kParentPresent,
+};
+
+struct DailyStatusDefinition {
+  std::string id;
+  std::string label;
+  DailyStatusType type = DailyStatusType::kParentPresent;
+  std::string parent;
+};
+
+struct DailyStatusConfig {
+  int schema_version = 1;
+  std::vector<DailyStatusDefinition> statuses;
+};
+
 // --- Daily Configs ---
 
 inline constexpr int kDefaultDailyTypStatisticFontSize = 10;
@@ -39,6 +55,7 @@ struct DailyTypConfig {
 
 struct DailyMdConfig {
   DailyReportLabels labels;
+  std::string end_only_time_format;
 };
 
 // --- Monthly Configs ---

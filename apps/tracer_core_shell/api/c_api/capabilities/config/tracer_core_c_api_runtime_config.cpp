@@ -39,27 +39,6 @@ constexpr std::string_view kLibwinpthreadRuntimeName = "libwinpthread-1.dll";
 #define TT_RUNTIME_REQUIRE_MINGW_DLLS 1
 #endif
 
-[[nodiscard]] auto ToDateCheckModeString(DateCheckMode mode)
-    -> std::string_view {
-  switch (mode) {
-    case DateCheckMode::kNone:
-      return "none";
-    case DateCheckMode::kContinuity:
-      return "continuity";
-    case DateCheckMode::kFull:
-      return "full";
-  }
-  return "none";
-}
-
-[[nodiscard]] auto ToDateCheckModeJson(const std::optional<DateCheckMode>& mode)
-    -> json {
-  if (!mode.has_value()) {
-    return nullptr;
-  }
-  return std::string(ToDateCheckModeString(*mode));
-}
-
 [[nodiscard]] auto ToStringJson(const std::optional<std::string>& value)
     -> json {
   if (!value.has_value()) {
@@ -74,8 +53,6 @@ constexpr std::string_view kLibwinpthreadRuntimeName = "libwinpthread-1.dll";
   return json{
       {"default_save_processed_output",
        cli_config.default_save_processed_output},
-      {"default_date_check_mode",
-       std::string(ToDateCheckModeString(cli_config.default_date_check_mode))},
       {"defaults",
        {{"default_format", ToStringJson(cli_config.defaults.default_format)}}},
       {"command_defaults",
@@ -83,9 +60,6 @@ constexpr std::string_view kLibwinpthreadRuntimeName = "libwinpthread-1.dll";
          ToStringJson(cli_config.command_defaults.export_format)},
         {"query_format",
          ToStringJson(cli_config.command_defaults.query_format)},
-        {"convert_date_check_mode",
-         ToDateCheckModeJson(
-             cli_config.command_defaults.convert_date_check_mode)},
         {"convert_save_processed_output",
          cli_config.command_defaults.convert_save_processed_output.has_value()
              ? json(*cli_config.command_defaults.convert_save_processed_output)
@@ -98,16 +72,11 @@ constexpr std::string_view kLibwinpthreadRuntimeName = "libwinpthread-1.dll";
          cli_config.command_defaults.convert_validate_structure.has_value()
              ? json(*cli_config.command_defaults.convert_validate_structure)
              : json(nullptr)},
-        {"ingest_date_check_mode",
-         ToDateCheckModeJson(
-             cli_config.command_defaults.ingest_date_check_mode)},
         {"ingest_save_processed_output",
          cli_config.command_defaults.ingest_save_processed_output.has_value()
              ? json(*cli_config.command_defaults.ingest_save_processed_output)
              : json(nullptr)},
-        {"validate_logic_date_check_mode",
-         ToDateCheckModeJson(
-             cli_config.command_defaults.validate_logic_date_check_mode)}}}};
+        }}};
 }
 
 [[nodiscard]] auto BuildFailureJsonResponse(
@@ -175,13 +144,10 @@ constexpr std::string_view kDatabaseFilename = "time_data.sqlite3";
   return {
       .export_format = defaults.export_format,
       .query_format = defaults.query_format,
-      .convert_date_check_mode = defaults.convert_date_check_mode,
       .convert_save_processed_output = defaults.convert_save_processed_output,
       .convert_validate_logic = defaults.convert_validate_logic,
       .convert_validate_structure = defaults.convert_validate_structure,
-      .ingest_date_check_mode = defaults.ingest_date_check_mode,
       .ingest_save_processed_output = defaults.ingest_save_processed_output,
-      .validate_logic_date_check_mode = defaults.validate_logic_date_check_mode,
   };
 }
 
@@ -193,7 +159,6 @@ constexpr std::string_view kDatabaseFilename = "time_data.sqlite3";
       .export_path = cli_config.export_path,
       .converter_config_toml_path = cli_config.converter_config_toml_path,
       .default_save_processed_output = cli_config.default_save_processed_output,
-      .default_date_check_mode = cli_config.default_date_check_mode,
       .defaults = ToCliGlobalDefaultsContext(cli_config.defaults),
       .command_defaults =
           ToCliCommandDefaultsContext(cli_config.command_defaults),

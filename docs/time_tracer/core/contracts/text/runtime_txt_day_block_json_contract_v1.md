@@ -261,7 +261,7 @@ child string entries append their canonical leaf as usual.
 ```toml
 parent = "recreation"
 
-[aliases.online]
+[canonical.online]
 group_aliases = ["上网"]
 "bilibili" = ["哔哩哔哩"]
 "douyin" = ["抖音"]
@@ -274,7 +274,7 @@ The resulting canonical paths are `recreation_online`,
 ### Android alias-key hierarchy migration
 
 1. Android sends a hierarchy operation or raw TOML rewrite request to Core and
-   receives the updated alias TOML together with `replacements[]` and
+   receives the updated canonical TOML together with `replacements[]` and
    `alias_replacements[]`.
 2. Android passes both replacement lists to the Core TXT actions for every
    managed TXT file through `RuntimeActivityHierarchyMigrationService`.

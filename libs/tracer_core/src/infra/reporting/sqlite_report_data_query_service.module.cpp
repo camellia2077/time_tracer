@@ -67,9 +67,11 @@ auto LoadDistinctTextTargets(sqlite3* db_connection, const std::string& sql,
 SqliteReportDataQueryService::SqliteReportDataQueryService(
     sqlite3* db_connection,
     std::shared_ptr<tracer_core::application::ports::IPlatformClock>
-        platform_clock)
+        platform_clock,
+    DailyStatusConfig status_config)
     : db_connection_(db_connection),
-      platform_clock_(std::move(platform_clock)) {
+      platform_clock_(std::move(platform_clock)),
+      status_config_(std::move(status_config)) {
   if (!platform_clock_) {
     throw std::invalid_argument(
         "SqliteReportDataQueryService platform clock must not be null.");
@@ -78,7 +80,8 @@ SqliteReportDataQueryService::SqliteReportDataQueryService(
 
 auto SqliteReportDataQueryService::QueryDaily(std::string_view date)
     -> DailyReportData {
-  DayQuerier querier(EnsureDbConnection(db_connection_), date);
+  DayQuerier querier(EnsureDbConnection(db_connection_), date,
+                     &status_config_);
   return querier.FetchData();
 }
 
@@ -181,7 +184,7 @@ auto SqliteReportDataQueryService::QueryAllDaily()
   ProjectNameCache name_cache =
       ::reports::services::CreateProjectNameCache(db_connection);
 
-  BatchDayDataFetcher fetcher(db_connection, name_cache);
+  BatchDayDataFetcher fetcher(db_connection, name_cache, &status_config_);
   auto batch_result = fetcher.FetchAllData();
 
   for (auto& [date, report] : batch_result.data_map) {

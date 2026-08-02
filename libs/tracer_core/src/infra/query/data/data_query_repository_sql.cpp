@@ -204,14 +204,6 @@ auto BuildWhereClauses(const QueryFilters& filters,
         " > tr_cross_midnight_activity." +
         std::string(schema::time_records::db::kEnd) + ")");
   }
-  if (filters.missing_wake_anchor) {
-    clauses.emplace_back("(d." + std::string(schema::day::db::kGetupTime) +
-                         " IS NULL OR d." +
-                         std::string(schema::day::db::kGetupTime) +
-                         " = '' OR d." +
-                         std::string(schema::day::db::kGetupTime) +
-                         " = '00:00')");
-  }
   return clauses;
 }
 
@@ -318,6 +310,7 @@ auto QueryRowsWithTotalDuration(sqlite3* db_conn, const std::string& sql,
       row.date = reinterpret_cast<const char*>(text);
     }
     row.total_seconds = sqlite3_column_int64(stmt, 1);
+    row.record_count = sqlite3_column_int64(stmt, 2);
     rows.push_back(std::move(row));
   }
   if (step_result != SQLITE_DONE) {

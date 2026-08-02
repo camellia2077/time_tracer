@@ -350,9 +350,10 @@ auto TestValidateLogicRejectsBadTimeRangeFixture(int& failures) -> void {
   cleanup();
 }
 
-auto TestRecordActivityAtomicallyWarnsForWakeOnlyDay(int& failures) -> void {
+auto TestRecordActivityAtomicallyAllowsFirstRecordOnLateMonthDay(
+    int& failures) -> void {
   const RuntimeTestPaths kPaths = BuildTempTestPaths(
-      "time_tracer_android_runtime_record_warning_wake_only_day_test");
+      "time_tracer_android_runtime_record_first_late_month_day_test");
   RemoveTree(kPaths.test_root);
 
   const auto cleanup = [&]() -> void { RemoveTree(kPaths.test_root); };
@@ -367,15 +368,15 @@ auto TestRecordActivityAtomicallyWarnsForWakeOnlyDay(int& failures) -> void {
         BuildRuntimeRequest(kPaths, kConfigTomlPath));
   } catch (const std::exception& exception) {
     ++failures;
-    std::cerr << "[FAIL] BuildAndroidRuntime should succeed for wake-only "
-                 "record warning test: "
+    std::cerr << "[FAIL] BuildAndroidRuntime should succeed for the first "
+                 "late-month record test: "
               << exception.what() << '\n';
     cleanup();
     return;
   }
 
   const auto kAck = runtime.runtime_api->pipeline().RunRecordActivityAtomically(
-      {.target_date_iso = "2026-03-01",
+      {.target_date_iso = "2026-03-31",
        .raw_activity_name = "w",
        .remark = "",
        .preferred_txt_path = "",
@@ -383,8 +384,8 @@ auto TestRecordActivityAtomicallyWarnsForWakeOnlyDay(int& failures) -> void {
        .time_order_mode = TimeOrderMode::kStrictCalendar});
   if (!kAck.ok) {
     ++failures;
-    std::cerr << "[FAIL] RunRecordActivityAtomically should succeed for a "
-                 "wake-only new day: "
+    std::cerr << "[FAIL] RunRecordActivityAtomically should allow the first "
+                 "record on a late-month day: "
               << kAck.message << '\n';
     cleanup();
     return;
@@ -882,7 +883,7 @@ auto RunPipelineValidationRegressionTests(int& failures) -> void {
   TestValidateLogicRejectsWakeKeywordAfterFirstEvent(failures);
   TestValidateLogicAllowsSingleAuthoredEventDay(failures);
   TestValidateLogicRejectsBadTimeRangeFixture(failures);
-  TestRecordActivityAtomicallyWarnsForWakeOnlyDay(failures);
+  TestRecordActivityAtomicallyAllowsFirstRecordOnLateMonthDay(failures);
   TestRecordActivityAtomicallyAcceptsWakeKeywordFromConfigOnly(failures);
   TestRecordActivityAtomicallyAcceptsCanonicalActivityToken(failures);
   TestRecordActivityAtomicallyPreservesMultilineRemark(failures);

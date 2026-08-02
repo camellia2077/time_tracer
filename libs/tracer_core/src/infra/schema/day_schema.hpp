@@ -16,7 +16,6 @@ inline constexpr std::string_view kActivities = "activities";
 inline constexpr std::string_view kDate = "date";
 inline constexpr std::string_view kStatus = "status";
 inline constexpr std::string_view kExercise = "exercise";
-inline constexpr std::string_view kWakeAnchor = "wake_anchor";
 inline constexpr std::string_view kCardio = "cardio";
 inline constexpr std::string_view kAnaerobic = "anaerobic";
 inline constexpr std::string_view kGetup = "getup";
@@ -60,7 +59,6 @@ inline constexpr std::string_view kIndexYearMonth = "idx_year_month";
 inline constexpr std::string_view kDate = "date";
 inline constexpr std::string_view kYear = "year";
 inline constexpr std::string_view kMonth = "month";
-inline constexpr std::string_view kWakeAnchor = "wake_anchor";
 inline constexpr std::string_view kRemark = "remark";
 inline constexpr std::string_view kGetupTime = "getup_time";
 inline constexpr std::string_view kActivityCount = "activity_count";
@@ -79,13 +77,13 @@ struct JsonOnlyKeySet {
   std::span<const std::string_view> values;
 };
 
-inline constexpr std::array<std::string_view, 7> kDaysTableColumns = {
+inline constexpr std::array<std::string_view, 6> kDaysTableColumns = {
     db::kDate,       db::kYear,   db::kMonth,
-    db::kWakeAnchor, db::kRemark, db::kGetupTime, db::kActivityCount,
+    db::kRemark, db::kGetupTime, db::kActivityCount,
 };
 
-inline constexpr std::array<std::string_view, 7> kHeaderJsonKeys = {
-    json::kDate,  json::kWakeAnchor,    json::kCardio, json::kAnaerobic,
+inline constexpr std::array<std::string_view, 6> kHeaderJsonKeys = {
+    json::kDate,  json::kCardio, json::kAnaerobic,
     json::kGetup, json::kActivityCount, json::kRemark,
 };
 
@@ -93,11 +91,10 @@ inline constexpr std::array<std::string_view, 4> kHeaderJsonOnlyKeys = {
     json::kStatus, json::kExercise, json::kCardio, json::kAnaerobic,
 };
 
-inline constexpr std::array<FieldMapping, 9> kHeaderFieldMappings = {{
+inline constexpr std::array<FieldMapping, 8> kHeaderFieldMappings = {{
     {.json_key_ = json::kDate, .db_column_ = db::kDate},
     {.json_key_ = json::kStatus, .db_column_ = ""},
     {.json_key_ = json::kExercise, .db_column_ = ""},
-    {.json_key_ = json::kWakeAnchor, .db_column_ = db::kWakeAnchor},
     {.json_key_ = json::kCardio, .db_column_ = ""},
     {.json_key_ = json::kAnaerobic, .db_column_ = ""},
     {.json_key_ = json::kGetup, .db_column_ = db::kGetupTime},

@@ -287,21 +287,11 @@ void StructureRules::ProcessDateLine(int line_number, const std::string& line,
     }
   }
 
-  if (!has_seen_any_date_) {
-    // Business invariant for single-month ingest files: first date must start
-    // from day 01 to keep continuity and gap checks predictable.
-    if (line.length() >= 5) {
-      std::string day_part = line.substr(3, 2);
-      if (day_part != "01") {
-        errors.insert({line_number,
-                       "The first date in the file must be the 1st day of the "
-                       "month (e.g., d0101). Found: " +
-                           line,
-                       ErrorType::kDateContinuity, span});
-      }
-    }
-    has_seen_any_date_ = true;
-  }
+  // Date continuity/completeness is a mode-controlled business check. It is
+  // intentionally not enforced by the TXT structural parser, because hosts
+  // such as Android allow a user's first record to begin on any day of the
+  // month. StructValidator applies this rule when continuity/full is enabled.
+  has_seen_any_date_ = true;
 
   has_seen_date_in_block_ = true;
   has_seen_event_in_day_ = false;

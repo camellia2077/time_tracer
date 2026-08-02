@@ -11,6 +11,7 @@ namespace tracer_core::application::tests {
 
 using tracer::core::domain::modlogic::converter::DayProcessor;
 using tracer::core::domain::modlogic::converter::LogProcessor;
+using tracer::core::domain::model::ActivityRecordKind;
 using tracer::core::domain::modtypes::ConverterConfig;
 
 using tracer_core::core::dto::ConvertRequest;
@@ -557,16 +558,21 @@ auto TestMixedTxtUsesIntervalEndAndLeavesGapsUnrecorded(TestState& state)
   }
 
   const auto& day = month_it->second.front();
-  Expect(state, day.processedActivities.size() == 4,
-         "Mixed day should emit only recorded segments and leave gaps empty.");
-  if (day.processedActivities.size() != 4) {
+  Expect(state, day.processedActivities.size() == 5,
+         "Mixed day should retain the context-free first point and leave gaps empty.");
+  if (day.processedActivities.size() != 5) {
     return;
   }
 
-  const auto& game = day.processedActivities[0];
-  const auto& sleep = day.processedActivities[1];
-  const auto& study = day.processedActivities[2];
-  const auto& internet = day.processedActivities[3];
+  const auto& breakfast = day.processedActivities[0];
+  const auto& game = day.processedActivities[1];
+  const auto& sleep = day.processedActivities[2];
+  const auto& study = day.processedActivities[3];
+  const auto& internet = day.processedActivities[4];
+  Expect(state, breakfast.kind == ActivityRecordKind::kEndOnly &&
+                    breakfast.start_time_str.empty() &&
+                    breakfast.end_time_str == "08:09:00",
+         "Context-free first point should be retained as end-only.");
   Expect(state, game.start_time_str == "08:09:00" &&
                     game.end_time_str == "12:00:00" &&
                     game.project_path == "game",
@@ -607,16 +613,21 @@ auto TestMixedTxtContiguousSampleUsesSharedTimeline(TestState& state) -> void {
   }
 
   const auto& day = month_it->second.front();
-  Expect(state, day.processedActivities.size() == 4,
-         "Contiguous mixed day should emit the four materialized activities.");
-  if (day.processedActivities.size() != 4) {
+  Expect(state, day.processedActivities.size() == 5,
+         "Contiguous mixed day should retain the first end-only activity.");
+  if (day.processedActivities.size() != 5) {
     return;
   }
 
-  const auto& game = day.processedActivities[0];
-  const auto& sleep = day.processedActivities[1];
-  const auto& study = day.processedActivities[2];
-  const auto& internet = day.processedActivities[3];
+  const auto& breakfast = day.processedActivities[0];
+  const auto& game = day.processedActivities[1];
+  const auto& sleep = day.processedActivities[2];
+  const auto& study = day.processedActivities[3];
+  const auto& internet = day.processedActivities[4];
+  Expect(state, breakfast.kind == ActivityRecordKind::kEndOnly &&
+                    breakfast.start_time_str.empty() &&
+                    breakfast.end_time_str == "08:09:00",
+         "Contiguous sample should retain the context-free first point.");
   Expect(state, game.project_path == "game" &&
                     game.start_time_str == "08:09:00" &&
                     game.end_time_str == "12:00:00",
@@ -676,6 +687,86 @@ auto TestMixedTxtPointAfterCrossMidnightIntervalUsesExpandedBoundary(
                     game.end_time_str == "23:50:00" &&
                     game.duration_seconds == ((22 * 60) + 15) * 60,
          "Point after cross-midnight interval should use the expanded previous end boundary.");
+}
+
+auto TestPointWithoutContextProducesEndOnly(TestState& state) -> void {
+  ConverterConfig config;
+  config.text_mapping["study"] = "study";
+  config.text_mapping["meal"] = "meal";
+  DayProcessor processor(config);
+
+  DailyLog previous_day;
+  previous_day.date = "2026-02-01";
+
+  DailyLog day;
+  day.date = "2026-02-02";
+  day.isContinuation = true;
+  day.rawEvents.push_back(
+      RawEvent{.endTimeStr = "09:00", .description = "study"});
+  day.rawEvents.push_back(
+      RawEvent{.endTimeStr = "10:00", .description = "meal"});
+
+  processor.Process(previous_day, day);
+
+  Expect(state, day.processedActivities.size() == 2,
+         "A point event without context should remain in the activity facts.");
+  if (day.processedActivities.size() != 2) {
+    return;
+  }
+
+  const auto& end_only = day.processedActivities[0];
+  const auto& following = day.processedActivities[1];
+  Expect(state, end_only.kind == ActivityRecordKind::kEndOnly,
+         "The first point without context should be marked end-only.");
+  Expect(state, end_only.start_time_str.empty() &&
+                    end_only.end_time_str == "09:00:00" &&
+                    end_only.duration_seconds == 0,
+         "End-only should keep only its end boundary and no duration.");
+  Expect(state, following.kind == ActivityRecordKind::kInterval &&
+                    following.start_time_str == "09:00:00" &&
+                    following.end_time_str == "10:00:00" &&
+                    following.duration_seconds == 60 * 60,
+         "A following point should use end-only's end as its start boundary.");
+}
+
+auto TestEndOnlyBoundaryCanBeInheritedAcrossAdjacentDay(
+    TestState& state) -> void {
+  ConverterConfig config;
+  config.text_mapping["study"] = "study";
+  config.text_mapping["meal"] = "meal";
+  DayProcessor processor(config);
+
+  DailyLog previous_day;
+  previous_day.date = "2026-02-01";
+  previous_day.isContinuation = true;
+  previous_day.rawEvents.push_back(
+      RawEvent{.endTimeStr = "18:00", .description = "study"});
+  DailyLog no_context_day;
+  processor.Process(no_context_day, previous_day);
+
+  Expect(state, previous_day.processedActivities.size() == 1 &&
+                    previous_day.processedActivities.front().kind ==
+                        ActivityRecordKind::kEndOnly,
+         "The previous day should materialize its context-free point as end-only.");
+
+  DailyLog current_day;
+  current_day.date = "2026-02-02";
+  current_day.isContinuation = true;
+  current_day.rawEvents.push_back(
+      RawEvent{.endTimeStr = "09:00", .description = "meal"});
+  processor.Process(previous_day, current_day);
+
+  Expect(state, current_day.processedActivities.size() == 1,
+         "The adjacent day should keep its first point activity.");
+  if (current_day.processedActivities.empty()) {
+    return;
+  }
+  const auto& activity = current_day.processedActivities.front();
+  Expect(state, activity.kind == ActivityRecordKind::kInterval &&
+                    activity.start_time_str == "18:00:00" &&
+                    activity.end_time_str == "09:00:00" &&
+                    activity.duration_seconds == 15 * 60 * 60,
+         "The next day should inherit the previous end-only boundary.");
 }
 
 auto TestMultilineRemarksUsePhysicalContinuationLines(TestState& state)
@@ -768,6 +859,8 @@ auto RunConvertIngestValidateTests(TestState& state) -> void {
   TestIngestResponses(state);
   TestValidateResponses(state);
   TestContinuationDayPreservesFirstSegment(state);
+  TestPointWithoutContextProducesEndOnly(state);
+  TestEndOnlyBoundaryCanBeInheritedAcrossAdjacentDay(state);
   TestIntervalDayBuildsExplicitRecords(state);
   TestMixedDayUsesIntervalEndAsNextPointBoundary(state);
   TestContinuationDayAllowsGapBeforeFirstInterval(state);

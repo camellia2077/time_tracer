@@ -1,12 +1,12 @@
 parent = "recreation"
 
-[aliases.online-platforms]
+[canonical.online-platforms]
 "zhihu" = ["zhihu", "知乎"]
 "douyin" = ["douyin", "抖音"]
 "bilibili" = ["bilibili", "哔哩哔哩"]
 "weibo" = ["weibo"]
 
-[aliases.game]
+[canonical.game]
 "minecraft" = ["minecraft"]
 "overwatch" = ["守望先锋", "overwatch"]
 "clash-royale" = ["皇室战争", "cr", "Clash Royale"]

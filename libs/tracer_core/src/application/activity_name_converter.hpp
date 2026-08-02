@@ -45,7 +45,7 @@ class ActivityNameTextConverter {
 
   // Replaces only supplied authored alias tokens in event names. This is used
   // when an alias is renamed and historical TXT must remain parseable under
-  // the updated alias document.
+  // the updated canonical document.
   [[nodiscard]] auto ReplaceAliasNames(
       std::string_view text,
       const std::unordered_map<std::string, std::string>& replacements) const

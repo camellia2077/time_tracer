@@ -25,9 +25,23 @@ class REPORTS_SHARED_API IFormattingStrategy {
       const std::string& category_name, const std::string& formatted_duration,
       double percentage) const -> std::string = 0;
 
+  [[nodiscard]] virtual auto FormatCategoryHeader(
+      const std::string& category_name, const std::string& formatted_duration,
+      double percentage, std::int64_t duration_seconds,
+      std::int64_t occurrence_count, int avg_days) const -> std::string {
+    return FormatCategoryHeader(category_name, formatted_duration, percentage);
+  }
+
   [[nodiscard]] virtual auto FormatTreeNode(
       const std::string& project_name, const std::string& formatted_duration,
       int indent_level) const -> std::string = 0;
+
+  [[nodiscard]] virtual auto FormatTreeNode(
+      const std::string& project_name, const std::string& formatted_duration,
+      int indent_level, double percentage, std::int64_t duration_seconds,
+      std::int64_t occurrence_count, int avg_days) const -> std::string {
+    return FormatTreeNode(project_name, formatted_duration, indent_level);
+  }
 
   [[nodiscard]] virtual auto StartChildrenList() const -> std::string {
     return "";

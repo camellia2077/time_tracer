@@ -1,7 +1,6 @@
 // infra/query/data/repository/query_runtime_service_report_mapping.cpp
 #include <nlohmann/json.hpp>
 #include <algorithm>
-#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <numeric>
@@ -16,6 +15,7 @@
 #include "infra/config/loader/alias_mapping_index_utils.hpp"
 #include "infra/config/loader/toml_loader_utils.hpp"
 #include "infra/query/data/internal/report_mapping.hpp"
+#include "infra/query/data/stats/report_chart_stats_calculator.hpp"
 
 import tracer.core.infrastructure.config.file_converter_config_provider;
 import tracer.core.domain.types.converter_config;
@@ -32,6 +32,7 @@ namespace modtypes = tracer::core::domain::modtypes;
 using FileConverterConfigProvider =
     tracer::core::infrastructure::config::FileConverterConfigProvider;
 namespace modloader = tracer::core::infrastructure::config::loader;
+using tracer_core::core::dto::ReportAverageDayBasis;
 
 namespace tracer::core::infrastructure::query::data::internal {
 namespace {
@@ -41,6 +42,11 @@ constexpr int kDefaultReportCompositionLookbackDays = 7;
 
 using nlohmann::json;
 
+auto AverageDayBasisName(ReportAverageDayBasis basis) -> std::string_view {
+  return basis == ReportAverageDayBasis::kCalendarDays ? "calendar_days"
+                                                        : "active_days";
+}
+
 struct ResolvedReportQueryWindow {
   int payload_lookback_days = 0;
   std::optional<infra_data_query_orchestrators::ResolvedDateRange> explicit_range;
@@ -49,77 +55,47 @@ struct ResolvedReportQueryWindow {
 
 
 [[nodiscard]] auto BuildCompositionTreeNodePayload(
-    std::string_view name, const reporting::ProjectNode& node) -> json {
+    const infra_data_query_stats::ReportCompositionTreeNodeView& view,
+    const infra_data_query_stats::ReportCompositionStats& stats) -> json {
+  const auto kStatsIt = stats.nodes.find(view.path);
+  const auto average_duration_seconds =
+      kStatsIt == stats.nodes.end()
+          ? 0LL
+          : kStatsIt->second.average_duration_seconds;
+  const auto average_occurrence_count =
+      kStatsIt == stats.nodes.end()
+          ? 0.0
+          : kStatsIt->second.average_occurrence_count;
+  const auto average_occurrence_ratio =
+      kStatsIt == stats.nodes.end()
+          ? 0.0
+          : kStatsIt->second.average_occurrence_ratio;
   json payload = {
-      {"name", name},
-      {"duration_seconds", node.duration},
-      {"occurrence_count", node.occurrence_count},
+      {"name", view.name},
+      {"duration_seconds", view.node->duration},
+      {"occurrence_count", view.node->occurrence_count},
+      {"average_duration_seconds", average_duration_seconds},
+      {"average_occurrence_count", average_occurrence_count},
+      {"average_occurrence_ratio", average_occurrence_ratio},
       {"children", json::array()},
   };
 
-  std::vector<std::pair<std::string_view, const reporting::ProjectNode*>>
-      children;
-  children.reserve(node.children.size());
-  for (const auto& [child_name, child] : node.children) {
-    if (!child_name.empty() && child.occurrence_count > 0) {
-      children.push_back({child_name, &child});
-    }
-  }
-  std::ranges::sort(
-      children, [](const auto& left, const auto& right) {
-        return left.first < right.first;
-      });
-  for (const auto& [child_name, child] : children) {
+  for (const auto& child : view.children) {
     payload["children"].push_back(
-        BuildCompositionTreeNodePayload(child_name, *child));
+        BuildCompositionTreeNodePayload(child, stats));
   }
   return payload;
 }
 
 [[nodiscard]] auto BuildCompositionTreePayload(
-    const reporting::ProjectTree& tree) -> json {
+    const std::vector<
+        infra_data_query_stats::ReportCompositionTreeNodeView>& tree,
+    const infra_data_query_stats::ReportCompositionStats& stats) -> json {
   json payload = json::array();
-  std::vector<std::pair<std::string_view, const reporting::ProjectNode*>>
-      roots;
-  roots.reserve(tree.size());
-  for (const auto& [root_name, root] : tree) {
-    if (!root_name.empty() && root.occurrence_count > 0) {
-      roots.push_back({root_name, &root});
-    }
-  }
-  std::ranges::sort(roots, [](const auto& left, const auto& right) {
-    return left.first < right.first;
-  });
-  for (const auto& [root_name, root] : roots) {
-    payload.push_back(BuildCompositionTreeNodePayload(root_name, *root));
+  for (const auto& root : tree) {
+    payload.push_back(BuildCompositionTreeNodePayload(root, stats));
   }
   return payload;
-}
-
-auto ParseIsoDateOrThrow(std::string_view value) -> std::chrono::sys_days {
-  if (value.size() != 10 || value[4] != '-' || value[7] != '-') {
-    throw std::runtime_error("Invalid ISO date boundary: " + std::string(value));
-  }
-
-  const int year = std::stoi(std::string(value.substr(0, 4)));
-  const unsigned month =
-      static_cast<unsigned>(std::stoi(std::string(value.substr(5, 2))));
-  const unsigned day =
-      static_cast<unsigned>(std::stoi(std::string(value.substr(8, 2))));
-  const std::chrono::year_month_day ymd{
-      std::chrono::year{year}, std::chrono::month{month},
-      std::chrono::day{day}};
-  if (!ymd.ok()) {
-    throw std::runtime_error("Invalid ISO date boundary: " + std::string(value));
-  }
-  return std::chrono::sys_days{ymd};
-}
-
-auto InclusiveRangeDays(std::string_view start_date, std::string_view end_date)
-    -> int {
-  const auto start = ParseIsoDateOrThrow(start_date);
-  const auto end = ParseIsoDateOrThrow(end_date);
-  return static_cast<int>((end - start).count()) + 1;
 }
 
 auto LoadConverterConfigOrThrow(
@@ -391,7 +367,7 @@ auto BuildReportChartContent(
           db_conn, kSelectedRoot, range.start_date, range.end_date);
   const auto kSeriesResult = infra_data_query_stats::BuildReportChartSeries(
       {.start_date = range.start_date, .end_date = range.end_date},
-      kSparseRows);
+      kSparseRows, request.average_day_basis);
   for (const auto& point : kSeriesResult.series) {
     payload["series"].push_back(json{
         {"date", point.date},
@@ -405,6 +381,8 @@ auto BuildReportChartContent(
       kSeriesResult.stats.total_duration_seconds;
   payload["active_days"] = kSeriesResult.stats.active_days;
   payload["range_days"] = kSeriesResult.stats.range_days;
+  payload["average_denominator_days"] =
+      kSeriesResult.stats.average_denominator_days;
 
   return payload.dump();
 }
@@ -429,9 +407,30 @@ auto BuildReportCompositionContent(
 
   json payload = json::object();
   payload["lookback_days"] = kWindow.payload_lookback_days;
+  payload["display_level"] = 0;
+  payload["display_path"] = json::array();
   payload["total_duration_seconds"] = 0;
   payload["active_root_count"] = 0;
+  payload["active_days"] = 0;
   payload["range_days"] = 0;
+  payload["average_day_basis"] = AverageDayBasisName(request.average_day_basis);
+  payload["average_denominator_days"] = 0;
+  const int kInitialChartRangeDays =
+      infra_data_query_stats::CalculateInclusiveDateRangeDays(
+          kWindow.range.start_date, kWindow.range.end_date);
+  payload["range_days"] = kInitialChartRangeDays;
+  if (request.average_day_basis == ReportAverageDayBasis::kCalendarDays) {
+    payload["average_denominator_days"] = kInitialChartRangeDays;
+  }
+  payload["average_day_basis"] = AverageDayBasisName(request.average_day_basis);
+  payload["average_denominator_days"] = 0;
+  const int kInitialRangeDays =
+      infra_data_query_stats::CalculateInclusiveDateRangeDays(
+          kWindow.range.start_date, kWindow.range.end_date);
+  payload["range_days"] = kInitialRangeDays;
+  if (request.average_day_basis == ReportAverageDayBasis::kCalendarDays) {
+    payload["average_denominator_days"] = kInitialRangeDays;
+  }
   payload["tree"] = json::array();
   if (kWindow.explicit_range.has_value()) {
     payload["from_date"] = kWindow.explicit_range->start_date;
@@ -458,8 +457,14 @@ auto BuildReportCompositionContent(
   // but aggregates root totals across the full period instead of per-day series.
   const reporting::ProjectTree tree =
       infra_data_query::QueryProjectTree(db_conn, filters);
-  const int kRangeDays =
-      InclusiveRangeDays(range.start_date, range.end_date);
+  const auto kCompositionStats =
+      infra_data_query_stats::BuildReportCompositionStats(
+          tree, infra_data_query::QueryDayDurations(db_conn, filters),
+          request.average_day_basis,
+          infra_data_query_stats::CalculateInclusiveDateRangeDays(
+              range.start_date, range.end_date));
+  const int kRangeDays = infra_data_query_stats::CalculateInclusiveDateRangeDays(
+      range.start_date, range.end_date);
   const std::int64_t total_duration_seconds = std::accumulate(
       tree.begin(), tree.end(), static_cast<std::int64_t>(0),
       [](std::int64_t total, const auto& entry) {
@@ -471,12 +476,28 @@ auto BuildReportCompositionContent(
         const auto& [root_name, node] = entry;
         return !root_name.empty() && node.duration > 0;
       }));
+  if (active_root_count == 1) {
+    for (const auto& [root_name, node] : tree) {
+      if (!root_name.empty() && node.duration > 0 && !node.children.empty()) {
+        payload["display_level"] = 1;
+        payload["display_path"] = json::array({root_name});
+        break;
+      }
+    }
+  }
   payload["total_duration_seconds"] = total_duration_seconds;
   payload["active_root_count"] = active_root_count;
+  payload["active_days"] = kCompositionStats.active_days;
   payload["range_days"] = kRangeDays;
+  payload["average_denominator_days"] =
+      request.average_day_basis == ReportAverageDayBasis::kCalendarDays
+          ? kRangeDays
+          : kCompositionStats.active_days;
   // The complete weighted activity tree is the sole composition payload.
   // Every client derives its current visual layer from a tree node's children.
-  payload["tree"] = BuildCompositionTreePayload(tree);
+  payload["tree"] = BuildCompositionTreePayload(
+      infra_data_query_stats::BuildReportCompositionTreeView(tree),
+      kCompositionStats);
 
   return payload.dump();
 }

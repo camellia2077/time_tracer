@@ -45,12 +45,12 @@ ProjectNode(1) ---- (N) ProjectNode.children
 
 ### 2.3 TimeRecord（活动明细）
 
-语义：一行代表一个活动时间区间。
+语义：一行代表一个活动事实；可以是完整活动时间区间，也可以是只有可靠结束时间的 `end_only` 记录。
 
 | 字段组 | 代表字段 |
 | --- | --- |
 | 主键/定位 | `logical_id`, `date` |
-| 时间区间 | `start_timestamp`, `end_timestamp`, `start`, `end`, `duration` |
+| 时间区间/边界 | `record_kind`, `start_timestamp`, `end_timestamp`, `start`, `end`, `duration` |
 | 项目关联 | `project_id`, `project_path_snapshot` |
 | 文本信息 | `activity_remark` |
 
@@ -69,6 +69,9 @@ ProjectNode(1) ---- (N) ProjectNode.children
    2. 查询建议优先使用快照字段，避免每次递归还原路径。
 5. 逻辑 ID 语义
    1. `logical_id` 为单日内有序记录标识（由转换流程生成）。
+6. end-only 语义
+   1. `record_kind = 'end_only'` 只表示截至时间，`duration` 固定为 `0`，但仍是活动明细和一次活动出现。
+   2. `start` 为空字符串仅是兼容存储形态；消费者必须优先读取 `record_kind`，不能用 `start` 是否为空替代记录类型判断。
 
 ## 4. 典型读取视图（建议对外暴露）
 

@@ -143,11 +143,11 @@ auto NativeQuery(JNIEnv* env, jobject thiz, jint action, jint year, jint month,
                  jstring from_date, jstring to_date, jstring remark,
                  jstring day_remark, jstring project, jstring root,
                  jint exercise, jint status, jboolean cross_midnight_activity,
-                 jboolean missing_wake_anchor, jboolean reverse, jint limit,
+                 jboolean reverse, jint limit,
                  jint top_n, jint lookback_days, jstring anchor_date,
                  jboolean score_by_duration, jstring tree_period,
                  jstring tree_period_argument, jint tree_max_depth,
-                 jstring output_mode) -> jstring;
+                 jstring output_mode, jstring average_day_basis) -> jstring;
 
 auto NativeReportJson(JNIEnv* env, jobject thiz, jstring request_json)
     -> jstring;

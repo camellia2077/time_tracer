@@ -60,7 +60,7 @@ Windows: report runtime client -> tracer_core_runtime_temporal_report_json()
 
 | 层次 | 定义 | 保障等级 | 实现方式 |
 |------|------|----------|----------|
-| **数据层** | 同一份 txt 导入后，报告的 `total_duration`、`detailed_records` 条数、`project_tree` 节点、各字段值完全一致 | **MUST** | 共享 `DayQuerier` / `BaseQuerier` 同一份 SQL + 映射代码 |
+| **数据层** | 同一份 txt 导入后，报告的 `total_duration`、`detailed_records` 条数、记录 `kind`、`project_tree` 节点、各字段值完全一致 | **MUST** | 共享 `DayQuerier` / `BaseQuerier` 同一份 SQL + 映射代码 |
 | **结构层** | MD 输出包含相同的 section 标题（`## All Activities`、`## Project Breakdown` 等）和标签（`- **Date**:`、`- **Total Time Recorded**:` 等） | **MUST** | 共享 `ReportDtoFormatter` + 同一份 `day.toml` 配置 |
 | **格式层** | 文本结构与换行语义一致（UTF-8 + LF + 末尾 LF） | **MUST** | `report_formatter_parity_md_tests.cpp` + `ReportOutputPolicy` |
 | **字节层** | 原始字节（含换行符）完全相同，且 `sha256` 一致 | **MUST** | parity 硬门禁（CLI/Android 原始字节 + `sha256`） |

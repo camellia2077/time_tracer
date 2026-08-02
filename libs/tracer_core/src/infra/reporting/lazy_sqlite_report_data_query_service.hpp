@@ -6,6 +6,7 @@
 
 #include "application/ports/reporting/i_platform_clock.hpp"
 #include "application/ports/reporting/i_report_data_query_service.hpp"
+#include "infra/config/models/report_catalog.hpp"
 
 namespace tracer::core::infrastructure::reports {
 class LazySqliteReportDataQueryService final
@@ -14,7 +15,8 @@ class LazySqliteReportDataQueryService final
   LazySqliteReportDataQueryService(
       std::filesystem::path db_path,
       std::shared_ptr<tracer_core::application::ports::IPlatformClock>
-          platform_clock);
+          platform_clock,
+      std::shared_ptr<const ReportCatalog> report_catalog = nullptr);
 
   auto QueryDaily(std::string_view date) -> DailyReportData override;
   auto QueryMonthly(std::string_view month) -> MonthlyReportData override;
@@ -40,6 +42,7 @@ class LazySqliteReportDataQueryService final
   std::filesystem::path db_path_;
   std::shared_ptr<tracer_core::application::ports::IPlatformClock>
       platform_clock_;
+  std::shared_ptr<const ReportCatalog> report_catalog_;
 };
 
 }  // namespace tracer::core::infrastructure::reports

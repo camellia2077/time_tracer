@@ -92,7 +92,7 @@ auto ValidatePeriodKeys(const toml::table& query_config,
                         const std::string& report_type) -> bool {
   const std::set<std::string> kPeriodKeys = {
       "title_template",         "actual_days_label",      "status_days_label",
-      "wake_anchor_days_label", "exercise_days_label",    "cardio_days_label",
+      "exercise_days_label",    "cardio_days_label",
       "anaerobic_days_label",   "total_time_label",       "no_records_message",
       "invalid_range_message",  "project_breakdown_label"};
 
@@ -201,11 +201,11 @@ auto DailyMd::ValidateSpecificKeys(const toml::table& query_config,
                                    const std::string& file_name) const -> bool {
   const std::set<std::string> kDailyMdKeys = {
       "title_prefix",          "date_label",
-      "total_time_label",      "status_label",
-      "wake_anchor_label",     "exercise_label",
+      "total_time_label",
       "getup_time_label",      "remark_label",
       "all_activities_label",  "activity_remark_label",
-      "activity_connector",    "no_records_message"};
+      "activity_connector",    "end_only_time_format",
+      "no_records_message"};
 
   return ValidateRequiredKeys(query_config, file_name, kDailyMdKeys, "daily");
 }
@@ -215,7 +215,6 @@ auto DailyTex::ValidateSpecificKeys(const toml::table& query_config,
     -> bool {
   const std::set<std::string> kDailyTexKeys = {
       "report_title",       "date_label",           "total_time_label",
-      "status_label",       "wake_anchor_label",    "exercise_label",
       "getup_time_label",   "remark_label",         "no_records_message",
       "statistics_label",   "all_activities_label", "activity_remark_label",
       "activity_connector", "keyword_colors",       "statistics_items"};
@@ -228,8 +227,7 @@ auto DailyTyp::ValidateSpecificKeys(const toml::table& query_config,
     -> bool {
   const std::set<std::string> kDailyTypKeys = {
       "title_prefix",       "date_label",           "total_time_label",
-      "status_label",       "wake_anchor_label",    "getup_time_label",
-      "remark_label",       "exercise_label",       "no_records_message",
+      "getup_time_label",   "remark_label",         "no_records_message",
       "statistics_label",   "all_activities_label", "activity_remark_label",
       "activity_connector", "keyword_colors",       "statistics_items"};
 

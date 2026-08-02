@@ -31,7 +31,7 @@ void TestDecodeRuntimeCheckResponse(int& failures) {
 
 void TestDecodeResolveCliContextResponse(int& failures) {
   const auto response = DecodeResolveCliContextResponse(
-      R"({"ok":true,"error_message":"","paths":{"exe_dir":"C:/bin","db_path":"C:/out/db/time_data.sqlite3","output_root":"C:/out","export_root":"C:/export","runtime_output_root":"C:/out","converter_config_toml_path":"C:/bin/config/converter.toml"},"cli_config":{"default_save_processed_output":true,"default_date_check_mode":"continuity","defaults":{"default_format":"md"},"command_defaults":{"export_format":"md","query_format":"tex","convert_date_check_mode":"full","convert_save_processed_output":false,"convert_validate_logic":true,"convert_validate_structure":false,"ingest_date_check_mode":"none","ingest_save_processed_output":true,"validate_logic_date_check_mode":"continuity"}}})");
+      R"({"ok":true,"error_message":"","paths":{"exe_dir":"C:/bin","db_path":"C:/out/db/time_data.sqlite3","output_root":"C:/out","export_root":"C:/export","runtime_output_root":"C:/out","converter_config_toml_path":"C:/bin/config/converter.toml"},"cli_config":{"default_save_processed_output":true,"defaults":{"default_format":"md"},"command_defaults":{"export_format":"md","query_format":"tex","convert_save_processed_output":false,"convert_validate_logic":true,"convert_validate_structure":false,"ingest_save_processed_output":true}}})");
 
   Expect(response.ok, "DecodeResolveCliContextResponse ok mismatch.", failures);
   Expect(response.paths.has_value(),
@@ -45,10 +45,6 @@ void TestDecodeResolveCliContextResponse(int& failures) {
          failures);
   Expect(response.cli_config->default_save_processed_output,
          "DecodeResolveCliContextResponse default_save mismatch.", failures);
-  Expect(response.cli_config->default_date_check_mode.has_value() &&
-             *response.cli_config->default_date_check_mode == "continuity",
-         "DecodeResolveCliContextResponse default_date_check_mode mismatch.",
-         failures);
   Expect(response.cli_config->command_defaults.convert_validate_logic
                  .has_value() &&
              *response.cli_config->command_defaults.convert_validate_logic,

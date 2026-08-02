@@ -41,10 +41,10 @@ Time Tracer 的目标不是简单记录“今天学习了多久”或“今天�
 ```toml
 parent = "exercise"
 
-[aliases.strength-training]
+[canonical.strength-training]
 group_aliases = ["无氧训练"]
 
-[aliases.strength-training.squat]
+[canonical.strength-training.squat]
 group_aliases = ["蹲"]
 "深蹲" = "squat"
 ```
@@ -65,7 +65,7 @@ group_aliases = ["蹲"]
 * 可以把叶子 alias 移入已有层级。移动会改变规范路径，例如从 `exercise_running` 变为 `exercise_cardio_running`。
 * 可以为已有 group 重命名记录别名或增加新的记录别名。
 
-移动叶子或重命名 group 记录别名会影响历史数据。系统会同步更新 alias TOML、TXT 中的规范活动 token，并重建数据库；所有步骤成功后才替换正式数据。增加 group 记录别名只影响今后的输入，不需要修改历史 TXT 或重建数据库。当前不能把一个 group 及其全部子孙作为整体一次移动。
+移动叶子或重命名 group 记录别名会影响历史数据。系统会同步更新 canonical TOML、TXT 中的规范活动 token，并重建数据库；所有步骤成功后才替换正式数据。增加 group 记录别名只影响今后的输入，不需要修改历史 TXT 或重建数据库。当前不能把一个 group 及其全部子孙作为整体一次移动。
 
 ### 数据如何展示
 

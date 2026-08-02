@@ -17,7 +17,7 @@ auto main() -> int {
     const fs::path kRepoRoot = FindRepoRoot();
     Require(!kRepoRoot.empty(), "Unable to locate repository root");
 
-    const fs::path kConverterConfig = kRepoRoot / "config" / "user" / "behavior.toml";
+    fs::path kConverterConfig = kRepoRoot / "config" / "user" / "behavior.toml";
     const fs::path kInputRoot = kRepoRoot / "test" / "data";
     Require(fs::exists(kInputRoot), "Missing test/data directory");
     const fs::path kTempRoot =
@@ -29,6 +29,21 @@ auto main() -> int {
     fs::remove_all(kTempRoot, io_error);
     fs::create_directories(kOutputRoot, io_error);
     Require(!io_error, "Failed to prepare temp output directories");
+
+    const fs::path kConfigRoot = kTempRoot / "config";
+    fs::create_directories(kConfigRoot / "user", io_error);
+    fs::copy(kRepoRoot / "config" / "program", kConfigRoot / "program",
+             fs::copy_options::recursive | fs::copy_options::overwrite_existing,
+             io_error);
+    fs::copy_file(kRepoRoot / "config" / "user" / "behavior.toml",
+                  kConfigRoot / "user" / "behavior.toml",
+                  fs::copy_options::overwrite_existing, io_error);
+    fs::copy(kRepoRoot / "test" / "data" / "activity_hierarchy",
+             kConfigRoot / "user" / "activity_hierarchy",
+             fs::copy_options::recursive | fs::copy_options::overwrite_existing,
+             io_error);
+    Require(!io_error, "Failed to prepare test config directory");
+    kConverterConfig = kConfigRoot / "user" / "behavior.toml";
 
     {
       auto runtime = CreateRuntime(api, kDbPath, kOutputRoot, kConverterConfig);

@@ -141,7 +141,7 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
                                                 kConverterConfigTomlPath);
   auto report_data_query_service =
       std::make_shared<infra_reports::LazySqliteReportDataQueryService>(
-          kDbPath, platform_clock);
+          kDbPath, platform_clock, report_catalog);
   auto static_formatter_registrar = std::make_shared<
       infrastructure::reports::AndroidStaticReportFormatterRegistrar>(
       kRuntimeConfigPaths.formatter_policy);

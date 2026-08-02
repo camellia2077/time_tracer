@@ -75,7 +75,7 @@
 
 1. 本目录存放的是设计参考资源，不是应用运行时资源
 2. 程序运行时配置的 canonical source 仍然是：
-   - `assets/tracer_core/config`
+   - `config/program`
 3. 跨平台共享的视觉核心，优先固化到 `ui/branding/master/`
 4. 平台实现差异，写到 `ui/branding/platform/`
 5. 稳定可复用的 SVG 导出，保留在 `ui/branding/exports/`

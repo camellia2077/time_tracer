@@ -174,7 +174,6 @@ void TestEncodeRequestRoundTrip(int& failures) {
     request.limit = 5;
     request.reverse = true;
     request.cross_midnight_activity = true;
-    request.missing_wake_anchor = true;
     request.anchor_date = "2026-02-01";
     request.activity_score_by_duration = false;
     const auto encoded = EncodeQueryRequest(request);
@@ -191,9 +190,6 @@ void TestEncodeRequestRoundTrip(int& failures) {
            "EncodeQueryRequest round-trip reverse mismatch.", failures);
     Expect(decoded.cross_midnight_activity == request.cross_midnight_activity,
            "EncodeQueryRequest round-trip cross_midnight_activity mismatch.",
-           failures);
-    Expect(decoded.missing_wake_anchor == request.missing_wake_anchor,
-           "EncodeQueryRequest round-trip missing_wake_anchor mismatch.",
            failures);
     Expect(decoded.anchor_date == request.anchor_date,
            "EncodeQueryRequest round-trip anchor_date mismatch.", failures);

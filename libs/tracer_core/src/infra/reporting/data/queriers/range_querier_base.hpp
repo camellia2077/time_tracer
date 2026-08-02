@@ -22,7 +22,6 @@ class RangeQuerierBase : public BaseQuerier<ReportDataType, QueryParamType> {
     data.has_records = data.matched_record_count > 0;
     const auto kFlagCounts = this->FetchDayFlagCounts();
     data.status_true_days = kFlagCounts.status_true_days;
-    data.wake_anchor_days = kFlagCounts.wake_anchor_days;
     data.exercise_true_days = kFlagCounts.exercise_true_days;
     data.cardio_true_days = kFlagCounts.cardio_true_days;
     data.anaerobic_true_days = kFlagCounts.anaerobic_true_days;

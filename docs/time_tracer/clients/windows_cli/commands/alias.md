@@ -1,6 +1,6 @@
 # `alias`
 
-管理 alias TOML 的 canonical 层级和 alias，用于配置编辑、层级查看，以及在需要时同步旧 TXT 和数据库。
+管理 canonical TOML 的 canonical 层级和 alias，用于配置编辑、层级查看，以及在需要时同步旧 TXT 和数据库。
 
 ## 子命令
 
@@ -28,7 +28,7 @@ time_tracer_cli alias tree --file config/activity_hierarchy/study.toml --show-al
 
 tree 先调用 Core 的 describe_activity_hierarchy 获取统一的 ActivityHierarchyTree，
 再由 CLI 负责字符树展示。Core 模型中的每个可选节点都有 canonical_key、
-相对于 [aliases] 的 canonical path、kind、aliases 和递归 children；是否显示
+相对于 [canonical] 的 canonical path、kind、aliases 和递归 children；是否显示
 alias 只影响 CLI 展示，不改变模型。
 
 ## 只改 TOML
@@ -108,7 +108,7 @@ time_tracer_cli alias add-group-alias --file <alias_toml> --group <group> --alia
 time_tracer_cli alias rename-group-alias --file <alias_toml> --group <group> --old-alias <old> --alias <new>
 ```
 
-这些命令只修改 alias TOML；canonical 路径不变时，不需要迁移 TXT 或数据库。
+这些命令只修改 canonical TOML；canonical 路径不变时，不需要迁移 TXT 或数据库。
 
 当前 `move`/`move-config` 支持移动 leaf activity 或完整 group 子树。使用
 `--alias` 移动 leaf，使用 `--group` 移动 group；group 的 nested groups、

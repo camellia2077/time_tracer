@@ -87,14 +87,6 @@ auto MemoryParser::Parse(
       day_data.year = kParsedYearMonth->first;
       day_data.month = kParsedYearMonth->second;
 
-      // days.wake_anchor is persisted as day metadata. It is derived from the
-      // wake anchor rule (getupTime + continuation state), not from whether
-      // any sleep_* activity exists in the fact set.
-      day_data.wake_anchor =
-          (!input_day.isContinuation && !input_day.getupTime.empty() &&
-           input_day.getupTime != "00:00:00")
-              ? 1
-              : 0;
       day_data.remark = ProcessDayRemarks(input_day.generalRemarks);
       day_data.getup_time = ResolveGetupTime(input_day);
       day_data.activity_count =
@@ -104,6 +96,7 @@ auto MemoryParser::Parse(
 
       for (const auto& activity : input_day.processedActivities) {
         TimeRecordInternal record;
+        record.kind = activity.kind;
         record.logical_id = activity.logical_id;
         record.start_timestamp = activity.start_timestamp;
         record.end_timestamp = activity.end_timestamp;

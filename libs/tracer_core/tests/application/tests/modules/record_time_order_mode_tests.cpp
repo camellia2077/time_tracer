@@ -62,6 +62,13 @@ auto TestLogicalDayBoundaryAndEquality(TestState& state) -> void {
   Expect(state,
          !IsStrictlyAfter("0904", "0904", TimeOrderMode::kLogicalDay0600),
          "logical_day_0600 should reject equal timestamps as strictly increasing.");
+
+  Expect(state,
+         IsStrictlyAfter("110608", "110600", TimeOrderMode::kStrictCalendar),
+         "strict_calendar should compare HHMMSS values at second precision.");
+  Expect(state,
+         !IsStrictlyAfter("110600", "110608", TimeOrderMode::kStrictCalendar),
+         "strict_calendar should reject a timestamp that is earlier by seconds.");
 }
 
 }  // namespace

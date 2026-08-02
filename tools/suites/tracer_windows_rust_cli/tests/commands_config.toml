@@ -36,3 +36,12 @@ expect_stdout_contains = [
   "rename-group-alias",
   "add-group-alias",
 ]
+
+[[commands]]
+name = "Activity Merge Command Is Exposed"
+stage = "config"
+args = ["activity", "--help"]
+expect_exit = 0
+expect_stdout_contains = [
+  "merge",
+]

@@ -169,6 +169,31 @@ void ValidateActivityDuration(const DailyLog& day,
   constexpr std::string_view kAllowLongToken = "@allow-long";
 
   for (const auto& activity : day.processedActivities) {
+    if (!activity.HasValidBoundaryShape()) {
+      diagnostics.push_back(
+          {.severity = DiagnosticSeverity::kError,
+           .code = "activity.record.invalid_boundary_shape",
+           .message =
+               "In file for date " + day.date +
+               ": Activity record boundaries do not match its record kind "
+               "(start=" +
+               (activity.start_time_str.empty() ? "N/A"
+                                                 : activity.start_time_str) +
+               ", end=" +
+               (activity.end_time_str.empty() ? "N/A"
+                                               : activity.end_time_str) +
+               ", project=" + activity.project_path + ").",
+           .source_span = activity.source_span});
+      continue;
+    }
+
+    if (activity.kind == ActivityRecordKind::kEndOnly) {
+      // An end-only activity is a valid authored fact whose start boundary is
+      // unavailable. It is visible in activity/count queries but has no
+      // duration to validate or aggregate.
+      continue;
+    }
+
     const int kDurationMinutes =
         activity.duration_seconds > 0 ? (activity.duration_seconds / 60) : 0;
     const int kDurationHours = kDurationMinutes / 60;

@@ -5,8 +5,6 @@
 #include <optional>
 #include <string>
 
-#include "domain/types/date_check_mode.hpp"
-
 namespace tracer_core::application::dto {
 
 struct CliGlobalDefaults {
@@ -16,18 +14,14 @@ struct CliGlobalDefaults {
 struct CliCommandDefaults {
   std::optional<std::string> export_format;
   std::optional<std::string> query_format;
-  std::optional<DateCheckMode> convert_date_check_mode;
   std::optional<bool> convert_save_processed_output;
   std::optional<bool> convert_validate_logic;
   std::optional<bool> convert_validate_structure;
-  std::optional<DateCheckMode> ingest_date_check_mode;
   std::optional<bool> ingest_save_processed_output;
-  std::optional<DateCheckMode> validate_logic_date_check_mode;
 };
 
 struct CliConfig {
   bool default_save_processed_output = false;
-  DateCheckMode default_date_check_mode = DateCheckMode::kNone;
   CliGlobalDefaults defaults;
   CliCommandDefaults command_defaults;
 };

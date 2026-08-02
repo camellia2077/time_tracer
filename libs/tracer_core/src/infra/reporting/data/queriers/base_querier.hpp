@@ -43,7 +43,6 @@ class BaseQuerier {
  protected:
   struct DayFlagCounts {
     int status_true_days = 0;
-    int wake_anchor_days = 0;
     int exercise_true_days = 0;
     int cardio_true_days = 0;
     int anaerobic_true_days = 0;
@@ -79,14 +78,16 @@ class BaseQuerier {
     // may legitimately exceed 24 hours.
     std::string sql = "SELECT ";
     sql += schema::time_records::db::kProjectId;
-    sql += ", SUM(";
+    sql += ", ";
     sql += schema::time_records::db::kDuration;
-    sql += ") FROM ";
+    sql += " FROM ";
     sql += schema::time_records::db::kTable;
     sql += " WHERE ";
     sql += GetDateConditionSql();
-    sql += " GROUP BY ";
-    sql += schema::time_records::db::kProjectId;
+    sql += " ORDER BY ";
+    sql += schema::time_records::db::kDate;
+    sql += ", ";
+    sql += schema::time_records::db::kLogicalId;
     sql += ";";
 
     if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
@@ -183,28 +184,6 @@ class BaseQuerier {
   [[nodiscard]] auto FetchDayFlagCounts() const -> DayFlagCounts {
     DayFlagCounts counts{};
     sqlite3_stmt* stmt = nullptr;
-    // Wake-anchor day counts come from persisted day metadata, not from
-    // generated sleep activities or arbitrary sleep_* records.
-    std::string sql = "SELECT SUM(CASE WHEN ";
-    sql += schema::day::db::kWakeAnchor;
-    sql +=
-        " != 0 THEN 1 ELSE 0 END) "
-        "FROM ";
-    sql += schema::day::db::kTable;
-    sql += " WHERE ";
-    sql += GetDateConditionSql();
-    sql += ";";
-
-    if (sqlite3_prepare_v2(this->db_, sql.c_str(), -1, &stmt, nullptr) ==
-        SQLITE_OK) {
-      BindSqlParameters(stmt);
-      if (sqlite3_step(stmt) == SQLITE_ROW) {
-        counts.wake_anchor_days = sqlite3_column_int(stmt, 0);
-      }
-    }
-    sqlite3_finalize(stmt);
-
-    stmt = nullptr;
     std::string record_sql =
         "SELECT "
         "COUNT(DISTINCT CASE WHEN (";

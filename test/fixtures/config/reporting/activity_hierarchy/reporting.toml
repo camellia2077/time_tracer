@@ -1,0 +1,4 @@
+parent = "reporting"
+
+[canonical]
+work = ["work"]

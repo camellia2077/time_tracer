@@ -1,4 +1,4 @@
 parent = "rest"
 
-[aliases]
+[canonical]
 "rest" = ["rest", "休息", "r"]

@@ -6,6 +6,60 @@ namespace tracer_core_c_api_stability_internal {
 
 void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
                        const fs::path& input_root) {
+  const json kEmptyQuickAccess = ParseResponse(
+      api.runtime_txt(runtime, json{{"action", "read_quick_access"},
+                                    {"toml_content", "quick_access = []\n"}}
+                                   .dump()
+                                   .c_str()),
+      "read empty quick access");
+  Require(kEmptyQuickAccess.value("ok", false),
+          "empty Quick Access TOML should read successfully");
+  Require(kEmptyQuickAccess.value("quick_access", json::array()).empty(),
+          "empty Quick Access TOML should return an empty list");
+
+  const json kExpectedQuickAccess = json::array({"学习", "休息", "read"});
+  const json kWrittenQuickAccess = ParseResponse(
+      api.runtime_txt(runtime,
+                      json{{"action", "write_quick_access"},
+                           {"quick_access", kExpectedQuickAccess}}
+                          .dump()
+                          .c_str()),
+      "write quick access");
+  Require(kWrittenQuickAccess.value("ok", false),
+          "write_quick_access should return ok=true");
+  Require(kWrittenQuickAccess.value("quick_access", json::array()) ==
+              kExpectedQuickAccess,
+          "write_quick_access should return persisted aliases");
+  const auto renderedQuickAccess =
+      kWrittenQuickAccess.value("toml_content", std::string{});
+  Require(!renderedQuickAccess.empty(),
+          "write_quick_access should return rendered TOML content");
+
+  const json kReadQuickAccess = ParseResponse(
+      api.runtime_txt(runtime, json{{"action", "read_quick_access"},
+                                    {"toml_content", renderedQuickAccess}}
+                                   .dump()
+                                   .c_str()),
+      "read quick access");
+  Require(kReadQuickAccess.value("ok", false),
+          "read_quick_access should return ok=true");
+  Require(kReadQuickAccess.value("quick_access", json::array()) ==
+              kExpectedQuickAccess,
+          "read_quick_access should preserve aliases and order");
+
+  const json kInvalidQuickAccess = ParseResponse(
+      api.runtime_txt(runtime,
+                      json{{"action", "write_quick_access"},
+                           {"quick_access", json::array({"same", "same"})}}
+                          .dump()
+                          .c_str()),
+      "write invalid quick access");
+  Require(!kInvalidQuickAccess.value("ok", true),
+          "duplicate Quick Access aliases should return ok=false");
+  Require(kInvalidQuickAccess.value("error_code", std::string{}) ==
+              "config.quick_access.failed",
+          "invalid Quick Access should expose config.quick_access.failed");
+
   RequireOk(
       api.runtime_validate_structure(
           runtime, json{{"input_path", input_root.string()}}.dump().c_str()),
@@ -191,9 +245,9 @@ void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
 
   const std::string kAliasToml =
       "parent = \"exercise\"\n\n"
-      "[aliases.cardio]\n"
+      "[canonical.cardio]\n"
       "group_aliases = [\"有氧\"]\n\n"
-      "[aliases.cardio.running]\n"
+      "[canonical.cardio.running]\n"
       "group_aliases = [\"跑步\"]\n"
       "treadmill = [\"跑步机\"]\n";
   const json kApplyActivityHierarchyOperation = ParseResponse(
@@ -212,7 +266,7 @@ void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
           "apply_activity_hierarchy_operation should return ok=true");
   Require(kApplyActivityHierarchyOperation.value("updated_toml_content",
                                                std::string{})
-              .find("[aliases.conditioning]") != std::string::npos,
+              .find("[canonical.conditioning]") != std::string::npos,
           "generic hierarchy operation should update the group TOML key");
   Require(kApplyActivityHierarchyOperation.at("replacements").size() == 3,
           "generic group rename should return all canonical replacements");
@@ -297,7 +351,7 @@ void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
                   {"toml_content", kAliasToml}},
                  {{"source_name", "rest.toml"},
                   {"toml_content",
-                   "parent = \"rest\"\n\n[aliases]\nrest = [\"有氧\"]\n"}}}}}
+                   "parent = \"rest\"\n\n[canonical]\nrest = [\"有氧\"]\n"}}}}}
                .dump()
                .c_str()),
        "validate duplicate activity hierarchy documents");
@@ -330,14 +384,14 @@ void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
 
   const std::string kExerciseDocument =
       "parent = \"exercise\"\n\n"
-      "[aliases]\n"
+      "[canonical]\n"
       "go = [\"围棋\"]\n\n"
-      "[aliases.cardio.running]\n"
+      "[canonical.cardio.running]\n"
       "group_aliases = [\"跑步\"]\n"
       "treadmill = [\"跑步机\"]\n";
   const std::string kMealDocument =
       "parent = \"meal\"\n\n"
-      "[aliases]\n"
+      "[canonical]\n"
       "dining = [\"吃饭\"]\n";
   const json kCrossDocumentLeafMove = ParseResponse(
       api.runtime_txt(
@@ -429,10 +483,10 @@ void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
   Require(kGroupMoveDocuments.size() == 2 &&
               kGroupMoveDocuments[0]
                       .value("updated_toml_content", std::string{})
-                      .find("[aliases.cardio]") == std::string::npos &&
+                      .find("[canonical.cardio]") == std::string::npos &&
               kGroupMoveDocuments[1]
                       .value("updated_toml_content", std::string{})
-                      .find("[aliases.cardio.running]") != std::string::npos &&
+                      .find("[canonical.cardio.running]") != std::string::npos &&
               kGroupMoveDocuments[1]
                       .value("updated_toml_content", std::string{})
                       .find("group_aliases = [ '跑步' ]") != std::string::npos,

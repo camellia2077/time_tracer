@@ -30,7 +30,6 @@ struct DailyLog {
   std::string date;
   bool hasStudyActivity = false;
   bool hasExerciseActivity = false;
-  bool hasWakeAnchor = false;
 
   std::string getupTime;
   std::vector<std::string> generalRemarks;
@@ -48,7 +47,6 @@ struct DailyLog {
     date.clear();
     hasStudyActivity = false;
     hasExerciseActivity = false;
-    hasWakeAnchor = false;
     getupTime.clear();
     generalRemarks.clear();
     rawEvents.clear();

@@ -14,6 +14,10 @@ namespace tracer::core::application::pipeline::record_time_order {
 // values follow this generic axis mapping.
 inline constexpr int kLogicalDayCutoffMinutes = 6 * 60;
 inline constexpr int kMinutesPerDay = 24 * 60;
+inline constexpr int kSecondsPerMinute = 60;
+inline constexpr int kLogicalDayCutoffSeconds =
+    kLogicalDayCutoffMinutes * kSecondsPerMinute;
+inline constexpr int kSecondsPerDay = kMinutesPerDay * kSecondsPerMinute;
 
 [[nodiscard]] inline auto TryParseHhmmToMinutes(std::string_view hhmm)
     -> std::optional<int> {
@@ -42,6 +46,18 @@ inline constexpr int kMinutesPerDay = 24 * 60;
   return hours * 60 + minutes;
 }
 
+[[nodiscard]] inline auto TryParseHhmmToSeconds(std::string_view hhmm)
+    -> std::optional<int> {
+  const auto minutes = TryParseHhmmToMinutes(hhmm);
+  if (!minutes.has_value()) {
+    return std::nullopt;
+  }
+  const int seconds = hhmm.size() == 6U
+                          ? (hhmm[4] - '0') * 10 + (hhmm[5] - '0')
+                          : 0;
+  return *minutes * kSecondsPerMinute + seconds;
+}
+
 [[nodiscard]] inline auto MapMinutesForTimeOrderMode(const int minutes,
                                                      const TimeOrderMode mode)
     -> int {
@@ -54,16 +70,26 @@ inline constexpr int kMinutesPerDay = 24 * 60;
   return minutes;
 }
 
+[[nodiscard]] inline auto MapSecondsForTimeOrderMode(const int seconds,
+                                                     const TimeOrderMode mode)
+    -> int {
+  if (mode == TimeOrderMode::kLogicalDay0600 &&
+      seconds < kLogicalDayCutoffSeconds) {
+    return seconds + kSecondsPerDay;
+  }
+  return seconds;
+}
+
 [[nodiscard]] inline auto IsStrictlyAfter(std::string_view candidate_time,
                                           std::string_view baseline_time,
                                           const TimeOrderMode mode) -> bool {
-  const auto candidate_minutes = TryParseHhmmToMinutes(candidate_time);
-  const auto baseline_minutes = TryParseHhmmToMinutes(baseline_time);
-  if (!candidate_minutes.has_value() || !baseline_minutes.has_value()) {
+  const auto candidate_seconds = TryParseHhmmToSeconds(candidate_time);
+  const auto baseline_seconds = TryParseHhmmToSeconds(baseline_time);
+  if (!candidate_seconds.has_value() || !baseline_seconds.has_value()) {
     return false;
   }
-  return MapMinutesForTimeOrderMode(*candidate_minutes, mode) >
-         MapMinutesForTimeOrderMode(*baseline_minutes, mode);
+  return MapSecondsForTimeOrderMode(*candidate_seconds, mode) >
+         MapSecondsForTimeOrderMode(*baseline_seconds, mode);
 }
 
 }  // namespace tracer::core::application::pipeline::record_time_order

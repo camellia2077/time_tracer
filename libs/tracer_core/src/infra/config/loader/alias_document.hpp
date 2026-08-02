@@ -108,17 +108,17 @@ inline auto ParseAliasDocument(const toml::table& table) -> AliasDocument {
     throw AliasDocumentParseError(
         parent_node == nullptr ? AliasDocumentSourceLocation{1U, 1U}
                                : AliasDocumentSource(parent_node->source()),
-        {}, "parent", "Alias TOML must contain a non-empty `parent` string.");
+        {}, "parent", "Canonical TOML must contain a non-empty `parent` string.");
   }
 
-  const toml::node* aliases_node = table.get("aliases");
-  const toml::table* aliases =
-      aliases_node == nullptr ? nullptr : aliases_node->as_table();
-  if (aliases == nullptr) {
+  const toml::node* canonical_node = table.get("canonical");
+  const toml::table* canonical =
+      canonical_node == nullptr ? nullptr : canonical_node->as_table();
+  if (canonical == nullptr) {
     throw AliasDocumentParseError(
-        aliases_node == nullptr ? AliasDocumentSourceLocation{1U, 1U}
-                                : AliasDocumentSource(aliases_node->source()),
-                                {}, "aliases", "Alias TOML must contain an `aliases` table.");
+        canonical_node == nullptr ? AliasDocumentSourceLocation{1U, 1U}
+                                  : AliasDocumentSource(canonical_node->source()),
+        {}, "canonical", "Canonical TOML must contain a `canonical` table.");
   }
 
   const std::function<std::vector<AliasDocumentAlias>(
@@ -205,7 +205,7 @@ inline auto ParseAliasDocument(const toml::table& table) -> AliasDocument {
   return {
       .parent = *parent,
       .parent_source = AliasDocumentSource(parent_node->source()),
-      .nodes = parse_nodes(*aliases, {}, false),
+      .nodes = parse_nodes(*canonical, {}, false),
   };
 }
 

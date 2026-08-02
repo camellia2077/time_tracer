@@ -4,7 +4,6 @@
 error_log = "../output/error_log.txt"
 export_root = "exported_reports"
 save_processed_output = true
-date_check_continuity = true
 
 [defaults]
 db_path = "output/db/time_data.sqlite3"
@@ -15,11 +14,6 @@ default_format = "md"
 format = "md"
 
 [commands.convert]
-# date_check: none | continuity | full
-# continuity: 仅检查 1号到“当前最大已记录日期”的连续性（允许未覆盖到月底）
-# full: 检查 1号到月底的完整性（包含连续性要求）
-date_check = "continuity"
-
 # 校验原始 TXT 结构与基础规则（年/月/日/事件格式、顺序、可识别活动等），确保可解析/可转换
 validate_structure = true
 
@@ -32,11 +26,7 @@ save_processed_output = true
 format = "md"
 
 [commands.ingest]
-date_check = "continuity"
 save_processed_output = true
-
-[commands.validate-logic]
-date_check = "none"
 
 [converter]
 # Converter system config and main loader entry point.

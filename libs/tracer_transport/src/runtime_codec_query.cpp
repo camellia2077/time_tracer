@@ -54,8 +54,6 @@ auto DecodeQueryRequest(std::string_view request_json) -> QueryRequestPayload {
   const auto kStatus = TryReadIntField(kPayload, "status");
   const auto kCrossMidnightActivity =
       TryReadBoolField(kPayload, "cross_midnight_activity");
-  const auto kMissingWakeAnchor =
-      TryReadBoolField(kPayload, "missing_wake_anchor");
   const auto kReverse = TryReadBoolField(kPayload, "reverse");
   const auto kLimit = TryReadIntField(kPayload, "limit");
   const auto kTopN = TryReadIntField(kPayload, "top_n");
@@ -68,6 +66,8 @@ auto DecodeQueryRequest(std::string_view request_json) -> QueryRequestPayload {
   const auto kTreePeriodArgument =
       TryReadStringField(kPayload, "tree_period_argument");
   const auto kTreeMaxDepth = TryReadIntField(kPayload, "tree_max_depth");
+  const auto kAverageDayBasis =
+      TryReadStringField(kPayload, "average_day_basis");
 
   if (kYear.HasError()) {
     throw std::invalid_argument(kYear.error.message);
@@ -105,9 +105,6 @@ auto DecodeQueryRequest(std::string_view request_json) -> QueryRequestPayload {
   if (kCrossMidnightActivity.HasError()) {
     throw std::invalid_argument(kCrossMidnightActivity.error.message);
   }
-  if (kMissingWakeAnchor.HasError()) {
-    throw std::invalid_argument(kMissingWakeAnchor.error.message);
-  }
   if (kReverse.HasError()) {
     throw std::invalid_argument(kReverse.error.message);
   }
@@ -138,6 +135,9 @@ auto DecodeQueryRequest(std::string_view request_json) -> QueryRequestPayload {
   if (kTreeMaxDepth.HasError()) {
     throw std::invalid_argument(kTreeMaxDepth.error.message);
   }
+  if (kAverageDayBasis.HasError()) {
+    throw std::invalid_argument(kAverageDayBasis.error.message);
+  }
 
   out.output_mode = kOutputMode.value;
   out.year = kYear.value;
@@ -151,7 +151,6 @@ auto DecodeQueryRequest(std::string_view request_json) -> QueryRequestPayload {
   out.exercise = kExercise.value;
   out.status = kStatus.value;
   out.cross_midnight_activity = kCrossMidnightActivity.value;
-  out.missing_wake_anchor = kMissingWakeAnchor.value;
   out.reverse = kReverse.value;
   out.limit = kLimit.value;
   out.top_n = kTopN.value;
@@ -162,6 +161,7 @@ auto DecodeQueryRequest(std::string_view request_json) -> QueryRequestPayload {
   out.tree_period = kTreePeriod.value;
   out.tree_period_argument = kTreePeriodArgument.value;
   out.tree_max_depth = kTreeMaxDepth.value;
+  out.average_day_basis = kAverageDayBasis.value;
 
   return out;
 }
@@ -206,9 +206,6 @@ auto EncodeQueryRequest(const QueryRequestPayload& request) -> std::string {
   if (request.cross_midnight_activity.has_value()) {
     payload["cross_midnight_activity"] = *request.cross_midnight_activity;
   }
-  if (request.missing_wake_anchor.has_value()) {
-    payload["missing_wake_anchor"] = *request.missing_wake_anchor;
-  }
   if (request.reverse.has_value()) {
     payload["reverse"] = *request.reverse;
   }
@@ -238,6 +235,9 @@ auto EncodeQueryRequest(const QueryRequestPayload& request) -> std::string {
   }
   if (request.tree_max_depth.has_value()) {
     payload["tree_max_depth"] = *request.tree_max_depth;
+  }
+  if (request.average_day_basis.has_value()) {
+    payload["average_day_basis"] = *request.average_day_basis;
   }
   return payload.dump();
 }

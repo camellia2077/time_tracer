@@ -32,6 +32,9 @@ python tools/run.py android --variant debug --install
 # 编译、安装并注入测试数据
 python tools/run.py android --variant debug --install --with-test-data
 
+# 编译、安装并注入测试数据 重建数据库
+python tools/run.py android --variant debug --install --with-test-data --rebuild-database
+
 该命令会在安装后注入 `test/data` 和 `test/data/activity_hierarchy`，清理旧数据库，
 并自动启动应用。需要保留已有数据库时增加：
 
@@ -73,7 +76,7 @@ test/data/activity_hierarchy
 
 ```text
 files/tracer_core/input
-files/tracer_core/config/activity_hierarchy
+files/tracer_core/config/user/activity_hierarchy
 ```
 
 脚本默认会停止应用、清理旧 TXT 和数据库，再写入新的测试数据。需要保留已有数据库时，增加：
@@ -89,25 +92,21 @@ files/tracer_core/config/activity_hierarchy
 程序自带的只读资源来自：
 
 ```text
-assets/tracer_core/program
+config/program
 ```
 
 Android 构建时会将其同步到 APK 的固定资源路径：
 
 ```text
-apps/android/runtime/src/main/assets/tracer_core/config
+apps/android/runtime/build/generated/tracer/assets/config/program
 ```
 
-默认的可编辑活动分类种子来自：
+仓库中的 `config/user/activity_hierarchy/**` 只作为用户配置入口说明，
+其全部内容都不会在 Android 编译时复制到 APK。运行时的活动分类文件由用户
+导入，或由 Android 在记录未配置活动时创建，实际保存在应用私有目录：
 
 ```text
-assets/tracer_core/defaults/activity_hierarchy
-```
-
-运行时首次初始化时，会将默认种子复制到应用私有目录：
-
-```text
-files/tracer_core/config/activity_hierarchy
+files/tracer_core/config/user/activity_hierarchy
 ```
 
 仓库测试数据使用独立目录：
@@ -123,10 +122,10 @@ test/data/activity_hierarchy
 Data 页的 **Clear Activity Data** 会删除应用私有目录中的：
 
 - 活动记录 TXT；
-- `config/activity_hierarchy` 下的活动分类 TOML；
+- `config/user/activity_hierarchy` 下的活动分类 TOML；
 - 活动数据库及其临时文件。
 
-程序配置资源和其他运行时数据不会被该操作删除。清理活动分类后，应用会在重新初始化时恢复默认 `_system.toml`。
+程序配置资源和其他运行时数据不会被该操作删除。清理活动分类后，应用会在重新初始化时恢复默认 `user/behavior.toml`。
 
 ## 6. 相关文档
 

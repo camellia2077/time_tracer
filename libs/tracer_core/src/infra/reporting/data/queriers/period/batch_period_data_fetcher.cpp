@@ -58,11 +58,6 @@ auto BatchPeriodDataFetcher::FetchAllData(const std::vector<int>& days_list)
 
   // 2. 执行一次 SQL 查询，获取最大范围内的所有数据
   std::vector<RawRecord> raw_records;
-  struct RawDayFlag {
-    std::string date;
-    int sleep = 0;
-  };
-  std::vector<RawDayFlag> raw_day_flags;
   sqlite3_stmt* stmt = nullptr;
 
   // 查询：日期 >= max_start_date
@@ -87,28 +82,6 @@ auto BatchPeriodDataFetcher::FetchAllData(const std::vector<int>& days_list)
   } else {
     throw std::runtime_error(
         "Failed to prepare statement for batch period data.");
-  }
-
-  sqlite3_stmt* flag_stmt = nullptr;
-  const std::string kFlagSql = std::format(
-      "SELECT {0}, {1} FROM {2} WHERE {0} >= ?", schema::day::db::kDate,
-      schema::day::db::kWakeAnchor, schema::day::db::kTable);
-  if (sqlite3_prepare_v2(db_, kFlagSql.c_str(), -1, &flag_stmt, nullptr) ==
-      SQLITE_OK) {
-    sqlite3_bind_text(flag_stmt, 1, max_start_date.c_str(), -1,
-                      SQLITE_TRANSIENT);
-    while (sqlite3_step(flag_stmt) == SQLITE_ROW) {
-      const unsigned char* date_ptr = sqlite3_column_text(flag_stmt, 0);
-      std::string date =
-          (date_ptr != nullptr) ? reinterpret_cast<const char*>(date_ptr) : "";
-      int sleep = sqlite3_column_int(flag_stmt, 1);
-      raw_day_flags.push_back({std::move(date), sleep});
-    }
-    sqlite3_finalize(flag_stmt);
-  } else {
-    sqlite3_finalize(flag_stmt);
-    throw std::runtime_error(
-        "Failed to prepare statement for batch period flags.");
   }
 
   // 3. 在内存中为每个 requested_days 进行聚合
@@ -158,14 +131,6 @@ auto BatchPeriodDataFetcher::FetchAllData(const std::vector<int>& days_list)
         }
         if (IsAnaerobicProjectPath(project_path)) {
           anaerobic_dates.insert(record.date);
-        }
-      }
-    }
-
-    for (const auto& flag : raw_day_flags) {
-      if (flag.date >= data.start_date) {
-        if (flag.sleep != 0) {
-          data.wake_anchor_days++;
         }
       }
     }

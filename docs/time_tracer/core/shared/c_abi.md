@@ -227,14 +227,15 @@
      - request `replacements[]` entries contain `old_alias` and `new_alias`
    - `apply_activity_hierarchy_operation`
      - request: `toml_content` and `operation`
-     - `operation.kind` is one of `add_group`, `delete_group`, `add_leaf`, `set_leaf_aliases`, `delete_leaf`, `promote_leaf`, `move_leaf`, `set_group_aliases`, `rename_parent`, `rename_group_canonical`, `rename_leaf_canonical`, `append_leaf_alias`, `append_group_alias`, or `rename_group_alias`
+     - `operation.kind` is one of `add_group`, `delete_group`, `add_leaf`, `set_leaf_aliases`, `delete_leaf`, `promote_leaf`, `move_leaf`, `move_group`, `merge_leaf_canonical`, `set_group_aliases`, `rename_parent`, `rename_group_canonical`, `rename_leaf_canonical`, `append_leaf_alias`, `append_group_alias`, or `rename_group_alias`
      - optional operation fields are `target_path`, `destination_path`, `canonical_key`, `new_name`, `old_parent`, `target_alias`, `old_alias`, and `aliases`; their required combination is determined by `kind`
-     - paths are dot-separated canonical keys relative to `[aliases]`; `root` represents the root parent for add operations
+     - paths are dot-separated canonical keys relative to `[canonical]`; `root` represents the root parent for add operations
      - response: `updated_toml_content`, canonical `replacements[]`, alias-key `alias_replacements[]`, and `hierarchy` (the core-validated parent/node snapshot); the caller persists TOML and performs TXT/database migration when replacements are returned
      - `rename_parent` changes the TOML `parent` and every document canonical path below it. `new_name` is the new parent; `old_parent`, when supplied, must match the TOML `parent`. A same-name rename or a path-shaped/whitespace-containing parent is rejected.
      - `rename_parent` does not accept a filename and never performs filesystem IO. Hosts must treat the TOML stem and `parent` as one value and commit the corresponding filename change together with TOML/TXT/database migration.
+     - `merge_leaf_canonical` requires `target_path` and `destination_path` to identify two leaf nodes in the same document. It removes the source leaf, keeps the destination aliases unchanged, returns source-canonical -> destination-canonical, and maps every source alias to the destination leaf's first alias. Group merge is rejected.
    - `move_activity_hierarchy_leaf_between_documents`
-     - request: `documents[]` containing the complete alias TOML document set,
+     - request: `documents[]` containing the complete canonical TOML document set,
        `source_name`, `destination_name`, and an operation object with
        `kind=move_leaf`, `target_path` or `target_alias`, and
        `destination_path` (`root` or an existing destination group)
@@ -252,7 +253,7 @@
    - `rewrite_activity_hierarchy_document`
      - request: `original_toml_content` and `updated_toml_content`
      - response: Core-serialized `updated_toml_content`, canonical `replacements[]`, alias-key `alias_replacements[]`, and `hierarchy`
-     - callers must pass this result through host-side TXT/database migration before persisting the alias TOML
+     - callers must pass this result through host-side TXT/database migration before persisting the canonical TOML
    - `describe_activity_hierarchy`
      - request: `toml_content`
      - response: `hierarchy`, the core-validated parent/node snapshot without applying an edit
@@ -266,7 +267,7 @@
      `docs/time_tracer/core/contracts/text/runtime_txt_day_block_json_contract_v1.md`
 
 The describe_activity_hierarchy model is presentation-neutral. Each selectable node
-contains canonical_key, canonical path relative to [aliases], kind (leaf or
+contains canonical_key, canonical path relative to [canonical], kind (leaf or
 group), aliases, and recursive children. The legacy is_group field remains in
 the JSON response for compatibility; new consumers should use kind.
 

@@ -44,7 +44,7 @@ Example:
 ```toml
 parent = "recreation"
 
-[aliases.online-platforms]
+[canonical.online-platforms]
 "zhihu" = ["zhihu", "知乎"]
 ```
 
@@ -79,17 +79,17 @@ activity token to one and only one canonical result.
 Allowed:
 
 ```toml
-[aliases.online-platforms]
+[canonical.online-platforms]
 "zhihu" = ["zhihu", "知乎"]
 ```
 
 Rejected:
 
 ```toml
-[aliases.online-platforms]
+[canonical.online-platforms]
 "zhihu" = ["zhihu"]
 
-[aliases.game]
+[canonical.game]
 "overwatch" = ["zhihu"]
 ```
 
@@ -138,14 +138,14 @@ The legacy alias-to-canonical scalar shape is invalid and is not supported:
 
 ## Child files
 
-Each child file owns one top-level parent and contains an `aliases` table.
+Each child file owns one top-level parent and contains a `canonical` table.
 
 Example:
 
 ```toml
 parent = "recreation"
 
-[aliases.online-platforms]
+[canonical.online-platforms]
 "zhihu" = ["zh", "zhihu"]
 ```
 
@@ -162,7 +162,7 @@ A child file should be read in four layers:
 
 1. `parent`
    - the top-level canonical path segment
-2. table path under `aliases.*`
+2. table path under `canonical.*`
    - the middle grouping segments under that parent
 3. left-hand key
    - the canonical leaf segment
@@ -174,7 +174,7 @@ Example:
 ```toml
 parent = "study"
 
-[aliases.math.calculus]
+[canonical.math.calculus]
 "indefinite-integral" = ["不定积分"]
 ```
 
@@ -210,7 +210,7 @@ freely across unrelated parent files.
 ### 2. Alias entry order inside the same child file is non-semantic
 
 Within the same child file, and within the same alias group such as
-`[aliases.online-platforms]`, alias entries may appear in any order.
+`[canonical.online-platforms]`, alias entries may appear in any order.
 
 Their written order affects readability only. It does not change how they are
 expanded or resolved.
@@ -220,7 +220,7 @@ These two forms are semantically equivalent:
 ```toml
 parent = "recreation"
 
-[aliases.online-platforms]
+[canonical.online-platforms]
 "zhihu" = ["zhihu", "知乎"]
 "douyin" = ["douyin", "抖音"]
 "bilibili" = ["bilibili", "哔哩哔哩"]
@@ -230,7 +230,7 @@ parent = "recreation"
 ```toml
 parent = "recreation"
 
-[aliases.online-platforms]
+[canonical.online-platforms]
 "weibo" = ["weibo"]
 "douyin" = ["douyin", "抖音"]
 "zhihu" = ["zhihu", "知乎"]
@@ -246,7 +246,7 @@ This is still rejected:
 ```toml
 parent = "recreation"
 
-[aliases.online-platforms]
+[canonical.online-platforms]
 "weibo" = ["weibo", "weibo"]
 ```
 
@@ -255,23 +255,23 @@ same array.
 
 ## Expansion Rule
 
-Each alias string in a normal array under `aliases` expands as:
+Each alias string in a normal array under `canonical` expands as:
 
 `parent + "_" + nested_table_segments + "_" + leaf_value`
 
-Root-level `aliases` leaves omit the middle group portion.
+Root-level `canonical` leaves omit the middle group portion.
 
 Examples:
 
 1. `parent = "meal"` and `"dining" = ["饭"]` -> `meal_dining`
-2. `parent = "recreation"` and `[aliases.game] "overwatch" = ["守望先锋"]`
+2. `parent = "recreation"` and `[canonical.game] "overwatch" = ["守望先锋"]`
    -> `recreation_game_overwatch`
 
 Group aliases use the same global uniqueness rule and may contain multiple
 recordable names for one group:
 
 ```toml
-[aliases.cardio]
+[canonical.cardio]
 group_aliases = ["有氧训练", "有氧"]
 ```
 
@@ -286,7 +286,7 @@ rules built on this expansion, see [Activity Hierarchy Migration](activity_hiera
 Alias child files are stored as TOML table paths such as:
 
 ```toml
-[aliases.study.math]
+[canonical.study.math]
 ```
 
 Because of that encoding, canonical path segments must also be TOML-safe when
@@ -299,13 +299,13 @@ Unquoted TOML table-path segments must not contain spaces.
 So this is invalid:
 
 ```toml
-[aliases.computer.data structure]
+[canonical.computer.data structure]
 ```
 
 This is valid:
 
 ```toml
-[aliases.computer.data-structure]
+[canonical.computer.data-structure]
 ```
 
 ### Practical guidance

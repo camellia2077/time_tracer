@@ -12,11 +12,14 @@ inline constexpr std::string_view kEndTimestamp = "end_timestamp";
 inline constexpr std::string_view kDate = "date";
 inline constexpr std::string_view kStart = "start";
 inline constexpr std::string_view kEnd = "end";
+inline constexpr std::string_view kRecordKind = "record_kind";
 inline constexpr std::string_view kProjectId = "project_id";
 inline constexpr std::string_view kDuration = "duration";
 inline constexpr std::string_view kProjectPathSnapshot =
     "project_path_snapshot";
 inline constexpr std::string_view kActivityRemark = "activity_remark";
+inline constexpr std::string_view kIntervalRecordKind = "interval";
+inline constexpr std::string_view kEndOnlyRecordKind = "end_only";
 }  // namespace schema::time_records::db
 
 namespace schema::projects::db {

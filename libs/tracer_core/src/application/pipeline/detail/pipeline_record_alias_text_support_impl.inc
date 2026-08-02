@@ -18,6 +18,13 @@ struct CandidateRecordBuildResult {
   std::vector<std::string> warnings;
 };
 
+struct PreviousEventContext {
+  int year = 0;
+  int month = 0;
+  int day = 0;
+  std::string time;
+};
+
 constexpr std::string_view kIncompleteDayWarning =
     "Warning: this day currently has fewer than 2 authored events, so some "
     "intervals may not be computable yet.";
@@ -262,6 +269,70 @@ constexpr std::string_view kOvernightContinuationWarning =
   return std::nullopt;
 }
 
+[[nodiscard]] auto TryParseDayMarker(std::string_view line)
+    -> std::optional<int> {
+  const std::string trimmed = Trim(std::string(line));
+  if (!IsDayMarkerLine(trimmed)) {
+    return std::nullopt;
+  }
+  return std::stoi(trimmed.substr(1));
+}
+
+[[nodiscard]] auto FindLastEventBefore(
+    const std::vector<std::string>& lines, const int end_exclusive,
+    const int year, const int month) -> std::optional<PreviousEventContext> {
+  int day = 0;
+  for (int index = end_exclusive - 1; index >= 0; --index) {
+    if (const auto marker = TryParseDayMarker(
+            lines[static_cast<std::size_t>(index)]);
+        marker.has_value()) {
+      day = *marker % 100;
+      continue;
+    }
+    const auto event_time =
+        ExtractEventTimeToken(lines[static_cast<std::size_t>(index)]);
+    if (day != 0 && event_time.has_value() &&
+        record_time_order::TryParseHhmmToMinutes(*event_time).has_value() &&
+        !ExtractActivityName(lines[static_cast<std::size_t>(index)]).empty()) {
+      return PreviousEventContext{.year = year,
+                                  .month = month,
+                                  .day = day,
+                                  .time = *event_time};
+    }
+  }
+  return std::nullopt;
+}
+
+[[nodiscard]] auto CalculateElapsedMinutes(
+    const ParsedIsoDate& current, std::string_view current_time,
+    const PreviousEventContext& previous) -> std::optional<int> {
+  const auto current_minutes =
+      record_time_order::TryParseHhmmToMinutes(current_time);
+  const auto previous_minutes =
+      record_time_order::TryParseHhmmToMinutes(previous.time);
+  if (!current_minutes.has_value() || !previous_minutes.has_value()) {
+    return std::nullopt;
+  }
+  std::tm current_tm{};
+  current_tm.tm_year = current.year - 1900;
+  current_tm.tm_mon = current.month - 1;
+  current_tm.tm_mday = current.day;
+  std::tm previous_tm{};
+  previous_tm.tm_year = previous.year - 1900;
+  previous_tm.tm_mon = previous.month - 1;
+  previous_tm.tm_mday = previous.day;
+  const std::time_t current_day = std::mktime(&current_tm);
+  const std::time_t previous_day = std::mktime(&previous_tm);
+  if (current_day < previous_day) {
+    return std::nullopt;
+  }
+  const auto day_delta = static_cast<int>(
+      (current_day - previous_day) / (24 * 60 * 60));
+  const int elapsed =
+      day_delta * 24 * 60 + *current_minutes - *previous_minutes;
+  return elapsed > 0 ? std::optional<int>(elapsed) : std::nullopt;
+}
+
 [[nodiscard]] auto IsStrictlyAfter(std::string_view candidate_time,
                                    std::string_view baseline_time,
                                    const TimeOrderMode mode) -> bool {
@@ -415,7 +486,9 @@ constexpr std::string_view kOvernightContinuationWarning =
     std::string_view existing_content, const ParsedIsoDate& logical_date,
     std::string_view record_activity_name, std::string_view remark,
     const TimeOrderMode time_order_mode,
-    const std::vector<std::string>& wake_keywords)
+    const std::vector<std::string>& wake_keywords,
+    const std::optional<PreviousEventContext>& previous_month_last_event =
+        std::nullopt)
     -> CandidateRecordBuildResult {
   // Record Activity starts from one synthesized event line, but core validation semantics are
   // defined for a whole month TXT. Build the full candidate content in memory first so the new
@@ -439,6 +512,18 @@ constexpr std::string_view kOvernightContinuationWarning =
     }
     lines.push_back(day_marker_line);
     lines.push_back(event_line);
+    std::optional<int> gap_from_previous_minutes = std::nullopt;
+    if (IsWakeKeywordActivity(record_activity_name, wake_keywords)) {
+      const auto previous = FindLastEventBefore(
+          lines, static_cast<int>(lines.size()) - 2, logical_date.year,
+          logical_date.month);
+      const auto& baseline = previous.has_value() ? previous
+                                                   : previous_month_last_event;
+      if (baseline.has_value()) {
+        gap_from_previous_minutes =
+            CalculateElapsedMinutes(logical_date, event_time, *baseline);
+      }
+    }
     const int block_start = static_cast<int>(lines.size()) - 2;
     const auto completeness_warning = ResolveAuthoredEventCompletenessWarning(
         lines, block_start, static_cast<int>(lines.size()), wake_keywords);
@@ -448,7 +533,7 @@ constexpr std::string_view kOvernightContinuationWarning =
     return {
         .canonical_text = JoinLinesCanonical(lines),
         .event_time = event_time,
-        .gap_from_previous_minutes = std::nullopt,
+        .gap_from_previous_minutes = gap_from_previous_minutes,
         .month_file_created = false,
         .warnings = warnings,
     };
@@ -494,6 +579,15 @@ constexpr std::string_view kOvernightContinuationWarning =
       if (delta_minutes > 0) {
         gap_from_previous_minutes = delta_minutes;
       }
+    }
+  } else if (IsWakeKeywordActivity(record_activity_name, wake_keywords)) {
+    const auto previous = FindLastEventBefore(
+        lines, block_start, logical_date.year, logical_date.month);
+    const auto& baseline = previous.has_value() ? previous
+                                                 : previous_month_last_event;
+    if (baseline.has_value()) {
+      gap_from_previous_minutes =
+          CalculateElapsedMinutes(logical_date, event_time, *baseline);
     }
   }
 

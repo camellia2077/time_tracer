@@ -50,6 +50,22 @@ Markdown 的本地化配置按 BCP-47 语言代码分目录保存，例如
 配置；缺少或不支持的语言回退到默认语言。LaTeX 和 Typst 通过各自的 `root` 字段
 使用根目录下的单语言配置。
 
+end-only 明细使用 Markdown 日配置中的 `end_only_time_format` 模板渲染，模板占位符
+为 `{end_time}`。例如：
+
+```toml
+# zh/day.toml
+end_only_time_format = "截至 {end_time}"
+# ja/day.toml: "{end_time} 時点"
+# en/day.toml: "As of {end_time}"
+```
+
+输出只保留结束时间，不输出虚构的开始时间或 `0h 0m` 持续时间：
+
+```markdown
+- 截至 17:40:30: study_math
+```
+
 ### 2.3 树节点递归渲染
 最引人瞩目的多层级项目时长明细树，是如何画进 Markdown 的？
 - `DayMdFormatter` 在末尾会调用 `MarkdownFormatter::FormatProjectTree`。

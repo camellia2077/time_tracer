@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "infra/reporting/shared/formatters/base/project_tree_formatter.hpp"
+#include "infra/reporting/shared/utils/format/time_format.hpp"
 
 namespace TypUtils {
 
@@ -47,6 +48,15 @@ auto FormatOneDecimal(double value) -> std::string {
   return output;
 }
 
+auto FormatAverageOccurrenceCount(std::int64_t occurrence_count,
+                                  int avg_days) -> std::string {
+  if (avg_days <= 0) {
+    return "0.00";
+  }
+  return FormatCompactNumber(static_cast<double>(occurrence_count) /
+                             static_cast<double>(avg_days));
+}
+
 class TypstFormattingStrategy : public reporting::IFormattingStrategy {
  public:
   TypstFormattingStrategy(std::string font, int font_size)
@@ -73,6 +83,26 @@ class TypstFormattingStrategy : public reporting::IFormattingStrategy {
     return output;
   }
 
+  [[nodiscard]] auto FormatCategoryHeader(
+      const std::string& category_name, const std::string& /*formatted_duration*/,
+      double percentage, std::int64_t duration_seconds,
+      std::int64_t occurrence_count, int avg_days) const
+      -> std::string override {
+    std::string output = FormatCategoryHeader(
+        category_name, TimeFormatDuration(duration_seconds), percentage);
+    if (occurrence_count > 0) {
+      output += "#emph[Average: ";
+      output += TimeFormatDuration(
+          avg_days > 0 ? duration_seconds / avg_days : duration_seconds);
+      output += "/day · ";
+      output += std::to_string(occurrence_count);
+      output += " times · ";
+      output += FormatAverageOccurrenceCount(occurrence_count, avg_days);
+      output += " times/day]\n";
+    }
+    return output;
+  }
+
   [[nodiscard]] auto FormatTreeNode(const std::string& project_name,
                                     const std::string& formatted_duration,
                                     int indent_level) const
@@ -82,6 +112,37 @@ class TypstFormattingStrategy : public reporting::IFormattingStrategy {
                            static_cast<size_t>(kIndentMultiplier),
                        ' ') +
            "+ " + project_name + ": " + formatted_duration + "\n";
+  }
+
+  [[nodiscard]] auto FormatTreeNode(
+      const std::string& project_name, const std::string& formatted_duration,
+      int indent_level, double percentage, std::int64_t duration_seconds,
+      std::int64_t occurrence_count, int avg_days) const
+      -> std::string override {
+    constexpr int kIndentMultiplier = 2;
+    const auto kActivityIndent = static_cast<size_t>(indent_level) *
+                                 static_cast<size_t>(kIndentMultiplier);
+    std::string output(kActivityIndent, ' ');
+    output += "+ ";
+    output += project_name;
+    output += ": ";
+    output += formatted_duration;
+    output += " (";
+    output += FormatOneDecimal(percentage);
+    output += "%)\n";
+    if (occurrence_count > 0) {
+      output.append(kActivityIndent + static_cast<size_t>(kIndentMultiplier),
+                    ' ');
+      output += "#emph[Average: ";
+      output += TimeFormatDuration(
+          avg_days > 0 ? duration_seconds / avg_days : duration_seconds);
+      output += "/day · ";
+      output += std::to_string(occurrence_count);
+      output += " times · ";
+      output += FormatAverageOccurrenceCount(occurrence_count, avg_days);
+      output += " times/day]\n";
+    }
+    return output;
   }
 
  private:

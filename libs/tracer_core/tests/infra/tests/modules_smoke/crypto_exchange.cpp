@@ -54,7 +54,7 @@ auto RunInfrastructureModuleCryptoExchangeSmoke() -> int {
   entries.reserve(exchange::kRequiredPackagePaths.size() + 3U + 2U);
   entries.push_back(BuildEntry(exchange::kManifestPath, manifest_text));
   entries.push_back(BuildEntry("config/user/activity_hierarchy/default.toml",
-                               "parent = \"study\"\n\n[aliases]\n\"study\" = "
+                               "parent = \"study\"\n\n[canonical]\n\"study\" = "
                                "\"math\"\n"));
   entries.push_back(BuildEntry("config/user/behavior.toml", "main = true\n"));
   auto binary_config = BuildEntry("config/user/notes.bin", "binary\0data");

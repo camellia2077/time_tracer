@@ -11,7 +11,6 @@ void RangeBaseConfig::LoadBaseConfig(const RangeReportLabels& labels) {
   activity_count_label_ = labels.activity_count_label;
   actual_days_label_ = labels.actual_days_label;
   status_days_label_ = labels.status_days_label;
-  wake_anchor_days_label_ = labels.wake_anchor_days_label;
   exercise_days_label_ = labels.exercise_days_label;
   cardio_days_label_ = labels.cardio_days_label;
   anaerobic_days_label_ = labels.anaerobic_days_label;
@@ -39,9 +38,6 @@ auto RangeBaseConfig::GetStatusDaysLabel() const -> const std::string& {
   return status_days_label_;
 }
 
-auto RangeBaseConfig::GetWakeAnchorDaysLabel() const -> const std::string& {
-  return wake_anchor_days_label_;
-}
 
 auto RangeBaseConfig::GetExerciseDaysLabel() const -> const std::string& {
   return exercise_days_label_;

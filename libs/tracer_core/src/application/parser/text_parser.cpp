@@ -268,11 +268,7 @@ auto TextParser::ProcessEventContext(DailyLog& current_day,
       current_day.getupTime.empty() && current_day.rawEvents.empty();
 
   if (is_wake) {
-    // Wake keywords define the day-level wake anchor, not a sleep activity.
-    // Parser ownership stops at establishing first-event day semantics.
-    // Only the first semantic event may establish that anchor here; later wake
-    // keywords are not rejected in parser, but must be rejected later by
-    // logic validation and must not redefine the day.
+    // Wake keywords define the day's getup time, not a sleep activity.
     if (input.kind == RawEventKind::Point && is_first_semantic_event) {
       current_day.getupTime = FormatTime(std::string(input.end_time_str_hhmm));
     }

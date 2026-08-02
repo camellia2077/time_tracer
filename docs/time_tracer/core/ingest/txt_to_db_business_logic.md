@@ -153,16 +153,21 @@ d0102
 
 ## 5. 活动时长的核心规则
 
-本系统最终写入数据库的是标准活动区间（start/end/duration）。
+本系统最终生成的活动事实通常是标准活动区间（start/end/duration）；当点事件
+缺少可靠的开始边界时，也可以生成只有结束时间的 end-only 活动事实。
 
 在作者态文本中，区间来源有两种：
 
 1. 点事件：
    - 记录“时间点 + 活动 token”
    - 其持续时间由“最后已知时间边界 -> 当前时间点”推导
+   - 如果不存在可靠的最后已知时间边界，则保留 `end`，不伪造 `start` 或 `duration`
 2. 区间事件：
    - 记录“开始时间 - 结束时间 + 活动 token”
    - 其持续时间由显式 `start -> end` 直接给出
+
+end-only 仍然计入活动次数和活动明细；它不计入 `Total Time Recorded` 或其他
+duration 聚合。end-only 的结束时间仍推进最后已知边界，后续点事件可以从该时间起算。
 
 在只有点事件的传统模式下，核心换算规则仍然可以理解为：
 
@@ -213,12 +218,12 @@ d0102
 普通活动名的合法性基于：
 
 `test/data/activity_hierarchy/*.toml` for test fixtures or
-`assets/tracer_core/defaults/activity_hierarchy/*.toml` for distribution defaults
+`config/user/activity_hierarchy/*.toml` for distribution defaults
 defaults. Generated platform copies are not sources of truth.
 
 这里的核心语义是：
 
-1. alias TOML 使用 canonical-key-first 格式：canonical key 位于左侧，右侧
+1. canonical TOML 使用 canonical-key-first 格式：canonical key 位于左侧，右侧
    是一个或多个 alias 的字符串数组，例如 `"running" = ["跑步", "run"]`
 2. canonical key 和 alias 数组中的字符串共同组成普通活动可识别 token 集合
 3. 这些 token 在后续转换时映射到项目路径或规范活动名；旧的
@@ -232,10 +237,10 @@ defaults. Generated platform copies are not sources of truth.
 
 wake 语义只来源于运行时的：
 
-`<filesDir>/tracer_core/config/activity_hierarchy/_system.toml`
+`<filesDir>/tracer_core/config/user/behavior.toml`
 
 仓库中的 distribution 默认 seed 位于
-`assets/tracer_core/defaults/activity_hierarchy/_system.toml`。
+`config/user/behavior.toml`。
 
 中的：
 
@@ -275,7 +280,7 @@ wake 相关活动只能是一天中的第一个语义活动。
 
 ## 8. `sleep_night` 的自动生成
 
-在 `activity_hierarchy/_system.toml` 中有：
+在 `user/behavior.toml` 中有：
 
 ```toml
 [sleep_inference]

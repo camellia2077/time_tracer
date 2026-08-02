@@ -75,7 +75,7 @@ auto CopyConverterAliasDirectory(const std::filesystem::path& source_root,
     return;
   }
   if (!std::filesystem::is_directory(source_root)) {
-    throw std::runtime_error("Alias config source must be a directory: " +
+    throw std::runtime_error("Canonical config source must be a directory: " +
                              source_root.string());
   }
 
@@ -83,13 +83,13 @@ auto CopyConverterAliasDirectory(const std::filesystem::path& source_root,
   // high-volume dataset. Because the files are small and low-frequency, full
   // replacement is preferred over incremental diff/merge logic.
   //
-  // Child alias files are therefore copied as a whole directory bundle so the
+  // Child canonical files are therefore copied as a whole directory bundle so the
   // active config remains an exact mirror of the source config without stale
-  // leftovers from older alias files.
+  // leftovers from older canonical files.
   std::error_code io_error;
   std::filesystem::create_directories(target_root, io_error);
   if (io_error) {
-    throw std::runtime_error("Failed to prepare alias config target directory: " +
+    throw std::runtime_error("Failed to prepare canonical config target directory: " +
                              target_root.string() + " | " + io_error.message());
   }
 
@@ -101,14 +101,14 @@ auto CopyConverterAliasDirectory(const std::filesystem::path& source_root,
     const auto relative_path = std::filesystem::relative(entry.path(),
                                                          source_root, io_error);
     if (io_error) {
-      throw std::runtime_error("Failed to resolve alias config child path: " +
+      throw std::runtime_error("Failed to resolve canonical config child path: " +
                                entry.path().string() + " | " +
                                io_error.message());
     }
     const std::filesystem::path target_path = target_root / relative_path;
     std::filesystem::create_directories(target_path.parent_path(), io_error);
     if (io_error) {
-      throw std::runtime_error("Failed to prepare alias config child target: " +
+      throw std::runtime_error("Failed to prepare canonical config child target: " +
                                target_path.string() + " | " +
                                io_error.message());
     }
@@ -116,7 +116,7 @@ auto CopyConverterAliasDirectory(const std::filesystem::path& source_root,
         entry.path(), target_path,
         std::filesystem::copy_options::overwrite_existing, io_error);
     if (io_error) {
-      throw std::runtime_error("Failed to copy alias config child: " +
+      throw std::runtime_error("Failed to copy canonical config child: " +
                                entry.path().string() + " -> " +
                                target_path.string() + " | " +
                                io_error.message());

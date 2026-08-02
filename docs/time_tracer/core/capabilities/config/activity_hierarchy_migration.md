@@ -6,7 +6,7 @@ This document defines how an activity alias becomes a recordable category, how
 an alias moves into a category, and when that structural edit requires TXT and
 database migration.
 
-It applies to every client that edits alias files generated from
+It applies to every client that edits canonical files generated from
 `test/data/activity_hierarchy/` or
 `assets/tracer_core/defaults/activity_hierarchy/`.
 
@@ -16,7 +16,7 @@ It applies to every client that edits alias files generated from
   TOML entry, such as `"running"`.
 - **Activity alias**: a string in the canonical key's alias array, such as
   `"跑步"` in `"running" = ["跑步"]`.
-- **Activity category**: a nested TOML table such as `[aliases.cardio]`.
+- **Activity category**: a nested TOML table such as `[canonical.cardio]`.
 - **Category record name**: a member of a category's `group_aliases` array.
   It records directly to that category's canonical path.
 
@@ -38,7 +38,7 @@ For example:
 ```toml
 parent = "exercise"
 
-[aliases.cardio]
+[canonical.cardio]
 group_aliases = ["有氧运动"]
 "running" = ["跑步"]
 ```
@@ -53,7 +53,7 @@ Initial state:
 ```toml
 parent = "exercise"
 
-[aliases]
+[canonical]
 "cardio" = ["有氧运动"]
 "running" = ["跑步"]
 ```
@@ -69,10 +69,10 @@ The category automatically retains the original alias as its record name:
 ```toml
 parent = "exercise"
 
-[aliases]
+[canonical]
 "running" = ["跑步"]
 
-[aliases.cardio]
+[canonical.cardio]
 group_aliases = ["有氧运动"]
 ```
 
@@ -94,7 +94,7 @@ Moving `跑步` into `cardio` produces:
 ```toml
 parent = "exercise"
 
-[aliases.cardio]
+[canonical.cardio]
 group_aliases = ["有氧运动"]
 "running" = ["跑步"]
 ```
@@ -114,10 +114,10 @@ Because `跑步` changes from `exercise_running` to
 5. TOML, TXT, and database are atomically activated only after success, and
    restored if any stage fails.
 
-Leaf and group nodes can be moved between alias TOML documents. A leaf move
+Leaf and group nodes can be moved between canonical TOML documents. A leaf move
 includes root-level and nested activities. A group move includes the complete
 subtree: the group, its group aliases, nested groups, and leaf activities. Core
-receives the complete alias TOML document set, validates global alias
+receives the complete canonical TOML document set, validates global alias
 uniqueness, and produces the updated source and destination documents plus a
 canonical replacement for every moved node whose path changes; the host must
 commit both documents, all TXT changes, and the candidate database in one
@@ -137,6 +137,24 @@ For a category with an existing `group_aliases` member:
 The Config UI exposes record-name editing only for categories that already have
 one or more category record names. It exposes adding a record name from the
 same category edit menu.
+
+## Merge Leaf Canonicals
+
+Merging a leaf `A` into another leaf `B` is the first supported merge form.
+Group nodes and group subtrees are not mergeable.
+
+Core receives `target_path=A` and `destination_path=B`, verifies that both
+paths resolve to leaves, removes A and its aliases, and leaves B's aliases
+unchanged. The migration plan contains:
+
+- `A`'s full canonical path → `B`'s full canonical path;
+- each alias formerly owned by A → B's first alias.
+
+The host applies both replacement namespaces to TXT, constructs a candidate
+database from the updated TOML/TXT pair, and activates the TOML, TXT, and
+database only after candidate ingestion succeeds. The source aliases are
+intentionally not copied into B; they are historical input tokens that are
+rewritten during migration.
 
 ## Related Documents
 

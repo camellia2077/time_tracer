@@ -1,5 +1,7 @@
 // infrastructure/tests/android_runtime/android_runtime_report_consistency_data_layer_tests.cpp
 #include <iostream>
+#include <algorithm>
+#include <fstream>
 #include <variant>
 
 #include "application/aggregate_runtime/i_tracer_core_runtime.hpp"
@@ -70,6 +72,27 @@ auto TestDataLayerStructuredFieldVerification(
         << "[FAIL] DataLayer/FieldVerify: project_tree should not be empty.\n";
   }
 
+  if (daily->metadata.statuses.size() != 2U) {
+    ++failures;
+    std::cerr << "[FAIL] DataLayer/FieldVerify: configured daily statuses "
+                 "should be present as structured fields.\n";
+  } else {
+    bool study_present = false;
+    bool exercise_absent = false;
+    for (const auto& status : daily->metadata.statuses) {
+      if (status.id == "status") {
+        study_present = status.label == "Study" && status.value;
+      } else if (status.id == "exercise") {
+        exercise_absent = status.label == "Exercise" && !status.value;
+      }
+    }
+    if (!study_present || !exercise_absent) {
+      ++failures;
+      std::cerr << "[FAIL] DataLayer/FieldVerify: parent_present values for "
+                   "2025-01-03 should be study=true and exercise=false.\n";
+    }
+  }
+
   if (!daily->detailed_records.empty()) {
     long long records_sum = 0;
     for (const auto& record : daily->detailed_records) {
@@ -91,6 +114,15 @@ auto TestDataLayerStructuredFieldVerification(
                 << "].project_path should not be empty.\n";
       break;
     }
+    if (record.kind == ActivityRecordKind::kEndOnly) {
+      if (!record.start_time.empty() || record.duration_seconds != 0) {
+        ++failures;
+        std::cerr << "[FAIL] DataLayer/FieldVerify: end-only activity["
+                  << index
+                  << "] should have empty start_time and zero duration.\n";
+      }
+      continue;
+    }
     if (record.start_time.empty()) {
       ++failures;
       std::cerr << "[FAIL] DataLayer/FieldVerify: record[" << index
@@ -104,6 +136,105 @@ auto TestDataLayerStructuredFieldVerification(
       break;
     }
   }
+}
+
+auto TestDataLayerEndOnlyConsistency(
+    const std::shared_ptr<ITracerCoreRuntime>& runtime_api, int& failures)
+    -> void {
+  const auto synthetic_root =
+      std::filesystem::temp_directory_path() /
+      "time_tracer_report_consistency_end_only_fixture";
+  const auto synthetic_input_path = synthetic_root / "2026" / "2026-03.txt";
+  std::error_code cleanup_error;
+  std::filesystem::remove_all(synthetic_root, cleanup_error);
+  const auto cleanup = [&synthetic_root]() {
+    std::error_code error;
+    std::filesystem::remove_all(synthetic_root, error);
+  };
+  std::error_code io_error;
+  std::filesystem::create_directories(synthetic_input_path.parent_path(),
+                                      io_error);
+  if (io_error) {
+    ++failures;
+    std::cerr << "[FAIL] DataLayer/EndOnly: could not create synthetic input "
+                 "directory.\n";
+    cleanup();
+    return;
+  }
+  std::ofstream synthetic_input(synthetic_input_path);
+  synthetic_input
+      << "y2026\nm03\n\nd0302\n"
+         "090000study_math_probability-theory_probability-distribution\n"
+         "100000study_math_probability-theory_probability-basics_conditional-probability\n";
+  synthetic_input.close();
+  if (!synthetic_input) {
+    ++failures;
+    std::cerr << "[FAIL] DataLayer/EndOnly: could not write synthetic input.\n";
+    cleanup();
+    return;
+  }
+
+  tracer_core::core::dto::IngestRequest ingest_request;
+  ingest_request.input_path = synthetic_input_path.string();
+  ingest_request.date_check_mode = DateCheckMode::kNone;
+  ingest_request.ingest_mode = IngestMode::kSingleTxtReplaceMonth;
+  const auto ingest_result = runtime_api->pipeline().RunIngest(ingest_request);
+  if (!ingest_result.ok) {
+    ++failures;
+    std::cerr << "[FAIL] DataLayer/EndOnly: synthetic ingest should succeed: "
+              << ingest_result.error_message << '\n';
+    cleanup();
+    return;
+  }
+
+  const auto structured_result =
+      runtime_api->report().RunTemporalStructuredReportQuery(
+          {.display_mode = ReportDisplayMode::kDay,
+           .selection = {.kind = TemporalSelectionKind::kSingleDay,
+                         .date = "2026-03-02"}});
+
+  if (!structured_result.ok) {
+    ++failures;
+    std::cerr << "[FAIL] DataLayer/EndOnly: structured day report should "
+                 "succeed: "
+              << structured_result.error_message << '\n';
+    cleanup();
+    return;
+  }
+
+  const auto* daily = std::get_if<DailyReportData>(&structured_result.report);
+  if (daily == nullptr) {
+    ++failures;
+    std::cerr << "[FAIL] DataLayer/EndOnly: report should hold "
+                 "DailyReportData.\n";
+    cleanup();
+    return;
+  }
+
+  const auto end_only_it = std::find_if(
+      daily->detailed_records.begin(), daily->detailed_records.end(),
+      [](const auto& record) { return record.kind == ActivityRecordKind::kEndOnly; });
+  if (end_only_it == daily->detailed_records.end()) {
+    ++failures;
+    std::cerr << "[FAIL] DataLayer/EndOnly: first day should retain an "
+                 "end-only timeline activity.\n";
+    cleanup();
+    return;
+  }
+
+  if (!end_only_it->start_time.empty() || end_only_it->end_time.empty() ||
+      end_only_it->duration_seconds != 0) {
+    ++failures;
+    std::cerr << "[FAIL] DataLayer/EndOnly: end-only activity should preserve "
+                 "end_time only and zero duration.\n";
+  }
+  if (daily->activity_count <
+      static_cast<int>(daily->detailed_records.size())) {
+    ++failures;
+    std::cerr << "[FAIL] DataLayer/EndOnly: activity_count should include "
+                 "end-only activities.\n";
+  }
+  cleanup();
 }
 
 auto TestDataLayerCrossIngestConsistency(
@@ -245,6 +376,7 @@ auto RunReportConsistencyFieldVerificationTests(
     const std::shared_ptr<ITracerCoreRuntime>& runtime_api, int& failures)
     -> void {
   TestDataLayerStructuredFieldVerification(runtime_api, failures);
+  TestDataLayerEndOnlyConsistency(runtime_api, failures);
 }
 
 auto RunReportConsistencyCrossIngestTests(

@@ -105,11 +105,6 @@ void RangeTypFormatter::FormatHeaderContent(std::string& report_stream,
                                                 data.status_true_days),
                         FormatRatio(data.status_true_days, data.actual_days));
     report_stream += "\n";
-    report_stream += BuildBulletLine(
-        FormatBooleanCountLabel(config_->GetWakeAnchorDaysLabel(),
-                                data.wake_anchor_days),
-        FormatRatio(data.wake_anchor_days, data.actual_days));
-    report_stream += "\n";
     report_stream +=
         BuildBulletLine(FormatBooleanCountLabel(config_->GetExerciseDaysLabel(),
                                                 data.exercise_true_days),

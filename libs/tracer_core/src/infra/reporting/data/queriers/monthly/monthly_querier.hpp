@@ -50,7 +50,6 @@ class BatchMonthDataFetcher {
       std::map<std::string, int>& anaerobic_days,
       const IProjectInfoProvider& provider);
   void FetchActualDays(std::map<std::string, int>& actual_days);
-  void FetchWakeAnchorDays(std::map<std::string, int>& wake_anchor_days);
 };
 
 #endif  // INFRASTRUCTURE_REPORTS_DATA_QUERIERS_MONTHLY_MONTHLY_QUERIER_H_

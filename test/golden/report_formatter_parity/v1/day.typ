@@ -5,8 +5,7 @@
 + *Date:* 2021-01-03
 + *Total Time Recorded:* 3h 30m
 + *Activity Count:* 3
-+ *Status:* true
-+ *Wake Anchor:* false
++ *Study:* true
 + *Exercise:* true
 + *Getup Time:* 07:30
 + *Remark:* Deep work \
@@ -26,7 +25,7 @@
   - *Zhihu*: 0h 10m
   - *Bilibili*: 0h 20m
   - *Douyin*: 0h 10m
-#text(font: "MiSans VF", size: 12pt)[= All Activities])
+#text(font: "MiSans VF", size: 12pt)[= Timeline])
 
 + 08:00 - 09:10 (1h 10m): Work->Coding
   + *Activity Remark:*

@@ -25,13 +25,10 @@ namespace {
   return {
       .export_format = defaults.export_format,
       .query_format = defaults.query_format,
-      .convert_date_check_mode = defaults.convert_date_check_mode,
       .convert_save_processed_output = defaults.convert_save_processed_output,
       .convert_validate_logic = defaults.convert_validate_logic,
       .convert_validate_structure = defaults.convert_validate_structure,
-      .ingest_date_check_mode = defaults.ingest_date_check_mode,
       .ingest_save_processed_output = defaults.ingest_save_processed_output,
-      .validate_logic_date_check_mode = defaults.validate_logic_date_check_mode,
   };
 }
 
@@ -46,7 +43,6 @@ auto LoadCliConfigSnapshot(const std::filesystem::path& executable_path)
       .export_path = config.export_path,
       .converter_config_toml_path = config.converter_config_toml_path,
       .default_save_processed_output = config.default_save_processed_output,
-      .default_date_check_mode = config.default_date_check_mode,
       .defaults = ToCliGlobalDefaultsSnapshot(config.defaults),
       .command_defaults = ToCliCommandDefaultsSnapshot(config.command_defaults),
   };

@@ -33,10 +33,12 @@ auto WithStructuredReportService(
     const std::filesystem::path& db_path,
     const std::shared_ptr<tracer_core::application::ports::IPlatformClock>&
         platform_clock,
-    Callback&& callback) {
+    Callback&& callback,
+    const DailyStatusConfig* status_config = nullptr) {
   DBManager db_manager(db_path.string());
   SqliteReportDataQueryService report_service(
-      EnsureReadableDbConnection(db_path, db_manager), platform_clock);
+      EnsureReadableDbConnection(db_path, db_manager), platform_clock,
+      status_config != nullptr ? *status_config : DailyStatusConfig{});
   return std::forward<Callback>(callback)(report_service);
 }
 
@@ -45,8 +47,11 @@ auto WithStructuredReportService(
 LazySqliteReportDataQueryService::LazySqliteReportDataQueryService(
     std::filesystem::path db_path,
     std::shared_ptr<tracer_core::application::ports::IPlatformClock>
-        platform_clock)
-    : db_path_(std::move(db_path)), platform_clock_(std::move(platform_clock)) {
+        platform_clock,
+    std::shared_ptr<const ReportCatalog> report_catalog)
+    : db_path_(std::move(db_path)),
+      platform_clock_(std::move(platform_clock)),
+      report_catalog_(std::move(report_catalog)) {
   if (db_path_.empty()) {
     throw std::invalid_argument(
         "LazySqliteReportDataQueryService db_path is empty.");
@@ -54,6 +59,9 @@ LazySqliteReportDataQueryService::LazySqliteReportDataQueryService(
   if (!platform_clock_) {
     throw std::invalid_argument(
         "LazySqliteReportDataQueryService platform_clock must not be null.");
+  }
+  if (!report_catalog_) {
+    report_catalog_ = std::make_shared<ReportCatalog>();
   }
 }
 
@@ -63,7 +71,8 @@ auto LazySqliteReportDataQueryService::QueryDaily(std::string_view date)
       db_path_, platform_clock_,
       [&](SqliteReportDataQueryService& report_service) -> DailyReportData {
         return report_service.QueryDaily(date);
-      });
+      },
+      &report_catalog_->daily_statuses);
 }
 
 auto LazySqliteReportDataQueryService::QueryMonthly(std::string_view month)
@@ -169,7 +178,8 @@ auto LazySqliteReportDataQueryService::QueryAllDaily()
       [&](SqliteReportDataQueryService& report_service)
           -> std::map<std::string, DailyReportData> {
         return report_service.QueryAllDaily();
-      });
+      },
+      &report_catalog_->daily_statuses);
 }
 
 auto LazySqliteReportDataQueryService::QueryAllMonthly()

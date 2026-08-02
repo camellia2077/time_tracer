@@ -18,7 +18,7 @@ args = ["alias", "promote", "--file", "{exe_dir}/config/user/activity_hierarchy/
 expect_exit = 0
 expect_stdout_contains = ["Promoted alias `cli-refactor-leaf`"]
 expect_file_contains = [
-  "{exe_dir}/config/user/activity_hierarchy/meal.toml::[aliases.cli-refactor-leaf]",
+  "{exe_dir}/config/user/activity_hierarchy/meal.toml::[canonical.cli-refactor-leaf]",
   "{exe_dir}/config/user/activity_hierarchy/meal.toml::group_aliases = [ 'cli-refactor-leaf' ]",
 ]
 
@@ -52,7 +52,7 @@ expect_stdout_contains = [
   "Existing TXT using the old canonical may require migration.",
 ]
 expect_file_contains = [
-  "{exe_dir}/config/user/activity_hierarchy/meal.toml::[aliases.cli-refactor-leaf]",
+  "{exe_dir}/config/user/activity_hierarchy/meal.toml::[canonical.cli-refactor-leaf]",
   "{exe_dir}/config/user/activity_hierarchy/meal.toml::dining = [ 'meal', '吃饭', '饭' ]",
 ]
 
@@ -63,7 +63,7 @@ args = ["--db", "{db_path}", "alias", "rename-group", "--file", "{exe_dir}/confi
 expect_exit = 0
 expect_stdout_contains = ["Renamed group `cli-refactor-leaf` to `cli-refactor-renamed`; rebuilt database"]
 expect_file_contains = [
-  "{exe_dir}/config/user/activity_hierarchy/meal.toml::[aliases.cli-refactor-renamed]",
+  "{exe_dir}/config/user/activity_hierarchy/meal.toml::[canonical.cli-refactor-renamed]",
 ]
 
 [[commands]]
@@ -85,7 +85,7 @@ args = ["--db", "{db_path}", "alias", "move", "--file", "{exe_dir}/config/user/a
 expect_exit = 0
 expect_stdout_contains = ["Moved canonical leaf from `meal_cli-refactor-renamed_dining` to `meal_cli-migration-target_dining`; rebuilt database"]
 expect_file_contains = [
-  "{exe_dir}/config/user/activity_hierarchy/meal.toml::[aliases.cli-migration-target]",
+  "{exe_dir}/config/user/activity_hierarchy/meal.toml::[canonical.cli-migration-target]",
   "{exe_dir}/config/user/activity_hierarchy/meal.toml::dining = [ 'meal', '吃饭', '饭' ]",
 ]
 
@@ -121,7 +121,7 @@ expect_stdout_contains = [
   "Moved group subtree from `exercise_cardio_running` to `meal_running`; rebuilt database",
 ]
 expect_file_contains = [
-  "{exe_dir}/config/user/activity_hierarchy/meal.toml::[aliases.running]",
+  "{exe_dir}/config/user/activity_hierarchy/meal.toml::[canonical.running]",
   "{exe_dir}/config/user/activity_hierarchy/meal.toml::treadmill = [ '跑步机' ]",
 ]
 

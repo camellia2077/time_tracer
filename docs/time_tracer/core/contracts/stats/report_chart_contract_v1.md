@@ -31,11 +31,29 @@
 2. `duration_seconds` (`int`, 必填，非负)
 3. `epoch_day` (`int`, 可选，保留为后续跨端渲染优化字段)
 
+## `report-composition` 展示语义
+
+`report-composition` 返回的加权 `tree` 之外，还必须提供以下展示字段：
+
+1. `display_level` (`int`, 必填，默认 `0`)
+2. `display_path` (`string[]`, 必填，默认 `[]`)
+
+Core 根据当前报告日期范围内的有效 parent 根数量计算这两个字段：
+
+1. 只有一个有效 parent 且该 parent 有子节点时，返回 `display_level=1`，并将该 parent
+   放入 `display_path`，表示客户端初始显示该 parent 的下一层活动。
+2. 存在多个有效 parent 时，返回 `display_level=0`、`display_path=[]`。
+3. 整个数据库可以存在多个 parent；如果当前日期范围内只有一个有效 parent，
+   仍按第 1 条自动下钻。
+
+Android 等客户端必须直接消费 `display_path` 作为初始展示路径，不根据
+TOML 文件名或自身重新判断 hierarchy 深度。
+
 ## 口径约束
 1. `total_duration_seconds = sum(series[].duration_seconds)`
 2. `range_days = 日期范围闭区间天数`
-3. `active_days = duration_seconds > 0 的天数`
-4. `average_duration_seconds = total_duration_seconds / range_days`（`range_days=0` 时为 `0`）
+3. `active_days = 至少存在一条活动事实（包括 end-only）的天数`
+4. `average_duration_seconds = total_duration_seconds / active_days`（`active_days=0` 时为 `0`；没有活动记录的日期不计入分母）
 
 ## 空数据约束
 1. 空数据时返回完整结构，不省略关键字段。

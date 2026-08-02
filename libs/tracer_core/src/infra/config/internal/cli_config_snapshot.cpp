@@ -5,7 +5,6 @@
 #include <system_error>
 
 import tracer.core.infrastructure.config.config_loader;
-import tracer.core.domain.types.date_check_mode;
 
 using ModAppConfig = tracer::core::infrastructure::modconfig::AppConfig;
 
@@ -49,7 +48,6 @@ std::optional<CliConfigSnapshotCacheEntry> g_cli_config_snapshot_cache{};
       .converter_config_toml_path =
           app_config.pipeline.converter_main_config_path,
       .default_save_processed_output = app_config.default_save_processed_output,
-      .default_date_check_mode = app_config.default_date_check_mode,
       .defaults =
           {
               .db_path = app_config.defaults.kDbPath,
@@ -60,20 +58,14 @@ std::optional<CliConfigSnapshotCacheEntry> g_cli_config_snapshot_cache{};
           {
               .export_format = app_config.command_defaults.export_format,
               .query_format = app_config.command_defaults.query_format,
-              .convert_date_check_mode =
-                  app_config.command_defaults.convert_date_check_mode,
               .convert_save_processed_output =
                   app_config.command_defaults.convert_save_processed_output,
               .convert_validate_logic =
                   app_config.command_defaults.convert_validate_logic,
               .convert_validate_structure =
                   app_config.command_defaults.convert_validate_structure,
-              .ingest_date_check_mode =
-                  app_config.command_defaults.ingest_date_check_mode,
               .ingest_save_processed_output =
                   app_config.command_defaults.ingest_save_processed_output,
-              .validate_logic_date_check_mode =
-                  app_config.command_defaults.validate_logic_date_check_mode,
           },
   };
 }

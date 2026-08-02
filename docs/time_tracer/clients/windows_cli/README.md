@@ -7,7 +7,8 @@
 
 | 主命令 | 用途 | 文档 |
 |---|---|---|
-| `alias` | 编辑 alias TOML、查看层级、迁移 canonical | [alias.md](commands/alias.md) |
+| `activity` | 合并 leaf activity 并迁移 TXT、数据库 | [activity.md](commands/activity.md) |
+| `alias` | 编辑 canonical TOML、查看层级、迁移 canonical | [alias.md](commands/alias.md) |
 | `pipeline` | TXT/config 校验、转换、导入、入库 | [pipeline.md](commands/pipeline.md) |
 | `query` | 查询数据库数据和树 | [query.md](commands/query.md) |
 | `report` | 生成报告、导出结果、生成图表 | [report.md](commands/report.md) |

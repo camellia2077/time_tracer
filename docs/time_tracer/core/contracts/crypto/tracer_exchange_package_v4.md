@@ -16,10 +16,10 @@
 包内路径分为两部分：
 1. 固定前缀（顺序固定）：
    - `manifest.toml`
-   - `config/activity_hierarchy/_system.toml`
-   - `config/activity_hierarchy/*.toml`
+   - `config/user/behavior.toml`
+   - `config/user/activity_hierarchy/*.toml`
 2. 变长 alias child file 段（顺序固定为字典序）：
-   - `config/activity_hierarchy/*.toml`
+   - `config/user/activity_hierarchy/*.toml`
 3. 变长 payload 后缀（顺序固定为字典序）：
    - `payload/<year>/YYYY-MM.txt`
 
@@ -53,7 +53,7 @@ files = [
 ]
 
 [converter]
-main_config = "config/activity_hierarchy/_system.toml"
+main_config = "config/user/behavior.toml"
 alias_mapping_files = [
   "config/activity_hierarchy/meal.toml",
   "config/activity_hierarchy/recreation.toml",
@@ -72,7 +72,7 @@ alias_mapping_files = [
    - `<year>` 与文件名中的 `YYYY` 一致
    - 数组必须按字典序严格递增
 8. `[converter]` 表必须存在。
-9. `converter.main_config` 必须精确等于 `config/activity_hierarchy/_system.toml`。
+9. `converter.main_config` 必须精确等于 `config/user/behavior.toml`。
 10. `converter.alias_mapping_files` 必须是非空字符串数组，并满足：
     - 每一项都严格位于 `config/activity_hierarchy/`
     - 每一项都以 `.toml` 结尾

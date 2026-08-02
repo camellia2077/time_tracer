@@ -6,7 +6,6 @@
 #include <optional>
 #include <string>
 
-#include "domain/types/date_check_mode.hpp"
 
 namespace tracer::core::infrastructure::config::internal {
 

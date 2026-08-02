@@ -21,11 +21,11 @@ namespace fs = std::filesystem;
 
 constexpr std::string_view kAliasToml =
     "parent = \"exercise\"\n\n"
-    "[aliases]\n"
+    "[canonical]\n"
     "walk = [\"步行\"]\n\n"
-    "[aliases.cardio]\n"
+    "[canonical.cardio]\n"
     "group_aliases = [\"有氧\", \"cardio\"]\n\n"
-    "[aliases.cardio.running]\n"
+    "[canonical.cardio.running]\n"
     "group_aliases = [\"跑步\"]\n"
     "treadmill = [\"跑步机\", \"treadmill\"]\n";
 
@@ -282,6 +282,40 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
             std::string::npos,
         "Move leaf operation changed.", failures);
 
+  const auto merge = config::ApplyActivityHierarchyOperation(
+      kAliasToml,
+      {
+          .kind = config::ActivityHierarchyOperationKind::kMergeLeafCanonical,
+          .target_path = "cardio.running.treadmill",
+          .destination_path = "walk",
+      });
+  CheckReplacements(
+      merge.replacements,
+      {{"exercise_cardio_running_treadmill", "exercise_walk"}},
+      "Merge leaf replacement plan changed.", failures);
+  Check(merge.alias_replacements.size() == 2U &&
+            merge.alias_replacements[0].old_alias == "跑步机" &&
+            merge.alias_replacements[0].new_alias == "步行" &&
+            merge.alias_replacements[1].old_alias == "treadmill" &&
+            merge.alias_replacements[1].new_alias == "步行" &&
+            RenderOperationResult(root, "merge-leaf", merge.updated_toml_content)
+                    .find("treadmill") == std::string::npos &&
+            RenderOperationResult(root, "merge-leaf", merge.updated_toml_content)
+                    .find("walk — aliases: 步行") != std::string::npos,
+        "Merge leaf must remove the source canonical and aliases.", failures);
+
+  bool rejected_group_merge = false;
+  try {
+    static_cast<void>(config::ApplyActivityHierarchyOperation(
+        kAliasToml,
+        {.kind = config::ActivityHierarchyOperationKind::kMergeLeafCanonical,
+         .target_path = "cardio",
+         .destination_path = "walk"}));
+  } catch (const std::invalid_argument&) {
+    rejected_group_merge = true;
+  }
+  Check(rejected_group_merge, "Merge leaf must reject group sources.", failures);
+
   const auto rename_parent = config::ApplyActivityHierarchyOperation(
       kAliasToml,
       {
@@ -416,7 +450,7 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
         std::vector<config::ActivityHierarchyDocumentInput>{
             {"one.toml", std::string(kAliasToml)},
             {"two.toml",
-             "parent = \"rest\"\n\n[aliases]\nrest = [\"步行\"]\n"}});
+             "parent = \"rest\"\n\n[canonical]\nrest = [\"步行\"]\n"}});
   } catch (const std::runtime_error&) {
     rejected_cross_file_duplicate = true;
   }
@@ -428,7 +462,7 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
 auto ExpectDuplicateAliasRejection(const fs::path& directory, int& failures)
     -> void {
   WriteSmokeFile(directory / "duplicate.toml",
-                 "parent = \"duplicate\"\n\n[aliases]\n"
+                 "parent = \"duplicate\"\n\n[canonical]\n"
                  "one = [\"same\"]\n"
                  "two = [\"same\"]\n");
   bool rejected = false;

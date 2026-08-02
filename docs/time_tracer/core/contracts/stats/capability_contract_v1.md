@@ -38,8 +38,8 @@
 2. `report-chart`
    - `total_duration_seconds = sum(series[].duration_seconds)`
    - `range_days = 日期范围内的总天数（闭区间）`
-   - `active_days = duration_seconds > 0 的天数`
-   - `average_duration_seconds = total_duration_seconds / range_days`（`range_days=0` 时为 `0`）
+   - `active_days = 至少存在一条活动事实（包括 end-only）的天数`
+   - `average_duration_seconds = total_duration_seconds / active_days`（`active_days=0` 时为 `0`；无记录日期不计入分母）
 3. `days-stats`（基于过滤后的全部样本，不受 `limit/reverse` 截断）
    - `count`：样本数
    - `mean_seconds`：均值

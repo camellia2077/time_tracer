@@ -40,6 +40,7 @@ class TestAndroidCommand(TestCase):
             serial=None,
             with_test_data=False,
             keep_database=False,
+            rebuild_database=False,
         )
 
         with patch.object(android, "BuildCommand", _FakeBuildCommand):
@@ -63,6 +64,7 @@ class TestAndroidCommand(TestCase):
                 serial="device-1",
                 with_test_data=True,
                 keep_database=False,
+                rebuild_database=False,
             )
 
             with (
@@ -71,16 +73,26 @@ class TestAndroidCommand(TestCase):
                 patch.object(
                     android.subprocess,
                     "run",
-                    return_value=subprocess.CompletedProcess([], 0),
+                    side_effect=[
+                        subprocess.CompletedProcess([], 0),
+                        subprocess.CompletedProcess([], 0),
+                        subprocess.CompletedProcess(
+                            [], 0, stdout="Broadcast completed: result=0"
+                        ),
+                        subprocess.CompletedProcess([], 0),
+                    ],
                 ) as run_mock,
             ):
                 result = android.run(args, context)
 
             self.assertEqual(result, 0)
             self.assertEqual(_FakeBuildCommand.last_profile, "android_edit")
-            self.assertEqual(run_mock.call_count, 2)
+            self.assertEqual(run_mock.call_count, 4)
             self.assertIn("install", run_mock.call_args_list[0].args[0])
             self.assertIn("push_test_data.py", " ".join(run_mock.call_args_list[1].args[0]))
+            self.assertIn("am", run_mock.call_args_list[2].args[0])
+            self.assertIn("REBUILD_DATABASE", " ".join(run_mock.call_args_list[2].args[0]))
+            self.assertIn("monkey", run_mock.call_args_list[3].args[0])
 
     def test_debug_install_only_does_not_build(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -96,6 +108,7 @@ class TestAndroidCommand(TestCase):
                 serial="device-1",
                 with_test_data=False,
                 keep_database=False,
+                rebuild_database=False,
             )
 
             with (
@@ -120,6 +133,7 @@ class TestAndroidCommand(TestCase):
             serial="device-1",
             with_test_data=True,
             keep_database=False,
+            rebuild_database=False,
         )
 
         result = android.run(args, _FakeContext(Path("."), Path(".")))

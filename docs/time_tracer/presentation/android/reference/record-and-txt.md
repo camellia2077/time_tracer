@@ -45,6 +45,10 @@ Describe the user-visible behavior of record creation and TXT editing flows.
   - Android builds a candidate day-block update
   - shared runtime validation decides whether mixed point/interval timeline semantics are valid
   - Android does not locally enforce overlap/gap business rules
+- Android does not require a month to start on day 1 and does not require every day
+  to be recorded. Record, interval, TXT save, import, sync, and rebuild flows use
+  `DATE_CHECK_NONE`; the shared Core continuity/full checks remain available to CLI
+  callers but are not enabled by Android user flows.
 
 ## First Code Entry Points
 

@@ -27,11 +27,8 @@ class REPORTS_SHARED_API DayBaseConfig {
   [[nodiscard]] auto GetDateLabel() const -> const std::string&;
   [[nodiscard]] auto GetTotalTimeLabel() const -> const std::string&;
   [[nodiscard]] auto GetActivityCountLabel() const -> const std::string&;
-  [[nodiscard]] auto GetStatusLabel() const -> const std::string&;
-  [[nodiscard]] auto GetWakeAnchorLabel() const -> const std::string&;
   [[nodiscard]] auto GetGetupTimeLabel() const -> const std::string&;
   [[nodiscard]] auto GetRemarkLabel() const -> const std::string&;
-  [[nodiscard]] auto GetExerciseLabel() const -> const std::string&;
   [[nodiscard]] auto GetNoRecords() const -> const std::string&;
   [[nodiscard]] auto GetStatisticsLabel() const -> const std::string&;
   [[nodiscard]] auto GetAllActivitiesLabel() const -> const std::string&;
@@ -53,11 +50,8 @@ class REPORTS_SHARED_API DayBaseConfig {
   std::string date_label_;
   std::string total_time_label_;
   std::string activity_count_label_;
-  std::string status_label_;
-  std::string wake_anchor_label_;
   std::string getup_time_label_;
   std::string remark_label_;
-  std::string exercise_label_;
   std::string no_records_;
   std::string statistics_label_;
   std::string all_activities_label_;

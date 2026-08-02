@@ -5,6 +5,7 @@ set(TRACER_CORE_INFRA_LITE_SOURCES
     "${TRACER_CORE_LIB_SOURCE_ROOT}/infra/config/static_converter_config_provider.cpp"
     "${TRACER_CORE_LIB_SOURCE_ROOT}/infra/config/loader/activity_hierarchy_text_renderer.cpp"
     "${TRACER_CORE_LIB_SOURCE_ROOT}/infra/config/loader/alias_toml_editor.cpp"
+    "${TRACER_CORE_LIB_SOURCE_ROOT}/infra/config/loader/quick_access_toml_store.cpp"
     "${TRACER_CORE_LIB_SOURCE_ROOT}/infra/${TIME_TRACKER_INFRA_PLATFORM_CLOCK_SOURCE}"
 )
 list(APPEND TRACER_CORE_INFRA_LITE_SOURCES

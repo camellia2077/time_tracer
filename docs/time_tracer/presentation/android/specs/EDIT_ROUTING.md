@@ -61,6 +61,8 @@ Start here:
 
 - `apps/android/feature-report/src/main/java/com/example/tracer/ui/screen/QueryReportTabContent.kt`
 - `apps/android/feature-report/src/main/java/com/example/tracer/ui/screen/QueryReportResultDisplay.kt`
+- `apps/android/feature-report/src/main/java/com/example/tracer/ui/screen/ReportActivityTimeline.kt`
+- `apps/android/feature-report/src/main/java/com/example/tracer/ui/screen/ReportTimelineEntries.kt`
 - `apps/android/feature-report/src/main/java/com/example/tracer/ui/screen/ReportChartResultContent.kt`
 
 ### Config, diagnostics, or app appearance

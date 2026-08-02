@@ -193,9 +193,6 @@ void DayStats::CalculateStats(DailyLog& day) {
   day.activityCount = static_cast<int>(day.processedActivities.size());
   day.hasStudyActivity = false;
   day.hasExerciseActivity = false;
-  day.hasWakeAnchor =
-      !day.isContinuation && !day.getupTime.empty() &&
-      NormalizeTime(day.getupTime) != "00:00:00";
 
   std::int64_t activity_sequence = 1;
   std::int64_t date_as_long = 0;
@@ -211,13 +208,20 @@ void DayStats::CalculateStats(DailyLog& day) {
   for (auto& activity : day.processedActivities) {
     activity.logical_id =
         (date_as_long * kDailySequenceBase) + activity_sequence++;
-    activity.duration_seconds = CalculateDurationSeconds(
-        activity.start_time_str, activity.end_time_str);
+    if (activity.kind == ActivityRecordKind::kEndOnly) {
+      activity.duration_seconds = 0;
+      activity.start_timestamp = 0;
+      activity.end_timestamp =
+          TimeStringToTimestamp(day.date, activity.end_time_str, true, 0);
+    } else {
+      activity.duration_seconds = CalculateDurationSeconds(
+          activity.start_time_str, activity.end_time_str);
 
-    activity.start_timestamp =
-        TimeStringToTimestamp(day.date, activity.start_time_str, false, 0);
-    activity.end_timestamp = TimeStringToTimestamp(
-        day.date, activity.end_time_str, true, activity.start_timestamp);
+      activity.start_timestamp =
+          TimeStringToTimestamp(day.date, activity.start_time_str, false, 0);
+      activity.end_timestamp = TimeStringToTimestamp(
+          day.date, activity.end_time_str, true, activity.start_timestamp);
+    }
 
     if (activity.project_path.starts_with("study")) {
       day.hasStudyActivity = true;

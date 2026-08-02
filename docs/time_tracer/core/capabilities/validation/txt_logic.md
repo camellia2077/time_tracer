@@ -31,8 +31,10 @@ For the target interval-event semantics, logic validation must also preserve
 this distinction:
 1. unrecorded gaps between authored intervals are allowed
 2. overlapping recorded intervals are not allowed
-3. `Total Time Recorded` still means recorded durations only, not full-day
-   coverage
+3. an end-only activity is valid when a point event has no reliable start
+   boundary
+4. `Total Time Recorded` still means recorded durations only, not full-day
+   coverage; end-only activities are excluded from duration aggregation
 
 ## Wake Anchor And Day Semantics
 

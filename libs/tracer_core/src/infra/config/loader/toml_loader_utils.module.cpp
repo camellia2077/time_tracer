@@ -148,9 +148,6 @@ void FillDailyLabels(const toml::table& tbl, DailyReportLabels& labels) {
   labels.activity_count_label =
       tbl["activity_count_label"].value_or("Activity Count");
 
-  labels.status_label = tbl["status_label"].value_or("Status");
-  labels.wake_anchor_label = tbl["wake_anchor_label"].value_or("Wake Anchor");
-  labels.exercise_label = tbl["exercise_label"].value_or("Exercise");
   labels.getup_time_label = tbl["getup_time_label"].value_or("Getup Time");
   labels.remark_label = tbl["remark_label"].value_or("Remark");
   labels.no_records_message = tbl["no_records_message"].value_or("No records.");
@@ -173,8 +170,6 @@ void FillRangeLabels(const toml::table& tbl, RangeReportLabels& labels) {
       tbl["activity_count_label"].value_or("Activity Count");
   labels.actual_days_label = GetRequired<std::string>(tbl, "actual_days_label");
   labels.status_days_label = tbl["status_days_label"].value_or("Status Days");
-  labels.wake_anchor_days_label =
-      tbl["wake_anchor_days_label"].value_or("Wake Anchor Days");
   labels.exercise_days_label =
       tbl["exercise_days_label"].value_or("Exercise Days");
   labels.cardio_days_label = tbl["cardio_days_label"].value_or("Cardio Days");

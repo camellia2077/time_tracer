@@ -44,7 +44,7 @@ Current Android JNI integration uses C ABI entrypoints in these categories:
 - activity and day remark atomic update calls
 - Config runtime calls (`tracer_core_runtime_config_json`) for TXT day-block,
   activity hierarchy operations/raw alias-TOML rewrite, and current-month
-  activity-name conversion
+  activity-name conversion, and Quick Access TOML content parsing/rendering
 - structure/logic validation
 - last-error access
 
@@ -85,7 +85,7 @@ Current status:
 - Atomic record requests carry explicit `time_order_mode` (`strict_calendar` / `logical_day_0600`) from Kotlin -> JNI -> C ABI.
 - Config requests use the shared `tracer_core_runtime_config_json` family and keep
   month-TXT business semantics in core rather than Kotlin UI helpers.
-- Android must not directly save an alias TOML document. Every alias TOML
+- Android must not directly save a canonical TOML document. Every canonical TOML
   change must use a Core hierarchy operation or
   `rewrite_activity_hierarchy_document`, then pass the returned TOML and one
   activity-name replacement plan through `RuntimeActivityHierarchyMigrationService`.
@@ -99,6 +99,11 @@ Current status:
   is the new file stem. The runtime protocol carries no filesystem filename
   mutation; Android owns the later `<old_parent>.toml` ->
   `<new_parent>.toml` transaction.
+- `merge_leaf_canonical` merges one leaf into another leaf in the same TOML.
+  Android sends the source in `operation.target_path` and the destination in
+  `operation.destination_path`. Core removes the source leaf, returns canonical
+  and alias replacement plans, and rejects groups; Android applies the plan
+  through the same TOML/TXT/candidate-database migration transaction.
 - Cross-TOML activity hierarchy moves use
   `move_activity_hierarchy_node_between_documents`. Android sends the complete
   alias-document set plus source/destination file names; Core returns the
@@ -114,6 +119,11 @@ Current status:
   each node carries canonical_key, canonical path, kind, aliases, and children.
   Android consumes kind internally and keeps the existing presentation adapter;
   the UI does not add canonical or alias text.
+- Quick Access is an alias-only `user/quick_access.toml` document. Android owns
+  file existence checks, directory creation, and physical reads/writes through
+  `ConfigTomlStorage`; Core only parses existing TOML content or renders new
+  TOML content through `tracer_core_runtime_config_json`. A missing file is an
+  empty Quick Access list and is not created by a read.
 - Kotlin-visible response shape remains `{ok,error_message,content}`.
 - JNI native method signatures remain stable.
 
@@ -137,6 +147,12 @@ Notes:
   work can send anchored recent requests without another ABI change.
 - Markdown report requests carry the current Android UI language as `locale`;
   Core selects `reports/markdown/<locale>/` and falls back to English.
+
+Structured day reports return `detailed_records` for the Report tab timeline.
+Each record includes `record_kind`, currently `interval` or `end_only`.
+Android must use this Core-produced kind instead of inferring semantics from
+empty timestamps: an `end_only` record displays a single localized
+"as-of" time point and has no duration segment.
 
 ## TXT Runtime Family
 

@@ -29,6 +29,11 @@ enum class DataQueryOutputMode {
   kSemanticJson,
 };
 
+enum class ReportAverageDayBasis {
+  kActiveDays,
+  kCalendarDays,
+};
+
 struct DataQueryRequest {
   DataQueryAction action = DataQueryAction::kYears;
   DataQueryOutputMode output_mode = DataQueryOutputMode::kText;
@@ -42,7 +47,6 @@ struct DataQueryRequest {
   std::optional<int> exercise;
   std::optional<int> status;
   bool cross_midnight_activity = false;
-  bool missing_wake_anchor = false;
   bool reverse = false;
   std::optional<int> limit;
   std::optional<int> top_n;
@@ -54,6 +58,7 @@ struct DataQueryRequest {
   std::optional<std::string> tree_period_argument;
   std::optional<int> tree_max_depth;
   std::optional<std::string> root;
+  ReportAverageDayBasis average_day_basis = ReportAverageDayBasis::kActiveDays;
 };
 
 struct TreeQueryRequest {

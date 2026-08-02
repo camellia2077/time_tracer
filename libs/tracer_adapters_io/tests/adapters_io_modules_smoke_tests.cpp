@@ -189,15 +189,6 @@ void TestRuntimeFactories(int& failures) {
       Expect(!has_exercise,
              "Processed-data JSON should not persist derived header.exercise.",
              failures);
-      const bool has_wake_anchor =
-          written_json.is_array() && !written_json.empty() &&
-          written_json.front().contains("headers") &&
-          written_json.front()["headers"].contains("wake_anchor");
-      Expect(
-          has_wake_anchor &&
-              written_json.front()["headers"]["wake_anchor"] == 1,
-          "Processed-data JSON should persist header.wake_anchor from day semantics.",
-          failures);
     }
 
     const auto loaded =
@@ -230,7 +221,6 @@ void TestRuntimeFactories(int& failures) {
       "date": "2026-03-16",
       "status": 0,
       "exercise": 0,
-      "wake_anchor": 1,
       "getup": "07:30",
       "activity_count": 2,
       "remark": "legacy"
@@ -280,10 +270,6 @@ void TestRuntimeFactories(int& failures) {
         Expect(legacy_days.front().hasExerciseActivity,
                "Legacy JSON load should rebuild exercise flag from activities.",
                failures);
-        Expect(legacy_days.front().hasWakeAnchor,
-               "Legacy JSON load should rebuild wake anchor from "
-               "getup/isContinuation.",
-               failures);
       }
     }
 
@@ -297,7 +283,6 @@ void TestRuntimeFactories(int& failures) {
       "date": "2026-04-01",
       "status": 0,
       "exercise": 0,
-      "wake_anchor": 1,
       "getup": "07:30",
       "activity_count": 1,
       "remark": ""
