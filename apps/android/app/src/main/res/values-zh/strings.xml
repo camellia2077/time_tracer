@@ -247,4 +247,16 @@
     <string name="config_report_average_day_basis_description">选择计算平均值时使用的天数。</string>
     <string name="config_report_average_day_basis_active">有活动记录的天数</string>
     <string name="config_report_average_day_basis_calendar">筛选范围内的所有自然日</string>
+    <string name="report_daily_status_editor_title">Daily 状态</string>
+    <string name="report_daily_status_editor_description">选择用于计算 Daily 报告状态字段的活动父级。</string>
+    <string name="report_daily_status_editor_loading">正在加载 Daily 状态配置…</string>
+    <string name="report_daily_status_editor_empty">未配置 Daily 状态。</string>
+    <string name="report_daily_status_saving">正在保存…</string>
+    <string name="report_daily_status_add">添加状态</string>
+    <string name="report_daily_status_edit">编辑状态</string>
+    <string name="report_daily_status_delete">删除状态</string>
+    <string name="report_daily_status_edit_title">编辑 Daily 状态</string>
+    <string name="report_daily_status_choose_parent">选择活动父级</string>
+    <string name="report_daily_status_parent">父级：%1$s</string>
+    <string name="daily_status_action_close">关闭</string>
 </resources>

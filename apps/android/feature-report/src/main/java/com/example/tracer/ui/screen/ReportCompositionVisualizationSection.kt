@@ -44,8 +44,7 @@ internal enum class ReportCompositionMeasure {
     DURATION,
     FREQUENCY
 }
-
-private fun ReportCompositionMeasure.labelRes(): Int =
+internal fun ReportCompositionMeasure.labelRes(): Int =
     when (this) {
         ReportCompositionMeasure.DURATION -> R.string.report_chart_measure_duration
         ReportCompositionMeasure.FREQUENCY -> R.string.report_chart_measure_frequency
@@ -58,7 +57,6 @@ private const val REPORT_COMPOSITION_LOG_TAG = "TracerComposition"
 private fun logReportCompositionInfo(message: String) {
     runCatching { Log.i(REPORT_COMPOSITION_LOG_TAG, message) }
 }
-
 @Composable
 internal fun ReportCompositionVisualizationSection(
     chartError: String,
@@ -286,164 +284,4 @@ internal fun ReportCompositionVisualizationSection(
         }
     }
 
-}
-
-@Composable
-private fun CompositionSliceLegend(
-    slices: List<ReportCompositionSlice>,
-    colors: List<androidx.compose.ui.graphics.Color>,
-    parentPath: List<String>,
-    nodes: List<TreeNode>,
-    valueLabel: (Long) -> String,
-    showAverage: Boolean,
-    showAverageRecords: Boolean,
-    showFrequency: Boolean,
-    onSliceSelected: (Int) -> Unit
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(6.dp)
-    ) {
-        slices.forEachIndexed { index, slice ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 48.dp)
-                    .clickable { onSliceSelected(index) }
-                    .padding(horizontal = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(10.dp)
-                        .background(
-                            color = colors.getOrElse(index) { androidx.compose.ui.graphics.Color.Gray },
-                            shape = CircleShape
-                        )
-                )
-                CompositionLegendRow(
-                    slice = slice,
-                    showAverage = showAverage,
-                    showFrequency = showFrequency,
-                    label = (parentPath + slice.root).joinToString(" › "),
-                    modifier = Modifier.weight(1f).padding(start = 8.dp)
-                )
-                if (nodes.firstOrNull { it.name == slice.root }?.children?.isNotEmpty() == true) {
-                    Icon(
-                        imageVector = Icons.Filled.ChevronRight,
-                        contentDescription = null,
-                        modifier = Modifier.padding(start = 4.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
-    }
-}
-
-internal fun resolveCompositionDrilldownNodes(
-    tree: List<TreeNode>,
-    path: List<String>
-): List<TreeNode> {
-    var currentLevel = tree
-    for (segment in path) {
-        val selected = currentLevel.firstOrNull { it.name == segment } ?: return tree
-        currentLevel = selected.children
-    }
-    return currentLevel
-}
-
-internal fun List<TreeNode>.toReportCompositionSlices(
-    compositionMeasure: ReportCompositionMeasure = ReportCompositionMeasure.DURATION,
-    averageDenominatorDays: Int = 0
-): List<ReportCompositionSlice> {
-    val totalValue = sumOf { node ->
-        when (compositionMeasure) {
-            ReportCompositionMeasure.DURATION -> node.durationSeconds ?: 0L
-            ReportCompositionMeasure.FREQUENCY -> node.occurrenceCount ?: 0L
-        }
-    }.coerceAtLeast(0L)
-    return mapNotNull { node ->
-        val value = when (compositionMeasure) {
-            ReportCompositionMeasure.DURATION -> node.durationSeconds
-            ReportCompositionMeasure.FREQUENCY -> node.occurrenceCount
-        }?.coerceAtLeast(0L) ?: return@mapNotNull null
-        if (node.name.isBlank() || value <= 0L) {
-            return@mapNotNull null
-        }
-        ReportCompositionSlice(
-            root = node.name,
-            durationSeconds = value,
-            percent = if (totalValue > 0L) {
-                value.toFloat() * 100f / totalValue.toFloat()
-            } else {
-                0f
-            },
-            totalDurationSeconds = node.durationSeconds,
-            occurrenceCount = node.occurrenceCount,
-            averageDurationSeconds = node.averageDurationSeconds ?:
-                if (averageDenominatorDays > 0) {
-                    (node.durationSeconds ?: 0L) / averageDenominatorDays
-                } else {
-                    null
-                },
-            averageOccurrenceCount = node.averageOccurrenceCount,
-            averageOccurrenceRatio = node.averageOccurrenceRatio
-        )
-    }.sortedWith(
-        compareByDescending<ReportCompositionSlice> { it.durationSeconds }
-            .thenBy { it.root }
-    )
-}
-
-@Composable
-private fun ReportCompositionMeasureSelector(
-    compositionMeasure: ReportCompositionMeasure,
-    onCompositionMeasureChange: (ReportCompositionMeasure) -> Unit
-) {
-    val measures = ReportCompositionMeasure.entries
-    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-        measures.forEachIndexed { index, item ->
-            val selected = compositionMeasure == item
-            SegmentedButton(
-                shape = SegmentedButtonDefaults.itemShape(index, measures.size),
-                onClick = { onCompositionMeasureChange(item) },
-                selected = selected,
-                colors = TracerSegmentedButtonDefaults.colors(),
-                label = { Text(stringResource(item.labelRes())) }
-            )
-        }
-    }
-}
-
-@Composable
-private fun ReportCompositionVisualModeSelector(
-    compositionVisualMode: ReportCompositionVisualMode,
-    onCompositionVisualModeChange: (ReportCompositionVisualMode) -> Unit
-) {
-    val modes = ReportCompositionVisualMode.entries
-    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-        modes.forEachIndexed { index, item ->
-            val selected = compositionVisualMode == item
-            SegmentedButton(
-                shape = SegmentedButtonDefaults.itemShape(
-                    index = index,
-                    count = modes.size
-                ),
-                onClick = { onCompositionVisualModeChange(item) },
-                selected = selected,
-                colors = TracerSegmentedButtonDefaults.colors(),
-                label = {
-                    Text(
-                        text = stringResource(item.labelRes()),
-                        fontWeight = if (selected) {
-                            TracerSegmentedButtonDefaults.activeLabelFontWeight
-                        } else {
-                            TracerSegmentedButtonDefaults.inactiveLabelFontWeight
-                        }
-                    )
-                }
-            )
-        }
-    }
 }

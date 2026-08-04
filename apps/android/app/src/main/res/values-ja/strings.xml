@@ -243,4 +243,20 @@
     <string name="config_open_source_licenses_unavailable">オープンソースライセンスは現在利用できません。</string>
     <string name="config_action_back">戻る</string>
     <string name="config_action_copy_diagnostics">診断ペイロードをコピー</string>
+    <string name="config_title_report_average_day_basis">レポート平均の分母</string>
+    <string name="config_report_average_day_basis_description">平均値の計算に使用する日数を選択します。</string>
+    <string name="config_report_average_day_basis_active">活動記録がある日</string>
+    <string name="config_report_average_day_basis_calendar">選択範囲内のすべての暦日</string>
+    <string name="report_daily_status_editor_title">Daily ステータス</string>
+    <string name="report_daily_status_editor_description">Daily レポートのステータス項目を計算する活動の親を選択します。</string>
+    <string name="report_daily_status_editor_loading">Daily ステータス設定を読み込み中…</string>
+    <string name="report_daily_status_editor_empty">Daily ステータスが設定されていません。</string>
+    <string name="report_daily_status_saving">保存中…</string>
+    <string name="report_daily_status_add">ステータスを追加</string>
+    <string name="report_daily_status_edit">ステータスを編集</string>
+    <string name="report_daily_status_delete">ステータスを削除</string>
+    <string name="report_daily_status_edit_title">Daily ステータスを編集</string>
+    <string name="report_daily_status_choose_parent">活動の親を選択</string>
+    <string name="report_daily_status_parent">親: %1$s</string>
+    <string name="daily_status_action_close">閉じる</string>
 </resources>

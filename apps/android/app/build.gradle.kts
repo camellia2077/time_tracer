@@ -329,7 +329,6 @@ fun registerPackagedAssetsPolicyTask(variant: String): TaskProvider<Task> {
                         "APK ${targetApk.name} contains an empty aboutlibraries asset.",
                     )
                 }
-
             }
         }
     }

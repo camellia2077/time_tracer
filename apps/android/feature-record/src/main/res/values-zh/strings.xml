@@ -151,4 +151,7 @@
     <string name="record_status_quick_activities_saved">快捷活动已保存（%1$d）。</string>
     <string name="record_status_invalid_suggested_activity">无效建议活动：%1$s。必须匹配配置允许的可输入活动 token（alias key、canonical token 或 wake keyword）。</string>
     <string name="record_duration_unavailable">不可用</string>
+    <string name="record_canonical_catalog_parent_title">选择活动父级</string>
+    <string name="record_canonical_catalog_parent_description">选择一个分组节点。该父级下存在活动时，Daily 状态将为 true。</string>
+    <string name="record_action_select_parent">用作父级</string>
 </resources>

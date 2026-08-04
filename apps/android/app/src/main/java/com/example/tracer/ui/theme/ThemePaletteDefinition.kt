@@ -3,48 +3,6 @@ package com.example.tracer.ui.theme
 import androidx.compose.ui.graphics.Color
 import com.example.tracer.data.ThemePalette
 
-internal data class ThemeColorTokens(
-    val primary: Color,
-    val onPrimary: Color,
-    val primaryContainer: Color,
-    val onPrimaryContainer: Color,
-    val secondary: Color,
-    val onSecondary: Color,
-    val secondaryContainer: Color,
-    val onSecondaryContainer: Color,
-    val tertiary: Color,
-    val onTertiary: Color,
-    val tertiaryContainer: Color,
-    val onTertiaryContainer: Color,
-    val background: Color,
-    val onBackground: Color,
-    val surface: Color,
-    val onSurface: Color,
-    val surfaceVariant: Color,
-    val onSurfaceVariant: Color,
-    val outline: Color,
-    val outlineVariant: Color,
-    val surfaceContainerLowest: Color,
-    val surfaceContainerLow: Color,
-    val surfaceContainer: Color,
-    val surfaceContainerHigh: Color,
-    val surfaceContainerHighest: Color
-)
-
-internal data class ThemePreviewColors(
-    val primary: Color,
-    val accent: Color,
-    val surface: Color
-)
-
-internal data class ThemePaletteDefinition(
-    val light: ThemeColorTokens,
-    val dark: ThemeColorTokens,
-    val preview: ThemePreviewColors,
-    val reportLight: ReportColorTokens,
-    val reportDark: ReportColorTokens
-)
-
 private val IndigoLightTokens = ThemeColorTokens(
     primary = Indigo600,
     onPrimary = Color.White,
@@ -560,20 +518,8 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
             accent = IndigoLightTokens.secondary,
             surface = IndigoLightTokens.background
         ),
-        reportLight = ReportColorTokens(
-            treeHierarchy = IndigoLightTokens.primary,
-            treeProgress = IndigoLightTokens.secondary,
-            timelineDuration = IndigoLightTokens.tertiary,
-            track = IndigoLightTokens.outlineVariant,
-            gap = IndigoLightTokens.surfaceVariant
-        ),
-        reportDark = ReportColorTokens(
-            treeHierarchy = IndigoDarkTokens.primary,
-            treeProgress = IndigoDarkTokens.secondary,
-            timelineDuration = IndigoDarkTokens.tertiary,
-            track = IndigoDarkTokens.outlineVariant,
-            gap = IndigoDarkTokens.surfaceVariant
-        )
+        reportLight = IndigoLightTokens.toReportColorTokens(),
+        reportDark = IndigoDarkTokens.toReportColorTokens()
     )
     ThemePalette.GraphiteAmber -> ThemePaletteDefinition(
         light = GraphiteLightTokens,
@@ -583,20 +529,8 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
             accent = GraphiteLightTokens.secondary,
             surface = GraphiteLightTokens.background
         ),
-        reportLight = ReportColorTokens(
-            treeHierarchy = GraphiteLightTokens.primary,
-            treeProgress = GraphiteLightTokens.secondary,
-            timelineDuration = GraphiteLightTokens.tertiary,
-            track = GraphiteLightTokens.outlineVariant,
-            gap = GraphiteLightTokens.surfaceVariant
-        ),
-        reportDark = ReportColorTokens(
-            treeHierarchy = GraphiteDarkTokens.primary,
-            treeProgress = GraphiteDarkTokens.secondary,
-            timelineDuration = GraphiteDarkTokens.tertiary,
-            track = GraphiteDarkTokens.outlineVariant,
-            gap = GraphiteDarkTokens.surfaceVariant
-        )
+        reportLight = GraphiteLightTokens.toReportColorTokens(),
+        reportDark = GraphiteDarkTokens.toReportColorTokens()
     )
     ThemePalette.Teal -> ThemePaletteDefinition(
         light = TealLightTokens,
@@ -606,20 +540,8 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
             accent = TealLightTokens.secondary,
             surface = TealLightTokens.background
         ),
-        reportLight = ReportColorTokens(
-            treeHierarchy = TealLightTokens.primary,
-            treeProgress = TealLightTokens.secondary,
-            timelineDuration = TealLightTokens.tertiary,
-            track = TealLightTokens.outlineVariant,
-            gap = TealLightTokens.surfaceVariant
-        ),
-        reportDark = ReportColorTokens(
-            treeHierarchy = TealDarkTokens.primary,
-            treeProgress = TealDarkTokens.secondary,
-            timelineDuration = TealDarkTokens.tertiary,
-            track = TealDarkTokens.outlineVariant,
-            gap = TealDarkTokens.surfaceVariant
-        )
+        reportLight = TealLightTokens.toReportColorTokens(),
+        reportDark = TealDarkTokens.toReportColorTokens()
     )
     ThemePalette.Orange -> ThemePaletteDefinition(
         light = OrangeLightTokens,
@@ -629,20 +551,8 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
             accent = OrangeLightTokens.secondary,
             surface = OrangeLightTokens.background
         ),
-        reportLight = ReportColorTokens(
-            treeHierarchy = OrangeLightTokens.primary,
-            treeProgress = OrangeLightTokens.secondary,
-            timelineDuration = OrangeLightTokens.tertiary,
-            track = OrangeLightTokens.outlineVariant,
-            gap = OrangeLightTokens.surfaceVariant
-        ),
-        reportDark = ReportColorTokens(
-            treeHierarchy = OrangeDarkTokens.primary,
-            treeProgress = OrangeDarkTokens.secondary,
-            timelineDuration = OrangeDarkTokens.tertiary,
-            track = OrangeDarkTokens.outlineVariant,
-            gap = OrangeDarkTokens.surfaceVariant
-        )
+        reportLight = OrangeLightTokens.toReportColorTokens(),
+        reportDark = OrangeDarkTokens.toReportColorTokens()
     )
     ThemePalette.Rose -> ThemePaletteDefinition(
         light = RoseLightTokens,
@@ -652,20 +562,8 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
             accent = RoseLightTokens.secondary,
             surface = RoseLightTokens.background
         ),
-        reportLight = ReportColorTokens(
-            treeHierarchy = RoseLightTokens.primary,
-            treeProgress = RoseLightTokens.secondary,
-            timelineDuration = RoseLightTokens.tertiary,
-            track = RoseLightTokens.outlineVariant,
-            gap = RoseLightTokens.surfaceVariant
-        ),
-        reportDark = ReportColorTokens(
-            treeHierarchy = RoseDarkTokens.primary,
-            treeProgress = RoseDarkTokens.secondary,
-            timelineDuration = RoseDarkTokens.tertiary,
-            track = RoseDarkTokens.outlineVariant,
-            gap = RoseDarkTokens.surfaceVariant
-        )
+        reportLight = RoseLightTokens.toReportColorTokens(),
+        reportDark = RoseDarkTokens.toReportColorTokens()
     )
     ThemePalette.Amber -> ThemePaletteDefinition(
         light = AmberLightTokens,
@@ -675,20 +573,8 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
             accent = AmberLightTokens.secondary,
             surface = AmberLightTokens.background
         ),
-        reportLight = ReportColorTokens(
-            treeHierarchy = AmberLightTokens.primary,
-            treeProgress = AmberLightTokens.secondary,
-            timelineDuration = AmberLightTokens.tertiary,
-            track = AmberLightTokens.outlineVariant,
-            gap = AmberLightTokens.surfaceVariant
-        ),
-        reportDark = ReportColorTokens(
-            treeHierarchy = AmberDarkTokens.primary,
-            treeProgress = AmberDarkTokens.secondary,
-            timelineDuration = AmberDarkTokens.tertiary,
-            track = AmberDarkTokens.outlineVariant,
-            gap = AmberDarkTokens.surfaceVariant
-        )
+        reportLight = AmberLightTokens.toReportColorTokens(),
+        reportDark = AmberDarkTokens.toReportColorTokens()
     )
     ThemePalette.Parchment -> ThemePaletteDefinition(
         light = ParchmentTokens,
@@ -700,20 +586,8 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
             accent = ParchmentTokens.onSurfaceVariant,
             surface = ParchmentTokens.background
         ),
-        reportLight = ReportColorTokens(
-            treeHierarchy = ParchmentTokens.primary,
-            treeProgress = ParchmentTokens.secondary,
-            timelineDuration = ParchmentTokens.tertiary,
-            track = ParchmentTokens.outlineVariant,
-            gap = ParchmentTokens.surfaceVariant
-        ),
-        reportDark = ReportColorTokens(
-            treeHierarchy = ParchmentTokens.primary,
-            treeProgress = ParchmentTokens.secondary,
-            timelineDuration = ParchmentTokens.tertiary,
-            track = ParchmentTokens.outlineVariant,
-            gap = ParchmentTokens.surfaceVariant
-        )
+        reportLight = ParchmentTokens.toReportColorTokens(),
+        reportDark = ParchmentTokens.toReportColorTokens()
     )
     ThemePalette.Snowfield -> ThemePaletteDefinition(
         light = SnowfieldTokens,
@@ -724,20 +598,8 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
             accent = Color(0xFF81A1C1),
             surface = SnowfieldTokens.background
         ),
-        reportLight = ReportColorTokens(
-            treeHierarchy = SnowfieldTokens.primary,
-            treeProgress = SnowfieldTokens.secondary,
-            timelineDuration = SnowfieldTokens.tertiary,
-            track = SnowfieldTokens.outlineVariant,
-            gap = SnowfieldTokens.surfaceVariant
-        ),
-        reportDark = ReportColorTokens(
-            treeHierarchy = SnowfieldTokens.primary,
-            treeProgress = SnowfieldTokens.secondary,
-            timelineDuration = SnowfieldTokens.tertiary,
-            track = SnowfieldTokens.outlineVariant,
-            gap = SnowfieldTokens.surfaceVariant
-        )
+        reportLight = SnowfieldTokens.toReportColorTokens(),
+        reportDark = SnowfieldTokens.toReportColorTokens()
     )
     ThemePalette.Blueprint -> ThemePaletteDefinition(
         light = BlueprintTokens,
@@ -747,20 +609,8 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
             accent = BlueprintTokens.tertiary,
             surface = BlueprintTokens.background
         ),
-        reportLight = ReportColorTokens(
-            treeHierarchy = BlueprintTokens.primary,
-            treeProgress = BlueprintTokens.secondary,
-            timelineDuration = BlueprintTokens.tertiary,
-            track = BlueprintTokens.outlineVariant,
-            gap = BlueprintTokens.surfaceVariant
-        ),
-        reportDark = ReportColorTokens(
-            treeHierarchy = BlueprintTokens.primary,
-            treeProgress = BlueprintTokens.secondary,
-            timelineDuration = BlueprintTokens.tertiary,
-            track = BlueprintTokens.outlineVariant,
-            gap = BlueprintTokens.surfaceVariant
-        )
+        reportLight = BlueprintTokens.toReportColorTokens(),
+        reportDark = BlueprintTokens.toReportColorTokens()
     )
     ThemePalette.Newsprint -> ThemePaletteDefinition(
         light = NewsprintTokens,
@@ -770,20 +620,8 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
             accent = NewsprintTokens.tertiary,
             surface = NewsprintTokens.background
         ),
-        reportLight = ReportColorTokens(
-            treeHierarchy = NewsprintTokens.primary,
-            treeProgress = NewsprintTokens.secondary,
-            timelineDuration = NewsprintTokens.tertiary,
-            track = NewsprintTokens.outlineVariant,
-            gap = NewsprintTokens.surfaceVariant
-        ),
-        reportDark = ReportColorTokens(
-            treeHierarchy = NewsprintTokens.primary,
-            treeProgress = NewsprintTokens.secondary,
-            timelineDuration = NewsprintTokens.tertiary,
-            track = NewsprintTokens.outlineVariant,
-            gap = NewsprintTokens.surfaceVariant
-        )
+        reportLight = NewsprintTokens.toReportColorTokens(),
+        reportDark = NewsprintTokens.toReportColorTokens()
     )
     ThemePalette.InkWash -> ThemePaletteDefinition(
         light = InkWashTokens,
@@ -793,20 +631,8 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
             accent = InkWashTokens.tertiary,
             surface = InkWashTokens.background
         ),
-        reportLight = ReportColorTokens(
-            treeHierarchy = InkWashTokens.primary,
-            treeProgress = InkWashTokens.secondary,
-            timelineDuration = InkWashTokens.tertiary,
-            track = InkWashTokens.outlineVariant,
-            gap = InkWashTokens.surfaceVariant
-        ),
-        reportDark = ReportColorTokens(
-            treeHierarchy = InkWashTokens.primary,
-            treeProgress = InkWashTokens.secondary,
-            timelineDuration = InkWashTokens.tertiary,
-            track = InkWashTokens.outlineVariant,
-            gap = InkWashTokens.surfaceVariant
-        )
+        reportLight = InkWashTokens.toReportColorTokens(),
+        reportDark = InkWashTokens.toReportColorTokens()
     )
     ThemePalette.Kraft -> ThemePaletteDefinition(
         light = KraftTokens,
@@ -816,19 +642,7 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
             accent = KraftTokens.tertiary,
             surface = KraftTokens.background
         ),
-        reportLight = ReportColorTokens(
-            treeHierarchy = KraftTokens.primary,
-            treeProgress = KraftTokens.secondary,
-            timelineDuration = KraftTokens.tertiary,
-            track = KraftTokens.outlineVariant,
-            gap = KraftTokens.surfaceVariant
-        ),
-        reportDark = ReportColorTokens(
-            treeHierarchy = KraftTokens.primary,
-            treeProgress = KraftTokens.secondary,
-            timelineDuration = KraftTokens.tertiary,
-            track = KraftTokens.outlineVariant,
-            gap = KraftTokens.surfaceVariant
-        )
+        reportLight = KraftTokens.toReportColorTokens(),
+        reportDark = KraftTokens.toReportColorTokens()
     )
 }

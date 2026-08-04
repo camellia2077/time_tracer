@@ -171,6 +171,7 @@
     <string name="report_summary_requested_days">要求日数: %1$d</string>
     <string name="report_summary_matched_days">一致日数: %1$d</string>
     <string name="report_summary_matched_records">一致レコード数: %1$d</string>
+    <string name="report_cd_edit_daily_statuses">Daily ステータスを編集</string>
 
     <string name="report_error_tree_level_min">時間内訳のレベルは -1 以上である必要があります。</string>
     <string name="report_error_chart_payload_invalid">グラフデータのペイロードが無効です。</string>
