@@ -9,6 +9,8 @@ Describe the stable responsibility split for the Windows Rust CLI.
 - You are deciding where a Windows CLI change belongs.
 - You are refactoring CLI/runtime boundaries.
 - You are adding a new command or presenter family.
+- For the acceptance bar and hotspot-specific refactoring requirements, also
+  read `REFACTORING.md`.
 
 ## What This Doc Does Not Cover
 

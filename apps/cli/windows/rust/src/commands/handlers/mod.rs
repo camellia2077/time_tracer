@@ -1,5 +1,7 @@
 pub mod activity;
 pub mod alias;
+mod alias_migration;
+mod alias_tree;
 pub mod doctor;
 pub mod exchange;
 pub mod licenses;

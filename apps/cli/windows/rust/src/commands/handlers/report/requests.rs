@@ -1,58 +1,15 @@
-use std::path::{Path, PathBuf};
+use serde_json::{json, Value};
 
-use serde_json::{Value, json};
-
-use crate::cli::{
-    ReportExportArgs, ReportExportPeriod, ReportFormat, ReportRenderArgs, ReportRenderPeriod,
-};
-use crate::core::runtime::CliConfig;
+use crate::cli::{ReportExportPeriod, ReportFormat, ReportRenderPeriod};
 use crate::error::AppError;
 
-pub fn resolve_render_formats(
-    args: &ReportRenderArgs,
-    cli_config: &CliConfig,
-) -> Vec<ReportFormat> {
-    if !args.format.is_empty() {
-        return args.format.clone();
-    }
-    if let Some(value) = &cli_config.command_defaults.query_format {
-        let formats = parse_format_tokens(value);
-        if !formats.is_empty() {
-            return formats;
-        }
-    }
-    if let Some(value) = &cli_config.defaults.default_format {
-        let formats = parse_format_tokens(value);
-        if !formats.is_empty() {
-            return formats;
-        }
-    }
-    vec![ReportFormat::Md]
-}
+use super::dates::{
+    month_to_range, normalize_day_argument, normalize_recent_argument, normalize_year_argument,
+    split_normalized_range, week_to_range,
+};
+use super::formats::{export_period_token, format_token};
 
-pub fn resolve_export_formats(
-    args: &ReportExportArgs,
-    cli_config: &CliConfig,
-) -> Vec<ReportFormat> {
-    if !args.format.is_empty() {
-        return args.format.clone();
-    }
-    if let Some(value) = &cli_config.command_defaults.export_format {
-        let formats = parse_format_tokens(value);
-        if !formats.is_empty() {
-            return formats;
-        }
-    }
-    if let Some(value) = &cli_config.defaults.default_format {
-        let formats = parse_format_tokens(value);
-        if !formats.is_empty() {
-            return formats;
-        }
-    }
-    vec![ReportFormat::Md]
-}
-
-pub fn build_render_request(
+pub(crate) fn build_render_request(
     period: ReportRenderPeriod,
     argument: &str,
     as_of: Option<&str>,
@@ -82,7 +39,7 @@ pub fn build_render_request(
     build_temporal_query_request(period, argument, format)
 }
 
-pub fn build_export_render_request(
+pub(crate) fn build_export_render_request(
     period: ReportExportPeriod,
     argument: &str,
     as_of: Option<&str>,
@@ -93,7 +50,7 @@ pub fn build_export_render_request(
     build_single_export_request(period, argument, as_of, format)
 }
 
-pub fn require_export_argument(
+pub(crate) fn require_export_argument(
     period: ReportExportPeriod,
     argument: Option<&str>,
 ) -> Result<&str, AppError> {
@@ -112,7 +69,7 @@ pub fn require_export_argument(
     Ok(argument)
 }
 
-pub fn reject_argument_when_all(
+pub(crate) fn reject_argument_when_all(
     period: ReportExportPeriod,
     argument: Option<&str>,
 ) -> Result<(), AppError> {
@@ -235,7 +192,7 @@ fn build_recent_query_request(
     Ok(request)
 }
 
-pub fn build_single_export_request(
+pub(crate) fn build_single_export_request(
     period: ReportExportPeriod,
     argument: &str,
     as_of: Option<&str>,
@@ -324,7 +281,7 @@ pub fn build_single_export_request(
     }
 }
 
-pub fn build_all_matching_export_request(
+pub(crate) fn build_all_matching_export_request(
     period: ReportExportPeriod,
     format: &ReportFormat,
 ) -> Result<Value, AppError> {
@@ -337,7 +294,7 @@ pub fn build_all_matching_export_request(
     }))
 }
 
-pub fn build_recent_batch_export_request(
+pub(crate) fn build_recent_batch_export_request(
     days: Vec<i32>,
     format: &ReportFormat,
 ) -> Result<Value, AppError> {
@@ -355,7 +312,7 @@ pub fn build_recent_batch_export_request(
     }))
 }
 
-pub fn parse_int_list(value: &str) -> Result<Vec<i32>, AppError> {
+pub(crate) fn parse_int_list(value: &str) -> Result<Vec<i32>, AppError> {
     let mut out = Vec::new();
     for token in value.split(',') {
         let t = token.trim();
@@ -385,7 +342,7 @@ fn parse_positive_int_list(command_label: &str, value: &str) -> Result<Vec<i32>,
     Ok(out)
 }
 
-pub fn list_targets_type(period: ReportExportPeriod) -> Result<&'static str, AppError> {
+pub(crate) fn list_targets_type(period: ReportExportPeriod) -> Result<&'static str, AppError> {
     match period {
         ReportExportPeriod::Day => Ok("day"),
         ReportExportPeriod::Month => Ok("month"),
@@ -400,397 +357,14 @@ pub fn list_targets_type(period: ReportExportPeriod) -> Result<&'static str, App
     }
 }
 
-pub fn normalize_export_name(
-    period: ReportExportPeriod,
-    argument: &str,
-) -> Result<String, AppError> {
-    normalize_export_argument(period, argument)
-}
-
-pub fn build_export_output_path(
-    export_root: &Path,
-    format: &ReportFormat,
-    period: ReportExportPeriod,
-    normalized_id: &str,
-) -> Result<PathBuf, AppError> {
-    let base_dir = export_root.join(report_format_dir(format));
-    let extension = report_format_extension(format);
-    match period {
-        ReportExportPeriod::Day => {
-            if normalized_id.len() != 10 {
-                return Err(AppError::InvalidArguments(format!(
-                    "Normalized day id must be YYYY-MM-DD, got `{normalized_id}`."
-                )));
-            }
-            Ok(base_dir
-                .join("day")
-                .join(&normalized_id[..4])
-                .join(&normalized_id[5..7])
-                .join(format!("{normalized_id}.{extension}")))
-        }
-        ReportExportPeriod::Month => Ok(base_dir
-            .join("month")
-            .join(format!("{normalized_id}.{extension}"))),
-        ReportExportPeriod::Week => Ok(base_dir
-            .join("week")
-            .join(format!("{normalized_id}.{extension}"))),
-        ReportExportPeriod::Year => Ok(base_dir
-            .join("year")
-            .join(format!("{normalized_id}.{extension}"))),
-        ReportExportPeriod::Recent => Ok(base_dir
-            .join("recent")
-            // Preserve legacy recent file naming even when request resolution uses range.
-            .join(format!("last_{normalized_id}_days_report.{extension}"))),
-        ReportExportPeriod::Range => {
-            let fs_safe_id = normalized_id.replace('|', "_");
-            Ok(base_dir
-                .join("range")
-                .join(format!("{fs_safe_id}.{extension}")))
-        }
-    }
-}
-
-pub fn format_token(value: &ReportFormat) -> &'static str {
-    match value {
-        ReportFormat::Md => "md",
-        ReportFormat::Tex => "tex",
-        ReportFormat::Typ => "typ",
-    }
-}
-
-pub fn report_format_dir(value: &ReportFormat) -> &'static str {
-    match value {
-        ReportFormat::Md => "markdown",
-        ReportFormat::Tex => "latex",
-        ReportFormat::Typ => "typ",
-    }
-}
-
-pub fn report_format_extension(value: &ReportFormat) -> &'static str {
-    match value {
-        ReportFormat::Md => "md",
-        ReportFormat::Tex => "tex",
-        ReportFormat::Typ => "typ",
-    }
-}
-
-fn parse_format_tokens(value: &str) -> Vec<ReportFormat> {
-    value
-        .split(',')
-        .filter_map(|token| match token.trim().to_ascii_lowercase().as_str() {
-            "md" => Some(ReportFormat::Md),
-            "tex" => Some(ReportFormat::Tex),
-            "typ" => Some(ReportFormat::Typ),
-            _ => None,
-        })
-        .collect()
-}
-
-fn render_period_token(value: ReportRenderPeriod) -> &'static str {
-    match value {
-        ReportRenderPeriod::Day => "day",
-        ReportRenderPeriod::Month => "month",
-        ReportRenderPeriod::Week => "week",
-        ReportRenderPeriod::Year => "year",
-        ReportRenderPeriod::Recent => "recent",
-        ReportRenderPeriod::Range => "range",
-    }
-}
-
-fn export_period_token(value: ReportExportPeriod) -> &'static str {
-    match value {
-        ReportExportPeriod::Day => "day",
-        ReportExportPeriod::Month => "month",
-        ReportExportPeriod::Week => "week",
-        ReportExportPeriod::Year => "year",
-        ReportExportPeriod::Recent => "recent",
-        ReportExportPeriod::Range => "range",
-    }
-}
-
-fn normalize_render_argument(
-    period: ReportRenderPeriod,
-    argument: &str,
-) -> Result<String, AppError> {
-    match period {
-        ReportRenderPeriod::Day => normalize_day_argument("`report render day`", argument),
-        ReportRenderPeriod::Month => normalize_month_argument("`report render month`", argument),
-        ReportRenderPeriod::Week => normalize_week_argument("`report render week`", argument),
-        ReportRenderPeriod::Year => normalize_year_argument("`report render year`", argument),
-        ReportRenderPeriod::Recent => unreachable!("recent arguments are parsed as days_list"),
-        ReportRenderPeriod::Range => normalize_range_argument("`report render range`", argument),
-    }
-}
-
-fn normalize_export_argument(
-    period: ReportExportPeriod,
-    argument: &str,
-) -> Result<String, AppError> {
-    match period {
-        ReportExportPeriod::Day => normalize_day_argument("`report export day`", argument),
-        ReportExportPeriod::Month => normalize_month_argument("`report export month`", argument),
-        ReportExportPeriod::Week => normalize_week_argument("`report export week`", argument),
-        ReportExportPeriod::Year => normalize_year_argument("`report export year`", argument),
-        ReportExportPeriod::Recent => normalize_recent_argument("`report export recent`", argument),
-        ReportExportPeriod::Range => normalize_range_argument("`report export range`", argument),
-    }
-}
-
-fn normalize_day_argument(command_label: &str, value: &str) -> Result<String, AppError> {
-    let normalized = if value.len() == 8 && value.chars().all(|ch| ch.is_ascii_digit()) {
-        format!("{}-{}-{}", &value[..4], &value[4..6], &value[6..8])
-    } else if value.len() == 10
-        && value.as_bytes()[4] == b'-'
-        && value.as_bytes()[7] == b'-'
-        && value
-            .chars()
-            .enumerate()
-            .all(|(index, ch)| matches!(index, 4 | 7) || ch.is_ascii_digit())
-    {
-        value.to_string()
-    } else {
-        return Err(AppError::InvalidArguments(format!(
-            "{command_label} expects YYYYMMDD or YYYY-MM-DD, got `{value}`."
-        )));
-    };
-
-    // Semantic validation: reject impossible dates like 2026-02-30.
-    let year: u32 = normalized[..4].parse().unwrap_or(0);
-    let month: u32 = normalized[5..7].parse().unwrap_or(0);
-    let day: u32 = normalized[8..10].parse().unwrap_or(0);
-    let max_day = match month {
-        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
-        4 | 6 | 9 | 11 => 30,
-        2 => {
-            if (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0) {
-                29
-            } else {
-                28
-            }
-        }
-        _ => 0,
-    };
-    if month < 1 || month > 12 || day < 1 || day > max_day {
-        return Err(AppError::InvalidArguments(format!(
-            "{command_label} expects YYYYMMDD or YYYY-MM-DD, got `{value}`."
-        )));
-    }
-
-    Ok(normalized)
-}
-
-fn parse_iso_date_to_serial_days(iso_date: &str) -> Result<i64, AppError> {
-    if iso_date.len() != 10 || iso_date.as_bytes()[4] != b'-' || iso_date.as_bytes()[7] != b'-' {
-        return Err(AppError::InvalidArguments(format!(
-            "Expected ISO date YYYY-MM-DD, got `{iso_date}`."
-        )));
-    }
-
-    let year = iso_date[..4].parse::<i32>().map_err(|error| {
-        AppError::InvalidArguments(format!("Invalid ISO year in `{iso_date}`: {error}"))
-    })?;
-    let month = iso_date[5..7].parse::<u32>().map_err(|error| {
-        AppError::InvalidArguments(format!("Invalid ISO month in `{iso_date}`: {error}"))
-    })?;
-    let day = iso_date[8..10].parse::<u32>().map_err(|error| {
-        AppError::InvalidArguments(format!("Invalid ISO day in `{iso_date}`: {error}"))
-    })?;
-
-    let month_i32 = i32::try_from(month)
-        .map_err(|_| AppError::InvalidArguments(format!("Invalid ISO month in `{iso_date}`.")))?;
-    let day_i32 = i32::try_from(day)
-        .map_err(|_| AppError::InvalidArguments(format!("Invalid ISO day in `{iso_date}`.")))?;
-
-    // Howard Hinnant civil-date conversion: days since 1970-01-01.
-    let year_adj = year - if month <= 2 { 1 } else { 0 };
-    let era = if year_adj >= 0 {
-        year_adj
-    } else {
-        year_adj - 399
-    } / 400;
-    let yoe = year_adj - era * 400;
-    let month_prime = month_i32 + if month > 2 { -3 } else { 9 };
-    let doy = (153 * month_prime + 2) / 5 + day_i32 - 1;
-    let doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
-    Ok(i64::from(era) * 146_097 + i64::from(doe) - 719_468)
-}
-
-fn format_serial_days_to_iso_date(serial_days: i64) -> Result<String, AppError> {
-    // Inverse Howard Hinnant civil-date conversion.
-    let z = serial_days + 719_468;
-    let era = if z >= 0 { z } else { z - 146_096 } / 146_097;
-    let doe = z - era * 146_097; // [0, 146096]
-    let yoe = (doe - doe / 1_460 + doe / 36_524 - doe / 146_096) / 365; // [0,399]
-    let y = yoe + era * 400;
-    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
-    let mp = (5 * doy + 2) / 153; // [0,11]
-    let d = doy - (153 * mp + 2) / 5 + 1; // [1,31]
-    let m = mp + if mp < 10 { 3 } else { -9 }; // [1,12]
-    let year = y + if m <= 2 { 1 } else { 0 };
-
-    let month_u32 = u32::try_from(m).map_err(|_| {
-        AppError::InvalidArguments(format!(
-            "Failed to convert computed month `{m}` to ISO date."
-        ))
-    })?;
-    let day_u32 = u32::try_from(d).map_err(|_| {
-        AppError::InvalidArguments(format!("Failed to convert computed day `{d}` to ISO date."))
-    })?;
-    let year_i32 = i32::try_from(year).map_err(|_| {
-        AppError::InvalidArguments(format!(
-            "Failed to convert computed year `{year}` to ISO date."
-        ))
-    })?;
-
-    Ok(format!("{year_i32:04}-{month_u32:02}-{day_u32:02}"))
-}
-
-fn normalize_month_argument(command_label: &str, value: &str) -> Result<String, AppError> {
-    if value.len() == 6 && value.chars().all(|ch| ch.is_ascii_digit()) {
-        return Ok(format!("{}-{}", &value[..4], &value[4..6]));
-    }
-    if value.len() == 7
-        && value.as_bytes()[4] == b'-'
-        && value
-            .chars()
-            .enumerate()
-            .all(|(index, ch)| index == 4 || ch.is_ascii_digit())
-    {
-        return Ok(value.to_string());
-    }
-    Err(AppError::InvalidArguments(format!(
-        "{command_label} expects YYYYMM or YYYY-MM, got `{value}`."
-    )))
-}
-
-fn month_to_range(command_label: &str, value: &str) -> Result<(String, String), AppError> {
-    let month = normalize_month_argument(command_label, value)?;
-    let year: u32 = month[..4].parse().unwrap_or(0);
-    let month_number: u32 = month[5..7].parse().unwrap_or(0);
-    let last_day = match month_number {
-        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
-        4 | 6 | 9 | 11 => 30,
-        2 => {
-            if (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0) {
-                29
-            } else {
-                28
-            }
-        }
-        _ => {
-            return Err(AppError::InvalidArguments(format!(
-                "{command_label} expects YYYYMM or YYYY-MM, got `{value}`."
-            )));
-        }
-    };
-    Ok((format!("{month}-01"), format!("{month}-{last_day:02}")))
-}
-
-fn normalize_week_argument(command_label: &str, value: &str) -> Result<String, AppError> {
-    if value.len() == 8
-        && value.as_bytes()[4] == b'-'
-        && value.as_bytes()[5] == b'W'
-        && value[..4].chars().all(|ch| ch.is_ascii_digit())
-        && value[6..].chars().all(|ch| ch.is_ascii_digit())
-    {
-        return Ok(value.to_string());
-    }
-    Err(AppError::InvalidArguments(format!(
-        "{command_label} expects YYYY-Www, got `{value}`."
-    )))
-}
-
-fn week_to_range(command_label: &str, value: &str) -> Result<(String, String), AppError> {
-    let week = normalize_week_argument(command_label, value)?;
-    let iso_year = week[..4].parse::<i32>().map_err(|error| {
-        AppError::InvalidArguments(format!(
-            "{command_label} expects YYYY-Www, got `{value}`: {error}"
-        ))
-    })?;
-    let iso_week = week[6..8].parse::<u32>().map_err(|error| {
-        AppError::InvalidArguments(format!(
-            "{command_label} expects YYYY-Www, got `{value}`: {error}"
-        ))
-    })?;
-    if !(1..=53).contains(&iso_week) {
-        return Err(AppError::InvalidArguments(format!(
-            "{command_label} expects YYYY-Www, got `{value}`."
-        )));
-    }
-
-    let january_fourth = parse_iso_date_to_serial_days(&format!("{iso_year:04}-01-04"))?;
-    let monday_based_weekday = ((january_fourth + 3).rem_euclid(7)) + 1;
-    let week_one_monday = january_fourth - (monday_based_weekday - 1);
-    let start_days = week_one_monday + i64::from((iso_week - 1) * 7);
-    let end_days = start_days + 6;
-    Ok((
-        format_serial_days_to_iso_date(start_days)?,
-        format_serial_days_to_iso_date(end_days)?,
-    ))
-}
-
-fn normalize_year_argument(command_label: &str, value: &str) -> Result<String, AppError> {
-    if value.len() == 4 && value.chars().all(|ch| ch.is_ascii_digit()) {
-        return Ok(value.to_string());
-    }
-    Err(AppError::InvalidArguments(format!(
-        "{command_label} expects a 4-digit year, got `{value}`."
-    )))
-}
-
-fn normalize_recent_argument(command_label: &str, value: &str) -> Result<String, AppError> {
-    let days = value.parse::<i32>().map_err(|error| {
-        AppError::InvalidArguments(format!(
-            "{command_label} expects a positive integer, got `{value}`: {error}"
-        ))
-    })?;
-    if days <= 0 {
-        return Err(AppError::InvalidArguments(format!(
-            "{command_label} expects a positive integer, got `{value}`."
-        )));
-    }
-    Ok(days.to_string())
-}
-
-fn normalize_range_argument(command_label: &str, value: &str) -> Result<String, AppError> {
-    let Some((start, end)) = value.split_once('|') else {
-        return Err(AppError::InvalidArguments(format!(
-            "{command_label} expects `start|end`."
-        )));
-    };
-    if end.contains('|') {
-        return Err(AppError::InvalidArguments(format!(
-            "{command_label} expects exactly one `|` separator."
-        )));
-    }
-
-    let normalized_start = normalize_day_argument(command_label, start.trim())?;
-    let normalized_end = normalize_day_argument(command_label, end.trim())?;
-    if normalized_start > normalized_end {
-        return Err(AppError::InvalidArguments(format!(
-            "{command_label} expects start <= end."
-        )));
-    }
-
-    Ok(format!("{normalized_start}|{normalized_end}"))
-}
-
-fn split_normalized_range(command_label: &str, value: &str) -> Result<(String, String), AppError> {
-    let normalized = normalize_range_argument(command_label, value)?;
-    let (start_date, end_date) = normalized.split_once('|').ok_or_else(|| {
-        AppError::InvalidArguments(format!("{command_label} expects `start|end`."))
-    })?;
-    Ok((start_date.to_string(), end_date.to_string()))
-}
-
 #[cfg(test)]
 mod tests {
     use std::path::Path;
 
-    use super::{
-        ReportExportPeriod, ReportFormat, ReportRenderPeriod, build_export_output_path,
-        build_export_render_request, build_render_request, normalize_export_name,
-    };
+    use crate::cli::{ReportExportPeriod, ReportFormat, ReportRenderPeriod};
+
+    use super::super::formats::{build_export_output_path, normalize_export_name};
+    use super::{build_export_render_request, build_render_request};
 
     #[test]
     fn normalize_month_accepts_compact_and_dashed_input() {
@@ -893,11 +467,9 @@ mod tests {
             &ReportFormat::Md,
         )
         .expect_err("non-recent as-of should fail");
-        assert!(
-            error
-                .to_string()
-                .contains("`--as-of` is supported only for `report render recent`")
-        );
+        assert!(error
+            .to_string()
+            .contains("`--as-of` is supported only for `report render recent`"));
     }
 
     #[test]

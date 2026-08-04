@@ -2,10 +2,10 @@ use crate::cli::{ReportExportArgs, ReportExportPeriod, ReportFormat};
 use crate::commands::handler::{CommandContext, CommandHandler};
 use crate::error::AppError;
 
-use super::support::{
+use super::formats::resolve_export_formats;
+use super::requests::{
     build_all_matching_export_request, build_recent_batch_export_request,
     build_single_export_request, parse_int_list, reject_argument_when_all, require_export_argument,
-    resolve_export_formats,
 };
 use super::{ReportSession, ReportSessionPort, RuntimeReportSessionPort};
 

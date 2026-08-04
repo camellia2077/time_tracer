@@ -9,6 +9,8 @@ client under `apps/cli/windows/rust/**`, hosted by `tracer_core.dll`.
 
 1. `docs/time_tracer/clients/windows_cli/README.md`
 2. `docs/time_tracer/clients/windows_cli/specs/STRUCTURE.md`
+3. `docs/time_tracer/clients/windows_cli/specs/REFACTORING.md` when changing
+   responsibility boundaries or refactoring CLI hotspots.
 
 Read `docs/time_tracer/core/shared/c_abi.md` when changing runtime bindings,
 symbol loading, or ABI payload consumption.

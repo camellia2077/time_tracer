@@ -3,6 +3,10 @@
 本文档按主命令组织 Windows Rust CLI。先看下面的命令索引，再进入对应主命令
 文档查看用途、数据影响范围和示例。
 
+重构要求与验收标准见
+[`specs/REFACTORING.md`](specs/REFACTORING.md)；结构和改动落点见
+[`specs/STRUCTURE.md`](specs/STRUCTURE.md)。
+
 ## 命令索引
 
 | 主命令 | 用途 | 文档 |
