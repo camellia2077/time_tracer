@@ -53,8 +53,8 @@ struct AliasDocumentCanonicalNode {
 class AliasDocumentParseError final : public std::runtime_error {
  public:
   AliasDocumentParseError(AliasDocumentSourceLocation source,
-                          std::vector<std::string> groups,
-                          std::string field, std::string message)
+                          std::vector<std::string> groups, std::string field,
+                          std::string message)
       : std::runtime_error(std::move(message)),
         source_(source),
         groups_(std::move(groups)),
@@ -108,7 +108,8 @@ inline auto ParseAliasDocument(const toml::table& table) -> AliasDocument {
     throw AliasDocumentParseError(
         parent_node == nullptr ? AliasDocumentSourceLocation{1U, 1U}
                                : AliasDocumentSource(parent_node->source()),
-        {}, "parent", "Canonical TOML must contain a non-empty `parent` string.");
+        {}, "parent",
+        "Canonical TOML must contain a non-empty `parent` string.");
   }
 
   const toml::node* canonical_node = table.get("canonical");
@@ -116,8 +117,9 @@ inline auto ParseAliasDocument(const toml::table& table) -> AliasDocument {
       canonical_node == nullptr ? nullptr : canonical_node->as_table();
   if (canonical == nullptr) {
     throw AliasDocumentParseError(
-        canonical_node == nullptr ? AliasDocumentSourceLocation{1U, 1U}
-                                  : AliasDocumentSource(canonical_node->source()),
+        canonical_node == nullptr
+            ? AliasDocumentSourceLocation{1U, 1U}
+            : AliasDocumentSource(canonical_node->source()),
         {}, "canonical", "Canonical TOML must contain a `canonical` table.");
   }
 
@@ -242,8 +244,8 @@ inline auto CollectAliasDocumentCanonicalNodes(const AliasDocument& document)
   return result;
 }
 
-inline auto ValidateAliasDocumentAliasUniqueness(
-    const AliasDocument& document) -> void {
+inline auto ValidateAliasDocumentAliasUniqueness(const AliasDocument& document)
+    -> void {
   std::vector<AliasDocumentAlias> seen;
   for (const auto& canonical_node :
        CollectAliasDocumentCanonicalNodes(document)) {

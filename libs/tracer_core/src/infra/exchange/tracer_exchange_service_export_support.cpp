@@ -25,14 +25,14 @@ auto ResolveEncryptOutputPath(const ResolveEncryptOutputPathRequest& request)
 auto CurrentUtcTimestampRfc3339() -> std::string {
   const auto kNow = std::chrono::system_clock::now();
   const std::time_t kRawTime = std::chrono::system_clock::to_time_t(kNow);
-  std::tm kUtcTime{};
+  std::tm utc_time{};
 #if defined(_WIN32)
-  gmtime_s(&kUtcTime, &kRawTime);
+  gmtime_s(&utc_time, &kRawTime);
 #else
-  gmtime_r(&kRawTime, &kUtcTime);
+  gmtime_r(&kRawTime, &utc_time);
 #endif
   std::ostringstream stream;
-  stream << std::put_time(&kUtcTime, "%Y-%m-%dT%H:%M:%SZ");
+  stream << std::put_time(&utc_time, "%Y-%m-%dT%H:%M:%SZ");
   return stream.str();
 }
 
@@ -126,16 +126,17 @@ auto CollectInputPayloadFilesFromPayloads(
               .generic_string();
       if (kNormalizedHint != kExpectedHint) {
         throw std::runtime_error(
-            "TXT payload hint must match canonical month headers yYYYY + mMM: " +
+            "TXT payload hint must match canonical month headers yYYYY + "
+            "mMM: " +
             payload_item.relative_path_hint + " -> expected " + kExpectedHint);
       }
     }
     if (const auto [it, inserted] =
             label_by_month.emplace(kHeaderInfo.month_key, kSourceLabel);
         !inserted) {
-      throw std::runtime_error(
-          "Duplicate month TXT payloads detected for " + kHeaderInfo.month_key +
-          ": " + it->second + " | " + kSourceLabel);
+      throw std::runtime_error("Duplicate month TXT payloads detected for " +
+                               kHeaderInfo.month_key + ": " + it->second +
+                               " | " + kSourceLabel);
     }
 
     payload_files.push_back(InputPayloadFile{

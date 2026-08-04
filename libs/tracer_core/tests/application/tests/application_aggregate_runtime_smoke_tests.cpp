@@ -67,7 +67,8 @@ class SmokePipelineWorkflow final
   }
   auto RunUpdateActivityRemarkAtomically(
       const tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest&)
-      -> tracer_core::core::dto::UpdateActivityRemarkAtomicallyResponse override {
+      -> tracer_core::core::dto::UpdateActivityRemarkAtomicallyResponse
+      override {
     return {.ok = true,
             .message = "remark: ok\nsync: ok",
             .operation_id = "smoke-remark-txn",
@@ -115,23 +116,27 @@ class SmokePipelineWorkflow final
   auto RunConvertTxtActivityNames(
       const tracer_core::core::dto::ConvertTxtActivityNamesRequest& request)
       -> tracer_core::core::dto::ConvertTxtActivityNamesResponse override {
-    return {.ok = true,
-            .converted_content = request.content,
-            .error_message = ""};
+    return {
+        .ok = true, .converted_content = request.content, .error_message = ""};
   }
   auto RunReplaceTxtCanonicalActivityNames(
-      const tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest& request)
-      -> tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse override {
-    return {.ok = true, .updated_content = request.content, .error_message = ""};
+      const tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest&
+          request)
+      -> tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse
+      override {
+    return {
+        .ok = true, .updated_content = request.content, .error_message = ""};
   }
   auto RunReplaceTxtAliasActivityNames(
-      const tracer_core::core::dto::ReplaceTxtAliasActivityNamesRequest& request)
+      const tracer_core::core::dto::ReplaceTxtAliasActivityNamesRequest&
+          request)
       -> tracer_core::core::dto::ReplaceTxtAliasActivityNamesResponse override {
-    return {.ok = true, .updated_content = request.content, .error_message = ""};
+    return {
+        .ok = true, .updated_content = request.content, .error_message = ""};
   }
-  auto InstallActiveConverterConfig(
-      const tracer::core::application::pipeline::
-          ActiveConverterConfigInstallRequest&) -> void override {}
+  auto InstallActiveConverterConfig(const tracer::core::application::pipeline::
+                                        ActiveConverterConfigInstallRequest&)
+      -> void override {}
 };
 
 class SmokeReportHandler final : public IReportHandler {
@@ -334,11 +339,10 @@ auto RunAggregateRuntimeSmoke(int& failures) -> void {
                  {.kind =
                       tracer_core::core::dto::TemporalSelectionKind::kSingleDay,
                   .date = "2026-03-10"},
-         .format = ReportFormat::kMarkdown});
-    Expect(
-        report_query_result.ok &&
-            report_query_result.content == "smoke-daily:2026-03-10",
-        "Aggregate runtime should dispatch report API.", failures);
+             .format = ReportFormat::kMarkdown});
+    Expect(report_query_result.ok &&
+               report_query_result.content == "smoke-daily:2026-03-10",
+           "Aggregate runtime should dispatch report API.", failures);
   } catch (const std::exception& exception) {
     ++failures;
     std::cerr << "[FAIL] Aggregate runtime smoke should construct and execute: "

@@ -70,7 +70,8 @@ namespace tracer::core::application::workflow {
 WorkflowHandler::WorkflowHandler(
     fs::path output_root_path,
     WorkflowHandler::ProcessedDataLoaderPtr processed_data_loader,
-    WorkflowHandler::TimeSheetRepositoryPtr time_sheet_repository,
+    WorkflowHandler::TimeSheetWriteRepositoryPtr time_sheet_write_repository,
+    WorkflowHandler::IngestRuntimeRepositoryPtr ingest_runtime_repository,
     WorkflowHandler::DatabaseHealthCheckerPtr database_health_checker,
     WorkflowHandler::ConverterConfigProviderPtr converter_config_provider,
     WorkflowHandler::IngestInputProviderPtr ingest_input_provider,
@@ -78,16 +79,17 @@ WorkflowHandler::WorkflowHandler(
     WorkflowHandler::ValidationIssueReporterPtr validation_issue_reporter)
     : output_root_path_(std::move(output_root_path)),
       processed_data_loader_(std::move(processed_data_loader)),
-      time_sheet_repository_(std::move(time_sheet_repository)),
+      time_sheet_write_repository_(std::move(time_sheet_write_repository)),
+      ingest_runtime_repository_(std::move(ingest_runtime_repository)),
       database_health_checker_(std::move(database_health_checker)),
       converter_config_provider_(std::move(converter_config_provider)),
       ingest_input_provider_(std::move(ingest_input_provider)),
       processed_data_storage_(std::move(processed_data_storage)),
       validation_issue_reporter_(std::move(validation_issue_reporter)) {
-  if (!processed_data_loader_ || !time_sheet_repository_ ||
-      !database_health_checker_ || !converter_config_provider_ ||
-      !ingest_input_provider_ || !processed_data_storage_ ||
-      !validation_issue_reporter_) {
+  if (!processed_data_loader_ || !time_sheet_write_repository_ ||
+      !ingest_runtime_repository_ || !database_health_checker_ ||
+      !converter_config_provider_ || !ingest_input_provider_ ||
+      !processed_data_storage_ || !validation_issue_reporter_) {
     throw std::invalid_argument(
         "WorkflowHandler dependencies must not be null.");
   }

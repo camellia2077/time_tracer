@@ -50,8 +50,8 @@ auto FormatOneDecimal(double value) -> std::string {
   return output;
 }
 
-auto FormatAverageOccurrenceCount(std::int64_t occurrence_count,
-                                  int avg_days) -> std::string {
+auto FormatAverageOccurrenceCount(std::int64_t occurrence_count, int avg_days)
+    -> std::string {
   if (avg_days <= 0) {
     return "0.00";
   }
@@ -105,10 +105,10 @@ class LatexFormattingStrategy : public reporting::IFormattingStrategy {
   }
 
   [[nodiscard]] auto FormatCategoryHeader(
-      const std::string& category_name, const std::string& /*formatted_duration*/,
-      double percentage, std::int64_t duration_seconds,
-      std::int64_t occurrence_count, int avg_days) const
-      -> std::string override {
+      const std::string& category_name,
+      const std::string& /*formatted_duration*/, double percentage,
+      std::int64_t duration_seconds, std::int64_t occurrence_count,
+      int avg_days) const -> std::string override {
     std::string output = FormatCategoryHeader(
         category_name, TimeFormatDuration(duration_seconds), percentage);
     if (occurrence_count > 0) {
@@ -133,15 +133,16 @@ class LatexFormattingStrategy : public reporting::IFormattingStrategy {
            TexUtils::EscapeLatex(formatted_duration) + "\n";
   }
 
-  [[nodiscard]] auto FormatTreeNode(
-      const std::string& project_name, const std::string& formatted_duration,
-      int /*indent_level*/, double percentage, std::int64_t duration_seconds,
-      std::int64_t occurrence_count, int avg_days) const
+  [[nodiscard]] auto FormatTreeNode(const std::string& project_name,
+                                    const std::string& formatted_duration,
+                                    int /*indent_level*/, double percentage,
+                                    std::int64_t duration_seconds,
+                                    std::int64_t occurrence_count,
+                                    int avg_days) const
       -> std::string override {
-    std::string output = "    \\item " +
-                         TexUtils::EscapeLatex(project_name) + ": " +
-                         TexUtils::EscapeLatex(formatted_duration) + " (" +
-                         FormatOneDecimal(percentage) + "\\%)\n";
+    std::string output = "    \\item " + TexUtils::EscapeLatex(project_name) +
+                         ": " + TexUtils::EscapeLatex(formatted_duration) +
+                         " (" + FormatOneDecimal(percentage) + "\\%)\n";
     if (occurrence_count > 0) {
       output += "        \\textit{Average: ";
       output += TexUtils::EscapeLatex(TimeFormatDuration(

@@ -201,7 +201,8 @@ auto ParseResponseEnvelope(ResponseEnvelopeParseArgs parse_args)
               .content = ReadOptionalString(payload, "content"),
               .report_hash_sha256 =
                   ReadOptionalStringValue(payload, "report_hash_sha256"),
-              .report_window_metadata = ReadOptionalReportWindowMetadata(payload),
+              .report_window_metadata =
+                  ReadOptionalReportWindowMetadata(payload),
           },
       .error = TransportError{},
   };

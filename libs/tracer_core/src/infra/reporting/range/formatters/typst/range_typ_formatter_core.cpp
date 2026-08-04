@@ -89,13 +89,13 @@ void RangeTypFormatter::FormatHeaderContent(std::string& report_stream,
   report_stream += "\n\n";
 
   if (data.actual_days > 0) {
-  report_stream += BuildBulletLine(
-      config_->GetTotalTimeLabel(),
-      TimeFormatDuration(data.total_duration, data.actual_days));
-  report_stream += "\n";
-  report_stream += BuildBulletLine(
-      config_->GetActivityCountLabel(),
-      FormatCountWithAverage(data.matched_record_count, data.requested_days));
+    report_stream += BuildBulletLine(
+        config_->GetTotalTimeLabel(),
+        TimeFormatDuration(data.total_duration, data.actual_days));
+    report_stream += "\n";
+    report_stream += BuildBulletLine(
+        config_->GetActivityCountLabel(),
+        FormatCountWithAverage(data.matched_record_count, data.requested_days));
     report_stream += "\n";
     report_stream += BuildBulletLine(config_->GetActualDaysLabel(),
                                      std::to_string(data.actual_days));

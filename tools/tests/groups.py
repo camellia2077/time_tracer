@@ -11,12 +11,11 @@ VERIFY_STACK_TESTS: tuple[str, ...] = (
     "tools.tests.platform.tidy.test_tidy_task_auto_fix_orchestrator",
     "tools.tests.platform.tidy.test_tidy_task_auto_fix_plan",
     "tools.tests.platform.tidy.test_tidy_task_auto_fix_rule_contract",
-    "tools.tests.platform.tidy.test_tidy_task_builder_split",
-    "tools.tests.platform.tidy.test_tidy_task_collectors",
+    "tools.tests.platform.tidy.test_tidy_structured_results",
     "tools.tests.platform.tidy.test_tidy_task_context",
-    "tools.tests.platform.tidy.test_tidy_task_log_contract",
+    "tools.tests.platform.tidy.test_tidy_task_contract",
     "tools.tests.platform.tidy.test_tidy_task_render",
-    "tools.tests.platform.tidy.test_tidy_step",
+    "tools.tests.platform.tidy.test_tidy_source_step",
     "tools.tests.verify.test_capability_smoke_profiles",
     "tools.tests.verify.test_verify_markdown_gate_runner",
     "tools.tests.verify.test_verify_profile_inference",
@@ -32,7 +31,7 @@ VERIFY_STACK_TESTS: tuple[str, ...] = (
     "tools.tests.run_cli.test_run_cli_dispatch_android",
     "tools.tests.run_cli.test_run_cli_dispatch_core_format",
     "tools.tests.run_cli.test_run_cli_dispatch_tidy_queue",
-    "tools.tests.run_cli.test_run_cli_dispatch_tidy_step",
+    "tools.tests.run_cli.test_run_cli_dispatch_tidy_source_step",
     "tools.tests.run_cli.test_run_cli_dispatch_tidy_task",
 )
 
@@ -47,12 +46,11 @@ PLATFORM_TESTS: tuple[str, ...] = (
     "tools.tests.platform.tidy.test_tidy_task_auto_fix_orchestrator",
     "tools.tests.platform.tidy.test_tidy_task_auto_fix_plan",
     "tools.tests.platform.tidy.test_tidy_task_auto_fix_rule_contract",
-    "tools.tests.platform.tidy.test_tidy_task_builder_split",
-    "tools.tests.platform.tidy.test_tidy_task_collectors",
+    "tools.tests.platform.tidy.test_tidy_structured_results",
     "tools.tests.platform.tidy.test_tidy_task_context",
-    "tools.tests.platform.tidy.test_tidy_task_log_contract",
+    "tools.tests.platform.tidy.test_tidy_task_contract",
     "tools.tests.platform.tidy.test_tidy_task_render",
-    "tools.tests.platform.tidy.test_tidy_step",
+    "tools.tests.platform.tidy.test_tidy_source_step",
 )
 
 VERIFY_TESTS: tuple[str, ...] = (
@@ -75,7 +73,7 @@ RUN_CLI_TESTS: tuple[str, ...] = (
     "tools.tests.run_cli.test_run_cli_dispatch_android",
     "tools.tests.run_cli.test_run_cli_dispatch_core_format",
     "tools.tests.run_cli.test_run_cli_dispatch_tidy_queue",
-    "tools.tests.run_cli.test_run_cli_dispatch_tidy_step",
+    "tools.tests.run_cli.test_run_cli_dispatch_tidy_source_step",
     "tools.tests.run_cli.test_run_cli_dispatch_tidy_task",
 )
 

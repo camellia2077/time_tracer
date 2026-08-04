@@ -198,12 +198,11 @@ auto EncryptBytesToFile(std::span<const std::uint8_t> plaintext_bytes,
                         const FileCryptoOptions& options = FileCryptoOptions{})
     -> FileCryptoResult;
 
-auto EncryptBytesToWriter(std::span<const std::uint8_t> plaintext_bytes,
-                          const FileCryptoWriteCallback& write_callback,
-                          std::string_view passphrase,
-                          const FileCryptoPathContext& path_context = {},
-                          const FileCryptoOptions& options = FileCryptoOptions{})
-    -> FileCryptoResult;
+auto EncryptBytesToWriter(
+    std::span<const std::uint8_t> plaintext_bytes,
+    const FileCryptoWriteCallback& write_callback, std::string_view passphrase,
+    const FileCryptoPathContext& path_context = {},
+    const FileCryptoOptions& options = FileCryptoOptions{}) -> FileCryptoResult;
 
 // Byte-level protection facade for callers that already constructed an
 // encoded package. The implementation intentionally reuses the existing
@@ -214,21 +213,19 @@ using EncodedBytesWriteCallback = FileCryptoWriteCallback;
 auto ProtectEncodedBytesToFile(
     std::span<const std::uint8_t> encoded_bytes,
     const std::filesystem::path& output_tracer_path,
-    std::string_view passphrase,
-    const FileCryptoPathContext& path_context = {},
+    std::string_view passphrase, const FileCryptoPathContext& path_context = {},
     const FileCryptoOptions& options = FileCryptoOptions{}) -> FileCryptoResult;
 
 auto ProtectEncodedBytesToWriter(
     std::span<const std::uint8_t> encoded_bytes,
     const EncodedBytesWriteCallback& write_callback,
-    std::string_view passphrase,
-    const FileCryptoPathContext& path_context = {},
+    std::string_view passphrase, const FileCryptoPathContext& path_context = {},
     const FileCryptoOptions& options = FileCryptoOptions{}) -> FileCryptoResult;
 
-auto DecryptFileToBytes(
-    const std::filesystem::path& input_tracer_path, std::string_view passphrase,
-    const FileCryptoPathContext& path_context = {},
-    const FileCryptoOptions& options = FileCryptoOptions{})
+auto DecryptFileToBytes(const std::filesystem::path& input_tracer_path,
+                        std::string_view passphrase,
+                        const FileCryptoPathContext& path_context = {},
+                        const FileCryptoOptions& options = FileCryptoOptions{})
     -> std::pair<FileCryptoResult, std::vector<std::uint8_t>>;
 
 auto EncryptDirectory(const std::filesystem::path& input_root_path,

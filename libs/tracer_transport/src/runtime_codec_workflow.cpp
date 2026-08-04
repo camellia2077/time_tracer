@@ -1,5 +1,6 @@
-#include "tracer/transport/runtime_codec.hpp"
+#include "tracer/transport/runtime_codec_workflow.hpp"
 
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 
@@ -227,20 +228,24 @@ auto DecodeUpdateActivityRemarkAtomicallyRequest(std::string_view request_json)
       !kPayload["logical_id"].is_number_integer()) {
     throw std::invalid_argument("field `logical_id` must be an integer.");
   }
-  const long long kLogicalId = kPayload["logical_id"].get<long long>();
+  const std::int64_t kLogicalId = kPayload["logical_id"].get<std::int64_t>();
   const auto kRemark = RequireStringField(kPayload, "remark");
-  const auto kPreferredTxtPath = TryReadStringField(kPayload, "preferred_txt_path");
+  const auto kPreferredTxtPath =
+      TryReadStringField(kPayload, "preferred_txt_path");
   const auto kDateCheckMode = TryReadStringField(kPayload, "date_check_mode");
   if (kTargetDateIso.HasError() || kRemark.HasError() ||
       kPreferredTxtPath.HasError() || kDateCheckMode.HasError()) {
-    const auto first_error = [&]() -> std::string {
-      for (const auto& issue : {kTargetDateIso.error, kRemark.error,
-                                kPreferredTxtPath.error, kDateCheckMode.error}) {
-        if (!issue.message.empty()) return issue.message;
+    const auto kFirstError = [&]() -> std::string {
+      for (const auto& issue :
+           {kTargetDateIso.error, kRemark.error, kPreferredTxtPath.error,
+            kDateCheckMode.error}) {
+        if (!issue.message.empty()) {
+          return issue.message;
+        }
       }
       return "invalid update activity remark request.";
     }();
-    throw std::invalid_argument(first_error);
+    throw std::invalid_argument(kFirstError);
   }
   UpdateActivityRemarkAtomicallyRequestPayload out{};
   out.target_date_iso = kTargetDateIso.value.value_or("");
@@ -252,7 +257,8 @@ auto DecodeUpdateActivityRemarkAtomicallyRequest(std::string_view request_json)
 }
 
 auto EncodeUpdateActivityRemarkAtomicallyRequest(
-    const UpdateActivityRemarkAtomicallyRequestPayload& request) -> std::string {
+    const UpdateActivityRemarkAtomicallyRequestPayload& request)
+    -> std::string {
   json payload = {
       {"target_date_iso", request.target_date_iso},
       {"logical_id", request.logical_id},
@@ -272,18 +278,22 @@ auto DecodeUpdateDayRemarkAtomicallyRequest(std::string_view request_json)
   const json kPayload = ParseRequestObject(request_json);
   const auto kTargetDateIso = RequireStringField(kPayload, "target_date_iso");
   const auto kRemark = RequireStringField(kPayload, "remark");
-  const auto kPreferredTxtPath = TryReadStringField(kPayload, "preferred_txt_path");
+  const auto kPreferredTxtPath =
+      TryReadStringField(kPayload, "preferred_txt_path");
   const auto kDateCheckMode = TryReadStringField(kPayload, "date_check_mode");
   if (kTargetDateIso.HasError() || kRemark.HasError() ||
       kPreferredTxtPath.HasError() || kDateCheckMode.HasError()) {
-    const auto first_error = [&]() -> std::string {
-      for (const auto& issue : {kTargetDateIso.error, kRemark.error,
-                                kPreferredTxtPath.error, kDateCheckMode.error}) {
-        if (!issue.message.empty()) return issue.message;
+    const auto kFirstError = [&]() -> std::string {
+      for (const auto& issue :
+           {kTargetDateIso.error, kRemark.error, kPreferredTxtPath.error,
+            kDateCheckMode.error}) {
+        if (!issue.message.empty()) {
+          return issue.message;
+        }
       }
       return "invalid update day remark request.";
     }();
-    throw std::invalid_argument(first_error);
+    throw std::invalid_argument(kFirstError);
   }
   return {
       .target_date_iso = kTargetDateIso.value.value_or(""),

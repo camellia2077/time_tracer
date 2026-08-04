@@ -29,11 +29,12 @@ void DisplaySummary(std::string& report_stream,
 
   if (data.actual_days > 0) {
     std::vector<TexCommonUtils::SummaryItem> items = {
-      {config->GetTotalTimeLabel(),
-       TexUtils::EscapeLatex(
-           TimeFormatDuration(data.total_duration, data.actual_days))},
-      {config->GetActivityCountLabel(),
-       FormatCountWithAverage(data.matched_record_count, data.requested_days)},
+        {config->GetTotalTimeLabel(),
+         TexUtils::EscapeLatex(
+             TimeFormatDuration(data.total_duration, data.actual_days))},
+        {config->GetActivityCountLabel(),
+         FormatCountWithAverage(data.matched_record_count,
+                                data.requested_days)},
         {config->GetActualDaysLabel(), std::to_string(data.actual_days)},
         {FormatBooleanCountLabel(config->GetStatusDaysLabel(),
                                  data.status_true_days),

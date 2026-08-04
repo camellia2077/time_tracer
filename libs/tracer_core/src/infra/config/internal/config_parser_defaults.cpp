@@ -98,7 +98,6 @@ void ParseSystemSettingsImpl(const toml::table& tbl, const fs::path& exe_path,
         TryReadTypedField<bool>(section, "save_processed_output",
                                 source_config_path, section_key, "a boolean")
             .value_or(false);
-
   };
 
   if (const toml::table* system_tbl =
@@ -147,7 +146,6 @@ void ParseCliDefaultsImpl(const toml::table& tbl, const fs::path& exe_path,
           *commands_tbl, "ingest", source_config_path, "commands")) {
     ParseIngestDefaults(*sub_tbl, source_config_path, config);
   }
-
 }
 
 auto ParseRuntimeConfigPaths(const toml::table& config_tbl,
@@ -160,10 +158,10 @@ auto ParseRuntimeConfigPaths(const toml::table& config_tbl,
     ThrowConfigFieldError(source_path, "converter",
                           "is required and must be a table.");
   }
-  const std::string main_config = RequireNonEmptyStringField(
+  const std::string kMainConfig = RequireNonEmptyStringField(
       *converter_tbl, "main_config", source_path, "converter");
   config.pipeline.converter_main_config_path =
-      NormalizeConfigRelativePath(config_dir, main_config);
+      NormalizeConfigRelativePath(config_dir, kMainConfig);
   EnsureFileExists(source_path, "converter.main_config",
                    config.pipeline.converter_main_config_path);
 
@@ -173,10 +171,11 @@ auto ParseRuntimeConfigPaths(const toml::table& config_tbl,
     ThrowConfigFieldError(source_path, "visualization",
                           "is required and must be a table.");
   }
-  const std::string heatmap = RequireNonEmptyStringField(
+  const std::string kHeatmap = RequireNonEmptyStringField(
       *visualization_tbl, "heatmap", source_path, "visualization");
-  const fs::path heatmap_path = NormalizeConfigRelativePath(config_dir, heatmap);
-  EnsureFileExists(source_path, "visualization.heatmap", heatmap_path);
+  const fs::path kHeatmapPath =
+      NormalizeConfigRelativePath(config_dir, kHeatmap);
+  EnsureFileExists(source_path, "visualization.heatmap", kHeatmapPath);
 
   const toml::table* reports_tbl =
       TryReadTableField(config_tbl, "reports", source_path, "");
@@ -184,7 +183,7 @@ auto ParseRuntimeConfigPaths(const toml::table& config_tbl,
     ThrowConfigFieldError(source_path, "reports",
                           "is required and must be a table.");
   }
-  const ReportPathSource report_source{
+  const ReportPathSource kReportSource{
       .config_dir = config_dir,
       .source_path = source_path,
   };
@@ -192,7 +191,7 @@ auto ParseRuntimeConfigPaths(const toml::table& config_tbl,
   if (const toml::table* typst_tbl =
           TryReadTableField(*reports_tbl, "typst", source_path, "reports")) {
     has_any_report_format = true;
-    LoadReportPathsFromTable(*typst_tbl, report_source, "reports.typst",
+    LoadReportPathsFromTable(*typst_tbl, kReportSource, "reports.typst",
                              config.reports.day_typ_config_path,
                              config.reports.month_typ_config_path,
                              config.reports.period_typ_config_path,
@@ -202,18 +201,18 @@ auto ParseRuntimeConfigPaths(const toml::table& config_tbl,
   if (const toml::table* latex_tbl =
           TryReadTableField(*reports_tbl, "latex", source_path, "reports")) {
     has_any_report_format = true;
-    LoadReportPathsFromTable(*latex_tbl, report_source, "reports.latex",
+    LoadReportPathsFromTable(*latex_tbl, kReportSource, "reports.latex",
                              config.reports.day_tex_config_path,
                              config.reports.month_tex_config_path,
                              config.reports.period_tex_config_path,
                              config.reports.week_tex_config_path,
                              config.reports.year_tex_config_path);
   }
-  if (const toml::table* markdown_tbl = TryReadTableField(
-          *reports_tbl, "markdown", source_path, "reports")) {
+  if (const toml::table* markdown_tbl =
+          TryReadTableField(*reports_tbl, "markdown", source_path, "reports")) {
     has_any_report_format = true;
     LoadReportPathsFromTable(
-        *markdown_tbl, report_source, "reports.markdown",
+        *markdown_tbl, kReportSource, "reports.markdown",
         config.reports.day_md_config_path, config.reports.month_md_config_path,
         config.reports.period_md_config_path,
         config.reports.week_md_config_path, config.reports.year_md_config_path);

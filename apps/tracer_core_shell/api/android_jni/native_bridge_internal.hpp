@@ -13,7 +13,7 @@
 
 #include "api/c_api/tracer_core_c_api.h"
 #include "tracer/transport/envelope.hpp"
-#include "tracer/transport/runtime_codec.hpp"
+#include "tracer/transport/envelope.hpp"
 
 namespace tracer_core::api::android::bridge_internal {
 

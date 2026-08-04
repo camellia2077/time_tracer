@@ -1,9 +1,7 @@
 #include "application/use_cases/report_api.hpp"
 
-#include <chrono>
 #include <exception>
 #include <filesystem>
-#include <fstream>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -12,7 +10,7 @@
 
 #include "application/use_cases/core_api_failure.hpp"
 #include "application/use_cases/report_api_support.hpp"
-#include "domain/utils/time_utils.hpp"
+#include "application/use_cases/report_query_support.hpp"
 #include "shared/types/reporting_errors.hpp"
 #include "shared/utils/period_utils.hpp"
 
@@ -44,491 +42,42 @@ namespace fs = std::filesystem;
 
 constexpr int kPeriodSeparatorLength = 40;
 
-struct RecentSelection {
-  int days = 0;
-  std::optional<std::string> anchor_date;
-};
-
-auto BuildTemporalStructuredReportFailure(
-    std::string_view operation, ReportDisplayMode display_mode,
-    TemporalSelectionKind selection_kind, std::string_view details)
-    -> TemporalStructuredReportOutput {
-  return {
-      .ok = false,
-      .display_mode = display_mode,
-      .selection_kind = selection_kind,
-      .report = DailyReportData{},
-      .error_message = core_api_failure::BuildErrorMessage(operation, details),
-  };
-}
-
-auto BuildTemporalStructuredReportFailure(
-    std::string_view operation,
-    const TemporalStructuredReportQueryRequest& request,
-    std::string_view details) -> TemporalStructuredReportOutput {
-  return BuildTemporalStructuredReportFailure(operation, request.display_mode,
-                                              request.selection.kind, details);
-}
-
-auto BuildTemporalStructuredReportFailure(
-    std::string_view operation,
-    const TemporalStructuredReportQueryRequest& request,
-    const std::exception& exception) -> TemporalStructuredReportOutput {
-  return BuildTemporalStructuredReportFailure(operation, request,
-                                              exception.what());
-}
-
-auto BuildTemporalTargetsFailure(std::string_view operation,
-                                 ReportDisplayMode display_mode,
-                                 std::string_view details)
-    -> TemporalReportTargetsOutput {
-  return {
-      .ok = false,
-      .display_mode = display_mode,
-      .items = {},
-      .error_message = core_api_failure::BuildErrorMessage(operation, details),
-  };
-}
-
-auto BuildWindowMetadata(const PeriodReportData& report)
-    -> tracer_core::core::dto::ReportWindowMetadata {
-  return {
-      .has_records = report.has_records,
-      .matched_day_count = report.matched_day_count,
-      .matched_record_count = report.matched_record_count,
-      .start_date = report.start_date,
-      .end_date = report.end_date,
-      .requested_days = report.requested_days,
-  };
-}
-
-auto CopyRangeFields(const RangeReportData& source, RangeReportData& target)
-    -> void {
-  target.range_label = source.range_label;
-  target.start_date = source.start_date;
-  target.end_date = source.end_date;
-  target.has_records = source.has_records;
-  target.matched_day_count = source.matched_day_count;
-  target.matched_record_count = source.matched_record_count;
-  target.requested_days = source.requested_days;
-  target.total_duration = source.total_duration;
-  target.actual_days = source.actual_days;
-  target.status_true_days = source.status_true_days;
-  target.exercise_true_days = source.exercise_true_days;
-  target.cardio_true_days = source.cardio_true_days;
-  target.anaerobic_true_days = source.anaerobic_true_days;
-  target.is_valid = source.is_valid;
-  target.project_stats = source.project_stats;
-  target.project_tree = source.project_tree;
-}
-
-auto WrapMonthlyReport(const PeriodReportData& source) -> MonthlyReportData {
-  MonthlyReportData out;
-  CopyRangeFields(source, out);
-  if (out.range_label.empty() && out.start_date.size() >= 7U) {
-    out.range_label = out.start_date.substr(0, 7);
-  }
-  return out;
-}
-
-auto WrapWeeklyReport(const PeriodReportData& source) -> WeeklyReportData {
-  WeeklyReportData out;
-  CopyRangeFields(source, out);
-  if (out.range_label.empty() && !out.start_date.empty()) {
-    out.range_label = FormatIsoWeek(IsoWeekFromDate(out.start_date));
-  }
-  return out;
-}
-
-auto WrapYearlyReport(const PeriodReportData& source) -> YearlyReportData {
-  YearlyReportData out;
-  CopyRangeFields(source, out);
-  if (out.range_label.empty() && out.start_date.size() >= 4U) {
-    out.range_label = out.start_date.substr(0, 4);
-  }
-  return out;
-}
-
-auto ToPeriodReport(const RangeReportData& source) -> PeriodReportData {
-  PeriodReportData out;
-  CopyRangeFields(source, out);
-  return out;
-}
-
-auto FormatTemporalStructuredReport(
-    const TemporalStructuredReportOutput& output, ReportFormat format,
-    std::string_view locale,
-    tracer_core::application::ports::IReportDtoFormatter& formatter)
-    -> TextOutput {
-  switch (output.display_mode) {
-    case ReportDisplayMode::kDay: {
-      const auto* report = std::get_if<DailyReportData>(&output.report);
-      if (report == nullptr) {
-        return core_api_failure::BuildTextFailure(
-            "RunTemporalReportQuery",
-            "Temporal structured report kind/data mismatch: day.");
-      }
-      return {.ok = true,
-              .content = formatter.FormatDailyLocalized(*report, format, locale),
-              .error_message = ""};
-    }
-    case ReportDisplayMode::kMonth: {
-      const auto* report = std::get_if<PeriodReportData>(&output.report);
-      if (report == nullptr) {
-        return core_api_failure::BuildTextFailure(
-            "RunTemporalReportQuery",
-            "Temporal structured report kind/data mismatch: month.");
-      }
-      return {.ok = true,
-              .content = formatter.FormatMonthlyLocalized(
-                  WrapMonthlyReport(*report), format, locale),
-              .error_message = ""};
-    }
-    case ReportDisplayMode::kWeek: {
-      const auto* report = std::get_if<PeriodReportData>(&output.report);
-      if (report == nullptr) {
-        return core_api_failure::BuildTextFailure(
-            "RunTemporalReportQuery",
-            "Temporal structured report kind/data mismatch: week.");
-      }
-      return {.ok = true,
-              .content = formatter.FormatWeeklyLocalized(
-                  WrapWeeklyReport(*report), format, locale),
-              .error_message = ""};
-    }
-    case ReportDisplayMode::kYear: {
-      const auto* report = std::get_if<PeriodReportData>(&output.report);
-      if (report == nullptr) {
-        return core_api_failure::BuildTextFailure(
-            "RunTemporalReportQuery",
-            "Temporal structured report kind/data mismatch: year.");
-      }
-      return {.ok = true,
-              .content = formatter.FormatYearlyLocalized(
-                  WrapYearlyReport(*report), format, locale),
-              .error_message = ""};
-    }
-    case ReportDisplayMode::kRecent:
-    case ReportDisplayMode::kRange: {
-      const auto* report = std::get_if<PeriodReportData>(&output.report);
-      if (report == nullptr) {
-        return core_api_failure::BuildTextFailure(
-            "RunTemporalReportQuery",
-            "Temporal structured report kind/data mismatch: period.");
-      }
-      return {.ok = true,
-              .content = formatter.FormatPeriodLocalized(*report, format, locale),
-              .error_message = "",
-              .report_window_metadata = BuildWindowMetadata(*report)};
-    }
-  }
-
-  return core_api_failure::BuildTextFailure(
-      "RunTemporalReportQuery",
-      "Unhandled temporal structured report display mode.");
-}
-
-auto NormalizeDateArgument(std::string_view argument) -> std::string {
-  return NormalizeToDateFormat(std::string(argument));
-}
-
-auto NormalizeMonthArgument(std::string_view argument) -> std::string {
-  return NormalizeToMonthFormat(std::string(argument));
-}
-
-auto ParseIsoDate(std::string_view value) -> std::chrono::sys_days {
-  const std::string normalized = NormalizeDateArgument(value);
-  const int year = std::stoi(normalized.substr(0, 4));
-  const unsigned month =
-      static_cast<unsigned>(std::stoi(normalized.substr(5, 2)));
-  const unsigned day = static_cast<unsigned>(std::stoi(normalized.substr(8, 2)));
-  const std::chrono::year_month_day ymd{
-      std::chrono::year(year),
-      std::chrono::month(month),
-      std::chrono::day(day),
-  };
-  if (!ymd.ok()) {
-    throw std::invalid_argument("Invalid ISO date: " + normalized);
-  }
-  return std::chrono::sys_days(ymd);
-}
-
-auto FormatIsoDate(std::chrono::sys_days day) -> std::string {
-  const std::chrono::year_month_day ymd(day);
-  std::ostringstream out;
-  out << static_cast<int>(ymd.year()) << '-';
-  const unsigned month = static_cast<unsigned>(ymd.month());
-  if (month < 10U) {
-    out << '0';
-  }
-  out << month << '-';
-  const unsigned day_number = static_cast<unsigned>(ymd.day());
-  if (day_number < 10U) {
-    out << '0';
-  }
-  out << day_number;
-  return out.str();
-}
-
-auto ResolveMonthRange(std::string_view month_value) -> TemporalSelectionPayload {
-  const std::string normalized = NormalizeMonthArgument(month_value);
-  if (normalized.size() != 7U) {
-    throw std::invalid_argument("Month argument must normalize to YYYY-MM.");
-  }
-  const int year = std::stoi(normalized.substr(0, 4));
-  const unsigned month =
-      static_cast<unsigned>(std::stoi(normalized.substr(5, 2)));
-  const auto last_day = std::chrono::year_month_day_last(
-      std::chrono::year(year),
-      std::chrono::month_day_last(std::chrono::month(month)));
-  std::ostringstream end_date;
-  end_date << year << '-';
-  if (month < 10U) {
-    end_date << '0';
-  }
-  end_date << month << '-';
-  const unsigned last_day_number = static_cast<unsigned>(last_day.day());
-  if (last_day_number < 10U) {
-    end_date << '0';
-  }
-  end_date << last_day_number;
-  return {
-      .kind = TemporalSelectionKind::kDateRange,
-      .start_date = normalized + "-01",
-      .end_date = end_date.str(),
-  };
-}
-
-auto ResolveWeekRange(std::string_view week_value) -> TemporalSelectionPayload {
-  IsoWeek week{};
-  if (!ParseIsoWeek(week_value, week)) {
-    throw std::invalid_argument(
-        "Week argument must be in ISO week format (YYYY-Www or YYYYWww).");
-  }
-  return {
-      .kind = TemporalSelectionKind::kDateRange,
-      .start_date = IsoWeekStartDate(week),
-      .end_date = IsoWeekEndDate(week),
-  };
-}
-
-auto ResolveYearRange(std::string_view year_value) -> TemporalSelectionPayload {
-  int year = 0;
-  if (!ParseGregorianYear(year_value, year)) {
-    throw std::invalid_argument("Year argument must be YYYY.");
-  }
-  return {
-      .kind = TemporalSelectionKind::kDateRange,
-      .start_date = std::to_string(year) + "-01-01",
-      .end_date = std::to_string(year) + "-12-31",
-  };
-}
-
-auto RequireSingleDaySelection(const TemporalSelectionPayload& selection)
-    -> std::string {
-  if (selection.kind != TemporalSelectionKind::kSingleDay) {
-    throw tracer_core::common::ReportingContractError(
-        "Temporal selection must be single_day for day display mode.",
-        "reporting.invalid_selection", "reporting",
-        {"Provide a single-day temporal selection for day reports."});
-  }
-  if (selection.anchor_date.has_value()) {
-    throw tracer_core::common::ReportingContractError(
-        "anchor_date is only supported for recent_days selection.",
-        "reporting.invalid_selection", "reporting",
-        {"Remove anchor_date or use recent display mode with recent_days."});
-  }
-  return NormalizeDateArgument(selection.date);
-}
-
-auto RequireDateRangeSelection(const TemporalSelectionPayload& selection)
-    -> report_api_support::DateRangeArgument {
-  if (selection.kind != TemporalSelectionKind::kDateRange) {
-    throw tracer_core::common::ReportingContractError(
-        "Temporal selection must be date_range for this display mode.",
-        "reporting.invalid_selection", "reporting",
-        {"Provide a date-range temporal selection."});
-  }
-  if (selection.anchor_date.has_value()) {
-    throw tracer_core::common::ReportingContractError(
-        "anchor_date is only supported for recent_days selection.",
-        "reporting.invalid_selection", "reporting",
-        {"Remove anchor_date or use recent display mode with recent_days."});
-  }
-  return report_api_support::ParseRangeArgument(selection.start_date + "|" +
-                                                selection.end_date);
-}
-
-auto RequireRecentSelection(const TemporalSelectionPayload& selection)
-    -> RecentSelection {
-  if (selection.kind != TemporalSelectionKind::kRecentDays) {
-    throw tracer_core::common::ReportingContractError(
-        "Temporal selection must be recent_days for recent display mode.",
-        "reporting.invalid_selection", "reporting",
-        {"Provide a recent-days temporal selection for recent reports."});
-  }
-
-  RecentSelection out{
-      .days = report_api_support::ParseRecentDaysArgument(
-          std::to_string(selection.days)),
-      .anchor_date = std::nullopt,
-  };
-  if (selection.anchor_date.has_value() && !selection.anchor_date->empty()) {
-    out.anchor_date = NormalizeDateArgument(*selection.anchor_date);
-  }
-  return out;
-}
-
-auto ResolveAnchoredRecentReport(
-    tracer_core::application::ports::IReportDataQueryService& service,
-    const RecentSelection& selection) -> PeriodReportData {
-  const auto anchor_day = ParseIsoDate(*selection.anchor_date);
-  const auto start_day =
-      anchor_day - std::chrono::days(selection.days - 1);
-  PeriodReportData report =
-      service.QueryRange(FormatIsoDate(start_day), FormatIsoDate(anchor_day));
-  // Anchored recent reuses the fixed-window range fetch, then restores recent
-  // metadata so formatting/export still behaves like recent instead of range.
-  report.range_label = std::to_string(selection.days) + " days";
-  report.start_date = FormatIsoDate(start_day);
-  report.end_date = FormatIsoDate(anchor_day);
-  report.requested_days = selection.days;
-  return report;
-}
-
-auto ExtensionForFormat(ReportFormat format) -> std::string_view {
-  switch (format) {
-    case ReportFormat::kMarkdown:
-      return ".md";
-    case ReportFormat::kLaTeX:
-      return ".tex";
-    case ReportFormat::kTyp:
-      return ".typ";
-  }
-  throw std::invalid_argument("Unsupported report format.");
-}
-
-auto DirectoryForFormat(ReportFormat format) -> std::string_view {
-  switch (format) {
-    case ReportFormat::kMarkdown:
-      return "markdown";
-    case ReportFormat::kLaTeX:
-      return "latex";
-    case ReportFormat::kTyp:
-      return "typ";
-  }
-  throw std::invalid_argument("Unsupported report format.");
-}
-
-auto ShouldSkipExportWrite(std::string_view content) -> bool {
-  return content.empty() ||
-         content.find("No time records") != std::string_view::npos;
-}
-
-void WriteUtf8File(const fs::path& output_path, std::string_view content) {
-  const fs::path parent = output_path.parent_path();
-  if (!parent.empty()) {
-    fs::create_directories(parent);
-  }
-
-  std::ofstream file(output_path, std::ios::binary | std::ios::trunc);
-  if (!file.is_open()) {
-    throw tracer_core::common::ReportingContractError(
-        "Unable to open report export file: " + output_path.string(),
-        "export.write.failed", "export",
-        {"Check that the export output directory is writable."});
-  }
-  file.write(content.data(), static_cast<std::streamsize>(content.size()));
-  if (file.fail()) {
-    throw tracer_core::common::ReportingContractError(
-        "Failed to write report export file: " + output_path.string(),
-        "export.write.failed", "export",
-        {"Check that the export output directory is writable."});
-  }
-}
-
-void WriteExportFileIfNeeded(const fs::path& output_path,
-                             std::string_view content) {
-  if (ShouldSkipExportWrite(content)) {
-    return;
-  }
-  WriteUtf8File(output_path, content);
-}
-
-auto BuildDayPath(const fs::path& export_root, ReportFormat format,
-                  std::string_view date) -> fs::path {
-  const fs::path base_dir = export_root / DirectoryForFormat(format) / "day";
-  if (date.size() == 10U) {
-    return base_dir / std::string(date.substr(0, 4)) /
-           std::string(date.substr(5, 2)) /
-           (std::string(date) + std::string(ExtensionForFormat(format)));
-  }
-  return base_dir /
-         (std::string(date) + std::string(ExtensionForFormat(format)));
-}
-
-auto BuildMonthPath(const fs::path& export_root, ReportFormat format,
-                    std::string_view month) -> fs::path {
-  return export_root / DirectoryForFormat(format) / "month" /
-         (std::string(month) + std::string(ExtensionForFormat(format)));
-}
-
-auto BuildRecentPath(const fs::path& export_root, ReportFormat format, int days)
-    -> fs::path {
-  return export_root / DirectoryForFormat(format) / "recent" /
-         ("last_" + std::to_string(days) + "_days_report" +
-          std::string(ExtensionForFormat(format)));
-}
-
-auto BuildWeekPath(const fs::path& export_root, ReportFormat format,
-                   std::string_view iso_week) -> fs::path {
-  return export_root / DirectoryForFormat(format) / "week" /
-         (std::string(iso_week) + std::string(ExtensionForFormat(format)));
-}
-
-auto BuildYearPath(const fs::path& export_root, ReportFormat format,
-                   std::string_view year) -> fs::path {
-  return export_root / DirectoryForFormat(format) / "year" /
-         (std::string(year) + std::string(ExtensionForFormat(format)));
-}
-
-auto BuildRangePath(const fs::path& export_root, ReportFormat format,
-                    std::string_view start_date, std::string_view end_date)
-    -> fs::path {
-  return export_root / DirectoryForFormat(format) / "range" /
-         (std::string(start_date) + "_" + std::string(end_date) +
-          std::string(ExtensionForFormat(format)));
-}
-
 auto ResolveExportPath(const TemporalReportExportRequest& request,
                        const TemporalSelectionPayload& selection) -> fs::path {
-  const fs::path export_root = fs::absolute(request.output_root_path);
+  const fs::path kExportRoot = fs::absolute(request.output_root_path);
   switch (request.display_mode) {
     case ReportDisplayMode::kDay:
-      return BuildDayPath(export_root, request.format,
-                          RequireSingleDaySelection(selection));
+      return report_api_support::BuildDayPath(
+          kExportRoot, request.format,
+          report_query_support::RequireSingleDaySelection(selection));
     case ReportDisplayMode::kMonth: {
-      const auto range = RequireDateRangeSelection(selection);
-      return BuildMonthPath(export_root, request.format,
-                            range.start_date.substr(0, 7));
+      const auto kRange =
+          report_query_support::RequireDateRangeSelection(selection);
+      return report_api_support::BuildMonthPath(kExportRoot, request.format,
+                                                kRange.start_date.substr(0, 7));
     }
     case ReportDisplayMode::kRecent:
-      return BuildRecentPath(export_root, request.format,
-                             RequireRecentSelection(selection).days);
+      return report_api_support::BuildRecentPath(
+          kExportRoot, request.format,
+          report_query_support::RequireRecentSelection(selection).days);
     case ReportDisplayMode::kWeek: {
-      const auto range = RequireDateRangeSelection(selection);
-      return BuildWeekPath(export_root, request.format,
-                           FormatIsoWeek(IsoWeekFromDate(range.start_date)));
+      const auto kRange =
+          report_query_support::RequireDateRangeSelection(selection);
+      return report_api_support::BuildWeekPath(
+          kExportRoot, request.format,
+          FormatIsoWeek(IsoWeekFromDate(kRange.start_date)));
     }
     case ReportDisplayMode::kYear: {
-      const auto range = RequireDateRangeSelection(selection);
-      return BuildYearPath(export_root, request.format,
-                           range.start_date.substr(0, 4));
+      const auto kRange =
+          report_query_support::RequireDateRangeSelection(selection);
+      return report_api_support::BuildYearPath(kExportRoot, request.format,
+                                               kRange.start_date.substr(0, 4));
     }
     case ReportDisplayMode::kRange: {
-      const auto range = RequireDateRangeSelection(selection);
-      return BuildRangePath(export_root, request.format, range.start_date,
-                            range.end_date);
+      const auto kRange =
+          report_query_support::RequireDateRangeSelection(selection);
+      return report_api_support::BuildRangePath(
+          kExportRoot, request.format, kRange.start_date, kRange.end_date);
     }
   }
   throw std::invalid_argument("Unhandled export display mode.");
@@ -538,11 +87,10 @@ auto RenderTemporalReportForExport(ReportApi& api,
                                    const TemporalReportExportRequest& request,
                                    const TemporalSelectionPayload& selection)
     -> TextOutput {
-  return api.RunTemporalReportQuery(
-      {.display_mode = request.display_mode,
-       .selection = selection,
-       .format = request.format,
-       .locale = request.locale});
+  return api.RunTemporalReportQuery({.display_mode = request.display_mode,
+                                     .selection = selection,
+                                     .format = request.format,
+                                     .locale = request.locale});
 }
 
 void RequireExportScopeRules(const TemporalReportExportRequest& request) {
@@ -604,13 +152,13 @@ auto BuildSelectionFromTarget(ReportDisplayMode display_mode,
   switch (display_mode) {
     case ReportDisplayMode::kDay:
       return {.kind = TemporalSelectionKind::kSingleDay,
-              .date = NormalizeDateArgument(target)};
+              .date = report_query_support::NormalizeDateArgument(target)};
     case ReportDisplayMode::kMonth:
-      return ResolveMonthRange(target);
+      return report_query_support::ResolveMonthRange(target);
     case ReportDisplayMode::kWeek:
-      return ResolveWeekRange(target);
+      return report_query_support::ResolveWeekRange(target);
     case ReportDisplayMode::kYear:
-      return ResolveYearRange(target);
+      return report_query_support::ResolveYearRange(target);
     case ReportDisplayMode::kRange:
     case ReportDisplayMode::kRecent:
       break;
@@ -627,8 +175,8 @@ ReportApi::ReportApi(IReportHandler& report_handler,
       report_data_query_service_(std::move(report_data_query_service)),
       report_dto_formatter_(std::move(report_dto_formatter)) {}
 
-auto ReportApi::RunTemporalReportQuery(const TemporalReportQueryRequest& request)
-    -> TextOutput {
+auto ReportApi::RunTemporalReportQuery(
+    const TemporalReportQueryRequest& request) -> TextOutput {
   try {
     if (!report_data_query_service_ || !report_dto_formatter_) {
       return core_api_failure::BuildTextFailure(
@@ -636,17 +184,16 @@ auto ReportApi::RunTemporalReportQuery(const TemporalReportQueryRequest& request
           "Report data query service and formatter are required.");
     }
 
-    const auto structured = RunTemporalStructuredReportQuery(
+    const auto kStructured = RunTemporalStructuredReportQuery(
         {.display_mode = request.display_mode, .selection = request.selection});
-    if (!structured.ok) {
+    if (!kStructured.ok) {
       auto failure = core_api_failure::BuildTextFailure(
-          "RunTemporalReportQuery", structured.error_message);
-      failure.error_contract = structured.error_contract;
+          "RunTemporalReportQuery", kStructured.error_message);
+      failure.error_contract = kStructured.error_contract;
       return failure;
     }
-    return FormatTemporalStructuredReport(structured, request.format,
-                                          request.locale,
-                                          *report_dto_formatter_);
+    return report_query_support::FormatTemporalStructuredReport(
+        kStructured, request.format, request.locale, *report_dto_formatter_);
   } catch (const tracer_core::common::ReportingContractError& error) {
     auto failure =
         core_api_failure::BuildTextFailure("RunTemporalReportQuery", error);
@@ -665,7 +212,7 @@ auto ReportApi::RunTemporalStructuredReportQuery(
     -> TemporalStructuredReportOutput {
   try {
     if (!report_data_query_service_) {
-      return BuildTemporalStructuredReportFailure(
+      return report_query_support::BuildTemporalStructuredReportFailure(
           "RunTemporalStructuredReportQuery", request,
           "Report data query service is not configured.");
     }
@@ -683,7 +230,8 @@ auto ReportApi::RunTemporalStructuredReportQuery(
                 .display_mode = request.display_mode,
                 .selection_kind = request.selection.kind,
                 .report = report_data_query_service_->QueryDaily(
-                    RequireSingleDaySelection(request.selection)),
+                    report_query_support::RequireSingleDaySelection(
+                        request.selection)),
                 .error_message = ""};
       case TemporalSelectionKind::kDateRange: {
         if (request.display_mode != ReportDisplayMode::kWeek &&
@@ -696,28 +244,31 @@ auto ReportApi::RunTemporalStructuredReportQuery(
               "reporting.invalid_selection", "reporting",
               {"Use single_day for day or recent_days for recent."});
         }
-        const auto range = RequireDateRangeSelection(request.selection);
+        const auto kRange =
+            report_query_support::RequireDateRangeSelection(request.selection);
         PeriodReportData report{};
         switch (request.display_mode) {
           case ReportDisplayMode::kMonth:
             // date_range is the canonical contract, but month/week/year still
             // resolve through target-based queries so missing-target behavior
             // and formatter semantics stay aligned with their display modes.
-            report = ToPeriodReport(
+            report = report_query_support::ToPeriodReport(
                 report_data_query_service_->QueryMonthly(
-                    range.start_date.substr(0, 7)));
+                    kRange.start_date.substr(0, 7)));
             break;
           case ReportDisplayMode::kWeek:
-            report = ToPeriodReport(report_data_query_service_->QueryWeekly(
-                FormatIsoWeek(IsoWeekFromDate(range.start_date))));
+            report = report_query_support::ToPeriodReport(
+                report_data_query_service_->QueryWeekly(
+                    FormatIsoWeek(IsoWeekFromDate(kRange.start_date))));
             break;
           case ReportDisplayMode::kYear:
-            report = ToPeriodReport(report_data_query_service_->QueryYearly(
-                range.start_date.substr(0, 4)));
+            report = report_query_support::ToPeriodReport(
+                report_data_query_service_->QueryYearly(
+                    kRange.start_date.substr(0, 4)));
             break;
           case ReportDisplayMode::kRange:
-            report = report_data_query_service_->QueryRange(range.start_date,
-                                                            range.end_date);
+            report = report_data_query_service_->QueryRange(kRange.start_date,
+                                                            kRange.end_date);
             break;
           case ReportDisplayMode::kDay:
           case ReportDisplayMode::kRecent:
@@ -738,12 +289,13 @@ auto ReportApi::RunTemporalStructuredReportQuery(
               {"Use date_range for week/month/year/range or single_day for "
                "day."});
         }
-        const auto recent = RequireRecentSelection(request.selection);
-        PeriodReportData report = recent.anchor_date.has_value()
-                                      ? ResolveAnchoredRecentReport(
-                                            *report_data_query_service_, recent)
-                                      : report_data_query_service_->QueryPeriod(
-                                            recent.days);
+        const auto kRecent =
+            report_query_support::RequireRecentSelection(request.selection);
+        PeriodReportData report =
+            kRecent.anchor_date.has_value()
+                ? report_query_support::ResolveAnchoredRecentReport(
+                      *report_data_query_service_, kRecent)
+                : report_data_query_service_->QueryPeriod(kRecent.days);
         return {.ok = true,
                 .display_mode = request.display_mode,
                 .selection_kind = request.selection.kind,
@@ -752,19 +304,19 @@ auto ReportApi::RunTemporalStructuredReportQuery(
       }
     }
 
-    return BuildTemporalStructuredReportFailure(
+    return report_query_support::BuildTemporalStructuredReportFailure(
         "RunTemporalStructuredReportQuery", request,
         "Unhandled temporal selection kind.");
   } catch (const tracer_core::common::ReportingContractError& error) {
-    auto failure = BuildTemporalStructuredReportFailure(
+    auto failure = report_query_support::BuildTemporalStructuredReportFailure(
         "RunTemporalStructuredReportQuery", request, error);
     tracer_core::common::ApplyReportingContract(failure, error);
     return failure;
   } catch (const std::exception& exception) {
-    return BuildTemporalStructuredReportFailure(
+    return report_query_support::BuildTemporalStructuredReportFailure(
         "RunTemporalStructuredReportQuery", request, exception);
   } catch (...) {
-    return BuildTemporalStructuredReportFailure(
+    return report_query_support::BuildTemporalStructuredReportFailure(
         "RunTemporalStructuredReportQuery", request,
         "Unknown non-standard exception.");
   }
@@ -774,13 +326,13 @@ auto ReportApi::RunPeriodBatchQuery(const PeriodBatchQueryRequest& request)
     -> TextOutput {
   try {
     if (report_data_query_service_ && report_dto_formatter_) {
-      const auto structured =
+      const auto kStructured =
           RunStructuredPeriodBatchQuery({.kDays = request.days_list});
-      if (!structured.ok && structured.items.empty()) {
-        if (!structured.error_message.empty()) {
+      if (!kStructured.ok && kStructured.items.empty()) {
+        if (!kStructured.error_message.empty()) {
           return {.ok = false,
                   .content = "",
-                  .error_message = structured.error_message};
+                  .error_message = kStructured.error_message};
         }
         return core_api_failure::BuildTextFailure(
             "RunPeriodBatchQuery",
@@ -788,12 +340,12 @@ auto ReportApi::RunPeriodBatchQuery(const PeriodBatchQueryRequest& request)
       }
 
       std::ostringstream output;
-      for (size_t index = 0; index < structured.items.size(); ++index) {
+      for (size_t index = 0; index < kStructured.items.size(); ++index) {
         if (index > 0) {
           output << "\n" << std::string(kPeriodSeparatorLength, '-') << "\n";
         }
 
-        const auto& item = structured.items[index];
+        const auto& item = kStructured.items[index];
         if (!item.ok || !item.report.has_value()) {
           output << report_api_support::BuildPeriodBatchErrorLine(
               item.kDays, item.error_message);
@@ -840,15 +392,15 @@ auto ReportApi::RunStructuredPeriodBatchQuery(
         .ok = true, .items = {}, .error_message = ""};
     output.items.reserve(request.kDays.size());
 
-    for (const int days : request.kDays) {
+    for (const int kDays : request.kDays) {
       StructuredPeriodBatchItem item{
-          .kDays = days,
+          .kDays = kDays,
           .ok = true,
           .report = std::nullopt,
           .error_message = "",
       };
       try {
-        item.report = report_data_query_service_->QueryPeriod(days);
+        item.report = report_data_query_service_->QueryPeriod(kDays);
       } catch (const std::exception& exception) {
         item.ok = false;
         item.error_message = exception.what();
@@ -872,10 +424,11 @@ auto ReportApi::RunStructuredPeriodBatchQuery(
 }
 
 auto ReportApi::RunTemporalReportTargetsQuery(
-    const TemporalReportTargetsRequest& request) -> TemporalReportTargetsOutput {
+    const TemporalReportTargetsRequest& request)
+    -> TemporalReportTargetsOutput {
   try {
     if (!report_data_query_service_) {
-      return BuildTemporalTargetsFailure(
+      return report_query_support::BuildTemporalTargetsFailure(
           "RunTemporalReportTargetsQuery", request.display_mode,
           "Report data query service is not configured.");
     }
@@ -909,21 +462,22 @@ auto ReportApi::RunTemporalReportTargetsQuery(
             {"Use day, week, month, or year targets instead."});
     }
 
-    return BuildTemporalTargetsFailure("RunTemporalReportTargetsQuery",
-                                       request.display_mode,
-                                       "Unhandled report display mode.");
+    return report_query_support::BuildTemporalTargetsFailure(
+        "RunTemporalReportTargetsQuery", request.display_mode,
+        "Unhandled report display mode.");
   } catch (const tracer_core::common::ReportingContractError& error) {
-    auto failure = BuildTemporalTargetsFailure("RunTemporalReportTargetsQuery",
-                                               request.display_mode, error.what());
+    auto failure = report_query_support::BuildTemporalTargetsFailure(
+        "RunTemporalReportTargetsQuery", request.display_mode, error.what());
     tracer_core::common::ApplyReportingContract(failure, error);
     return failure;
   } catch (const std::exception& exception) {
-    return BuildTemporalTargetsFailure("RunTemporalReportTargetsQuery",
-                                       request.display_mode, exception.what());
+    return report_query_support::BuildTemporalTargetsFailure(
+        "RunTemporalReportTargetsQuery", request.display_mode,
+        exception.what());
   } catch (...) {
-    return BuildTemporalTargetsFailure("RunTemporalReportTargetsQuery",
-                                       request.display_mode,
-                                       "Unknown non-standard exception.");
+    return report_query_support::BuildTemporalTargetsFailure(
+        "RunTemporalReportTargetsQuery", request.display_mode,
+        "Unknown non-standard exception.");
   }
 }
 
@@ -935,59 +489,59 @@ auto ReportApi::RunTemporalReportExport(
     switch (request.export_scope) {
       case ReportExportScope::kSingle: {
         const auto& selection = *request.selection;
-        const auto rendered =
+        const auto kRendered =
             RenderTemporalReportForExport(*this, request, selection);
-        if (!rendered.ok) {
+        if (!kRendered.ok) {
           return {.ok = false,
-                  .error_message = rendered.error_message,
-                  .error_contract = rendered.error_contract};
+                  .error_message = kRendered.error_message,
+                  .error_contract = kRendered.error_contract};
         }
-        WriteExportFileIfNeeded(ResolveExportPath(request, selection),
-                                rendered.content);
+        report_api_support::WriteExportFileIfNeeded(
+            ResolveExportPath(request, selection), kRendered.content);
         return {.ok = true, .error_message = ""};
       }
       case ReportExportScope::kAllMatching: {
-        const auto targets =
-            RunTemporalReportTargetsQuery({.display_mode = request.display_mode});
-        if (!targets.ok) {
+        const auto kTargets = RunTemporalReportTargetsQuery(
+            {.display_mode = request.display_mode});
+        if (!kTargets.ok) {
           return {.ok = false,
-                  .error_message = targets.error_message,
-                  .error_contract = targets.error_contract};
+                  .error_message = kTargets.error_message,
+                  .error_contract = kTargets.error_contract};
         }
-        for (const auto& target : targets.items) {
-          const auto selection =
+        for (const auto& target : kTargets.items) {
+          const auto kSelection =
               BuildSelectionFromTarget(request.display_mode, target);
-          const auto rendered =
-              RenderTemporalReportForExport(*this, request, selection);
-          if (!rendered.ok) {
+          const auto kRendered =
+              RenderTemporalReportForExport(*this, request, kSelection);
+          if (!kRendered.ok) {
             return {.ok = false,
-                    .error_message = rendered.error_message,
-                    .error_contract = rendered.error_contract};
+                    .error_message = kRendered.error_message,
+                    .error_contract = kRendered.error_contract};
           }
-          WriteExportFileIfNeeded(ResolveExportPath(request, selection),
-                                  rendered.content);
+          report_api_support::WriteExportFileIfNeeded(
+              ResolveExportPath(request, kSelection), kRendered.content);
         }
         return {.ok = true, .error_message = ""};
       }
       case ReportExportScope::kBatchRecentList:
-        for (const int days : request.recent_days_list) {
+        for (const int kDays : request.recent_days_list) {
           TemporalSelectionPayload selection{
-              .kind = TemporalSelectionKind::kRecentDays, .days = days};
-          const auto rendered =
+              .kind = TemporalSelectionKind::kRecentDays, .days = kDays};
+          const auto kRendered =
               RenderTemporalReportForExport(*this, request, selection);
-          if (!rendered.ok) {
+          if (!kRendered.ok) {
             return {.ok = false,
-                    .error_message = rendered.error_message,
-                    .error_contract = rendered.error_contract};
+                    .error_message = kRendered.error_message,
+                    .error_contract = kRendered.error_contract};
           }
-          WriteExportFileIfNeeded(ResolveExportPath(request, selection),
-                                  rendered.content);
+          report_api_support::WriteExportFileIfNeeded(
+              ResolveExportPath(request, selection), kRendered.content);
         }
         return {.ok = true, .error_message = ""};
     }
   } catch (const tracer_core::common::ReportingContractError& error) {
-    auto failure =
-        core_api_failure::BuildOperationFailure("RunTemporalReportExport", error);
+    auto failure = core_api_failure::BuildOperationFailure(
+        "RunTemporalReportExport", error);
     tracer_core::common::ApplyReportingContract(failure, error);
     return failure;
   } catch (const std::exception& exception) {

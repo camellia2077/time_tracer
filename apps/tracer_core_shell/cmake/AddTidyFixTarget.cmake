@@ -1,6 +1,7 @@
 # cmake/AddTidyFixTarget.cmake
 
 find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
+find_program(TT_TIDY_PYTHON_EXE NAMES python python3)
 
 if(CLANG_TIDY_EXE)
     message(STATUS "Found clang-tidy for fix: ${CLANG_TIDY_EXE}")
@@ -20,6 +21,19 @@ if(CLANG_TIDY_EXE)
     endif()
     if(NOT DEFINED TT_ANALYSIS_COMPILE_DB_DIR OR "${TT_ANALYSIS_COMPILE_DB_DIR}" STREQUAL "")
         set(TT_ANALYSIS_COMPILE_DB_DIR "${CMAKE_BINARY_DIR}/analysis_compile_db")
+    endif()
+    set(TT_CLANG_TIDY_STRUCTURED_RESULTS_DIR "${CMAKE_BINARY_DIR}/structured_tidy_results")
+    get_filename_component(TT_TIME_TRACER_REPO_ROOT
+        "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+    set(TT_CLANG_TIDY_WRAPPER_SCRIPT
+        "${TT_TIME_TRACER_REPO_ROOT}/tools/toolchain/commands/clang/tidy/invocation.py")
+    if(TT_TIDY_PYTHON_EXE AND EXISTS "${TT_CLANG_TIDY_WRAPPER_SCRIPT}")
+        file(MAKE_DIRECTORY "${TT_CLANG_TIDY_STRUCTURED_RESULTS_DIR}")
+        set(TT_CLANG_TIDY_STRUCTURED_WRAPPER_ENABLED ON)
+        message(STATUS "Using structured clang-tidy wrapper: ${TT_CLANG_TIDY_WRAPPER_SCRIPT}")
+    else()
+        set(TT_CLANG_TIDY_STRUCTURED_WRAPPER_ENABLED OFF)
+        message(WARNING "Python3 or structured clang-tidy wrapper not found; tidy requires the structured clang-tidy wrapper.")
     endif()
 
     # 1. 汇总源文件
@@ -159,19 +173,40 @@ if(CLANG_TIDY_EXE)
         
         # --- 目标 A: tidy-fix (含修复) ---
         set(CURRENT_FIX_TARGET "tidy_fix_step_${COUNTER}")
-        add_custom_target(${CURRENT_FIX_TARGET}
-            COMMAND ${CLANG_TIDY_EXE} 
-                -p ${TT_ANALYSIS_COMPILE_DB_DIR} 
-                --fix 
-                --format-style=file 
-                "-header-filter=${TT_CLANG_TIDY_HEADER_FILTER}"
-                "--config-file=${TT_CLANG_TIDY_CONFIG_FILE}"
-                ${TIDY_ERR_FLAG}
-                "${TIDY_SOURCE_FILE}"
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            COMMENT "[${COUNTER}/FIX] Analyzing and Fixing: ${FILE_PATH}"
-            VERBATIM
-        )
+        if(TT_CLANG_TIDY_STRUCTURED_WRAPPER_ENABLED)
+            add_custom_target(${CURRENT_FIX_TARGET}
+                COMMAND ${TT_TIDY_PYTHON_EXE}
+                    "${TT_CLANG_TIDY_WRAPPER_SCRIPT}"
+                    --output "${TT_CLANG_TIDY_STRUCTURED_RESULTS_DIR}/fix_${COUNTER}.json"
+                    --source-file "${TIDY_SOURCE_FILE}"
+                    --
+                    ${CLANG_TIDY_EXE}
+                    -p ${TT_ANALYSIS_COMPILE_DB_DIR}
+                    --fix
+                    --format-style=file
+                    "-header-filter=${TT_CLANG_TIDY_HEADER_FILTER}"
+                    "--config-file=${TT_CLANG_TIDY_CONFIG_FILE}"
+                    ${TIDY_ERR_FLAG}
+                    "${TIDY_SOURCE_FILE}"
+                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                COMMENT "[${COUNTER}/FIX] Analyzing and Fixing: ${FILE_PATH}"
+                VERBATIM
+            )
+        else()
+            add_custom_target(${CURRENT_FIX_TARGET}
+                COMMAND ${CLANG_TIDY_EXE}
+                    -p ${TT_ANALYSIS_COMPILE_DB_DIR}
+                    --fix
+                    --format-style=file
+                    "-header-filter=${TT_CLANG_TIDY_HEADER_FILTER}"
+                    "--config-file=${TT_CLANG_TIDY_CONFIG_FILE}"
+                    ${TIDY_ERR_FLAG}
+                    "${TIDY_SOURCE_FILE}"
+                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                COMMENT "[${COUNTER}/FIX] Analyzing and Fixing: ${FILE_PATH}"
+                VERBATIM
+            )
+        endif()
         if(PREV_FIX_TARGET)
             add_dependencies(${CURRENT_FIX_TARGET} ${PREV_FIX_TARGET})
         endif()
@@ -179,18 +214,38 @@ if(CLANG_TIDY_EXE)
 
         # --- 目标 B: tidy (仅检查) ---
         set(CURRENT_CHECK_TARGET "tidy_check_step_${COUNTER}")
-        add_custom_target(${CURRENT_CHECK_TARGET}
-            COMMAND ${CLANG_TIDY_EXE} 
-                -p ${TT_ANALYSIS_COMPILE_DB_DIR} 
-                --format-style=file 
-                "-header-filter=${TT_CLANG_TIDY_HEADER_FILTER}"
-                "--config-file=${TT_CLANG_TIDY_CONFIG_FILE}"
-                ${TIDY_ERR_FLAG}
-                "${TIDY_SOURCE_FILE}"
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            COMMENT "[${COUNTER}/CHECK] Analyzing: ${FILE_PATH}"
-            VERBATIM
-        )
+        if(TT_CLANG_TIDY_STRUCTURED_WRAPPER_ENABLED)
+            add_custom_target(${CURRENT_CHECK_TARGET}
+                COMMAND ${TT_TIDY_PYTHON_EXE}
+                    "${TT_CLANG_TIDY_WRAPPER_SCRIPT}"
+                    --output "${TT_CLANG_TIDY_STRUCTURED_RESULTS_DIR}/check_${COUNTER}.json"
+                    --source-file "${TIDY_SOURCE_FILE}"
+                    --
+                    ${CLANG_TIDY_EXE}
+                    -p ${TT_ANALYSIS_COMPILE_DB_DIR}
+                    --format-style=file
+                    "-header-filter=${TT_CLANG_TIDY_HEADER_FILTER}"
+                    "--config-file=${TT_CLANG_TIDY_CONFIG_FILE}"
+                    ${TIDY_ERR_FLAG}
+                    "${TIDY_SOURCE_FILE}"
+                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                COMMENT "[${COUNTER}/CHECK] Analyzing: ${FILE_PATH}"
+                VERBATIM
+            )
+        else()
+            add_custom_target(${CURRENT_CHECK_TARGET}
+                COMMAND ${CLANG_TIDY_EXE}
+                    -p ${TT_ANALYSIS_COMPILE_DB_DIR}
+                    --format-style=file
+                    "-header-filter=${TT_CLANG_TIDY_HEADER_FILTER}"
+                    "--config-file=${TT_CLANG_TIDY_CONFIG_FILE}"
+                    ${TIDY_ERR_FLAG}
+                    "${TIDY_SOURCE_FILE}"
+                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                COMMENT "[${COUNTER}/CHECK] Analyzing: ${FILE_PATH}"
+                VERBATIM
+            )
+        endif()
         # REMOVED: add_dependencies(${CURRENT_CHECK_TARGET} ${PREV_CHECK_TARGET})
         # 移除上述依赖后，Ninja 就可以并行执行所有检查任务，显著提升速度。
         list(APPEND ALL_CHECK_TARGETS ${CURRENT_CHECK_TARGET})

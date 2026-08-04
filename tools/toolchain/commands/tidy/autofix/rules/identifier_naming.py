@@ -8,7 +8,17 @@ from ..models import FixContext, RenameSymbolOp
 from .base import RuleBase
 from .catalog import IDENTIFIER_NAMING_METADATA
 
-_SUPPORTED_RENAME_KINDS = {"constant", "variable"}
+_SUPPORTED_RENAME_KINDS = {
+    "constant",
+    "variable",
+    "function",
+    "method",
+    "parameter",
+    "member",
+    "class member",
+    "private member",
+    "protected member",
+}
 _EXACT_NAME_RULES = {
     "payload": "kPayload",
     "parsed": "kParsed",
@@ -55,7 +65,10 @@ class IdentifierNamingRule(RuleBase):
                     symbol_kind=str(candidate["symbol_kind"]),
                     old_name=str(candidate["old_name"]),
                     new_name=str(candidate["new_name"]),
-                    success_reason="supported_rule_driven_const_rename",
+                    suggested_from_diagnostic=bool(
+                        candidate.get("suggested_from_diagnostic", False)
+                    ),
+                    success_reason="supported_rule_driven_semantic_rename",
                 ),
             )
         ]
@@ -96,6 +109,7 @@ def diagnostic_to_candidate(diagnostic, *, default_file: str) -> dict | None:
         return None
 
     suggested_name = ""
+    suggested_from_diagnostic = False
     for raw_line in diagnostic.raw_lines[1:]:
         suggestion_match = _SUGGESTED_NAME_PATTERN.match(raw_line)
         if not suggestion_match:
@@ -103,8 +117,9 @@ def diagnostic_to_candidate(diagnostic, *, default_file: str) -> dict | None:
         maybe_name = suggestion_match.group(1).strip()
         if maybe_name and maybe_name != old_name:
             suggested_name = maybe_name
+            suggested_from_diagnostic = True
             break
-    if not suggested_name:
+    if not suggested_name and symbol_kind == "constant":
         suggested_name = suggest_const_name(old_name)
     if not suggested_name:
         return None
@@ -117,6 +132,7 @@ def diagnostic_to_candidate(diagnostic, *, default_file: str) -> dict | None:
         "symbol_kind": symbol_kind,
         "old_name": old_name,
         "new_name": suggested_name,
+        "suggested_from_diagnostic": suggested_from_diagnostic,
         "message": diagnostic.message,
     }
 
@@ -129,11 +145,23 @@ def supported_rename_candidate(candidate: dict, file_path: Path, *, line_text: s
         return False, "unsupported_file_type"
     old_name = str(candidate.get("old_name", "")).strip()
     new_name = str(candidate.get("new_name", "")).strip()
-    expected_name = suggest_const_name(old_name)
     if not old_name or not new_name:
         return False, "missing_rename_payload"
-    if expected_name and new_name != expected_name:
-        return False, "rename_not_rule_driven"
-    if "const " not in line_text and "const auto" not in line_text and "const json" not in line_text:
-        return False, "not_const_local_pattern"
-    return True, "supported_rule_driven_const_rename"
+    if old_name == new_name:
+        return False, "rename_is_noop"
+    if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", new_name):
+        return False, "invalid_new_identifier"
+
+    # Constants may use the deterministic fallback template when clang-tidy
+    # did not render a suggestion note. For every other symbol kind, require
+    # clang-tidy's explicit suggestion so Python never guesses a style.
+    if symbol_kind == "constant":
+        expected_name = suggest_const_name(old_name)
+        if not candidate.get("suggested_from_diagnostic", False) and expected_name != new_name:
+            return False, "rename_not_rule_driven"
+    elif not candidate.get("suggested_from_diagnostic", False):
+        return False, "missing_structured_name_suggestion"
+
+    if not re.search(rf"\b{re.escape(old_name)}\b", line_text):
+        return False, "old_identifier_not_on_diagnostic_line"
+    return True, "supported_rule_driven_semantic_rename"

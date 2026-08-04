@@ -40,9 +40,9 @@ struct BatchDataResult {
 
 class BatchDayDataFetcher {
  public:
-  explicit BatchDayDataFetcher(sqlite3* sqlite_db,
-                               IProjectInfoProvider& provider,
-                               const DailyStatusConfig* status_config = nullptr);
+  explicit BatchDayDataFetcher(
+      sqlite3* sqlite_db, IProjectInfoProvider& provider,
+      const DailyStatusConfig* status_config = nullptr);
 
   [[nodiscard]] auto FetchAllData() -> BatchDataResult;
 

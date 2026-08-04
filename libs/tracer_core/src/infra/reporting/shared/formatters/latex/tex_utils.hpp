@@ -58,8 +58,7 @@ namespace TexUtils {
 // NOLINTBEGIN(bugprone-easily-swappable-parameters)
 [[nodiscard]] REPORTS_SHARED_API auto FormatProjectTree(
     const reporting::ProjectTree& tree, std::int64_t total_duration,
-    int avg_days,
-    int category_title_font_size, double list_top_sep_pt,
+    int avg_days, int category_title_font_size, double list_top_sep_pt,
     double list_item_sep_ex) -> std::string;
 // NOLINTEND(bugprone-easily-swappable-parameters)
 

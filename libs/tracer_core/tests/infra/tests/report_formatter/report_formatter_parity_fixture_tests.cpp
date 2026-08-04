@@ -216,7 +216,8 @@ auto BuildDailyFixture() -> DailyReportData {
       .end_time = "09:10",
       .project_path = "Work_Coding",
       .duration_seconds = 4200,
-      .activityRemark = std::optional<std::string>{"Feature refactor\nFollow-up"},
+      .activityRemark =
+          std::optional<std::string>{"Feature refactor\nFollow-up"},
   });
   report.detailed_records.push_back(TimeRecord{
       .start_time = "09:20",
@@ -240,10 +241,8 @@ template <typename RangeReportType>
 auto BuildRangeFixture(const std::string& range_label,
                        const std::string& start_date,
                        const std::string& end_date, int requested_days,
-                       int actual_days, int status_days,
-                       int exercise_days,
-                       int cardio_days, int anaerobic_days)
-    -> RangeReportType {
+                       int actual_days, int status_days, int exercise_days,
+                       int cardio_days, int anaerobic_days) -> RangeReportType {
   RangeReportType report;
   report.range_label = range_label;
   report.start_date = start_date;
@@ -293,12 +292,12 @@ auto ExpectNotContains(std::string_view case_name, std::string_view content,
     return;
   }
   ++failures;
-  std::cerr << "[FAIL] " << case_name << " should not contain `"
-            << unexpected << "`.\n";
+  std::cerr << "[FAIL] " << case_name << " should not contain `" << unexpected
+            << "`.\n";
 }
 
-auto CheckBooleanMetadataLabels(const ParityOutputs& outputs,
-                                int& failures) -> void {
+auto CheckBooleanMetadataLabels(const ParityOutputs& outputs, int& failures)
+    -> void {
   ExpectContains("positive boolean summary label",
                  FormatBooleanCountLabel("Cardio Days (True)", 16),
                  "Cardio Days", failures);
@@ -320,11 +319,10 @@ auto CheckBooleanMetadataLabels(const ParityOutputs& outputs,
                     "recorded_coverage_ratio", failures);
 }
 
-auto CheckDailyActivityCountLabels(const ParityOutputs& outputs,
-                                   int& failures) -> void {
+auto CheckDailyActivityCountLabels(const ParityOutputs& outputs, int& failures)
+    -> void {
   constexpr std::string_view kMarkdownExpected = "- **Activity Count**: 3";
-  constexpr std::string_view kLatexExpected =
-      "\\textbf{Activity Count}: 3";
+  constexpr std::string_view kLatexExpected = "\\textbf{Activity Count}: 3";
   constexpr std::string_view kTypstExpected = "+ *Activity Count:* 3";
   ExpectContains("daily markdown activity count", outputs.cli_by_format[0].day,
                  kMarkdownExpected, failures);
@@ -349,8 +347,8 @@ auto CheckDailyStatusLabelsArePresent(const ParityOutputs& outputs,
   constexpr std::string_view kTypstStudy = "+ *Study:* true";
   constexpr std::string_view kTypstExercise = "+ *Exercise:* true";
 
-  ExpectContains("CLI daily Markdown Study status", outputs.cli_by_format[0].day,
-                 kMarkdownStudy, failures);
+  ExpectContains("CLI daily Markdown Study status",
+                 outputs.cli_by_format[0].day, kMarkdownStudy, failures);
   ExpectContains("CLI daily Markdown Exercise status",
                  outputs.cli_by_format[0].day, kMarkdownExercise, failures);
   ExpectContains("CLI daily LaTeX Study status", outputs.cli_by_format[1].day,
@@ -365,8 +363,7 @@ auto CheckDailyStatusLabelsArePresent(const ParityOutputs& outputs,
   ExpectContains("Android daily Markdown Study status",
                  outputs.android_by_format[0].day, kMarkdownStudy, failures);
   ExpectContains("Android daily Markdown Exercise status",
-                 outputs.android_by_format[0].day, kMarkdownExercise,
-                 failures);
+                 outputs.android_by_format[0].day, kMarkdownExercise, failures);
   ExpectContains("Android daily LaTeX Study status",
                  outputs.android_by_format[1].day, kLatexStudy, failures);
   ExpectContains("Android daily LaTeX Exercise status",
@@ -411,8 +408,7 @@ auto CheckDailyTimelineFormatting(infra_reports::ReportDtoFormatter& formatter,
   ExpectContains("Japanese timeline heading", kJapaneseMarkdown,
                  "## タイムライン", failures);
 
-  constexpr std::string_view kPreciseActivity =
-      "08:00:12 - 09:10:05 (1h 10m)";
+  constexpr std::string_view kPreciseActivity = "08:00:12 - 09:10:05 (1h 10m)";
   constexpr std::string_view kMinuteActivity = "09:20 - 10:20 (1h 0m)";
   ExpectContains("Markdown timeline seconds", kMarkdown, kPreciseActivity,
                  failures);
@@ -487,14 +483,10 @@ auto CheckEndOnlyLocalizedMarkdown(infra_reports::ReportDtoFormatter& formatter,
       end_only_report, ReportFormat::kMarkdown, "ja");
   ExpectContains("English end-only Markdown", kEnglishOutput,
                  "As of 17:40:30: study->math", failures);
-  ExpectContains(
-      "Chinese end-only Markdown",
-      kChineseOutput,
-      "截至 17:40:30: study->math", failures);
-  ExpectContains(
-      "Japanese end-only Markdown",
-      kJapaneseOutput,
-      "17:40:30 時点: study->math", failures);
+  ExpectContains("Chinese end-only Markdown", kChineseOutput,
+                 "截至 17:40:30: study->math", failures);
+  ExpectContains("Japanese end-only Markdown", kJapaneseOutput,
+                 "17:40:30 時点: study->math", failures);
 }
 
 // NOLINTEND(readability-magic-numbers,readability-identifier-naming,bugprone-easily-swappable-parameters,modernize-use-auto,modernize-use-designated-initializers)

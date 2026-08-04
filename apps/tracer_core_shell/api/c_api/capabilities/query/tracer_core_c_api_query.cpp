@@ -6,7 +6,7 @@ import tracer.core.application.use_cases.interface;
 #include "api/c_api/runtime/tracer_core_c_api_internal.hpp"
 #include "application/dto/query_requests.hpp"
 #include "application/dto/query_responses.hpp"
-#include "tracer/transport/runtime_codec.hpp"
+#include "tracer/transport/runtime_codec_query.hpp"
 
 namespace tt_transport = tracer::transport;
 using tracer::core::application::use_cases::ITracerCoreRuntime;

@@ -5,8 +5,8 @@
 
 namespace tracer::core::application::pipeline::detail {
 
-auto ResolveConverterConfigPathSet(const std::filesystem::path& main_config_path)
-    -> ConverterConfigPathSet {
+auto ResolveConverterConfigPathSet(
+    const std::filesystem::path& main_config_path) -> ConverterConfigPathSet {
   if (main_config_path.empty()) {
     throw std::invalid_argument(
         "Converter main config path must not be empty.");
@@ -24,7 +24,8 @@ auto ResolveConverterConfigPathSet(const std::filesystem::path& main_config_path
 
 auto EnsureConverterConfigSourceExists(const std::filesystem::path& path,
                                        std::string_view label) -> void {
-  if (!std::filesystem::exists(path) || !std::filesystem::is_regular_file(path)) {
+  if (!std::filesystem::exists(path) ||
+      !std::filesystem::is_regular_file(path)) {
     throw std::runtime_error(std::string(label) +
                              " must be an existing file: " + path.string());
   }
@@ -33,21 +34,21 @@ auto EnsureConverterConfigSourceExists(const std::filesystem::path& path,
 auto CopyConverterConfigFile(const std::filesystem::path& source_path,
                              const std::filesystem::path& target_path,
                              std::string_view label) -> void {
-  std::error_code kIoError;
-  std::filesystem::create_directories(target_path.parent_path(), kIoError);
-  if (kIoError) {
+  std::error_code io_error;
+  std::filesystem::create_directories(target_path.parent_path(), io_error);
+  if (io_error) {
     throw std::runtime_error("Failed to prepare " + std::string(label) +
                              " target directory: " + target_path.string() +
-                             " | " + kIoError.message());
+                             " | " + io_error.message());
   }
 
-  std::filesystem::copy_file(
-      source_path, target_path, std::filesystem::copy_options::overwrite_existing,
-      kIoError);
-  if (kIoError) {
+  std::filesystem::copy_file(source_path, target_path,
+                             std::filesystem::copy_options::overwrite_existing,
+                             io_error);
+  if (io_error) {
     throw std::runtime_error("Failed to install " + std::string(label) + ": " +
                              source_path.string() + " -> " +
-                             target_path.string() + " | " + kIoError.message());
+                             target_path.string() + " | " + io_error.message());
   }
 }
 
@@ -63,8 +64,7 @@ auto RemoveConverterAliasDirectory(const std::filesystem::path& target_root)
   std::filesystem::remove_all(kAliasDir, io_error);
   if (io_error) {
     throw std::runtime_error("Failed to remove activity hierarchy directory: " +
-                             kAliasDir.string() + " | " +
-                             io_error.message());
+                             kAliasDir.string() + " | " + io_error.message());
   }
 }
 
@@ -83,14 +83,15 @@ auto CopyConverterAliasDirectory(const std::filesystem::path& source_root,
   // high-volume dataset. Because the files are small and low-frequency, full
   // replacement is preferred over incremental diff/merge logic.
   //
-  // Child canonical files are therefore copied as a whole directory bundle so the
-  // active config remains an exact mirror of the source config without stale
-  // leftovers from older canonical files.
+  // Child canonical files are therefore copied as a whole directory bundle so
+  // the active config remains an exact mirror of the source config without
+  // stale leftovers from older canonical files.
   std::error_code io_error;
   std::filesystem::create_directories(target_root, io_error);
   if (io_error) {
-    throw std::runtime_error("Failed to prepare canonical config target directory: " +
-                             target_root.string() + " | " + io_error.message());
+    throw std::runtime_error(
+        "Failed to prepare canonical config target directory: " +
+        target_root.string() + " | " + io_error.message());
   }
 
   for (const auto& entry :
@@ -98,28 +99,27 @@ auto CopyConverterAliasDirectory(const std::filesystem::path& source_root,
     if (!entry.is_regular_file()) {
       continue;
     }
-    const auto relative_path = std::filesystem::relative(entry.path(),
-                                                         source_root, io_error);
+    const auto kRelativePath =
+        std::filesystem::relative(entry.path(), source_root, io_error);
     if (io_error) {
-      throw std::runtime_error("Failed to resolve canonical config child path: " +
-                               entry.path().string() + " | " +
-                               io_error.message());
+      throw std::runtime_error(
+          "Failed to resolve canonical config child path: " +
+          entry.path().string() + " | " + io_error.message());
     }
-    const std::filesystem::path target_path = target_root / relative_path;
-    std::filesystem::create_directories(target_path.parent_path(), io_error);
+    const std::filesystem::path kTargetPath = target_root / kRelativePath;
+    std::filesystem::create_directories(kTargetPath.parent_path(), io_error);
     if (io_error) {
-      throw std::runtime_error("Failed to prepare canonical config child target: " +
-                               target_path.string() + " | " +
-                               io_error.message());
+      throw std::runtime_error(
+          "Failed to prepare canonical config child target: " +
+          kTargetPath.string() + " | " + io_error.message());
     }
     std::filesystem::copy_file(
-        entry.path(), target_path,
+        entry.path(), kTargetPath,
         std::filesystem::copy_options::overwrite_existing, io_error);
     if (io_error) {
-      throw std::runtime_error("Failed to copy canonical config child: " +
-                               entry.path().string() + " -> " +
-                               target_path.string() + " | " +
-                               io_error.message());
+      throw std::runtime_error(
+          "Failed to copy canonical config child: " + entry.path().string() +
+          " -> " + kTargetPath.string() + " | " + io_error.message());
     }
   }
 }

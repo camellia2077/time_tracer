@@ -106,7 +106,8 @@ void TestDecodeTreeResponse(int& failures) {
          "DecodeTreeResponse child duration mismatch.", failures);
   Expect(response.nodes[0].children[0].parent_duration_percent.has_value() &&
              *response.nodes[0].children[0].parent_duration_percent == 50.0,
-         "DecodeTreeResponse child parent duration percent mismatch.", failures);
+         "DecodeTreeResponse child parent duration percent mismatch.",
+         failures);
 
   const auto missing_contract = DecodeTreeResponse(
       R"({"ok":false,"found":false,"error_message":"missing target","roots":[],"nodes":[]})");
@@ -117,10 +118,10 @@ void TestDecodeTreeResponse(int& failures) {
   Expect(missing_contract.error_contract.error_code.empty(),
          "DecodeTreeResponse missing-contract error_code should default empty.",
          failures);
-  Expect(
-      missing_contract.error_contract.error_category.empty(),
-      "DecodeTreeResponse missing-contract error_category should default empty.",
-      failures);
+  Expect(missing_contract.error_contract.error_category.empty(),
+         "DecodeTreeResponse missing-contract error_category should default "
+         "empty.",
+         failures);
   Expect(missing_contract.error_contract.hints.empty(),
          "DecodeTreeResponse missing-contract hints should default empty.",
          failures);
@@ -159,10 +160,9 @@ void TestDecodeAckAndTextResponses(int& failures) {
   Expect(ack_ok.error_message.empty(),
          "DecodeAckResponse error_message mismatch.", failures);
 
-  const auto ack_failed =
-      DecodeAckResponse(
-          R"({"ok":false,"error_message":"","error_code":"runtime.logic_error","error_category":"logic","hints":["retry later"]})",
-          "runtime_export");
+  const auto ack_failed = DecodeAckResponse(
+      R"({"ok":false,"error_message":"","error_code":"runtime.logic_error","error_category":"logic","hints":["retry later"]})",
+      "runtime_export");
   Expect(!ack_failed.ok, "DecodeAckResponse failed ok mismatch.", failures);
   Expect(ack_failed.error_message == "Core operation failed.",
          "DecodeAckResponse failed fallback error mismatch.", failures);
@@ -191,8 +191,7 @@ void TestDecodeAckAndTextResponses(int& failures) {
          "DecodeTextResponse failed fallback error mismatch.", failures);
   Expect(text_failed.content == "partial",
          "DecodeTextResponse failed content mismatch.", failures);
-  Expect(text_failed.error_contract.error_code ==
-             "reporting.target.not_found",
+  Expect(text_failed.error_contract.error_code == "reporting.target.not_found",
          "DecodeTextResponse failed error_code mismatch.", failures);
   Expect(text_failed.error_contract.error_category == "logic",
          "DecodeTextResponse failed error_category mismatch.", failures);

@@ -3,13 +3,14 @@ from tempfile import TemporaryDirectory
 from unittest import TestCase
 
 from tools.tests.platform.support.tidy_task_auto_fix_support import AutoFixFixtureBuilder, DiagnosticEntry
-from tools.toolchain.commands.tidy.tasking.task_auto_fix import (
+from tools.toolchain.commands.tidy.queue.task_auto_fix import (
     plan_redundant_cast_actions,
     plan_runtime_int_actions,
     plan_using_namespace_actions,
     rename_candidates,
     suggest_const_name,
     suggest_task_refactors,
+    supported_rename_candidate,
 )
 
 
@@ -27,8 +28,8 @@ class TestTidyTaskAutoFixPlan(TestCase):
                 "example.cpp",
                 ["auto value = static_cast<unsigned long long>(limit);"],
             )
-            task_log = fb.write_legacy_task_log(
-                relative_path="task_001.log",
+            task_log = fb.write_task_fixture(
+                relative_path="task_001.json",
                 source_file=source_file,
                 diagnostics=[
                     DiagnosticEntry(
@@ -62,9 +63,9 @@ class TestTidyTaskAutoFixPlan(TestCase):
                 ],
             )
             task_log = fb.write_toon_task(
-                relative_path="task_003.toon",
+                relative_path="task_003.json",
                 task_id="003",
-                batch_id="batch_001",
+                cluster_id="cluster_001",
                 source_file=source_file,
                 diagnostics=[
                     DiagnosticEntry(
@@ -98,9 +99,9 @@ class TestTidyTaskAutoFixPlan(TestCase):
                 ],
             )
             task_log = fb.write_toon_task(
-                relative_path="task_029.toon",
+                relative_path="task_029.json",
                 task_id="029",
-                batch_id="batch_003",
+                cluster_id="cluster_003",
                 source_file=source_file,
                 diagnostics=[
                     DiagnosticEntry(
@@ -124,6 +125,91 @@ class TestTidyTaskAutoFixPlan(TestCase):
             self.assertEqual(len(candidates), 2)
             self.assertEqual(candidates[0]["new_name"], "kCanonical")
             self.assertEqual(candidates[1]["new_name"], "kBytes")
+
+    def test_rename_candidates_keep_clangd_suggestion_for_non_const_variables(self):
+        with TemporaryDirectory() as temp_dir:
+            fb = AutoFixFixtureBuilder(Path(temp_dir))
+            source_file = fb.write_source(
+                "libs/tracer_core/src/application/pipeline/example.cpp",
+                [
+                    "void Install() {",
+                    "  std::error_code kIoError;",
+                    "  Use(kIoError);",
+                    "}",
+                ],
+            )
+            task_log, _json_path = fb.write_cluster_task_artifacts(
+                cluster_id="cluster_variable_rename",
+                task_id="001",
+                source_file=source_file,
+                diagnostics=[
+                    DiagnosticEntry(
+                        line=2,
+                        col=19,
+                        check="readability-identifier-naming",
+                        message="invalid case style for variable 'kIoError'",
+                        raw_lines=(
+                            "example.cpp:2:19: warning: invalid case style for variable 'kIoError'",
+                            "    | k_io_error",
+                        ),
+                    )
+                ],
+            )
+
+            parsed = fb.parse(task_log)
+            candidates = rename_candidates(parsed)
+
+            self.assertEqual(len(candidates), 1)
+            self.assertEqual(candidates[0]["symbol_kind"], "variable")
+            self.assertEqual(candidates[0]["old_name"], "kIoError")
+            self.assertEqual(candidates[0]["new_name"], "k_io_error")
+            self.assertTrue(candidates[0]["suggested_from_diagnostic"])
+
+    def test_non_const_variable_without_clang_suggestion_is_not_guessed(self):
+        with TemporaryDirectory() as temp_dir:
+            fb = AutoFixFixtureBuilder(Path(temp_dir))
+            source_file = fb.write_source(
+                "example.cpp",
+                ["void Install() {", "  std::error_code kIoError;", "}"],
+            )
+            task_log, _json_path = fb.write_cluster_task_artifacts(
+                cluster_id="cluster_variable_no_suggestion",
+                task_id="001",
+                source_file=source_file,
+                diagnostics=[
+                    DiagnosticEntry(
+                        line=2,
+                        col=19,
+                        check="readability-identifier-naming",
+                        message="invalid case style for variable 'kIoError'",
+                    )
+                ],
+            )
+
+            parsed = fb.parse(task_log)
+            self.assertEqual(rename_candidates(parsed), [])
+
+    def test_supported_rename_candidate_routes_variable_to_semantic_engine(self):
+        with TemporaryDirectory() as temp_dir:
+            source_file = Path(temp_dir) / "example.cpp"
+            source_file.write_text(
+                "void Install() {\n  std::error_code kIoError;\n}\n",
+                encoding="utf-8",
+            )
+
+            supported, reason = supported_rename_candidate(
+                {
+                    "symbol_kind": "variable",
+                    "old_name": "kIoError",
+                    "new_name": "k_io_error",
+                    "suggested_from_diagnostic": True,
+                },
+                source_file,
+                line_text="  std::error_code kIoError;",
+            )
+
+            self.assertTrue(supported)
+            self.assertEqual(reason, "supported_rule_driven_semantic_rename")
 
     def test_plan_using_namespace_actions_collects_symbols_from_dto_headers(self):
         with TemporaryDirectory() as temp_dir:
@@ -184,8 +270,8 @@ class TestTidyTaskAutoFixPlan(TestCase):
                     "}  // namespace tracer::core::application::use_cases",
                 ],
             )
-            task_log = fb.write_legacy_task_log(
-                relative_path="task_006.log",
+            task_log = fb.write_task_fixture(
+                relative_path="task_006.json",
                 source_file=source_file,
                 diagnostics=[
                     DiagnosticEntry(
@@ -225,9 +311,9 @@ class TestTidyTaskAutoFixPlan(TestCase):
                 ],
             )
             task_log = fb.write_toon_task(
-                relative_path="task_031.toon",
+                relative_path="task_031.json",
                 task_id="031",
-                batch_id="batch_004",
+                cluster_id="cluster_004",
                 source_file=source_file,
                 diagnostics=[
                     DiagnosticEntry(
@@ -270,8 +356,8 @@ class TestTidyTaskAutoFixPlan(TestCase):
                     "}",
                 ],
             )
-            task_log = fb.write_legacy_task_log(
-                relative_path="task_002.log",
+            task_log = fb.write_task_fixture(
+                relative_path="task_002.json",
                 source_file=source_file,
                 diagnostics=[],
             )

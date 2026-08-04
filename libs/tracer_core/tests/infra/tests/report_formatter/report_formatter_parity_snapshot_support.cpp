@@ -156,8 +156,8 @@ auto RunCaseWithSnapshot(const std::string& case_name,
                          const std::filesystem::path& snapshot_file,
                          const std::string& cli_output,
                          const std::string& android_output,
-                         bool update_snapshots,
-                         bool compare_snapshot_bytes, int& failures) -> void {
+                         bool update_snapshots, bool compare_snapshot_bytes,
+                         int& failures) -> void {
   if (cli_output != android_output) {
     ++failures;
     std::cerr << "[FAIL] " << case_name

@@ -32,12 +32,12 @@ auto BuildUnexpectedFailure(std::string_view operation) -> TResult {
 
 namespace tracer::core::application::use_cases {
 
-using tracer_core::core::dto::TracerExchangeExportRequest;
-using tracer_core::core::dto::TracerExchangeExportResult;
+using tracer_core::core::dto::TracerExchangeContentEncodingResult;
 using tracer_core::core::dto::TracerExchangeContentRequest;
 using tracer_core::core::dto::TracerExchangeContentResult;
 using tracer_core::core::dto::TracerExchangeExportContent;
-using tracer_core::core::dto::TracerExchangeContentEncodingResult;
+using tracer_core::core::dto::TracerExchangeExportRequest;
+using tracer_core::core::dto::TracerExchangeExportResult;
 using tracer_core::core::dto::TracerExchangeImportRequest;
 using tracer_core::core::dto::TracerExchangeImportResult;
 using tracer_core::core::dto::TracerExchangeInspectRequest;

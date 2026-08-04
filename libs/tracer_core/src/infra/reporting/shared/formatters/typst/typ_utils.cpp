@@ -48,8 +48,8 @@ auto FormatOneDecimal(double value) -> std::string {
   return output;
 }
 
-auto FormatAverageOccurrenceCount(std::int64_t occurrence_count,
-                                  int avg_days) -> std::string {
+auto FormatAverageOccurrenceCount(std::int64_t occurrence_count, int avg_days)
+    -> std::string {
   if (avg_days <= 0) {
     return "0.00";
   }
@@ -84,16 +84,16 @@ class TypstFormattingStrategy : public reporting::IFormattingStrategy {
   }
 
   [[nodiscard]] auto FormatCategoryHeader(
-      const std::string& category_name, const std::string& /*formatted_duration*/,
-      double percentage, std::int64_t duration_seconds,
-      std::int64_t occurrence_count, int avg_days) const
-      -> std::string override {
+      const std::string& category_name,
+      const std::string& /*formatted_duration*/, double percentage,
+      std::int64_t duration_seconds, std::int64_t occurrence_count,
+      int avg_days) const -> std::string override {
     std::string output = FormatCategoryHeader(
         category_name, TimeFormatDuration(duration_seconds), percentage);
     if (occurrence_count > 0) {
       output += "#emph[Average: ";
-      output += TimeFormatDuration(
-          avg_days > 0 ? duration_seconds / avg_days : duration_seconds);
+      output += TimeFormatDuration(avg_days > 0 ? duration_seconds / avg_days
+                                                : duration_seconds);
       output += "/day · ";
       output += std::to_string(occurrence_count);
       output += " times · ";
@@ -114,10 +114,12 @@ class TypstFormattingStrategy : public reporting::IFormattingStrategy {
            "+ " + project_name + ": " + formatted_duration + "\n";
   }
 
-  [[nodiscard]] auto FormatTreeNode(
-      const std::string& project_name, const std::string& formatted_duration,
-      int indent_level, double percentage, std::int64_t duration_seconds,
-      std::int64_t occurrence_count, int avg_days) const
+  [[nodiscard]] auto FormatTreeNode(const std::string& project_name,
+                                    const std::string& formatted_duration,
+                                    int indent_level, double percentage,
+                                    std::int64_t duration_seconds,
+                                    std::int64_t occurrence_count,
+                                    int avg_days) const
       -> std::string override {
     constexpr int kIndentMultiplier = 2;
     const auto kActivityIndent = static_cast<size_t>(indent_level) *
@@ -134,8 +136,8 @@ class TypstFormattingStrategy : public reporting::IFormattingStrategy {
       output.append(kActivityIndent + static_cast<size_t>(kIndentMultiplier),
                     ' ');
       output += "#emph[Average: ";
-      output += TimeFormatDuration(
-          avg_days > 0 ? duration_seconds / avg_days : duration_seconds);
+      output += TimeFormatDuration(avg_days > 0 ? duration_seconds / avg_days
+                                                : duration_seconds);
       output += "/day · ";
       output += std::to_string(occurrence_count);
       output += " times · ";

@@ -109,12 +109,10 @@ auto ParseIsoDate(std::string_view value)
 
 auto FormatIsoDate(const std::chrono::year_month_day& ymd) -> std::string {
   std::ostringstream stream;
-  stream << std::setw(4) << std::setfill('0')
-         << static_cast<int>(ymd.year()) << "-"
-         << std::setw(2) << std::setfill('0')
-         << static_cast<unsigned>(ymd.month()) << "-"
-         << std::setw(2) << std::setfill('0')
-         << static_cast<unsigned>(ymd.day());
+  stream << std::setw(4) << std::setfill('0') << static_cast<int>(ymd.year())
+         << "-" << std::setw(2) << std::setfill('0')
+         << static_cast<unsigned>(ymd.month()) << "-" << std::setw(2)
+         << std::setfill('0') << static_cast<unsigned>(ymd.day());
   return stream.str();
 }
 
@@ -248,16 +246,19 @@ auto ToCliDataQueryAction(tracer_core::core::dto::DataQueryAction action)
           "Mapping names action must be handled before SQL query conversion.");
     case CoreAction::kActivityAliasMappings:
       throw std::runtime_error(
-          "Activity alias mappings action must be handled before SQL query conversion.");
+          "Activity alias mappings action must be handled before SQL query "
+          "conversion.");
     case CoreAction::kMappingAliasKeys:
       throw std::runtime_error(
-          "Mapping alias keys action must be handled before SQL query conversion.");
+          "Mapping alias keys action must be handled before SQL query "
+          "conversion.");
     case CoreAction::kWakeKeywords:
       throw std::runtime_error(
           "Wake keywords action must be handled before SQL query conversion.");
     case CoreAction::kAuthorableEventTokens:
       throw std::runtime_error(
-          "Authorable event tokens action must be handled before SQL query conversion.");
+          "Authorable event tokens action must be handled before SQL query "
+          "conversion.");
     case CoreAction::kReportChart:
       return infra_data_query::DataQueryAction::kReportChart;
     case CoreAction::kReportComposition:

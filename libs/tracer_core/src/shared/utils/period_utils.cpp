@@ -84,9 +84,11 @@ auto FormatDate(const sys_days& date) -> std::string {
   output.reserve(kDateStringLength);
   AppendPaddedNumber(output, static_cast<int>(ymd.year()), 4);
   output += "-";
-  AppendPaddedNumber(output, static_cast<int>(static_cast<unsigned>(ymd.month())), 2);
+  AppendPaddedNumber(output,
+                     static_cast<int>(static_cast<unsigned>(ymd.month())), 2);
   output += "-";
-  AppendPaddedNumber(output, static_cast<int>(static_cast<unsigned>(ymd.day())), 2);
+  AppendPaddedNumber(output, static_cast<int>(static_cast<unsigned>(ymd.day())),
+                     2);
   return output;
 }
 }  // namespace
@@ -206,8 +208,8 @@ auto IsoWeekStartDate(const IsoWeek& week) -> std::string {
   int jan4_weekday = static_cast<int>(weekday{jan4}.iso_encoding());
   sys_days first_thursday = jan4 + days{kThursdayOffset - jan4_weekday};
   sys_days first_monday = first_thursday - days{kFirstMondayOffset};
-  sys_days start = first_monday +
-                   days{static_cast<std::int64_t>(kDaysInWeek) * (week.week - 1)};
+  sys_days start = first_monday + days{static_cast<std::int64_t>(kDaysInWeek) *
+                                       (week.week - 1)};
   return FormatDate(start);
 }
 

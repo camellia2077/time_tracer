@@ -59,6 +59,7 @@ class TidyFixStrategyConfig:
             "performance-for-range-copy",
             "modernize-pass-by-value",
             "readability-identifier-naming",
+            "bugprone-narrowing-conversions",
         ]
     )
     nolint_allowed: list[str] = field(
@@ -90,10 +91,8 @@ class TidySourceScopeConfig:
 class TidyConfig:
     max_lines: int = 100
     max_diags: int = 10
-    batch_size: int = 50
     jobs_full: int = 0
-    jobs_task_batch: int = 0
-    parse_workers: int = 0
+    jobs_task: int = 0
     keep_going: bool = True
     header_filter_regex: str = r"^(?!.*[\\/]_deps[\\/]).*"
     run_fix_before_tidy: bool = True

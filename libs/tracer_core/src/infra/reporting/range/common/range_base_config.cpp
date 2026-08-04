@@ -38,7 +38,6 @@ auto RangeBaseConfig::GetStatusDaysLabel() const -> const std::string& {
   return status_days_label_;
 }
 
-
 auto RangeBaseConfig::GetExerciseDaysLabel() const -> const std::string& {
   return exercise_days_label_;
 }

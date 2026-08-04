@@ -67,8 +67,7 @@ inline auto BuildAliasFieldPath(std::string_view relative_child_path,
                                 const std::vector<std::string>& groups,
                                 std::string_view leaf_key) -> std::string {
   std::string field = "activity hierarchy TOML file `" +
-                      std::string(relative_child_path) +
-                      "` field `canonical";
+                      std::string(relative_child_path) + "` field `canonical";
   for (const auto& group : groups) {
     field += ".";
     field += group;
@@ -122,9 +121,9 @@ inline auto BuildTomlDiagnostic(const fs::path& path, std::size_t line_number,
 inline auto BuildTomlDiagnostic(const fs::path& path,
                                 const toml::source_region& source,
                                 std::string_view message) -> std::string {
-  return BuildTomlDiagnostic(
-      path, static_cast<std::size_t>(source.begin.line),
-      static_cast<std::size_t>(source.begin.column), message);
+  return BuildTomlDiagnostic(path, static_cast<std::size_t>(source.begin.line),
+                             static_cast<std::size_t>(source.begin.column),
+                             message);
 }
 
 inline auto BuildTomlDiagnostic(const fs::path& path, const toml::node& node,
@@ -147,7 +146,8 @@ inline auto BuildAliasChildParseHint(const fs::path& relative_path,
   }
 
   return message +
-         " | Activity hierarchy TOML files are encoded as TOML table paths such as "
+         " | Activity hierarchy TOML files are encoded as TOML table paths "
+         "such as "
          "`[canonical.study.math]`. In TOML table headers, unquoted path "
          "segments cannot contain spaces. This is a TOML syntax requirement, "
          "not an alias-timing or database rule. If a canonical path segment "
@@ -169,7 +169,8 @@ inline auto LoadAliasMappingDefinition(const fs::path& alias_directory_path,
   //
   // Design rules:
   // 1. Every alias key must be globally unambiguous.
-  //    A given alias key must always resolve to exactly one canonical activity path.
+  //    A given alias key must always resolve to exactly one canonical activity
+  //    path.
   // 2. Canonical activity paths do not need to be unique.
   //    Different alias keys may resolve to the same canonical activity path.
   // 3. Duplicate alias keys are rejected strictly, even if the right-hand value
@@ -183,7 +184,8 @@ inline auto LoadAliasMappingDefinition(const fs::path& alias_directory_path,
   // later inserted into or queried from the database.
   // Those concerns belong to later conversion, persistence, and query stages.
   //
-  const fs::path normalized_alias_directory = fs::absolute(alias_directory_path);
+  const fs::path normalized_alias_directory =
+      fs::absolute(alias_directory_path);
   if (!fs::exists(normalized_alias_directory) ||
       !fs::is_directory(normalized_alias_directory)) {
     return AliasMappingDefinition{
@@ -194,16 +196,17 @@ inline auto LoadAliasMappingDefinition(const fs::path& alias_directory_path,
   }
 
   std::vector<fs::path> relative_paths;
-  for (const auto& entry : fs::recursive_directory_iterator(
-           normalized_alias_directory)) {
+  for (const auto& entry :
+       fs::recursive_directory_iterator(normalized_alias_directory)) {
     if (entry.is_regular_file() && IsAliasChildTomlPath(entry.path())) {
       relative_paths.push_back(
           fs::relative(entry.path(), normalized_alias_directory));
     }
   }
-  std::ranges::sort(relative_paths, [](const fs::path& left, const fs::path& right) {
-    return left.generic_string() < right.generic_string();
-  });
+  std::ranges::sort(relative_paths,
+                    [](const fs::path& left, const fs::path& right) {
+                      return left.generic_string() < right.generic_string();
+                    });
   AliasMappingDefinition definition{
       .alias_directory_path = normalized_alias_directory,
       .child_files = {},
@@ -212,13 +215,13 @@ inline auto LoadAliasMappingDefinition(const fs::path& alias_directory_path,
   definition.child_files.reserve(relative_paths.size());
 
   std::unordered_map<std::string, AliasSourceLocation> alias_sources;
-  const auto add_expanded_alias =
-      [&](const AliasMappingChildFile& child_file,
-          const AliasDocumentAlias& alias, std::string_view canonical) -> void {
+  const auto add_expanded_alias = [&](const AliasMappingChildFile& child_file,
+                                      const AliasDocumentAlias& alias,
+                                      std::string_view canonical) -> void {
     const auto [existing_it, inserted] = alias_sources.emplace(
-        alias.value, AliasSourceLocation{child_file.absolute_path,
-                                         alias.source.line,
-                                         alias.source.column});
+        alias.value,
+        AliasSourceLocation{child_file.absolute_path, alias.source.line,
+                            alias.source.column});
     if (!inserted) {
       throw std::runtime_error(BuildTomlDiagnostic(
           child_file.absolute_path, alias.source,
@@ -260,11 +263,11 @@ inline auto LoadAliasMappingDefinition(const fs::path& alias_directory_path,
     //   parent -> top-level canonical segment
     //   canonical.<group path> -> middle canonical segments
     //   canonical leaf key -> user-authored alias string array
-    // `parent` owns the top-level segment; nested canonical tables contribute the
-    // middle path segments before the string leaf becomes the canonical tail.
-    // Child files therefore define the top-level ownership boundary, while the
-    // written order of alias entries inside the same file/group remains
-    // non-semantic.
+    // `parent` owns the top-level segment; nested canonical tables contribute
+    // the middle path segments before the string leaf becomes the canonical
+    // tail. Child files therefore define the top-level ownership boundary,
+    // while the written order of alias entries inside the same file/group
+    // remains non-semantic.
     definition.child_files.push_back({
         .relative_path = relative_path,
         .absolute_path = absolute_path,

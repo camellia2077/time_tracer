@@ -20,9 +20,10 @@ auto RunInfrastructureModuleReportsSmoke() -> int {
   const auto kRunPeriodQuery =
       &tracer::core::infrastructure::reports::ReportService::RunPeriodQuery;
   const auto kQueryAllDaily = &tracer::core::infrastructure::reports::
-      SqliteReportDataQueryService::QueryAllDaily;
-  const auto kListDailyTargets = &tracer::core::infrastructure::reports::
-      SqliteReportDataQueryService::ListDailyTargets;
+                                  SqliteReportDataQueryService::QueryAllDaily;
+  const auto kListDailyTargets =
+      &tracer::core::infrastructure::reports::SqliteReportDataQueryService::
+          ListDailyTargets;
   const auto kListYearlyTargets =
       &tracer::core::infrastructure::reports::LazySqliteReportDataQueryService::
           ListYearlyTargets;
@@ -78,18 +79,17 @@ auto RunInfrastructureModuleReportsSmoke() -> int {
                                .activity_count = 1}});
     writer.InsertRecords(
         {TimeRecordInternal{.kind = ActivityRecordKind::kEndOnly,
-                             .logical_id = 9,
-                             .start_timestamp = 0,
-                             .end_timestamp = 1770000000,
-                             .start_time_str = "",
-                             .end_time_str = "12:00",
-                             .project_path = "work",
-                             .duration_seconds = 0,
-                             .remark = std::nullopt,
-                             .date = "2023-11-30"}});
+                            .logical_id = 9,
+                            .start_timestamp = 0,
+                            .end_timestamp = 1770000000,
+                            .start_time_str = "",
+                            .end_time_str = "12:00",
+                            .project_path = "work",
+                            .duration_seconds = 0,
+                            .remark = std::nullopt,
+                            .date = "2023-11-30"}});
     const auto kEndOnlyDay = data_query_service.QueryDaily("2023-11-30");
-    if (kEndOnlyDay.activity_count != 1 ||
-        kEndOnlyDay.total_duration != 0 ||
+    if (kEndOnlyDay.activity_count != 1 || kEndOnlyDay.total_duration != 0 ||
         kEndOnlyDay.detailed_records.size() != 1U ||
         kEndOnlyDay.detailed_records.front().kind !=
             ActivityRecordKind::kEndOnly) {

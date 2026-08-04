@@ -1,5 +1,6 @@
 // Atomic record helpers for alias validation and TXT day-block text assembly.
-// Keep this block isolated so record input semantics can be tested independently.
+// Keep this block isolated so record input semantics can be tested
+// independently.
 
 struct ParsedIsoDate {
   int year = 0;
@@ -80,7 +81,8 @@ constexpr std::string_view kOvernightContinuationWarning =
   const int day = std::stoi(trimmed.substr(8, 2));
   const int max_day = DaysInMonth(year, month);
   if (month < 1 || month > 12 || day < 1 || day > max_day) {
-    throw std::invalid_argument("target_date_iso is not a valid calendar date.");
+    throw std::invalid_argument(
+        "target_date_iso is not a valid calendar date.");
   }
 
   ParsedIsoDate parsed{};
@@ -140,8 +142,7 @@ constexpr std::string_view kOvernightContinuationWarning =
   return Trim(cleaned);
 }
 
-[[nodiscard]] auto NormalizeForComparison(std::string_view raw)
-    -> std::string {
+[[nodiscard]] auto NormalizeForComparison(std::string_view raw) -> std::string {
   std::string normalized;
   normalized.reserve(raw.size());
   for (const char ch : raw) {
@@ -177,7 +178,7 @@ constexpr std::string_view kOvernightContinuationWarning =
     return std::nullopt;
   }
   const bool has_hhmmss = first_non_space + 6U <= line.size() &&
-      IsDigitsOnly(line.substr(first_non_space, 6U));
+                          IsDigitsOnly(line.substr(first_non_space, 6U));
   const std::string_view time =
       line.substr(first_non_space, has_hhmmss ? 6U : 4U);
   if (!IsDigitsOnly(time)) {
@@ -196,8 +197,8 @@ constexpr std::string_view kOvernightContinuationWarning =
   if (first_non_space == std::string_view::npos) {
     return "";
   }
-  std::string raw_body = Trim(std::string(
-      line.substr(first_non_space + hhmm->size())));
+  std::string raw_body =
+      Trim(std::string(line.substr(first_non_space + hhmm->size())));
   if (raw_body.empty()) {
     return "";
   }
@@ -278,13 +279,14 @@ constexpr std::string_view kOvernightContinuationWarning =
   return std::stoi(trimmed.substr(1));
 }
 
-[[nodiscard]] auto FindLastEventBefore(
-    const std::vector<std::string>& lines, const int end_exclusive,
-    const int year, const int month) -> std::optional<PreviousEventContext> {
+[[nodiscard]] auto FindLastEventBefore(const std::vector<std::string>& lines,
+                                       const int end_exclusive, const int year,
+                                       const int month)
+    -> std::optional<PreviousEventContext> {
   int day = 0;
   for (int index = end_exclusive - 1; index >= 0; --index) {
-    if (const auto marker = TryParseDayMarker(
-            lines[static_cast<std::size_t>(index)]);
+    if (const auto marker =
+            TryParseDayMarker(lines[static_cast<std::size_t>(index)]);
         marker.has_value()) {
       day = *marker % 100;
       continue;
@@ -294,18 +296,17 @@ constexpr std::string_view kOvernightContinuationWarning =
     if (day != 0 && event_time.has_value() &&
         record_time_order::TryParseHhmmToMinutes(*event_time).has_value() &&
         !ExtractActivityName(lines[static_cast<std::size_t>(index)]).empty()) {
-      return PreviousEventContext{.year = year,
-                                  .month = month,
-                                  .day = day,
-                                  .time = *event_time};
+      return PreviousEventContext{
+          .year = year, .month = month, .day = day, .time = *event_time};
     }
   }
   return std::nullopt;
 }
 
-[[nodiscard]] auto CalculateElapsedMinutes(
-    const ParsedIsoDate& current, std::string_view current_time,
-    const PreviousEventContext& previous) -> std::optional<int> {
+[[nodiscard]] auto CalculateElapsedMinutes(const ParsedIsoDate& current,
+                                           std::string_view current_time,
+                                           const PreviousEventContext& previous)
+    -> std::optional<int> {
   const auto current_minutes =
       record_time_order::TryParseHhmmToMinutes(current_time);
   const auto previous_minutes =
@@ -326,8 +327,8 @@ constexpr std::string_view kOvernightContinuationWarning =
   if (current_day < previous_day) {
     return std::nullopt;
   }
-  const auto day_delta = static_cast<int>(
-      (current_day - previous_day) / (24 * 60 * 60));
+  const auto day_delta =
+      static_cast<int>((current_day - previous_day) / (24 * 60 * 60));
   const int elapsed =
       day_delta * 24 * 60 + *current_minutes - *previous_minutes;
   return elapsed > 0 ? std::optional<int>(elapsed) : std::nullopt;
@@ -344,10 +345,12 @@ constexpr std::string_view kOvernightContinuationWarning =
                                             mode);
 }
 
-[[nodiscard]] auto HasDuplicateInDayBlock(
-    const std::vector<std::string>& lines, const int block_start,
-    const int block_end, std::string_view event_time,
-    std::string_view normalized_activity) -> bool {
+[[nodiscard]] auto HasDuplicateInDayBlock(const std::vector<std::string>& lines,
+                                          const int block_start,
+                                          const int block_end,
+                                          std::string_view event_time,
+                                          std::string_view normalized_activity)
+    -> bool {
   const std::string normalized_target =
       NormalizeForComparison(normalized_activity);
   if (normalized_target.empty()) {
@@ -387,7 +390,8 @@ constexpr std::string_view kOvernightContinuationWarning =
   for (const auto& line : lines) {
     stream << line << '\n';
   }
-  return modtext::RequireCanonicalText(stream.str(), "record_activity_candidate");
+  return modtext::RequireCanonicalText(stream.str(),
+                                       "record_activity_candidate");
 }
 
 [[nodiscard]] auto BuildRawEventLine(std::string_view hhmm,
@@ -431,10 +435,9 @@ constexpr std::string_view kOvernightContinuationWarning =
     return std::nullopt;
   }
 
-  const auto first_activity = FindFirstActivityName(lines, block_start,
-                                                    block_end);
-  if (first_activity.has_value() &&
-      !wake_keywords.empty() &&
+  const auto first_activity =
+      FindFirstActivityName(lines, block_start, block_end);
+  if (first_activity.has_value() && !wake_keywords.empty() &&
       !IsWakeKeywordActivity(*first_activity, wake_keywords)) {
     return std::string(kOvernightContinuationWarning);
   }
@@ -462,14 +465,14 @@ constexpr std::string_view kOvernightContinuationWarning =
   // canonical representation so records created through this path have the
   // same activity-name representation as an explicit alias-to-canonical
   // conversion.
-  const std::string normalized = NormalizeActivityNameForRecord(raw_activity_name);
+  const std::string normalized =
+      NormalizeActivityNameForRecord(raw_activity_name);
   if (normalized.empty()) {
     throw std::invalid_argument("Activity name is empty.");
   }
   const bool matches_canonical = std::ranges::any_of(
-      config.text_mapping, [&](const auto& entry) -> bool {
-        return entry.second == normalized;
-      });
+      config.text_mapping,
+      [&](const auto& entry) -> bool { return entry.second == normalized; });
   if (config.text_mapping.contains(normalized) || matches_canonical ||
       IsWakeKeywordActivity(normalized, config.sleep_inference.wake_keywords)) {
     const ActivityNameTextConverter converter(config);
@@ -488,11 +491,11 @@ constexpr std::string_view kOvernightContinuationWarning =
     const TimeOrderMode time_order_mode,
     const std::vector<std::string>& wake_keywords,
     const std::optional<PreviousEventContext>& previous_month_last_event =
-        std::nullopt)
-    -> CandidateRecordBuildResult {
-  // Record Activity starts from one synthesized event line, but core validation semantics are
-  // defined for a whole month TXT. Build the full candidate content in memory first so the new
-  // line is judged in document context before official TXT is modified.
+        std::nullopt) -> CandidateRecordBuildResult {
+  // Record Activity starts from one synthesized event line, but core validation
+  // semantics are defined for a whole month TXT. Build the full candidate
+  // content in memory first so the new line is judged in document context
+  // before official TXT is modified.
   std::vector<std::string> lines = SplitLines(existing_content);
   const std::string event_time = GetCurrentLocalHhmmss();
   const std::string event_line =
@@ -500,8 +503,8 @@ constexpr std::string_view kOvernightContinuationWarning =
   const std::string day_marker_line =
       BuildDayMarkerLine(logical_date.day_marker);
 
-  const auto block_start_it = std::ranges::find_if(
-      lines, [&](const std::string& line) -> bool {
+  const auto block_start_it =
+      std::ranges::find_if(lines, [&](const std::string& line) -> bool {
         return Trim(line) == day_marker_line;
       });
 
@@ -514,11 +517,11 @@ constexpr std::string_view kOvernightContinuationWarning =
     lines.push_back(event_line);
     std::optional<int> gap_from_previous_minutes = std::nullopt;
     if (IsWakeKeywordActivity(record_activity_name, wake_keywords)) {
-      const auto previous = FindLastEventBefore(
-          lines, static_cast<int>(lines.size()) - 2, logical_date.year,
-          logical_date.month);
-      const auto& baseline = previous.has_value() ? previous
-                                                   : previous_month_last_event;
+      const auto previous =
+          FindLastEventBefore(lines, static_cast<int>(lines.size()) - 2,
+                              logical_date.year, logical_date.month);
+      const auto& baseline =
+          previous.has_value() ? previous : previous_month_last_event;
       if (baseline.has_value()) {
         gap_from_previous_minutes =
             CalculateElapsedMinutes(logical_date, event_time, *baseline);
@@ -545,7 +548,8 @@ constexpr std::string_view kOvernightContinuationWarning =
   if (HasDuplicateInDayBlock(lines, block_start, block_end, event_time,
                              record_activity_name)) {
     warnings.push_back(
-        "Possible duplicate record: same HHmm and activity already exists in this day.");
+        "Possible duplicate record: same HHmm and activity already exists in "
+        "this day.");
   }
 
   const auto last_event_time =
@@ -555,9 +559,8 @@ constexpr std::string_view kOvernightContinuationWarning =
       !IsStrictlyAfter(event_time, *last_event_time, time_order_mode)) {
     throw std::invalid_argument(
         "Record rejected: new time " + event_time +
-        " must be later than last event time " + *last_event_time +
-        " in day " + logical_date.day_marker +
-        ". Use DAY/ALL editor for backfill edits.");
+        " must be later than last event time " + *last_event_time + " in day " +
+        logical_date.day_marker + ". Use DAY/ALL editor for backfill edits.");
   }
   if (last_event_time.has_value()) {
     // `gap_from_previous_minutes` is a presentation metric for Record success
@@ -572,9 +575,8 @@ constexpr std::string_view kOvernightContinuationWarning =
       const int mapped_candidate =
           record_time_order::MapMinutesForTimeOrderMode(*candidate_minutes,
                                                         time_order_mode);
-      const int mapped_baseline =
-          record_time_order::MapMinutesForTimeOrderMode(*baseline_minutes,
-                                                        time_order_mode);
+      const int mapped_baseline = record_time_order::MapMinutesForTimeOrderMode(
+          *baseline_minutes, time_order_mode);
       const int delta_minutes = mapped_candidate - mapped_baseline;
       if (delta_minutes > 0) {
         gap_from_previous_minutes = delta_minutes;
@@ -583,8 +585,8 @@ constexpr std::string_view kOvernightContinuationWarning =
   } else if (IsWakeKeywordActivity(record_activity_name, wake_keywords)) {
     const auto previous = FindLastEventBefore(
         lines, block_start, logical_date.year, logical_date.month);
-    const auto& baseline = previous.has_value() ? previous
-                                                 : previous_month_last_event;
+    const auto& baseline =
+        previous.has_value() ? previous : previous_month_last_event;
     if (baseline.has_value()) {
       gap_from_previous_minutes =
           CalculateElapsedMinutes(logical_date, event_time, *baseline);

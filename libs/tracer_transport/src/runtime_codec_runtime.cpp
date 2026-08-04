@@ -2,7 +2,7 @@
 #include <string>
 
 #include "nlohmann/json.hpp"
-#include "tracer/transport/runtime_codec.hpp"
+#include "tracer/transport/runtime_codec_runtime.hpp"
 
 import tracer.transport;
 

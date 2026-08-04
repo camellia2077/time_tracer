@@ -1,4 +1,5 @@
-// Atomic record helpers for TXT candidate transaction, validation, ingest, and rollback.
+// Atomic record helpers for TXT candidate transaction, validation, ingest, and
+// rollback.
 
 struct ResolvedRecordPaths {
   fs::path runtime_root;
@@ -98,9 +99,8 @@ auto WriteCanonicalTextFile(const fs::path& path, std::string_view content)
     std::string_view preferred_txt_path,
     bool allow_missing_preferred_txt_path = false) -> ResolvedRecordPaths {
   ResolvedRecordPaths paths = BuildRuntimeRoots(output_root);
-  const std::string default_relative =
-      std::format("{0:04d}/{0:04d}-{1:02d}.txt", logical_date.year,
-                  logical_date.month);
+  const std::string default_relative = std::format(
+      "{0:04d}/{0:04d}-{1:02d}.txt", logical_date.year, logical_date.month);
 
   if (!preferred_txt_path.empty()) {
     const auto [canonical_target, relative_target] =
@@ -121,7 +121,8 @@ auto WriteCanonicalTextFile(const fs::path& path, std::string_view content)
     return paths;
   }
 
-  paths.target_txt_path = fs::weakly_canonical(paths.input_root) / default_relative;
+  paths.target_txt_path =
+      fs::weakly_canonical(paths.input_root) / default_relative;
   paths.target_relative_path = default_relative;
   return paths;
 }
@@ -135,11 +136,10 @@ auto EnsureTargetMonthMatchesLogicalDate(const std::string& content,
   }
   if (target_month->year != logical_date.year ||
       target_month->month != logical_date.month) {
-    throw std::invalid_argument("Target TXT header month " +
-                                target_month->month_key +
-                                " does not match target_date_iso month " +
-                                logical_date.month_key + ": " +
-                                target_path.string());
+    throw std::invalid_argument(
+        "Target TXT header month " + target_month->month_key +
+        " does not match target_date_iso month " + logical_date.month_key +
+        ": " + target_path.string());
   }
 }
 
@@ -154,10 +154,9 @@ auto EnsureTargetMonthMatchesLogicalDate(const std::string& content,
 
   static std::atomic<unsigned long long> counter{0};
   const auto sequence = counter.fetch_add(1) + 1;
-  const auto now_ms =
-      std::chrono::duration_cast<std::chrono::milliseconds>(
-          std::chrono::system_clock::now().time_since_epoch())
-          .count();
+  const auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                          std::chrono::system_clock::now().time_since_epoch())
+                          .count();
   const std::string operation_id =
       std::format("record_activity_txn_{}_{}", now_ms, sequence);
   const fs::path root = cache_root / operation_id;
@@ -182,8 +181,8 @@ auto CleanupTransactionWorkspace(const fs::path& root) -> void {
   fs::remove_all(root, io_error);
 }
 
-[[nodiscard]] auto FindPreviousMonthLastEvent(
-    const fs::path& input_root, const ParsedIsoDate& logical_date)
+[[nodiscard]] auto FindPreviousMonthLastEvent(const fs::path& input_root,
+                                              const ParsedIsoDate& logical_date)
     -> std::optional<PreviousEventContext> {
   int year = logical_date.year;
   int month = logical_date.month - 1;
@@ -203,7 +202,8 @@ auto CleanupTransactionWorkspace(const fs::path& root) -> void {
                                month);
   } catch (...) {
     // A stale or malformed previous-month file must not prevent recording the
-    // current wake event; it only makes the optional display metric unavailable.
+    // current wake event; it only makes the optional display metric
+    // unavailable.
     return std::nullopt;
   }
 }
@@ -211,8 +211,8 @@ auto CleanupTransactionWorkspace(const fs::path& root) -> void {
 [[nodiscard]] auto BuildRecordSuccessMessage(
     const ParsedIsoDate& logical_date, const fs::path& target_path,
     const std::optional<int>& gap_from_previous_minutes,
-    const bool month_file_created,
-    const std::vector<std::string>& warnings) -> std::string {
+    const bool month_file_created, const std::vector<std::string>& warnings)
+    -> std::string {
   const auto format_elapsed = [](const int minutes) -> std::string {
     const int hours = minutes / 60;
     const int mins = minutes % 60;
@@ -272,16 +272,18 @@ auto RestoreOfficialTxt(const fs::path& target_txt_path,
   if (fs::exists(target_txt_path)) {
     fs::remove(target_txt_path, io_error);
     if (io_error || fs::exists(target_txt_path)) {
-      throw std::runtime_error("Failed to remove newly created TXT during rollback: " +
-                               target_txt_path.string() +
-                               (io_error ? " | " + io_error.message() : ""));
+      throw std::runtime_error(
+          "Failed to remove newly created TXT during rollback: " +
+          target_txt_path.string() +
+          (io_error ? " | " + io_error.message() : ""));
     }
   }
 }
 
 [[nodiscard]] auto RunManualValidationPipeline(
     const fs::path& output_root, const ConverterConfig& converter_config,
-    std::shared_ptr<app_ports::IValidationIssueReporter> validation_issue_reporter,
+    std::shared_ptr<app_ports::IValidationIssueReporter>
+        validation_issue_reporter,
     const IngestInputModel& input, const DateCheckMode date_check_mode)
     -> PipelineSession {
   modports::ClearBufferedDiagnostics();
@@ -297,12 +299,13 @@ auto RestoreOfficialTxt(const fs::path& target_txt_path,
   session.state.converter_config = converter_config;
   session.state.ingest_inputs = {input};
 
-  runtime_bridge::LogInfo("\n--- Atomic Record Candidate Validation Started ---");
+  runtime_bridge::LogInfo(
+      "\n--- Atomic Record Candidate Validation Started ---");
   runtime_bridge::LogInfo(
       "[STEP] Step: Pre-validating File Structure before Conversion...");
   if (!StructureValidationStage::Execute(session)) {
-    throw std::runtime_error(
-        BuildPipelineFailureMessage("Atomic record structure validation failed."));
+    throw std::runtime_error(BuildPipelineFailureMessage(
+        "Atomic record structure validation failed."));
   }
 
   if (!ConversionStage::Execute(session)) {
@@ -328,7 +331,8 @@ auto RunRecordActivityAtomicallySupport(
     const RecordActivityAtomicallyRequest& request,
     const fs::path& output_root_path,
     app_ports::IConverterConfigProvider& converter_config_provider,
-    std::shared_ptr<app_ports::IValidationIssueReporter> validation_issue_reporter,
+    std::shared_ptr<app_ports::IValidationIssueReporter>
+        validation_issue_reporter,
     const RunSingleTxtReplaceMonthIngestFn& run_single_txt_replace_month_ingest)
     -> RecordActivityAtomicallyResponse {
   try {
@@ -353,10 +357,10 @@ auto RunRecordActivityAtomicallySupport(
 
     const bool target_previously_existed =
         fs::exists(resolved_paths.target_txt_path);
-    const std::string official_content = target_previously_existed
-                                             ? ReadCanonicalTextFile(
-                                                   resolved_paths.target_txt_path)
-                                             : BuildMonthTemplate(logical_date);
+    const std::string official_content =
+        target_previously_existed
+            ? ReadCanonicalTextFile(resolved_paths.target_txt_path)
+            : BuildMonthTemplate(logical_date);
     if (target_previously_existed) {
       EnsureTargetMonthMatchesLogicalDate(official_content, logical_date,
                                           resolved_paths.target_txt_path);
@@ -368,9 +372,8 @@ auto RunRecordActivityAtomicallySupport(
     // Upper layer chooses explicit time_order_mode. This layer only applies
     // generic mode semantics and must not infer/override mode on its own.
     CandidateRecordBuildResult candidate_build = BuildCandidateRecordContent(
-        official_content, logical_date, record_activity_name,
-        normalized_remark, request.time_order_mode,
-        converter_config.sleep_inference.wake_keywords,
+        official_content, logical_date, record_activity_name, normalized_remark,
+        request.time_order_mode, converter_config.sleep_inference.wake_keywords,
         previous_month_last_event);
     candidate_build.month_file_created = !target_previously_existed;
 
@@ -401,9 +404,10 @@ auto RunRecordActivityAtomicallySupport(
       fs::create_directories(resolved_paths.target_txt_path.parent_path(),
                              io_error);
       if (io_error) {
-        throw std::runtime_error("Failed to prepare target TXT directory: " +
-                                 resolved_paths.target_txt_path.parent_path().string() +
-                                 " | " + io_error.message());
+        throw std::runtime_error(
+            "Failed to prepare target TXT directory: " +
+            resolved_paths.target_txt_path.parent_path().string() + " | " +
+            io_error.message());
       }
       WriteCanonicalTextFile(resolved_paths.target_txt_path, candidate_content);
 
@@ -417,40 +421,44 @@ auto RunRecordActivityAtomicallySupport(
                              target_previously_existed);
         } catch (const std::exception& rollback_error) {
           retain_workspace = true;
-          response = {.ok = false,
-                      .message = std::string("Atomic record ingest failed and TXT rollback also failed. ingest=") +
-                                 ingest_error.what() + " | rollback=" +
-                                 rollback_error.what(),
-                      .operation_id = workspace.operation_id,
-                      .warnings = candidate_build.warnings,
-                      .rollback_failed = true,
-                      .retained_transaction_root = workspace.root.string()};
+          response = {
+              .ok = false,
+              .message = std::string("Atomic record ingest failed and TXT "
+                                     "rollback also failed. ingest=") +
+                         ingest_error.what() +
+                         " | rollback=" + rollback_error.what(),
+              .operation_id = workspace.operation_id,
+              .warnings = candidate_build.warnings,
+              .rollback_failed = true,
+              .retained_transaction_root = workspace.root.string()};
           response_ready = true;
         }
 
         if (!response_ready) {
-          response = {.ok = false,
-                      .message = std::string("Atomic record ingest failed. Official TXT has been rolled back: ") +
-                                 ingest_error.what(),
-                      .operation_id = workspace.operation_id,
-                      .warnings = candidate_build.warnings,
-                      .rollback_failed = false,
-                      .retained_transaction_root = std::nullopt};
+          response = {
+              .ok = false,
+              .message = std::string("Atomic record ingest failed. Official "
+                                     "TXT has been rolled back: ") +
+                         ingest_error.what(),
+              .operation_id = workspace.operation_id,
+              .warnings = candidate_build.warnings,
+              .rollback_failed = false,
+              .retained_transaction_root = std::nullopt};
           response_ready = true;
         }
       }
 
       if (!response_ready) {
-        response = {.ok = true,
-                    .message = BuildRecordSuccessMessage(
-                        logical_date, resolved_paths.target_txt_path,
-                        candidate_build.gap_from_previous_minutes,
-                        candidate_build.month_file_created,
-                        candidate_build.warnings),
-                    .operation_id = workspace.operation_id,
-                    .warnings = candidate_build.warnings,
-                    .rollback_failed = false,
-                    .retained_transaction_root = std::nullopt};
+        response = {
+            .ok = true,
+            .message = BuildRecordSuccessMessage(
+                logical_date, resolved_paths.target_txt_path,
+                candidate_build.gap_from_previous_minutes,
+                candidate_build.month_file_created, candidate_build.warnings),
+            .operation_id = workspace.operation_id,
+            .warnings = candidate_build.warnings,
+            .rollback_failed = false,
+            .retained_transaction_root = std::nullopt};
         response_ready = true;
       }
     } catch (const std::exception& error) {

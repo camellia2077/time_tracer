@@ -59,8 +59,7 @@ auto RenderActivitySuggestionsOutput(
 
 auto RenderProjectTreeOutput(const std::vector<ProjectTreeNode>& nodes,
                              int max_depth, int max_available_depth,
-                             DataQueryOutputMode output_mode)
-    -> std::string {
+                             DataQueryOutputMode output_mode) -> std::string {
   if (ShouldRenderSemanticJson(output_mode)) {
     return BuildSemanticTreePayload(nodes, max_depth, max_available_depth);
   }

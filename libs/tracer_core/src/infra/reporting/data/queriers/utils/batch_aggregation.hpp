@@ -13,10 +13,9 @@
 namespace reports::data::batch {
 
 template <typename ReportDataT>
-void FinalizeAggregation(ReportDataT& data,
-                         const std::map<std::int64_t, std::int64_t>& project_agg,
-                         int actual_days,
-                         const IProjectInfoProvider& provider) {
+void FinalizeAggregation(
+    ReportDataT& data, const std::map<std::int64_t, std::int64_t>& project_agg,
+    int actual_days, const IProjectInfoProvider& provider) {
   data.actual_days = actual_days;
   data.project_stats.clear();
   data.project_stats.reserve(project_agg.size());
@@ -30,10 +29,10 @@ void FinalizeAggregation(ReportDataT& data,
 }
 
 template <typename ReportDataT>
-void FinalizeAggregation(ReportDataT& data,
-                         const std::map<std::int64_t, std::int64_t>& project_agg,
-                         const std::set<std::string>& distinct_dates,
-                         const IProjectInfoProvider& provider) {
+void FinalizeAggregation(
+    ReportDataT& data, const std::map<std::int64_t, std::int64_t>& project_agg,
+    const std::set<std::string>& distinct_dates,
+    const IProjectInfoProvider& provider) {
   FinalizeAggregation(data, project_agg,
                       static_cast<int>(distinct_dates.size()), provider);
 }

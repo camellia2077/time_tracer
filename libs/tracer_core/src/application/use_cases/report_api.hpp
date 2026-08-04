@@ -26,7 +26,8 @@ class ReportApi final : public IReportApi {
       -> tracer_core::core::dto::TextOutput override;
 
   auto RunTemporalStructuredReportQuery(
-      const tracer_core::core::dto::TemporalStructuredReportQueryRequest& request)
+      const tracer_core::core::dto::TemporalStructuredReportQueryRequest&
+          request)
       -> tracer_core::core::dto::TemporalStructuredReportOutput override;
 
   auto RunPeriodBatchQuery(

@@ -2,9 +2,12 @@
 #define APPLICATION_USE_CASES_REPORT_API_SUPPORT_HPP_
 
 #include <exception>
+#include <filesystem>
+#include <optional>
 #include <string>
 #include <string_view>
 
+#include "application/dto/reporting_requests.hpp"
 #include "application/dto/reporting_responses.hpp"
 #include "application/dto/shared_envelopes.hpp"
 #include "domain/reports/types/report_types.hpp"
@@ -30,6 +33,25 @@ auto BuildStructuredPeriodBatchFailure(std::string_view operation)
 
 auto BuildPeriodBatchErrorLine(int days, std::string_view details)
     -> std::string;
+
+auto BuildDayPath(const std::filesystem::path& export_root, ReportFormat format,
+                  std::string_view date) -> std::filesystem::path;
+auto BuildMonthPath(const std::filesystem::path& export_root,
+                    ReportFormat format, std::string_view month)
+    -> std::filesystem::path;
+auto BuildRecentPath(const std::filesystem::path& export_root,
+                     ReportFormat format, int days) -> std::filesystem::path;
+auto BuildWeekPath(const std::filesystem::path& export_root,
+                   ReportFormat format, std::string_view iso_week)
+    -> std::filesystem::path;
+auto BuildYearPath(const std::filesystem::path& export_root,
+                   ReportFormat format, std::string_view year)
+    -> std::filesystem::path;
+auto BuildRangePath(const std::filesystem::path& export_root,
+                    ReportFormat format, std::string_view start_date,
+                    std::string_view end_date) -> std::filesystem::path;
+auto WriteExportFileIfNeeded(const std::filesystem::path& output_path,
+                             std::string_view content) -> void;
 
 }  // namespace tracer::core::application::use_cases::report_support
 

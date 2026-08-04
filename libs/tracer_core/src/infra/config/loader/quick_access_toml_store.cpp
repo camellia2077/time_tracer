@@ -66,12 +66,12 @@ auto ValidateTopLevelKeys(const toml::table& table) -> void {
   QuickAccessConfig config;
   config.aliases.reserve(array->size());
   for (const toml::node& node : *array) {
-    const auto alias = node.value<std::string>();
-    if (!alias.has_value()) {
+    const auto kAlias = node.value<std::string>();
+    if (!kAlias.has_value()) {
       throw std::invalid_argument(
           "quick_access must contain only string values.");
     }
-    config.aliases.push_back(*alias);
+    config.aliases.push_back(*kAlias);
   }
   ValidateAliases(config.aliases);
   return config;
@@ -94,8 +94,7 @@ auto ValidateTopLevelKeys(const toml::table& table) -> void {
 
 }  // namespace
 
-auto ParseQuickAccessToml(std::string_view content)
-    -> QuickAccessConfig {
+auto ParseQuickAccessToml(std::string_view content) -> QuickAccessConfig {
   try {
     return ParseQuickAccessTable(
         toml::parse(content, std::string_view{"quick_access.toml"}));

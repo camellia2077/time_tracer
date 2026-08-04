@@ -52,8 +52,7 @@ namespace {
 
 [[nodiscard]] constexpr auto Majority(const std::uint32_t kX,
                                       const std::uint32_t kY,
-                                      const std::uint32_t kZ)
-    -> std::uint32_t {
+                                      const std::uint32_t kZ) -> std::uint32_t {
   return (kX & kY) ^ (kX & kZ) ^ (kY & kZ);
 }
 
@@ -110,10 +109,9 @@ namespace {
           static_cast<std::uint32_t>(padded[kBase + 3U]);
     }
     for (std::size_t index = 16U; index < 64U; ++index) {
-      schedule[index] = SmallSigma1(schedule[index - 2U]) +
-                        schedule[index - 7U] +
-                        SmallSigma0(schedule[index - 15U]) +
-                        schedule[index - 16U];
+      schedule[index] =
+          SmallSigma1(schedule[index - 2U]) + schedule[index - 7U] +
+          SmallSigma0(schedule[index - 15U]) + schedule[index - 16U];
     }
 
     std::uint32_t a = state[0];
@@ -126,9 +124,8 @@ namespace {
     std::uint32_t h = state[7];
 
     for (std::size_t index = 0; index < 64U; ++index) {
-      const std::uint32_t kTemp1 =
-          h + BigSigma1(e) + Choose(e, f, g) + kRoundConstants[index] +
-          schedule[index];
+      const std::uint32_t kTemp1 = h + BigSigma1(e) + Choose(e, f, g) +
+                                   kRoundConstants[index] + schedule[index];
       const std::uint32_t kTemp2 = BigSigma0(a) + Majority(a, b, c);
       h = g;
       g = f;
@@ -154,10 +151,8 @@ namespace {
   for (std::size_t index = 0; index < state.size(); ++index) {
     const std::uint32_t kWord = state[index];
     digest[index * 4U] = static_cast<std::uint8_t>((kWord >> 24U) & 0xFFU);
-    digest[index * 4U + 1U] =
-        static_cast<std::uint8_t>((kWord >> 16U) & 0xFFU);
-    digest[index * 4U + 2U] =
-        static_cast<std::uint8_t>((kWord >> 8U) & 0xFFU);
+    digest[index * 4U + 1U] = static_cast<std::uint8_t>((kWord >> 16U) & 0xFFU);
+    digest[index * 4U + 2U] = static_cast<std::uint8_t>((kWord >> 8U) & 0xFFU);
     digest[index * 4U + 3U] = static_cast<std::uint8_t>(kWord & 0xFFU);
   }
   return digest;

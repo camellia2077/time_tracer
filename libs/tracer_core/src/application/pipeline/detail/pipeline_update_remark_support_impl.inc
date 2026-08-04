@@ -8,8 +8,7 @@ struct RemarkEventMatch {
   std::size_t delimiter_index = std::string::npos;
 };
 
-[[nodiscard]] auto FindRemarkDelimiter(std::string_view line)
-    -> std::size_t {
+[[nodiscard]] auto FindRemarkDelimiter(std::string_view line) -> std::size_t {
   return line.find("//");
 }
 
@@ -18,8 +17,8 @@ struct RemarkEventMatch {
 }
 
 [[nodiscard]] auto TryParseRemarkEventLine(std::string_view line)
-    -> std::optional<std::tuple<std::string, std::string, std::string,
-                                std::size_t>> {
+    -> std::optional<
+        std::tuple<std::string, std::string, std::string, std::size_t>> {
   const std::string trimmed = Trim(std::string(line));
   const bool has_six_digit_start =
       trimmed.size() >= 6U && IsDigitsOnly(trimmed.substr(0, 6));
@@ -33,8 +32,8 @@ struct RemarkEventMatch {
   std::string end_time;
   std::size_t payload_start = start_time_length;
   if (trimmed.size() >= start_time_length + 7U &&
-             trimmed[start_time_length] == '-' &&
-             IsDigitsOnly(trimmed.substr(start_time_length + 1U, 6))) {
+      trimmed[start_time_length] == '-' &&
+      IsDigitsOnly(trimmed.substr(start_time_length + 1U, 6))) {
     end_time = trimmed.substr(start_time_length + 1U, 6);
     payload_start = start_time_length + 7U;
   } else if (trimmed.size() >= start_time_length + 5U &&
@@ -50,18 +49,16 @@ struct RemarkEventMatch {
   const std::string_view payload(trimmed.data() + payload_start,
                                  trimmed.size() - payload_start);
   const std::size_t delimiter_index = FindRemarkDelimiter(payload);
-  const std::string activity = Trim(std::string(
-      payload.substr(0, delimiter_index == std::string::npos
-                              ? payload.size()
-                              : delimiter_index)));
+  const std::string activity = Trim(std::string(payload.substr(
+      0, delimiter_index == std::string::npos ? payload.size()
+                                              : delimiter_index)));
   if (activity.empty()) {
     return std::nullopt;
   }
   return std::tuple<std::string, std::string, std::string, std::size_t>{
       std::move(start_time), std::move(end_time), std::move(activity),
-      delimiter_index == std::string::npos
-          ? std::string::npos
-          : payload_start + delimiter_index};
+      delimiter_index == std::string::npos ? std::string::npos
+                                           : payload_start + delimiter_index};
 }
 
 [[nodiscard]] auto SplitRemarkBody(std::string_view body)
@@ -103,7 +100,8 @@ struct RemarkEventMatch {
   }
   const long long sequence = request.logical_id % kDailySequenceBase;
   if (sequence <= 0) {
-    throw std::invalid_argument("logical_id does not contain a valid activity sequence.");
+    throw std::invalid_argument(
+        "logical_id does not contain a valid activity sequence.");
   }
 
   auto lines = SplitRemarkBody(resolved.day_body);
@@ -116,8 +114,9 @@ struct RemarkEventMatch {
     }
     ++activity_sequence;
     if (activity_sequence == sequence) {
-      match = RemarkEventMatch{.line_index = index,
-                               .delimiter_index = FindRemarkDelimiter(lines[index])};
+      match = RemarkEventMatch{
+          .line_index = index,
+          .delimiter_index = FindRemarkDelimiter(lines[index])};
       break;
     }
   }
@@ -125,7 +124,8 @@ struct RemarkEventMatch {
     throw std::invalid_argument("target activity event was not found.");
   }
 
-  const std::string normalized_remark = NormalizeRemarkForRecord(request.remark);
+  const std::string normalized_remark =
+      NormalizeRemarkForRecord(request.remark);
   std::string updated_line = lines[match->line_index];
   const std::size_t delimiter_index = FindRemarkDelimiter(updated_line);
   if (delimiter_index != std::string::npos) {
@@ -175,11 +175,12 @@ struct RemarkEventMatch {
     updated_body += line;
     updated_body.push_back('\n');
   }
-  return txt_day_block::ReplaceDayBlock({
-             .content = official_content,
-             .day_marker = logical_date.day_marker,
-             .edited_day_body = updated_body,
-         })
+  return txt_day_block::ReplaceDayBlock(
+             {
+                 .content = official_content,
+                 .day_marker = logical_date.day_marker,
+                 .edited_day_body = updated_body,
+             })
       .updated_content;
 }
 
@@ -194,9 +195,10 @@ auto RunUpdateActivityRemarkAtomicallySupport(
     -> UpdateActivityRemarkAtomicallyResponse {
   try {
     const ParsedIsoDate logical_date = ParseIsoDate(request.target_date_iso);
-    const auto paths = ResolveRecordTargetPaths(
-        output_root_path, logical_date, request.preferred_txt_path);
-    const std::string official_content = ReadCanonicalTextFile(paths.target_txt_path);
+    const auto paths = ResolveRecordTargetPaths(output_root_path, logical_date,
+                                                request.preferred_txt_path);
+    const std::string official_content =
+        ReadCanonicalTextFile(paths.target_txt_path);
     EnsureTargetMonthMatchesLogicalDate(official_content, logical_date,
                                         paths.target_txt_path);
     const std::string candidate_content =
@@ -208,7 +210,8 @@ auto RunUpdateActivityRemarkAtomicallySupport(
       WriteCanonicalTextFile(workspace.candidate_txt_path, candidate_content);
       static_cast<void>(RunManualValidationPipeline(
           output_root_path, converter_config_provider->LoadConverterConfig(),
-          validation_issue_reporter, IngestInputModel{
+          validation_issue_reporter,
+          IngestInputModel{
               .source_id = paths.target_txt_path.string(),
               .source_label = paths.target_txt_path.string(),
               .content = candidate_content,
@@ -218,19 +221,21 @@ auto RunUpdateActivityRemarkAtomicallySupport(
       WriteCanonicalTextFile(paths.target_txt_path, candidate_content);
       try {
         run_single_txt_replace_month_ingest(paths.target_txt_path.string(),
-                                             request.date_check_mode);
+                                            request.date_check_mode);
       } catch (const std::exception& ingest_error) {
         try {
           RestoreOfficialTxt(paths.target_txt_path, workspace.backup_txt_path,
                              true);
         } catch (...) {
           retain_workspace = true;
-          return {.ok = false,
-                  .message = std::string("remark ingest failed and TXT rollback failed: ") +
-                             ingest_error.what(),
-                  .operation_id = workspace.operation_id,
-                  .rollback_failed = true,
-                  .retained_transaction_root = workspace.root.string()};
+          return {
+              .ok = false,
+              .message = std::string(
+                             "remark ingest failed and TXT rollback failed: ") +
+                         ingest_error.what(),
+              .operation_id = workspace.operation_id,
+              .rollback_failed = true,
+              .retained_transaction_root = workspace.root.string()};
         }
         const UpdateActivityRemarkAtomicallyResponse response{
             .ok = false,

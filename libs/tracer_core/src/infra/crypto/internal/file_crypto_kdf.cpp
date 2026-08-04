@@ -78,8 +78,7 @@ auto ResolvePwhashLimits(FileCryptoSecurityLevel security_level)
   switch (security_level) {
     case FileCryptoSecurityLevel::kMin:
       return {
-          .ops_limit =
-              static_cast<std::uint64_t>(crypto_pwhash_OPSLIMIT_MIN),
+          .ops_limit = static_cast<std::uint64_t>(crypto_pwhash_OPSLIMIT_MIN),
           .kMemLimitBytes =
               static_cast<std::uint64_t>(crypto_pwhash_MEMLIMIT_MIN),
       };
@@ -92,8 +91,7 @@ auto ResolvePwhashLimits(FileCryptoSecurityLevel security_level)
       };
     case FileCryptoSecurityLevel::kMax:
       return {
-          .ops_limit =
-              static_cast<std::uint64_t>(crypto_pwhash_OPSLIMIT_MAX),
+          .ops_limit = static_cast<std::uint64_t>(crypto_pwhash_OPSLIMIT_MAX),
           .kMemLimitBytes = crypto_pwhash_MEMLIMIT_MAX,
       };
     case FileCryptoSecurityLevel::kModerate:
@@ -106,10 +104,10 @@ auto ResolvePwhashLimits(FileCryptoSecurityLevel security_level)
     case FileCryptoSecurityLevel::kInteractive:
     default:
       return {
-          .ops_limit = static_cast<std::uint64_t>(
-              crypto_pwhash_OPSLIMIT_INTERACTIVE),
-          .kMemLimitBytes = static_cast<std::uint64_t>(
-              crypto_pwhash_MEMLIMIT_INTERACTIVE),
+          .ops_limit =
+              static_cast<std::uint64_t>(crypto_pwhash_OPSLIMIT_INTERACTIVE),
+          .kMemLimitBytes =
+              static_cast<std::uint64_t>(crypto_pwhash_MEMLIMIT_INTERACTIVE),
       };
   }
 #else
@@ -127,8 +125,7 @@ auto DeriveMasterKeyWithArgon2id(
   const std::size_t kMemLimitBytes =
       static_cast<std::size_t>(limits.mem_limit_kib) * 1024U;
   if (crypto_pwhash(key.data(), key.size(), passphrase.data(),
-                    static_cast<std::uint64_t>(passphrase.size()),
-                    salt.data(),
+                    static_cast<std::uint64_t>(passphrase.size()), salt.data(),
                     static_cast<std::uint64_t>(limits.ops_limit),
                     kMemLimitBytes, crypto_pwhash_ALG_ARGON2ID13) != 0) {
     sodium_memzero(key.data(), key.size());

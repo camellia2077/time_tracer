@@ -55,8 +55,7 @@ void TestParseMissingOptionalDefaults(int& failures) {
   Expect(!parsed.envelope.report_hash_sha256.has_value(),
          "Missing `report_hash_sha256` should default to nullopt.", failures);
   Expect(!parsed.envelope.report_window_metadata.has_value(),
-         "Missing report window metadata should default to nullopt.",
-         failures);
+         "Missing report window metadata should default to nullopt.", failures);
 }
 
 void TestParseOptionalTypeMismatchDefaults(int& failures) {
@@ -188,8 +187,8 @@ void TestSerializeRoundTripWithErrorContract(int& failures) {
          "Roundtrip `error_code` mismatch.", failures);
   Expect(parsed.envelope.error_category == "runtime",
          "Roundtrip `error_category` mismatch.", failures);
-  Expect(parsed.envelope.hints.size() == 2U,
-         "Roundtrip `hints` size mismatch.", failures);
+  Expect(parsed.envelope.hints.size() == 2U, "Roundtrip `hints` size mismatch.",
+         failures);
   Expect(parsed.envelope.hints[0] == "check request",
          "Roundtrip first hint mismatch.", failures);
   Expect(parsed.envelope.content == "partial payload",

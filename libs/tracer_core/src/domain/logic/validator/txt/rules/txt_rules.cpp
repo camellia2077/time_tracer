@@ -26,17 +26,16 @@ constexpr int kMaxMonth = 12;
   constexpr int kMaxSeconds = 59;
   if ((time.length() != kLegacyTimeDigitsLength &&
        time.length() != kCanonicalTimeDigitsLength) ||
-      !std::ranges::all_of(time, [](char value) -> bool {
-        return IsAsciiDigit(value);
-      })) {
+      !std::ranges::all_of(
+          time, [](char value) -> bool { return IsAsciiDigit(value); })) {
     return false;
   }
 
   try {
-    const int hours = std::stoi(std::string(time.substr(0, 2)));
-    const int minutes = std::stoi(std::string(time.substr(2, 2)));
-    if (hours < 0 || hours > kMaxHours || minutes < 0 ||
-        minutes > kMaxMinutes) {
+    const int kHours = std::stoi(std::string(time.substr(0, 2)));
+    const int kMinutes = std::stoi(std::string(time.substr(2, 2)));
+    if (kHours < 0 || kHours > kMaxHours || kMinutes < 0 ||
+        kMinutes > kMaxMinutes) {
       return false;
     }
     return time.length() == kLegacyTimeDigitsLength ||
@@ -55,10 +54,10 @@ auto ExtractRemarkAndDescription(std::string_view remaining_line)
   size_t comment_pos = std::string::npos;
   constexpr std::array<const char*, 3> kDelimiters = {"//", "#", ";"};
   for (const char* delimiter : kDelimiters) {
-    const size_t pos = remaining_line.find(delimiter);
-    if (pos != std::string::npos &&
-        (comment_pos == std::string::npos || pos < comment_pos)) {
-      comment_pos = pos;
+    const size_t kPos = remaining_line.find(delimiter);
+    if (kPos != std::string::npos &&
+        (comment_pos == std::string::npos || kPos < comment_pos)) {
+      comment_pos = kPos;
     }
   }
 
@@ -112,10 +111,9 @@ auto LineRules::IsDate(const std::string& line) -> bool {
   if (line.length() != kDateStringLength || line[0] != 'd') {
     return false;
   }
-  return std::ranges::all_of(line.begin() + 1, line.end(),
-                             [](unsigned char kChar) -> bool {
-                               return std::isdigit(kChar) != 0;
-                             });
+  return std::ranges::all_of(
+      line.begin() + 1, line.end(),
+      [](unsigned char kChar) -> bool { return std::isdigit(kChar) != 0; });
 }
 
 auto LineRules::IsRemark(const std::string& line) const -> bool {
@@ -131,46 +129,45 @@ auto LineRules::IsValidEventLine(const std::string& line, int line_number,
   constexpr size_t kCanonicalTimeDigitsLength = 6;
 
   if (line.length() < kMinimumEventLineLength ||
-      !std::ranges::all_of(line.substr(0, kLegacyTimeDigitsLength),
-                           [](char value) -> bool {
-                             return IsAsciiDigit(value);
-                           })) {
+      !std::ranges::all_of(
+          line.substr(0, kLegacyTimeDigitsLength),
+          [](char value) -> bool { return IsAsciiDigit(value); })) {
     return false;
   }
   std::string_view remaining_line;
-  const bool uses_six_digit_time =
+  const bool kUsesSixDigitTime =
       line.length() >= kCanonicalTimeDigitsLength &&
       std::ranges::all_of(line.substr(0, kCanonicalTimeDigitsLength),
                           [](char value) { return IsAsciiDigit(value); });
-  const size_t time_length = uses_six_digit_time ? kCanonicalTimeDigitsLength
-                                                  : kLegacyTimeDigitsLength;
-  if (line.length() > time_length && line[time_length] == '-') {
-    const size_t end_offset = time_length + 1U;
-    if (line.length() < end_offset + time_length ||
-        !IsValidAuthoredTime(std::string_view(line).substr(0, time_length)) ||
+  const size_t kTimeLength = kUsesSixDigitTime ? kCanonicalTimeDigitsLength
+                                                 : kLegacyTimeDigitsLength;
+  if (line.length() > kTimeLength && line[kTimeLength] == '-') {
+    const size_t kEndOffset = kTimeLength + 1U;
+    if (line.length() < kEndOffset + kTimeLength ||
+        !IsValidAuthoredTime(std::string_view(line).substr(0, kTimeLength)) ||
         !IsValidAuthoredTime(
-            std::string_view(line).substr(end_offset, time_length))) {
+            std::string_view(line).substr(kEndOffset, kTimeLength))) {
       return false;
     }
-    remaining_line = std::string_view(line).substr(end_offset + time_length);
+    remaining_line = std::string_view(line).substr(kEndOffset + kTimeLength);
   } else {
-    if (!IsValidAuthoredTime(std::string_view(line).substr(0, time_length))) {
+    if (!IsValidAuthoredTime(std::string_view(line).substr(0, kTimeLength))) {
       return false;
     }
-    remaining_line = std::string_view(line).substr(time_length);
+    remaining_line = std::string_view(line).substr(kTimeLength);
   }
 
-  const ParsedEventLine parsed = ExtractRemarkAndDescription(remaining_line);
-  if (parsed.description.empty()) {
+  const ParsedEventLine kParsed = ExtractRemarkAndDescription(remaining_line);
+  if (kParsed.description.empty()) {
     return false;
   }
 
-  if (!wake_keywords_.contains(parsed.description) &&
-      !valid_event_keywords_.contains(parsed.description)) {
+  if (!wake_keywords_.contains(kParsed.description) &&
+      !valid_event_keywords_.contains(kParsed.description)) {
     // Unknown activity is a semantic validation error, not a syntax error:
     // the line is structurally valid but references unmapped domain terms.
     errors.insert({line_number,
-                   "Unrecognized activity '" + parsed.description +
+                   "Unrecognized activity '" + kParsed.description +
                        "'. Please check spelling or update config file.",
                    ErrorType::kUnrecognizedActivity, span});
   }

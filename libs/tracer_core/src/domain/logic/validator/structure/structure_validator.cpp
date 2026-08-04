@@ -47,9 +47,9 @@ auto IsLeap(int year) -> bool {
     -> std::optional<int> {
   std::string digits;
   digits.reserve(6);
-  for (const char value : time_value) {
-    if (std::isdigit(static_cast<unsigned char>(value)) != 0) {
-      digits.push_back(value);
+  for (const char kValue : time_value) {
+    if (std::isdigit(static_cast<unsigned char>(kValue)) != 0) {
+      digits.push_back(kValue);
     }
   }
   if (digits.length() == 4) {
@@ -60,14 +60,14 @@ auto IsLeap(int year) -> bool {
   }
 
   try {
-    const int hour = std::stoi(digits.substr(0, 2));
-    const int minute = std::stoi(digits.substr(2, 2));
-    const int second = std::stoi(digits.substr(4, 2));
-    if (hour < 0 || hour >= 24 || minute < 0 || minute >= 60 || second < 0 ||
-        second >= 60) {
+    const int kHour = std::stoi(digits.substr(0, 2));
+    const int kMinute = std::stoi(digits.substr(2, 2));
+    const int kSecond = std::stoi(digits.substr(4, 2));
+    if (kHour < 0 || kHour >= 24 || kMinute < 0 || kMinute >= 60 || kSecond < 0 ||
+        kSecond >= 60) {
       return std::nullopt;
     }
-    return ((hour * 60) + minute) * kSecondsPerMinute + second;
+    return ((kHour * 60) + kMinute) * kSecondsPerMinute + kSecond;
   } catch (const std::exception&) {
     return std::nullopt;
   }
@@ -81,28 +81,30 @@ auto IsLeap(int year) -> bool {
              kPointBoundaryWrapThresholdSeconds;
 }
 
-[[nodiscard]] auto ExpandRelativeToBoundary(int raw_minutes, int boundary_minutes,
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+[[nodiscard]] auto ExpandRelativeToBoundary(int raw_minutes,
+                                            int boundary_minutes,
                                             bool allow_equal)
     -> std::optional<int> {
   // Expand authored boundary values against the last known boundary so
   // point-style midnight wraps stay monotonic, while short backward moves still
   // fail as overlap. Explicit interval end wrapping is handled separately by
   // ExpandIntervalEndRelativeToStart and does not use this heuristic.
-  const int day_offset = boundary_minutes / kSecondsPerDay;
-  const int boundary_raw_minutes = boundary_minutes % kSecondsPerDay;
-  int candidate = raw_minutes + (day_offset * kSecondsPerDay);
+  const int kDayOffset = boundary_minutes / kSecondsPerDay;
+  const int kBoundaryRawMinutes = boundary_minutes % kSecondsPerDay;
+  int candidate = raw_minutes + (kDayOffset * kSecondsPerDay);
 
-  if (raw_minutes > boundary_raw_minutes) {
+  if (raw_minutes > kBoundaryRawMinutes) {
     return candidate;
   }
-  if (raw_minutes == boundary_raw_minutes) {
+  if (raw_minutes == kBoundaryRawMinutes) {
     if (allow_equal) {
       return boundary_minutes;
     }
     return std::nullopt;
   }
 
-  if (!IsPlausiblePointBoundaryWrap(boundary_raw_minutes, raw_minutes)) {
+  if (!IsPlausiblePointBoundaryWrap(kBoundaryRawMinutes, raw_minutes)) {
     return std::nullopt;
   }
   candidate += kSecondsPerDay;
@@ -112,17 +114,18 @@ auto IsLeap(int year) -> bool {
   return candidate;
 }
 
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 [[nodiscard]] auto ExpandIntervalEndRelativeToStart(int end_raw_minutes,
                                                     int start_minutes)
     -> std::optional<int> {
-  const int day_offset = start_minutes / kSecondsPerDay;
-  const int start_raw_minutes = start_minutes % kSecondsPerDay;
-  int candidate = end_raw_minutes + (day_offset * kSecondsPerDay);
+  const int kDayOffset = start_minutes / kSecondsPerDay;
+  const int kStartRawMinutes = start_minutes % kSecondsPerDay;
+  int candidate = end_raw_minutes + (kDayOffset * kSecondsPerDay);
 
-  if (end_raw_minutes == start_raw_minutes) {
+  if (end_raw_minutes == kStartRawMinutes) {
     return std::nullopt;
   }
-  if (end_raw_minutes < start_raw_minutes) {
+  if (end_raw_minutes < kStartRawMinutes) {
     candidate += kSecondsPerDay;
   }
   return candidate;
@@ -178,10 +181,9 @@ void ValidateActivityDuration(const DailyLog& day,
                ": Activity record boundaries do not match its record kind "
                "(start=" +
                (activity.start_time_str.empty() ? "N/A"
-                                                 : activity.start_time_str) +
+                                                : activity.start_time_str) +
                ", end=" +
-               (activity.end_time_str.empty() ? "N/A"
-                                               : activity.end_time_str) +
+               (activity.end_time_str.empty() ? "N/A" : activity.end_time_str) +
                ", project=" + activity.project_path + ").",
            .source_span = activity.source_span});
       continue;
@@ -282,28 +284,27 @@ void ValidateWakeKeywordPosition(
   }
 }
 
-void ValidateMixedTimeline(
-    const DailyLog& day, const std::unordered_set<std::string>& wake_keywords,
-    std::vector<Diagnostic>& diagnostics) {
+void ValidateMixedTimeline(const DailyLog& day,
+                           const std::unordered_set<std::string>& wake_keywords,
+                           std::vector<Diagnostic>& diagnostics) {
   std::optional<int> last_known_boundary_minutes;
   if (ShouldSeedTimelineFromDayBoundary(day)) {
     last_known_boundary_minutes = ParseFlexibleHhmmss(day.getupTime);
   }
 
   for (const auto& raw_event : day.rawEvents) {
-    const bool is_wake =
-        wake_keywords.contains(raw_event.description) &&
-        raw_event.kind == RawEventKind::Point;
-    if (is_wake) {
+    const bool kIsWake = wake_keywords.contains(raw_event.description) &&
+                         raw_event.kind == RawEventKind::Point;
+    if (kIsWake) {
       if (!last_known_boundary_minutes.has_value()) {
         last_known_boundary_minutes = ParseFlexibleHhmmss(raw_event.endTimeStr);
       }
       continue;
     }
 
-    const std::optional<int> end_minutes =
+    const std::optional<int> kEndMinutes =
         ParseFlexibleHhmmss(raw_event.endTimeStr);
-    if (!end_minutes.has_value()) {
+    if (!kEndMinutes.has_value()) {
       continue;
     }
 
@@ -328,13 +329,13 @@ void ValidateMixedTimeline(
              .source_span = raw_event.source_span});
       }
 
-      const std::optional<int> start_minutes =
+      const std::optional<int> kStartMinutes =
           ParseFlexibleHhmmss(*raw_event.startTimeStr);
-      if (!start_minutes.has_value()) {
+      if (!kStartMinutes.has_value()) {
         continue;
       }
 
-      if (*start_minutes == *end_minutes) {
+      if (*kStartMinutes == *kEndMinutes) {
         diagnostics.push_back(
             {.severity = DiagnosticSeverity::kError,
              .code = "timeline.interval.invalid_range",
@@ -344,12 +345,11 @@ void ValidateMixedTimeline(
         continue;
       }
 
-      int expanded_start_minutes = *start_minutes;
+      int expanded_start_minutes = *kStartMinutes;
       if (last_known_boundary_minutes.has_value()) {
-        const std::optional<int> expanded_start =
-            ExpandRelativeToBoundary(*start_minutes,
-                                     *last_known_boundary_minutes, true);
-        if (!expanded_start.has_value()) {
+        const std::optional<int> kExpandedStart = ExpandRelativeToBoundary(
+            *kStartMinutes, *last_known_boundary_minutes, true);
+        if (!kExpandedStart.has_value()) {
           diagnostics.push_back(
               {.severity = DiagnosticSeverity::kError,
                .code = "timeline.event.overlap",
@@ -359,12 +359,12 @@ void ValidateMixedTimeline(
                .source_span = raw_event.source_span});
           continue;
         }
-        expanded_start_minutes = *expanded_start;
+        expanded_start_minutes = *kExpandedStart;
       }
 
-      const std::optional<int> expanded_end =
-          ExpandIntervalEndRelativeToStart(*end_minutes, expanded_start_minutes);
-      if (!expanded_end.has_value()) {
+      const std::optional<int> kExpandedEnd = ExpandIntervalEndRelativeToStart(
+          *kEndMinutes, expanded_start_minutes);
+      if (!kExpandedEnd.has_value()) {
         diagnostics.push_back(
             {.severity = DiagnosticSeverity::kError,
              .code = "timeline.interval.invalid_range",
@@ -373,15 +373,15 @@ void ValidateMixedTimeline(
              .source_span = raw_event.source_span});
         continue;
       }
-      last_known_boundary_minutes = *expanded_end;
+      last_known_boundary_minutes = kExpandedEnd;
       continue;
     }
 
-    int expanded_end_minutes = *end_minutes;
+    int expanded_end_minutes = *kEndMinutes;
     if (last_known_boundary_minutes.has_value()) {
-      const std::optional<int> expanded_end = ExpandRelativeToBoundary(
-          *end_minutes, *last_known_boundary_minutes, false);
-      if (!expanded_end.has_value()) {
+      const std::optional<int> kExpandedEnd = ExpandRelativeToBoundary(
+          *kEndMinutes, *last_known_boundary_minutes, false);
+      if (!kExpandedEnd.has_value()) {
         diagnostics.push_back(
             {.severity = DiagnosticSeverity::kError,
              .code = "timeline.event.overlap",
@@ -390,7 +390,7 @@ void ValidateMixedTimeline(
              .source_span = raw_event.source_span});
         continue;
       }
-      expanded_end_minutes = *expanded_end;
+      expanded_end_minutes = *kExpandedEnd;
     }
 
     last_known_boundary_minutes = expanded_end_minutes;

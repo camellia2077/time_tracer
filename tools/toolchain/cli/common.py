@@ -4,7 +4,7 @@ import sys
 from collections.abc import Iterable
 
 from ..core.context import Context
-from ..commands.tidy import clang_tidy_config
+from ..commands.clang.tidy import config as clang_tidy_config
 from .model import ParserDefaults
 
 
@@ -251,27 +251,6 @@ def add_tidy_task_view_arg(
         choices=effective_choices,
         default=default,
         help=effective_help,
-    )
-
-
-def add_task_selector_args(parser_obj: argparse.ArgumentParser) -> None:
-    parser_obj.add_argument(
-        "--task-log",
-        default=None,
-        help=(
-            "Explicit task artifact path (.json/.toon/.log). Preferred after refresh/rebase; "
-            "overrides --batch-id/--task-id selection."
-        ),
-    )
-    parser_obj.add_argument(
-        "--batch-id",
-        default=None,
-        help="Queue batch identifier under tasks/ (e.g. 2, 002, batch_002).",
-    )
-    parser_obj.add_argument(
-        "--task-id",
-        default=None,
-        help="Task identifier (e.g. 11, 011). When omitted, use the smallest pending task.",
     )
 
 

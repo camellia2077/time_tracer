@@ -16,7 +16,8 @@
 
 #include "application/workflow_handler.hpp"
 #include "application/ports/pipeline/i_database_health_checker.hpp"
-#include "application/ports/pipeline/i_time_sheet_repository.hpp"
+#include "application/ports/pipeline/i_time_sheet_write_repository.hpp"
+#include "application/ports/pipeline/i_ingest_runtime_repository.hpp"
 #include "application/runtime_bridge/logger.hpp"
 
 namespace fs = std::filesystem;
@@ -30,7 +31,8 @@ class IDatabaseHealthChecker;
 class IIngestInputProvider;
 class IProcessedDataLoader;
 class IProcessedDataStorage;
-class ITimeSheetRepository;
+class ITimeSheetWriteRepository;
+class IIngestRuntimeRepository;
 class IValidationIssueReporter;
 }  // namespace tracer_core::application::ports
 

@@ -84,8 +84,7 @@ auto ConverterConfigLoader::ParseTomlToStruct(const toml::table& tbl,
 auto ConverterConfigLoader::ParseSleepInference(const toml::table& tbl,
                                                 ConverterConfig& config)
     -> void {
-  const toml::table* sleep_inference_tbl =
-      tbl["sleep_inference"].as_table();
+  const toml::table* sleep_inference_tbl = tbl["sleep_inference"].as_table();
   if (sleep_inference_tbl == nullptr) {
     throw std::runtime_error(
         "Invalid converter config: 'sleep_inference' must be a table.");

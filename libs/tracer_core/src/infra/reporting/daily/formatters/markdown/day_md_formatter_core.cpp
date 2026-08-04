@@ -23,21 +23,22 @@ auto BuildMarkdownItemLine(const std::string& label, const std::string& value)
   return line;
 }
 
+// NOLINTBEGIN(bugprone-easily-swappable-parameters)
 auto BuildActivityLine(const TimeRecord& record,
                        const std::string& project_path,
                        const std::string& end_only_time_format) -> std::string {
   std::string line;
-  const std::string start_time = FormatClockTime(record.start_time);
-  const std::string end_time = FormatClockTime(record.end_time);
-  line.reserve(start_time.size() + end_time.size() +
-               project_path.size() + kActivityLinePadding);
+  const std::string kStartTime = FormatClockTime(record.start_time);
+  const std::string kEndTime = FormatClockTime(record.end_time);
+  line.reserve(kStartTime.size() + kEndTime.size() + project_path.size() +
+               kActivityLinePadding);
   line += "- ";
   if (record.kind == ActivityRecordKind::kEndOnly) {
-    line += ReplaceAll(end_only_time_format, "{end_time}", end_time);
+    line += ReplaceAll(end_only_time_format, "{end_time}", kEndTime);
   } else {
-    line += start_time;
+    line += kStartTime;
     line += " - ";
-    line += end_time;
+    line += kEndTime;
     line += " (";
     line += TimeFormatDuration(record.duration_seconds);
     line += "): ";
@@ -49,6 +50,7 @@ auto BuildActivityLine(const TimeRecord& record,
   line += "\n";
   return line;
 }
+// NOLINTEND(bugprone-easily-swappable-parameters)
 }  // namespace
 
 DayMdConfig::DayMdConfig(const DailyMdConfig& config)
@@ -84,11 +86,11 @@ void DayMdFormatter::FormatHeaderContent(std::string& report_stream,
   report_stream += BuildMarkdownItemLine(config_->GetDateLabel(), data.date);
   report_stream += BuildMarkdownItemLine(
       config_->GetTotalTimeLabel(), TimeFormatDuration(data.total_duration));
-  report_stream += BuildMarkdownItemLine(
-      config_->GetActivityCountLabel(), std::to_string(data.activity_count));
+  report_stream += BuildMarkdownItemLine(config_->GetActivityCountLabel(),
+                                         std::to_string(data.activity_count));
   for (const auto& status : data.metadata.statuses) {
-    report_stream += BuildMarkdownItemLine(
-        status.label, status.value ? "true" : "false");
+    report_stream +=
+        BuildMarkdownItemLine(status.label, status.value ? "true" : "false");
   }
   report_stream += BuildMarkdownItemLine(config_->GetGetupTimeLabel(),
                                          data.metadata.getup_time);

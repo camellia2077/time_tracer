@@ -66,7 +66,8 @@ auto FormatDateTm(const std::tm& time_info) -> std::string {
 
 }  // namespace
 
-auto TimeFormatDuration(std::int64_t total_seconds, int avg_days) -> std::string {
+auto TimeFormatDuration(std::int64_t total_seconds, int avg_days)
+    -> std::string {
   if (total_seconds == 0) {
     if (avg_days > 1) {
       return "0h 0m (average: 0h 0m/day)";

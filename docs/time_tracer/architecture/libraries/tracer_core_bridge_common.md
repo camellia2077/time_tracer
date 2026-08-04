@@ -79,3 +79,22 @@ Detailed navigation for the shared bridge-helper library.
 4. [Android Runtime Protocol](../../presentation/android/runtime-protocol.md)
 5. [TXT Runtime JSON Contract](../../core/contracts/text/runtime_txt_day_block_json_contract_v1.md)
 6. [tracer_core](tracer_core.md)
+
+## Refactoring Guidance
+
+`tracer_core_bridge_common` exists to remove repeated C API/JNI boundary
+plumbing. It should remain small and mechanically predictable.
+
+- Bridge helpers may build, parse, and delegate transport envelopes.
+- They must not implement use-case orchestration, business validation, TXT
+  semantics, filesystem behavior, or a parallel domain DTO model.
+- If a bridge change needs business meaning, move that meaning to a core
+  capability or transport contract first, then keep the bridge as mapping and
+  delegation code.
+- Preserve ABI ownership, null/error behavior, and downstream shell/Android
+  compatibility.
+
+Refactor duplicated mapping only after identifying the exact boundary contract.
+Validate through downstream shell/runtime and Android tests because this
+library currently has no independent library-only test suite. Use the
+requirements in `libs/tracer_core_bridge_common/AGENTS.md`.

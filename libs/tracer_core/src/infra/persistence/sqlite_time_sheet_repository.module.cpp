@@ -1,11 +1,7 @@
-#include <optional>
 #include <string>
-#include <string_view>
 #include <vector>
 
 #include "infra/persistence/sqlite_time_sheet_repository.hpp"
-#include "application/ports/pipeline/i_time_sheet_repository.hpp"
-
 import tracer.core.infrastructure.persistence.write.importer.repository;
 
 namespace tracer::core::infrastructure::persistence {
@@ -51,23 +47,6 @@ auto SqliteTimeSheetRepository::ReplaceIngestSyncStatuses(
 
 auto SqliteTimeSheetRepository::ClearIngestSyncStatus() -> void {
   repository_.ClearIngestSyncStatus();
-}
-
-auto SqliteTimeSheetRepository::ListIngestSyncStatuses(
-    const tracer_core::core::dto::IngestSyncStatusRequest& request) const
-    -> tracer_core::core::dto::IngestSyncStatusOutput {
-  return repository_.ListIngestSyncStatuses(request);
-}
-
-auto SqliteTimeSheetRepository::TryGetLatestActivityTailBeforeDate(
-    std::string_view date) const
-    -> std::optional<tracer_core::application::ports::PreviousActivityTail> {
-  const auto kTail = repository_.TryGetLatestActivityTailBeforeDate(date);
-  if (!kTail.has_value()) {
-    return std::nullopt;
-  }
-  return tracer_core::application::ports::PreviousActivityTail{
-      .date = kTail->date, .end_time = kTail->end_time};
 }
 
 }  // namespace tracer::core::infrastructure::persistence

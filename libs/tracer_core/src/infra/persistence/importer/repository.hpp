@@ -3,9 +3,7 @@
 #define INFRASTRUCTURE_PERSISTENCE_IMPORTER_REPOSITORY_H_
 
 #include <memory>
-#include <optional>
 #include <string>
-#include <string_view>
 #include <vector>
 
 #include "application/dto/pipeline_responses.hpp"
@@ -22,11 +20,6 @@ class Writer;
 namespace tracer::core::infrastructure::persistence::importer {
 class Repository {
  public:
-  struct LatestActivityTail {
-    std::string date;
-    std::string end_time;
-  };
-
   explicit Repository(std::string db_path);
   ~Repository();
 
@@ -44,11 +37,6 @@ class Repository {
       const std::vector<tracer_core::core::dto::IngestSyncStatusEntry>& entries)
       -> void;
   auto ClearIngestSyncStatus() -> void;
-  [[nodiscard]] auto ListIngestSyncStatuses(
-      const tracer_core::core::dto::IngestSyncStatusRequest& request) const
-      -> tracer_core::core::dto::IngestSyncStatusOutput;
-  [[nodiscard]] auto TryGetLatestActivityTailBeforeDate(
-      std::string_view date) const -> std::optional<LatestActivityTail>;
 
  private:
   auto EnsureWriteRepositoryReady() -> void;

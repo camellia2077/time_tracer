@@ -56,3 +56,11 @@ CONCISE_PREPROCESSOR_METADATA = RuleMetadata(
     risk_level="low",
 )
 
+BRACES_AROUND_STATEMENTS_METADATA = RuleMetadata(
+    rule_id="braces_around_statements",
+    action_kind="braces_around_statement",
+    engine_id="text",
+    supported_checks=("readability-braces-around-statements",),
+    preview_only=False,
+    risk_level="low",
+)

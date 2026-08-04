@@ -32,14 +32,14 @@ class TidyLayout:
     workspace_name: str
     root: Path
     tasks_dir: Path
-    tasks_done_dir: Path
+    archive_dir: Path
     rename_dir: Path
     automation_dir: Path
     analysis_compile_db_dir: Path
     analysis_compile_db_path: Path
     tidy_result_path: Path
-    batch_state_path: Path
-    refresh_state_path: Path
+    tidy_state_path: Path
+    scan_manifest_path: Path
     flow_state_path: Path
 
 
@@ -135,14 +135,14 @@ def resolve_tidy_layout(
         workspace_name=normalized_workspace,
         root=root,
         tasks_dir=(root / "tasks").resolve(),
-        tasks_done_dir=(root / "tasks_done").resolve(),
+        archive_dir=(root / "tasks" / "archive").resolve(),
         rename_dir=(root / "rename").resolve(),
         automation_dir=(root / "automation").resolve(),
         analysis_compile_db_dir=analysis_compile_db_dir,
         analysis_compile_db_path=(analysis_compile_db_dir / "compile_commands.json").resolve(),
         tidy_result_path=(root / "tidy_result.json").resolve(),
-        batch_state_path=(root / "batch_state.json").resolve(),
-        refresh_state_path=(root / "refresh_state.json").resolve(),
+        tidy_state_path=(root / "tidy_state.json").resolve(),
+        scan_manifest_path=(root / "scan_manifest.json").resolve(),
         flow_state_path=(root / "flow_state.json").resolve(),
     )
 

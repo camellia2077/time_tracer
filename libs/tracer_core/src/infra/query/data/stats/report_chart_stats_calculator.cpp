@@ -90,9 +90,8 @@ auto BuildTotalsByDate(const std::vector<LegacyDayDurationRow>& sparse_rows)
   std::unordered_map<std::string, DaySummary> totals_by_date;
   totals_by_date.reserve(sparse_rows.size());
   for (const auto& row : sparse_rows) {
-    totals_by_date[row.date] =
-        DaySummary{.total_seconds = row.total_seconds,
-                   .record_count = row.record_count};
+    totals_by_date[row.date] = DaySummary{.total_seconds = row.total_seconds,
+                                          .record_count = row.record_count};
   }
   return totals_by_date;
 }
@@ -128,8 +127,8 @@ auto BuildCompositionTreeNodeView(const std::string& name,
   view.children.reserve(children.size());
   for (const auto& [child_name, child] : children) {
     view.children.push_back(BuildCompositionTreeNodeView(
-        std::string(child_name), *child, view.path + "_" + std::string(child_name),
-        child_occurrence_count));
+        std::string(child_name), *child,
+        view.path + "_" + std::string(child_name), child_occurrence_count));
   }
   return view;
 }
@@ -155,8 +154,7 @@ auto CalculateInclusiveDateRangeDays(std::string_view start_date,
 
 auto BuildReportCompositionTreeView(const reporting::ProjectTree& tree)
     -> std::vector<ReportCompositionTreeNodeView> {
-  std::vector<std::pair<std::string_view, const reporting::ProjectNode*>>
-      roots;
+  std::vector<std::pair<std::string_view, const reporting::ProjectNode*>> roots;
   for (const auto& [root_name, root] : tree) {
     if (!root_name.empty() && root.occurrence_count > 0) {
       roots.push_back({root_name, &root});
@@ -175,11 +173,30 @@ auto BuildReportCompositionTreeView(const reporting::ProjectTree& tree)
   std::vector<ReportCompositionTreeNodeView> views;
   views.reserve(roots.size());
   for (const auto& [root_name, root] : roots) {
-    views.push_back(BuildCompositionTreeNodeView(
-        std::string(root_name), *root, std::string(root_name),
-        root_occurrence_count));
+    views.push_back(BuildCompositionTreeNodeView(std::string(root_name), *root,
+                                                 std::string(root_name),
+                                                 root_occurrence_count));
   }
   return views;
+}
+
+auto AppendCompositionNodeStats(
+    const std::vector<ReportCompositionTreeNodeView>& views,
+    int denominator_days, ReportCompositionStats& result) -> void {
+  for (const auto& view : views) {
+    result.nodes.emplace(
+        view.path, ReportCompositionNodeStats{
+                       .average_duration_seconds =
+                           AverageOrZero(view.node->duration, denominator_days),
+                       .average_occurrence_count = AverageOrZero(
+                           static_cast<double>(view.node->occurrence_count),
+                           denominator_days),
+                       .average_occurrence_ratio = AverageOrZero(
+                           static_cast<double>(view.node->occurrence_count),
+                           static_cast<int>(view.level_occurrence_count)),
+                   });
+    AppendCompositionNodeStats(view.children, denominator_days, result);
+  }
 }
 
 auto BuildReportChartSeries(
@@ -195,8 +212,8 @@ auto BuildReportChartSeries(
 
   const auto kStartDays = std::chrono::sys_days{*kStartYmd};
   const auto kEndDays = std::chrono::sys_days{*kEndYmd};
-  const int kRangeDays = CalculateInclusiveDateRangeDays(
-      range.start_date, range.end_date);
+  const int kRangeDays =
+      CalculateInclusiveDateRangeDays(range.start_date, range.end_date);
 
   const auto kTotalsByDate = BuildTotalsByDate(sparse_rows);
 
@@ -213,7 +230,8 @@ auto BuildReportChartSeries(
         static_cast<long long>(cursor.time_since_epoch().count());
     result.stats.total_duration_seconds += kDurationSeconds;
     result.stats.range_days = kRangeDays;
-    if (kIt != kTotalsByDate.end() && kIt->second.record_count > 0) {
+    if (kIt != kTotalsByDate.end() &&
+        (kIt->second.record_count > 0 || kDurationSeconds > 0)) {
       ++result.stats.active_days;
     }
     result.series.push_back(ReportChartSeriesPoint{
@@ -228,9 +246,9 @@ auto BuildReportChartSeries(
               tracer_core::core::dto::ReportAverageDayBasis::kCalendarDays
           ? result.stats.range_days
           : result.stats.active_days;
-  result.stats.average_duration_seconds = AverageOrZero(
-      result.stats.total_duration_seconds,
-      result.stats.average_denominator_days);
+  result.stats.average_duration_seconds =
+      AverageOrZero(result.stats.total_duration_seconds,
+                    result.stats.average_denominator_days);
 
   return result;
 }
@@ -239,8 +257,7 @@ auto BuildReportCompositionStats(
     const reporting::ProjectTree& tree,
     const std::vector<LegacyDayDurationRow>& recorded_days,
     tracer_core::core::dto::ReportAverageDayBasis average_day_basis,
-    int range_days)
-    -> ReportCompositionStats {
+    int range_days) -> ReportCompositionStats {
   ReportCompositionStats result;
   result.active_days = static_cast<int>(recorded_days.size());
   const int denominator_days =
@@ -248,20 +265,8 @@ auto BuildReportCompositionStats(
               tracer_core::core::dto::ReportAverageDayBasis::kCalendarDays
           ? range_days
           : result.active_days;
-  for (const auto& view : BuildReportCompositionTreeView(tree)) {
-    result.nodes.emplace(
-        view.path,
-        ReportCompositionNodeStats{
-            .average_duration_seconds =
-                AverageOrZero(view.node->duration, denominator_days),
-            .average_occurrence_count = AverageOrZero(
-                static_cast<double>(view.node->occurrence_count),
-                denominator_days),
-            .average_occurrence_ratio = AverageOrZero(
-                static_cast<double>(view.node->occurrence_count),
-                static_cast<int>(view.level_occurrence_count)),
-        });
-  }
+  AppendCompositionNodeStats(BuildReportCompositionTreeView(tree),
+                             denominator_days, result);
   return result;
 }
 

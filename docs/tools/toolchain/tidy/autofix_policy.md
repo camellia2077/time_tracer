@@ -48,9 +48,10 @@
 当前已支持：
 
 - `readability-identifier-naming`
-  - 仅限 rule-driven rename
-  - 当前只接受局部 `const` 常量 / 变量场景
-  - 新名字必须能由稳定模板推导，例如 `payload -> kPayload`
+  - 通过 clangd LSP `textDocument/rename` 执行语义级 rename
+  - 优先使用 clang-tidy 诊断中的结构化建议名；常量在缺少建议时才允许使用稳定模板，例如 `payload -> kPayload`
+  - 支持配置中的变量、参数、函数、方法和成员等符号种类；Python 不负责猜测非显式建议的命名风格
+  - 当前仍限制在允许 source roots 内，且要求 clangd rename 不跨文件
 
 原因：
 
@@ -243,7 +244,8 @@
 
 | check | action kind | engine | 默认模式 | 备注 |
 | --- | --- | --- | --- | --- |
-| `readability-identifier-naming` | `rename` | `clangd` | apply | 仅限 rule-driven const local rename |
+| `readability-identifier-naming` | `rename` | `clangd` | apply | 结构化建议名 + clangd 语义 rename；当前限制同文件 |
+| `bugprone-narrowing-conversions` | agent safe refactor | agent/source edit | apply after focused re-check | agent 负责选择显式转换或等价类型安全修复，并通过 build + focused tidy 验证 |
 | `google-runtime-int` | `runtime_int` | `text` | apply | 固定类型替换，必要时补 `<cstdint>` |
 | `readability-redundant-casting` | `redundant_cast` | `text` | apply | 单行冗余 cast 删除 |
 | `google-explicit-constructor` | `explicit_constructor` | `text` | apply | 行前缀插入 |

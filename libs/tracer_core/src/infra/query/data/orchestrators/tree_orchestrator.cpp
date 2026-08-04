@@ -30,8 +30,8 @@ template <typename NodeList>
 auto GetMaxTreeDepth(const NodeList& nodes, int current_depth = 0) -> int {
   int max_depth = current_depth;
   for (const auto& node : nodes) {
-    max_depth = std::max(
-        max_depth, GetMaxTreeDepth(node.children, current_depth + 1));
+    max_depth =
+        std::max(max_depth, GetMaxTreeDepth(node.children, current_depth + 1));
   }
   return max_depth;
 }
@@ -54,8 +54,7 @@ auto HandleTreeQuery(sqlite3* db_conn,
       query_data_repository::QueryProjectTree(db_conn, tree_filters);
   const auto kFullNodes = app_tree::BuildProjectTreeNodesFromReportTree(kTree);
   const int kMaxAvailableDepth = GetMaxTreeDepth(kFullNodes);
-  const auto kNodes =
-      app_tree::LimitProjectTreeDepth(kFullNodes, kMaxDepth);
+  const auto kNodes = app_tree::LimitProjectTreeDepth(kFullNodes, kMaxDepth);
   return BuildSuccessOutput(data_query_renderers::RenderProjectTreeOutput(
       kNodes, kMaxDepth, kMaxAvailableDepth, output_mode));
 }

@@ -1,4 +1,4 @@
-#include "tracer/transport/runtime_codec.hpp"
+#include "tracer/transport/runtime_codec_tree.hpp"
 
 #include <cstdint>
 #include <stdexcept>
@@ -89,7 +89,8 @@ auto ParseTreeNode(const json& node_json) -> ProjectTreeNodePayload {
     out.duration_seconds = kDurationSecondsIt->get<std::int64_t>();
   }
 
-  const auto kParentDurationPercentIt = node_json.find("parent_duration_percent");
+  const auto kParentDurationPercentIt =
+      node_json.find("parent_duration_percent");
   if (kParentDurationPercentIt != node_json.end() &&
       !kParentDurationPercentIt->is_null()) {
     if (!kParentDurationPercentIt->is_number()) {

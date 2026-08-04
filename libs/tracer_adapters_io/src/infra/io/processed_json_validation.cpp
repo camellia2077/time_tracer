@@ -97,7 +97,6 @@ auto CollectProcessedJsonValidationErrors(
                       ": 'activities' field is missing or not an array."});
       continue;
     }
-
   }
 
   return errors;

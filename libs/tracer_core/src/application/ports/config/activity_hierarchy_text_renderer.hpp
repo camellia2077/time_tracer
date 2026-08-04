@@ -11,7 +11,8 @@ namespace tracer::core::application::config {
     const std::filesystem::path& activity_hierarchy_toml_path,
     bool show_aliases) -> std::string;
 [[nodiscard]] auto RenderActivityHierarchyText(std::string_view toml_content,
-                                               bool show_aliases) -> std::string;
+                                               bool show_aliases)
+    -> std::string;
 
 }  // namespace tracer::core::application::config
 

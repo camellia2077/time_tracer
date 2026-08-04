@@ -12,19 +12,19 @@ namespace tracer::core::infrastructure::query::data::internal {
 namespace tracer::core::infrastructure::query::data::repository::internal {
 
 using tracer::core::infrastructure::query::data::internal::
-    BuildMappingNamesContent;
-using tracer::core::infrastructure::query::data::internal::
     BuildActivityAliasMappingsContent;
+using tracer::core::infrastructure::query::data::internal::
+    BuildAuthorableEventTokensContent;
 using tracer::core::infrastructure::query::data::internal::
     BuildMappingAliasKeysContent;
 using tracer::core::infrastructure::query::data::internal::
-    BuildWakeKeywordsContent;
-using tracer::core::infrastructure::query::data::internal::
-    BuildAuthorableEventTokensContent;
+    BuildMappingNamesContent;
 using tracer::core::infrastructure::query::data::internal::
     BuildReportChartContent;
 using tracer::core::infrastructure::query::data::internal::
     BuildReportCompositionContent;
+using tracer::core::infrastructure::query::data::internal::
+    BuildWakeKeywordsContent;
 using tracer::core::infrastructure::query::data::internal::
     ValidateReportChartRequest;
 using tracer::core::infrastructure::query::data::internal::

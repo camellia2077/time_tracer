@@ -16,8 +16,8 @@ namespace tracer::core::infrastructure::config::internal {
 namespace {
 
 [[nodiscard]] auto ToAndroidBundleReportConfigPathSet(
-    const config_parser_internal::AndroidBundleReportConfigPathSet&
-        paths) -> AndroidBundleReportConfigPathSet {
+    const config_parser_internal::AndroidBundleReportConfigPathSet& paths)
+    -> AndroidBundleReportConfigPathSet {
   return {
       .day = paths.day,
       .month = paths.month,

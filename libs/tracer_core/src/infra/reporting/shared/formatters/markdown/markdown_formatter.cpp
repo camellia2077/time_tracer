@@ -32,13 +32,13 @@ auto FormatOneDecimal(double value) -> std::string {
   return output;
 }
 
-auto FormatAverageOccurrenceCount(std::int64_t occurrence_count,
-                                  int avg_days) -> std::string {
+auto FormatAverageOccurrenceCount(std::int64_t occurrence_count, int avg_days)
+    -> std::string {
   if (avg_days <= 0) {
     return "0.00";
   }
   return std::format("{:.2f}", static_cast<double>(occurrence_count) /
-                                  static_cast<double>(avg_days));
+                                   static_cast<double>(avg_days));
 }
 
 }  // namespace
@@ -62,14 +62,14 @@ class MarkdownFormattingStrategy : public reporting::IFormattingStrategy {
     output += " (";
     output += FormatOneDecimal(percentage);
     output += "%)\n";
-      return output;
+    return output;
   }
 
   [[nodiscard]] auto FormatCategoryHeader(
-      const std::string& category_name, const std::string& /*formatted_duration*/,
-      double percentage, std::int64_t duration_seconds,
-      std::int64_t occurrence_count, int avg_days) const
-      -> std::string override {
+      const std::string& category_name,
+      const std::string& /*formatted_duration*/, double percentage,
+      std::int64_t duration_seconds, std::int64_t occurrence_count,
+      int avg_days) const -> std::string override {
     std::string output;
     output += "- **";
     output += category_name;
@@ -80,8 +80,8 @@ class MarkdownFormattingStrategy : public reporting::IFormattingStrategy {
     output += "%)\n";
     if (occurrence_count > 0) {
       output += "  *Average: ";
-      output += TimeFormatDuration(
-          avg_days > 0 ? duration_seconds / avg_days : duration_seconds);
+      output += TimeFormatDuration(avg_days > 0 ? duration_seconds / avg_days
+                                                : duration_seconds);
       output += "/day · ";
       output += std::to_string(occurrence_count);
       output += " times · ";
@@ -106,10 +106,12 @@ class MarkdownFormattingStrategy : public reporting::IFormattingStrategy {
     return output;
   }
 
-  [[nodiscard]] auto FormatTreeNode(
-      const std::string& project_name, const std::string& formatted_duration,
-      int indent_level, double percentage, std::int64_t duration_seconds,
-      std::int64_t occurrence_count, int avg_days) const
+  [[nodiscard]] auto FormatTreeNode(const std::string& project_name,
+                                    const std::string& formatted_duration,
+                                    int indent_level, double percentage,
+                                    std::int64_t duration_seconds,
+                                    std::int64_t occurrence_count,
+                                    int avg_days) const
       -> std::string override {
     constexpr int kIndentMultiplier = 2;
     const auto kActivityIndent = static_cast<size_t>(indent_level + 1) *
@@ -126,8 +128,8 @@ class MarkdownFormattingStrategy : public reporting::IFormattingStrategy {
       output.append(kActivityIndent + static_cast<size_t>(kIndentMultiplier),
                     ' ');
       output += "*Average: ";
-      output += TimeFormatDuration(
-          avg_days > 0 ? duration_seconds / avg_days : duration_seconds);
+      output += TimeFormatDuration(avg_days > 0 ? duration_seconds / avg_days
+                                                : duration_seconds);
       output += "/day · ";
       output += std::to_string(occurrence_count);
       output += " times · ";
@@ -144,8 +146,8 @@ class MarkdownFormattingStrategy : public reporting::IFormattingStrategy {
 // Public API: keep parameter order and naming for ABI compatibility.
 // NOLINTBEGIN(bugprone-easily-swappable-parameters)
 auto FormatProjectTree(const reporting::ProjectTree& tree,
-                       std::int64_t total_duration,
-                       int avg_days) -> std::string {
+                       std::int64_t total_duration, int avg_days)
+    -> std::string {
   auto strategy = std::make_unique<MarkdownFormattingStrategy>();
   reporting::ProjectTreeFormatter formatter(std::move(strategy));
   return formatter.FormatProjectTree(tree, total_duration, avg_days);

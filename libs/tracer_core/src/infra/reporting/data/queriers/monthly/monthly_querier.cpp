@@ -26,10 +26,9 @@ using tracer::core::infrastructure::reports::data::stats::IsStudyProjectPath;
 auto DaysInMonth(std::string_view year_month) -> int {
   const int year = std::stoi(std::string(year_month.substr(0, 4)));
   const int month = std::stoi(std::string(year_month.substr(5, 2)));
-  constexpr int kDaysPerMonth[] = {
-      31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-  if (month == 2 &&
-      ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0))) {
+  constexpr int kDaysPerMonth[] = {31, 28, 31, 30, 31, 30,
+                                   31, 31, 30, 31, 30, 31};
+  if (month == 2 && ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0))) {
     return 29;
   }
   return kDaysPerMonth[month - 1];

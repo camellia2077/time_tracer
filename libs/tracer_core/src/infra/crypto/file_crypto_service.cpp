@@ -49,9 +49,8 @@ auto ResolveGroupLabel(const std::filesystem::path& input_root_path,
     return "(root)";
   }
   std::error_code relative_error;
-  const std::filesystem::path kRelative =
-      std::filesystem::relative(current_input_path, input_root_path,
-                                relative_error);
+  const std::filesystem::path kRelative = std::filesystem::relative(
+      current_input_path, input_root_path, relative_error);
   if (relative_error) {
     return "(root)";
   }
@@ -67,18 +66,19 @@ auto ResolveGroupLabel(const std::filesystem::path& input_root_path,
   return kLabel.empty() ? "(root)" : kLabel;
 }
 
-auto BuildSingleFileDescriptor(const FileCryptoPathContext& path_context,
-                               const std::filesystem::path& fallback_input_path,
-                               const std::filesystem::path& fallback_output_path,
-                               std::uint64_t input_size_bytes)
+auto BuildSingleFileDescriptor(
+    const FileCryptoPathContext& path_context,
+    const std::filesystem::path& fallback_input_path,
+    const std::filesystem::path& fallback_output_path,
+    std::uint64_t input_size_bytes)
     -> file_crypto_internal::ProgressFileDescriptor {
   file_crypto_internal::ProgressFileDescriptor descriptor{};
-  descriptor.input_path = ResolvePathOrFallback(
-      path_context.current_input_path, fallback_input_path);
+  descriptor.input_path = ResolvePathOrFallback(path_context.current_input_path,
+                                                fallback_input_path);
   descriptor.output_path = ResolvePathOrFallback(
       path_context.current_output_path, fallback_output_path);
-  const std::filesystem::path kInputRootPath =
-      ResolveRootOrFallback(path_context.input_root_path, descriptor.input_path);
+  const std::filesystem::path kInputRootPath = ResolveRootOrFallback(
+      path_context.input_root_path, descriptor.input_path);
   descriptor.group_label =
       ResolveGroupLabel(kInputRootPath, descriptor.input_path);
   descriptor.group_index = 1;
@@ -95,8 +95,8 @@ auto PrepareSingleFileReporter(
     const std::filesystem::path& fallback_output_path,
     const FileCryptoPathContext& path_context, std::uint64_t input_size_bytes,
     file_crypto_internal::ProgressReporter& reporter) -> FileCryptoResult {
-  const std::filesystem::path kInputPath =
-      ResolvePathOrFallback(path_context.current_input_path, fallback_input_path);
+  const std::filesystem::path kInputPath = ResolvePathOrFallback(
+      path_context.current_input_path, fallback_input_path);
   const std::filesystem::path kOutputPath = ResolvePathOrFallback(
       path_context.current_output_path, fallback_output_path);
   const std::filesystem::path kInputRootPath =
@@ -250,7 +250,8 @@ auto EncryptBytesToWriter(std::span<const std::uint8_t> plaintext_bytes,
                           const FileCryptoWriteCallback& write_callback,
                           std::string_view passphrase,
                           const FileCryptoPathContext& path_context,
-                          const FileCryptoOptions& options) -> FileCryptoResult {
+                          const FileCryptoOptions& options)
+    -> FileCryptoResult {
   if (!write_callback) {
     return file_crypto_internal::MakeError(
         FileCryptoError::kInvalidArgument,
@@ -305,11 +306,12 @@ auto EncryptBytesToWriter(std::span<const std::uint8_t> plaintext_bytes,
   return {};
 }
 
-auto ProtectEncodedBytesToFile(
-    std::span<const std::uint8_t> encoded_bytes,
-    const std::filesystem::path& output_tracer_path,
-    std::string_view passphrase, const FileCryptoPathContext& path_context,
-    const FileCryptoOptions& options) -> FileCryptoResult {
+auto ProtectEncodedBytesToFile(std::span<const std::uint8_t> encoded_bytes,
+                               const std::filesystem::path& output_tracer_path,
+                               std::string_view passphrase,
+                               const FileCryptoPathContext& path_context,
+                               const FileCryptoOptions& options)
+    -> FileCryptoResult {
   return EncryptBytesToFile(encoded_bytes, output_tracer_path, passphrase,
                             path_context, options);
 }
@@ -395,25 +397,25 @@ auto DecryptFile(const std::filesystem::path& input_tracer_path,
   return kResult;
 }
 
-auto DecryptFileToBytes(
-    const std::filesystem::path& input_tracer_path, std::string_view passphrase,
-    const FileCryptoPathContext& path_context, const FileCryptoOptions& options)
+auto DecryptFileToBytes(const std::filesystem::path& input_tracer_path,
+                        std::string_view passphrase,
+                        const FileCryptoPathContext& path_context,
+                        const FileCryptoOptions& options)
     -> std::pair<FileCryptoResult, std::vector<std::uint8_t>> {
   if (input_tracer_path.empty()) {
-    return {file_crypto_internal::MakeError(
-                FileCryptoError::kInvalidArgument, "Input path is required."),
+    return {file_crypto_internal::MakeError(FileCryptoError::kInvalidArgument,
+                                            "Input path is required."),
             {}};
   }
   if (passphrase.empty()) {
-    return {file_crypto_internal::MakeError(
-                FileCryptoError::kInvalidArgument,
-                "Passphrase must not be empty."),
+    return {file_crypto_internal::MakeError(FileCryptoError::kInvalidArgument,
+                                            "Passphrase must not be empty."),
             {}};
   }
 
   std::error_code size_error;
-  const auto kInputSize = std::filesystem::file_size(input_tracer_path,
-                                                     size_error);
+  const auto kInputSize =
+      std::filesystem::file_size(input_tracer_path, size_error);
   if (size_error) {
     return {file_crypto_internal::MakeError(FileCryptoError::kInputReadFailed,
                                             "Failed to read input file size."),

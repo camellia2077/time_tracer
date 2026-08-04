@@ -22,17 +22,17 @@ auto ReadTomlSourceLine(const std::string& content, std::size_t line_number)
   std::size_t current_line = 1U;
   std::size_t line_start = 0U;
   while (current_line < line_number) {
-    const std::size_t newline = content.find('\n', line_start);
-    if (newline == std::string::npos) {
+    const std::size_t kNewline = content.find('\n', line_start);
+    if (kNewline == std::string::npos) {
       return {};
     }
-    line_start = newline + 1U;
+    line_start = kNewline + 1U;
     ++current_line;
   }
-  const std::size_t line_end = content.find('\n', line_start);
-  std::string line = content.substr(
-      line_start, line_end == std::string::npos ? std::string::npos
-                                                : line_end - line_start);
+  const std::size_t kLineEnd = content.find('\n', line_start);
+  std::string line = content.substr(line_start, kLineEnd == std::string::npos
+                                                    ? std::string::npos
+                                                    : kLineEnd - line_start);
   if (!line.empty() && line.back() == '\r') {
     line.pop_back();
   }
@@ -42,32 +42,32 @@ auto ReadTomlSourceLine(const std::string& content, std::size_t line_number)
 auto BuildTomlParseDiagnostic(const fs::path& path, const std::string& content,
                               const toml::parse_error& error) -> std::string {
   const auto& source = error.source();
-  const auto line = static_cast<std::size_t>(source.begin.line);
-  const auto column = static_cast<std::size_t>(source.begin.column);
+  const auto kLine = static_cast<std::size_t>(source.begin.line);
+  const auto kColumn = static_cast<std::size_t>(source.begin.column);
   std::string message = path.string();
-  if (line > 0U) {
-    message += ":" + std::to_string(line);
-    if (column > 0U) {
-      message += ":" + std::to_string(column);
+  if (kLine > 0U) {
+    message += ":" + std::to_string(kLine);
+    if (kColumn > 0U) {
+      message += ":" + std::to_string(kColumn);
     }
   }
   message += ": ";
   message += std::string(error.description());
-  const std::string raw_line = ReadTomlSourceLine(content, line);
-  if (!raw_line.empty()) {
+  const std::string kRawLine = ReadTomlSourceLine(content, kLine);
+  if (!kRawLine.empty()) {
     message += "\n> ";
-    message += raw_line;
+    message += kRawLine;
   }
   return message;
 }
 
 auto ParseTomlFile(const fs::path& path) -> toml::table {
-  const std::string content = infra_file_io::ReadCanonicalText(path);
+  const std::string kContent = infra_file_io::ReadCanonicalText(path);
   try {
-    return toml::parse(content, path.string());
+    return toml::parse(kContent, path.string());
   } catch (const toml::parse_error& e) {
     throw std::runtime_error("Config TOML Parse Error: " +
-                             BuildTomlParseDiagnostic(path, content, e));
+                             BuildTomlParseDiagnostic(path, kContent, e));
   } catch (const std::exception& e) {
     throw std::runtime_error("Config Load Error [" + path.string() +
                              "]: " + e.what());

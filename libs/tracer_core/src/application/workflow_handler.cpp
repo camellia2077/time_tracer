@@ -5,14 +5,16 @@ namespace tracer::core::application::workflow {
 WorkflowHandler::WorkflowHandler(
     std::filesystem::path output_root_path,
     ProcessedDataLoaderPtr processed_data_loader,
-    TimeSheetRepositoryPtr time_sheet_repository,
+    TimeSheetWriteRepositoryPtr time_sheet_write_repository,
+    IngestRuntimeRepositoryPtr ingest_runtime_repository,
     DatabaseHealthCheckerPtr database_health_checker,
     ConverterConfigProviderPtr converter_config_provider,
     IngestInputProviderPtr ingest_input_provider,
     ProcessedDataStoragePtr processed_data_storage,
     ValidationIssueReporterPtr validation_issue_reporter)
     : impl_(std::move(output_root_path), std::move(processed_data_loader),
-            std::move(time_sheet_repository),
+            std::move(time_sheet_write_repository),
+            std::move(ingest_runtime_repository),
             std::move(database_health_checker),
             std::move(converter_config_provider),
             std::move(ingest_input_provider), std::move(processed_data_storage),
@@ -93,7 +95,8 @@ auto WorkflowHandler::RunReplaceTxtDayBlock(
 }
 
 auto WorkflowHandler::RunUpdateActivityRemarkAtomically(
-    const tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest& request)
+    const tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest&
+        request)
     -> tracer_core::core::dto::UpdateActivityRemarkAtomicallyResponse {
   return impl_.RunUpdateActivityRemarkAtomically(request);
 }
@@ -111,7 +114,8 @@ auto WorkflowHandler::RunConvertTxtActivityNames(
 }
 
 auto WorkflowHandler::RunReplaceTxtCanonicalActivityNames(
-    const tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest& request)
+    const tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest&
+        request)
     -> tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse {
   return impl_.RunReplaceTxtCanonicalActivityNames(request);
 }

@@ -21,8 +21,8 @@ class IPipelineApi {
       const tracer_core::core::dto::IngestSyncStatusRequest& request)
       -> tracer_core::core::dto::IngestSyncStatusOutput = 0;
 
-  virtual auto ClearIngestSyncStatus() -> tracer_core::core::dto::OperationAck =
-      0;
+  virtual auto ClearIngestSyncStatus()
+      -> tracer_core::core::dto::OperationAck = 0;
 
   virtual auto RunImport(const tracer_core::core::dto::ImportRequest& request)
       -> tracer_core::core::dto::OperationAck = 0;
@@ -39,7 +39,8 @@ class IPipelineApi {
       const tracer_core::core::dto::RecordActivityAtomicallyRequest& request)
       -> tracer_core::core::dto::RecordActivityAtomicallyResponse = 0;
   virtual auto RunUpdateActivityRemarkAtomically(
-      const tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest& request)
+      const tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest&
+          request)
       -> tracer_core::core::dto::UpdateActivityRemarkAtomicallyResponse = 0;
   virtual auto RunUpdateDayRemarkAtomically(
       const tracer_core::core::dto::UpdateDayRemarkAtomicallyRequest& request)
@@ -62,11 +63,13 @@ class IPipelineApi {
       -> tracer_core::core::dto::ConvertTxtActivityNamesResponse = 0;
 
   virtual auto RunReplaceTxtCanonicalActivityNames(
-      const tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest& request)
+      const tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest&
+          request)
       -> tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse = 0;
 
   virtual auto RunReplaceTxtAliasActivityNames(
-      const tracer_core::core::dto::ReplaceTxtAliasActivityNamesRequest& request)
+      const tracer_core::core::dto::ReplaceTxtAliasActivityNamesRequest&
+          request)
       -> tracer_core::core::dto::ReplaceTxtAliasActivityNamesResponse = 0;
 };
 

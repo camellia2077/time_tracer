@@ -86,25 +86,40 @@ auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int {
   std::error_code cleanup_error;
 
   const std::filesystem::path kConfigSmokeDir =
-      std::filesystem::path("temp") / "phase4_config_infra_module_smoke";
+      BuildRepoRoot() / "temp" / "phase4_config_infra_module_smoke";
   const std::filesystem::path kFakeExePath =
       kConfigSmokeDir / "bin" / "tracer_core_smoke.exe";
   const std::filesystem::path kCopiedConfigRoot =
       kFakeExePath.parent_path() / "config";
   const std::filesystem::path kSourceConfigRoot =
       BuildRepoRoot() / "config" / "program";
+  const std::filesystem::path kSourceUserConfigRoot =
+      BuildRepoRoot() / "config" / "user";
+  const std::filesystem::path kSourceActivityHierarchyRoot =
+      BuildRepoRoot() / "test" / "data" / "activity_hierarchy";
   std::filesystem::remove_all(kConfigSmokeDir, cleanup_error);
   std::filesystem::create_directories(kConfigSmokeDir);
-  std::filesystem::create_directories(kCopiedConfigRoot.parent_path());
+  std::filesystem::create_directories(kCopiedConfigRoot);
   if (!std::filesystem::exists(kSourceConfigRoot)) {
     return 404;
   }
-  std::filesystem::copy(kSourceConfigRoot, kCopiedConfigRoot,
+  if (!std::filesystem::exists(kSourceActivityHierarchyRoot)) {
+    return 408;
+  }
+  std::filesystem::copy(kSourceConfigRoot, kCopiedConfigRoot / "program",
                         std::filesystem::copy_options::recursive);
+  std::filesystem::copy(kSourceUserConfigRoot, kCopiedConfigRoot / "user",
+                        std::filesystem::copy_options::recursive |
+                            std::filesystem::copy_options::overwrite_existing);
+  std::filesystem::copy(kSourceActivityHierarchyRoot,
+                        kCopiedConfigRoot / "user" / "activity_hierarchy",
+                        std::filesystem::copy_options::recursive |
+                            std::filesystem::copy_options::overwrite_existing);
   WriteSmokeFile(kFakeExePath, "smoke");
 
   const std::filesystem::path kDailyMarkdownConfig =
-      kCopiedConfigRoot / "reports" / "markdown" / "en" / "day.toml";
+      kCopiedConfigRoot / "program" / "reports" / "markdown" / "en" /
+      "day.toml";
   const toml::table kDailyMarkdownTable =
       tracer::core::infrastructure::config::loader::ReadToml(
           kDailyMarkdownConfig);

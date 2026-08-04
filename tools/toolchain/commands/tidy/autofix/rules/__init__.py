@@ -1,5 +1,6 @@
 from .base import RuleBase
 from .catalog import (
+    BRACES_AROUND_STATEMENTS_METADATA,
     CONCISE_PREPROCESSOR_METADATA,
     EXPLICIT_CONSTRUCTOR_METADATA,
     IDENTIFIER_NAMING_METADATA,
@@ -7,6 +8,7 @@ from .catalog import (
     RUNTIME_INT_METADATA,
     USING_NAMESPACE_METADATA,
 )
+from .braces_around_statements import BracesAroundStatementsRule
 from .concise_preprocessor_directives import ConcisePreprocessorDirectivesRule
 from .explicit_constructor import ExplicitConstructorRule
 from .identifier_naming import IdentifierNamingRule, extract_rename_candidates, suggest_const_name, supported_rename_candidate
@@ -16,6 +18,7 @@ from .using_namespace import UsingNamespaceRule
 
 __all__ = [
     "RuleBase",
+    "BRACES_AROUND_STATEMENTS_METADATA",
     "IDENTIFIER_NAMING_METADATA",
     "REDUNDANT_CAST_METADATA",
     "RUNTIME_INT_METADATA",
@@ -23,6 +26,7 @@ __all__ = [
     "USING_NAMESPACE_METADATA",
     "CONCISE_PREPROCESSOR_METADATA",
     "ConcisePreprocessorDirectivesRule",
+    "BracesAroundStatementsRule",
     "ExplicitConstructorRule",
     "IdentifierNamingRule",
     "RedundantCastRule",

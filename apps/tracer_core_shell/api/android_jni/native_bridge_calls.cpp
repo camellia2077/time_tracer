@@ -4,6 +4,8 @@
 
 #include "api/android_jni/native_bridge_internal.hpp"
 #include "domain/ports/diagnostics.hpp"
+#include "tracer/transport/runtime_codec_ingest.hpp"
+#include "tracer/transport/runtime_codec_workflow.hpp"
 
 namespace tracer_core::api::android::bridge_internal {
 

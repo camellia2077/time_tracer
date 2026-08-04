@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .....services.clangd_lsp import ClangdClient
+from ....clang.clangd import ClangdClient
 from ....cmd_rename.internal.common_symbols import resolve_position
-from ...analysis_compile_db import ensure_analysis_compile_db
+from ....clang.tidy.compile_db import ensure_analysis_compile_db
 from ..analyzers import build_diff, has_identifier, line_text
 from ..models import ExecutionRecord, FixContext, FixIntent, RenameSymbolOp
 from ..reasons import CommonReasons, RenameReasons
@@ -52,6 +52,7 @@ class ClangdRenameEngine:
             "symbol_kind": operation.symbol_kind,
             "old_name": operation.old_name,
             "new_name": operation.new_name,
+            "suggested_from_diagnostic": operation.suggested_from_diagnostic,
         }
         supported, reason = supported_rename_candidate(
             candidate,

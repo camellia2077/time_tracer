@@ -87,7 +87,8 @@ auto TestDayDurationStatsCalculator(int& failures) -> void {
 auto TestReportChartSeriesCalculator(int& failures) -> void {
   const auto kSparseRows = BuildSparseReportChartRows();
   const auto kResult = data_query_stats::BuildReportChartSeries(
-      {.start_date = "2026-02-01", .end_date = "2026-02-03"}, kSparseRows);
+      {.start_date = "2026-02-01", .end_date = "2026-02-03"}, kSparseRows,
+      tracer_core::core::dto::ReportAverageDayBasis::kCalendarDays);
 
   Expect(kResult.series.size() == 3,
          "report chart series should fill missing dates with zero.", failures);

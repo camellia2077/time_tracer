@@ -307,8 +307,7 @@ void TestRuntimeFactories(int& failures) {
            "Processed-data loader should accept JSON days with one activity.",
            failures);
     Expect(sparse_loaded.data_by_source.size() == 1U,
-           "Processed-data loader should load sparse source files.",
-           failures);
+           "Processed-data loader should load sparse source files.", failures);
     if (!sparse_loaded.data_by_source.empty()) {
       const auto& sparse_days = sparse_loaded.data_by_source.begin()->second;
       Expect(sparse_days.size() == 1U,

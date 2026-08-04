@@ -1,7 +1,7 @@
 import time
 from pathlib import Path
 
-from ....services.clangd_lsp import ClangdClient
+from ...clang.clangd import ClangdClient
 from ...cmd_build import BuildCommand
 from ...tidy.workspace import DEFAULT_TIDY_BUILD_DIR_NAME
 from . import common_paths

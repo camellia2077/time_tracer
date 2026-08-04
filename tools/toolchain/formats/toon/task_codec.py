@@ -4,7 +4,7 @@ from collections import defaultdict
 from pathlib import Path
 import re
 
-from ...commands.tidy.tasking.task_record_types import (
+from ...commands.tidy.queue.task_record_types import (
     TASK_RECORD_VERSION,
     SourceFingerprint,
     TaskDiagnostic,
@@ -23,7 +23,8 @@ def render_task_record(record: TaskRecord) -> str:
     lines = [
         "task:",
         f"  id: {record.task_id}",
-        f"  batch: {record.batch_id}",
+        f"  cluster: {record.cluster_id}",
+        *([f"  scan_id: {record.scan_id}"] if record.scan_id else []),
         f"  source: {record.source_file}",
         f"  workspace: {record.workspace or '<unset>'}",
     ]
@@ -80,7 +81,8 @@ def parse_task_record(content: str, *, task_path: Path) -> TaskRecord:
     lines = content.splitlines()
     section = ""
     task_id = _task_id_from_path(task_path)
-    batch_id = _batch_id_from_path(task_path)
+    cluster_id = _cluster_id_from_path(task_path)
+    scan_id: str | None = None
     source_file = ""
     workspace = ""
     queue_generation: int | None = None
@@ -121,8 +123,10 @@ def parse_task_record(content: str, *, task_path: Path) -> TaskRecord:
             parsed = item.strip()
             if key == "id":
                 task_id = parsed or task_id
-            elif key == "batch":
-                batch_id = parsed or batch_id
+            elif key == "cluster":
+                cluster_id = parsed or cluster_id
+            elif key == "scan_id":
+                scan_id = parsed or None
             elif key == "source":
                 source_file = parsed
             elif key == "workspace":
@@ -216,7 +220,8 @@ def parse_task_record(content: str, *, task_path: Path) -> TaskRecord:
     return TaskRecord(
         version=TASK_RECORD_VERSION,
         task_id=task_id,
-        batch_id=batch_id,
+        cluster_id=cluster_id,
+        scan_id=scan_id,
         queue_generation=queue_generation,
         source_file=source_file,
         source_fingerprint=_build_source_fingerprint(
@@ -320,7 +325,7 @@ def _task_id_from_path(task_path: Path | None) -> str:
     return match.group(1).zfill(3)
 
 
-def _batch_id_from_path(task_path: Path | None) -> str:
+def _cluster_id_from_path(task_path: Path | None) -> str:
     if task_path is None or task_path.parent is None:
         return ""
     return task_path.parent.name

@@ -341,7 +341,7 @@ struct ActivityTailCandidate {
 [[nodiscard]] auto ResolvePreviousTailForReplaceMonth(
     const PipelineSession& context, const SingleTxtTargetMonth& target_month,
     const std::map<std::string, std::vector<DailyLog>>& processed_data,
-    app_ports::ITimeSheetRepository& repository)
+    app_ports::IIngestRuntimeRepository& repository)
     -> std::optional<app_ports::PreviousActivityTail> {
   if (processed_data.empty()) {
     return std::nullopt;

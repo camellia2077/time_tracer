@@ -14,9 +14,9 @@ from .models import (
 )
 from .reasons import CommonReasons
 from .registry import build_default_registry
-from ..tasking.task_context import resolve_task_context
-from ..tasking.task_auto_fix_report import report_paths, write_result_report
-from ..tasking.task_auto_fix_types import AutoFixAction, TaskAutoFixResult
+from ..queue.task_context import resolve_task_context
+from ..queue.task_auto_fix_report import report_paths, write_result_report
+from ..queue.task_auto_fix_types import AutoFixAction, TaskAutoFixResult
 from ..workspace import resolve_workspace
 
 
@@ -39,7 +39,7 @@ def run_task_auto_fix_orchestrator(
     source_file = parsed.source_file or str(task_ctx.task_json_path)
     json_path, markdown_path = report_paths(
         build_tidy_dir,
-        parsed.batch_id or "batch_unknown",
+        parsed.cluster_id or "cluster_unknown",
         parsed.task_id,
         report_suffix,
     )
@@ -60,7 +60,7 @@ def run_task_auto_fix_orchestrator(
     result = TaskAutoFixResult(
         app_name=task_ctx.app_name,
         task_id=parsed.task_id,
-        batch_id=parsed.batch_id,
+        cluster_id=parsed.cluster_id,
         task_log=str(task_ctx.task_json_path),
         source_file=source_file,
         mode="dry_run" if dry_run else "apply",

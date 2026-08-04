@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from .models import AutoFixRule, FixContext, FixIntent
 from .rules import (
+    BracesAroundStatementsRule,
     ConcisePreprocessorDirectivesRule,
     ExplicitConstructorRule,
     IdentifierNamingRule,
@@ -33,6 +34,7 @@ class RuleRegistry:
 def build_default_registry() -> RuleRegistry:
     return RuleRegistry(
         [
+            BracesAroundStatementsRule(),
             IdentifierNamingRule(),
             RedundantCastRule(),
             RuntimeIntRule(),

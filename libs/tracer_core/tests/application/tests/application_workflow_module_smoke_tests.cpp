@@ -5,9 +5,10 @@ import tracer.core.domain.model.daily_log;
 #include "application/ports/pipeline/i_converter_config_provider.hpp"
 #include "application/ports/pipeline/i_database_health_checker.hpp"
 #include "application/ports/pipeline/i_ingest_input_provider.hpp"
+#include "application/ports/pipeline/i_ingest_runtime_repository.hpp"
 #include "application/ports/pipeline/i_processed_data_loader.hpp"
 #include "application/ports/pipeline/i_processed_data_storage.hpp"
-#include "application/ports/pipeline/i_time_sheet_repository.hpp"
+#include "application/ports/pipeline/i_time_sheet_write_repository.hpp"
 #include "application/ports/pipeline/i_validation_issue_reporter.hpp"
 
 #include <filesystem>
@@ -34,7 +35,9 @@ class SmokeProcessedDataLoader final : public app_ports::IProcessedDataLoader {
   }
 };
 
-class SmokeTimeSheetRepository final : public app_ports::ITimeSheetRepository {
+class SmokeTimeSheetRepository final
+    : public app_ports::ITimeSheetWriteRepository,
+      public app_ports::IIngestRuntimeRepository {
  public:
   [[nodiscard]] auto IsDbOpen() const -> bool override { return true; }
   auto ImportData(const std::vector<DayData>&,
@@ -140,8 +143,8 @@ auto RunWorkflowModuleSmoke(int& failures) -> void {
 
     app_workflow::WorkflowHandler pipeline_workflow(
         std::filesystem::path("phase4-workflow-module-output"),
-        std::move(processed_data_loader), std::move(time_sheet_repository),
-        std::move(database_health_checker),
+        std::move(processed_data_loader), time_sheet_repository,
+        time_sheet_repository, std::move(database_health_checker),
         std::move(converter_config_provider), std::move(ingest_input_provider),
         std::move(processed_data_storage),
         std::move(validation_issue_reporter));

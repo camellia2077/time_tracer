@@ -16,7 +16,8 @@ class IReportApi {
       -> tracer_core::core::dto::TextOutput = 0;
 
   virtual auto RunTemporalStructuredReportQuery(
-      const tracer_core::core::dto::TemporalStructuredReportQueryRequest& request)
+      const tracer_core::core::dto::TemporalStructuredReportQueryRequest&
+          request)
       -> tracer_core::core::dto::TemporalStructuredReportOutput = 0;
 
   virtual auto RunPeriodBatchQuery(

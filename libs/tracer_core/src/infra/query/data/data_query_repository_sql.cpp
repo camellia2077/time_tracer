@@ -191,7 +191,8 @@ auto BuildWhereClauses(const QueryFilters& filters,
   }
   if (filters.cross_midnight_activity) {
     clauses.emplace_back(
-        "EXISTS (SELECT 1 FROM " + std::string(schema::time_records::db::kTable) +
+        "EXISTS (SELECT 1 FROM " +
+        std::string(schema::time_records::db::kTable) +
         " tr_cross_midnight_activity WHERE tr_cross_midnight_activity." +
         std::string(schema::time_records::db::kDate) + " = d." +
         std::string(schema::day::db::kDate) + " AND " +

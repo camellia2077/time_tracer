@@ -31,12 +31,15 @@ class ReportDtoFormatter final
   auto FormatMonthlyLocalized(const MonthlyReportData& report,
                               ReportFormat format, std::string_view locale)
       -> std::string override;
-  auto FormatPeriodLocalized(const PeriodReportData& report, ReportFormat format,
-                             std::string_view locale) -> std::string override;
-  auto FormatWeeklyLocalized(const WeeklyReportData& report, ReportFormat format,
-                             std::string_view locale) -> std::string override;
-  auto FormatYearlyLocalized(const YearlyReportData& report, ReportFormat format,
-                             std::string_view locale) -> std::string override;
+  auto FormatPeriodLocalized(const PeriodReportData& report,
+                             ReportFormat format, std::string_view locale)
+      -> std::string override;
+  auto FormatWeeklyLocalized(const WeeklyReportData& report,
+                             ReportFormat format, std::string_view locale)
+      -> std::string override;
+  auto FormatYearlyLocalized(const YearlyReportData& report,
+                             ReportFormat format, std::string_view locale)
+      -> std::string override;
 
  private:
   template <typename ReportDataType>

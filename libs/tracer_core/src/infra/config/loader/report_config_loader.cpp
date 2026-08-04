@@ -90,28 +90,27 @@ auto ReportConfigLoader::LoadDailyStatusConfig(const fs::path& path)
   if (!kStatusesNode.is_table()) {
     ThrowInvalidConfig(path, "key 'daily_statuses' must be a table.");
   }
-  const toml::table& kStatuses = *kStatusesNode.as_table();
+  const toml::table& statuses = *kStatusesNode.as_table();
   const toml::node_view<const toml::node> kParentPresentNode =
-      RequireNode(kStatuses, path, "parent_present");
+      RequireNode(statuses, path, "parent_present");
   if (!kParentPresentNode.is_table()) {
-    ThrowInvalidConfig(
-        path, "key 'daily_statuses.parent_present' must be a table.");
+    ThrowInvalidConfig(path,
+                       "key 'daily_statuses.parent_present' must be a table.");
   }
 
   DailyStatusConfig config;
   config.schema_version = *kSchemaVersion;
-  for (const auto& [id_node, status_node] :
-       *kParentPresentNode.as_table()) {
+  for (const auto& [id_node, status_node] : *kParentPresentNode.as_table()) {
     const std::string kId = std::string(id_node.str());
     if (!status_node.is_table()) {
-      ThrowInvalidConfig(path, "daily_statuses.parent_present." + kId +
-                               " must be a table.");
+      ThrowInvalidConfig(
+          path, "daily_statuses.parent_present." + kId + " must be a table.");
     }
-    const toml::table& kStatus = *status_node.as_table();
+    const toml::table& status = *status_node.as_table();
     DailyStatusDefinition definition;
     definition.id = kId;
-    definition.label = RequireNonEmptyString(kStatus, path, "label");
-    definition.parent = RequireNonEmptyString(kStatus, path, "parent");
+    definition.label = RequireNonEmptyString(status, path, "label");
+    definition.parent = RequireNonEmptyString(status, path, "parent");
     definition.type = DailyStatusType::kParentPresent;
     config.statuses.push_back(std::move(definition));
   }

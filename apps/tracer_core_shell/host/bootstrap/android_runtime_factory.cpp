@@ -63,6 +63,9 @@ auto BuildAndroidPipelineState(const fs::path& output_root,
   auto time_sheet_repository =
       std::make_shared<infra_persistence_write::SqliteTimeSheetRepository>(
           db_path.string());
+  auto ingest_runtime_repository =
+      std::make_shared<infra_persistence_runtime::SqliteIngestRuntimeRepository>(
+          db_path.string());
   auto database_health_checker =
       std::make_shared<infra_persistence_runtime::SqliteDatabaseHealthChecker>(
           db_path.string());
@@ -80,7 +83,8 @@ auto BuildAndroidPipelineState(const fs::path& output_root,
   auto state = std::make_shared<AndroidPipelineRuntimeState>();
   state->workflow_handler = std::make_shared<app_workflow::WorkflowHandler>(
       output_root, std::move(processed_data_loader),
-      std::move(time_sheet_repository), std::move(database_health_checker),
+      std::move(time_sheet_repository), std::move(ingest_runtime_repository),
+      std::move(database_health_checker),
       std::move(converter_config_provider), std::move(ingest_input_provider),
       std::move(processed_data_storage), std::move(validation_issue_reporter));
   return state;

@@ -202,9 +202,9 @@ gradle_tasks = [
 ]
 
 [build.profiles.android_ci]
-description = "Android CI checks (snapshot verify + debug/local QA, signing-free)."
+description = "Android CI checks (generated config assets + debug/local QA, signing-free)."
 gradle_tasks = [
-    ":runtime:verifyTracerCoreConfigSnapshot",
+    ":runtime:generateTracerCoreConfigAssets",
     ":app:check",
 ]
 

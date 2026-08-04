@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from ...services.clangd_lsp import ClangdClient
+from ..clang.clangd import ClangdClient
 from .internal import apply_processor
 
 

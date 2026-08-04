@@ -1,6 +1,6 @@
 import argparse
 
-from ....commands.tidy.flow import TidyFlowCommand
+from ....commands.tidy.execution.flow import TidyFlowCommand
 from ....core.context import Context
 from ...common import (
     add_profile_arg,
@@ -46,12 +46,6 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
         type=int,
         default=None,
         help="Ninja parallel jobs for tidy generation, e.g. 16",
-    )
-    parser.add_argument(
-        "--parse-workers",
-        type=int,
-        default=None,
-        help="Parallel workers for tidy log splitting",
     )
     add_profile_arg(parser, defaults)
     parser.add_argument(
@@ -132,7 +126,6 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         test_every=args.test_every,
         concise=args.concise,
         jobs=args.jobs,
-        parse_workers=args.parse_workers,
         keep_going=args.keep_going,
         task_view=args.task_view,
         run_tidy_fix=args.run_tidy_fix,

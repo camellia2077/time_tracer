@@ -28,11 +28,13 @@ auto TestDataQueryFailureMessageNormalization(TestState& state) -> void {
   Expect(state, !response.ok,
          "RunDataQuery should keep failed service responses as failures.");
   Expect(state, Contains(response.error_message, "RunDataQuery"),
-         "RunDataQuery should normalize empty failure messages with operation name.");
+         "RunDataQuery should normalize empty failure messages with operation "
+         "name.");
   Expect(state,
          Contains(response.error_message,
                   "Data query service returned a failed response."),
-         "RunDataQuery should explain failed service responses with empty messages.");
+         "RunDataQuery should explain failed service responses with empty "
+         "messages.");
 }
 
 auto TestDataQueryPreservesEmptySuccessfulPayload(TestState& state) -> void {
@@ -63,13 +65,13 @@ auto TestDataQueryForwardsStableActionPayload(TestState& state) -> void {
   auto runtime_api =
       BuildRuntimeApiForTest(pipeline_workflow, report_handler, data_query);
 
-  data_query->response = {.ok = true,
-                          .content = "[\"alias_a\",\"alias_b\"]",
-                          .error_message = ""};
+  data_query->response = {
+      .ok = true, .content = "[\"alias_a\",\"alias_b\"]", .error_message = ""};
 
   DataQueryRequest request{};
   request.action = DataQueryAction::kMappingAliasKeys;
-  request.output_mode = tracer_core::core::dto::DataQueryOutputMode::kSemanticJson;
+  request.output_mode =
+      tracer_core::core::dto::DataQueryOutputMode::kSemanticJson;
   request.root = "study";
   request.limit = 5;
   request.reverse = true;
@@ -79,10 +81,12 @@ auto TestDataQueryForwardsStableActionPayload(TestState& state) -> void {
   Expect(state, response.ok,
          "RunDataQuery should succeed for stable alias-key actions.");
   Expect(state, response.content == "[\"alias_a\",\"alias_b\"]",
-         "RunDataQuery should preserve service content for stable alias-key actions.");
+         "RunDataQuery should preserve service content for stable alias-key "
+         "actions.");
   Expect(state, data_query->call_count == 1,
          "RunDataQuery should call the data query service exactly once.");
-  Expect(state, data_query->last_request.action == DataQueryAction::kMappingAliasKeys,
+  Expect(state,
+         data_query->last_request.action == DataQueryAction::kMappingAliasKeys,
          "RunDataQuery should forward stable action type unchanged.");
   Expect(state,
          data_query->last_request.output_mode ==

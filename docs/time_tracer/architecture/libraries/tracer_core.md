@@ -193,3 +193,63 @@ of those behavioral rules.
 4. Core pipeline TXT semantics resolve the requested block.
 5. CLI prints `day_body` or reports a host-formatted error without re-encoding
    the month-TXT business rules locally.
+
+## Refactoring Guidance
+
+`tracer_core` is the business owner. Route new code through an existing
+capability path instead of creating a generic utility or a new cross-capability
+orchestrator.
+
+### Refactoring by capability
+
+| Concern | Owner path | Refactoring focus |
+|---|---|---|
+| Ingest and pipeline | `src/application/pipeline/**` | Keep parsing, structural validation, logical validation, and persistence gating explicit and ordered. |
+| Query | `src/application/query/**`, `src/infra/query/**` | Separate query orchestration, ports, SQL construction, row mapping, and report enrichment. |
+| Reporting | `src/application/reporting/**`, `src/infra/reporting/**` | Keep report semantics and statistics separate from formatting and generic data access. |
+| Exchange | `tracer_exchange` and `src/infra/exchange/**` | Separate exchange policy from package/file crypto mechanics. |
+| Config | `src/infra/config/**` | Keep config parsing/editing, runtime resolution, and business defaults distinct. |
+| Persistence write | `src/infra/persistence/importer/**` | Protect collect -> validate -> persistence gate -> transactional write. |
+| Persistence runtime | `src/infra/persistence/repositories/**` | Keep read/runtime DB access separate; reads must not silently create a database. |
+
+The pipeline persistence boundary is explicit at the application ports:
+`ITimeSheetWriteRepository` owns validated ingest writes and sync mutations,
+while `IIngestRuntimeRepository` owns sync status reads and previous-activity
+tail reads. The SQLite importer is write-only; read-side ingest queries are
+implemented by `SqliteIngestRuntimeRepository` under the runtime module.
+
+Pipeline orchestration is split by role: `PipelineWorkflow` is the stable
+application facade, `PipelineIngestService` owns ingest/import/replace and
+previous-tail coordination, `pipeline_ingest_sync_support.*` owns sync
+snapshot construction and sync mutations, and `PipelineOrchestrator` owns the
+collect/validate/convert stage sequence. New pipeline changes should preserve
+these boundaries instead of adding more post-processing branches to the facade.
+
+Reporting application orchestration is similarly split: `ReportApi` remains
+the public use-case facade, `report_query_support.*` owns temporal selection,
+window normalization, structured DTO wrapping, and formatter dispatch, and
+`report_export_support.*` owns export path policy and UTF-8 file writes.
+Android static formatter registration is separated into policy registration and
+formatter builders. Windows CLI report output keeps window diagnostics in its
+presentation module; Core remains the owner of report semantics.
+
+When a large file is selected, classify its functions as orchestration, domain
+rule, port/DTO, parsing, validation, SQL/repository, serialization, or
+diagnostics. Extract only a coherent role, preferably behind an existing
+module surface or a narrow port.
+
+### Invariants to preserve
+
+- Pipeline order remains collect -> parse -> structural validation -> logical
+  validation -> persistence gate -> DB open/init -> transactional import.
+- Domain/application layers do not expose runtime JSON.
+- Query, reporting, persistence-write, and persistence-runtime remain separate
+  capability concerns; reuse crosses them through explicit ports or composition.
+- Existing capability APIs and module surfaces remain stable while internals
+  move.
+
+For core validation, use the capability profiles `cap_pipeline`, `cap_query`,
+`cap_reporting`, `cap_exchange`, `cap_config`, `cap_persistence_write`, and
+`cap_persistence_runtime`. Use
+`python tools/run.py verify --app tracer_core_shell --profile fast --concise`
+for cross-boundary changes.

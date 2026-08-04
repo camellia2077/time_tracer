@@ -1,8 +1,10 @@
+import sys
 from collections.abc import Callable
 from pathlib import Path
 
 from ...core.context import Context
-from ..tidy import analysis_compile_db, clang_tidy_config, workspace as tidy_workspace
+from ..clang.tidy import compile_db as analysis_compile_db, config as clang_tidy_config
+from ..tidy import workspace as tidy_workspace
 from . import common as build_common
 
 
@@ -206,6 +208,7 @@ def configure_cmake(
     )
     build_dir = _resolve_cmake_build_dir(ctx, app_name, resolved_build_dir_name, tidy)
     source_dir = ctx.get_app_source_dir(app_name)
+    tidy_python_executable = str(Path(sys.executable).resolve()).replace("\\", "/")
 
     build_dir.mkdir(parents=True, exist_ok=True)
 
@@ -219,6 +222,8 @@ def configure_cmake(
                 "ENABLE_PCH=OFF",
                 "-D",
                 "TT_ENABLE_CXX_CLANG_TIDY_WRAPPER=OFF",
+                "-D",
+                f"TT_TIDY_PYTHON_EXE={tidy_python_executable}",
             ]
         )
     else:

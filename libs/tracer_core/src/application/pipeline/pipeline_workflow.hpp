@@ -11,12 +11,15 @@
 #include "application/ports/pipeline/i_converter_config_provider.hpp"
 #include "application/ports/pipeline/i_database_health_checker.hpp"
 #include "application/ports/pipeline/i_ingest_input_provider.hpp"
+#include "application/ports/pipeline/i_ingest_runtime_repository.hpp"
 #include "application/ports/pipeline/i_processed_data_loader.hpp"
 #include "application/ports/pipeline/i_processed_data_storage.hpp"
-#include "application/ports/pipeline/i_time_sheet_repository.hpp"
+#include "application/ports/pipeline/i_time_sheet_write_repository.hpp"
 #include "application/ports/pipeline/i_validation_issue_reporter.hpp"
 
 namespace tracer::core::application::pipeline {
+
+class PipelineIngestService;
 
 class PipelineWorkflow final : public IPipelineWorkflow {
  public:
@@ -30,14 +33,17 @@ class PipelineWorkflow final : public IPipelineWorkflow {
       std::shared_ptr<tracer_core::application::ports::IProcessedDataLoader>;
   using ProcessedDataStoragePtr =
       std::shared_ptr<tracer_core::application::ports::IProcessedDataStorage>;
-  using TimeSheetRepositoryPtr =
-      std::shared_ptr<tracer_core::application::ports::ITimeSheetRepository>;
+  using TimeSheetWriteRepositoryPtr = std::shared_ptr<
+      tracer_core::application::ports::ITimeSheetWriteRepository>;
+  using IngestRuntimeRepositoryPtr = std::shared_ptr<
+      tracer_core::application::ports::IIngestRuntimeRepository>;
   using ValidationIssueReporterPtr = std::shared_ptr<
       tracer_core::application::ports::IValidationIssueReporter>;
 
   PipelineWorkflow(std::filesystem::path output_root_path,
                    ProcessedDataLoaderPtr processed_data_loader,
-                   TimeSheetRepositoryPtr time_sheet_repository,
+                   TimeSheetWriteRepositoryPtr time_sheet_write_repository,
+                   IngestRuntimeRepositoryPtr ingest_runtime_repository,
                    DatabaseHealthCheckerPtr database_health_checker,
                    ConverterConfigProviderPtr converter_config_provider,
                    IngestInputProviderPtr ingest_input_provider,
@@ -53,8 +59,7 @@ class PipelineWorkflow final : public IPipelineWorkflow {
       const std::map<std::string, std::vector<DailyLog>>& data_map)
       -> void override;
   auto RunIngest(const std::string& source_path, DateCheckMode date_check_mode,
-                 bool save_processed, IngestMode ingest_mode)
-      -> void override;
+                 bool save_processed, IngestMode ingest_mode) -> void override;
   auto RunIngestSyncStatusQuery(
       const tracer_core::core::dto::IngestSyncStatusRequest& request)
       -> tracer_core::core::dto::IngestSyncStatusOutput override;
@@ -69,8 +74,10 @@ class PipelineWorkflow final : public IPipelineWorkflow {
       const tracer_core::core::dto::RecordActivityAtomicallyRequest& request)
       -> tracer_core::core::dto::RecordActivityAtomicallyResponse override;
   auto RunUpdateActivityRemarkAtomically(
-      const tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest& request)
-      -> tracer_core::core::dto::UpdateActivityRemarkAtomicallyResponse override;
+      const tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest&
+          request)
+      -> tracer_core::core::dto::UpdateActivityRemarkAtomicallyResponse
+      override;
   auto RunUpdateDayRemarkAtomically(
       const tracer_core::core::dto::UpdateDayRemarkAtomicallyRequest& request)
       -> tracer_core::core::dto::UpdateDayRemarkAtomicallyResponse override;
@@ -87,10 +94,13 @@ class PipelineWorkflow final : public IPipelineWorkflow {
       const tracer_core::core::dto::ConvertTxtActivityNamesRequest& request)
       -> tracer_core::core::dto::ConvertTxtActivityNamesResponse override;
   auto RunReplaceTxtCanonicalActivityNames(
-      const tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest& request)
-      -> tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse override;
+      const tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest&
+          request)
+      -> tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse
+      override;
   auto RunReplaceTxtAliasActivityNames(
-      const tracer_core::core::dto::ReplaceTxtAliasActivityNamesRequest& request)
+      const tracer_core::core::dto::ReplaceTxtAliasActivityNamesRequest&
+          request)
       -> tracer_core::core::dto::ReplaceTxtAliasActivityNamesResponse override;
   auto InstallActiveConverterConfig(
       const ActiveConverterConfigInstallRequest& request) -> void override;
@@ -98,12 +108,14 @@ class PipelineWorkflow final : public IPipelineWorkflow {
  private:
   std::filesystem::path output_root_path_;
   ProcessedDataLoaderPtr processed_data_loader_;
-  TimeSheetRepositoryPtr time_sheet_repository_;
+  TimeSheetWriteRepositoryPtr time_sheet_write_repository_;
+  IngestRuntimeRepositoryPtr ingest_runtime_repository_;
   DatabaseHealthCheckerPtr database_health_checker_;
   ConverterConfigProviderPtr converter_config_provider_;
   IngestInputProviderPtr ingest_input_provider_;
   ProcessedDataStoragePtr processed_data_storage_;
   ValidationIssueReporterPtr validation_issue_reporter_;
+  std::unique_ptr<PipelineIngestService> ingest_service_;
 
   auto RunDatabaseImportFromMemoryReplacingMonth(
       const std::map<std::string, std::vector<DailyLog>>& data_map, int year,

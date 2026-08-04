@@ -24,8 +24,7 @@ struct TracerExchangeTextPayloadItem {
 struct TracerExchangeContentEntry {
   std::string relative_path;
   std::vector<std::uint8_t> data;
-  TracerExchangeContentEntryKind kind =
-      TracerExchangeContentEntryKind::kConfig;
+  TracerExchangeContentEntryKind kind = TracerExchangeContentEntryKind::kConfig;
   bool required = true;
   bool text = true;
 };

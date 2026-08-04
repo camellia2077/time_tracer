@@ -101,7 +101,8 @@ auto Writer::InsertRecords(const std::vector<TimeRecordInternal>& records)
   project_resolver_->PreloadAndResolve(paths);
 
   for (const auto& record_data : records) {
-    std::int64_t project_id = project_resolver_->GetId(record_data.project_path);
+    std::int64_t project_id =
+        project_resolver_->GetId(record_data.project_path);
 
     sqlite3_bind_int64(stmt_insert_record_, kRecordIdxLogicalId,
                        record_data.logical_id);

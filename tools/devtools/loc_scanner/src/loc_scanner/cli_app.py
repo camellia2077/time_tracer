@@ -3,9 +3,17 @@ import json
 from datetime import datetime
 from pathlib import Path
 
-from .config import LANG_CHOICES, LanguageConfig, load_language_config
+from .config import (
+    LANG_CHOICES,
+    LanguageConfig,
+    load_language_config,
+)
+from .classification import (
+    resolve_single_language_category,
+)
 from .reporter import LocConsoleReporter
 from .service import UNDER_SENTINEL, LocScanService, ScanArgumentResolver
+from .profile_scan import ProfileScanRunner
 
 
 class LocCliApplication:
@@ -19,6 +27,7 @@ class LocCliApplication:
         log_path = self._resolve_log_path(
             args.log_file,
             args.lang,
+            profile=args.profile,
             workspace_root=workspace_root,
         )
         log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -30,7 +39,7 @@ class LocCliApplication:
         )
         self._write_json_log(log_path, payload)
 
-        print(f"[LOG] 扫描日志: {log_path}")
+        print(f"[LOG] Scan log: {log_path}")
         return exit_code
 
     def _run_scan(
@@ -44,14 +53,28 @@ class LocCliApplication:
 
         if args.dir_max_depth is not None and args.dir_over_files is None:
             return self._error(
-                "--dir-max-depth 只能与 --dir-over-files 一起使用。",
+                "--dir-max-depth can only be used with --dir-over-files.",
+                payload,
+            )
+
+        if args.profile is not None:
+            return self._run_profile_scan(
+                args,
+                payload,
+                workspace_root=workspace_root,
+                config_path=config_path,
+            )
+
+        if args.compare_baseline:
+            return self._error(
+                "--compare-baseline can only be used with --profile.",
                 payload,
             )
 
         try:
             config = load_language_config(config_path=config_path, lang=args.lang)
         except (FileNotFoundError, ValueError, OSError) as error:
-            return self._error(f"配置加载失败: {error}", payload)
+            return self._error(f"Configuration loading failed: {error}", payload)
 
         resolver = ScanArgumentResolver()
         scan_service = LocScanService(config)
@@ -68,7 +91,7 @@ class LocCliApplication:
 
         mode, threshold = resolver.resolve_mode_and_threshold(args, config)
         if threshold <= 0:
-            return self._error("阈值必须是正整数。", payload)
+            return self._error("Threshold must be a positive integer.", payload)
         return self._run_line_scan(
             payload=payload,
             paths=paths,
@@ -77,6 +100,19 @@ class LocCliApplication:
             scan_service=scan_service,
             reporter=reporter,
         )
+
+    def _run_profile_scan(
+        self,
+        args: argparse.Namespace,
+        payload: dict,
+        *,
+        workspace_root: Path,
+        config_path: Path,
+    ) -> tuple[int, dict]:
+        return ProfileScanRunner(
+            workspace_root=workspace_root,
+            config_path=config_path,
+        ).run(args, payload)
 
     def _run_line_scan(
         self,
@@ -95,18 +131,61 @@ class LocCliApplication:
         for path in paths:
             if not path.exists():
                 reporter.print_missing_path(path)
-                path_results.append({"path": str(path), "matched_files": []})
+                path_results.append(
+                    {
+                        "path": str(path),
+                        "matched_files": [],
+                        "category_counts": {
+                            "production": 0,
+                            "tests": 0,
+                            "other": 0,
+                        },
+                    }
+                )
                 continue
             matched = scan_service.analyze_path(path, mode, threshold)
-            reporter.print_line_path_result(path, mode, threshold, matched)
-            matched_files = [{"path": file_path, "lines": lines} for file_path, lines in matched]
+            matched_files = [
+                {
+                    "path": file_path,
+                    "lines": lines,
+                    "category": resolve_single_language_category(
+                        file_path=Path(file_path),
+                        scan_root=path,
+                        test_directory_names=scan_service.config.test_directory_names,
+                    ),
+                }
+                for file_path, lines in matched
+            ]
+            category_counts = {
+                category: sum(
+                    file_result["category"] == category
+                    for file_result in matched_files
+                )
+                for category in ("production", "tests", "other")
+            }
+            reporter.print_line_path_result(path, mode, threshold, matched_files)
             total_matched_files += len(matched_files)
-            path_results.append({"path": str(path), "matched_files": matched_files})
+            path_results.append(
+                {
+                    "path": str(path),
+                    "matched_files": matched_files,
+                    "category_counts": category_counts,
+                }
+            )
 
         payload["status"] = "ok"
         payload["scan"] = {"mode": mode, "threshold": threshold}
         payload["results"] = path_results
-        payload["summary"] = {"matched_files": total_matched_files}
+        payload["summary"] = {
+            "matched_files": total_matched_files,
+            "category_counts": {
+                category: sum(
+                    path_result["category_counts"][category]
+                    for path_result in path_results
+                )
+                for category in ("production", "tests", "other")
+            },
+        }
         return 0, payload
 
     def _run_dir_file_scan(
@@ -124,9 +203,9 @@ class LocCliApplication:
             threshold = int(args.dir_over_files)
 
         if threshold <= 0:
-            return self._error("--dir-over-files 阈值必须是正整数。", payload)
+            return self._error("--dir-over-files threshold must be a positive integer.", payload)
         if args.dir_max_depth is not None and args.dir_max_depth < 0:
-            return self._error("--dir-max-depth 必须是 >= 0 的整数。", payload)
+            return self._error("--dir-max-depth must be an integer >= 0.", payload)
 
         reporter.print_dir_scan_header(threshold, args.dir_max_depth)
         path_results: list[dict] = []
@@ -161,50 +240,55 @@ class LocCliApplication:
     def parse_args() -> argparse.Namespace:
         default_config = str(LocCliApplication._default_config_path())
         parser = argparse.ArgumentParser(
-            description="统一代码行数扫描工具（C++/Kotlin/Python/Rust）。"
+            description="Unified line-count scanner for C++, Kotlin, Python, and Rust."
         )
-        parser.add_argument(
+        selector = parser.add_mutually_exclusive_group(required=True)
+        selector.add_argument(
             "--lang",
             choices=LANG_CHOICES,
-            required=True,
-            help="语言类型: cpp | kt | py | rs。",
+            help="Scan one language: cpp | kt | py | rs.",
+        )
+        selector.add_argument(
+            "--profile",
+            metavar="NAME",
+            help="Scan multiple components and languages through a TOML profile.",
         )
         parser.add_argument(
             "paths",
             nargs="*",
             help=(
-                "待扫描目录（可传多个，支持相对/绝对路径）。"
-                "未传时使用 TOML default_paths；若 path_mode=toml_only 则忽略该参数。"
+                "Directories to scan (multiple relative or absolute paths are supported). "
+                "Uses TOML default_paths when omitted; ignored when path_mode=toml_only."
             ),
         )
         parser.add_argument(
             "--workspace-root",
             default=".",
-            help="工作区根目录。paths/config/log-file 的相对路径基于该目录解析。",
+            help="Workspace root used to resolve relative paths for paths, config, and log-file.",
         )
         parser.add_argument(
             "--config",
             default=default_config,
-            help=f"TOML 配置文件路径。默认: {default_config}",
+            help=f"TOML configuration path. Default: {default_config}",
         )
         parser.add_argument(
             "--log-file",
             default=None,
             help=(
-                "扫描日志输出路径（支持相对/绝对）。"
-                "未传时默认写入 <workspace-root>/.loc_scanner_logs/scan_<lang>.json。"
+                "Scan log output path (relative or absolute). "
+                "Defaults to scan_<lang>.json for language scans and scan_profile_<name>.json for profiles."
             ),
         )
 
         group = parser.add_mutually_exclusive_group()
-        group.add_argument("--over", type=int, metavar="N", help="扫描大文件（over 模式）。")
+        group.add_argument("--over", type=int, metavar="N", help="Scan large files (over mode).")
         group.add_argument(
             "--under",
             type=int,
             nargs="?",
             const=UNDER_SENTINEL,
             metavar="N",
-            help="扫描小文件（under 模式）。不传 N 时使用 TOML 的 default_under_threshold。",
+            help="Scan small files (under mode). Uses TOML default_under_threshold when N is omitted.",
         )
         group.add_argument(
             "--dir-over-files",
@@ -213,16 +297,31 @@ class LocCliApplication:
             const=LocCliApplication.DIR_OVER_SENTINEL,
             metavar="N",
             help=(
-                "扫描目录中代码文件数超过 N 的目录。"
-                "不传 N 时使用 TOML 中该语言的 default_dir_over_files。"
+                "Scan directories containing more than N code files. "
+                "Uses the language default_dir_over_files when N is omitted."
             ),
         )
-        parser.add_argument("-t", "--threshold", type=int, help="兼容旧参数，等价于 --over N。")
+        parser.add_argument("-t", "--threshold", type=int, help="Legacy alias equivalent to --over N.")
         parser.add_argument(
             "--dir-max-depth",
             type=int,
             default=None,
-            help="目录扫描最大深度（相对输入根目录；0 仅根目录）。仅与 --dir-over-files 配合使用。",
+            help="Maximum directory scan depth relative to the input root; 0 scans only the root. Used with --dir-over-files.",
+        )
+        parser.add_argument(
+            "--compare-baseline",
+            default=None,
+            metavar="PATH",
+            help=(
+                "Compare this profile scan with a previously generated profile JSON report "
+                "and report added, removed, and changed hotspots."
+            ),
+        )
+        parser.add_argument(
+            "--save-baseline",
+            default=None,
+            metavar="PATH",
+            help="Save this profile JSON report to an independent baseline path for --compare-baseline.",
         )
         return parser.parse_args()
 
@@ -242,7 +341,13 @@ class LocCliApplication:
         return path.resolve()
 
     @staticmethod
-    def _resolve_log_path(log_file: str | None, lang: str, *, workspace_root: Path) -> Path:
+    def _resolve_log_path(
+        log_file: str | None,
+        lang: str | None,
+        *,
+        profile: str | None = None,
+        workspace_root: Path,
+    ) -> Path:
         if log_file:
             path = Path(log_file)
             if not path.is_absolute():
@@ -250,16 +355,21 @@ class LocCliApplication:
             else:
                 path = path.resolve()
             return path
-        return (workspace_root / ".loc_scanner_logs" / f"scan_{lang}.json").resolve()
+        scan_name = f"profile_{profile}" if profile else lang
+        return (workspace_root / "temp" / "loc_scanner" / "logs" / f"scan_{scan_name}.json").resolve()
 
     @staticmethod
     def _build_base_payload(*, args: argparse.Namespace, workspace_root: Path) -> dict:
-        return {
+        payload = {
             "generated_at": datetime.now().astimezone().isoformat(timespec="seconds"),
             "status": "unknown",
-            "lang": args.lang,
             "workspace_root": str(workspace_root),
         }
+        if getattr(args, "lang", None) is not None:
+            payload["lang"] = args.lang
+        if getattr(args, "profile", None) is not None:
+            payload["profile"] = args.profile
+        return payload
 
     @staticmethod
     def _write_json_log(path: Path, payload: dict) -> None:

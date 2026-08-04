@@ -8,33 +8,33 @@ import tracer.core.domain.types.app_options;
 
 namespace tracer::core::application::use_cases {
 
+using tracer::core::domain::types::AppOptions;
 using tracer_core::core::dto::ConvertRequest;
+using tracer_core::core::dto::ConvertTxtActivityNamesRequest;
+using tracer_core::core::dto::ConvertTxtActivityNamesResponse;
+using tracer_core::core::dto::DefaultTxtDayMarkerRequest;
+using tracer_core::core::dto::DefaultTxtDayMarkerResponse;
+using tracer_core::core::dto::ImportRequest;
+using tracer_core::core::dto::IngestRequest;
 using tracer_core::core::dto::IngestSyncStatusOutput;
 using tracer_core::core::dto::IngestSyncStatusRequest;
 using tracer_core::core::dto::OperationAck;
-using tracer_core::core::dto::IngestRequest;
-using tracer_core::core::dto::ImportRequest;
-using tracer_core::core::dto::ValidateStructureRequest;
-using tracer_core::core::dto::ValidateLogicRequest;
 using tracer_core::core::dto::RecordActivityAtomicallyRequest;
 using tracer_core::core::dto::RecordActivityAtomicallyResponse;
+using tracer_core::core::dto::ReplaceTxtAliasActivityNamesRequest;
+using tracer_core::core::dto::ReplaceTxtAliasActivityNamesResponse;
+using tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest;
+using tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse;
+using tracer_core::core::dto::ReplaceTxtDayBlockRequest;
+using tracer_core::core::dto::ReplaceTxtDayBlockResponse;
+using tracer_core::core::dto::ResolveTxtDayBlockRequest;
+using tracer_core::core::dto::ResolveTxtDayBlockResponse;
 using tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest;
 using tracer_core::core::dto::UpdateActivityRemarkAtomicallyResponse;
 using tracer_core::core::dto::UpdateDayRemarkAtomicallyRequest;
 using tracer_core::core::dto::UpdateDayRemarkAtomicallyResponse;
-using tracer_core::core::dto::DefaultTxtDayMarkerRequest;
-using tracer_core::core::dto::DefaultTxtDayMarkerResponse;
-using tracer_core::core::dto::ResolveTxtDayBlockRequest;
-using tracer_core::core::dto::ResolveTxtDayBlockResponse;
-using tracer_core::core::dto::ReplaceTxtDayBlockRequest;
-using tracer_core::core::dto::ReplaceTxtDayBlockResponse;
-using tracer_core::core::dto::ConvertTxtActivityNamesRequest;
-using tracer_core::core::dto::ConvertTxtActivityNamesResponse;
-using tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest;
-using tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse;
-using tracer_core::core::dto::ReplaceTxtAliasActivityNamesRequest;
-using tracer_core::core::dto::ReplaceTxtAliasActivityNamesResponse;
-using tracer::core::domain::types::AppOptions;
+using tracer_core::core::dto::ValidateLogicRequest;
+using tracer_core::core::dto::ValidateStructureRequest;
 namespace core_api_failure = tracer::core::application::use_cases::failure;
 
 PipelineApi::PipelineApi(pipeline::IPipelineWorkflow& pipeline_workflow)

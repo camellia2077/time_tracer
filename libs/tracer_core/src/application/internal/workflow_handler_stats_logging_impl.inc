@@ -100,7 +100,7 @@ auto WorkflowHandler::RunDatabaseImportFromMemory(
     const std::map<std::string, std::vector<DailyLog>>& data_map) -> void {
   runtime_bridge::LogInfo("Task: Memory Import...");
 
-  ImportService service(*time_sheet_repository_);
+  ImportService service(*time_sheet_write_repository_);
   ImportStats stats = service.ImportFromMemory(data_map);
 
   PrintImportStats(stats, "Memory Import");
@@ -112,7 +112,7 @@ auto WorkflowHandler::RunDatabaseImportFromMemoryReplacingAll(
     const std::map<std::string, std::vector<DailyLog>>& data_map) -> void {
   runtime_bridge::LogInfo("Task: Memory Import (Replace All)...");
 
-  ImportService service(*time_sheet_repository_);
+  ImportService service(*time_sheet_write_repository_);
   ImportStats stats =
       service.ImportFromMemory(data_map, std::nullopt, ReplaceAllTarget{});
 
@@ -126,7 +126,7 @@ auto WorkflowHandler::RunDatabaseImportFromMemoryReplacingMonth(
     int month) -> void {
   runtime_bridge::LogInfo("Task: Memory Import (Replace Month)...");
 
-  ImportService service(*time_sheet_repository_);
+  ImportService service(*time_sheet_write_repository_);
   ImportStats stats = service.ImportFromMemory(
       data_map, ReplaceMonthTarget{.kYear = year, .kMonth = month});
 

@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 
-from ....services.clangd_lsp import ClangdClient
+from ...clang.clangd import ClangdClient
 
 
 def process_apply_candidate(

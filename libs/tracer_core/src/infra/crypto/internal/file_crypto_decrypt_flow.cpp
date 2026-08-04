@@ -73,15 +73,16 @@ auto DecryptCiphertext(std::span<const std::uint8_t> ciphertext,
   }
 
   std::vector<std::uint8_t> decrypted_payload(ciphertext.size());
-  unsigned long long decrypted_size = 0;
+  std::uint64_t decrypted_size = 0;
   if (crypto_aead_xchacha20poly1305_ietf_decrypt(
           decrypted_payload.data(), &decrypted_size, nullptr, ciphertext.data(),
-          static_cast<unsigned long long>(ciphertext.size()), nullptr, 0,
+          static_cast<std::uint64_t>(ciphertext.size()), nullptr, 0,
           header.nonce.data(), key.data()) != 0) {
-    return {MakeError(
-                FileCryptoError::kDecryptFailed,
-                "Decryption failed (wrong passphrase or corrupted ciphertext)."),
-            {}};
+    return {
+        MakeError(
+            FileCryptoError::kDecryptFailed,
+            "Decryption failed (wrong passphrase or corrupted ciphertext)."),
+        {}};
   }
 
   decrypted_payload.resize(static_cast<std::size_t>(decrypted_size));
@@ -89,8 +90,7 @@ auto DecryptCiphertext(std::span<const std::uint8_t> ciphertext,
 }
 
 auto DecodePlaintext(std::vector<std::uint8_t> decrypted_payload,
-                     const TracerFileHeader& header,
-                     ProgressReporter* reporter)
+                     const TracerFileHeader& header, ProgressReporter* reporter)
     -> std::pair<FileCryptoResult, std::vector<std::uint8_t>> {
   if (header.kVersion == kFormatVersionV1 ||
       header.compression_id == kCompressionNone) {
@@ -158,11 +158,10 @@ auto DecryptBytesInternal(std::span<const std::uint8_t> encrypted_bytes,
     return {kPhaseResult, {}};
   }
 
-  const auto kPayloadBegin =
-      kEncryptedBuffer.begin() +
-      static_cast<std::ptrdiff_t>(header.header_size);
-  const std::vector<std::uint8_t> kCiphertext(
-      kPayloadBegin, kEncryptedBuffer.end());
+  const auto kPayloadBegin = kEncryptedBuffer.begin() +
+                             static_cast<std::ptrdiff_t>(header.header_size);
+  const std::vector<std::uint8_t> kCiphertext(kPayloadBegin,
+                                              kEncryptedBuffer.end());
 
   auto [decrypt_result, decrypted_payload] =
       DecryptCiphertext(kCiphertext, header, key);
@@ -210,9 +209,8 @@ auto DecryptFileInternal(const fs::path& input_tracer_path,
     return read_result;
   }
 
-  auto [decrypt_result, plaintext] =
-      DecryptBytesInternal(encrypted_bytes, passphrase, reporter,
-                           batch_session);
+  auto [decrypt_result, plaintext] = DecryptBytesInternal(
+      encrypted_bytes, passphrase, reporter, batch_session);
   if (!decrypt_result.ok()) {
     return decrypt_result;
   }

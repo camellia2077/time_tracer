@@ -12,7 +12,7 @@ import tracer.core.application.use_cases.interface;
 #include "application/dto/shared_envelopes.hpp"
 #include "nlohmann/json.hpp"
 #include "shared/types/reporting_errors.hpp"
-#include "tracer/transport/runtime_codec.hpp"
+#include "tracer/transport/runtime_codec_report.hpp"
 
 namespace tt_transport = tracer::transport;
 using tracer::core::application::use_cases::ITracerCoreRuntime;

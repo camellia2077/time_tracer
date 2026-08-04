@@ -3,6 +3,7 @@
 #include <string>
 
 #include "api/android_jni/native_bridge_internal.hpp"
+#include "tracer/transport/runtime_codec_query.hpp"
 
 namespace tracer_core::api::android::bridge_internal {
 

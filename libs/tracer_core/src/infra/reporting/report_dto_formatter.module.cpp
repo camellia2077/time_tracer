@@ -52,22 +52,22 @@ auto FormatLocalizedReport(const ReportDataType& report, ReportFormat format,
   ReportCatalog localized_catalog = base_catalog;
   localized_catalog.loaded_reports.markdown = *localized_markdown;
   return GenericFormatterFactory<ReportDataType>::Create(format,
-                                                          localized_catalog)
+                                                         localized_catalog)
       ->FormatReport(report);
 }
 
-auto FindLocalizedMarkdown(const ReportCatalog& catalog, std::string_view locale)
+auto FindLocalizedMarkdown(const ReportCatalog& catalog,
+                           std::string_view locale)
     -> const MarkdownReportConfigs* {
-  const auto iter = catalog.loaded_reports.markdown_locales.find(
-      std::string(locale));
-  return iter == catalog.loaded_reports.markdown_locales.end()
-             ? nullptr
-             : &iter->second;
+  const auto iter =
+      catalog.loaded_reports.markdown_locales.find(std::string(locale));
+  return iter == catalog.loaded_reports.markdown_locales.end() ? nullptr
+                                                               : &iter->second;
 }
 
 auto ReportDtoFormatter::FormatDailyLocalized(const DailyReportData& report,
-                                               ReportFormat format,
-                                               std::string_view locale)
+                                              ReportFormat format,
+                                              std::string_view locale)
     -> std::string {
   return FormatLocalizedReport(report, format, report_catalog_,
                                FindLocalizedMarkdown(report_catalog_, locale));

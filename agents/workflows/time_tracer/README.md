@@ -1,55 +1,24 @@
-# time_tracer Workflows Index
+# time_tracer clang-tidy workflows
 
-This directory contains agent workflow policies for `time_tracer`.
+Use the profile-specific document that matches the scope of work:
 
-## Clang-Tidy Workflow Map
+- `clang_tidy_all_daily.md` / `clang_tidy_all_strict.md`: continue the current queue with bounded agent runs.
+- `clang_tidy_by_id_daily.md` / `clang_tidy_by_id_strict.md`: start from one current task, then process its complete source cluster.
+- `clang_tidy_all_shared.md` and `clang_tidy_by_id_shared.md`: common contracts referenced by those documents.
 
-Use this matrix to pick the right document:
+There is no `num` workflow and no `tidy-batch` command. The queue is strictly:
 
-- Scope axis:
-  - `all`: full queue / end-to-end cleanup flow
-  - `by_num`: one specific pending task (`task_NNN`)
-- Profile axis:
-  - `daily`: repo-root `.clang-tidy`
-  - `strict`: repo-root `.clang-tidy.strict` (via `--strict-config`)
-- Base axis:
-  - `shared`: profile-agnostic common contract and process rules
+```text
+scan -> source clusters -> tasks
+```
 
-## Files and Purpose
+The generated layout is `tasks/clusters/<source_filename>_<hash>/task_<local_id>.*`. A cluster is one source file and all current diagnostics for that file; its task numbers are local and ordered within that directory.
 
-- `clang_tidy_all_shared.md`
-  - Shared base for full-queue cleanup (`all`), independent of daily/strict.
-  - Defines common path contract, task handling order, batch policy, completion gate, and guardrails.
+Normal bounded loop:
 
-- `clang_tidy_all_daily.md`
-  - Daily-profile bindings for full-queue cleanup.
-  - Adds `.clang-tidy` policy and expands daily commands.
+1. Run `tidy-agent` with a small cluster/task/time budget.
+2. If a cluster needs manual work, fix only that source cluster and rerun `tidy-agent` or `tidy-source-step` using a freshly resolved task path.
+3. Stop normally when the budget is exhausted. If the runner reports `blocked` or exit code `2`, the agent edits the current source cluster and reruns it; this is not a request for user confirmation.
+4. When the current queue is empty, run `tidy-close --dry-run`, then the real `tidy-close` final gate.
 
-- `clang_tidy_all_strict.md`
-  - Strict-profile bindings for full-queue cleanup.
-  - Adds `--strict-config` policy and expands strict commands.
-
-- `clang_tidy_by_num_shared.md`
-  - Shared base for single-task cleanup (`by_num`), independent of daily/strict.
-  - Defines one-task contract, required command order, batch handoff, and completion checks.
-
-- `clang_tidy_by_num_daily.md`
-  - Daily-profile bindings for single-task cleanup.
-  - Adds `.clang-tidy` policy and expands daily commands.
-
-- `clang_tidy_by_num_strict.md`
-  - Strict-profile bindings for single-task cleanup.
-  - Adds `--strict-config` policy and expands strict commands.
-
-## Selection Guide
-
-- Need to process one known task id: start from `clang_tidy_by_num_*`.
-- Need to run/continue full queue automation: start from `clang_tidy_all_*`.
-- Unsure between daily and strict:
-  - choose `daily` for routine iteration
-  - choose `strict` for hard gate / final cleanup
-
-## Source-of-Truth Rule
-
-- Style rules are owned by clang-tidy configs (`.clang-tidy` / `.clang-tidy.strict`), not duplicated in these workflow docs.
-- Workflow docs define execution policy and command contracts.
+`tidy-refresh` always regenerates the full current scan and queue. It is used when source changes make the current queue stale; it is not an incremental batch transition.

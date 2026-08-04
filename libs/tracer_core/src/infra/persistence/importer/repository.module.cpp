@@ -13,7 +13,6 @@
 #include "infra/persistence/importer/repository.hpp"
 #include "infra/persistence/importer/repository_ingest_sync_sql.hpp"
 #include "application/pipeline/importer/model/import_models.hpp"
-#include "infra/persistence/sqlite/db_manager.hpp"
 #include "infra/schema/day_schema.hpp"
 #include "infra/schema/sqlite_schema.hpp"
 
@@ -22,12 +21,8 @@ import tracer.core.infrastructure.persistence.write.importer.sqlite;
 namespace tracer::core::infrastructure::persistence::importer {
 
 using tracer_core::core::dto::IngestSyncStatusEntry;
-using tracer_core::core::dto::IngestSyncStatusOutput;
-using tracer_core::core::dto::IngestSyncStatusRequest;
 
-namespace {
-
-}  // namespace
+namespace {}  // namespace
 
 Repository::Repository(std::string db_path) : db_path_(std::move(db_path)) {}
 
@@ -171,8 +166,8 @@ auto Repository::ReplaceMonthData(
   }
 }
 
-auto Repository::UpsertIngestSyncStatus(
-    const IngestSyncStatusEntry& entry) -> void {
+auto Repository::UpsertIngestSyncStatus(const IngestSyncStatusEntry& entry)
+    -> void {
   EnsureWriteRepositoryReady();
   detail::UpsertIngestSyncStatusRow(connection_manager_->GetDb(), entry);
 }
@@ -182,7 +177,8 @@ auto Repository::ReplaceIngestSyncStatuses(
   EnsureWriteRepositoryReady();
 
   if (!connection_manager_->BeginTransaction()) {
-    throw std::runtime_error("Failed to begin ingest sync replacement transaction.");
+    throw std::runtime_error(
+        "Failed to begin ingest sync replacement transaction.");
   }
 
   try {
@@ -198,7 +194,8 @@ auto Repository::ReplaceIngestSyncStatuses(
     }
 
     if (!connection_manager_->CommitTransaction()) {
-      throw std::runtime_error("Failed to commit ingest sync replacement transaction.");
+      throw std::runtime_error(
+          "Failed to commit ingest sync replacement transaction.");
     }
   } catch (const std::exception&) {
     connection_manager_->RollbackTransaction();
@@ -214,75 +211,6 @@ auto Repository::ClearIngestSyncStatus() -> void {
                           "Delete ingest month sync rows")) {
     throw std::runtime_error("Failed to clear ingest sync statuses.");
   }
-}
-
-auto Repository::ListIngestSyncStatuses(const IngestSyncStatusRequest& request)
-    const -> IngestSyncStatusOutput {
-  sqlite3* db_connection = nullptr;
-  DBManager db_manager(db_path_);
-
-  if (IsDbOpen()) {
-    db_connection = connection_manager_->GetDb();
-  } else {
-    if (!db_manager.OpenDatabaseIfNeeded()) {
-      return {.ok = true, .items = {}, .error_message = ""};
-    }
-    db_connection = db_manager.GetDbConnection();
-  }
-
-  if (db_connection == nullptr) {
-    return {.ok = true, .items = {}, .error_message = ""};
-  }
-
-  return detail::ListIngestSyncStatusRows(db_connection, request);
-}
-
-auto Repository::TryGetLatestActivityTailBeforeDate(std::string_view date) const
-    -> std::optional<LatestActivityTail> {
-  sqlite3* db_connection = nullptr;
-  DBManager db_manager(db_path_);
-
-  if (IsDbOpen()) {
-    db_connection = connection_manager_->GetDb();
-  } else {
-    if (!db_manager.OpenDatabaseIfNeeded()) {
-      return std::nullopt;
-    }
-    db_connection = db_manager.GetDbConnection();
-  }
-
-  if (db_connection == nullptr) {
-    return std::nullopt;
-  }
-
-  const std::string kSql = std::format(
-      "SELECT {0}, \"{1}\" FROM {2} WHERE {0} < ?1 "
-      "ORDER BY {0} DESC, {3} DESC LIMIT 1;",
-      schema::time_records::db::kDate, schema::time_records::db::kEnd,
-      schema::time_records::db::kTable,
-      schema::time_records::db::kEndTimestamp);
-
-  sqlite3_stmt* stmt = nullptr;
-  if (sqlite3_prepare_v2(db_connection, kSql.c_str(), -1, &stmt, nullptr) !=
-      SQLITE_OK) {
-    return std::nullopt;
-  }
-
-  sqlite3_bind_text(stmt, 1, date.data(), static_cast<int>(date.size()),
-                    SQLITE_TRANSIENT);
-
-  std::optional<LatestActivityTail> result;
-  if (sqlite3_step(stmt) == SQLITE_ROW) {
-    const unsigned char* date_text = sqlite3_column_text(stmt, 0);
-    const unsigned char* end_text = sqlite3_column_text(stmt, 1);
-    if (date_text != nullptr && end_text != nullptr) {
-      result = LatestActivityTail{
-          .date = reinterpret_cast<const char*>(date_text),
-          .end_time = reinterpret_cast<const char*>(end_text)};
-    }
-  }
-  sqlite3_finalize(stmt);
-  return result;
 }
 
 }  // namespace tracer::core::infrastructure::persistence::importer

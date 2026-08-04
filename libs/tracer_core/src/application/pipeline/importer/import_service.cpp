@@ -6,12 +6,12 @@
 #include <format>
 
 #include "application/parser/memory_parser.hpp"
-#include "application/ports/pipeline/i_time_sheet_repository.hpp"
+#include "application/ports/pipeline/i_time_sheet_write_repository.hpp"
 
 import tracer.core.domain.model.daily_log;
 
 ImportService::ImportService(
-    tracer_core::application::ports::ITimeSheetRepository& repository)
+    tracer_core::application::ports::ITimeSheetWriteRepository& repository)
     : repository_(repository) {}
 
 auto ImportService::ImportFromMemory(

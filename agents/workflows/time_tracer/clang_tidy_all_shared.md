@@ -1,67 +1,66 @@
 ---
-description: Shared base policy for the full time_tracer clang-tidy queue (profile-agnostic)
+description: Shared bounded source-cluster contract for the time_tracer clang-tidy queue
 ---
 
-## Fixed Contract (MUST)
-- Official app anchor: `tracer_core_shell`
-- Official source scope: `core_family`
-- Official tidy workspace: `build_tidy_core_family`
-- Run from repo root only: `C:\code\time_tracer`
+## Fixed contract
 
-## Style Authority (MUST)
-- Style and naming rules are defined by the active clang-tidy config profile selected by the caller workflow.
-- Do not maintain a duplicated style-rule checklist in workflow markdown files.
-- LLM suggestions are advisory only; clang-tidy/verify results are authoritative for acceptance.
+- Run from `C:\code\time_tracer`.
+- App: `tracer_core_shell`.
+- Source scope: `core_family`.
+- Tidy workspace: `build_tidy_core_family`.
+- Canonical queue: `out/tidy/tracer_core_shell/build_tidy_core_family/tasks/`.
 
-## Fixed Paths (MUST)
-- Task queue: `out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_*/task_*.json|toon|log`
-  - `task_*.json` is canonical for machine execution only
-  - `task_*.toon` is the default reading view for humans/agents when present
-  - `task_*.log` is compatibility-only
-- Machine summary: `out/tidy/tracer_core_shell/build_tidy_core_family/tidy_result.json`
-- Automation reports: `out/tidy/tracer_core_shell/build_tidy_core_family/automation/`
-- Verify result: `out/test/artifact_windows_cli/result.json`
+The queue layout is:
 
-## First Command (MUST)
-- Start with the official auto entry:
-  - `python tools/run.py tidy-flow --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --task-view toon --all --resume --test-every 3 --concise --keep-going --with-tidy-fix --tidy-fix-limit <FIX_N> <PROFILE_FLOW_FLAGS>`
-- If flags are unclear, read `python tools/run.py tidy-flow -h` before changing anything.
+```text
+tasks/
+  clusters/
+    <source_filename>_<hash>/
+      cluster.json
+      task_001.json
+      task_001.toon
+      task_001.log
+  scan_manifest.json
+  queue_state.json
+```
 
-## Single-Task Policy (MUST)
-- When auto flow stops on manual tasks, always pick the smallest pending task by canonical identity, but read the task through `task_NNN.toon` first when it exists.
-- Only fall back to `.json`, then `.log`, when `.toon` is missing or clearly insufficient for the current decision.
-- Do not switch to `.json` just for normal task reading; preserve `toon` as the low-token reading contract.
-- Always derive `<BATCH_ID>` from the real task path before acting.
-- For task-local commands, always execute with the canonical `.json` path via `--task-log <resolved_task_json>`.
-- After any `tidy-flow` / `tidy-batch` / `tidy-refresh` / rebase, re-resolve from the current `tasks/` tree. Do not trust an older batch/task pair.
-- Use this order:
-  1. `tidy-task-patch --task-log <resolved_task_json>`
-  2. `tidy-task-fix --task-log <resolved_task_json> --dry-run`
-  3. `tidy-task-suggest --task-log <resolved_task_json>`
-  4. `tidy-step --task-log <resolved_task_json> --dry-run <PROFILE_STEP_FLAGS>`
-  5. `tidy-step --task-log <resolved_task_json> <PROFILE_STEP_FLAGS>`
-- Treat `automation/` as the first place to read before manual fixing.
+`task_*.json` is the machine contract. `.toon` is the preferred reading view. A cluster groups all pending diagnostics for one source file; process the whole cluster, not one stale diagnostic.
 
-## Batch Policy (MUST)
-- `tidy-step` is the normal one-task close path:
-  - it runs build sanity check
-  - reruns focused clang-tidy on the selected task source
-  - archives the matching `task_<TASK_ID>` artifact when that re-check is clean
-- Normal batch close path is `tidy-batch --preset sop <PROFILE_BATCH_FLAGS>`.
-- Queue batch id is a queue code, not a historical identity. Full rebase / full refresh keeps the current pending queue namespace instead of rewinding to `batch_001`.
-- `clean + tidy-refresh` is troubleshooting-only, not the normal workflow.
-- If the same file has several task logs in one batch, prefer clustered clean.
+## Bounded processing
 
-## Completion Gate (MUST)
-- Done means:
-  - no `task_*.json` / `task_*.log` / `task_*.toon` remains under `out/tidy/tracer_core_shell/build_tidy_core_family/tasks/`
-  - `out/test/artifact_windows_cli/result.json` still reports success
-- Exit code `2` from auto flow is not completion.
-- Final acceptance command is:
-  - `python tools/run.py tidy-close --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --keep-going --concise <PROFILE_CLOSE_FLAGS>`
+Start with:
 
-## Repo-Specific Guardrails (MUST)
-- Only use pinpoint suppression at true ABI boundaries such as `apps/tracer_core_shell/api/c_api`.
-- Non-ABI implementation files must prefer real fixes over suppression.
-- Do not add app-side shell wrappers for clang-tidy; use `python tools/run.py ...` directly.
-- For parameter syntax and defaults, always consult `python tools/run.py <subcommand> -h`.
+```powershell
+python tools/run.py tidy-agent --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --max-clusters 3 --max-tasks 10 --max-minutes 30 <PROFILE_FLAGS>
+```
+
+The runner re-resolves the queue after every cluster. It may stop because the budget is exhausted (`paused`), because the current source cluster still needs an agent edit or refresh (`blocked`/exit `2`), or because the queue is empty and final close is required (`queue_empty_requires_tidy_close`). A blocked result is not a request for user confirmation: the agent edits the current cluster and reruns it.
+
+For one selected task, resolve its current path, read `.toon`, and execute with the matching `.json` path:
+
+```powershell
+python tools/run.py tidy-source-step --task-log <resolved_task_json> --dry-run <PROFILE_FLAGS>
+python tools/run.py tidy-source-step --task-log <resolved_task_json> <PROFILE_FLAGS>
+```
+
+`tidy-source-step` applies safe fixes, runs build sanity, re-runs focused clang-tidy for the complete source cluster, and archives the cluster only after the fresh check is clean. Never manually move or delete task files.
+
+After any source edit, refresh, rebase, or archive, discard old task paths and resolve the current `tasks/` tree again. Use `tidy-refresh` when the queue itself is stale; it performs a full scan -> cluster -> task regeneration.
+
+## Completion gate
+
+A bounded slice may stop at any budget boundary; record the current runner state and resume later. The whole queue is complete only when:
+
+- no `task_*.json`, `.toon`, or `.log` remains anywhere below `tasks/`;
+- `tidy-close` exits `0`;
+- `tidy_result.json.final_gate` reports final-full tidy, verify, and queue-empty as passed;
+- the verify result is newer than the final source changes.
+
+Preview and then execute:
+
+```powershell
+python tools/run.py tidy-close --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --dry-run <PROFILE_FLAGS>
+python tools/run.py tidy-close --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --keep-going --concise <PROFILE_FLAGS>
+```
+
+There is no batch checkpoint or batch identity in this workflow.

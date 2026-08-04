@@ -6,9 +6,11 @@
 
 1. [architecture.md](architecture.md)
    - 文件分层、改动路由与状态/报告职责地图
-2. [flow.md](flow.md)
+2. [refactoring_guidance.md](refactoring_guidance.md)
+   - tidy 工作流、task/cluster/state 不变量与安全重构要求
+3. [flow.md](flow.md)
    - 执行流、状态文件与批次/refresh/flow 行为
-3. [sop.md](sop.md)
+4. [sop.md](sop.md)
    - 批次收口与日常处理 SOP
-4. [autofix_policy.md](autofix_policy.md)
+5. [autofix_policy.md](autofix_policy.md)
    - task auto-fix 规则与边界

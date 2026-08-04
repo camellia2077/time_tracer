@@ -136,15 +136,13 @@ auto PrepareAndroidConfigFixture(const std::filesystem::path& target_root)
   const std::filesystem::path source_root =
       BuildRepoRoot() / "config" / "program";
   const std::filesystem::path user_source_root =
-      BuildRepoRoot() / "test" / "data" / "user";
+      BuildRepoRoot() / "config" / "user";
   const std::filesystem::path hierarchy_source_root =
       BuildRepoRoot() / "test" / "data" / "activity_hierarchy";
   const std::filesystem::path android_bundle_path =
-      BuildRepoRoot() / "apps" / "android" / "runtime" / "src" / "main" /
-      "assets" / "config" / "program" / "meta" / "bundle.toml";
+      source_root / "meta" / "bundle.toml";
   const std::filesystem::path android_config_path =
-      BuildRepoRoot() / "apps" / "android" / "runtime" / "src" / "main" /
-      "assets" / "config" / "program" / "config.toml";
+      source_root / "config.toml";
 
   const auto copy_required_file = [&](std::string_view relative_path) -> bool {
     return CopyFileWithParents(
@@ -166,7 +164,11 @@ auto PrepareAndroidConfigFixture(const std::filesystem::path& target_root)
          copy_required_file("charts/heatmap.toml") &&
          copy_required_file("charts/pie.toml") &&
          CopyDirectoryTree(source_root / "reports" / "markdown",
-                           target_root / "program" / "reports" / "markdown");
+                           target_root / "program" / "reports" / "markdown") &&
+         CopyDirectoryTree(source_root / "reports" / "latex",
+                           target_root / "program" / "reports" / "latex") &&
+         CopyDirectoryTree(source_root / "reports" / "typst",
+                           target_root / "program" / "reports" / "typst");
 }
 
 auto ExpectBuildRuntimeThrows(

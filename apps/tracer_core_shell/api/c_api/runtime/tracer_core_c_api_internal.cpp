@@ -12,7 +12,11 @@ import tracer.core.application.use_cases.interface;
 #include "application/dto/query_responses.hpp"
 #include "application/dto/shared_envelopes.hpp"
 #include "api/c_api/runtime/c_api_parse_bridge.hpp"
-#include "tracer/transport/runtime_codec.hpp"
+#include "tracer/transport/runtime_codec_capabilities.hpp"
+#include "tracer/transport/runtime_codec_ingest.hpp"
+#include "tracer/transport/runtime_codec_query.hpp"
+#include "tracer/transport/runtime_codec_report.hpp"
+#include "tracer/transport/runtime_codec_tree.hpp"
 
 #ifndef TT_ENABLE_PROCESSED_JSON_IO
 #define TT_ENABLE_PROCESSED_JSON_IO 1

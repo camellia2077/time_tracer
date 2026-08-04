@@ -14,8 +14,12 @@ auto RunPersistenceRuntimeSmokeImpl() -> int {
                                SqliteDatabaseHealthChecker::CheckReady;
   const auto kGetAllProjects = &tracer::core::infrastructure::persistence::
                                    SqliteProjectRepository::GetAllProjects;
+  const auto kListIngestSyncStatuses =
+      &tracer::core::infrastructure::persistence::
+          SqliteIngestRuntimeRepository::ListIngestSyncStatuses;
   (void)kCheckReady;
   (void)kGetAllProjects;
+  (void)kListIngestSyncStatuses;
 
   const std::filesystem::path kPersistenceRuntimeSmokeDir =
       std::filesystem::path("temp") / "phase10_infra_module_smoke";
@@ -50,6 +54,14 @@ auto RunPersistenceRuntimeSmokeImpl() -> int {
     const auto projects = project_repository.GetAllProjects();
     if (projects.size() != 1U || projects.front().name != "Root") {
       return 29;
+    }
+
+    tracer::core::infrastructure::persistence::SqliteIngestRuntimeRepository
+        ingest_runtime_repository(kRuntimeDbPath.string());
+    const auto sync_status =
+        ingest_runtime_repository.ListIngestSyncStatuses({});
+    if (!sync_status.ok || !sync_status.items.empty()) {
+      return 31;
     }
   } catch (...) {
     return 30;

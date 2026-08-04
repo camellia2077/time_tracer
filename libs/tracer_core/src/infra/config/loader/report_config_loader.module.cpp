@@ -94,18 +94,17 @@ auto ReportConfigLoader::LoadDailyStatusConfig(const fs::path& path)
   const toml::node_view<const toml::node> kParentPresentNode =
       RequireNode(kStatuses, path, "parent_present");
   if (!kParentPresentNode.is_table()) {
-    ThrowInvalidConfig(
-        path, "key 'daily_statuses.parent_present' must be a table.");
+    ThrowInvalidConfig(path,
+                       "key 'daily_statuses.parent_present' must be a table.");
   }
 
   DailyStatusConfig config;
   config.schema_version = *kSchemaVersion;
-  for (const auto& [id_node, status_node] :
-       *kParentPresentNode.as_table()) {
+  for (const auto& [id_node, status_node] : *kParentPresentNode.as_table()) {
     const std::string kId = std::string(id_node.str());
     if (!status_node.is_table()) {
-      ThrowInvalidConfig(path, "daily_statuses.parent_present." + kId +
-                               " must be a table.");
+      ThrowInvalidConfig(
+          path, "daily_statuses.parent_present." + kId + " must be a table.");
     }
     const toml::table& kStatus = *status_node.as_table();
     DailyStatusDefinition definition;

@@ -86,7 +86,8 @@ class FakePipelineWorkflow final
   int replace_txt_day_block_call_count = 0;
   int convert_txt_activity_names_call_count = 0;
   int replace_txt_canonical_activity_names_call_count = 0;
-  tracer_core::core::dto::IngestSyncStatusRequest last_ingest_sync_status_request;
+  tracer_core::core::dto::IngestSyncStatusRequest
+      last_ingest_sync_status_request;
   tracer_core::core::dto::IngestSyncStatusOutput ingest_sync_status_output = {
       .ok = true,
       .items = {},
@@ -160,8 +161,10 @@ class FakePipelineWorkflow final
       const tracer_core::core::dto::RecordActivityAtomicallyRequest& request)
       -> tracer_core::core::dto::RecordActivityAtomicallyResponse override;
   auto RunUpdateActivityRemarkAtomically(
-      const tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest& request)
-      -> tracer_core::core::dto::UpdateActivityRemarkAtomicallyResponse override;
+      const tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest&
+          request)
+      -> tracer_core::core::dto::UpdateActivityRemarkAtomicallyResponse
+      override;
   auto RunUpdateDayRemarkAtomically(
       const tracer_core::core::dto::UpdateDayRemarkAtomicallyRequest& request)
       -> tracer_core::core::dto::UpdateDayRemarkAtomicallyResponse override;
@@ -178,14 +181,17 @@ class FakePipelineWorkflow final
       const tracer_core::core::dto::ConvertTxtActivityNamesRequest& request)
       -> tracer_core::core::dto::ConvertTxtActivityNamesResponse override;
   auto RunReplaceTxtCanonicalActivityNames(
-      const tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest& request)
-      -> tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse override;
+      const tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest&
+          request)
+      -> tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse
+      override;
   auto RunReplaceTxtAliasActivityNames(
-      const tracer_core::core::dto::ReplaceTxtAliasActivityNamesRequest& request)
+      const tracer_core::core::dto::ReplaceTxtAliasActivityNamesRequest&
+          request)
       -> tracer_core::core::dto::ReplaceTxtAliasActivityNamesResponse override;
   auto InstallActiveConverterConfig(
-      const tracer::core::application::pipeline::ActiveConverterConfigInstallRequest&
-          request) -> void override;
+      const tracer::core::application::pipeline::
+          ActiveConverterConfigInstallRequest& request) -> void override;
 };
 
 class FakeReportHandler final : public IReportHandler {

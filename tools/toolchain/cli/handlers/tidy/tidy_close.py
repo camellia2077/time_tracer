@@ -1,6 +1,6 @@
 import argparse
 
-from ....commands.tidy.close import TidyCloseCommand
+from ....commands.tidy.execution.close import TidyCloseCommand
 from ....core.context import Context
 from ...common import (
     add_profile_arg,
@@ -33,24 +33,15 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
         help="Close tidy queue only (skip verify gate).",
     )
     parser.add_argument(
-        "--stabilize",
+        "--dry-run",
         action="store_true",
-        help=(
-            "If final full tidy repopulates tasks/, keep draining the refreshed "
-            "queue and rerun final-full until it stabilizes or a task blocks progress."
-        ),
+        help="Preview the final-full tidy gate without changing tasks or running verify.",
     )
     parser.add_argument(
         "--jobs",
         type=int,
         default=None,
         help="Bounded parallel jobs for final full tidy (0 = auto-throttled).",
-    )
-    parser.add_argument(
-        "--parse-workers",
-        type=int,
-        default=None,
-        help="Log split workers for final full tidy when a full rebuild runs.",
     )
     add_profile_arg(parser, defaults)
     parser.add_argument(
@@ -87,13 +78,9 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
 def run(args: argparse.Namespace, ctx: Context) -> int:
     kill_build_procs = bool(args.kill_build_procs and not args.no_kill_build_procs)
     strict_config = bool(args.strict_config)
-    stabilize = bool(args.stabilize)
-    # In strict mode, tidy-close is treated as the final acceptance gate.
-    # A final full tidy refresh can legitimately repopulate tasks/ with a new
-    # queue wave, so we automatically enable stabilize to drain/retry instead
-    # of failing early with a transient "pending_tasks" status.
-    if strict_config:
-        stabilize = True
+    if args.dry_run and args.tidy_only:
+        print("Error: --dry-run cannot be combined with --tidy-only.")
+        return 2
     cmd = TidyCloseCommand(ctx)
     return cmd.execute(
         app_name=args.app,
@@ -103,13 +90,12 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         source_scope=args.source_scope,
         profile_name=args.profile,
         jobs=args.jobs,
-        parse_workers=args.parse_workers,
         concise=args.concise,
         kill_build_procs=kill_build_procs,
         tidy_only=args.tidy_only,
+        dry_run=args.dry_run,
         config_file=args.config_file,
         strict_config=strict_config,
-        stabilize=stabilize,
     )
 
 

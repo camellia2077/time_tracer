@@ -18,14 +18,10 @@ auto RunPersistenceWriteSmokeImpl() -> int {
                                importer::Repository::ImportData;
   const auto kReplaceMonthData = &tracer::core::infrastructure::persistence::
                                      importer::Repository::ReplaceMonthData;
-  const auto kLatestActivityTail =
-      &tracer::core::infrastructure::persistence::importer::Repository::
-          TryGetLatestActivityTailBeforeDate;
   const auto kExecuteSql =
       &tracer::core::infrastructure::persistence::importer::sqlite::ExecuteSql;
   (void)kImportData;
   (void)kReplaceMonthData;
-  (void)kLatestActivityTail;
   (void)kExecuteSql;
 
   const std::filesystem::path kPersistenceSmokeDir =
@@ -75,15 +71,15 @@ auto RunPersistenceWriteSmokeImpl() -> int {
                                            .activity_count = 1}});
     persistence_writer.InsertRecords(
         {TimeRecordInternal{.kind = ActivityRecordKind::kEndOnly,
-                             .logical_id = 1,
-                             .start_timestamp = 0,
-                             .end_timestamp = 1770000000,
-                             .start_time_str = "",
-                             .end_time_str = "12:00",
-                             .project_path = "work",
-                             .duration_seconds = 0,
-                             .remark = std::nullopt,
-                             .date = "2026-02-01"}});
+                            .logical_id = 1,
+                            .start_timestamp = 0,
+                            .end_timestamp = 1770000000,
+                            .start_time_str = "",
+                            .end_time_str = "12:00",
+                            .project_path = "work",
+                            .duration_seconds = 0,
+                            .remark = std::nullopt,
+                            .date = "2026-02-01"}});
 
     sqlite3_stmt* record_stmt = nullptr;
     if (sqlite3_prepare_v2(

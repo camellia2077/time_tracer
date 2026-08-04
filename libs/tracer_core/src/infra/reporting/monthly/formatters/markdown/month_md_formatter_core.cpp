@@ -78,15 +78,19 @@ void MonthMdFormatter::FormatHeaderContent(
       config_->GetActivityCountLabel(),
       FormatCountWithAverage(data.matched_record_count, data.requested_days));
   report_stream += BuildMarkdownItemLine(
-      FormatBooleanCountLabel(config_->GetStatusDaysLabel(), data.status_true_days),
+      FormatBooleanCountLabel(config_->GetStatusDaysLabel(),
+                              data.status_true_days),
       FormatRatio(data.status_true_days, data.actual_days));
   report_stream += BuildMarkdownItemLine(
-      FormatBooleanCountLabel(config_->GetExerciseDaysLabel(), data.exercise_true_days),
+      FormatBooleanCountLabel(config_->GetExerciseDaysLabel(),
+                              data.exercise_true_days),
       FormatRatio(data.exercise_true_days, data.actual_days));
   report_stream += BuildMarkdownItemLine(
-      FormatBooleanCountLabel(config_->GetCardioDaysLabel(), data.cardio_true_days),
+      FormatBooleanCountLabel(config_->GetCardioDaysLabel(),
+                              data.cardio_true_days),
       FormatRatio(data.cardio_true_days, data.actual_days));
   report_stream += BuildMarkdownItemLine(
-      FormatBooleanCountLabel(config_->GetAnaerobicDaysLabel(), data.anaerobic_true_days),
+      FormatBooleanCountLabel(config_->GetAnaerobicDaysLabel(),
+                              data.anaerobic_true_days),
       FormatRatio(data.anaerobic_true_days, data.actual_days));
 }

@@ -1,23 +1,26 @@
 from unittest import TestCase
 
-from tools.toolchain.commands.tidy.tasking.task_model import (
+from tools.toolchain.commands.tidy.queue.task_model import (
     TaskDiagnostic,
     TaskSnippet,
-    build_task_draft,
     finalize_task_record,
     render_text,
     render_toon,
     task_record_to_dict,
+)
+from tools.toolchain.commands.tidy.queue.task_record_builder import (
+    build_task_draft_from_diagnostics,
 )
 
 from ..support.tidy_task_model_support import _make_task_record
 
 
 class TestTidyTaskRender(TestCase):
-    def test_task_record_to_dict_writes_minimal_v2_schema(self):
+    def test_task_record_to_dict_writes_minimal_cluster_schema(self):
         source_file = "C:/code/time_tracer/libs/tracer_core/src/infra/query/data/stats/stats_boundary.module.cpp"
         record = _make_task_record(
             source_file=source_file,
+            cluster_id="cluster_001",
             diagnostics=(
                 TaskDiagnostic(
                     file=source_file,
@@ -47,8 +50,9 @@ class TestTidyTaskRender(TestCase):
 
         payload = task_record_to_dict(record)
 
-        self.assertEqual(payload["version"], 3)
-        self.assertEqual(payload["queue_batch_id"], "batch_001")
+        self.assertEqual(payload["version"], 4)
+        self.assertEqual(payload["cluster_id"], "cluster_001")
+        self.assertEqual(payload["scan_id"], "scan_fixture")
         self.assertIn("queue_generation", payload)
         self.assertNotIn("summary", payload)
         self.assertNotIn("snippets", payload)
@@ -64,25 +68,38 @@ class TestTidyTaskRender(TestCase):
 
     def test_render_text_keeps_caret_and_filters_noise(self):
         source_file = "C:/code/time_tracer/libs/tracer_core/src/application/importer/import_service.cpp"
-        draft = build_task_draft(
+        raw_lines = [
+            (
+                f"{source_file}:2:8: error: module 'tracer.core.domain.model.daily_log' "
+                "not found [clang-diagnostic-error]"
+            ),
+            "    2 | import tracer.core.domain.model.daily_log;",
+            "      | ~~~~~~~^~~~~~",
+            "Suppressed 52637 warnings (52637 in non-user code).",
+            "Use -header-filter=.* to display errors from all non-system headers.",
+            "Found compiler error(s).",
+        ]
+        draft = build_task_draft_from_diagnostics(
             [
-                (
-                    f"{source_file}:2:8: error: module 'tracer.core.domain.model.daily_log' "
-                    "not found [clang-diagnostic-error]"
-                ),
-                "    2 | import tracer.core.domain.model.daily_log;",
-                "      | ~~~~~~~^~~~~~",
-                "Suppressed 52637 warnings (52637 in non-user code).",
-                "Use -header-filter=.* to display errors from all non-system headers.",
-                "Found compiler error(s).",
-            ]
+                {
+                    "file": source_file,
+                    "line": 2,
+                    "col": 8,
+                    "severity": "error",
+                    "message": "module 'tracer.core.domain.model.daily_log' not found",
+                    "check": "clang-diagnostic-error",
+                    "lines": raw_lines,
+                }
+            ],
+            raw_lines=raw_lines,
         )
 
         self.assertIsNotNone(draft)
         record = finalize_task_record(
             draft,
             task_id="002",
-            batch_id="batch_001",
+            cluster_id="cluster_001",
+            scan_id="scan_fixture",
             queue_generation=1,
             workspace="build_tidy_core_family",
             source_scope="core_family",

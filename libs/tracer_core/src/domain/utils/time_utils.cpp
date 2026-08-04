@@ -30,8 +30,7 @@ auto TimeStrToSeconds(const std::string& time_str_in) -> int {
       }
     }
     if (all_digits) {
-      time_str = time_str.substr(0, 2) + ":" + time_str.substr(2, 2) +
-                 ":00";
+      time_str = time_str.substr(0, 2) + ":" + time_str.substr(2, 2) + ":00";
     }
   }
 
@@ -57,7 +56,8 @@ auto TimeStrToSeconds(const std::string& time_str_in) -> int {
     int minutes = std::stoi(time_str.substr(3, 2));
     int seconds = std::stoi(time_str.substr(6, 2));
     if (hours < 0 || hours >= kHoursInDay || minutes < 0 ||
-        minutes >= kMinutesInHour || seconds < 0 || seconds >= kSecondsInMinute) {
+        minutes >= kMinutesInHour || seconds < 0 ||
+        seconds >= kSecondsInMinute) {
       return 0;
     }
     return (hours * kSecondsInHour) + (minutes * kSecondsInMinute) + seconds;

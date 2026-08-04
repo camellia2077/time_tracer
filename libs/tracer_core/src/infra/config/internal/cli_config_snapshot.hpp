@@ -6,7 +6,6 @@
 #include <optional>
 #include <string>
 
-
 namespace tracer::core::infrastructure::config::internal {
 
 #include "infra/config/internal/detail/cli_config_snapshot_decl.inc"

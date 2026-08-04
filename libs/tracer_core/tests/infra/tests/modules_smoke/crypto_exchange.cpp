@@ -60,10 +60,12 @@ auto RunInfrastructureModuleCryptoExchangeSmoke() -> int {
   auto binary_config = BuildEntry("config/user/notes.bin", "binary\0data");
   binary_config.entry_flags = exchange::kEntryFlagRequired;
   entries.push_back(std::move(binary_config));
-  entries.push_back(BuildEntry("payload/2025/2025-01.txt",
-                               "y2025\nm01\nd0101\n0600 study_math // alpha\n"));
-  entries.push_back(BuildEntry("payload/2026/2026-12.txt",
-                               "y2026\nm12\nd1201\n0600 study_math // alpha\n"));
+  entries.push_back(
+      BuildEntry("payload/2025/2025-01.txt",
+                 "y2025\nm01\nd0101\n0600 study_math // alpha\n"));
+  entries.push_back(
+      BuildEntry("payload/2026/2026-12.txt",
+                 "y2026\nm12\nd1201\n0600 study_math // alpha\n"));
 
   const auto package_bytes = exchange::EncodePackageBytes(entries);
   const exchange::DecodedTracerExchangePackage decoded =

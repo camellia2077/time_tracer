@@ -22,33 +22,33 @@ auto LoadReportPathsFromTable(const toml::table& section,
                               fs::path& day_path, fs::path& month_path,
                               fs::path& period_path, fs::path& week_path,
                               fs::path& year_path) -> void {
-  const std::string root = RequireNonEmptyStringField(
+  const std::string kRoot = RequireNonEmptyStringField(
       section, "root", source.source_path, section_field_path);
-  const fs::path root_path =
-      NormalizeConfigRelativePath(source.config_dir, root);
-  if (!fs::is_directory(root_path)) {
+  const fs::path kRootPath =
+      NormalizeConfigRelativePath(source.config_dir, kRoot);
+  if (!fs::is_directory(kRootPath)) {
     ThrowConfigFieldError(source.source_path,
                           JoinFieldPath(section_field_path, "root"),
                           "must point to an existing directory.");
   }
 
-  fs::path report_root = root_path;
+  fs::path report_root = kRootPath;
   if (section_field_path == "reports.markdown") {
-    const std::string locale = RequireNonEmptyStringField(
+    const std::string kLocale = RequireNonEmptyStringField(
         section, "default_locale", source.source_path, section_field_path);
-    report_root /= locale;
+    report_root /= kLocale;
   }
 
-  const auto load = [&](std::string_view key, fs::path& output) {
+  const auto kLoad = [&](std::string_view key, fs::path& output) {
     output = report_root / (std::string(key) + ".toml");
-    EnsureFileExists(source.source_path,
-                     JoinFieldPath(section_field_path, key), output);
+    EnsureFileExists(source.source_path, JoinFieldPath(section_field_path, key),
+                     output);
   };
-  load("day", day_path);
-  load("month", month_path);
-  load("period", period_path);
-  load("week", week_path);
-  load("year", year_path);
+  kLoad("day", day_path);
+  kLoad("month", month_path);
+  kLoad("period", period_path);
+  kLoad("week", week_path);
+  kLoad("year", year_path);
 }
 
 auto ValidateBundleFileList(const toml::table& bundle_tbl,
@@ -136,22 +136,22 @@ auto TryResolveAndroidBundleConfigPathsImpl(const fs::path& config_dir)
       .config_dir = config_dir,
   };
   ValidateBundleFileList(bundle_tbl, kBundleSource);
-  const fs::path config_path = config_dir / "program" / "config.toml";
-  if (!fs::exists(config_path)) {
+  const fs::path kConfigPath = config_dir / "program" / "config.toml";
+  if (!fs::exists(kConfigPath)) {
     ThrowConfigFieldError(kBundlePath, "file_list.required",
                           "must include config.toml.");
   }
   toml::table config_tbl;
   try {
-    config_tbl = toml::parse(infra_file_io::ReadCanonicalText(config_path));
+    config_tbl = toml::parse(infra_file_io::ReadCanonicalText(kConfigPath));
   } catch (const toml::parse_error& err) {
     throw std::runtime_error("Failed to parse config.toml [" +
-                             config_path.string() + "]: " +
-                             std::string(err.description()));
+                             kConfigPath.string() +
+                             "]: " + std::string(err.description()));
   }
 
   AppConfig parsed_config;
-  ParseRuntimeConfigPaths(config_tbl, config_path.parent_path(), config_path,
+  ParseRuntimeConfigPaths(config_tbl, kConfigPath.parent_path(), kConfigPath,
                           parsed_config);
 
   AndroidBundleConfigPaths out{};
@@ -182,9 +182,11 @@ auto TryResolveAndroidBundleConfigPathsImpl(const fs::path& config_dir)
         .year = parsed_config.reports.year_tex_config_path,
     };
   }
-  if (kProfile == "android" && (out.latex.has_value() || out.typst.has_value())) {
-    ThrowConfigFieldError(config_path, "reports",
-                          "must not contain LaTeX or Typst for profile 'android'.");
+  if (kProfile == "android" &&
+      (out.latex.has_value() || out.typst.has_value())) {
+    ThrowConfigFieldError(
+        kConfigPath, "reports",
+        "must not contain LaTeX or Typst for profile 'android'.");
   }
   return out;
 }

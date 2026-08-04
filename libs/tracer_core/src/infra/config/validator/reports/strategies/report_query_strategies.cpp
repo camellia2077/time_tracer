@@ -91,10 +91,10 @@ auto ValidatePeriodKeys(const toml::table& query_config,
                         const std::string& file_name,
                         const std::string& report_type) -> bool {
   const std::set<std::string> kPeriodKeys = {
-      "title_template",         "actual_days_label",      "status_days_label",
-      "exercise_days_label",    "cardio_days_label",
-      "anaerobic_days_label",   "total_time_label",       "no_records_message",
-      "invalid_range_message",  "project_breakdown_label"};
+      "title_template",         "actual_days_label",  "status_days_label",
+      "exercise_days_label",    "cardio_days_label",  "anaerobic_days_label",
+      "total_time_label",       "no_records_message", "invalid_range_message",
+      "project_breakdown_label"};
 
   return std::ranges::all_of(kPeriodKeys, [&](const auto& key) -> auto {
     if (query_config.contains(key)) {
@@ -200,11 +200,9 @@ auto BaseStrategy::IsValidHexColor(const std::string& color_string) -> bool {
 auto DailyMd::ValidateSpecificKeys(const toml::table& query_config,
                                    const std::string& file_name) const -> bool {
   const std::set<std::string> kDailyMdKeys = {
-      "title_prefix",          "date_label",
-      "total_time_label",
-      "getup_time_label",      "remark_label",
-      "all_activities_label",  "activity_remark_label",
-      "activity_connector",    "end_only_time_format",
+      "title_prefix",          "date_label",         "total_time_label",
+      "getup_time_label",      "remark_label",       "all_activities_label",
+      "activity_remark_label", "activity_connector", "end_only_time_format",
       "no_records_message"};
 
   return ValidateRequiredKeys(query_config, file_name, kDailyMdKeys, "daily");

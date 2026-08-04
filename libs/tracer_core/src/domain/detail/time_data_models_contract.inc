@@ -1,3 +1,3 @@
-using ::ActivityStats;
 using ::ActivityRecordKind;
+using ::ActivityStats;
 using ::BaseActivityRecord;

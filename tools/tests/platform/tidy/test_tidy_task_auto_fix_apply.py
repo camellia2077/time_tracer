@@ -2,7 +2,7 @@ from tempfile import TemporaryDirectory
 from unittest import TestCase
 
 from tools.tests.platform.support.tidy_task_auto_fix_support import AutoFixFixtureBuilder, DiagnosticEntry
-from tools.toolchain.commands.tidy.tasking.task_auto_fix import (
+from tools.toolchain.commands.tidy.queue.task_auto_fix import (
     apply_explicit_constructor_actions,
     apply_runtime_int_actions,
     apply_using_namespace_actions,
@@ -25,8 +25,8 @@ class TestTidyTaskAutoFixApply(TestCase):
                     "long long duration = 0;",
                 ],
             )
-            task_log = fb.write_legacy_task_log(
-                relative_path="task_004.log",
+            task_log = fb.write_task_fixture(
+                relative_path="task_004.json",
                 source_file=source_file,
                 diagnostics=[
                     DiagnosticEntry(
@@ -62,9 +62,9 @@ class TestTidyTaskAutoFixApply(TestCase):
                 ],
             )
             task_log = fb.write_toon_task(
-                relative_path="task_018.toon",
+                relative_path="task_018.json",
                 task_id="018",
-                batch_id="batch_002",
+                cluster_id="cluster_002",
                 source_file=source_file,
                 diagnostics=[
                     DiagnosticEntry(
@@ -127,9 +127,9 @@ class TestTidyTaskAutoFixApply(TestCase):
                 ],
             )
             task_log = fb.write_toon_task(
-                relative_path="libs/tracer_core/src/task_005.toon",
+                relative_path="libs/tracer_core/src/task_005.json",
                 task_id="005",
-                batch_id="batch_001",
+                cluster_id="cluster_001",
                 source_file=source_file,
                 diagnostics=[
                     DiagnosticEntry(

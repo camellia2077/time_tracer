@@ -31,10 +31,8 @@ class IPipelineWorkflow {
   virtual auto RunDatabaseImportFromMemory(
       const std::map<std::string, std::vector<DailyLog>>& data_map) -> void = 0;
   virtual auto RunIngest(const std::string& source_path,
-                         DateCheckMode date_check_mode,
-                         bool save_processed,
-                         IngestMode ingest_mode)
-      -> void = 0;
+                         DateCheckMode date_check_mode, bool save_processed,
+                         IngestMode ingest_mode) -> void = 0;
   virtual auto RunIngestSyncStatusQuery(
       const tracer_core::core::dto::IngestSyncStatusRequest& request)
       -> tracer_core::core::dto::IngestSyncStatusOutput = 0;
@@ -49,7 +47,8 @@ class IPipelineWorkflow {
       const tracer_core::core::dto::RecordActivityAtomicallyRequest& request)
       -> tracer_core::core::dto::RecordActivityAtomicallyResponse = 0;
   virtual auto RunUpdateActivityRemarkAtomically(
-      const tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest& request)
+      const tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest&
+          request)
       -> tracer_core::core::dto::UpdateActivityRemarkAtomicallyResponse = 0;
   virtual auto RunUpdateDayRemarkAtomically(
       const tracer_core::core::dto::UpdateDayRemarkAtomicallyRequest& request)
@@ -67,10 +66,12 @@ class IPipelineWorkflow {
       const tracer_core::core::dto::ConvertTxtActivityNamesRequest& request)
       -> tracer_core::core::dto::ConvertTxtActivityNamesResponse = 0;
   virtual auto RunReplaceTxtCanonicalActivityNames(
-      const tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest& request)
+      const tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest&
+          request)
       -> tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse = 0;
   virtual auto RunReplaceTxtAliasActivityNames(
-      const tracer_core::core::dto::ReplaceTxtAliasActivityNamesRequest& request)
+      const tracer_core::core::dto::ReplaceTxtAliasActivityNamesRequest&
+          request)
       -> tracer_core::core::dto::ReplaceTxtAliasActivityNamesResponse = 0;
   virtual auto InstallActiveConverterConfig(
       const ActiveConverterConfigInstallRequest& request) -> void = 0;

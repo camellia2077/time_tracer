@@ -20,11 +20,11 @@ namespace {
 
 auto BuildTextMappingsFromAlias(toml::table& main_tbl,
                                 const fs::path& alias_directory_path) -> void {
-  const modalias::AliasMappingDefinition definition =
+  const modalias::AliasMappingDefinition kDefinition =
       modalias::LoadAliasMappingDefinition(alias_directory_path,
                                            modloader::ReadToml);
   toml::table text_mappings;
-  for (const auto& entry : definition.expanded_entries) {
+  for (const auto& entry : kDefinition.expanded_entries) {
     text_mappings.insert(entry.alias_key, entry.canonical_value);
   }
   main_tbl.insert_or_assign("text_mappings", std::move(text_mappings));
@@ -42,7 +42,7 @@ auto ConverterConfigLoader::LoadMergedToml(const fs::path& main_config_path)
   }
 
   toml::table main_tbl = modloader::ReadToml(main_config_path);
-  const fs::path alias_directory_path =
+  const fs::path kAliasDirectoryPath =
       main_config_path.parent_path() / "activity_hierarchy";
 
   if (!MainRule::Validate(main_tbl)) {
@@ -57,14 +57,14 @@ auto ConverterConfigLoader::LoadMergedToml(const fs::path& main_config_path)
     // diagnostic to the parent directory; it is the actionable error shown by
     // the CLI and Android runtime.
     static_cast<void>(modalias::LoadAliasMappingDefinition(
-        alias_directory_path, modloader::ReadToml));
+        kAliasDirectoryPath, modloader::ReadToml));
   } catch (const std::exception& error) {
     throw std::runtime_error(
         "Converter config validation failed for activity hierarchy TOML: " +
         std::string(error.what()));
   }
 
-  BuildTextMappingsFromAlias(main_tbl, alias_directory_path);
+  BuildTextMappingsFromAlias(main_tbl, kAliasDirectoryPath);
 
   return main_tbl;
 }
@@ -78,8 +78,7 @@ auto ConverterConfigLoader::ParseTomlToStruct(const toml::table& tbl,
 auto ConverterConfigLoader::ParseSleepInference(const toml::table& tbl,
                                                 ConverterConfig& config)
     -> void {
-  const toml::table* sleep_inference_tbl =
-      tbl["sleep_inference"].as_table();
+  const toml::table* sleep_inference_tbl = tbl["sleep_inference"].as_table();
   if (sleep_inference_tbl == nullptr) {
     throw std::runtime_error(
         "Invalid converter config: 'sleep_inference' must be a table.");

@@ -22,11 +22,6 @@ auto UpsertIngestSyncStatusRow(
     sqlite3* sqlite_db,
     const tracer_core::core::dto::IngestSyncStatusEntry& entry) -> void;
 
-[[nodiscard]] auto ListIngestSyncStatusRows(
-    sqlite3* sqlite_db,
-    const tracer_core::core::dto::IngestSyncStatusRequest& request)
-    -> tracer_core::core::dto::IngestSyncStatusOutput;
-
 }  // namespace tracer::core::infrastructure::persistence::importer::detail
 
 #endif  // INFRASTRUCTURE_PERSISTENCE_IMPORTER_REPOSITORY_INGEST_SYNC_SQL_HPP_

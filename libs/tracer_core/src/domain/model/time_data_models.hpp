@@ -46,8 +46,8 @@ enum class ActivityRecordKind {
 // 统一的基础活动记录 (对应原 Activity / TimeRecordInternal)
 struct BaseActivityRecord {
   [[nodiscard]] static auto MakeInterval(std::string start_time,
-                                          std::string end_time,
-                                          std::string project)
+                                         std::string end_time,
+                                         std::string project)
       -> BaseActivityRecord {
     BaseActivityRecord record;
     record.kind = ActivityRecordKind::kInterval;
@@ -58,7 +58,7 @@ struct BaseActivityRecord {
   }
 
   [[nodiscard]] static auto MakeEndOnly(std::string end_time,
-                                         std::string project)
+                                        std::string project)
       -> BaseActivityRecord {
     BaseActivityRecord record;
     record.kind = ActivityRecordKind::kEndOnly;

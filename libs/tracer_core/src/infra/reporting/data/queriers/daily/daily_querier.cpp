@@ -36,9 +36,8 @@ auto SplitParentPath(std::string_view parent) -> std::vector<std::string> {
   size_t start = 0;
   while (start <= parent.size()) {
     const size_t separator = parent.find('/', start);
-    const size_t end = separator == std::string_view::npos
-                           ? parent.size()
-                           : separator;
+    const size_t end =
+        separator == std::string_view::npos ? parent.size() : separator;
     if (end == start) {
       return {};
     }
@@ -83,10 +82,10 @@ auto BuildDailyStatusValues(
   std::vector<DailyStatusValue> values;
   values.reserve(config.statuses.size());
   for (const auto& status : config.statuses) {
-    values.push_back({.id = status.id,
-                      .label = status.label,
-                      .value = HasParentActivity(project_stats, provider,
-                                                  status.parent)});
+    values.push_back(
+        {.id = status.id,
+         .label = status.label,
+         .value = HasParentActivity(project_stats, provider, status.parent)});
   }
   return values;
 }
@@ -136,9 +135,8 @@ auto DayQuerier::FetchData() -> DailyReportData {
                               name_cache);
     }
     if (status_config_ != nullptr) {
-      data.metadata.statuses =
-          BuildDailyStatusValues(data.project_stats, name_cache,
-                                 *status_config_);
+      data.metadata.statuses = BuildDailyStatusValues(
+          data.project_stats, name_cache, *status_config_);
     }
   }
   return data;
@@ -158,9 +156,8 @@ void DayQuerier::PrepareData(DailyReportData& data) const {
 void DayQuerier::FetchMetadata(DailyReportData& data) {
   sqlite3_stmt* stmt;
   std::string sql = std::format(
-      "SELECT {}, {}, {} FROM {} WHERE {} = ?;",
-      schema::day::db::kRemark, schema::day::db::kGetupTime,
-      schema::day::db::kActivityCount,
+      "SELECT {}, {}, {} FROM {} WHERE {} = ?;", schema::day::db::kRemark,
+      schema::day::db::kGetupTime, schema::day::db::kActivityCount,
       schema::day::db::kTable, schema::day::db::kDate);
   if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
     sqlite3_bind_text(stmt, 1, param_.data(), static_cast<int>(param_.size()),
@@ -218,9 +215,9 @@ void DayQuerier::FetchDetailedRecords(DailyReportData& data,
   sqlite3_finalize(stmt);
 }
 
-BatchDayDataFetcher::BatchDayDataFetcher(
-    sqlite3* sqlite_db, IProjectInfoProvider& provider,
-    const DailyStatusConfig* status_config)
+BatchDayDataFetcher::BatchDayDataFetcher(sqlite3* sqlite_db,
+                                         IProjectInfoProvider& provider,
+                                         const DailyStatusConfig* status_config)
     : db_(sqlite_db), provider_(provider), status_config_(status_config) {
   if (db_ == nullptr) {
     throw std::invalid_argument("Database connection cannot be null.");
@@ -245,8 +242,7 @@ void BatchDayDataFetcher::FetchDaysMetadata(BatchDataResult& result) {
       "FROM {0} ORDER BY {1} ASC;",
       schema::day::db::kTable, schema::day::db::kDate, schema::day::db::kYear,
       schema::day::db::kMonth, schema::day::db::kRemark,
-      schema::day::db::kGetupTime,
-      schema::day::db::kActivityCount);
+      schema::day::db::kGetupTime, schema::day::db::kActivityCount);
 
   if (sqlite3_prepare_v2(db_, kSql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
     throw std::runtime_error("Failed to prepare statement for days metadata.");
@@ -357,9 +353,8 @@ void BatchDayDataFetcher::FetchTimeRecords(BatchDataResult& result) {
 
   if (status_config_ != nullptr) {
     for (auto& [date, data] : result.data_map) {
-      data.metadata.statuses =
-          BuildDailyStatusValues(data.project_stats, provider_,
-                                 *status_config_);
+      data.metadata.statuses = BuildDailyStatusValues(
+          data.project_stats, provider_, *status_config_);
     }
   }
 }

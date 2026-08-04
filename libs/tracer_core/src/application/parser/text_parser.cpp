@@ -51,7 +51,8 @@ constexpr std::string_view kRemarkDelimiter = "//";
 auto FormatTime(const std::string& time_str_hhmmss) -> std::string {
   return (time_str_hhmmss.length() == kCanonicalTimeDigitsLength)
              ? time_str_hhmmss.substr(kTimeHourOffset, kTimeHourLength) + ":" +
-                   time_str_hhmmss.substr(kTimeMinuteOffset, kTimeMinuteLength) +
+                   time_str_hhmmss.substr(kTimeMinuteOffset,
+                                          kTimeMinuteLength) +
                    ":" +
                    time_str_hhmmss.substr(kTimeSecondOffset, kTimeSecondLength)
              : time_str_hhmmss;
@@ -72,23 +73,23 @@ auto FormatTime(const std::string& time_str_hhmmss) -> std::string {
     -> std::optional<std::string> {
   if ((authored_time.length() != kLegacyTimeDigitsLength &&
        authored_time.length() != kCanonicalTimeDigitsLength) ||
-      !std::ranges::all_of(authored_time,
-                           [](char value) -> bool { return IsAsciiDigit(value); })) {
+      !std::ranges::all_of(authored_time, [](char value) -> bool {
+        return IsAsciiDigit(value);
+      })) {
     return std::nullopt;
   }
 
-  const int hour =
-      ((authored_time[kTimeHourOffset] - '0') * 10) +
-      (authored_time[kTimeHourOffset + 1] - '0');
-  const int minute = ((authored_time[kTimeMinuteOffset] - '0') * 10) +
+  const int kHour = ((authored_time[kTimeHourOffset] - '0') * 10) +
+                   (authored_time[kTimeHourOffset + 1] - '0');
+  const int kMinute = ((authored_time[kTimeMinuteOffset] - '0') * 10) +
                      (authored_time[kTimeMinuteOffset + 1] - '0');
-  if (hour > kMaxHour || minute > kMaxMinute) {
+  if (kHour > kMaxHour || kMinute > kMaxMinute) {
     return std::nullopt;
   }
   if (authored_time.length() == kCanonicalTimeDigitsLength) {
-    const int second = ((authored_time[kTimeSecondOffset] - '0') * 10) +
+    const int kSecond = ((authored_time[kTimeSecondOffset] - '0') * 10) +
                        (authored_time[kTimeSecondOffset + 1] - '0');
-    if (second > kMaxSecond) {
+    if (kSecond > kMaxSecond) {
       return std::nullopt;
     }
     return std::string(authored_time);
@@ -98,10 +99,9 @@ auto FormatTime(const std::string& time_str_hhmmss) -> std::string {
 
 [[nodiscard]] auto UsesSixDigitTime(std::string_view line) -> bool {
   return line.length() >= kCanonicalTimeDigitsLength &&
-         std::ranges::all_of(line.substr(0, kCanonicalTimeDigitsLength),
-                             [](char value) -> bool {
-                               return IsAsciiDigit(value);
-                             });
+         std::ranges::all_of(
+             line.substr(0, kCanonicalTimeDigitsLength),
+             [](char value) -> bool { return IsAsciiDigit(value); });
 }
 }  // namespace
 
@@ -207,9 +207,9 @@ auto TextParser::IsMonthMarker(const std::string& line) -> bool {
 
 auto TextParser::IsNewDayMarker(const std::string& line) -> bool {
   return line.length() == kDayMarkerLength && line[0] == kDayMarkerPrefix &&
-         std::ranges::all_of(
-             line.substr(1),
-             [](char value) -> bool { return IsAsciiDigit(value); });
+         std::ranges::all_of(line.substr(1), [](char value) -> bool {
+           return IsAsciiDigit(value);
+         });
 }
 
 auto TextParser::ExtractRemark(std::string_view remaining_line)
@@ -217,9 +217,9 @@ auto TextParser::ExtractRemark(std::string_view remaining_line)
   size_t comment_pos = std::string::npos;
   std::string_view chosen_delimiter;
 
-  const size_t delimiter_pos = remaining_line.find(kRemarkDelimiter);
-  if (delimiter_pos != std::string::npos) {
-    comment_pos = delimiter_pos;
+  const size_t kDelimiterPos = remaining_line.find(kRemarkDelimiter);
+  if (kDelimiterPos != std::string::npos) {
+    comment_pos = kDelimiterPos;
     chosen_delimiter = kRemarkDelimiter;
   }
 
@@ -264,12 +264,12 @@ auto TextParser::ProcessEventContext(DailyLog& current_day,
     }
   }
 
-  const bool is_first_semantic_event =
+  const bool kIsFirstSemanticEvent =
       current_day.getupTime.empty() && current_day.rawEvents.empty();
 
   if (is_wake) {
     // Wake keywords define the day's getup time, not a sleep activity.
-    if (input.kind == RawEventKind::Point && is_first_semantic_event) {
+    if (input.kind == RawEventKind::Point && kIsFirstSemanticEvent) {
       current_day.getupTime = FormatTime(std::string(input.end_time_str_hhmm));
     }
 
@@ -279,7 +279,7 @@ auto TextParser::ProcessEventContext(DailyLog& current_day,
   // A first point event without wake semantics needs previous-day context to
   // close its leading segment. A first interval event is self-contained and
   // must not inherit a previous-day boundary.
-  if (input.kind == RawEventKind::Point && is_first_semantic_event) {
+  if (input.kind == RawEventKind::Point && kIsFirstSemanticEvent) {
     current_day.isContinuation = true;
   }
   return is_wake;
@@ -294,18 +294,18 @@ auto TextParser::ParseLine(const std::string& line, int line_number,
                       "Remark line appears before date");
     }
 
-    const std::string remark_line =
+    const std::string kRemarkLine =
         Trim(line.substr(kRemarkDelimiter.length()));
-    if (remark_line.empty()) {
+    if (kRemarkLine.empty()) {
       ThrowParseError(source_file, line_number, line,
                       "Remark line must contain text");
     }
 
     if (current_day.rawEvents.empty()) {
-      current_day.generalRemarks.push_back(remark_line);
+      current_day.generalRemarks.push_back(kRemarkLine);
     } else {
       RawEvent& event = current_day.rawEvents.back();
-      AppendRemarkLine(event, remark_line);
+      AppendRemarkLine(event, kRemarkLine);
       AppendContinuationSourceSpan(event, line_number, line);
     }
     return;
@@ -328,32 +328,33 @@ auto TextParser::ParseLine(const std::string& line, int line_number,
   std::optional<std::string> start_time_hhmmss;
   std::string end_time_hhmmss;
   std::string_view event_payload;
-  const size_t time_length = UsesSixDigitTime(line) ? kCanonicalTimeDigitsLength
-                                                     : kLegacyTimeDigitsLength;
-  if (line.length() > time_length && line[time_length] == kIntervalSeparator) {
-    const size_t end_offset = time_length + 1U;
-    if (line.length() < end_offset + time_length) {
-      ThrowParseError(source_file, line_number, line, "Invalid event line format");
+  const size_t kTimeLength = UsesSixDigitTime(line) ? kCanonicalTimeDigitsLength
+                                                    : kLegacyTimeDigitsLength;
+  if (line.length() > kTimeLength && line[kTimeLength] == kIntervalSeparator) {
+    const size_t kEndOffset = kTimeLength + 1U;
+    if (line.length() < kEndOffset + kTimeLength) {
+      ThrowParseError(source_file, line_number, line,
+                      "Invalid event line format");
     }
-    const auto start_time = NormalizeTimeToHhmmss(
-        std::string_view(line).substr(0, time_length));
-    const auto end_time = NormalizeTimeToHhmmss(
-        std::string_view(line).substr(end_offset, time_length));
-    if (!start_time.has_value() || !end_time.has_value()) {
+    const auto kStartTime =
+        NormalizeTimeToHhmmss(std::string_view(line).substr(0, kTimeLength));
+    const auto kEndTime = NormalizeTimeToHhmmss(
+        std::string_view(line).substr(kEndOffset, kTimeLength));
+    if (!kStartTime.has_value() || !kEndTime.has_value()) {
       ThrowParseError(source_file, line_number, line, "Time out of range");
     }
     event_kind = RawEventKind::Interval;
-    start_time_hhmmss = *start_time;
-    end_time_hhmmss = *end_time;
-    event_payload = std::string_view(line).substr(end_offset + time_length);
+    start_time_hhmmss = *kStartTime;
+    end_time_hhmmss = *kEndTime;
+    event_payload = std::string_view(line).substr(kEndOffset + kTimeLength);
   } else {
-    const auto end_time = NormalizeTimeToHhmmss(
-        std::string_view(line).substr(0, time_length));
-    if (!end_time.has_value()) {
+    const auto kEndTime =
+        NormalizeTimeToHhmmss(std::string_view(line).substr(0, kTimeLength));
+    if (!kEndTime.has_value()) {
       ThrowParseError(source_file, line_number, line, "Time out of range");
     }
-    end_time_hhmmss = *end_time;
-    event_payload = std::string_view(line).substr(time_length);
+    end_time_hhmmss = *kEndTime;
+    event_payload = std::string_view(line).substr(kTimeLength);
   }
 
   RemarkResult remark_data = ExtractRemark(event_payload);
@@ -379,11 +380,12 @@ auto TextParser::ParseLine(const std::string& line, int line_number,
   raw_event.endTimeStr = std::move(end_time_hhmmss);
   raw_event.description = std::move(remark_data.description);
   raw_event.remark = std::move(remark_data.remark);
-  raw_event.source_span = SourceSpan{.file_path = std::string(source_file),
-                                     .line_start = line_number,
-                                     .line_end = line_number,
-                                     .column_start = 1,
-                                     .column_end = static_cast<int>(line.length()),
-                                     .raw_text = line};
+  raw_event.source_span =
+      SourceSpan{.file_path = std::string(source_file),
+                 .line_start = line_number,
+                 .line_end = line_number,
+                 .column_start = 1,
+                 .column_end = static_cast<int>(line.length()),
+                 .raw_text = line};
   current_day.rawEvents.push_back(std::move(raw_event));
 }

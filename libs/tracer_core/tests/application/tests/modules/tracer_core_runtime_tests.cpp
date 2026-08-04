@@ -23,9 +23,8 @@ auto TestRuntimeAccessorsAndForwarding(TestState& state) -> void {
   auto pipeline_api = std::make_shared<PipelineApi>(pipeline_workflow);
   auto query_api = std::make_shared<QueryApi>(repository, data_query);
   auto report_formatter = std::make_shared<FakeReportDtoFormatter>();
-  auto report_api = std::make_shared<ReportApi>(report_handler,
-                                                report_data_query,
-                                                report_formatter);
+  auto report_api = std::make_shared<ReportApi>(
+      report_handler, report_data_query, report_formatter);
   auto tracer_exchange_api =
       std::make_shared<TracerExchangeApi>(tracer_exchange);
 

@@ -40,17 +40,18 @@ struct ParsedYearMonth {
 
 [[nodiscard]] auto IsDigitsOnly(std::string_view value) -> bool {
   return !value.empty() &&
-         std::ranges::all_of(value, [](const char ch) -> bool {
-           return std::isdigit(static_cast<unsigned char>(ch)) != 0;
+         std::ranges::all_of(value, [](const char kCh) -> bool {
+           return std::isdigit(static_cast<unsigned char>(kCh)) != 0;
          });
 }
 
-[[nodiscard]] auto IsLeapYear(const int year) -> bool {
-  return (year % 400 == 0) || ((year % 4 == 0) && (year % 100 != 0));
+[[nodiscard]] auto IsLeapYear(const int kYear) -> bool {
+  return (kYear % 400 == 0) || ((kYear % 4 == 0) && (kYear % 100 != 0));
 }
 
-[[nodiscard]] auto DaysInMonth(const int year, const int month) -> int {
-  switch (month) {
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+[[nodiscard]] auto DaysInMonth(const int kYear, const int kMonth) -> int {
+  switch (kMonth) {
     case 1:
     case 3:
     case 5:
@@ -65,7 +66,7 @@ struct ParsedYearMonth {
     case 11:
       return 30;
     case 2:
-      return IsLeapYear(year) ? 29 : 28;
+      return IsLeapYear(kYear) ? 29 : 28;
     default:
       return 0;
   }
@@ -73,59 +74,60 @@ struct ParsedYearMonth {
 
 [[nodiscard]] auto ParseIsoDate(std::string_view raw_target_date)
     -> ParsedIsoDate {
-  const std::string trimmed = Trim(std::string(raw_target_date));
-  if (trimmed.size() != 10U || trimmed[4] != '-' || trimmed[7] != '-' ||
-      !IsDigitsOnly(trimmed.substr(0, 4)) ||
-      !IsDigitsOnly(trimmed.substr(5, 2)) ||
-      !IsDigitsOnly(trimmed.substr(8, 2))) {
+  const std::string kTrimmed = Trim(std::string(raw_target_date));
+  if (kTrimmed.size() != 10U || kTrimmed[4] != '-' || kTrimmed[7] != '-' ||
+      !IsDigitsOnly(kTrimmed.substr(0, 4)) ||
+      !IsDigitsOnly(kTrimmed.substr(5, 2)) ||
+      !IsDigitsOnly(kTrimmed.substr(8, 2))) {
     throw std::invalid_argument("target_date_iso must use YYYY-MM-DD.");
   }
 
-  const int year = std::stoi(trimmed.substr(0, 4));
-  const int month = std::stoi(trimmed.substr(5, 2));
-  const int day = std::stoi(trimmed.substr(8, 2));
-  const int max_day = DaysInMonth(year, month);
-  if (month < 1 || month > 12 || day < 1 || day > max_day) {
-    throw std::invalid_argument("target_date_iso is not a valid calendar date.");
+  const int kYear = std::stoi(kTrimmed.substr(0, 4));
+  const int kMonth = std::stoi(kTrimmed.substr(5, 2));
+  const int kDay = std::stoi(kTrimmed.substr(8, 2));
+  const int kMaxDay = DaysInMonth(kYear, kMonth);
+  if (kMonth < 1 || kMonth > 12 || kDay < 1 || kDay > kMaxDay) {
+    throw std::invalid_argument(
+        "target_date_iso is not a valid calendar date.");
   }
 
   return ParsedIsoDate{
-      .year = year,
-      .month = month,
-      .day = day,
-      .day_marker = std::format("{:02d}{:02d}", month, day),
+      .year = kYear,
+      .month = kMonth,
+      .day = kDay,
+      .day_marker = std::format("{:02d}{:02d}", kMonth, kDay),
   };
 }
 
 [[nodiscard]] auto TryParseSelectedMonth(std::string_view raw_value)
     -> std::optional<ParsedYearMonth> {
-  const std::string trimmed = Trim(std::string(raw_value));
-  if (trimmed.size() != 7U || trimmed[4] != '-' ||
-      !IsDigitsOnly(trimmed.substr(0, 4)) ||
-      !IsDigitsOnly(trimmed.substr(5, 2))) {
+  const std::string kTrimmed = Trim(std::string(raw_value));
+  if (kTrimmed.size() != 7U || kTrimmed[4] != '-' ||
+      !IsDigitsOnly(kTrimmed.substr(0, 4)) ||
+      !IsDigitsOnly(kTrimmed.substr(5, 2))) {
     return std::nullopt;
   }
 
-  const int year = std::stoi(trimmed.substr(0, 4));
-  const int month = std::stoi(trimmed.substr(5, 2));
-  if (month < 1 || month > 12) {
+  const int kYear = std::stoi(kTrimmed.substr(0, 4));
+  const int kMonth = std::stoi(kTrimmed.substr(5, 2));
+  if (kMonth < 1 || kMonth > 12) {
     return std::nullopt;
   }
-  return ParsedYearMonth{.year = year, .month = month};
+  return ParsedYearMonth{.year = kYear, .month = kMonth};
 }
 
 [[nodiscard]] auto NormalizeDayMarker(std::string_view raw_value)
     -> std::string {
   std::string normalized;
   normalized.reserve(4);
-  for (const char ch : raw_value) {
-    if (std::isdigit(static_cast<unsigned char>(ch)) == 0) {
+  for (const char kCh : raw_value) {
+    if (std::isdigit(static_cast<unsigned char>(kCh)) == 0) {
       continue;
     }
     if (normalized.size() >= 4U) {
       break;
     }
-    normalized.push_back(ch);
+    normalized.push_back(kCh);
   }
   return normalized;
 }
@@ -134,15 +136,15 @@ struct ParsedYearMonth {
   if (value.size() != 4U || !IsDigitsOnly(value)) {
     return false;
   }
-  const int month = std::stoi(std::string(value.substr(0, 2)));
-  const int day = std::stoi(std::string(value.substr(2, 2)));
-  return month >= 1 && month <= 12 && day >= 1 && day <= 31;
+  const int kMonth = std::stoi(std::string(value.substr(0, 2)));
+  const int kDay = std::stoi(std::string(value.substr(2, 2)));
+  return kMonth >= 1 && kMonth <= 12 && kDay >= 1 && kDay <= 31;
 }
 
 [[nodiscard]] auto IsDayMarkerLine(std::string_view line) -> bool {
-  const std::string trimmed = Trim(std::string(line));
-  return trimmed.size() == 5U && trimmed.front() == 'd' &&
-         IsValidDayMarker(std::string_view(trimmed).substr(1));
+  const std::string kTrimmed = Trim(std::string(line));
+  return kTrimmed.size() == 5U && kTrimmed.front() == 'd' &&
+         IsValidDayMarker(std::string_view(kTrimmed).substr(1));
 }
 
 [[nodiscard]] auto BuildDayMarkerLine(std::string_view normalized_day_marker)
@@ -155,8 +157,8 @@ struct ParsedYearMonth {
   std::vector<std::string> lines;
   std::string current;
   current.reserve(content.size());
-  for (const char ch : content) {
-    if (ch == '\n') {
+  for (const char kCh : content) {
+    if (kCh == '\n') {
       if (!current.empty() && current.back() == '\r') {
         current.pop_back();
       }
@@ -164,7 +166,7 @@ struct ParsedYearMonth {
       current.clear();
       continue;
     }
-    current.push_back(ch);
+    current.push_back(kCh);
   }
   if (!current.empty() && current.back() == '\r') {
     current.pop_back();
@@ -186,9 +188,9 @@ struct ParsedYearMonth {
 
 [[nodiscard]] auto FindDayBlockStart(const std::vector<std::string>& lines,
                                      std::string_view day_marker) -> int {
-  const std::string day_marker_line = BuildDayMarkerLine(day_marker);
+  const std::string kDayMarkerLine = BuildDayMarkerLine(day_marker);
   for (int index = 0; index < static_cast<int>(lines.size()); ++index) {
-    if (Trim(lines[static_cast<std::size_t>(index)]) == day_marker_line) {
+    if (Trim(lines[static_cast<std::size_t>(index)]) == kDayMarkerLine) {
       return index;
     }
   }
@@ -196,8 +198,8 @@ struct ParsedYearMonth {
 }
 
 [[nodiscard]] auto FindDayBlockEnd(const std::vector<std::string>& lines,
-                                   const int block_start) -> int {
-  for (int index = block_start + 1; index < static_cast<int>(lines.size());
+                                   const int kBlockStart) -> int {
+  for (int index = kBlockStart + 1; index < static_cast<int>(lines.size());
        ++index) {
     if (IsDayMarkerLine(lines[static_cast<std::size_t>(index)])) {
       return index;
@@ -206,13 +208,14 @@ struct ParsedYearMonth {
   return static_cast<int>(lines.size());
 }
 
-[[nodiscard]] auto NormalizeEditedDayBody(std::string_view normalized_day_marker,
-                                          std::string_view edited_day_body)
+// NOLINTBEGIN(bugprone-easily-swappable-parameters)
+[[nodiscard]] auto NormalizeEditedDayBody(
+    std::string_view normalized_day_marker, std::string_view edited_day_body)
     -> std::vector<std::string> {
   std::vector<std::string> lines =
       SplitLinesPreserveTrailingEmpty(edited_day_body);
-  const std::string day_marker_line = BuildDayMarkerLine(normalized_day_marker);
-  if (!lines.empty() && Trim(lines.front()) == day_marker_line) {
+  const std::string kDayMarkerLine = BuildDayMarkerLine(normalized_day_marker);
+  if (!lines.empty() && Trim(lines.front()) == kDayMarkerLine) {
     lines.erase(lines.begin());
   }
   return lines;
@@ -228,105 +231,109 @@ struct ParsedYearMonth {
   return modtext::RequireCanonicalText(joined, "txt_day_block");
 }
 
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 [[nodiscard]] auto BuildDayContentIsoDate(
     std::string_view selected_month, std::string_view normalized_day_marker)
     -> std::optional<std::string> {
   if (!IsValidDayMarker(normalized_day_marker)) {
     return std::nullopt;
   }
-  const auto parsed_month = TryParseSelectedMonth(selected_month);
-  if (!parsed_month.has_value()) {
+  const auto kParsedMonth = TryParseSelectedMonth(selected_month);
+  if (!kParsedMonth.has_value()) {
     return std::nullopt;
   }
 
-  const int marker_month =
+  const int kMarkerMonth =
       std::stoi(std::string(normalized_day_marker.substr(0, 2)));
-  const int marker_day =
+  const int kMarkerDay =
       std::stoi(std::string(normalized_day_marker.substr(2, 2)));
-  if (marker_month != parsed_month->month ||
-      marker_day > DaysInMonth(parsed_month->year, parsed_month->month)) {
+  if (kMarkerMonth != kParsedMonth->month ||
+      kMarkerDay > DaysInMonth(kParsedMonth->year, kParsedMonth->month)) {
     return std::nullopt;
   }
-  return std::format("{:04d}-{:02d}-{:02d}", parsed_month->year,
-                     marker_month, marker_day);
+  return std::format("{:04d}-{:02d}-{:02d}", kParsedMonth->year, kMarkerMonth,
+                     kMarkerDay);
 }
+// NOLINTEND(bugprone-easily-swappable-parameters)
 
 }  // namespace
 
 auto DefaultDayMarker(const DefaultTxtDayMarkerRequest& request)
     -> DefaultTxtDayMarkerResponse {
-  const ParsedIsoDate target_date = ParseIsoDate(request.target_date_iso);
-  const auto parsed_month = TryParseSelectedMonth(request.selected_month);
-  if (!parsed_month.has_value()) {
+  const ParsedIsoDate kTargetDate = ParseIsoDate(request.target_date_iso);
+  const auto kParsedMonth = TryParseSelectedMonth(request.selected_month);
+  if (!kParsedMonth.has_value()) {
     return {.ok = true,
-            .normalized_day_marker = target_date.day_marker,
+            .normalized_day_marker = kTargetDate.day_marker,
             .error_message = ""};
   }
 
-  const int max_day = DaysInMonth(parsed_month->year, parsed_month->month);
+  const int kMaxDay = DaysInMonth(kParsedMonth->year, kParsedMonth->month);
   return {
       .ok = true,
       .normalized_day_marker = std::format(
-          "{:02d}{:02d}", parsed_month->month,
-          std::min(target_date.day, max_day > 0 ? max_day : target_date.day)),
+          "{:02d}{:02d}", kParsedMonth->month,
+          std::min(kTargetDate.day, kMaxDay > 0 ? kMaxDay : kTargetDate.day)),
       .error_message = "",
   };
 }
 
 auto ResolveDayBlock(const ResolveTxtDayBlockRequest& request)
     -> ResolveTxtDayBlockResponse {
-  const std::string normalized_day_marker = NormalizeDayMarker(request.day_marker);
-  const std::optional<std::string> iso_date =
-      BuildDayContentIsoDate(request.selected_month, normalized_day_marker);
-  if (!IsValidDayMarker(normalized_day_marker)) {
+  const std::string kNormalizedDayMarker =
+      NormalizeDayMarker(request.day_marker);
+  const std::optional<std::string> kIsoDate =
+      BuildDayContentIsoDate(request.selected_month, kNormalizedDayMarker);
+  if (!IsValidDayMarker(kNormalizedDayMarker)) {
     return {.ok = true,
-            .normalized_day_marker = normalized_day_marker,
+            .normalized_day_marker = kNormalizedDayMarker,
             .found = false,
             .is_marker_valid = false,
             .can_save = false,
             .day_body = "",
-            .day_content_iso_date = iso_date,
+            .day_content_iso_date = kIsoDate,
             .error_message = ""};
   }
 
-  const std::vector<std::string> lines = SplitLines(request.content);
-  const int start_index = FindDayBlockStart(lines, normalized_day_marker);
-  if (start_index < 0) {
+  const std::vector<std::string> kLines = SplitLines(request.content);
+  const int kStartIndex = FindDayBlockStart(kLines, kNormalizedDayMarker);
+  if (kStartIndex < 0) {
     return {.ok = true,
-            .normalized_day_marker = normalized_day_marker,
+            .normalized_day_marker = kNormalizedDayMarker,
             .found = false,
             .is_marker_valid = true,
             .can_save = false,
             .day_body = "",
-            .day_content_iso_date = iso_date,
+            .day_content_iso_date = kIsoDate,
             .error_message = ""};
   }
 
-  const int end_index = FindDayBlockEnd(lines, start_index);
+  const int kEndIndex = FindDayBlockEnd(kLines, kStartIndex);
   std::string day_body;
-  for (int index = start_index + 1; index < end_index; ++index) {
+  for (int index = kStartIndex + 1; index < kEndIndex; ++index) {
     if (!day_body.empty()) {
       day_body.push_back('\n');
     }
-    day_body.append(lines[static_cast<std::size_t>(index)]);
+    day_body.append(kLines[static_cast<std::size_t>(index)]);
   }
 
   return {.ok = true,
-          .normalized_day_marker = normalized_day_marker,
+          .normalized_day_marker = kNormalizedDayMarker,
           .found = true,
           .is_marker_valid = true,
           .can_save = true,
           .day_body = day_body,
-          .day_content_iso_date = iso_date,
+          .day_content_iso_date = kIsoDate,
           .error_message = ""};
 }
 
 auto ReplaceDayBlock(const ReplaceTxtDayBlockRequest& request)
     -> ReplaceTxtDayBlockResponse {
-  const std::string normalized_day_marker = NormalizeDayMarker(request.day_marker);
-  if (!IsValidDayMarker(normalized_day_marker)) {
+  const std::string kNormalizedDayMarker =
+      NormalizeDayMarker(request.day_marker);
+  if (!IsValidDayMarker(kNormalizedDayMarker)) {
     return {.ok = true,
-            .normalized_day_marker = normalized_day_marker,
+            .normalized_day_marker = kNormalizedDayMarker,
             .found = false,
             .is_marker_valid = false,
             .updated_content = request.content,
@@ -334,25 +341,25 @@ auto ReplaceDayBlock(const ReplaceTxtDayBlockRequest& request)
   }
 
   std::vector<std::string> lines = SplitLines(request.content);
-  const int start_index = FindDayBlockStart(lines, normalized_day_marker);
-  if (start_index < 0) {
+  const int kStartIndex = FindDayBlockStart(lines, kNormalizedDayMarker);
+  if (kStartIndex < 0) {
     return {.ok = true,
-            .normalized_day_marker = normalized_day_marker,
+            .normalized_day_marker = kNormalizedDayMarker,
             .found = false,
             .is_marker_valid = true,
             .updated_content = request.content,
             .error_message = ""};
   }
 
-  const int end_index = FindDayBlockEnd(lines, start_index);
-  const std::vector<std::string> normalized_body_lines =
-      NormalizeEditedDayBody(normalized_day_marker, request.edited_day_body);
-  lines.erase(lines.begin() + start_index + 1, lines.begin() + end_index);
-  lines.insert(lines.begin() + start_index + 1, normalized_body_lines.begin(),
-               normalized_body_lines.end());
+  const int kEndIndex = FindDayBlockEnd(lines, kStartIndex);
+  const std::vector<std::string> kNormalizedBodyLines =
+      NormalizeEditedDayBody(kNormalizedDayMarker, request.edited_day_body);
+  lines.erase(lines.begin() + kStartIndex + 1, lines.begin() + kEndIndex);
+  lines.insert(lines.begin() + kStartIndex + 1, kNormalizedBodyLines.begin(),
+               kNormalizedBodyLines.end());
 
   return {.ok = true,
-          .normalized_day_marker = normalized_day_marker,
+          .normalized_day_marker = kNormalizedDayMarker,
           .found = true,
           .is_marker_valid = true,
           .updated_content = JoinLinesCanonical(lines),

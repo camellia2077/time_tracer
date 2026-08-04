@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from tools.toolchain.commands.tidy.tasking.task_model import (
+from tools.toolchain.commands.tidy.queue.task_model import (
     TaskDiagnostic,
     TaskRecord,
     TaskSnippet,
@@ -14,7 +14,7 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 def _make_task_record(
     *,
     task_id: str = "001",
-    batch_id: str = "batch_001",
+    cluster_id: str = "cluster_fixture",
     source_file: str,
     diagnostics: tuple[TaskDiagnostic, ...],
     snippets: tuple[TaskSnippet, ...] = (),
@@ -27,9 +27,10 @@ def _make_task_record(
         checks=tuple(TaskSummaryEntry(name=check, count=1) for check in checks),
     )
     return TaskRecord(
-        version=3,
+        version=4,
         task_id=task_id,
-        batch_id=batch_id,
+        cluster_id=cluster_id,
+        scan_id="scan_fixture",
         queue_generation=None,
         source_file=source_file,
         source_fingerprint=None,

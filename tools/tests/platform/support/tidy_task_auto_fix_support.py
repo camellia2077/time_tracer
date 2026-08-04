@@ -6,8 +6,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from types import SimpleNamespace
 
-from tools.toolchain.commands.tidy.tasking.task_log import parse_task_log
-from tools.toolchain.commands.tidy.tasking.task_model import (
+from tools.toolchain.commands.tidy.queue.task_log import parse_task_log
+from tools.toolchain.commands.tidy.queue.task_model import (
     TaskDiagnostic,
     TaskRecord,
     TaskSummary,
@@ -42,8 +42,9 @@ def build_test_context(
         root=build_tidy_dir,
         tasks_dir=tasks_dir,
         automation_dir=automation_dir,
-        tasks_done_dir=build_tidy_dir / "tasks_done",
-        batch_state_path=build_tidy_dir / "batch_state.json",
+        archive_dir=build_tidy_dir / "tasks" / "archive",
+        tidy_state_path=build_tidy_dir / "tidy_state.json",
+        scan_manifest_path=tasks_dir / "scan_manifest.json",
     )
     return ctx
 
@@ -100,82 +101,67 @@ class AutoFixFixtureBuilder:
         path.write_text("\n".join(lines), encoding="utf-8")
         return path
 
-    def write_legacy_task_log(
+    def write_task_fixture(
         self,
         *,
         relative_path: str,
         source_file: Path,
         diagnostics: list[DiagnosticEntry],
     ) -> Path:
-        entries: list[str] = [
-            f"File: {source_file}",
-            "============================================================",
-        ]
-        for item in diagnostics:
-            entries.append(
-                f"{source_file}:{item.line}:{item.col}: {item.severity}: {item.message} [{item.check}]"
-            )
-        return self.write_text(relative_path, entries)
+        task_path = self.root / relative_path
+        return self.write_task_json(
+            task_path=task_path,
+            task_id=task_path.stem.removeprefix("task_") or "001",
+            cluster_id=task_path.parent.name,
+            source_file=source_file,
+            diagnostics=diagnostics,
+        )
 
     def write_toon_task(
         self,
         *,
         relative_path: str,
         task_id: str,
-        batch_id: str,
+        cluster_id: str,
         source_file: Path,
         diagnostics: list[DiagnosticEntry],
     ) -> Path:
-        check_counts = Counter(item.check for item in diagnostics)
-        lines = [
-            "task:",
-            f"  id: {task_id}",
-            f"  batch: {batch_id}",
-            f"  source: {source_file}",
-            "summary:",
-            f"  diagnostics: {len(diagnostics)}",
-            "  compiler_errors: false",
-            f"checks[{len(check_counts)}]{{name,count}}:",
-        ]
-        for check_name, count in check_counts.items():
-            lines.append(f"  {check_name},{count}")
-        lines.append(
-            f"diagnostics[{len(diagnostics)}]{{index,line,col,severity,check,message}}:"
+        return self.write_task_json(
+            task_path=self.root / relative_path,
+            task_id=task_id,
+            cluster_id=cluster_id,
+            source_file=source_file,
+            diagnostics=diagnostics,
         )
-        for index, item in enumerate(diagnostics, start=1):
-            lines.append(
-                f"  {index},{item.line},{item.col},{item.severity},{item.check},{item.message}"
-            )
-        return self.write_text(relative_path, lines)
 
-    def write_batch_toon_task(
+    def write_cluster_toon_task(
         self,
         *,
-        batch_id: str,
+        cluster_id: str,
         task_id: str,
         source_file: Path,
         diagnostics: list[DiagnosticEntry],
     ) -> Path:
         return self.write_toon_task(
             relative_path=(
-                f"out/tidy/{self.app_name}/{self.build_dir_name}/tasks/{batch_id}/task_{task_id}.toon"
+                f"out/tidy/{self.app_name}/{self.build_dir_name}/tasks/clusters/{cluster_id}/task_{task_id}.json"
             ),
             task_id=task_id,
-            batch_id=batch_id,
+            cluster_id=cluster_id,
             source_file=source_file,
             diagnostics=diagnostics,
         )
 
-    def write_batch_task_artifacts(
+    def write_cluster_task_artifacts(
         self,
         *,
-        batch_id: str,
+        cluster_id: str,
         task_id: str,
         source_file: Path,
         diagnostics: list[DiagnosticEntry],
     ) -> tuple[Path, Path]:
-        task_path = self.write_batch_toon_task(
-            batch_id=batch_id,
+        task_path = self.write_cluster_toon_task(
+            cluster_id=cluster_id,
             task_id=task_id,
             source_file=source_file,
             diagnostics=diagnostics,
@@ -183,7 +169,7 @@ class AutoFixFixtureBuilder:
         json_path = self.write_task_json(
             task_path=task_path,
             task_id=task_id,
-            batch_id=batch_id,
+            cluster_id=cluster_id,
             source_file=source_file,
             diagnostics=diagnostics,
         )
@@ -194,7 +180,7 @@ class AutoFixFixtureBuilder:
         *,
         task_path: Path,
         task_id: str,
-        batch_id: str,
+        cluster_id: str,
         source_file: Path,
         diagnostics: list[DiagnosticEntry],
     ) -> Path:
@@ -202,9 +188,10 @@ class AutoFixFixtureBuilder:
         checks_summary = Counter(item.check for item in diagnostics)
 
         record = TaskRecord(
-            version=3,
+            version=4,
             task_id=task_id,
-            batch_id=batch_id,
+            cluster_id=cluster_id,
+            scan_id="scan_fixture",
             queue_generation=None,
             source_file=str(source_file),
             source_fingerprint=None,

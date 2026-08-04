@@ -30,10 +30,8 @@ inline constexpr int kSecondsPerDay = kMinutesPerDay * kSecondsPerMinute;
     }
   }
 
-  const int hours =
-      (hhmm[0] - '0') * 10 + (hhmm[1] - '0');
-  const int minutes =
-      (hhmm[2] - '0') * 10 + (hhmm[3] - '0');
+  const int hours = (hhmm[0] - '0') * 10 + (hhmm[1] - '0');
+  const int minutes = (hhmm[2] - '0') * 10 + (hhmm[3] - '0');
   if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
     return std::nullopt;
   }
@@ -52,9 +50,8 @@ inline constexpr int kSecondsPerDay = kMinutesPerDay * kSecondsPerMinute;
   if (!minutes.has_value()) {
     return std::nullopt;
   }
-  const int seconds = hhmm.size() == 6U
-                          ? (hhmm[4] - '0') * 10 + (hhmm[5] - '0')
-                          : 0;
+  const int seconds =
+      hhmm.size() == 6U ? (hhmm[4] - '0') * 10 + (hhmm[5] - '0') : 0;
   return *minutes * kSecondsPerMinute + seconds;
 }
 

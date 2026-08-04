@@ -6,7 +6,7 @@ from pathlib import Path
 
 from ...core.context import Context
 from ..cmd_build import BuildCommand
-from ..tidy import invoker as tidy_invoker
+from ..tidy.scan import invoker as tidy_invoker
 from .split import DEFAULT_ANALYZE_BATCH_SIZE, split_sarif_report
 from . import workspace as analyze_workspace
 from .report_service import build_summary, merge_sarif_reports

@@ -30,8 +30,6 @@ def _build_command_text(args: argparse.Namespace) -> str:
         parts.append("--concise")
     if args.jobs is not None:
         parts.extend(["--jobs", str(args.jobs)])
-    if args.parse_workers is not None:
-        parts.extend(["--parse-workers", str(args.parse_workers)])
     if args.source_scope:
         parts.extend(["--source-scope", args.source_scope])
     if args.task_view:
@@ -61,12 +59,6 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
     add_kill_build_procs_args(parser)
     add_concise_arg(parser)
     parser.add_argument("--jobs", type=int, default=None, help="Ninja parallel jobs, e.g. 16")
-    parser.add_argument(
-        "--parse-workers",
-        type=int,
-        default=None,
-        help="Parallel workers for log splitting",
-    )
     add_source_scope_arg(
         parser,
         defaults,
@@ -105,7 +97,6 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         args.app,
         args.extra_args,
         jobs=args.jobs,
-        parse_workers=args.parse_workers,
         concise=bool(args.concise),
         profile_name=args.profile,
         kill_build_procs=bool(args.kill_build_procs and not args.no_kill_build_procs),

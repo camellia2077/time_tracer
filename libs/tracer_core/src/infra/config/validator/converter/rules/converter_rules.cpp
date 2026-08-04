@@ -40,7 +40,8 @@ auto ValidateMainStrictAlias(const toml::table& main_tbl) -> bool {
            ->value<std::string>()
            .has_value()) {
     modports::EmitError(
-        "[Validator] Error: 'sleep_inference' must contain 'wake_keywords' and a string "
+        "[Validator] Error: 'sleep_inference' must contain 'wake_keywords' and "
+        "a string "
         "'sleep_project_path'.");
     return false;
   }
@@ -74,8 +75,8 @@ auto MappingRule::Validate(const toml::table& mappings_tbl) -> bool {
 
 auto V2Rule::ValidateAliasMapping(const fs::path& alias_directory) -> bool {
   try {
-    static_cast<void>(modalias::LoadAliasMappingDefinition(alias_directory,
-                                                           modloader::ReadToml));
+    static_cast<void>(modalias::LoadAliasMappingDefinition(
+        alias_directory, modloader::ReadToml));
     return true;
   } catch (const std::exception& error) {
     modports::EmitError("[Validator] Error: alias mapping validation failed: " +

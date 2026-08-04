@@ -1,6 +1,6 @@
 import argparse
 
-from ....commands.tidy.loop import TidyLoopCommand
+from ....commands.tidy.execution.loop import TidyLoopCommand
 from ....core.context import Context
 from ...common import add_tidy_build_dir_arg
 from ...model import CommandSpec, ParserDefaults

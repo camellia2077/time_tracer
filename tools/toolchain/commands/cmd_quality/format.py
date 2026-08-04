@@ -1,9 +1,8 @@
-import subprocess
 from pathlib import Path
-import shutil
 
 from ...core.context import Context
 from ...core.executor import run_command
+from ..clang import format as clang_format
 from ..cmd_build import BuildCommand
 
 
@@ -47,7 +46,7 @@ class FormatCommand:
 
     def _resolve_clang_format(self) -> str | None:
         env = self.ctx.setup_env()
-        return shutil.which("clang-format", path=env.get("PATH"))
+        return clang_format.resolve_clang_format(env.get("PATH"))
 
     @staticmethod
     def _should_skip_path(path: Path) -> bool:
@@ -93,8 +92,8 @@ class FormatCommand:
         raw_paths: list[str],
         check_only: bool,
     ) -> int:
-        clang_format = self._resolve_clang_format()
-        if not clang_format:
+        clang_format_executable = self._resolve_clang_format()
+        if not clang_format_executable:
             print("--- format: failed (paths), clang-format was not found on PATH")
             return 1
 
@@ -112,26 +111,16 @@ class FormatCommand:
         print(f"--- format: start (paths), mode={mode_label}, files={len(files)}")
         env = self.ctx.setup_env()
         for index, file_path in enumerate(files, start=1):
-            command = [clang_format, "-style=file"]
-            if check_only:
-                command.extend(["--dry-run", "--Werror"])
-            else:
-                command.append("-i")
-            command.append(str(file_path))
             print(f"[{index}/{len(files)}] {'Checking' if check_only else 'Formatting'}: {file_path}")
-            result = subprocess.run(
-                command,
+            result = clang_format.run_clang_format(
+                clang_format_executable,
+                file_path,
                 cwd=self.ctx.repo_root,
                 env=env,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                check=False,
+                check_only=check_only,
             )
             if result.returncode != 0:
-                output = (result.stdout or "").rstrip()
+                output = result.output.rstrip()
                 if output:
                     print(output)
                 print(f"--- format: failed (paths), exit={result.returncode}")

@@ -24,8 +24,7 @@ using tracer::core::infrastructure::reports::data::stats::IsExerciseProjectPath;
 using tracer::core::infrastructure::reports::data::stats::IsStudyProjectPath;
 
 auto DaysInYear(int year) -> int {
-  const bool leap = (year % 400 == 0) ||
-                    ((year % 4 == 0) && (year % 100 != 0));
+  const bool leap = (year % 400 == 0) || ((year % 4 == 0) && (year % 100 != 0));
   return leap ? 366 : 365;
 }
 }  // namespace

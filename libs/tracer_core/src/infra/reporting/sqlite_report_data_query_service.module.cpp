@@ -80,8 +80,7 @@ SqliteReportDataQueryService::SqliteReportDataQueryService(
 
 auto SqliteReportDataQueryService::QueryDaily(std::string_view date)
     -> DailyReportData {
-  DayQuerier querier(EnsureDbConnection(db_connection_), date,
-                     &status_config_);
+  DayQuerier querier(EnsureDbConnection(db_connection_), date, &status_config_);
   return querier.FetchData();
 }
 

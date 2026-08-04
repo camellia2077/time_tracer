@@ -23,8 +23,8 @@ struct StackFrame {
   bool list_started = false;
 };
 
-auto CalculatePercentage(std::int64_t duration,
-                         std::int64_t total_duration) -> double {
+auto CalculatePercentage(std::int64_t duration, std::int64_t total_duration)
+    -> double {
   if (total_duration <= 0) {
     return 0.0;
   }

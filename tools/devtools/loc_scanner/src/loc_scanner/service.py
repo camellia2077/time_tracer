@@ -67,10 +67,26 @@ class LocScanService:
         mode: str,
         threshold: int,
     ) -> list[tuple[str, int]]:
-        result_files: list[tuple[str, int]] = []
+        all_files = self.scan_files(target_dir)
+        return self.filter_files(all_files, mode, threshold)
 
+    def scan_files(
+        self,
+        target_dir: Path,
+        *,
+        excluded_roots: tuple[Path, ...] = (),
+    ) -> list[tuple[str, int]]:
+        """Return all readable source files and their physical line counts."""
+        result_files: list[tuple[str, int]] = []
+        normalized_excluded_roots = tuple(path.resolve() for path in excluded_roots)
         for root, dirs, files in os.walk(target_dir):
-            dirs[:] = [name for name in dirs if not self._should_skip_dir(name)]
+            current_root = Path(root).resolve()
+            dirs[:] = [
+                name
+                for name in dirs
+                if not self._should_skip_dir(name)
+                and not self._is_excluded(current_root / name, normalized_excluded_roots)
+            ]
 
             for file_name in files:
                 if not file_name.lower().endswith(self._extensions_tuple):
@@ -80,12 +96,26 @@ class LocScanService:
                 try:
                     line_count = self._count_lines_fast(file_path)
                 except Exception as error:
-                    print(f"读取文件时发生意外错误 {file_path}: {error}")
+                    print(f"Unexpected error while reading {file_path}: {error}")
                     continue
+                result_files.append((file_path, line_count))
+        return result_files
 
-                if self._matches_threshold(line_count, mode, threshold):
-                    result_files.append((file_path, line_count))
+    @staticmethod
+    def _is_excluded(path: Path, excluded_roots: tuple[Path, ...]) -> bool:
+        return any(path == excluded or excluded in path.parents for excluded in excluded_roots)
 
+    def filter_files(
+        self,
+        files: list[tuple[str, int]],
+        mode: str,
+        threshold: int,
+    ) -> list[tuple[str, int]]:
+        result_files = [
+            item
+            for item in files
+            if self._matches_threshold(item[1], mode, threshold)
+        ]
         result_files.sort(key=lambda item: item[1], reverse=(mode == "over"))
         return result_files
 

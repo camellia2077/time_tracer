@@ -67,11 +67,9 @@ class TracerExchangeService final : public app_ports::ITracerExchangeService {
       app_workflow::IWorkflowHandler& workflow_handler)
       : workflow_handler_(workflow_handler) {}
 
-  auto BuildExportContent(
-      const app_dto::TracerExchangeContentRequest& request)
+  auto BuildExportContent(const app_dto::TracerExchangeContentRequest& request)
       -> app_dto::TracerExchangeContentResult override;
-  auto EncodeExportContent(
-      const app_dto::TracerExchangeExportContent& content)
+  auto EncodeExportContent(const app_dto::TracerExchangeExportContent& content)
       -> app_dto::TracerExchangeContentEncodingResult override;
 
   auto RunExport(const app_dto::TracerExchangeExportRequest& request)

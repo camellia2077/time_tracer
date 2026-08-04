@@ -13,6 +13,8 @@ using tracer::transport::moderrors::Code;
 using tracer::transport::moderrors::Make;
 using tracer::transport::modfields::BuildTypeError;
 using tracer::transport::modfields::FormatFieldIssue;
+using tracer::transport::modruntime::EncodeIngestRequest;
+using tracer::transport::modruntime::IngestRequestPayload;
 
 auto Contains(std::string_view text, std::string_view pattern) -> bool {
   return text.find(pattern) != std::string_view::npos;
@@ -65,6 +67,16 @@ void TestFieldBridge(int& failures) {
          failures);
 }
 
+void TestRuntimeCodecBridge(int& failures) {
+  IngestRequestPayload request{};
+  request.input_path = "month.txt";
+  request.date_check_mode = "strict";
+  request.save_processed_output = true;
+  const auto request_json = EncodeIngestRequest(request);
+  Expect(Contains(request_json, "month.txt"),
+         "Runtime module should expose operation codec functions.", failures);
+}
+
 }  // namespace
 
 auto main() -> int {
@@ -72,6 +84,7 @@ auto main() -> int {
   TestErrorBridge(failures);
   TestEnvelopeBridge(failures);
   TestFieldBridge(failures);
+  TestRuntimeCodecBridge(failures);
 
   if (failures == 0) {
     std::cout << "[PASS] tracer_transport_modules_smoke_tests\n";

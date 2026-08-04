@@ -15,13 +15,13 @@ namespace {
 
 auto ResolveMarkdownLocaleRoot(const std::filesystem::path& day_config_path)
     -> std::filesystem::path {
-  const auto parent = day_config_path.parent_path();
-  const auto candidate = parent.parent_path();
-  if (!std::filesystem::exists(candidate) ||
-      !std::filesystem::is_directory(candidate)) {
-    return parent;
+  const auto kParent = day_config_path.parent_path();
+  const auto kCandidate = kParent.parent_path();
+  if (!std::filesystem::exists(kCandidate) ||
+      !std::filesystem::is_directory(kCandidate)) {
+    return kParent;
   }
-  for (const auto& entry : std::filesystem::directory_iterator(candidate)) {
+  for (const auto& entry : std::filesystem::directory_iterator(kCandidate)) {
     if (!entry.is_directory()) {
       continue;
     }
@@ -30,10 +30,10 @@ auto ResolveMarkdownLocaleRoot(const std::filesystem::path& day_config_path)
         std::filesystem::exists(entry.path() / "period.toml") &&
         std::filesystem::exists(entry.path() / "week.toml") &&
         std::filesystem::exists(entry.path() / "year.toml")) {
-      return candidate;
+      return kCandidate;
     }
   }
-  return parent;
+  return kParent;
 }
 
 auto LoadLocalizedMarkdownReports(const std::filesystem::path& markdown_dir,
@@ -44,29 +44,29 @@ auto LoadLocalizedMarkdownReports(const std::filesystem::path& markdown_dir,
     if (!entry.is_directory()) {
       continue;
     }
-    const std::string locale = entry.path().filename().string();
+    const std::string kLocale = entry.path().filename().string();
     MarkdownReportConfigs localized{};
-    const auto path = [&entry](std::string_view name) {
+    const auto kPath = [&entry](std::string_view name) {
       return entry.path() / (std::string(name) + ".toml");
     };
-    const auto day_path = path(kReportNames[0]);
-    const auto month_path = path(kReportNames[1]);
-    const auto period_path = path(kReportNames[2]);
-    const auto week_path = path(kReportNames[3]);
-    const auto year_path = path(kReportNames[4]);
-    if (!std::filesystem::exists(day_path) ||
-        !std::filesystem::exists(month_path) ||
-        !std::filesystem::exists(period_path) ||
-        !std::filesystem::exists(week_path) ||
-        !std::filesystem::exists(year_path)) {
+    const auto kDayPath = kPath(kReportNames[0]);
+    const auto kMonthPath = kPath(kReportNames[1]);
+    const auto kPeriodPath = kPath(kReportNames[2]);
+    const auto kWeekPath = kPath(kReportNames[3]);
+    const auto kYearPath = kPath(kReportNames[4]);
+    if (!std::filesystem::exists(kDayPath) ||
+        !std::filesystem::exists(kMonthPath) ||
+        !std::filesystem::exists(kPeriodPath) ||
+        !std::filesystem::exists(kWeekPath) ||
+        !std::filesystem::exists(kYearPath)) {
       continue;
     }
-    localized.day = ReportConfigLoader::LoadDailyMdConfig(day_path);
-    localized.month = ReportConfigLoader::LoadMonthlyMdConfig(month_path);
-    localized.period = ReportConfigLoader::LoadPeriodMdConfig(period_path);
-    localized.week = ReportConfigLoader::LoadWeeklyMdConfig(week_path);
-    localized.year = ReportConfigLoader::LoadYearlyMdConfig(year_path);
-    reports.markdown_locales.emplace(locale, std::move(localized));
+    localized.day = ReportConfigLoader::LoadDailyMdConfig(kDayPath);
+    localized.month = ReportConfigLoader::LoadMonthlyMdConfig(kMonthPath);
+    localized.period = ReportConfigLoader::LoadPeriodMdConfig(kPeriodPath);
+    localized.week = ReportConfigLoader::LoadWeeklyMdConfig(kWeekPath);
+    localized.year = ReportConfigLoader::LoadYearlyMdConfig(kYearPath);
+    reports.markdown_locales.emplace(kLocale, std::move(localized));
   }
 }
 

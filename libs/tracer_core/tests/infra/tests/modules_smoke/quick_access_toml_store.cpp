@@ -71,7 +71,8 @@ auto RunQuickAccessTomlStoreTests() -> int {
           "duplicate alias must be rejected", failures);
 
     ExpectReadFailure("quick_access = \"not-an-array\"\n",
-                      "non-array Quick Access field must be rejected", failures);
+                      "non-array Quick Access field must be rejected",
+                      failures);
     ExpectReadFailure("other = []\n",
                       "missing Quick Access field must be rejected", failures);
     ExpectReadFailure("quick_access = [\"ok\"]\nother = true\n",

@@ -268,13 +268,12 @@ auto ValidateManifestPayloadFiles(const std::vector<std::string>& payload_files)
 }
 
 auto ValidateConfigFiles(const std::string& config_root,
-                        const std::vector<std::string>& config_files) -> void {
+                         const std::vector<std::string>& config_files) -> void {
   if (config_root != "config/user") {
     ThrowMalformedPackage("manifest config root must be `config/user`.");
   }
   if (config_files.empty()) {
-    ThrowMalformedPackage(
-        "manifest config files must be a non-empty array.");
+    ThrowMalformedPackage("manifest config files must be a non-empty array.");
   }
 
   std::string previous_path;
@@ -295,9 +294,9 @@ auto ValidateConfigFiles(const std::string& config_root,
 auto ValidatePackageEntryLayout(
     const std::vector<TracerExchangePackageEntry>& entries,
     const TracerExchangeManifest& manifest) -> void {
-  const std::size_t expected_entry_count =
-      kRequiredPackagePaths.size() + manifest.config_files.size() +
-      manifest.payload_files.size();
+  const std::size_t expected_entry_count = kRequiredPackagePaths.size() +
+                                           manifest.config_files.size() +
+                                           manifest.payload_files.size();
   if (entries.size() != expected_entry_count) {
     ThrowMalformedPackage(
         "entry_count does not match manifest config and payload file count.");
@@ -333,7 +332,8 @@ auto ValidatePackageEntryLayout(
   const std::size_t payload_offset =
       kRequiredPackagePaths.size() + manifest.config_files.size();
   for (std::size_t index = 0; index < manifest.payload_files.size(); ++index) {
-    const std::string_view expected_payload_path = manifest.payload_files[index];
+    const std::string_view expected_payload_path =
+        manifest.payload_files[index];
     const std::size_t entry_index = payload_offset + index;
     if (entries[entry_index].relative_path != expected_payload_path) {
       ThrowMalformedPackage(

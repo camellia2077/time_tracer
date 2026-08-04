@@ -86,8 +86,8 @@ auto TracerExchangeService::RunImport(
         .input_root_path = kInputPath.parent_path(),
         .output_root_path = kTransactionPaths.transaction_root,
         .current_input_path = kInputPath,
-        .current_output_path = kTransactionPaths.transaction_root /
-                               "exchange.ttpkg",
+        .current_output_path =
+            kTransactionPaths.transaction_root / "exchange.ttpkg",
     };
     auto [decrypt_result, package_bytes] = file_crypto::DecryptFileToBytes(
         kInputPath, request.passphrase, kPathContext,
@@ -142,8 +142,8 @@ auto TracerExchangeService::RunImport(
     EmitImportTransactionProgress(
         request.progress_observer, "build_effective_text_view", 4U, kPhaseCount,
         "effective_text_root", kEffectiveTextEntryCount,
-        kEffectiveTextEntryCount, kInputPath, kActiveTextRoot,
-        kActiveTextRoot, kTransactionPaths.effective_text_root);
+        kEffectiveTextEntryCount, kInputPath, kActiveTextRoot, kActiveTextRoot,
+        kTransactionPaths.effective_text_root);
 
     const ActiveConverterConfigPaths kActivePaths =
         ResolveActiveConverterConfigPaths(
@@ -160,24 +160,20 @@ auto TracerExchangeService::RunImport(
     EmitImportTransactionProgress(
         request.progress_observer, "apply_converter_config", 5U, kPhaseCount,
         "converter_config", 0U, 1U, kInputPath, kActiveTextRoot,
-        kPackageMainConfigPath,
-        request.active_converter_main_config_path);
+        kPackageMainConfigPath, request.active_converter_main_config_path);
     config_applied = true;
     fs::create_directories(kPackageMainConfigPath.parent_path());
-    fs::copy_file(
-        request.active_converter_main_config_path, kPackageMainConfigPath,
-        fs::copy_options::overwrite_existing);
+    fs::copy_file(request.active_converter_main_config_path,
+                  kPackageMainConfigPath, fs::copy_options::overwrite_existing);
     workflow_handler_.InstallActiveConverterConfig({
-        .source_main_config_path =
-            kPackageMainConfigPath.string(),
+        .source_main_config_path = kPackageMainConfigPath.string(),
         .target_main_config_path =
             request.active_converter_main_config_path.string(),
     });
     EmitImportTransactionProgress(
         request.progress_observer, "apply_converter_config", 5U, kPhaseCount,
         "converter_config", 1U, 1U, kInputPath, kActiveTextRoot,
-        kPackageMainConfigPath,
-        request.active_converter_main_config_path);
+        kPackageMainConfigPath, request.active_converter_main_config_path);
 
     EmitImportTransactionProgress(
         request.progress_observer, "validate_text_structure", 6U, kPhaseCount,
@@ -212,8 +208,7 @@ auto TracerExchangeService::RunImport(
         kActiveTextRoot, kTransactionPaths.effective_text_root,
         kActiveTextRoot);
     text_root_updated = true;
-    WriteImportedPayloadsToActiveTextRoot(kActiveTextRoot,
-                                          kManagedMonthFiles,
+    WriteImportedPayloadsToActiveTextRoot(kActiveTextRoot, kManagedMonthFiles,
                                           imported_payloads);
     EmitImportTransactionProgress(
         request.progress_observer, "replace_managed_text", 8U, kPhaseCount,
@@ -223,25 +218,22 @@ auto TracerExchangeService::RunImport(
 
     EmitImportTransactionProgress(
         request.progress_observer, "rebuild_database", kRebuildDatabasePhase,
-        kPhaseCount,
-        kTransactionPaths.effective_text_root.string(), 0U, 1U, kInputPath,
-        kActiveTextRoot, kTransactionPaths.effective_text_root,
+        kPhaseCount, kTransactionPaths.effective_text_root.string(), 0U, 1U,
+        kInputPath, kActiveTextRoot, kTransactionPaths.effective_text_root,
         kActiveTextRoot);
     workflow_handler_.RunIngestReplacingAll(
         kTransactionPaths.effective_text_root.string(), request.date_check_mode,
         false);
     EmitImportTransactionProgress(
         request.progress_observer, "rebuild_database", kRebuildDatabasePhase,
-        kPhaseCount,
-        kTransactionPaths.effective_text_root.string(), 1U, 1U, kInputPath,
-        kActiveTextRoot, kTransactionPaths.effective_text_root,
+        kPhaseCount, kTransactionPaths.effective_text_root.string(), 1U, 1U,
+        kInputPath, kActiveTextRoot, kTransactionPaths.effective_text_root,
         kActiveTextRoot);
 
     EmitImportTransactionProgress(
         request.progress_observer, "cleanup", kCleanupPhase, kPhaseCount,
         kTransactionPaths.transaction_root.string(), 0U, 1U, kInputPath,
-        kActiveTextRoot, kTransactionPaths.transaction_root,
-        kRuntimeWorkRoot);
+        kActiveTextRoot, kTransactionPaths.transaction_root, kRuntimeWorkRoot);
     std::error_code cleanup_error;
     fs::remove_all(kTransactionPaths.transaction_root, cleanup_error);
 
@@ -253,15 +245,15 @@ auto TracerExchangeService::RunImport(
     rollback_error_message = TryRollbackImportTransaction(
         workflow_handler_, kActiveTextRoot, kTransactionPaths.backup_text_root,
         kTransactionPaths.backup_config_root,
-        request.active_converter_main_config_path,
-        imported_payloads, text_root_updated, config_applied);
+        request.active_converter_main_config_path, imported_payloads,
+        text_root_updated, config_applied);
   } catch (...) {
     failure_message = "unexpected tracer exchange import failure";
     rollback_error_message = TryRollbackImportTransaction(
         workflow_handler_, kActiveTextRoot, kTransactionPaths.backup_text_root,
         kTransactionPaths.backup_config_root,
-        request.active_converter_main_config_path,
-        imported_payloads, text_root_updated, config_applied);
+        request.active_converter_main_config_path, imported_payloads,
+        text_root_updated, config_applied);
   }
 
   return BuildFailedImportResult(kTransactionPaths.transaction_root,

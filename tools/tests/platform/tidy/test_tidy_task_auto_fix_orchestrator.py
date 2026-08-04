@@ -5,7 +5,7 @@ from unittest.mock import patch
 from tools.tests.platform.support.tidy_task_auto_fix_support import AutoFixFixtureBuilder, DiagnosticEntry
 from tools.tests.platform.support.path_assertions import assert_same_path
 from tools.toolchain.commands.tidy.autofix.models import ExecutionRecord
-from tools.toolchain.commands.tidy.tasking.task_auto_fix import run_task_auto_fix
+from tools.toolchain.commands.tidy.queue.task_auto_fix import run_task_auto_fix
 
 
 class TestTidyTaskAutoFixOrchestrator(TestCase):
@@ -40,8 +40,8 @@ class TestTidyTaskAutoFixOrchestrator(TestCase):
                     "}  // namespace tracer::core::application::use_cases",
                 ],
             )
-            task_path, _json_path = fb.write_batch_task_artifacts(
-                batch_id="batch_003",
+            task_path, _json_path = fb.write_cluster_task_artifacts(
+                cluster_id="cluster_003",
                 task_id="030",
                 source_file=source_file,
                 diagnostics=[
@@ -75,7 +75,7 @@ class TestTidyTaskAutoFixOrchestrator(TestCase):
                     ExecutionRecord(
                         intent_id=intents[0].intent_id,
                         status="previewed",
-                        reason="supported_rule_driven_const_rename",
+                        reason="supported_rule_driven_semantic_rename",
                         edit_count=2,
                         changed_files=(str(source_file),),
                         old_name="tree_result",
@@ -97,7 +97,7 @@ class TestTidyTaskAutoFixOrchestrator(TestCase):
                     fb.context(),
                     task_log_path=str(task_path),
                     dry_run=True,
-                    report_suffix="patch",
+                    report_suffix="fix",
                 )
 
             self.assertEqual(result.action_count, 2)
@@ -122,8 +122,8 @@ class TestTidyTaskAutoFixOrchestrator(TestCase):
                     "#endif",
                 ],
             )
-            task_path, _json_path = fb.write_batch_task_artifacts(
-                batch_id="batch_004",
+            task_path, _json_path = fb.write_cluster_task_artifacts(
+                cluster_id="cluster_004",
                 task_id="031",
                 source_file=source_file,
                 diagnostics=[

@@ -27,7 +27,8 @@ auto BuildRepoRoot() -> std::filesystem::path {
       .parent_path();  // repo root
 }
 
-auto ReadFixtureText(const std::filesystem::path& relative_path) -> std::string {
+auto ReadFixtureText(const std::filesystem::path& relative_path)
+    -> std::string {
   const std::filesystem::path fixture_path = BuildRepoRoot() / relative_path;
   std::ifstream input(fixture_path, std::ios::binary);
   if (!input.is_open()) {
@@ -69,9 +70,11 @@ auto TestTxtDayBlockSemantics(TestState& state) -> void {
          !Contains(resolved.day_body, "0102") &&
              Contains(resolved.day_body, "0904无氧训练"),
          "ResolveDayBlock should return body lines without marker line.");
-  Expect(state,
-         resolved.day_content_iso_date == std::optional<std::string>("2025-01-02"),
-         "ResolveDayBlock should derive ISO date when selected month matches marker.");
+  Expect(
+      state,
+      resolved.day_content_iso_date == std::optional<std::string>("2025-01-02"),
+      "ResolveDayBlock should derive ISO date when selected month matches "
+      "marker.");
 
   const auto missing = ResolveDayBlock({
       .content = std::string(kMonthContent),
@@ -91,8 +94,7 @@ auto TestTxtDayBlockSemantics(TestState& state) -> void {
       .selected_month = "2025-01",
   });
   Expect(state, invalid.ok, "invalid marker should still return ok=true.");
-  Expect(state, !invalid.is_marker_valid,
-         "invalid marker should be rejected.");
+  Expect(state, !invalid.is_marker_valid, "invalid marker should be rejected.");
   Expect(state, !invalid.found, "invalid marker should not report found.");
 
   const auto replaced = ReplaceDayBlock({
@@ -103,11 +105,12 @@ auto TestTxtDayBlockSemantics(TestState& state) -> void {
   Expect(state, replaced.ok, "ReplaceDayBlock should return ok=true.");
   Expect(state, replaced.found,
          "ReplaceDayBlock should find existing day block.");
-  Expect(state,
-         Contains(replaced.updated_content, "d0102\n1111new_line\n2222tail\n") &&
-             Contains(replaced.updated_content, "d0101\n0900study\n") &&
-             Contains(replaced.updated_content, "d0103\n0900sleep\n"),
-         "ReplaceDayBlock should only rewrite the target day block.");
+  Expect(
+      state,
+      Contains(replaced.updated_content, "d0102\n1111new_line\n2222tail\n") &&
+          Contains(replaced.updated_content, "d0101\n0900study\n") &&
+          Contains(replaced.updated_content, "d0103\n0900sleep\n"),
+      "ReplaceDayBlock should only rewrite the target day block.");
   const auto replaced_resolved = ResolveDayBlock({
       .content = replaced.updated_content,
       .day_marker = "0102",
@@ -130,12 +133,13 @@ auto TestTxtDayBlockSemantics(TestState& state) -> void {
       .target_date_iso = "2025-01-31",
   });
   Expect(state, fallback_marker.normalized_day_marker == "0131",
-         "DefaultDayMarker should fall back to target_date_iso month/day when selected month is invalid.");
+         "DefaultDayMarker should fall back to target_date_iso month/day when "
+         "selected month is invalid.");
 }
 
 auto TestTxtDayBlockFixtureFiles(TestState& state) -> void {
-  const std::string empty_month = ReadFixtureText(
-      "test/fixtures/text/minimal_month/2026-01.empty.txt");
+  const std::string empty_month =
+      ReadFixtureText("test/fixtures/text/minimal_month/2026-01.empty.txt");
   Expect(state, !empty_month.empty(),
          "empty month fixture should be readable from test/fixtures.");
   const auto empty_resolved = ResolveDayBlock({
@@ -197,10 +201,11 @@ auto TestTxtDayBlockPipelineApiForwarding(TestState& state) -> void {
          "RunDefaultTxtDayMarker should return workflow response.");
   Expect(state, pipeline_workflow.default_txt_day_marker_call_count == 1,
          "RunDefaultTxtDayMarker should call workflow once.");
-  Expect(state,
-         pipeline_workflow.last_default_txt_day_marker_request.target_date_iso ==
-             "2025-01-02",
-         "RunDefaultTxtDayMarker should forward target_date_iso.");
+  Expect(
+      state,
+      pipeline_workflow.last_default_txt_day_marker_request.target_date_iso ==
+          "2025-01-02",
+      "RunDefaultTxtDayMarker should forward target_date_iso.");
 
   const auto resolve_response = runtime_api.pipeline().RunResolveTxtDayBlock({
       .content = "full-content",
@@ -211,9 +216,10 @@ auto TestTxtDayBlockPipelineApiForwarding(TestState& state) -> void {
          "RunResolveTxtDayBlock should return workflow response.");
   Expect(state, pipeline_workflow.resolve_txt_day_block_call_count == 1,
          "RunResolveTxtDayBlock should call workflow once.");
-  Expect(state,
-         pipeline_workflow.last_resolve_txt_day_block_request.day_marker == "0102",
-         "RunResolveTxtDayBlock should forward day_marker.");
+  Expect(
+      state,
+      pipeline_workflow.last_resolve_txt_day_block_request.day_marker == "0102",
+      "RunResolveTxtDayBlock should forward day_marker.");
 
   const auto replace_response = runtime_api.pipeline().RunReplaceTxtDayBlock({
       .content = "full-content",
@@ -229,10 +235,11 @@ auto TestTxtDayBlockPipelineApiForwarding(TestState& state) -> void {
              "body",
          "RunReplaceTxtDayBlock should forward edited body.");
 
-  const auto convert_response = runtime_api.pipeline().RunConvertTxtActivityNames({
-      .content = "month-content",
-      .direction = "canonical_to_alias",
-  });
+  const auto convert_response =
+      runtime_api.pipeline().RunConvertTxtActivityNames({
+          .content = "month-content",
+          .direction = "canonical_to_alias",
+      });
   Expect(state, convert_response.ok,
          "RunConvertTxtActivityNames should return workflow response.");
   Expect(state, pipeline_workflow.convert_txt_activity_names_call_count == 1,
@@ -248,14 +255,16 @@ auto TestTxtDayBlockPipelineApiForwarding(TestState& state) -> void {
           .replacements = {{.old_canonical = "exercise_walk",
                             .new_canonical = "exercise_cardio_walk"}},
       });
-  Expect(state, replace_canonical_response.ok,
-         "RunReplaceTxtCanonicalActivityNames should return workflow response.");
+  Expect(
+      state, replace_canonical_response.ok,
+      "RunReplaceTxtCanonicalActivityNames should return workflow response.");
   Expect(state,
          pipeline_workflow.replace_txt_canonical_activity_names_call_count == 1,
          "RunReplaceTxtCanonicalActivityNames should call workflow once.");
   Expect(state,
          pipeline_workflow.last_replace_txt_canonical_activity_names_request
-                 .replacements.front().new_canonical == "exercise_cardio_walk",
+                 .replacements.front()
+                 .new_canonical == "exercise_cardio_walk",
          "RunReplaceTxtCanonicalActivityNames should forward replacements.");
 
   pipeline_workflow.fail_resolve_txt_day_block = true;
@@ -265,7 +274,8 @@ auto TestTxtDayBlockPipelineApiForwarding(TestState& state) -> void {
       .selected_month = "2025-01",
   });
   Expect(state, !failure.ok,
-         "RunResolveTxtDayBlock should convert thrown exceptions into failed DTOs.");
+         "RunResolveTxtDayBlock should convert thrown exceptions into failed "
+         "DTOs.");
   Expect(state, Contains(failure.error_message, "RunResolveTxtDayBlock failed"),
          "RunResolveTxtDayBlock failure should include operation name.");
 }

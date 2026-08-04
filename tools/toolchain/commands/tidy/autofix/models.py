@@ -43,6 +43,7 @@ class ReplaceLiteralOnLineOp:
 class ReplaceLineWithBlockOp:
     expected_line: str
     replacement_lines: tuple[str, ...]
+    match_mode: str = "exact"
     success_reason: str = "line_replaced_with_block"
     missing_reason: str = "line_not_found"
     empty_replacement_reason: str = "empty_replacement_block"
@@ -61,6 +62,7 @@ class RenameSymbolOp:
     symbol_kind: str
     old_name: str
     new_name: str
+    suggested_from_diagnostic: bool = False
     success_reason: str = "rename_applied"
 
 

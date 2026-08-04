@@ -48,8 +48,10 @@ Detailed navigation for the transport implementation library.
 2. `include/tracer/transport/fields.hpp`
 3. `include/tracer/transport/runtime_requests.hpp`
 4. `include/tracer/transport/runtime_responses.hpp`
-5. `include/tracer/transport/runtime_codec.hpp`
-6. Canonical modules under `src/modules`
+5. Operation-specific codec headers under
+   `include/tracer/transport/runtime_codec_*.hpp`
+6. Canonical modules under `src/modules`, including the aggregate
+   `tracer.transport.runtime` surface
 
 ## Change Routing
 
@@ -60,7 +62,9 @@ Detailed navigation for the transport implementation library.
 3. Change runtime request/response DTO helpers:
    - start in `include/tracer/transport/runtime_requests.hpp` and `include/tracer/transport/runtime_responses.hpp`
 4. Change operation codec behavior:
-   - start in the matching `src/runtime_codec_*.cpp` family
+   - include the matching operation-specific
+     `include/tracer/transport/runtime_codec_<operation>.hpp`
+   - start in the matching `src/runtime_codec_<operation>.cpp` family
    - treat these as operation codec entrypoints, not as a complete file checklist
 5. Change module surfaces:
    - inspect `src/modules` and module smoke tests
@@ -104,3 +108,24 @@ Detailed navigation for the transport implementation library.
 3. [Android Runtime Protocol](../../presentation/android/runtime-protocol.md)
 4. [TXT Runtime JSON Contract](../../core/contracts/text/runtime_txt_day_block_json_contract_v1.md)
 5. [tracer_core](tracer_core.md)
+
+## Refactoring Guidance
+
+`tracer_transport` owns wire representation and codec mechanics and remains
+independent of `tracer_core`.
+
+- Split only along explicit wire concerns: envelope construction, field
+  reading, request/response DTOs, or operation-specific codecs. The public
+  codec surface is intentionally operation-specific; consumers should include
+  only the codec family they use, while module consumers may import the
+  aggregate `tracer.transport.runtime` surface.
+- Preserve malformed-input behavior, missing-field defaults, optional values,
+  compatibility fallbacks, and encode/decode round trips.
+- Do not add core domain decisions, database or filesystem access, JNI/C ABI
+  logic, or host lifecycle orchestration.
+- A transport DTO describes a wire payload; it is not automatically a core
+  business model.
+
+Before extraction, add or identify envelope, field, or codec contract tests.
+Run the transport tests and relevant downstream shell/runtime round-trip tests.
+Use `libs/tracer_transport/AGENTS.md` for the required validation commands.

@@ -90,8 +90,7 @@ auto TryRollbackImportTransaction(
           .source_main_config_path =
               (backup_config_root / fs::path("config/user/behavior.toml"))
                   .string(),
-          .target_main_config_path =
-              active_converter_main_config_path.string(),
+          .target_main_config_path = active_converter_main_config_path.string(),
       });
     }
   } catch (const std::exception& rollback_error) {

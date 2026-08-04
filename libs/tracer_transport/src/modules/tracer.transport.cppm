@@ -6,6 +6,7 @@ export module tracer.transport;
 
 export import tracer.transport.errors;
 export import tracer.transport.fields;
+export import tracer.transport.runtime;
 
 export namespace tracer::transport::modenvelope {
 

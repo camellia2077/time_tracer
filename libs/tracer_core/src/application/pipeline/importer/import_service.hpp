@@ -11,7 +11,7 @@
 
 struct DailyLog;
 namespace tracer_core::application::ports {
-class ITimeSheetRepository;
+class ITimeSheetWriteRepository;
 }  // namespace tracer_core::application::ports
 
 struct ReplaceAllTarget {};
@@ -19,7 +19,7 @@ struct ReplaceAllTarget {};
 class ImportService {
  public:
   explicit ImportService(
-      tracer_core::application::ports::ITimeSheetRepository& repository);
+      tracer_core::application::ports::ITimeSheetWriteRepository& repository);
   // [保留] 仅保留处理内存对象（结构体）的接口
   auto ImportFromMemory(
       const std::map<std::string, std::vector<DailyLog>>& data_map,
@@ -29,7 +29,7 @@ class ImportService {
       -> ImportStats;
 
  private:
-  tracer_core::application::ports::ITimeSheetRepository& repository_;
+  tracer_core::application::ports::ITimeSheetWriteRepository& repository_;
 };
 
 #endif  // APPLICATION_IMPORTER_IMPORT_SERVICE_H_

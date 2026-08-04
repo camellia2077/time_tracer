@@ -9,7 +9,7 @@ import tracer.core.domain.model.time_data_models;
 #include <string_view>
 #include <vector>
 
-#include "application/ports/pipeline/i_time_sheet_repository.hpp"
+#include "application/ports/pipeline/i_time_sheet_write_repository.hpp"
 #include "application/tests/modules/pipeline_tests.hpp"
 #include "application/tests/support/test_support.hpp"
 
@@ -32,7 +32,7 @@ constexpr int kEndTimestamp = 28800;
 constexpr int kDurationSeconds = 3600;
 
 class FakeTimeSheetRepository final
-    : public tracer_core::application::ports::ITimeSheetRepository {
+    : public tracer_core::application::ports::ITimeSheetWriteRepository {
  public:
   bool db_open = true;
   bool fail_import = false;
@@ -98,19 +98,6 @@ class FakeTimeSheetRepository final
       -> void override {}
 
   auto ClearIngestSyncStatus() -> void override {}
-
-  [[nodiscard]] auto ListIngestSyncStatuses(
-      const tracer_core::core::dto::IngestSyncStatusRequest&) const
-      -> tracer_core::core::dto::IngestSyncStatusOutput override {
-    return {.ok = true, .items = {}, .error_message = ""};
-  }
-
-  [[nodiscard]] auto TryGetLatestActivityTailBeforeDate(
-      std::string_view /*date*/) const
-      -> std::optional<
-          tracer_core::application::ports::PreviousActivityTail> override {
-    return std::nullopt;
-  }
 };
 
 auto BuildSingleDayMap() -> std::map<std::string, std::vector<DailyLog>> {

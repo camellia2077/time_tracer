@@ -61,22 +61,25 @@ auto TestParseRecentDaysArgument(TestState& state) -> void {
 }
 
 auto TestParseRangeArgument(TestState& state) -> void {
-  const auto canonical = report_support::ParseRangeArgument("2026-01-01|2026-01-31");
+  const auto canonical =
+      report_support::ParseRangeArgument("2026-01-01|2026-01-31");
   Expect(state, canonical.start_date == "2026-01-01",
          "ParseRangeArgument should preserve ISO start_date.");
   Expect(state, canonical.end_date == "2026-01-31",
          "ParseRangeArgument should preserve ISO end_date.");
 
-  const auto comma = report_support::ParseRangeArgument(" 2026-02-01 , 2026-02-09 ");
+  const auto comma =
+      report_support::ParseRangeArgument(" 2026-02-01 , 2026-02-09 ");
   Expect(state, comma.start_date == "2026-02-01",
          "ParseRangeArgument should accept comma separators.");
   Expect(state, comma.end_date == "2026-02-09",
-         "ParseRangeArgument should trim whitespace around comma-separated dates.");
+         "ParseRangeArgument should trim whitespace around comma-separated "
+         "dates.");
 
   bool threw_descending = false;
   try {
-    static_cast<void>(report_support::ParseRangeArgument(
-        "2026-03-09|2026-03-01"));
+    static_cast<void>(
+        report_support::ParseRangeArgument("2026-03-09|2026-03-01"));
   } catch (const std::invalid_argument&) {
     threw_descending = true;
   }
@@ -97,8 +100,8 @@ auto TestTemporalTextQueryPreservesWindowMetadata(TestState& state) -> void {
   FakePipelineWorkflow pipeline_workflow;
   FakeReportHandler report_handler;
   auto report_data_query = std::make_shared<FakeReportDataQueryService>();
-  auto runtime_api =
-      BuildRuntimeApiForTest(pipeline_workflow, report_handler, report_data_query);
+  auto runtime_api = BuildRuntimeApiForTest(pipeline_workflow, report_handler,
+                                            report_data_query);
 
   const auto recent = runtime_api.report().RunTemporalReportQuery(
       {.display_mode = ReportDisplayMode::kRecent,
@@ -109,7 +112,8 @@ auto TestTemporalTextQueryPreservesWindowMetadata(TestState& state) -> void {
   Expect(state, recent.content == "period:2026-03-01|2026-03-07",
          "RunTemporalReportQuery should delegate period formatting.");
   Expect(state, recent.report_window_metadata.has_value(),
-         "RunTemporalReportQuery should expose window metadata for recent reports.");
+         "RunTemporalReportQuery should expose window metadata for recent "
+         "reports.");
   if (recent.report_window_metadata.has_value()) {
     const auto& metadata = *recent.report_window_metadata;
     Expect(state, !metadata.has_records,
@@ -133,7 +137,8 @@ auto TestTemporalTextQueryPreservesWindowMetadata(TestState& state) -> void {
   Expect(state, range.ok,
          "RunTemporalReportQuery should succeed for range period reports.");
   Expect(state, range.report_window_metadata.has_value(),
-         "RunTemporalReportQuery should expose window metadata for range reports.");
+         "RunTemporalReportQuery should expose window metadata for range "
+         "reports.");
 
   const auto month = runtime_api.report().RunTemporalReportQuery(
       {.display_mode = ReportDisplayMode::kMonth,
@@ -144,7 +149,8 @@ auto TestTemporalTextQueryPreservesWindowMetadata(TestState& state) -> void {
   Expect(state, month.content == "month:2026-04",
          "RunTemporalReportQuery should delegate monthly formatting.");
   Expect(state, !month.report_window_metadata.has_value(),
-         "RunTemporalReportQuery should keep window metadata reserved for recent/range reports.");
+         "RunTemporalReportQuery should keep window metadata reserved for "
+         "recent/range reports.");
 }
 
 auto TestStructuredReportDistinguishesEmptyWindowFromMissingTarget(
@@ -152,38 +158,48 @@ auto TestStructuredReportDistinguishesEmptyWindowFromMissingTarget(
   FakePipelineWorkflow pipeline_workflow;
   FakeReportHandler report_handler;
   auto report_data_query = std::make_shared<FakeReportDataQueryService>();
-  auto runtime_api =
-      BuildRuntimeApiForTest(pipeline_workflow, report_handler, report_data_query);
+  auto runtime_api = BuildRuntimeApiForTest(pipeline_workflow, report_handler,
+                                            report_data_query);
 
-  const auto empty_range = runtime_api.report().RunTemporalStructuredReportQuery(
-      {.display_mode = ReportDisplayMode::kRange,
-       .selection = BuildRangeSelection("2024-12-01", "2024-12-31")});
+  const auto empty_range =
+      runtime_api.report().RunTemporalStructuredReportQuery(
+          {.display_mode = ReportDisplayMode::kRange,
+           .selection = BuildRangeSelection("2024-12-01", "2024-12-31")});
   Expect(state, empty_range.ok,
-         "RunTemporalStructuredReportQuery should treat empty range windows as successful reports.");
+         "RunTemporalStructuredReportQuery should treat empty range windows as "
+         "successful reports.");
   Expect(state, empty_range.error_contract.error_code.empty(),
-         "RunTemporalStructuredReportQuery empty range should not expose target-not-found error code.");
+         "RunTemporalStructuredReportQuery empty range should not expose "
+         "target-not-found error code.");
   const auto* empty_range_report =
       std::get_if<PeriodReportData>(&empty_range.report);
   Expect(state, empty_range_report != nullptr,
-         "RunTemporalStructuredReportQuery empty range should still return period report data.");
+         "RunTemporalStructuredReportQuery empty range should still return "
+         "period report data.");
   if (empty_range_report != nullptr) {
     Expect(state, !empty_range_report->has_records,
-           "RunTemporalStructuredReportQuery empty range should preserve has_records=false.");
+           "RunTemporalStructuredReportQuery empty range should preserve "
+           "has_records=false.");
     Expect(state, empty_range_report->matched_record_count == 0,
-           "RunTemporalStructuredReportQuery empty range should preserve matched_record_count=0.");
+           "RunTemporalStructuredReportQuery empty range should preserve "
+           "matched_record_count=0.");
   }
 
   report_data_query->fail_target_not_found = true;
-  const auto missing_day = runtime_api.report().RunTemporalStructuredReportQuery(
-      {.display_mode = ReportDisplayMode::kDay,
-       .selection = BuildDaySelection("2024-12-31")});
+  const auto missing_day =
+      runtime_api.report().RunTemporalStructuredReportQuery(
+          {.display_mode = ReportDisplayMode::kDay,
+           .selection = BuildDaySelection("2024-12-31")});
   Expect(state, !missing_day.ok,
-         "RunTemporalStructuredReportQuery should fail when the named report target is missing.");
+         "RunTemporalStructuredReportQuery should fail when the named report "
+         "target is missing.");
   Expect(state,
          missing_day.error_contract.error_code == "reporting.target.not_found",
-         "RunTemporalStructuredReportQuery missing target should expose reporting.target.not_found.");
+         "RunTemporalStructuredReportQuery missing target should expose "
+         "reporting.target.not_found.");
   Expect(state, missing_day.error_contract.error_category == "reporting",
-         "RunTemporalStructuredReportQuery missing target should expose reporting category.");
+         "RunTemporalStructuredReportQuery missing target should expose "
+         "reporting category.");
 }
 
 }  // namespace

@@ -45,7 +45,7 @@ auto RunInfrastructureModuleQueryStatsRepositorySmoke() -> int {
     return 6;
   }
 
-      const std::vector<tracer::core::infrastructure::query::data::DayDurationRow>
+  const std::vector<tracer::core::infrastructure::query::data::DayDurationRow>
       kRows = {
           {.date = "2026-02-01", .total_seconds = 3600, .record_count = 1},
           {.date = "2026-02-02", .total_seconds = 0, .record_count = 1},
@@ -132,9 +132,9 @@ auto RunInfrastructureModuleQueryStatsRepositorySmoke() -> int {
 
     tracer::core::infrastructure::persistence::importer::sqlite::Statement
         statement(connection.GetDb());
-    tracer::core::infrastructure::persistence::importer::sqlite::Writer
-        writer(connection.GetDb(), statement.GetInsertDayStmt(),
-               statement.GetInsertRecordStmt(), statement.GetInsertProjectStmt());
+    tracer::core::infrastructure::persistence::importer::sqlite::Writer writer(
+        connection.GetDb(), statement.GetInsertDayStmt(),
+        statement.GetInsertRecordStmt(), statement.GetInsertProjectStmt());
     writer.InsertDays({DayData{.date = "2026-02-02",
                                .remark = "",
                                .getup_time = std::nullopt,
@@ -143,20 +143,21 @@ auto RunInfrastructureModuleQueryStatsRepositorySmoke() -> int {
                                .activity_count = 1}});
     writer.InsertRecords(
         {TimeRecordInternal{.kind = ActivityRecordKind::kEndOnly,
-                             .logical_id = 7,
-                             .start_timestamp = 0,
-                             .end_timestamp = 1770000000,
-                             .start_time_str = "",
-                             .end_time_str = "12:00",
-                             .project_path = "work",
-                             .duration_seconds = 0,
-                             .remark = std::nullopt,
-                             .date = "2026-02-02"}});
+                            .logical_id = 7,
+                            .start_timestamp = 0,
+                            .end_timestamp = 1770000000,
+                            .start_time_str = "",
+                            .end_time_str = "12:00",
+                            .project_path = "work",
+                            .duration_seconds = 0,
+                            .remark = std::nullopt,
+                            .date = "2026-02-02"}});
 
     const auto kPersistedRows =
         tracer::core::infrastructure::query::data::QueryDayDurations(
             connection.GetDb(), filters);
-    if (kPersistedRows.size() != 1U || kPersistedRows.front().total_seconds != 0 ||
+    if (kPersistedRows.size() != 1U ||
+        kPersistedRows.front().total_seconds != 0 ||
         kPersistedRows.front().record_count != 1) {
       return 16;
     }

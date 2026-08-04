@@ -22,6 +22,11 @@ Navigation hub for detailed library-level guidance under
 2. Open one detailed library doc only after you know the owning library.
 3. Use local `libs/*/README.md` only as a thin workspace entrypoint.
 
+## Refactoring
+
+- [Library Refactoring Architecture Guidance](libs_refactoring_guidance.md)
+  - Refactoring workflow, responsibility-specific rules, and validation order
+
 ## Libraries
 
 1. [tracer_core](tracer_core.md)

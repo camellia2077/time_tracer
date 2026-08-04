@@ -37,8 +37,10 @@ class PipelineApi final : public IPipelineApi {
       const tracer_core::core::dto::RecordActivityAtomicallyRequest& request)
       -> tracer_core::core::dto::RecordActivityAtomicallyResponse override;
   auto RunUpdateActivityRemarkAtomically(
-      const tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest& request)
-      -> tracer_core::core::dto::UpdateActivityRemarkAtomicallyResponse override;
+      const tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest&
+          request)
+      -> tracer_core::core::dto::UpdateActivityRemarkAtomicallyResponse
+      override;
   auto RunUpdateDayRemarkAtomically(
       const tracer_core::core::dto::UpdateDayRemarkAtomicallyRequest& request)
       -> tracer_core::core::dto::UpdateDayRemarkAtomicallyResponse override;
@@ -59,10 +61,13 @@ class PipelineApi final : public IPipelineApi {
       const tracer_core::core::dto::ConvertTxtActivityNamesRequest& request)
       -> tracer_core::core::dto::ConvertTxtActivityNamesResponse override;
   auto RunReplaceTxtCanonicalActivityNames(
-      const tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest& request)
-      -> tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse override;
+      const tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest&
+          request)
+      -> tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse
+      override;
   auto RunReplaceTxtAliasActivityNames(
-      const tracer_core::core::dto::ReplaceTxtAliasActivityNamesRequest& request)
+      const tracer_core::core::dto::ReplaceTxtAliasActivityNamesRequest&
+          request)
       -> tracer_core::core::dto::ReplaceTxtAliasActivityNamesResponse override;
 
  private:

@@ -15,24 +15,26 @@ namespace tracer::core::application::config {
 auto RenderActivityHierarchyText(
     const std::filesystem::path& activity_hierarchy_toml_path,
     bool show_aliases) -> std::string {
-  const auto path = std::filesystem::absolute(activity_hierarchy_toml_path);
-  if (!std::filesystem::exists(path) ||
-      !std::filesystem::is_regular_file(path)) {
-    throw std::runtime_error("Canonical TOML file not found: " + path.string());
+  const auto kPath = std::filesystem::absolute(activity_hierarchy_toml_path);
+  if (!std::filesystem::exists(kPath) ||
+      !std::filesystem::is_regular_file(kPath)) {
+    throw std::runtime_error("Canonical TOML file not found: " + kPath.string());
   }
-  std::ifstream input(path);
+  std::ifstream input(kPath);
   if (!input) {
-    throw std::runtime_error("Read canonical TOML file failed: " + path.string());
+    throw std::runtime_error("Read canonical TOML file failed: " +
+                             kPath.string());
   }
-  const std::string content((std::istreambuf_iterator<char>(input)),
+  const std::string kContent((std::istreambuf_iterator<char>(input)),
                             std::istreambuf_iterator<char>());
-  return RenderActivityHierarchyText(std::string_view(content), show_aliases);
+  return RenderActivityHierarchyText(std::string_view(kContent), show_aliases);
 }
 
-auto RenderActivityHierarchyText(std::string_view toml_content, bool show_aliases)
-    -> std::string {
-  return infrastructure::config::loader::detail::RenderActivityHierarchyTreeText(
-      DescribeActivityHierarchy(toml_content), show_aliases);
+auto RenderActivityHierarchyText(std::string_view toml_content,
+                                 bool show_aliases) -> std::string {
+  return infrastructure::config::loader::detail::
+      RenderActivityHierarchyTreeText(DescribeActivityHierarchy(toml_content),
+                                      show_aliases);
 }
 
 }  // namespace tracer::core::application::config
@@ -42,8 +44,9 @@ namespace {
 
 namespace config = tracer::core::application::config;
 
-auto RenderNode(const config::ActivityHierarchyTreeNode& node, std::string prefix,
-                bool is_last, bool show_aliases, std::string& output) -> void {
+auto RenderNode(const config::ActivityHierarchyTreeNode& node,
+                std::string prefix, bool is_last, bool show_aliases,
+                std::string& output) -> void {
   output += prefix;
   output += is_last ? "└── " : "├── ";
   output += node.canonical_key;
@@ -61,15 +64,13 @@ auto RenderNode(const config::ActivityHierarchyTreeNode& node, std::string prefi
   }
   output += '\n';
 
-  const std::string child_prefix =
-      prefix + (is_last ? "    " : "│   ");
+  const std::string kChildPrefix = prefix + (is_last ? "    " : "│   ");
   auto children = node.children;
-  std::ranges::sort(
-      children, [](const auto& left, const auto& right) {
-        return left.canonical_key < right.canonical_key;
-      });
+  std::ranges::sort(children, [](const auto& left, const auto& right) {
+    return left.canonical_key < right.canonical_key;
+  });
   for (std::size_t index = 0U; index < children.size(); ++index) {
-    RenderNode(children[index], child_prefix, index + 1U == children.size(),
+    RenderNode(children[index], kChildPrefix, index + 1U == children.size(),
                show_aliases, output);
   }
 }
@@ -77,7 +78,7 @@ auto RenderNode(const config::ActivityHierarchyTreeNode& node, std::string prefi
 }  // namespace
 
 auto RenderActivityHierarchyTreeText(const config::ActivityHierarchyTree& tree,
-                                  bool show_aliases) -> std::string {
+                                     bool show_aliases) -> std::string {
   std::string output = tree.parent + '\n';
   auto nodes = tree.nodes;
   std::ranges::sort(nodes, [](const auto& left, const auto& right) {

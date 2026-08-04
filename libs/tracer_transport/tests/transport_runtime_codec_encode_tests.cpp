@@ -104,22 +104,27 @@ void TestEncodeRequestRoundTrip(int& failures) {
     const auto encoded = EncodeRecordActivityAtomicallyRequest(request);
     const auto decoded = DecodeRecordActivityAtomicallyRequest(encoded);
     Expect(decoded.target_date_iso == request.target_date_iso,
-           "EncodeRecordActivityAtomicallyRequest round-trip target_date_iso mismatch.",
+           "EncodeRecordActivityAtomicallyRequest round-trip target_date_iso "
+           "mismatch.",
            failures);
     Expect(decoded.raw_activity_name == request.raw_activity_name,
-           "EncodeRecordActivityAtomicallyRequest round-trip raw_activity_name mismatch.",
+           "EncodeRecordActivityAtomicallyRequest round-trip raw_activity_name "
+           "mismatch.",
            failures);
     Expect(decoded.remark == request.remark,
            "EncodeRecordActivityAtomicallyRequest round-trip remark mismatch.",
            failures);
     Expect(decoded.preferred_txt_path == request.preferred_txt_path,
-           "EncodeRecordActivityAtomicallyRequest round-trip preferred_txt_path mismatch.",
+           "EncodeRecordActivityAtomicallyRequest round-trip "
+           "preferred_txt_path mismatch.",
            failures);
     Expect(decoded.date_check_mode == request.date_check_mode,
-           "EncodeRecordActivityAtomicallyRequest round-trip date_check_mode mismatch.",
+           "EncodeRecordActivityAtomicallyRequest round-trip date_check_mode "
+           "mismatch.",
            failures);
     Expect(decoded.time_order_mode == request.time_order_mode,
-           "EncodeRecordActivityAtomicallyRequest round-trip time_order_mode mismatch.",
+           "EncodeRecordActivityAtomicallyRequest round-trip time_order_mode "
+           "mismatch.",
            failures);
   }
 
@@ -132,19 +137,21 @@ void TestEncodeRequestRoundTrip(int& failures) {
     request.date_check_mode = "continuity";
     const auto encoded = EncodeUpdateActivityRemarkAtomicallyRequest(request);
     const auto decoded = DecodeUpdateActivityRemarkAtomicallyRequest(encoded);
-    Expect(decoded.target_date_iso == request.target_date_iso,
-           "EncodeUpdateActivityRemarkAtomicallyRequest target_date_iso mismatch.",
-           failures);
+    Expect(
+        decoded.target_date_iso == request.target_date_iso,
+        "EncodeUpdateActivityRemarkAtomicallyRequest target_date_iso mismatch.",
+        failures);
     Expect(decoded.logical_id == request.logical_id,
            "EncodeUpdateActivityRemarkAtomicallyRequest logical_id mismatch.",
            failures);
     Expect(decoded.remark == request.remark,
            "EncodeUpdateActivityRemarkAtomicallyRequest remark mismatch.",
            failures);
-    Expect(decoded.preferred_txt_path == request.preferred_txt_path &&
-               decoded.date_check_mode == request.date_check_mode,
-           "EncodeUpdateActivityRemarkAtomicallyRequest optional fields mismatch.",
-           failures);
+    Expect(
+        decoded.preferred_txt_path == request.preferred_txt_path &&
+            decoded.date_check_mode == request.date_check_mode,
+        "EncodeUpdateActivityRemarkAtomicallyRequest optional fields mismatch.",
+        failures);
   }
 
   {
@@ -156,12 +163,14 @@ void TestEncodeRequestRoundTrip(int& failures) {
     const auto encoded = EncodeUpdateDayRemarkAtomicallyRequest(request);
     const auto decoded = DecodeUpdateDayRemarkAtomicallyRequest(encoded);
     Expect(decoded.target_date_iso == request.target_date_iso,
-           "EncodeUpdateDayRemarkAtomicallyRequest target_date_iso mismatch.", failures);
+           "EncodeUpdateDayRemarkAtomicallyRequest target_date_iso mismatch.",
+           failures);
     Expect(decoded.remark == request.remark,
            "EncodeUpdateDayRemarkAtomicallyRequest remark mismatch.", failures);
     Expect(decoded.preferred_txt_path == request.preferred_txt_path &&
                decoded.date_check_mode == request.date_check_mode,
-           "EncodeUpdateDayRemarkAtomicallyRequest optional fields mismatch.", failures);
+           "EncodeUpdateDayRemarkAtomicallyRequest optional fields mismatch.",
+           failures);
   }
 
   {
@@ -223,8 +232,7 @@ void TestEncodeRequestRoundTrip(int& failures) {
            "EncodeTemporalReportRequest round-trip anchor_date mismatch.",
            failures);
     Expect(decoded.format == request.format,
-           "EncodeTemporalReportRequest round-trip format mismatch.",
-           failures);
+           "EncodeTemporalReportRequest round-trip format mismatch.", failures);
   }
 
   {
@@ -277,10 +285,9 @@ void TestEncodeResponses(int& failures) {
       .ok = true,
       .error_message = "",
       .content = "2026\nTotal: 1\n",
-      .error_contract =
-          ErrorContractPayload{.error_code = "query.none",
-                               .error_category = "logic",
-                               .hints = {"hint-a", "hint-b"}}});
+      .error_contract = ErrorContractPayload{.error_code = "query.none",
+                                             .error_category = "logic",
+                                             .hints = {"hint-a", "hint-b"}}});
   const json query = json::parse(query_json);
   Expect(query.value("ok", false), "EncodeQueryResponse ok mismatch.",
          failures);
@@ -298,10 +305,9 @@ void TestEncodeResponses(int& failures) {
       .ok = true,
       .error_message = "",
       .content = "## Monthly Summary",
-      .error_contract =
-          ErrorContractPayload{.error_code = "report.none",
-                               .error_category = "logic",
-                               .hints = {"hint-report"}}});
+      .error_contract = ErrorContractPayload{.error_code = "report.none",
+                                             .error_category = "logic",
+                                             .hints = {"hint-report"}}});
   const json report = json::parse(report_json);
   Expect(report.value("content", std::string{}) == "## Monthly Summary",
          "EncodeReportResponse content mismatch.", failures);
@@ -332,7 +338,8 @@ void TestEncodeResponses(int& failures) {
   const json report_targets = json::parse(report_targets_json);
   Expect(report_targets.value("type", std::string{}) == "month",
          "EncodeReportTargetsResponse type mismatch.", failures);
-  Expect(report_targets.contains("items") && report_targets["items"].is_array() &&
+  Expect(report_targets.contains("items") &&
+             report_targets["items"].is_array() &&
              report_targets["items"].size() == 2U,
          "EncodeReportTargetsResponse items mismatch.", failures);
 
@@ -426,10 +433,10 @@ void TestEncodeResponses(int& failures) {
              ingest_sync_status["items"].is_array() &&
              ingest_sync_status["items"].size() == 1U,
          "EncodeIngestSyncStatusResponse items mismatch.", failures);
-  Expect(
-      ingest_sync_status["items"][0].value("txt_relative_path", std::string{}) ==
-          "2026/2026-03.txt",
-      "EncodeIngestSyncStatusResponse txt_relative_path mismatch.", failures);
+  Expect(ingest_sync_status["items"][0].value(
+             "txt_relative_path", std::string{}) == "2026/2026-03.txt",
+         "EncodeIngestSyncStatusResponse txt_relative_path mismatch.",
+         failures);
 }
 
 void TestEncodeTreeResponse(int& failures) {

@@ -93,8 +93,8 @@ auto TracerExchangeService::RunInspect(
       .input_root_path = kInputPath.parent_path(),
       .output_root_path = kInputPath.parent_path(),
       .current_input_path = kInputPath,
-      .current_output_path = kInputPath.parent_path() /
-                             (kInputPath.stem().string() + ".ttpkg"),
+      .current_output_path =
+          kInputPath.parent_path() / (kInputPath.stem().string() + ".ttpkg"),
   };
   auto [decrypt_result, package_bytes] = file_crypto::DecryptFileToBytes(
       kInputPath, request.passphrase, kPathContext,

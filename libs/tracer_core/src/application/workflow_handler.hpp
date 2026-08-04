@@ -18,14 +18,17 @@ class WorkflowHandler final : public IWorkflowHandler {
       pipeline::PipelineWorkflow::ProcessedDataLoaderPtr;
   using ProcessedDataStoragePtr =
       pipeline::PipelineWorkflow::ProcessedDataStoragePtr;
-  using TimeSheetRepositoryPtr =
-      pipeline::PipelineWorkflow::TimeSheetRepositoryPtr;
+  using TimeSheetWriteRepositoryPtr =
+      pipeline::PipelineWorkflow::TimeSheetWriteRepositoryPtr;
+  using IngestRuntimeRepositoryPtr =
+      pipeline::PipelineWorkflow::IngestRuntimeRepositoryPtr;
   using ValidationIssueReporterPtr =
       pipeline::PipelineWorkflow::ValidationIssueReporterPtr;
 
   WorkflowHandler(std::filesystem::path output_root_path,
                   ProcessedDataLoaderPtr processed_data_loader,
-                  TimeSheetRepositoryPtr time_sheet_repository,
+                  TimeSheetWriteRepositoryPtr time_sheet_write_repository,
+                  IngestRuntimeRepositoryPtr ingest_runtime_repository,
                   DatabaseHealthCheckerPtr database_health_checker,
                   ConverterConfigProviderPtr converter_config_provider,
                   IngestInputProviderPtr ingest_input_provider,
@@ -41,8 +44,7 @@ class WorkflowHandler final : public IWorkflowHandler {
       const std::map<std::string, std::vector<DailyLog>>& data_map)
       -> void override;
   auto RunIngest(const std::string& source_path, DateCheckMode date_check_mode,
-                 bool save_processed, IngestMode ingest_mode)
-      -> void override;
+                 bool save_processed, IngestMode ingest_mode) -> void override;
   auto RunIngestSyncStatusQuery(
       const tracer_core::core::dto::IngestSyncStatusRequest& request)
       -> tracer_core::core::dto::IngestSyncStatusOutput override;
@@ -57,8 +59,10 @@ class WorkflowHandler final : public IWorkflowHandler {
       const tracer_core::core::dto::RecordActivityAtomicallyRequest& request)
       -> tracer_core::core::dto::RecordActivityAtomicallyResponse override;
   auto RunUpdateActivityRemarkAtomically(
-      const tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest& request)
-      -> tracer_core::core::dto::UpdateActivityRemarkAtomicallyResponse override;
+      const tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest&
+          request)
+      -> tracer_core::core::dto::UpdateActivityRemarkAtomicallyResponse
+      override;
   auto RunUpdateDayRemarkAtomically(
       const tracer_core::core::dto::UpdateDayRemarkAtomicallyRequest& request)
       -> tracer_core::core::dto::UpdateDayRemarkAtomicallyResponse override;
@@ -75,10 +79,13 @@ class WorkflowHandler final : public IWorkflowHandler {
       const tracer_core::core::dto::ConvertTxtActivityNamesRequest& request)
       -> tracer_core::core::dto::ConvertTxtActivityNamesResponse override;
   auto RunReplaceTxtCanonicalActivityNames(
-      const tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest& request)
-      -> tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse override;
+      const tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest&
+          request)
+      -> tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse
+      override;
   auto RunReplaceTxtAliasActivityNames(
-      const tracer_core::core::dto::ReplaceTxtAliasActivityNamesRequest& request)
+      const tracer_core::core::dto::ReplaceTxtAliasActivityNamesRequest&
+          request)
       -> tracer_core::core::dto::ReplaceTxtAliasActivityNamesResponse override;
   auto InstallActiveConverterConfig(
       const pipeline::ActiveConverterConfigInstallRequest& request)

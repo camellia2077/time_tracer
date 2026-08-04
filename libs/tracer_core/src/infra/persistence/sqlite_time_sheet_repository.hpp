@@ -2,16 +2,14 @@
 #ifndef INFRASTRUCTURE_PERSISTENCE_SQLITE_TIME_SHEET_REPOSITORY_H_
 #define INFRASTRUCTURE_PERSISTENCE_SQLITE_TIME_SHEET_REPOSITORY_H_
 
-#include <optional>
 #include <string>
-#include <string_view>
 
-#include "application/ports/pipeline/i_time_sheet_repository.hpp"
+#include "application/ports/pipeline/i_time_sheet_write_repository.hpp"
 #include "infra/persistence/importer/repository.hpp"
 
 namespace tracer::core::infrastructure::persistence {
 class SqliteTimeSheetRepository final
-    : public tracer_core::application::ports::ITimeSheetRepository {
+    : public tracer_core::application::ports::ITimeSheetWriteRepository {
  public:
   explicit SqliteTimeSheetRepository(const std::string& db_path);
 
@@ -32,12 +30,6 @@ class SqliteTimeSheetRepository final
       const std::vector<tracer_core::core::dto::IngestSyncStatusEntry>& entries)
       -> void override;
   auto ClearIngestSyncStatus() -> void override;
-  [[nodiscard]] auto ListIngestSyncStatuses(
-      const tracer_core::core::dto::IngestSyncStatusRequest& request) const
-      -> tracer_core::core::dto::IngestSyncStatusOutput override;
-  [[nodiscard]] auto TryGetLatestActivityTailBeforeDate(std::string_view date)
-      const -> std::optional<
-          tracer_core::application::ports::PreviousActivityTail> override;
 
  private:
   importer::Repository repository_;

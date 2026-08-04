@@ -49,7 +49,7 @@ auto WorkflowHandler::RunIngest(const std::string& source_path,
 
     const auto kPreviousTail = ResolvePreviousTailForReplaceMonth(
         context, *kTargetMonth, context.result.processed_data,
-        *time_sheet_repository_);
+        *ingest_runtime_repository_);
     if (kPreviousTail.has_value()) {
       LogLinker linker(context.state.converter_config);
       linker.LinkFirstDayWithExternalPreviousEvent(

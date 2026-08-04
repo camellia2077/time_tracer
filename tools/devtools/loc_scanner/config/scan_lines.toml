@@ -1,6 +1,177 @@
 # over_inclusive = true：判定逻辑为 大于等于 >=
 # over_inclusive = false：判定逻辑为 严格大于 >
 
+[test_classification]
+# 组件根目录内，命中以下目录名的代码文件会单独归入 tests 类别。
+directory_names = ["test", "tests", "androidTest", "testFixtures"]
+# 数字越小优先级越高；tests 默认放到最低优先级。
+priority = 3
+
+[components.tracer_core]
+display_name = "libs/tracer_core"
+root = "libs/tracer_core"
+category = "libs"
+priority = 0
+
+[components.tracer_adapters_io]
+display_name = "libs/tracer_adapters_io"
+root = "libs/tracer_adapters_io"
+category = "libs"
+priority = 1
+
+[components.tracer_core_bridge_common]
+display_name = "libs/tracer_core_bridge_common"
+root = "libs/tracer_core_bridge_common"
+category = "libs"
+priority = 1
+
+[components.tracer_transport]
+display_name = "libs/tracer_transport"
+root = "libs/tracer_transport"
+category = "libs"
+priority = 1
+
+[components.tracer_core_shell]
+display_name = "apps/tracer_core_shell"
+root = "apps/tracer_core_shell"
+category = "presentation"
+priority = 2
+
+[components.android]
+display_name = "apps/android"
+root = "apps/android"
+category = "presentation"
+priority = 2
+
+[components.windows_cli]
+display_name = "apps/cli"
+root = "apps/cli"
+category = "presentation"
+priority = 2
+
+[components.server]
+display_name = "apps/server"
+root = "apps/server"
+category = "presentation"
+priority = 2
+
+[components.shared_tests]
+display_name = "test"
+root = "test"
+category = "tests"
+priority = 3
+
+[components.tool_tests]
+display_name = "tools/tests"
+root = "tools/tests"
+category = "tests"
+priority = 3
+
+[components.loc_scanner]
+display_name = "tools/devtools/loc_scanner"
+root = "tools/devtools/loc_scanner"
+category = "tools"
+priority = 2
+
+[components.tidy_workflow]
+display_name = "tools/toolchain/commands/tidy"
+root = "tools/toolchain/commands/tidy"
+category = "tools"
+priority = 2
+test_roots = [
+  "tools/tests/platform/tidy",
+]
+
+[components.clang_adapters]
+display_name = "tools/toolchain/commands/clang"
+root = "tools/toolchain/commands/clang"
+category = "tools"
+priority = 2
+
+[components.toolchain_glue]
+display_name = "tools/toolchain glue"
+root = "tools/toolchain"
+category = "tools"
+priority = 3
+exclude_roots = [
+  "tools/toolchain/commands/tidy",
+  "tools/toolchain/commands/clang",
+]
+
+[profiles.core_family]
+display_name = "Core Family"
+components = [
+  "tracer_core",
+  "tracer_adapters_io",
+  "tracer_core_bridge_common",
+  "tracer_transport",
+]
+
+[profiles.presentation]
+display_name = "Presentation"
+components = [
+  "tracer_core_shell",
+  "android",
+  "windows_cli",
+  "server",
+]
+
+[profiles.android]
+display_name = "Android"
+components = ["android"]
+
+[profiles.windows_cli]
+display_name = "Windows CLI"
+components = ["windows_cli"]
+languages = ["rs"]
+
+[profiles.tests]
+display_name = "Tests"
+components = [
+  "shared_tests",
+  "tool_tests",
+]
+
+[profiles.loc_scanner]
+display_name = "LOC Scanner"
+components = ["loc_scanner"]
+languages = ["py"]
+
+[profiles.python_tooling]
+display_name = "Python Tooling"
+components = [
+  "shared_tests",
+  "tool_tests",
+  "tidy_workflow",
+  "clang_adapters",
+  "toolchain_glue",
+  "loc_scanner",
+]
+languages = ["py"]
+
+[profiles.tidy]
+display_name = "Clang-Tidy Python Tooling"
+components = [
+  "tidy_workflow",
+  "clang_adapters",
+]
+languages = ["py"]
+
+[profiles.workspace]
+display_name = "Core Family + Presentation"
+components = [
+  "tracer_core",
+  "tracer_adapters_io",
+  "tracer_core_bridge_common",
+  "tracer_transport",
+  "tracer_core_shell",
+  "android",
+  "windows_cli",
+  "server",
+  "shared_tests",
+  "tool_tests",
+]
+
 [cpp]
 display_name = "C++"
 default_paths = ["apps", "libs"]
@@ -43,7 +214,7 @@ ignore_dirs = [
   ".tox",
 ]
 ignore_prefixes = [".", "site-packages"]
-default_over_threshold = 150
+default_over_threshold = 200
 default_under_threshold = 120
 default_dir_over_files = 10
 over_inclusive = true

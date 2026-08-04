@@ -16,6 +16,7 @@ target_sources(ttr_lib PUBLIC
     FILE_SET transport_modules TYPE CXX_MODULES FILES
         src/modules/tracer.transport.errors.cppm
         src/modules/tracer.transport.fields.cppm
+        src/modules/tracer.transport.runtime.cppm
         src/modules/tracer.transport.cppm
 )
 set_target_properties(ttr_lib PROPERTIES

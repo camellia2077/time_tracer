@@ -7,16 +7,13 @@ normalize_ext = [".md"]
 # Granular task splitting limits to prevent AI agent overload
 max_lines = 150
 max_diags = 12
-# Store tasks by folder batches to reduce agent context scope.
-batch_size = 10
 # Full tidy parallelism.
 # 0 = auto-throttled bounded fan-out, not unbounded Ninja `-j`.
 jobs_full = 0
-# Task/batch helper parallelism (tidy-fix, module prebuild, batch refresh helpers).
+# Task helper parallelism (tidy-fix, module prebuild, focused re-check helpers).
 # 0 = auto-throttled bounded fan-out tuned separately from full tidy.
-jobs_task_batch = 0
+jobs_task = 0
 # Log parser worker count (0 = auto).
-parse_workers = 0
 # User preference: keep going through as many tidy checks as possible.
 # This maps to Ninja `-k 0` behind `cmake --build`.
 keep_going = true
@@ -59,6 +56,7 @@ safe_refactor = [
   "performance-for-range-copy",
   "modernize-pass-by-value",
   "readability-identifier-naming",
+  "bugprone-narrowing-conversions",
 ]
 nolint_allowed = [
   "readability-function-cognitive-complexity",

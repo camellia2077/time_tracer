@@ -75,8 +75,7 @@ auto Statement::PrepareStatements() -> void {
       schema::time_records::db::kEndTimestamp, schema::time_records::db::kDate,
       schema::time_records::db::kStart, schema::time_records::db::kEnd,
       schema::time_records::db::kRecordKind,
-      schema::time_records::db::kProjectId,
-      schema::time_records::db::kDuration,
+      schema::time_records::db::kProjectId, schema::time_records::db::kDuration,
       schema::time_records::db::kProjectPathSnapshot,
       schema::time_records::db::kActivityRemark);
   if (sqlite3_prepare_v2(db_, kInsertRecordSql.c_str(), -1,

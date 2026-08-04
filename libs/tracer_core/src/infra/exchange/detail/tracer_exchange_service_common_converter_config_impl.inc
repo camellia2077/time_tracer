@@ -10,11 +10,10 @@ auto ResolveActiveConverterConfigPaths(
   const fs::path alias_directory_path =
       main_config_path.parent_path() / "activity_hierarchy";
   const fs::path config_root = main_config_path.parent_path().parent_path();
-  const auto alias_definition =
-      tracer::core::infrastructure::config::loader::detail::
-          LoadAliasMappingDefinition(
-              alias_directory_path,
-              tracer::core::infrastructure::config::loader::ReadToml);
+  const auto alias_definition = tracer::core::infrastructure::config::loader::
+      detail::LoadAliasMappingDefinition(
+          alias_directory_path,
+          tracer::core::infrastructure::config::loader::ReadToml);
 
   ActiveConverterConfigPaths paths{
       .config_root_path = config_root,
@@ -48,11 +47,11 @@ auto BackupActiveConverterConfig(const ActiveConverterConfigPaths& active_paths,
       active_paths.main_config_path,
       BuildBackupPath(backup_root, "config/user/behavior.toml"));
   for (const auto& child_path : active_paths.alias_child_paths) {
-    const fs::path relative_path =
-        fs::relative(child_path, active_paths.alias_directory_path.parent_path());
-    CopyFileWithOverwrite(child_path,
-                          BuildBackupPath(backup_root,
-                                          (fs::path("config") / relative_path)
-                                              .generic_string()));
+    const fs::path relative_path = fs::relative(
+        child_path, active_paths.alias_directory_path.parent_path());
+    CopyFileWithOverwrite(
+        child_path,
+        BuildBackupPath(backup_root,
+                        (fs::path("config") / relative_path).generic_string()));
   }
 }

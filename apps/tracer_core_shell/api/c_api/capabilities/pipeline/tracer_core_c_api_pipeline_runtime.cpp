@@ -5,7 +5,8 @@ import tracer.core.application.use_cases.interface;
 #include "api/c_api/tracer_core_c_api.h"
 #include "api/c_api/runtime/tracer_core_c_api_internal.hpp"
 #include "application/dto/pipeline_requests.hpp"
-#include "tracer/transport/runtime_codec.hpp"
+#include "tracer/transport/runtime_codec_ingest.hpp"
+#include "tracer/transport/runtime_codec_workflow.hpp"
 
 namespace tt_transport = tracer::transport;
 using tracer::core::application::use_cases::IPipelineApi;

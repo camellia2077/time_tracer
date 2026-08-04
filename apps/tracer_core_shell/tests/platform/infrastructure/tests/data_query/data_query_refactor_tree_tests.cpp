@@ -160,7 +160,13 @@ auto TestAdapterBoundaryGuardrails(int& failures) -> void {
       },
       {
           "libs/tracer_core/src/infra/query/data/repository/"
-          "query_runtime_service_report_mapping.cpp",
+          "query_runtime_service_mapping_content.cpp",
+          {"std::sqrt(", "nearest-rank",
+           "variance_seconds =", "stddev_seconds ="},
+      },
+      {
+          "libs/tracer_core/src/infra/query/data/repository/"
+          "query_runtime_service_report_content.cpp",
           {"std::sqrt(", "nearest-rank",
            "variance_seconds =", "stddev_seconds ="},
       },

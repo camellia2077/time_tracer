@@ -4,7 +4,7 @@
 #include <string>
 #include <string_view>
 
-#include "tracer/transport/runtime_codec.hpp"
+#include "tracer/transport/envelope.hpp"
 
 namespace tracer_core_bridge_common::jni {
 

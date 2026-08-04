@@ -100,8 +100,7 @@ void MonthTypFormatter::FormatHeaderContent(
     report_stream += "\n";
     report_stream += BuildBulletLine(
         config_->GetActivityCountLabel(),
-        FormatCountWithAverage(data.matched_record_count,
-                               data.requested_days));
+        FormatCountWithAverage(data.matched_record_count, data.requested_days));
     report_stream += "\n";
     report_stream +=
         BuildBulletLine(FormatBooleanCountLabel(config_->GetStatusDaysLabel(),

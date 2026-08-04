@@ -27,6 +27,7 @@ set(TIME_TRACKER_INFRA_REPORTING_SOURCES
     ${TIME_TRACKER_INFRA_REPORTING_DATA_QUERYING_SOURCES}
     "reporting/facade/android_static_report_formatter_registrar.cpp"
     "reporting/facade/android_static_report_formatter_registrar_support.cpp"
+    "reporting/facade/android_static_report_formatter_registrar_builders.cpp"
     "reporting/facade/report_formatter_registry_adapter.cpp"
     "reporting/daily/formatters/markdown/day_md_formatter_core.cpp"
     "reporting/monthly/formatters/markdown/month_md_formatter_core.cpp"

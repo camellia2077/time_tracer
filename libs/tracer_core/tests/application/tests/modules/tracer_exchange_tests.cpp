@@ -27,8 +27,8 @@ auto TestBuildExportContentDelegatesToExchangeService(TestState& state)
       .producer_app = "time_tracer_cli",
   };
 
-  const auto result = runtime_api.tracer_exchange()
-                          .BuildTracerExchangeExportContent(request);
+  const auto result =
+      runtime_api.tracer_exchange().BuildTracerExchangeExportContent(request);
   Expect(state, result.ok,
          "BuildTracerExchangeExportContent should return the service result.");
   Expect(state, tracer_exchange->content_call_count == 1,
@@ -53,8 +53,7 @@ auto TestExportDelegatesToExchangeService(TestState& state) -> void {
   const tracer_core::core::dto::TracerExchangeExportRequest request{
       .input_text_root_path = "input",
       .requested_output_path = "out/export.tracer",
-      .active_converter_main_config_path =
-          "config/user/behavior.toml",
+      .active_converter_main_config_path = "config/user/behavior.toml",
       .passphrase = "secret",
       .producer_platform = "windows",
       .producer_app = "time_tracer_cli",
@@ -70,13 +69,15 @@ auto TestExportDelegatesToExchangeService(TestState& state) -> void {
          tracer_exchange->last_export_request.requested_output_path ==
              request.requested_output_path,
          "RunTracerExchangeExport should forward requested_output_path.");
-  Expect(state,
-         tracer_exchange->last_export_request.protection.compression ==
-             tracer_core::core::dto::TracerExchangeCompressionMode::kExisting &&
-             tracer_exchange->last_export_request.protection.encryption ==
-                 tracer_core::core::dto::TracerExchangeEncryptionMode::kExisting,
-         "Existing exchange export behavior should remain the default "
-         "protection strategy.");
+  Expect(
+      state,
+      tracer_exchange->last_export_request.protection.compression ==
+              tracer_core::core::dto::TracerExchangeCompressionMode::
+                  kExisting &&
+          tracer_exchange->last_export_request.protection.encryption ==
+              tracer_core::core::dto::TracerExchangeEncryptionMode::kExisting,
+      "Existing exchange export behavior should remain the default "
+      "protection strategy.");
 }
 
 auto TestEncodeExportContentDelegatesToExchangeService(TestState& state)
@@ -91,8 +92,8 @@ auto TestEncodeExportContentDelegatesToExchangeService(TestState& state)
 
   tracer_core::core::dto::TracerExchangeExportContent content{};
   content.manifest.source_root_name = "data";
-  const auto result = runtime_api.tracer_exchange()
-                          .EncodeTracerExchangeExportContent(content);
+  const auto result =
+      runtime_api.tracer_exchange().EncodeTracerExchangeExportContent(content);
   Expect(state, result.ok,
          "EncodeTracerExchangeExportContent should return the service result.");
   Expect(state, tracer_exchange->encoding_call_count == 1,
@@ -118,8 +119,7 @@ auto TestImportFailureIsWrapped(TestState& state) -> void {
   const auto result = runtime_api.tracer_exchange().RunTracerExchangeImport(
       {.input_tracer_path = "sample.tracer",
        .active_text_root_path = "runtime/input",
-       .active_converter_main_config_path =
-           "config/user/behavior.toml",
+       .active_converter_main_config_path = "config/user/behavior.toml",
        .runtime_work_root = "runtime/work",
        .passphrase = "secret"});
   Expect(state, !result.ok,

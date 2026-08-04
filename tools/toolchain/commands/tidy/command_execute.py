@@ -1,14 +1,20 @@
 import time
 
-from . import analysis_compile_db
+from ...core.context import Context
+from ...core.executor import kill_build_processes
+from ..clang.tidy import compile_db as analysis_compile_db
+from .scan import (
+    invoker as tidy_invoker,
+    structured_results as tidy_structured_results,
+    timing as tidy_timing,
+)
 
 
 def execute_tidy_command(
-    command,
+    ctx: Context,
     app_name: str,
     extra_args: list[str] | None = None,
     jobs: int | None = None,
-    parse_workers: int | None = None,
     concise: bool = False,
     profile_name: str | None = None,
     kill_build_procs: bool = False,
@@ -20,10 +26,14 @@ def execute_tidy_command(
     config_file: str | None = None,
     strict_config: bool = False,
 ) -> int:
-    paths = command._resolve_tidy_paths(app_name, build_dir_name=build_dir_name)
+    paths = tidy_invoker.resolve_tidy_paths(ctx, app_name, build_dir_name=build_dir_name)
     build_dir = paths["build_dir"]
     log_path = paths["log_path"]
     tasks_dir = paths["tasks_dir"]
+    structured_results_dir = paths.get(
+        "structured_results_dir",
+        build_dir / "structured_tidy_results",
+    )
     ninja_log_path = paths["ninja_log_path"]
     output_mode = "quiet" if concise else "live"
     overall_start = time.perf_counter()
@@ -32,12 +42,15 @@ def execute_tidy_command(
     parse_seconds = 0.0
     split_stats = None
 
-    if kill_build_procs:
-        from ...core.executor import kill_build_processes
+    structured_results_dir.mkdir(parents=True, exist_ok=True)
+    for result_path in structured_results_dir.glob("*.json"):
+        result_path.unlink()
 
+    if kill_build_procs:
         kill_build_processes()
 
-    ret, did_auto_configure, configure_seconds = command._ensure_configured(
+    ret, did_auto_configure, configure_seconds = tidy_invoker.ensure_configured(
+        ctx,
         app_name=app_name,
         build_dir=build_dir,
         source_scope=source_scope,
@@ -57,7 +70,8 @@ def execute_tidy_command(
         has_target_override,
         effective_jobs,
         effective_keep_going,
-    ) = command._resolve_build_options(
+    ) = tidy_invoker.resolve_build_options(
+        ctx,
         extra_args,
         jobs,
         keep_going,
@@ -66,7 +80,7 @@ def execute_tidy_command(
     resolved_prebuild_targets = [target for target in (prebuild_targets or []) if str(target).strip()]
     if resolved_prebuild_targets:
         prebuild_log_path = log_path
-        prebuild_cmd = command._build_module_prereq_command(
+        prebuild_cmd = tidy_invoker.build_module_prereq_command(
             build_dir,
             resolved_prebuild_targets,
             effective_jobs,
@@ -75,7 +89,8 @@ def execute_tidy_command(
             "--- Tidy module prebuild: "
             + ", ".join(resolved_prebuild_targets)
         )
-        prebuild_ret, _ = command._run_tidy_build(
+        prebuild_ret, _ = tidy_invoker.run_tidy_build(
+            ctx,
             prebuild_cmd,
             prebuild_log_path,
             output_mode=output_mode,
@@ -85,15 +100,12 @@ def execute_tidy_command(
             return prebuild_ret
 
     try:
-        compile_db_dir = command._ensure_analysis_compile_db(build_dir)
+        compile_db_dir = analysis_compile_db.ensure_analysis_compile_db(build_dir)
     except (FileNotFoundError, OSError, ValueError) as error:
         print(f"--- Failed to prepare analysis compile db: {error}")
         return 1
-    compile_units = analysis_compile_db.load_compile_units(
-        compile_db_dir / "compile_commands.json"
-    )
 
-    cmd = command._build_tidy_command(
+    cmd = tidy_invoker.build_tidy_command(
         app_name,
         build_dir,
         filtered_args,
@@ -101,32 +113,40 @@ def execute_tidy_command(
         effective_jobs,
         effective_keep_going,
     )
-    ret, build_seconds = command._run_tidy_build(
+    ret, build_seconds = tidy_invoker.run_tidy_build(
+        ctx,
         cmd,
         log_path,
         output_mode=output_mode,
     )
     if ret != 0:
-        print(f"--- Tidy build finished with code {ret}. Processing logs anyway...")
+        print(f"--- Tidy build finished with code {ret}.")
 
-    if log_path.exists():
+    structured_check_results = sorted(structured_results_dir.glob("check_*.json"))
+    if structured_check_results:
         try:
-            split_stats, parse_seconds = command._split_from_log(
-                log_path,
+            split_stats, parse_seconds = tidy_structured_results.collect_structured_results(
+                ctx,
+                structured_results_dir,
                 tasks_dir,
-                parse_workers=parse_workers,
                 task_view=task_view,
                 workspace_name=build_dir_name or "",
                 source_scope=source_scope,
-                compile_units=compile_units,
             )
-        except ValueError as error:
-            print(f"--- Tidy log split failed: {error}")
-            return 1
+            print(
+                f"--- Tidy structured results: {len(structured_check_results)} invocation(s)"
+            )
+        except (OSError, ValueError) as error:
+            print(f"--- Tidy structured result collection failed: {error}")
+            return ret if ret != 0 else 1
+    elif not structured_check_results:
+        print("--- Structured clang-tidy results are unavailable.")
+        print("--- Re-run tidy after restoring the structured clang-tidy wrapper.")
+        return ret if ret != 0 else 1
 
-    ninja_stats = command._read_ninja_timing(ninja_log_path)
+    ninja_stats = tidy_timing.read_ninja_timing(ninja_log_path)
     total_seconds = time.perf_counter() - overall_start
-    command._print_timing_summary(
+    tidy_timing.print_timing_summary(
         did_auto_configure=did_auto_configure,
         configure_seconds=configure_seconds,
         build_seconds=build_seconds,

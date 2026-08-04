@@ -36,25 +36,25 @@ constexpr size_t kTimeSecondLength = 2;
   }
 
   try {
-    const int start_hour = std::stoi(
+    const int kStartHour = std::stoi(
         std::string(start_hhmm.substr(kTimeHourOffset, kTimeHourLength)));
-    const int start_minute = std::stoi(
+    const int kStartMinute = std::stoi(
         std::string(start_hhmm.substr(kTimeMinuteOffset, kTimeMinuteLength)));
-    const int end_hour = std::stoi(
+    const int kEndHour = std::stoi(
         std::string(end_hhmm.substr(kTimeHourOffset, kTimeHourLength)));
-    const int end_minute = std::stoi(
+    const int kEndMinute = std::stoi(
         std::string(end_hhmm.substr(kTimeMinuteOffset, kTimeMinuteLength)));
-    const int start_second = std::stoi(
+    const int kStartSecond = std::stoi(
         std::string(start_hhmm.substr(kTimeSecondOffset, kTimeSecondLength)));
-    const int end_second = std::stoi(
+    const int kEndSecond = std::stoi(
         std::string(end_hhmm.substr(kTimeSecondOffset, kTimeSecondLength)));
-    const int start_total =
-        ((start_hour * kMinutesPerHour) + start_minute) * kSecondsPerMinute +
-        start_second;
-    const int end_total =
-        ((end_hour * kMinutesPerHour) + end_minute) * kSecondsPerMinute +
-        end_second;
-    if (start_total == end_total) {
+    const int kStartTotal =
+        ((kStartHour * kMinutesPerHour) + kStartMinute) * kSecondsPerMinute +
+        kStartSecond;
+    const int kEndTotal =
+        ((kEndHour * kMinutesPerHour) + kEndMinute) * kSecondsPerMinute +
+        kEndSecond;
+    if (kStartTotal == kEndTotal) {
       return false;
     }
     return true;
@@ -134,12 +134,12 @@ auto ActivityMapper::MapActivities(DailyLog& day) -> void {
   std::string mapped_description(description);
 
   // Canonical mapping stage:
-  // TXT stores alias keys (raw activity tokens). During full-text conversion/ingest we map
-  // alias key -> canonical value expanded from the fixed activity hierarchy
-  // TOML directory.
-  // Timing semantics are applied later: alias normalization decides only the
-  // canonical activity path, while time ranges and durations are derived from
-  // neighboring authored event timestamps in subsequent steps.
+  // TXT stores alias keys (raw activity tokens). During full-text
+  // conversion/ingest we map alias key -> canonical value expanded from the
+  // fixed activity hierarchy TOML directory. Timing semantics are applied
+  // later: alias normalization decides only the canonical activity path, while
+  // time ranges and durations are derived from neighboring authored event
+  // timestamps in subsequent steps.
   auto map_it = config_.text_mapping.find(mapped_description);
   if (map_it != config_.text_mapping.end()) {
     mapped_description = map_it->second;
@@ -191,9 +191,9 @@ auto ActivityMapper::AppendActivity(
       time_range.start_hhmm.empty()
           ? BaseActivityRecord::MakeEndOnly(std::string(time_range.end_hhmm),
                                             kProjectPath)
-          : BaseActivityRecord::MakeInterval(
-                std::string(time_range.start_hhmm),
-                std::string(time_range.end_hhmm), kProjectPath);
+          : BaseActivityRecord::MakeInterval(std::string(time_range.start_hhmm),
+                                             std::string(time_range.end_hhmm),
+                                             kProjectPath);
   if (!raw_event.remark.empty()) {
     activity.remark = raw_event.remark;
   }

@@ -19,4 +19,4 @@ class RenameReasons:
     RENAME_FAILED = "rename_failed"
     OUT_OF_SCOPE_WORKSPACE_EDIT_BLOCKED = "out_of_scope_workspace_edit_blocked"
     RENAME_CROSSES_FILE_BOUNDARY = "rename_crosses_file_boundary"
-    SUPPORTED_RULE_DRIVEN_CONST_RENAME = "supported_rule_driven_const_rename"
+    SUPPORTED_RULE_DRIVEN_SEMANTIC_RENAME = "supported_rule_driven_semantic_rename"

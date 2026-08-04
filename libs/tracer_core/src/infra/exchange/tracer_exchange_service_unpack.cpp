@@ -12,16 +12,17 @@ using exchange_pkg::DecodePackageBytes;
 
 auto EnsureUnpackOutputRootReady(const fs::path& output_root) -> void {
   if (output_root.empty()) {
-    throw std::invalid_argument("requested_output_root_path must not be empty.");
+    throw std::invalid_argument(
+        "requested_output_root_path must not be empty.");
   }
   if (fs::exists(output_root)) {
     if (!fs::is_directory(output_root)) {
-      throw std::invalid_argument(
-          "Unpack output path must be a directory: " + output_root.string());
+      throw std::invalid_argument("Unpack output path must be a directory: " +
+                                  output_root.string());
     }
     if (fs::directory_iterator(output_root) != fs::directory_iterator()) {
-      throw std::invalid_argument(
-          "Unpack output directory must be empty: " + output_root.string());
+      throw std::invalid_argument("Unpack output directory must be empty: " +
+                                  output_root.string());
     }
     return;
   }
@@ -46,14 +47,15 @@ auto TracerExchangeService::RunUnpack(
     throw std::invalid_argument("Passphrase must not be empty.");
   }
   if (request.requested_output_root_path.empty()) {
-    throw std::invalid_argument("requested_output_root_path must not be empty.");
+    throw std::invalid_argument(
+        "requested_output_root_path must not be empty.");
   }
 
   const fs::path kInputPath = fs::absolute(request.input_tracer_path);
   const fs::path kOutputRoot = fs::absolute(request.requested_output_root_path);
   if (!fs::exists(kInputPath) || !fs::is_regular_file(kInputPath)) {
-    throw std::invalid_argument(
-        "Unpack input path must be an existing file: " + kInputPath.string());
+    throw std::invalid_argument("Unpack input path must be an existing file: " +
+                                kInputPath.string());
   }
   if (!HasExtensionCaseInsensitive(kInputPath, ".tracer")) {
     throw std::invalid_argument("Unpack input file must be .tracer: " +
@@ -83,8 +85,8 @@ auto TracerExchangeService::RunUnpack(
       .source_root_name = kPackage.manifest.source_root_name,
       .payload_file_count =
           static_cast<std::uint64_t>(kPackage.manifest.payload_files.size()),
-      .converter_file_count = static_cast<std::uint64_t>(
-          kPackage.manifest.config_files.size()),
+      .converter_file_count =
+          static_cast<std::uint64_t>(kPackage.manifest.config_files.size()),
       .manifest_included = true,
       .error_message = "",
   };

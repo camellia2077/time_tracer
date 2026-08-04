@@ -1,6 +1,6 @@
 import argparse
 
-from ....commands.tidy.fix import TidyFixCommand
+from ....commands.tidy.execution.fix import TidyFixCommand
 from ....core.context import Context
 from ...common import add_source_scope_arg, add_tidy_build_dir_arg, add_tidy_config_args
 from ...model import CommandSpec, ParserDefaults

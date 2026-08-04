@@ -8,7 +8,14 @@
 #include <vector>
 
 #include "nlohmann/json.hpp"
-#include "tracer/transport/runtime_codec.hpp"
+#include "tracer/transport/runtime_codec_capabilities.hpp"
+#include "tracer/transport/runtime_codec_export.hpp"
+#include "tracer/transport/runtime_codec_ingest.hpp"
+#include "tracer/transport/runtime_codec_query.hpp"
+#include "tracer/transport/runtime_codec_report.hpp"
+#include "tracer/transport/runtime_codec_runtime.hpp"
+#include "tracer/transport/runtime_codec_tree.hpp"
+#include "tracer/transport/runtime_codec_workflow.hpp"
 
 namespace tracer_transport_runtime_codec_tests {
 
@@ -22,15 +29,15 @@ using tracer::transport::DecodeIngestRequest;
 using tracer::transport::DecodeIngestSyncStatusRequest;
 using tracer::transport::DecodeQueryRequest;
 using tracer::transport::DecodeRecordActivityAtomicallyRequest;
-using tracer::transport::DecodeUpdateActivityRemarkAtomicallyRequest;
-using tracer::transport::DecodeUpdateDayRemarkAtomicallyRequest;
 using tracer::transport::DecodeReportBatchRequest;
-using tracer::transport::DecodeTemporalReportRequest;
 using tracer::transport::DecodeResolveCliContextResponse;
 using tracer::transport::DecodeRuntimeCheckResponse;
+using tracer::transport::DecodeTemporalReportRequest;
 using tracer::transport::DecodeTextResponse;
 using tracer::transport::DecodeTreeRequest;
 using tracer::transport::DecodeTreeResponse;
+using tracer::transport::DecodeUpdateActivityRemarkAtomicallyRequest;
+using tracer::transport::DecodeUpdateDayRemarkAtomicallyRequest;
 using tracer::transport::DecodeValidateLogicRequest;
 using tracer::transport::DecodeValidateStructureRequest;
 using tracer::transport::EncodeCapabilitiesResponse;
@@ -44,14 +51,14 @@ using tracer::transport::EncodeIngestSyncStatusResponse;
 using tracer::transport::EncodeQueryRequest;
 using tracer::transport::EncodeQueryResponse;
 using tracer::transport::EncodeRecordActivityAtomicallyRequest;
-using tracer::transport::EncodeUpdateActivityRemarkAtomicallyRequest;
 using tracer::transport::EncodeReportBatchRequest;
 using tracer::transport::EncodeReportBatchResponse;
 using tracer::transport::EncodeReportResponse;
-using tracer::transport::EncodeTemporalReportRequest;
 using tracer::transport::EncodeReportTargetsResponse;
+using tracer::transport::EncodeTemporalReportRequest;
 using tracer::transport::EncodeTreeRequest;
 using tracer::transport::EncodeTreeResponse;
+using tracer::transport::EncodeUpdateActivityRemarkAtomicallyRequest;
 using tracer::transport::EncodeValidateLogicRequest;
 using tracer::transport::EncodeValidateStructureRequest;
 using tracer::transport::ErrorContractPayload;
@@ -66,15 +73,15 @@ using tracer::transport::ProjectTreeNodePayload;
 using tracer::transport::QueryRequestPayload;
 using tracer::transport::QueryResponsePayload;
 using tracer::transport::RecordActivityAtomicallyRequestPayload;
-using tracer::transport::UpdateActivityRemarkAtomicallyRequestPayload;
-using tracer::transport::UpdateDayRemarkAtomicallyRequestPayload;
 using tracer::transport::ReportBatchRequestPayload;
 using tracer::transport::ReportBatchResponsePayload;
 using tracer::transport::ReportResponsePayload;
-using tracer::transport::TemporalReportRequestPayload;
 using tracer::transport::ReportTargetsResponsePayload;
+using tracer::transport::TemporalReportRequestPayload;
 using tracer::transport::TreeRequestPayload;
 using tracer::transport::TreeResponsePayload;
+using tracer::transport::UpdateActivityRemarkAtomicallyRequestPayload;
+using tracer::transport::UpdateDayRemarkAtomicallyRequestPayload;
 using tracer::transport::ValidateLogicRequestPayload;
 using tracer::transport::ValidateStructureRequestPayload;
 

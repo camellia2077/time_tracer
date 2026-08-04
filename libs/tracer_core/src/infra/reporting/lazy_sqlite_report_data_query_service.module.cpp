@@ -33,8 +33,7 @@ auto WithStructuredReportService(
     const std::filesystem::path& db_path,
     const std::shared_ptr<tracer_core::application::ports::IPlatformClock>&
         platform_clock,
-    Callback&& callback,
-    const DailyStatusConfig* status_config = nullptr) {
+    Callback&& callback, const DailyStatusConfig* status_config = nullptr) {
   DBManager db_manager(db_path.string());
   SqliteReportDataQueryService report_service(
       EnsureReadableDbConnection(db_path, db_manager), platform_clock,

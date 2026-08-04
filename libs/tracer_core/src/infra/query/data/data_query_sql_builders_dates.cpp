@@ -81,7 +81,7 @@ auto BuildDayDurationsSql(sqlite3* db_conn, const QueryFilters& filters,
   sql += ") AS ";
   sql += schema::sql::alias::kTotalDuration;
   sql += ", COUNT(tr.";
-  sql += schema::time_records::db::kLogicalId;
+  sql += schema::time_records::db::kDate;
   sql += ") AS record_count";
   sql += " FROM ";
   sql += schema::day::db::kTable;
@@ -150,7 +150,7 @@ auto BuildDayDurationsByRootInDateRangeSql(
   sql += "), 0) AS ";
   sql += schema::sql::alias::kTotalDuration;
   sql += ", COUNT(tr.";
-  sql += schema::time_records::db::kLogicalId;
+  sql += schema::time_records::db::kDate;
   sql += ") AS record_count";
   sql += " FROM ";
   sql += schema::day::db::kTable;

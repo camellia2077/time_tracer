@@ -63,8 +63,7 @@ auto BuildActivityLine(const TimeRecord& record,
     output += "+ *";
     output += config->GetActivityRemarkLabel();
     output += ":*\n    ";
-    output +=
-        FormatMultilineForList(record.activityRemark.value(), 4, " \\");
+    output += FormatMultilineForList(record.activityRemark.value(), 4, " \\");
   }
 
   return output;
@@ -92,8 +91,8 @@ void DisplayHeader(std::string& report_stream, const DailyReportData& data,
                                    std::to_string(data.activity_count));
   report_stream += "\n";
   for (const auto& status : data.metadata.statuses) {
-    report_stream += BuildBulletLine(status.label,
-                                     status.value ? "true" : "false");
+    report_stream +=
+        BuildBulletLine(status.label, status.value ? "true" : "false");
     report_stream += "\n";
   }
   report_stream +=

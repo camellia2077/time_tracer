@@ -142,7 +142,8 @@ auto FakePipelineWorkflow::RunReplaceTxtDayBlock(
 }
 
 auto FakePipelineWorkflow::RunUpdateActivityRemarkAtomically(
-    const tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest& request)
+    const tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest&
+        request)
     -> tracer_core::core::dto::UpdateActivityRemarkAtomicallyResponse {
   ++update_activity_remark_atomically_call_count;
   last_update_activity_remark_request = request;
@@ -167,13 +168,13 @@ auto FakePipelineWorkflow::RunConvertTxtActivityNames(
   if (fail_convert_txt_activity_names) {
     throw std::runtime_error("convert txt activity names failed");
   }
-  return {.ok = true,
-          .converted_content = request.content,
-          .error_message = ""};
+  return {
+      .ok = true, .converted_content = request.content, .error_message = ""};
 }
 
 auto FakePipelineWorkflow::RunReplaceTxtCanonicalActivityNames(
-    const tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest& request)
+    const tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest&
+        request)
     -> tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse {
   ++replace_txt_canonical_activity_names_call_count;
   last_replace_txt_canonical_activity_names_request = request;
@@ -225,7 +226,8 @@ auto FakeReportHandler::RunPeriodQuery(int /*days*/, ReportFormat /*format*/)
 auto FakeReportHandler::RunWeeklyQuery(std::string_view /*iso_week*/,
                                        ReportFormat /*format*/) -> std::string {
   if (fail_target_not_found) {
-    throw tracer_core::common::ReportTargetNotFoundError("week", "missing-week");
+    throw tracer_core::common::ReportTargetNotFoundError("week",
+                                                         "missing-week");
   }
   if (fail_query) {
     throw std::runtime_error("weekly query failed");
@@ -236,7 +238,8 @@ auto FakeReportHandler::RunWeeklyQuery(std::string_view /*iso_week*/,
 auto FakeReportHandler::RunYearlyQuery(std::string_view /*year*/,
                                        ReportFormat /*format*/) -> std::string {
   if (fail_target_not_found) {
-    throw tracer_core::common::ReportTargetNotFoundError("year", "missing-year");
+    throw tracer_core::common::ReportTargetNotFoundError("year",
+                                                         "missing-year");
   }
   if (fail_query) {
     throw std::runtime_error("yearly query failed");
@@ -308,7 +311,8 @@ auto FakeReportDataQueryService::QueryYearly(std::string_view year)
   return report;
 }
 
-auto FakeReportDataQueryService::ListDailyTargets() -> std::vector<std::string> {
+auto FakeReportDataQueryService::ListDailyTargets()
+    -> std::vector<std::string> {
   if (fail_list_targets) {
     throw std::runtime_error("daily target listing failed");
   }
@@ -478,8 +482,8 @@ auto BuildRuntimeApi(
     const std::shared_ptr<FakeProjectRepository>& repository,
     const std::shared_ptr<FakeDataQueryService>& data_query,
     const std::shared_ptr<FakeTracerExchangeService>& tracer_exchange_service,
-    const std::shared_ptr<FakeReportDataQueryService>& report_data_query_service)
-    -> TracerCoreRuntime {
+    const std::shared_ptr<FakeReportDataQueryService>&
+        report_data_query_service) -> TracerCoreRuntime {
   auto pipeline_api = std::make_shared<PipelineApi>(pipeline_workflow);
   auto query_api = std::make_shared<QueryApi>(repository, data_query);
   auto report_formatter = std::make_shared<FakeReportDtoFormatter>();

@@ -33,7 +33,8 @@ inline auto BuildProjectTreeFromRecords(
 
     for (size_t index = 1; index < kParts.size(); ++index) {
       current_node->children[kParts[index]].duration += duration;
-      current_node->children[kParts[index]].occurrence_count += occurrence_count;
+      current_node->children[kParts[index]].occurrence_count +=
+          occurrence_count;
       current_node = &current_node->children[kParts[index]];
     }
   }

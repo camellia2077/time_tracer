@@ -14,6 +14,7 @@ set(TIME_TRACKER_INFRA_PERSISTENCE_WRITE_SOURCES
 
 set(TIME_TRACKER_INFRA_PERSISTENCE_RUNTIME_SOURCES
     "persistence/repositories/sqlite_project_repository.module.cpp"
+    "persistence/repositories/sqlite_ingest_runtime_repository.module.cpp"
     "persistence/sqlite_database_health_checker.module.cpp"
 )
 
@@ -37,6 +38,7 @@ set(TIME_TRACKER_INFRA_PERSISTENCE_WRITE_MODULE_FILES
 set(TIME_TRACKER_INFRA_PERSISTENCE_RUNTIME_MODULE_FILES
     "persistence/runtime/tracer.core.infrastructure.persistence.runtime.cppm"
     "persistence/runtime/rt_project_repo.cppm"
+    "persistence/runtime/rt_ingest_repo.cppm"
     "persistence/runtime/rt_db_health.cppm"
 )
 

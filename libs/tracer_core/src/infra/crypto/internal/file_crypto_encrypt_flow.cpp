@@ -29,7 +29,7 @@ auto EncryptBytesInternal(std::span<const std::uint8_t> plaintext_bytes,
     return {kInitResult, {}};
   }
   const std::vector<std::uint8_t> kPlaintext(plaintext_bytes.begin(),
-                                            plaintext_bytes.end());
+                                             plaintext_bytes.end());
 
   if (reporter != nullptr) {
     if (const auto kPhaseResult =
@@ -97,10 +97,10 @@ auto EncryptBytesInternal(std::span<const std::uint8_t> plaintext_bytes,
 
   std::vector<std::uint8_t> ciphertext(
       compressed_plaintext.size() + crypto_aead_xchacha20poly1305_ietf_ABYTES);
-  unsigned long long ciphertext_size = 0;
+  std::uint64_t ciphertext_size = 0;
   if (crypto_aead_xchacha20poly1305_ietf_encrypt(
           ciphertext.data(), &ciphertext_size, compressed_plaintext.data(),
-          static_cast<unsigned long long>(compressed_plaintext.size()), nullptr,
+          static_cast<std::uint64_t>(compressed_plaintext.size()), nullptr,
           0, nullptr, header.nonce.data(), key.data()) != 0) {
     sodium_memzero(key.data(), key.size());
     return {MakeError(FileCryptoError::kCryptoOperationFailed,
@@ -146,9 +146,8 @@ auto EncryptFileInternal(const fs::path& input_txt_path,
     return read_result;
   }
 
-  auto [encrypt_result, encrypted_bytes] =
-      EncryptBytesInternal(plaintext, passphrase, security_level, reporter,
-                           batch_session);
+  auto [encrypt_result, encrypted_bytes] = EncryptBytesInternal(
+      plaintext, passphrase, security_level, reporter, batch_session);
   if (!encrypt_result.ok()) {
     return encrypt_result;
   }

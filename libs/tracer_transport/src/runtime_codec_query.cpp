@@ -1,4 +1,4 @@
-#include "tracer/transport/runtime_codec.hpp"
+#include "tracer/transport/runtime_codec_query.hpp"
 
 #include <stdexcept>
 #include <string>

@@ -77,9 +77,8 @@ Connection::Connection(const std::string& db_path) {
                            nullptr) == SQLITE_OK) {
       while (sqlite3_step(columns_stmt) == SQLITE_ROW) {
         const auto* name = sqlite3_column_text(columns_stmt, 1);
-        if (name != nullptr &&
-            std::string_view(reinterpret_cast<const char*>(name)) ==
-                schema::day::db::kActivityCount) {
+        if (name != nullptr && std::string_view(reinterpret_cast<const char*>(
+                                   name)) == schema::day::db::kActivityCount) {
           has_activity_count = true;
           break;
         }
@@ -148,7 +147,8 @@ Connection::Connection(const std::string& db_path) {
         schema::time_records::db::kDate, schema::time_records::db::kStart,
         schema::time_records::db::kEnd, schema::time_records::db::kRecordKind,
         schema::time_records::db::kIntervalRecordKind,
-        schema::time_records::db::kProjectId, schema::time_records::db::kDuration,
+        schema::time_records::db::kProjectId,
+        schema::time_records::db::kDuration,
         schema::time_records::db::kProjectPathSnapshot,
         schema::time_records::db::kActivityRemark, schema::day::db::kTable,
         schema::day::db::kDate, schema::projects::db::kTable,
@@ -193,7 +193,8 @@ Connection::Connection(const std::string& db_path) {
         schema::ingest_month_sync::db::kTxtRelativePath,
         schema::ingest_month_sync::db::kTxtContentHashSha256,
         schema::ingest_month_sync::db::kIngestedAtUnixMs);
-    ExecuteSql(db_, kCreateIngestMonthSyncSql, "Create ingest_month_sync table");
+    ExecuteSql(db_, kCreateIngestMonthSyncSql,
+               "Create ingest_month_sync table");
   }
 }
 

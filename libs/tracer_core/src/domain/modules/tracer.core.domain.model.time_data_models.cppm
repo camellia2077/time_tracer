@@ -12,8 +12,8 @@ export namespace tracer::core::domain::model {
 
 export namespace tracer::core::domain::modmodel {
 
-using tracer::core::domain::model::ActivityStats;
 using tracer::core::domain::model::ActivityRecordKind;
+using tracer::core::domain::model::ActivityStats;
 using tracer::core::domain::model::BaseActivityRecord;
 
 }  // namespace tracer::core::domain::modmodel

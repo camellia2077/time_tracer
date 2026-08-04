@@ -76,8 +76,7 @@ auto StringToTimeT(const std::string& datetime_str) -> std::int64_t {
         kSecond >= kSecondsPerMinute) {
       return std::nullopt;
     }
-    return ((kHour * kMinutesPerHour) + kMinute) * kSecondsPerMinute +
-           kSecond;
+    return ((kHour * kMinutesPerHour) + kMinute) * kSecondsPerMinute + kSecond;
   } catch (const std::exception&) {
     return std::nullopt;
   }
@@ -86,16 +85,16 @@ auto StringToTimeT(const std::string& datetime_str) -> std::int64_t {
 [[nodiscard]] auto CalculateDurationSeconds(const std::string& start_time_str,
                                             const std::string& end_time_str)
     -> int {
-  const auto start_seconds = ParseHhmmToSeconds(start_time_str);
-  const auto end_seconds = ParseHhmmToSeconds(end_time_str);
-  if (!start_seconds.has_value() || !end_seconds.has_value()) {
+  const auto kStartSeconds = ParseHhmmToSeconds(start_time_str);
+  const auto kEndSeconds = ParseHhmmToSeconds(end_time_str);
+  if (!kStartSeconds.has_value() || !kEndSeconds.has_value()) {
     return 0;
   }
-  int wrapped_end_seconds = *end_seconds;
-  if (wrapped_end_seconds < *start_seconds) {
+  int wrapped_end_seconds = *kEndSeconds;
+  if (wrapped_end_seconds < *kStartSeconds) {
     wrapped_end_seconds += kSecondsPerDay;
   }
-  return wrapped_end_seconds - *start_seconds;
+  return wrapped_end_seconds - *kStartSeconds;
 }
 
 [[nodiscard]] auto TimeStringToTimestamp(const std::string& date,

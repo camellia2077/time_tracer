@@ -43,7 +43,7 @@ class ProjectNameCache : public IProjectInfoProvider {
     const std::string kSql = std::format(
         "SELECT {0}, {1}, {2} FROM {3}", schema::projects::db::kId,
         schema::projects::db::kName, schema::projects::db::kParentId,
-      schema::projects::db::kTable);
+        schema::projects::db::kTable);
     sqlite3_stmt* stmt = nullptr;
     if (sqlite3_prepare_v2(sqlite_db, kSql.c_str(), -1, &stmt, nullptr) ==
         SQLITE_OK) {

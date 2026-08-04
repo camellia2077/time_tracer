@@ -47,9 +47,8 @@ namespace TypUtils {
 // NOLINTBEGIN(bugprone-easily-swappable-parameters)
 REPORTS_SHARED_API auto FormatProjectTree(
     const reporting::ProjectTree& tree, std::int64_t total_duration,
-    int avg_days,
-    const std::string& category_title_font, int category_title_font_size)
-    -> std::string;
+    int avg_days, const std::string& category_title_font,
+    int category_title_font_size) -> std::string;
 // NOLINTEND(bugprone-easily-swappable-parameters)
 
 }  // namespace TypUtils

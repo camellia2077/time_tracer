@@ -180,6 +180,7 @@ auto BuildSemanticActivitySuggestionsPayload(
   return payload.dump();
 }
 
+// NOLINTBEGIN(bugprone-easily-swappable-parameters)
 auto BuildSemanticTreePayload(const std::vector<ProjectTreeNode>& nodes,
                               int max_depth, int max_available_depth)
     -> std::string {
@@ -211,6 +212,7 @@ auto BuildSemanticTreePayload(const std::vector<ProjectTreeNode>& nodes,
   payload["root_count"] = roots.size();
   return payload.dump();
 }
+// NOLINTEND(bugprone-easily-swappable-parameters)
 
 auto BuildSemanticJsonObjectPayload(std::string_view action,
                                     std::string content) -> std::string {

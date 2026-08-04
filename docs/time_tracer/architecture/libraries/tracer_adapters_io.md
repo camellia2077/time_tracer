@@ -82,3 +82,26 @@ Detailed navigation for the IO adapter library used around the core runtime.
 2. [tracer_core](tracer_core.md)
 3. [Core JSON Boundary Design](../../core/architecture/core_json_boundary_design.md)
 4. [TXT Runtime JSON Contract](../../core/contracts/text/runtime_txt_day_block_json_contract_v1.md)
+
+## Refactoring Guidance
+
+`tracer_adapters_io` is an IO boundary. Keep filesystem collection,
+filesystem persistence, and adapter-side diagnostics translation here; keep
+meaning and business decisions in `tracer_core`.
+
+- Split large files by IO responsibility: discovery, reader, writer,
+  processed-data persistence, or file utilities.
+- `txt_ingest_input_provider` may collect canonical text inputs and construct
+  the core input collection. It must not decide TXT event meaning, timeline
+  validity, or business validation.
+- Processed-data JSON validation and serialization are adapter concerns. Do
+  not move runtime request/response envelopes here.
+- Preserve error distinctions for missing input, malformed input, IO failure,
+  and core processing failure.
+- If the change is about day-block parsing, replacement, or semantic rules,
+  route it to `tracer_core` instead of extracting it into the adapter.
+
+Before extraction, cover the behavior with adapter module tests or downstream
+host-flow tests. Validate with the requirements in
+`libs/tracer_adapters_io/AGENTS.md` and rerun the relevant core integration
+path when the input collection contract changes.

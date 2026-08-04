@@ -4,9 +4,9 @@ from types import SimpleNamespace
 from unittest import TestCase
 from unittest.mock import patch
 
-from tools.toolchain.commands.tidy.flow_internal.flow_prepare_phase import run_prepare_phase
-from tools.toolchain.commands.tidy.flow_internal.flow_state import new_state
-from tools.toolchain.commands.tidy.refresh_internal.refresh_runner import run_full_tidy
+from tools.toolchain.commands.tidy.execution.flow_internal.flow_prepare_phase import run_prepare_phase
+from tools.toolchain.commands.tidy.execution.flow_internal.flow_state import new_state
+from tools.toolchain.commands.tidy.execution.refresh_internal.refresh_runner import run_full_tidy
 from tools.toolchain.core.context import Context
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
@@ -25,7 +25,7 @@ class TestTidyTaskContract(TestCase):
                 return 0
 
         with patch(
-            "tools.toolchain.commands.tidy.refresh_internal.refresh_runner.TidyCommand",
+            "tools.toolchain.commands.tidy.execution.refresh_internal.refresh_runner.TidyCommand",
             FakeTidyCommand,
         ):
             ctx = Context(REPO_ROOT)
@@ -33,7 +33,6 @@ class TestTidyTaskContract(TestCase):
                 ctx=ctx,
                 app_name="tracer_core_shell",
                 jobs=8,
-                parse_workers=4,
                 keep_going=True,
                 concise=True,
                 source_scope="core_family",
@@ -57,7 +56,7 @@ class TestTidyTaskContract(TestCase):
                 return 0
 
         with TemporaryDirectory() as temp_dir, patch(
-            "tools.toolchain.commands.tidy.flow_internal.flow_prepare_phase.TidyCommand",
+            "tools.toolchain.commands.tidy.execution.flow_internal.flow_prepare_phase.TidyCommand",
             FakeTidyCommand,
         ):
             ctx = Context(REPO_ROOT)
@@ -65,7 +64,6 @@ class TestTidyTaskContract(TestCase):
                 app_name="tracer_core_shell",
                 resume=False,
                 jobs=8,
-                parse_workers=4,
                 source_scope="core_family",
                 tidy_build_dir_name="build_tidy_core_family",
                 task_view="text+toon",
@@ -80,7 +78,6 @@ class TestTidyTaskContract(TestCase):
                 test_every=3,
                 concise=False,
                 jobs=8,
-                parse_workers=4,
                 keep_going=True,
                 run_tidy_fix=False,
                 tidy_fix_limit=0,

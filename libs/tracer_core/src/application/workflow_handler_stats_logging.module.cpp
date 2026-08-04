@@ -23,7 +23,8 @@ class IDatabaseHealthChecker;
 class IIngestInputProvider;
 class IProcessedDataLoader;
 class IProcessedDataStorage;
-class ITimeSheetRepository;
+class ITimeSheetWriteRepository;
+class IIngestRuntimeRepository;
 class IValidationIssueReporter;
 }  // namespace tracer_core::application::ports
 

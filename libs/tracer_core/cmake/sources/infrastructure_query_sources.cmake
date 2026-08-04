@@ -26,7 +26,8 @@ set(TIME_TRACKER_INFRA_QUERY_SOURCES
     "query/data/renderers/renderers_boundary.cpp"
     "query/data/repository/query_runtime_service.cpp"
     "query/data/repository/query_runtime_service_request.cpp"
-    "query/data/repository/query_runtime_service_report_mapping.cpp"
+    "query/data/repository/query_runtime_service_mapping_content.cpp"
+    "query/data/repository/query_runtime_service_report_content.cpp"
     "query/data/repository/query_runtime_service_dispatch.cpp"
     "query/data/repository/query_runtime_service_period.cpp"
 )

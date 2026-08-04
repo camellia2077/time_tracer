@@ -19,8 +19,9 @@ struct ReportChartDateRange {
   std::string_view end_date;
 };
 
-[[nodiscard]] auto CalculateInclusiveDateRangeDays(
-    std::string_view start_date, std::string_view end_date) -> int;
+[[nodiscard]] auto CalculateInclusiveDateRangeDays(std::string_view start_date,
+                                                   std::string_view end_date)
+    -> int;
 
 template <typename TValue>
 [[nodiscard]] constexpr auto AverageOrZero(TValue total, int denominator)

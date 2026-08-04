@@ -1,21 +1,26 @@
-# Library Architecture Docs
+# Architecture and Refactoring Docs
 
-This directory is the library-level navigation entry for `time_tracer`.
-Start here when the change crosses library boundaries or when you need to
-answer "which library owns this behavior?" before opening code.
+This directory is the shared architecture and refactoring entry point for
+`time_tracer`. Start here when a change crosses library or presentation
+boundaries, or when you need to answer "which module owns this behavior?"
+before opening code.
 
 ## Start Here
-1. [Library Dependency Map](library_dependency_map.md)
+1. [Refactoring Guidance](refactoring_guidance.md)
+   - The common decision workflow for libs and presentation/client modules.
+2. [Library Dependency Map](library_dependency_map.md)
    - Cross-library ownership, dependency direction, and one-hop change routing.
-2. [Library Detail Docs](libraries/README.md)
+3. [Library Detail Docs](libraries/README.md)
    - Detailed library-level ownership, hotspot routing, and validation notes.
-3. [tracer_core](libraries/tracer_core.md)
+4. [Library Refactoring Architecture Guidance](libraries/libs_refactoring_guidance.md)
+   - Library-specific rules that extend the common refactoring workflow.
+5. [tracer_core](libraries/tracer_core.md)
    - Core business logic, module boundaries, config/query/report families.
-4. [tracer_core_bridge_common](libraries/tracer_core_bridge_common.md)
+6. [tracer_core_bridge_common](libraries/tracer_core_bridge_common.md)
    - Shared C API / JNI bridge helpers.
-5. [tracer_transport](libraries/tracer_transport.md)
+7. [tracer_transport](libraries/tracer_transport.md)
    - Runtime envelope, field readers, and request/response codec logic.
-6. [tracer_adapters_io](libraries/tracer_adapters_io.md)
+8. [tracer_adapters_io](libraries/tracer_adapters_io.md)
    - File-system ingest and processed-data IO adapters.
 
 ## Use This Directory When

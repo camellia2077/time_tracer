@@ -24,8 +24,8 @@ void TestDecodeIngestRequest(int& failures) {
       "field `input_path` must be a string.", "DecodeIngestRequest missing",
       failures);
 
-  const auto status_request = DecodeIngestSyncStatusRequest(
-      R"({"months":["2026-03","2026-04"]})");
+  const auto status_request =
+      DecodeIngestSyncStatusRequest(R"({"months":["2026-03","2026-04"]})");
   Expect(status_request.months.has_value() &&
              status_request.months->size() == 2U &&
              (*status_request.months)[0] == "2026-03",
@@ -38,17 +38,21 @@ void TestDecodeIngestRequest(int& failures) {
   const auto day_remark = DecodeUpdateDayRemarkAtomicallyRequest(
       R"({"target_date_iso":"2026-03-29","remark":"day line one\nday line two","preferred_txt_path":"2026/2026-03.txt","date_check_mode":"continuity"})");
   Expect(day_remark.target_date_iso == "2026-03-29",
-         "DecodeUpdateDayRemarkAtomicallyRequest target_date_iso mismatch.", failures);
+         "DecodeUpdateDayRemarkAtomicallyRequest target_date_iso mismatch.",
+         failures);
   Expect(day_remark.remark == "day line one\nday line two",
          "DecodeUpdateDayRemarkAtomicallyRequest remark mismatch.", failures);
   Expect(day_remark.preferred_txt_path.has_value() &&
              *day_remark.preferred_txt_path == "2026/2026-03.txt" &&
              day_remark.date_check_mode.has_value() &&
              *day_remark.date_check_mode == "continuity",
-         "DecodeUpdateDayRemarkAtomicallyRequest optional fields mismatch.", failures);
+         "DecodeUpdateDayRemarkAtomicallyRequest optional fields mismatch.",
+         failures);
   ExpectInvalidArgument(
-      [] { (void)DecodeUpdateDayRemarkAtomicallyRequest(
-          R"({"target_date_iso":"2026-03-29"})"); },
+      [] {
+        (void)DecodeUpdateDayRemarkAtomicallyRequest(
+            R"({"target_date_iso":"2026-03-29"})");
+      },
       "field `remark` must be a string.",
       "DecodeUpdateDayRemarkAtomicallyRequest missing remark", failures);
 
@@ -75,9 +79,9 @@ void TestDecodeQueryRequest(int& failures) {
          "DecodeQueryRequest from_date mismatch.", failures);
   Expect(request.reverse.has_value() && *request.reverse,
          "DecodeQueryRequest reverse mismatch.", failures);
-  Expect(request.anchor_date.has_value() &&
-             *request.anchor_date == "2026-01-31",
-         "DecodeQueryRequest anchor_date mismatch.", failures);
+  Expect(
+      request.anchor_date.has_value() && *request.anchor_date == "2026-01-31",
+      "DecodeQueryRequest anchor_date mismatch.", failures);
   Expect(request.activity_score_by_duration.has_value() &&
              *request.activity_score_by_duration,
          "DecodeQueryRequest score flag mismatch.", failures);
@@ -152,7 +156,8 @@ void TestDecodeWorkflowRequests(int& failures) {
   const auto atomic_record_without_mode = DecodeRecordActivityAtomicallyRequest(
       R"({"target_date_iso":"2026-03-29","raw_activity_name":"study","remark":"remark"})");
   Expect(!atomic_record_without_mode.time_order_mode.has_value(),
-         "DecodeRecordActivityAtomicallyRequest missing time_order_mode should remain unset.",
+         "DecodeRecordActivityAtomicallyRequest missing time_order_mode should "
+         "remain unset.",
          failures);
 
   ExpectInvalidArgument(
@@ -211,14 +216,12 @@ void TestDecodeTemporalReportRequest(int& failures) {
          "DecodeTemporalReportRequest operation_kind mismatch.", failures);
   Expect(query.display_mode == "week",
          "DecodeTemporalReportRequest display_mode mismatch.", failures);
-  Expect(query.selection_kind.has_value() &&
-             *query.selection_kind == "date_range",
-         "DecodeTemporalReportRequest selection_kind mismatch.", failures);
-  Expect(query.start_date.has_value() &&
-             *query.start_date == "2026-03-02",
+  Expect(
+      query.selection_kind.has_value() && *query.selection_kind == "date_range",
+      "DecodeTemporalReportRequest selection_kind mismatch.", failures);
+  Expect(query.start_date.has_value() && *query.start_date == "2026-03-02",
          "DecodeTemporalReportRequest start_date mismatch.", failures);
-  Expect(query.end_date.has_value() &&
-             *query.end_date == "2026-03-08",
+  Expect(query.end_date.has_value() && *query.end_date == "2026-03-08",
          "DecodeTemporalReportRequest end_date mismatch.", failures);
   Expect(query.format.has_value() && *query.format == "markdown",
          "DecodeTemporalReportRequest format mismatch.", failures);
@@ -240,12 +243,16 @@ void TestDecodeTemporalReportRequest(int& failures) {
   const auto atomic_remark = DecodeUpdateActivityRemarkAtomicallyRequest(
       R"({"target_date_iso":"2026-03-29","logical_id":20260329000042,"remark":"updated","preferred_txt_path":"2026/2026-03.txt","date_check_mode":"continuity"})");
   Expect(atomic_remark.logical_id == 20260329000042LL,
-         "DecodeUpdateActivityRemarkAtomicallyRequest logical_id mismatch.", failures);
+         "DecodeUpdateActivityRemarkAtomicallyRequest logical_id mismatch.",
+         failures);
   Expect(atomic_remark.remark == "updated",
-         "DecodeUpdateActivityRemarkAtomicallyRequest remark mismatch.", failures);
+         "DecodeUpdateActivityRemarkAtomicallyRequest remark mismatch.",
+         failures);
   ExpectInvalidArgument(
-      [] { (void)DecodeUpdateActivityRemarkAtomicallyRequest(
-          R"({"target_date_iso":"2026-03-29","logical_id":"42","remark":"x"})"); },
+      [] {
+        (void)DecodeUpdateActivityRemarkAtomicallyRequest(
+            R"({"target_date_iso":"2026-03-29","logical_id":"42","remark":"x"})");
+      },
       "field `logical_id` must be an integer.",
       "DecodeUpdateActivityRemarkAtomicallyRequest bad logical_id type",
       failures);

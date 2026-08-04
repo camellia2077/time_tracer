@@ -42,11 +42,12 @@ enum class ActivityHierarchyOperationKind {
 // Paths are relative to [canonical] and use dot-separated canonical keys.
 // A root-level parent path is represented by `root` for add-group/add-leaf.
 // `target_path` identifies the edited group or leaf; `destination_path` is
-// used by kMoveLeaf/kMoveGroup/kMergeLeafCanonical. `canonical_key` is used by add operations,
-// `new_name` by rename operations, and `old_parent` optionally guards
-// kRenameParent against a stale TOML document.
+// used by kMoveLeaf/kMoveGroup/kMergeLeafCanonical. `canonical_key` is used by
+// add operations, `new_name` by rename operations, and `old_parent` optionally
+// guards kRenameParent against a stale TOML document.
 struct ActivityHierarchyOperationRequest {
-  ActivityHierarchyOperationKind kind = ActivityHierarchyOperationKind::kAddGroup;
+  ActivityHierarchyOperationKind kind =
+      ActivityHierarchyOperationKind::kAddGroup;
   std::string target_path;
   std::string destination_path;
   std::string canonical_key;
@@ -76,8 +77,9 @@ struct ActivityHierarchyCrossDocumentOperationResult {
 
 struct ActivityHierarchyDocumentInput;
 
-// One in-memory canonical TOML document participating in a cross-file validation.
-// `source_name` is diagnostic-only and is never read from the filesystem.
+// One in-memory canonical TOML document participating in a cross-file
+// validation. `source_name` is diagnostic-only and is never read from the
+// filesystem.
 struct ActivityHierarchyDocumentInput {
   std::string source_name;
   std::string toml_content;
@@ -88,7 +90,8 @@ struct ActivityHierarchyDocumentInput {
 // database migration.
 auto ApplyActivityHierarchyOperation(
     std::string_view toml_content,
-    const ActivityHierarchyOperationRequest& request) -> ActivityHierarchyOperationResult;
+    const ActivityHierarchyOperationRequest& request)
+    -> ActivityHierarchyOperationResult;
 
 // Moves one leaf or one complete group subtree from one existing canonical TOML
 // document to another. The complete document set is supplied so Core can
@@ -109,9 +112,9 @@ auto MoveActivityHierarchyLeafBetweenDocuments(
 
 // Validates a raw TOML edit and derives the canonical/alias token migration
 // plan by comparing the Core-owned hierarchy before and after the edit.
-auto RewriteActivityHierarchyDocument(
-    std::string_view original_toml_content,
-    std::string_view updated_toml_content) -> ActivityHierarchyOperationResult;
+auto RewriteActivityHierarchyDocument(std::string_view original_toml_content,
+                                      std::string_view updated_toml_content)
+    -> ActivityHierarchyOperationResult;
 
 // Returns the core-validated hierarchy view for presentation. Node paths are
 // dot-separated canonical keys relative to [canonical].
