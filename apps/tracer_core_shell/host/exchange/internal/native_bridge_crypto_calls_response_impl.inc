@@ -1,14 +1,3 @@
-auto BuildErrorCodeContentJson(std::string_view error_code) -> std::string {
-  return json{{"error_code", error_code}}.dump();
-}
-
-auto BuildPathPairContentJson(const fs::path& input_path,
-                              const fs::path& output_path) -> std::string {
-  return json{{"input_path", input_path.string()},
-              {"output_path", output_path.string()}}
-      .dump();
-}
-
 auto BuildExportContentJson(const app_dto::TracerExchangeExportResult& result)
     -> std::string {
   return json{{"output_path", result.resolved_output_tracer_path.string()},
@@ -56,21 +45,6 @@ auto BuildInspectContentJson(const app_dto::TracerExchangeInspectResult& result)
        tracer_core::shell::tracer_exchange::BuildInspectContent(result)},
   }
       .dump();
-}
-
-auto BuildFileCryptoResponse(const file_crypto::FileCryptoResult& result,
-                             const fs::path& input_path,
-                             const fs::path& output_path) -> std::string {
-  if (!result.ok()) {
-    const std::string error_message = !result.error_message.empty()
-                                          ? result.error_message
-                                          : result.error_code;
-    return BuildResponseJson(false, error_message,
-                             BuildErrorCodeContentJson(result.error_code));
-  }
-
-  return BuildResponseJson(true, std::string{},
-                           BuildPathPairContentJson(input_path, output_path));
 }
 
 auto BuildTracerExchangeExportResponse(

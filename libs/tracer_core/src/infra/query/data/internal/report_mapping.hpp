@@ -12,7 +12,7 @@ namespace tracer::core::infrastructure::query::data::internal {
 namespace tracer::core::infrastructure::query::data::repository::internal {
 
 using tracer::core::infrastructure::query::data::internal::
-    BuildActivityAliasMappingsContent;
+    BuildActivityHierarchyLeafMappingsContent;
 using tracer::core::infrastructure::query::data::internal::
     BuildAuthorableEventTokensContent;
 using tracer::core::infrastructure::query::data::internal::

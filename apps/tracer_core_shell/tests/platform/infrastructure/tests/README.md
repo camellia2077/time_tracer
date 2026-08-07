@@ -28,14 +28,6 @@ Use this file as the fast navigation index for agents.
     - `report_formatter/report_formatter_parity_typ_tests.cpp`
     - `report_formatter/report_formatter_parity_internal.hpp`
 
-- `file_crypto/`
-  - File crypto roundtrip/failure/progress/interop tests.
-  - Entry: `file_crypto/file_crypto_test_main.cpp`
-  - Group dispatcher: `file_crypto/file_crypto_service_tests.cpp`
-  - Shared helper:
-    - `file_crypto/file_crypto_service_test_internal.hpp`
-    - `file_crypto/file_crypto_service_test_common.cpp`
-
 - Flat files kept at current level:
   - `validation_issue_reporter_tests.cpp`
   - `txt_month_header_tests.cpp`
@@ -59,4 +51,4 @@ When moving/adding test files, always update this file first.
 
 1. `python tools/run.py build --app tracer_core --build-dir build_fast --concise`
 2. `python tools/run.py verify --app tracer_core --build-dir build_fast --concise`
-3. `rg -n "infrastructure/tests/(android_runtime|data_query|report_formatter|file_crypto)" apps/tracer_core_shell/tests/platform`
+3. `rg -n "infrastructure/tests/(android_runtime|data_query|report_formatter|exchange)" apps/tracer_core_shell/tests/platform`

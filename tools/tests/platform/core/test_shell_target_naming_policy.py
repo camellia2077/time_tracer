@@ -7,13 +7,11 @@ class TestShellTargetNamingPolicy(TestCase):
     _SHELL_TARGET_PREFIXES = (
         "tc_c_api_",
         "tt_android_runtime_",
-        "tt_file_crypto_",
         "tt_exchange_runtime_",
     )
     _ALLOWED_LEGACY_NON_OWNER_TARGETS = {
         "tc_c_api_smoke_tests",
         "tt_android_runtime_shell_smoke_tests",
-        "tt_file_crypto_runtime_bridge_tests",
     }
     _REQUIRED_TOKENS = (
         "pipeline",

@@ -310,8 +310,7 @@ the JSON response for compatibility; new consumers should use kind.
 
 ## Detailed Related Contracts
 1. `docs/time_tracer/core/contracts/crypto/runtime_crypto_json_contract_v1.md`
-2. `docs/time_tracer/core/contracts/crypto/file_format_v2.md`
-3. `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v4.md`
+2. `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v6.md`
 4. `docs/time_tracer/presentation/android/runtime-protocol.md`
 5. `docs/time_tracer/core/contracts/text/runtime_txt_day_block_json_contract_v1.md`
 

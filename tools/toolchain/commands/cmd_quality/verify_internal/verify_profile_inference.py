@@ -43,11 +43,11 @@ _OWNER_PROFILE_RULES: tuple[tuple[str, str], ...] = (
     ),
     ("apps/tracer_core_shell/tests/platform/infrastructure/tests/data_query/", "cap_query"),
     (
-        "apps/tracer_core_shell/tests/platform/infrastructure/tests/file_crypto/file_crypto_service_tracer_exchange_",
+        "apps/tracer_core_shell/tests/platform/infrastructure/tests/exchange/tracer_exchange_",
         "cap_exchange",
     ),
     (
-        "apps/tracer_core_shell/tests/platform/infrastructure/tests/file_crypto/file_crypto_exchange_test_main.cpp",
+        "apps/tracer_core_shell/tests/platform/infrastructure/tests/exchange/exchange_test_main.cpp",
         "cap_exchange",
     ),
     ("libs/tracer_core/src/application/pipeline/", "cap_pipeline"),
@@ -187,11 +187,11 @@ _NON_OWNER_SHELL_PROFILE_RULES: tuple[tuple[str, str], ...] = (
         "shell_aggregate",
     ),
     (
-        "apps/tracer_core_shell/tests/platform/infrastructure/tests/file_crypto/file_crypto_service_",
+        "apps/tracer_core_shell/tests/platform/infrastructure/tests/exchange/tracer_exchange_",
         "shell_aggregate",
     ),
     (
-        "apps/tracer_core_shell/tests/platform/infrastructure/tests/file_crypto/file_crypto_test_main.cpp",
+        "apps/tracer_core_shell/tests/platform/infrastructure/tests/exchange/exchange_test_main.cpp",
         "shell_aggregate",
     ),
     ("tools/suites/tracer_windows_rust_cli/config_shell_aggregate.toml", "shell_aggregate"),

@@ -12,7 +12,7 @@ This directory groups capability-owned docs for `tracer_core`.
 4. [reporting/README.md](reporting/README.md)
    - Reporting ownership and reporting-contract entry.
 5. [exchange/README.md](exchange/README.md)
-   - Exchange ownership and `.tracer` contract routing.
+   - Exchange ownership and `.zip` contract routing.
 6. [config/README.md](config/README.md)
    - Config ownership and validation/config boundary routing.
 7. [persistence/README.md](persistence/README.md)

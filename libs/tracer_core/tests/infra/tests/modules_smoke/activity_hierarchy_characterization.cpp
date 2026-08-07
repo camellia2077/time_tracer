@@ -1,6 +1,6 @@
 import tracer.core.infrastructure.config;
 
-#include "application/ports/config/alias_toml_editor.hpp"
+#include "application/ports/config/activity_hierarchy_toml_editor.hpp"
 #include "application/ports/config/activity_hierarchy_text_renderer.hpp"
 #include "infra/config/loader/alias_mapping_index_utils.hpp"
 #include "infra/tests/modules_smoke/config.hpp"
@@ -19,7 +19,7 @@ namespace {
 
 namespace fs = std::filesystem;
 
-constexpr std::string_view kAliasToml =
+constexpr std::string_view kActivityHierarchyToml =
     "parent = \"exercise\"\n\n"
     "[canonical]\n"
     "walk = [\"步行\"]\n\n"
@@ -118,7 +118,7 @@ auto RenderOperationResult(const fs::path& root, std::string_view name,
 auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
   namespace config = tracer::core::application::config;
 
-  const auto snapshot = config::DescribeActivityHierarchy(kAliasToml);
+  const auto snapshot = config::DescribeActivityHierarchy(kActivityHierarchyToml);
   const auto walk = std::ranges::find_if(snapshot.nodes, [](const auto& node) {
     return node.canonical_key == "walk";
   });
@@ -136,7 +136,7 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
         "Core hierarchy snapshot changed.", failures);
 
   const auto add_group = config::ApplyActivityHierarchyOperation(
-      kAliasToml, {
+      kActivityHierarchyToml, {
                       .kind = config::ActivityHierarchyOperationKind::kAddGroup,
                       .target_path = "root",
                       .canonical_key = "strength",
@@ -172,7 +172,7 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
 
   const auto set_group_aliases_with_rename =
       config::ApplyActivityHierarchyOperation(
-          kAliasToml,
+          kActivityHierarchyToml,
           {
               .kind = config::ActivityHierarchyOperationKind::kSetGroupAliases,
               .target_path = "cardio",
@@ -188,7 +188,7 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
         failures);
 
   const auto rename_group_alias = config::ApplyActivityHierarchyOperation(
-      kAliasToml,
+      kActivityHierarchyToml,
       {
           .kind = config::ActivityHierarchyOperationKind::kRenameGroupAlias,
           .target_path = "cardio",
@@ -219,7 +219,7 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
         "Delete group operation changed.", failures);
 
   const auto set_leaf_aliases = config::ApplyActivityHierarchyOperation(
-      kAliasToml,
+      kActivityHierarchyToml,
       {
           .kind = config::ActivityHierarchyOperationKind::kSetLeafAliases,
           .target_path = "walk",
@@ -236,7 +236,7 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
         failures);
 
   const auto append_leaf_alias = config::ApplyActivityHierarchyOperation(
-      kAliasToml,
+      kActivityHierarchyToml,
       {
           .kind = config::ActivityHierarchyOperationKind::kAppendLeafAlias,
           .target_path = "root",
@@ -249,7 +249,7 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
         "Append leaf alias operation changed.", failures);
 
   const auto promote = config::ApplyActivityHierarchyOperation(
-      kAliasToml,
+      kActivityHierarchyToml,
       {
           .kind = config::ActivityHierarchyOperationKind::kPromoteLeaf,
           .target_path = "walk",
@@ -260,7 +260,7 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
         "Promote leaf operation changed.", failures);
 
   const auto promote_by_alias = config::ApplyActivityHierarchyOperation(
-      kAliasToml,
+      kActivityHierarchyToml,
       {
           .kind = config::ActivityHierarchyOperationKind::kPromoteLeaf,
           .target_alias = "步行",
@@ -271,7 +271,7 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
         "Alias-selected promote operation changed.", failures);
 
   const auto move = config::ApplyActivityHierarchyOperation(
-      kAliasToml, {
+      kActivityHierarchyToml, {
                       .kind = config::ActivityHierarchyOperationKind::kMoveLeaf,
                       .target_path = "cardio.running.treadmill",
                       .destination_path = "cardio",
@@ -282,11 +282,25 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
       "Move leaf replacement plan changed.", failures);
   Check(RenderOperationResult(root, "move", move.updated_toml_content)
                 .find("treadmill — aliases: treadmill, 跑步机\n") !=
-            std::string::npos,
+             std::string::npos,
         "Move leaf operation changed.", failures);
 
+  const auto move_group_nested = config::ApplyActivityHierarchyOperation(
+      kActivityHierarchyToml,
+      {
+          .kind = config::ActivityHierarchyOperationKind::kMoveGroup,
+          .target_path = "cardio.running",
+          .destination_path = "root",
+      });
+  CheckReplacements(
+      move_group_nested.replacements,
+      {{"exercise_cardio_running", "exercise_running"},
+       {"exercise_cardio_running_treadmill", "exercise_running_treadmill"}},
+      "Group move must return replacements for every moved descendant.",
+      failures);
+
   const auto merge = config::ApplyActivityHierarchyOperation(
-      kAliasToml,
+      kActivityHierarchyToml,
       {
           .kind = config::ActivityHierarchyOperationKind::kMergeLeafCanonical,
           .target_path = "cardio.running.treadmill",
@@ -310,7 +324,7 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
   bool rejected_group_merge = false;
   try {
     static_cast<void>(config::ApplyActivityHierarchyOperation(
-        kAliasToml,
+        kActivityHierarchyToml,
         {.kind = config::ActivityHierarchyOperationKind::kMergeLeafCanonical,
          .target_path = "cardio",
          .destination_path = "walk"}));
@@ -321,7 +335,7 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
         failures);
 
   const auto rename_parent = config::ApplyActivityHierarchyOperation(
-      kAliasToml,
+      kActivityHierarchyToml,
       {
           .kind = config::ActivityHierarchyOperationKind::kRenameParent,
           .new_name = "training",
@@ -346,7 +360,7 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
   bool rejected_stale_parent = false;
   try {
     static_cast<void>(config::ApplyActivityHierarchyOperation(
-        kAliasToml,
+        kActivityHierarchyToml,
         {.kind = config::ActivityHierarchyOperationKind::kRenameParent,
          .new_name = "training",
          .old_parent = "stale"}));
@@ -359,7 +373,7 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
   bool rejected_same_parent = false;
   try {
     static_cast<void>(config::ApplyActivityHierarchyOperation(
-        kAliasToml,
+        kActivityHierarchyToml,
         {.kind = config::ActivityHierarchyOperationKind::kRenameParent,
          .new_name = "exercise"}));
   } catch (const std::invalid_argument&) {
@@ -371,7 +385,7 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
   bool rejected_unsafe_parent = false;
   try {
     static_cast<void>(config::ApplyActivityHierarchyOperation(
-        kAliasToml,
+        kActivityHierarchyToml,
         {.kind = config::ActivityHierarchyOperationKind::kRenameParent,
          .new_name = "training/2026"}));
   } catch (const std::invalid_argument&) {
@@ -381,7 +395,7 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
         "Rename parent must reject a path-shaped parent name.", failures);
 
   const auto rename_group = config::ApplyActivityHierarchyOperation(
-      kAliasToml,
+      kActivityHierarchyToml,
       {
           .kind = config::ActivityHierarchyOperationKind::kRenameGroupCanonical,
           .target_path = "cardio",
@@ -396,7 +410,7 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
       "Generic group rename replacement plan changed.", failures);
 
   const auto rename_leaf = config::ApplyActivityHierarchyOperation(
-      kAliasToml,
+      kActivityHierarchyToml,
       {
           .kind = config::ActivityHierarchyOperationKind::kRenameLeafCanonical,
           .target_path = "walk",
@@ -407,7 +421,7 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
                     "Generic leaf rename replacement plan changed.", failures);
 
   const auto rename_leaf_with_aliases = config::ApplyActivityHierarchyOperation(
-      kAliasToml,
+      kActivityHierarchyToml,
       {
           .kind = config::ActivityHierarchyOperationKind::kRenameLeafCanonical,
           .target_path = "walk",
@@ -421,7 +435,7 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
         failures);
 
   const auto delete_leaf = config::ApplyActivityHierarchyOperation(
-      kAliasToml,
+      kActivityHierarchyToml,
       {
           .kind = config::ActivityHierarchyOperationKind::kDeleteLeaf,
           .target_path = "walk",
@@ -434,7 +448,7 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
   bool rejected_duplicate = false;
   try {
     static_cast<void>(config::ApplyActivityHierarchyOperation(
-        kAliasToml,
+        kActivityHierarchyToml,
         {
             .kind = config::ActivityHierarchyOperationKind::kAddLeaf,
             .target_path = "cardio",
@@ -452,7 +466,7 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
   try {
     config::ValidateActivityHierarchyDocuments(
         std::vector<config::ActivityHierarchyDocumentInput>{
-            {"one.toml", std::string(kAliasToml)},
+            {"one.toml", std::string(kActivityHierarchyToml)},
             {"two.toml",
              "parent = \"rest\"\n\n[canonical]\nrest = [\"步行\"]\n"}});
   } catch (const std::runtime_error&) {
@@ -462,6 +476,41 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
       rejected_cross_file_duplicate,
       "Core document-set validation must reject cross-file duplicate aliases.",
       failures);
+
+  const auto cross_document_group_move =
+      config::MoveActivityHierarchyNodeBetweenDocuments(
+          std::vector<config::ActivityHierarchyDocumentInput>{
+              {"exercise.toml", std::string(kActivityHierarchyToml)},
+              {"meal.toml",
+               "parent = \"meal\"\n\n[canonical]\n"
+               "dining = [\"吃饭\"]\n"}},
+          "exercise.toml", "meal.toml",
+          {.kind = config::ActivityHierarchyOperationKind::kMoveGroup,
+           .target_path = "cardio",
+           .destination_path = "root"});
+  Check(cross_document_group_move.updated_documents.size() == 2U &&
+            cross_document_group_move.replacements.size() == 3U &&
+            ContainsReplacement(cross_document_group_move.replacements,
+                                "exercise_cardio", "meal_cardio") &&
+            ContainsReplacement(cross_document_group_move.replacements,
+                                "exercise_cardio_running",
+                                "meal_cardio_running") &&
+            ContainsReplacement(cross_document_group_move.replacements,
+                                "exercise_cardio_running_treadmill",
+                                "meal_cardio_running_treadmill") &&
+            cross_document_group_move.updated_documents[0]
+                    .updated_toml_content.find("[canonical.cardio]") ==
+                std::string::npos &&
+            cross_document_group_move.updated_documents[1]
+                    .updated_toml_content.find(
+                        "group_aliases = [ '有氧', 'cardio' ]") !=
+                std::string::npos &&
+            cross_document_group_move.updated_documents[1]
+                    .updated_toml_content.find("[canonical.cardio.running]") !=
+                std::string::npos,
+        "Core group cross-document move must preserve the complete subtree.",
+        failures);
+
 }
 
 auto ExpectDuplicateAliasRejection(const fs::path& directory, int& failures)
@@ -512,7 +561,7 @@ auto RunActivityHierarchyCharacterizationTests() -> int {
 
   const fs::path alias_directory = root / "activity_hierarchy";
   const fs::path alias_file = alias_directory / "exercise.toml";
-  WriteSmokeFile(alias_file, kAliasToml);
+  WriteSmokeFile(alias_file, kActivityHierarchyToml);
 
   const auto definition = tracer::core::infrastructure::config::loader::detail::
       LoadAliasMappingDefinition(

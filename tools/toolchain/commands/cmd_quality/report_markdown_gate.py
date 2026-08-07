@@ -72,7 +72,7 @@ class ReportMarkdownGateCommand:
         )
         # Keep manual gate runs aligned with verify:
         # prefer pre-exchange reporting snapshot to avoid DB drift after
-        # `exchange import ... (replace all)` fixtures (for example config-refresh.tracer).
+        # `exchange import ... (replace all)` fixtures (for example config-refresh.zip).
         db_path = (
             snapshot_db_path
             if snapshot_db_path.is_file()

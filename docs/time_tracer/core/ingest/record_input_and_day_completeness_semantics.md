@@ -316,7 +316,7 @@ import 的阻断条件：
 
 为消除“alias key”和“wake keyword”之间的歧义，当前实现约定：
 
-1. `listActivityAliasKeys()` 继续只表示 aliases child files 中的 alias key
+1. `listActivityHierarchyLeafKeys()` 继续只表示 aliases child files 中的 alias key
 2. `listWakeKeywords()` 只表示 `user/behavior.toml` 中 `sleep_inference.wake_keywords`
 3. `listAuthorableEventTokens()` 表示 `alias_mapping.keys ∪ wake_keywords`
 4. `Record Input`、`Quick Access`、core atomic record 活动名校验统一使用第 3 条口径

@@ -1,13 +1,14 @@
-// infrastructure/tests/file_crypto/file_crypto_service_tracer_exchange_package_tests.cpp
+// infrastructure/tests/exchange/tracer_exchange_package_tests.cpp
 #include <exception>
+#include <cstdint>
 #include <string>
 
-#include "infrastructure/tests/file_crypto/file_crypto_service_tracer_exchange_test_support.hpp"
+#include "infrastructure/tests/exchange/tracer_exchange_test_support.hpp"
 
 namespace android_runtime_tests {
 namespace {
 
-using namespace file_crypto_tests_internal;
+using namespace exchange_tests_internal;
 using namespace tracer_exchange_tests_internal;
 
 auto TestTracerExchangePackageRoundTrip(int& failures) -> void {
@@ -67,6 +68,39 @@ auto TestTracerExchangeDecodeRejectsShaMismatch(int& failures) -> void {
          "DecodePackageBytes error should mention SHA-256 mismatch.", failures);
 }
 
+auto TestTracerExchangeZipAesRoundTrip(int& failures) -> void {
+  const auto entries =
+      BuildValidPackageEntries(BuildSamplePayloads(), "main = true\n");
+  constexpr std::string_view kPassphrase = "zip-aes-test-passphrase";
+  const auto bytes = exchange_pkg::EncodeZipBytes(entries, kPassphrase);
+
+  Expect(bytes.size() >= 4U && bytes[0] == 'P' && bytes[1] == 'K' &&
+             bytes[2] == 0x03U && bytes[3] == 0x04U,
+         "ZIP exchange output should begin with a standard ZIP local header.",
+         failures);
+
+  const auto decoded = exchange_pkg::DecodeZipBytes(bytes, kPassphrase);
+  Expect(decoded.entries.size() == entries.size(),
+         "ZIP AES round-trip should preserve all exchange entries.", failures);
+  const auto* payload = FindEntry(decoded, "payload/2025/2025-01.txt");
+  Expect(payload != nullptr,
+         "ZIP AES round-trip should preserve payload entry paths.", failures);
+  if (payload != nullptr) {
+    Expect(std::string(payload->data.begin(), payload->data.end()) ==
+               "y2025\nm01\nd0101\n0600w\n0630meal\n0700rest\n",
+           "ZIP AES round-trip should preserve payload bytes.", failures);
+  }
+
+  bool did_throw = false;
+  try {
+    static_cast<void>(exchange_pkg::DecodeZipBytes(bytes, "wrong-passphrase"));
+  } catch (const std::exception&) {
+    did_throw = true;
+  }
+  Expect(did_throw, "ZIP AES decode should reject an incorrect passphrase.",
+         failures);
+}
+
 auto TestTracerExchangeManifestRejectsPathDrift(int& failures) -> void {
   exchange_pkg::TracerExchangeManifest manifest{};
   manifest.producer_platform = "windows";
@@ -98,9 +132,10 @@ auto TestTracerExchangeManifestRejectsPathDrift(int& failures) -> void {
 
 }  // namespace
 
-auto RunFileCryptoTracerExchangePackageTests(int& failures) -> void {
+auto RunTracerExchangePackageTests(int& failures) -> void {
   TestTracerExchangePackageRoundTrip(failures);
   TestTracerExchangeDecodeRejectsShaMismatch(failures);
+  TestTracerExchangeZipAesRoundTrip(failures);
   TestTracerExchangeManifestRejectsPathDrift(failures);
 }
 

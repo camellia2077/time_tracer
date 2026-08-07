@@ -745,49 +745,30 @@ if(BUILD_TESTING)
         COMMAND tt_fmt_parity_tests
     )
 
-    add_executable(tt_file_crypto_runtime_bridge_tests
-        "${TRACER_CORE_SHELL_HOST_ROOT}/bootstrap/android_runtime_config_bridge.cpp"
-        "${TRACER_CORE_SHELL_HOST_ROOT}/bootstrap/android_runtime_factory.cpp"
-        "${TRACER_CORE_SHELL_HOST_ROOT}/bootstrap/android_runtime_factory_resolver.cpp"
-        "${TRACER_CORE_SHELL_HOST_ROOT}/bootstrap/android_runtime_factory_catalog.cpp"
-        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_test_common.cpp"
-        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_test_common.cpp"
-        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_tests.cpp"
-        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_roundtrip_tests.cpp"
-        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_failure_tests.cpp"
-        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_progress_tests.cpp"
-        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_interop_tests.cpp"
-        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_test_main.cpp"
-    )
     add_executable(tt_exchange_runtime_tests
         "${TRACER_CORE_SHELL_HOST_ROOT}/bootstrap/android_runtime_config_bridge.cpp"
         "${TRACER_CORE_SHELL_HOST_ROOT}/bootstrap/android_runtime_factory.cpp"
         "${TRACER_CORE_SHELL_HOST_ROOT}/bootstrap/android_runtime_factory_resolver.cpp"
         "${TRACER_CORE_SHELL_HOST_ROOT}/bootstrap/android_runtime_factory_catalog.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_test_common.cpp"
-        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_test_common.cpp"
-        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_tracer_exchange_test_support.cpp"
-        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_tracer_exchange_package_tests.cpp"
-        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_tracer_exchange_tests.cpp"
-        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_exchange_test_main.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/exchange/exchange_test_common.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/exchange/tracer_exchange_test_support.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/exchange/tracer_exchange_package_tests.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/exchange/tracer_exchange_tests.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/exchange/exchange_test_main.cpp"
     )
-    foreach(tt_file_crypto_target
-        tt_file_crypto_runtime_bridge_tests
-        tt_exchange_runtime_tests
-    )
-        setup_app_target(${tt_file_crypto_target})
-        target_include_directories(${tt_file_crypto_target} PRIVATE
+    setup_app_target(tt_exchange_runtime_tests)
+    target_include_directories(tt_exchange_runtime_tests PRIVATE
             "${TRACER_CORE_SHELL_SOURCE_ROOT}"
             "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}"
-        )
-        target_link_libraries(${tt_file_crypto_target} PRIVATE
-            tc_infra_full_lib
-        )
-        add_test(
-            NAME ${tt_file_crypto_target}
-            COMMAND ${tt_file_crypto_target}
-        )
-    endforeach()
+    )
+    target_link_libraries(tt_exchange_runtime_tests PRIVATE
+        tc_infra_full_lib
+    )
+    add_test(
+        NAME tt_exchange_runtime_tests
+        COMMAND tt_exchange_runtime_tests
+    )
 endif()
 
 

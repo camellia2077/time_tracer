@@ -7,7 +7,7 @@
 #include <utility>
 #include <vector>
 
-#include "application/ports/config/alias_toml_editor.hpp"
+#include "application/ports/config/activity_hierarchy_toml_editor.hpp"
 #include "infra/config/loader/activity_hierarchy_text_renderer.hpp"
 
 namespace tracer::core::application::config {

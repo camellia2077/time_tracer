@@ -71,6 +71,15 @@ struct DecodedTracerExchangePackage {
 [[nodiscard]] auto DecodePackageBytes(std::span<const std::uint8_t> bytes)
     -> DecodedTracerExchangePackage;
 
+// The current exchange carrier is a password-protected ZIP AES archive.  The
+// ZIP entries use the same logical layout as the v6 package contract.
+[[nodiscard]] auto EncodeZipBytes(
+    const std::vector<TracerExchangePackageEntry>& entries,
+    std::string_view passphrase) -> std::vector<std::uint8_t>;
+[[nodiscard]] auto DecodeZipBytes(std::span<const std::uint8_t> bytes,
+                                  std::string_view passphrase)
+    -> DecodedTracerExchangePackage;
+
 }  // namespace tracer::core::infrastructure::crypto::exchange
 
 namespace tracer::core::infrastructure::crypto::exchange {

@@ -13,7 +13,7 @@ REPORTING_GOLDEN_DB_SNAPSHOT_NAME = "reporting_golden_db.sqlite3"
 
 def _resolve_reporting_db_for_gates(result_layout) -> Path:
     # Prefer the reporting snapshot captured before exchange-stage imports.
-    # Exchange fixtures may later import `config-refresh.tracer` with replace-all,
+    # Exchange fixtures may later import `config-refresh.zip` with replace-all,
     # which intentionally replaces runtime DB content with a smaller fixture dataset.
     # Using this snapshot prevents golden gates from being affected by that
     # expected post-report DB overwrite.

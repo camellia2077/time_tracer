@@ -27,7 +27,6 @@ _DEFAULT_RUNTIME_LOCK_PROCESS_NAMES = [
     "tt_android_runtime_pipeline_regression_tests.exe",
     "tt_fmt_parity_tests.exe",
     "tt_exchange_runtime_tests.exe",
-    "tt_file_crypto_runtime_bridge_tests.exe",
     "tc_query_infra_smoke_tests.exe",
     "tc_reporting_infra_smoke_tests.exe",
     "tc_exchange_infra_smoke_tests.exe",

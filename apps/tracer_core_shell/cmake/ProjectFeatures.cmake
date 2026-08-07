@@ -48,10 +48,6 @@ _tt_define_bool_feature(
     "${TT_ENABLE_AI_PROVIDER_EFFECTIVE}"
 )
 
-target_compile_definitions(tt_feature_flags INTERFACE
-    TT_ENABLE_FILE_CRYPTO=1
-)
-
 if(TT_USE_BUNDLED_SQLITE)
     set(TT_RUNTIME_REQUIRE_SQLITE_DLL OFF)
 else()

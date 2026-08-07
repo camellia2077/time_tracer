@@ -52,7 +52,7 @@ auto TestExportDelegatesToExchangeService(TestState& state) -> void {
 
   const tracer_core::core::dto::TracerExchangeExportRequest request{
       .input_text_root_path = "input",
-      .requested_output_path = "out/export.tracer",
+      .requested_output_path = "out/export.zip",
       .active_converter_main_config_path = "config/user/behavior.toml",
       .passphrase = "secret",
       .producer_platform = "windows",
@@ -117,7 +117,7 @@ auto TestImportFailureIsWrapped(TestState& state) -> void {
                                      repository, data_query, tracer_exchange);
 
   const auto result = runtime_api.tracer_exchange().RunTracerExchangeImport(
-      {.input_tracer_path = "sample.tracer",
+      {.input_tracer_path = "sample.zip",
        .active_text_root_path = "runtime/input",
        .active_converter_main_config_path = "config/user/behavior.toml",
        .runtime_work_root = "runtime/work",
@@ -138,7 +138,7 @@ auto TestInspectWithoutServiceFailsGracefully(TestState& state) -> void {
   auto runtime_api = BuildRuntimeApiForTest(pipeline_workflow, report_handler);
 
   const auto result = runtime_api.tracer_exchange().RunTracerExchangeInspect(
-      {.input_tracer_path = "sample.tracer", .passphrase = "secret"});
+      {.input_tracer_path = "sample.zip", .passphrase = "secret"});
   Expect(state, !result.ok,
          "RunTracerExchangeInspect should fail cleanly when no exchange "
          "service is configured.");

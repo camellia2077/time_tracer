@@ -4,7 +4,7 @@
 
 auto main() -> int {
   int failures = 0;
-  android_runtime_tests::RunFileCryptoTracerExchangeTests(failures);
+  android_runtime_tests::RunTracerExchangeTests(failures);
 
   if (failures == 0) {
     std::cout << "[PASS] time_tracker_exchange_runtime_tests\n";

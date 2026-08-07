@@ -18,7 +18,7 @@ auto ResolveEncryptOutputPath(const ResolveEncryptOutputPathRequest& request)
   if (fs::exists(output_path) && fs::is_directory(output_path)) {
     output_path /= request.input_path.filename();
   }
-  output_path.replace_extension(".tracer");
+  output_path.replace_extension(".zip");
   return output_path;
 }
 

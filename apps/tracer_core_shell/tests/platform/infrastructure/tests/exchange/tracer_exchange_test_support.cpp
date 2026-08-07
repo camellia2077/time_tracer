@@ -1,4 +1,4 @@
-// infrastructure/tests/file_crypto/file_crypto_service_tracer_exchange_test_support.cpp
+// infrastructure/tests/exchange/tracer_exchange_test_support.cpp
 import tracer.core.infrastructure.exchange;
 
 #include <algorithm>
@@ -15,11 +15,11 @@ import tracer.core.infrastructure.exchange;
 #include <windows.h>
 #endif
 
-#include "infrastructure/tests/file_crypto/file_crypto_service_tracer_exchange_test_support.hpp"
+#include "infrastructure/tests/exchange/tracer_exchange_test_support.hpp"
 
 namespace android_runtime_tests::tracer_exchange_tests_internal {
 
-using namespace file_crypto_tests_internal;
+using namespace exchange_tests_internal;
 
 auto ToBytes(std::string_view text) -> std::vector<std::uint8_t> {
   return {text.begin(), text.end()};
@@ -222,56 +222,38 @@ auto WriteRawBytesWithParents(const fs::path& path,
                     std::vector<std::uint8_t>(bytes.begin(), bytes.end()));
 }
 
-auto WriteEncryptedTracerFromEntries(
-    const fs::path& package_path, const fs::path& tracer_path,
+auto WriteEncryptedZipFromEntries(
+    const fs::path& /*package_path*/, const fs::path& zip_path,
     const std::vector<exchange_pkg::TracerExchangePackageEntry>&
         package_entries,
     std::string_view passphrase, int& failures) -> bool {
-  const auto package_bytes = exchange_pkg::EncodePackageBytes(package_entries);
-  const file_crypto::FileCryptoPathContext path_context{
-      .input_root_path = package_path.parent_path(),
-      .output_root_path = tracer_path.parent_path(),
-      .current_input_path = package_path,
-      .current_output_path = tracer_path,
-  };
-  const auto encrypt_result = file_crypto::EncryptBytesToFile(
-      package_bytes, tracer_path, passphrase, path_context);
-  if (!encrypt_result.ok()) {
+  try {
+    const auto zip_bytes =
+        exchange_pkg::EncodeZipBytes(package_entries, passphrase);
+    if (!WriteRawBytesWithParents(zip_path, zip_bytes)) {
+      ++failures;
+      std::cerr << "[FAIL] Failed to write ZIP exchange fixture.\n";
+      return false;
+    }
+  } catch (const std::exception& error) {
     ++failures;
-    std::cerr << "[FAIL] Encrypt error: " << encrypt_result.error_code << " | "
-              << encrypt_result.error_message << '\n';
+    std::cerr << "[FAIL] ZIP AES encode error: " << error.what() << '\n';
     return false;
   }
 
   return true;
 }
 
-auto DecodeTracerPackage(const fs::path& tracer_path,
-                         const fs::path& decrypted_package_path,
+auto DecodeZipPackage(const fs::path& zip_path,
+                         const fs::path& /*decrypted_package_path*/,
                          std::string_view passphrase, int& failures)
     -> std::optional<exchange_pkg::DecodedTracerExchangePackage> {
-  const file_crypto::FileCryptoPathContext path_context{
-      .input_root_path = tracer_path.parent_path(),
-      .output_root_path = decrypted_package_path.parent_path(),
-      .current_input_path = tracer_path,
-      .current_output_path = decrypted_package_path,
-  };
-  auto [decrypt_result, package_bytes] = file_crypto::DecryptFileToBytes(
-      tracer_path, std::string(passphrase), path_context);
-  if (!decrypt_result.ok()) {
-    ++failures;
-    std::cerr << "[FAIL] DecryptFileToBytes(tracer package) failed "
-                 "unexpectedly: "
-              << decrypt_result.error_code << " | "
-              << decrypt_result.error_message << '\n';
-    return std::nullopt;
-  }
-
   try {
-    return exchange_pkg::DecodePackageBytes(package_bytes);
+    const auto bytes = ReadBytes(zip_path);
+    return exchange_pkg::DecodeZipBytes(bytes, passphrase);
   } catch (const std::exception& error) {
     ++failures;
-    std::cerr << "[FAIL] DecodePackageBytes failed unexpectedly: "
+    std::cerr << "[FAIL] DecodeZipBytes failed unexpectedly: "
               << error.what() << '\n';
     return std::nullopt;
   }

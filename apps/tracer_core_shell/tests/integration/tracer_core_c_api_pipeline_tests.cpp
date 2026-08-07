@@ -243,7 +243,7 @@ void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
               "y2026\nm01\n\n012431有氧aa\n012500exercise_cardio // keep canonical\n",
           "alias replacement should preserve canonical names and remarks");
 
-  const std::string kAliasToml =
+  const std::string kActivityHierarchyToml =
       "parent = \"exercise\"\n\n"
       "[canonical.cardio]\n"
       "group_aliases = [\"有氧\"]\n\n"
@@ -254,7 +254,7 @@ void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
       api.runtime_txt(
           runtime,
           json{{"action", "apply_activity_hierarchy_operation"},
-               {"toml_content", kAliasToml},
+               {"toml_content", kActivityHierarchyToml},
                {"operation",
                 {{"kind", "rename_group_canonical"},
                  {"target_path", "cardio"},
@@ -283,7 +283,7 @@ void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
       api.runtime_txt(
           runtime,
           json{{"action", "apply_activity_hierarchy_operation"},
-               {"toml_content", kAliasToml},
+               {"toml_content", kActivityHierarchyToml},
                {"operation",
                 {{"kind", "rename_parent"},
                  {"old_parent", "exercise"},
@@ -313,7 +313,7 @@ void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
   const json kDescribeActivityHierarchy = ParseResponse(
       api.runtime_txt(runtime,
                       json{{"action", "describe_activity_hierarchy"},
-                           {"toml_content", kAliasToml}}
+                           {"toml_content", kActivityHierarchyToml}}
                           .dump()
                           .c_str()),
       "describe activity hierarchy");
@@ -331,7 +331,7 @@ void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
   const json kRenderActivityHierarchyText = ParseResponse(
       api.runtime_txt(runtime,
                       json{{"action", "render_activity_hierarchy_text"},
-                           {"toml_content", kAliasToml},
+                           {"toml_content", kActivityHierarchyToml},
                            {"show_aliases", true}}
                           .dump()
                           .c_str()),
@@ -348,7 +348,7 @@ void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
           json{{"action", "validate_activity_hierarchy_documents"},
                {"documents",
                 {{{"source_name", "exercise.toml"},
-                  {"toml_content", kAliasToml}},
+                  {"toml_content", kActivityHierarchyToml}},
                  {{"source_name", "rest.toml"},
                   {"toml_content",
                    "parent = \"rest\"\n\n[canonical]\nrest = [\"有氧\"]\n"}}}}}
@@ -364,7 +364,7 @@ void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
       api.runtime_txt(
           runtime,
           json{{"action", "apply_activity_hierarchy_operation"},
-               {"toml_content", kAliasToml},
+               {"toml_content", kActivityHierarchyToml},
                {"operation",
                 {{"kind", "move_leaf"},
                  {"target_path", "cardio.running.treadmill"},
@@ -508,7 +508,7 @@ void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
       api.runtime_txt(
           runtime,
           json{{"action", "apply_activity_hierarchy_operation"},
-               {"toml_content", kAliasToml},
+               {"toml_content", kActivityHierarchyToml},
                {"operation", {{"kind", "rename_everything"}}}}
               .dump()
               .c_str()),

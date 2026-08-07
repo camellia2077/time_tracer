@@ -9,7 +9,7 @@ import tracer.core.application.use_cases.interface;
 
 #include "nlohmann/json.hpp"
 #include "application/dto/pipeline_requests.hpp"
-#include "application/ports/config/alias_toml_editor.hpp"
+#include "application/ports/config/activity_hierarchy_toml_editor.hpp"
 #include "application/ports/config/quick_access_toml_store.hpp"
 #include "api/c_api/capabilities/config/activity_hierarchy_operation_bridge.hpp"
 #include "application/ports/config/activity_hierarchy_text_renderer.hpp"

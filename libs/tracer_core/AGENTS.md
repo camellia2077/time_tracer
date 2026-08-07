@@ -26,7 +26,7 @@ Before changing core code, read:
 - TXT runtime DTO or action contract:
   `docs/time_tracer/core/contracts/text/runtime_txt_day_block_json_contract_v1.md`
 - Tracer exchange or crypto:
-  - `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v4.md`
+  - `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v6.md`
   - `docs/time_tracer/core/contracts/crypto/runtime_crypto_json_contract_v1.md`
 - Reporting or statistics semantics:
   `docs/time_tracer/core/contracts/stats/README.md`

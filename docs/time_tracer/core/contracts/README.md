@@ -22,7 +22,7 @@
 8. `docs/time_tracer/core/contracts/crypto/file_format/README.md`
 9. `docs/time_tracer/core/contracts/crypto/package/README.md`
 10. `docs/time_tracer/core/contracts/crypto/runtime/README.md`
-11. `docs/time_tracer/core/contracts/crypto/file_format_v2.md`
+11. `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v6.md`
 12. `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v6.md`
 13. `docs/time_tracer/core/contracts/crypto/runtime_crypto_json_contract_v1.md`
 14. `docs/time_tracer/core/contracts/stats/README.md`

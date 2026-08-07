@@ -94,7 +94,7 @@ namespace tracer_core::shell::c_api_bridge {
   if (normalized == "activity_alias_mappings" ||
       normalized == "activity-alias-mappings" ||
       normalized == "alias_mappings" || normalized == "alias-mappings") {
-    return DataQueryAction::kActivityAliasMappings;
+    return DataQueryAction::kActivityHierarchyLeafMappings;
   }
   if (normalized == "mapping_alias_keys" ||
       normalized == "mapping-alias-keys" ||

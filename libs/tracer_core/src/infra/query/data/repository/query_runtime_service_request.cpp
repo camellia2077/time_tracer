@@ -244,7 +244,7 @@ auto ToCliDataQueryAction(tracer_core::core::dto::DataQueryAction action)
     case CoreAction::kMappingNames:
       throw std::runtime_error(
           "Mapping names action must be handled before SQL query conversion.");
-    case CoreAction::kActivityAliasMappings:
+    case CoreAction::kActivityHierarchyLeafMappings:
       throw std::runtime_error(
           "Activity alias mappings action must be handled before SQL query "
           "conversion.");

@@ -1,7 +1,7 @@
 # Crypto Package Contracts
 
-This subgroup collects the inner tracer-exchange package contracts carried by
-the outer `.tracer` container.
+This subgroup collects the logical tracer-exchange package contracts carried
+as entries in the outer ZIP AES-256 archive.
 
 ## Docs
 1. [../tracer_exchange_package_v6.md](../tracer_exchange_package_v6.md)

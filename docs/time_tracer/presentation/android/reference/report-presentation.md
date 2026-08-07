@@ -22,6 +22,10 @@ Describe the user-visible report, query, and chart presentation behavior.
 - The day timeline preserves Core record kinds. An `end_only` record counts as
   a timeline detail and active day, but is rendered as one localized end-time
   point without a duration value or interval line.
+- The text Breakdown tree scrolls horizontally when its visible hierarchy is
+  wider than the viewport. Its scrollable width follows the deepest visible
+  node, so deeper hierarchies remain accessible instead of being compressed or
+  clipped.
 - Breakdown horizontal bars render every visible item at its natural row height; the Report page owns vertical scrolling instead of placing bars in a fixed-height inner viewport.
 
 ## Regression Coverage

@@ -67,7 +67,7 @@ auto TestRuntimeAccessorsAndForwarding(TestState& state) -> void {
 
   const auto exchange_result =
       runtime.tracer_exchange().RunTracerExchangeInspect(
-          {.input_tracer_path = "sample.tracer", .passphrase = "secret"});
+          {.input_tracer_path = "sample.zip", .passphrase = "secret"});
   Expect(
       state, exchange_result.ok,
       "Tracer exchange API should still return the delegated inspect result.");

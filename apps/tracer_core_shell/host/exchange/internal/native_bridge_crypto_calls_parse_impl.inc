@@ -1,17 +1,3 @@
-struct EncryptFileArgs {
-  fs::path input_path;
-  fs::path output_path;
-  std::string passphrase;
-  file_crypto::FileCryptoSecurityLevel security_level =
-      file_crypto::FileCryptoSecurityLevel::kInteractive;
-};
-
-struct DecryptFileArgs {
-  fs::path input_path;
-  fs::path output_path;
-  std::string passphrase;
-};
-
 struct ExportTracerExchangeArgs {
   fs::path input_path;
   fs::path output_path;
@@ -24,7 +10,7 @@ struct ExportTracerExchangeArgs {
 struct ExportTracerExchangeFromPayloadArgs {
   std::vector<app_dto::TracerExchangeTextPayloadItem> payload_items;
   std::string logical_source_root_name = "data";
-  std::string output_display_name = "data.tracer";
+  std::string output_display_name = "data.zip";
   std::string passphrase;
   app_dto::TracerExchangeSecurityLevel security_level =
       app_dto::TracerExchangeSecurityLevel::kInteractive;
@@ -43,6 +29,13 @@ struct InspectTracerExchangeArgs {
   std::string passphrase;
 };
 
+auto ToLowerAscii(std::string value) -> std::string {
+  std::ranges::transform(value, value.begin(), [](unsigned char ch) -> char {
+    return static_cast<char>(std::tolower(ch));
+  });
+  return value;
+}
+
 auto RequireNonEmptyText(std::string value, std::string_view field_name)
     -> std::string {
   if (value.empty()) {
@@ -54,35 +47,23 @@ auto RequireNonEmptyText(std::string value, std::string_view field_name)
 
 auto ParseTracerExchangeSecurityLevel(std::string_view value)
     -> std::optional<app_dto::TracerExchangeSecurityLevel> {
-  const auto parsed_crypto_level = ParseCryptoSecurityLevel(value);
-  if (!parsed_crypto_level.has_value()) {
-    return std::nullopt;
+  const std::string normalized = ToLowerAscii(std::string(value));
+  if (normalized == "min") {
+    return app_dto::TracerExchangeSecurityLevel::kMin;
   }
-
-  switch (parsed_crypto_level.value()) {
-    case file_crypto::FileCryptoSecurityLevel::kInteractive:
-      return app_dto::TracerExchangeSecurityLevel::kInteractive;
-    case file_crypto::FileCryptoSecurityLevel::kModerate:
-      return app_dto::TracerExchangeSecurityLevel::kModerate;
-    case file_crypto::FileCryptoSecurityLevel::kHigh:
-      return app_dto::TracerExchangeSecurityLevel::kHigh;
-    case file_crypto::FileCryptoSecurityLevel::kMin:
-      return app_dto::TracerExchangeSecurityLevel::kMin;
-    case file_crypto::FileCryptoSecurityLevel::kMax:
-      return app_dto::TracerExchangeSecurityLevel::kMax;
+  if (normalized.empty() || normalized == "interactive") {
+    return app_dto::TracerExchangeSecurityLevel::kInteractive;
   }
-
+  if (normalized == "moderate") {
+    return app_dto::TracerExchangeSecurityLevel::kModerate;
+  }
+  if (normalized == "high" || normalized == "sensitive") {
+    return app_dto::TracerExchangeSecurityLevel::kHigh;
+  }
+  if (normalized == "max") {
+    return app_dto::TracerExchangeSecurityLevel::kMax;
+  }
   return std::nullopt;
-}
-
-auto RequireCryptoSecurityLevel(std::string_view value)
-    -> file_crypto::FileCryptoSecurityLevel {
-  const auto parsed_security_level = ParseCryptoSecurityLevel(value);
-  if (!parsed_security_level.has_value()) {
-    throw std::invalid_argument(
-        "securityLevel must be one of: interactive, moderate, high.");
-  }
-  return parsed_security_level.value();
 }
 
 auto RequireTracerExchangeSecurityLevel(std::string_view value)
@@ -98,41 +79,6 @@ auto RequireTracerExchangeSecurityLevel(std::string_view value)
 auto ParseAndroidDateCheckMode(jint value) -> DateCheckMode {
   return tracer_core::shell::c_api_bridge::ParseDateCheckMode(
       ParseDateCheckMode(value));
-}
-
-auto ParseEncryptFileArgs(JNIEnv* env, jstring input_path, jstring output_path,
-                          jstring passphrase, jstring security_level)
-    -> EncryptFileArgs {
-  const std::string input_path_utf8 =
-      RequireNonEmptyText(ToUtf8(env, input_path), "inputPath");
-  const std::string output_path_utf8 =
-      RequireNonEmptyText(ToUtf8(env, output_path), "outputPath");
-  const std::string passphrase_utf8 =
-      RequireNonEmptyText(ToUtf8(env, passphrase), "passphrase");
-  const std::string security_level_utf8 = ToUtf8(env, security_level);
-
-  return {
-      .input_path = fs::path(input_path_utf8),
-      .output_path = fs::path(output_path_utf8),
-      .passphrase = passphrase_utf8,
-      .security_level = RequireCryptoSecurityLevel(security_level_utf8),
-  };
-}
-
-auto ParseDecryptFileArgs(JNIEnv* env, jstring input_path, jstring output_path,
-                          jstring passphrase) -> DecryptFileArgs {
-  const std::string input_path_utf8 =
-      RequireNonEmptyText(ToUtf8(env, input_path), "inputPath");
-  const std::string output_path_utf8 =
-      RequireNonEmptyText(ToUtf8(env, output_path), "outputPath");
-  const std::string passphrase_utf8 =
-      RequireNonEmptyText(ToUtf8(env, passphrase), "passphrase");
-
-  return {
-      .input_path = fs::path(input_path_utf8),
-      .output_path = fs::path(output_path_utf8),
-      .passphrase = passphrase_utf8,
-  };
 }
 
 auto ParseExportTracerExchangeArgs(JNIEnv* env, jstring input_path,
@@ -169,7 +115,7 @@ auto ParseExportTracerExchangeFromPayloadArgs(JNIEnv* env, jstring request_json,
   const std::string logical_source_root_name =
       request_payload.value("logical_source_root_name", std::string("data"));
   const std::string output_display_name =
-      request_payload.value("output_display_name", std::string("data.tracer"));
+      request_payload.value("output_display_name", std::string("data.zip"));
   const std::string passphrase_utf8 = RequireNonEmptyText(
       request_payload.value("passphrase", std::string{}), "passphrase");
   const std::string security_level_utf8 = request_payload.value(
@@ -205,7 +151,7 @@ auto ParseExportTracerExchangeFromPayloadArgs(JNIEnv* env, jstring request_json,
                                       ? std::string("data")
                                       : logical_source_root_name,
       .output_display_name = output_display_name.empty()
-                                 ? std::string("data.tracer")
+                                 ? std::string("data.zip")
                                  : output_display_name,
       .passphrase = passphrase_utf8,
       .security_level = RequireTracerExchangeSecurityLevel(security_level_utf8),

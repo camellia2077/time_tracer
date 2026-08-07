@@ -1,4 +1,6 @@
 #include <climits>
+#include <algorithm>
+#include <cctype>
 #include <filesystem>
 #include <span>
 #include <nlohmann/json.hpp>
@@ -6,6 +8,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <ranges>
 
 #if defined(_WIN32)
 #include <io.h>
@@ -15,18 +18,17 @@
 
 #include "api/android_jni/native_bridge_internal.hpp"
 #include "api/c_api/runtime/c_api_parse_bridge.hpp"
+#include "host/native_bridge_progress.hpp"
 #include "api/c_api/runtime/tracer_core_c_api_internal.hpp"
 #include "application/dto/exchange_requests.hpp"
 #include "application/dto/exchange_responses.hpp"
 #include "application/aggregate_runtime/i_tracer_core_runtime.hpp"
-#include "host/exchange/native_bridge_crypto_helpers.hpp"
 #include "host/exchange/tracer_exchange_inspect_formatter.hpp"
 
 namespace tracer_core::api::android::bridge_internal {
 
 namespace fs = std::filesystem;
 namespace app_dto = tracer_core::core::dto;
-namespace file_crypto = tracer_core::infrastructure::crypto;
 using nlohmann::json;
 using tracer::core::application::use_cases::ITracerCoreRuntime;
 
@@ -40,21 +42,7 @@ namespace {
 // Tracer exchange DTO construction plus runtime-locked dispatch.
 #include "host/exchange/internal/native_bridge_crypto_calls_exchange_dispatch_impl.inc"
 
-// Direct file encrypt/decrypt execution helpers.
-#include "host/exchange/internal/native_bridge_crypto_calls_file_ops_impl.inc"
-
 }  // namespace
-
-auto NativeEncryptFile(JNIEnv* env, jobject /*thiz*/, jstring input_path,
-                       jstring output_path, jstring passphrase,
-                       jstring security_level) -> jstring {
-  return ExecuteJniMethod(env, [&]() -> std::string {
-    const EncryptFileArgs args = ParseEncryptFileArgs(
-        env, input_path, output_path, passphrase, security_level);
-    return BuildFileCryptoResponse(RunEncryptFileOperation(env, args),
-                                   args.input_path, args.output_path);
-  });
-}
 
 auto NativeExportTracerExchange(JNIEnv* env, jobject /*thiz*/,
                                 jstring input_path, jstring output_path,
@@ -99,16 +87,6 @@ auto NativeInspectTracerExchange(JNIEnv* env, jobject /*thiz*/,
         ParseInspectTracerExchangeArgs(env, input_path, passphrase);
     return BuildTracerExchangeInspectResponse(
         DispatchInspectTracerExchange(env, args));
-  });
-}
-
-auto NativeDecryptFile(JNIEnv* env, jobject /*thiz*/, jstring input_path,
-                       jstring output_path, jstring passphrase) -> jstring {
-  return ExecuteJniMethod(env, [&]() -> std::string {
-    const DecryptFileArgs args =
-        ParseDecryptFileArgs(env, input_path, output_path, passphrase);
-    return BuildFileCryptoResponse(RunDecryptFileOperation(env, args),
-                                   args.input_path, args.output_path);
   });
 }
 

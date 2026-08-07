@@ -32,7 +32,7 @@ Important rules:
 - Business payloads between JNI and core remain UTF-8 JSON strings.
 - Large binary exchange outputs do not go through JSON.
   - Android tracer exchange export passes a detached output fd into JNI.
-  - Native writes encrypted `.tracer` bytes directly to that fd.
+  - Native writes encrypted `.zip` bytes directly to that fd.
 
 ## C ABI Scope
 
@@ -184,6 +184,9 @@ Current Android-facing responsibilities are:
 ## Crypto Progress Note
 
 - Android crypto progress uses the same snapshot-to-JSON callback path as the core C ABI.
+- Encrypted ZIP export reports only the package-level overall progress. Android's
+  export card consumes that value and renders one progress bar; current-file
+  progress remains available for import/other exchange operations.
 - Android host intentionally exposes only the Android-supported security levels.
 
 ## Open Next

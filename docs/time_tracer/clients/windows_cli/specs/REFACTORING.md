@@ -83,9 +83,9 @@ split instructions:
   orchestration, and terminal/file presentation distinct while preserving
   atomicity and canonical Core semantics.
 - `src/commands/handlers/exchange/{mod,tests}.rs`: retain `exchange/mod.rs` as
-  the session/prompt/progress/dispatch facade. Treat export, import, unpack,
-  and inspect as one exchange contract family until their bootstrap, prompt,
-  and progress lifecycles can change independently.
+  the session/prompt/progress/dispatch facade. Treat export, import, and
+  inspect as one exchange contract family until their bootstrap, prompt, and
+  progress lifecycles can change independently.
 
 ## Acceptance evidence
 

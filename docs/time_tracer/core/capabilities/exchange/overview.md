@@ -9,7 +9,7 @@ implementation in `tracer_core`.
 
 Exchange owns:
 1. export of complete tracer exchange packages
-2. inspect of `.tracer` files and decrypted package summaries
+2. inspect of `.zip` files and decrypted package summaries
 3. transactional import of exchange packages
 4. package assembly/decoding and file-crypto integration
 

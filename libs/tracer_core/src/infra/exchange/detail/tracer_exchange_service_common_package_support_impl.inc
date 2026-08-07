@@ -125,7 +125,7 @@ auto BuildScopedStagingDir(const fs::path& writable_root,
     -> fs::path {
   const fs::path base_root =
       writable_root.empty() ? fs::current_path() : fs::absolute(writable_root);
-  return base_root / ".tracer_staging" / std::string(purpose) /
+  return base_root / ".exchange_staging" / std::string(purpose) /
          (SanitizeStem(std::string(stem)) + "-" + BuildUniqueSuffix());
 }
 
@@ -212,17 +212,6 @@ auto EnsureRegularFileExists(const fs::path& path, std::string_view label)
     throw std::runtime_error(std::string(label) +
                              " is missing: " + path.string());
   }
-}
-
-auto EnsureCryptoResultOk(const file_crypto::FileCryptoResult& result,
-                          std::string_view action, const fs::path& input_path)
-    -> void {
-  if (result.ok()) {
-    return;
-  }
-  throw std::runtime_error(std::string(action) + " failed for " +
-                           input_path.string() + ": " + result.error_code +
-                           " | " + result.error_message);
 }
 
 auto WriteDecodedPackageToRoot(

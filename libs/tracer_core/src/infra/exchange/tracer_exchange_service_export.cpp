@@ -173,7 +173,6 @@ auto ResolveUnprotectedOutputPath(const fs::path& input_path,
 auto ProtectAndWriteEncodedPackage(
     std::span<const std::uint8_t> package_bytes,
     const app_dto::TracerExchangeExportRequest& request,
-    const fs::path& input_path, std::string_view source_root_name,
     const fs::path& resolved_output) -> void {
   const bool kHasOutputPath = !request.requested_output_path.empty();
   if (UsesNoProtection(request.protection)) {
@@ -189,47 +188,48 @@ auto ProtectAndWriteEncodedPackage(
                                  ? "Failed to write exchange output."
                                  : error_message);
   }
-
-  const file_crypto::FileCryptoPathContext kPathContext{
-      .input_root_path =
-          input_path.empty() ? fs::path(source_root_name) : input_path,
-      .output_root_path = resolved_output.parent_path(),
-      .current_input_path = input_path.empty()
-                                ? fs::path(source_root_name) / "payload.ttpkg"
-                                : input_path,
-      .current_output_path = resolved_output,
+  const auto package = exchange_pkg::DecodePackageBytes(package_bytes);
+  const auto emit_progress = [&](std::string_view phase, std::size_t done,
+                                 std::size_t total) {
+    if (!request.progress_observer) {
+      return;
+    }
+    app_dto::TracerExchangeProgressSnapshot snapshot{};
+    snapshot.output_root_path = resolved_output.parent_path();
+    snapshot.current_output_path = resolved_output;
+    snapshot.current_item = resolved_output.filename().string();
+    snapshot.current_group_label = "zip_aes_exchange";
+    snapshot.phase_index = done == total ? 3U : 1U;
+    snapshot.phase_count = 3U;
+    snapshot.done_count = done;
+    snapshot.total_count = total;
+    // ZIP encoding is an atomic package operation. Export exposes only its
+    // overall logical progress; there is no meaningful current-file stream.
+    snapshot.overall_done_bytes = done;
+    snapshot.overall_total_bytes = total;
+    snapshot.is_encrypt_operation = true;
+    snapshot.phase = std::string(phase);
+    if (request.progress_observer(snapshot) ==
+        app_dto::TracerExchangeProgressControl::kCancel) {
+      throw std::runtime_error("ZIP exchange export was cancelled.");
+    }
   };
-  const auto kCryptoOptions =
-      BuildCryptoOptions(request.security_level, request.progress_observer);
-  const auto kEncryptResult =
-      kHasOutputPath
-          ? file_crypto::ProtectEncodedBytesToFile(
-                package_bytes, resolved_output, request.passphrase,
-                kPathContext, kCryptoOptions)
-          : file_crypto::ProtectEncodedBytesToWriter(
-                package_bytes,
-                [&request](std::span<const std::uint8_t> ciphertext_bytes)
-                    -> file_crypto::FileCryptoResult {
-                  std::string error_message;
-                  if (request.encrypted_output_writer(ciphertext_bytes,
-                                                      error_message)) {
-                    return {};
-                  }
-                  return {
-                      .error = file_crypto::FileCryptoError::kOutputWriteFailed,
-                      .error_code = std::string(file_crypto::ToErrorCode(
-                          file_crypto::FileCryptoError::kOutputWriteFailed)),
-                      .error_message =
-                          error_message.empty()
-                              ? std::string("Failed to write encrypted "
-                                            "exchange output.")
-                              : error_message,
-                  };
-                },
-                request.passphrase, kPathContext, kCryptoOptions);
-  EnsureCryptoResultOk(
-      kEncryptResult, "Encrypt",
-      input_path.empty() ? fs::path(source_root_name) : input_path);
+  emit_progress("zip_prepare", 0U, package.entries.size());
+  const auto zip_bytes =
+      exchange_pkg::EncodeZipBytes(package.entries, request.passphrase);
+  emit_progress("zip_aes_encrypt", package.entries.size(),
+                package.entries.size());
+  if (kHasOutputPath) {
+    WriteFileBytes(resolved_output, zip_bytes);
+    return;
+  }
+  std::string error_message;
+  if (!request.encrypted_output_writer(zip_bytes, error_message)) {
+    throw std::runtime_error(error_message.empty()
+                                 ? "Failed to write encrypted ZIP exchange "
+                                   "output."
+                                 : error_message);
+  }
 }
 
 }  // namespace
@@ -395,7 +395,7 @@ auto TracerExchangeService::RunExport(
                               })
                             : fs::path("android_export_sink") /
                                   (request.output_display_name.empty()
-                                       ? (kSourceRootName + ".tracer")
+                                       ? (kSourceRootName + ".zip")
                                        : request.output_display_name))
           : (kHasOutputPath
                  ? ResolveUnprotectedOutputPath(
@@ -407,8 +407,7 @@ auto TracerExchangeService::RunExport(
   if (kHasOutputPath) {
     EnsureParentDirectory(kResolvedOutput);
   }
-  ProtectAndWriteEncodedPackage(k_package_bytes, request, kInputPath,
-                                kSourceRootName, kResolvedOutput);
+  ProtectAndWriteEncodedPackage(k_package_bytes, request, kResolvedOutput);
   return {
       .ok = true,
       .resolved_output_tracer_path = kResolvedOutput,

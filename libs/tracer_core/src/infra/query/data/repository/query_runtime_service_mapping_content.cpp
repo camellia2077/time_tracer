@@ -86,7 +86,7 @@ auto BuildMappingNamesContent(
   return BuildNamesPayload(names);
 }
 
-auto BuildActivityAliasMappingsContent(
+auto BuildActivityHierarchyLeafMappingsContent(
     const std::optional<std::filesystem::path>& converter_config_toml_path)
     -> std::string {
   if (!converter_config_toml_path.has_value() ||

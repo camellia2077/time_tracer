@@ -34,9 +34,9 @@ auto QueryRuntimeService::RunDataQuery(
     return {.ok = true, .content = std::move(content), .error_message = ""};
   }
   if (request.action ==
-      tracer_core::core::dto::DataQueryAction::kActivityAliasMappings) {
+      tracer_core::core::dto::DataQueryAction::kActivityHierarchyLeafMappings) {
     std::string content =
-        runtime_service_internal::BuildActivityAliasMappingsContent(
+        runtime_service_internal::BuildActivityHierarchyLeafMappingsContent(
             converter_config_toml_path_);
     content = infra_data_query_renderers::RenderJsonObjectOutput(
         "activity_alias_mappings", std::move(content), request.output_mode);

@@ -1,6 +1,6 @@
-// infrastructure/tests/file_crypto/file_crypto_service_tracer_exchange_test_support.hpp
-#ifndef INFRASTRUCTURE_TESTS_FILE_CRYPTO_SERVICE_TRACER_EXCHANGE_TEST_SUPPORT_HPP_
-#define INFRASTRUCTURE_TESTS_FILE_CRYPTO_SERVICE_TRACER_EXCHANGE_TEST_SUPPORT_HPP_
+// infrastructure/tests/exchange/tracer_exchange_test_support.hpp
+#ifndef INFRASTRUCTURE_TESTS_EXCHANGE_TRACER_EXCHANGE_TEST_SUPPORT_HPP_
+#define INFRASTRUCTURE_TESTS_EXCHANGE_TRACER_EXCHANGE_TEST_SUPPORT_HPP
 
 import tracer.core.infrastructure.exchange;
 
@@ -13,13 +13,12 @@ import tracer.core.infrastructure.exchange;
 #include <vector>
 
 #include "host/bootstrap/android_runtime_factory.hpp"
-#include "infrastructure/tests/file_crypto/file_crypto_service_test_internal.hpp"
+#include "infrastructure/tests/exchange/exchange_test_common.hpp"
 
 namespace android_runtime_tests::tracer_exchange_tests_internal {
 
 namespace fs = std::filesystem;
 namespace exchange_pkg = tracer::core::infrastructure::crypto::exchange;
-namespace file_crypto = tracer_core::infrastructure::crypto;
 
 struct PayloadFixture {
   std::string relative_path;
@@ -58,12 +57,12 @@ auto SeedExportInputRoot(const fs::path& input_root,
                          const std::vector<PayloadFixture>& payloads) -> bool;
 auto WriteRawBytesWithParents(const fs::path& path,
                               std::span<const std::uint8_t> bytes) -> bool;
-auto WriteEncryptedTracerFromEntries(
-    const fs::path& package_path, const fs::path& tracer_path,
+auto WriteEncryptedZipFromEntries(
+    const fs::path& package_path, const fs::path& zip_path,
     const std::vector<exchange_pkg::TracerExchangePackageEntry>&
         package_entries,
     std::string_view passphrase, int& failures) -> bool;
-auto DecodeTracerPackage(const fs::path& tracer_path,
+auto DecodeZipPackage(const fs::path& zip_path,
                          const fs::path& decrypted_package_path,
                          std::string_view passphrase, int& failures)
     -> std::optional<exchange_pkg::DecodedTracerExchangePackage>;
@@ -78,8 +77,8 @@ auto BuildTracerExchangeRuntime(const RuntimeTestPaths& paths,
 
 namespace android_runtime_tests {
 
-auto RunFileCryptoTracerExchangePackageTests(int& failures) -> void;
+auto RunTracerExchangePackageTests(int& failures) -> void;
 
 }  // namespace android_runtime_tests
 
-#endif  // INFRASTRUCTURE_TESTS_FILE_CRYPTO_SERVICE_TRACER_EXCHANGE_TEST_SUPPORT_HPP_
+#endif  // INFRASTRUCTURE_TESTS_EXCHANGE_TRACER_EXCHANGE_TEST_SUPPORT_HPP

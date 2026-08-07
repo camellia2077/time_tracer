@@ -6,7 +6,6 @@
 
 - `exchange export`：导出 exchange 包。
 - `exchange import`：导入并替换活动配置和相关数据。
-- `exchange unpack`：解包到指定目录。
 - `exchange inspect`：检查包内容，不执行导入。
 
 ```powershell

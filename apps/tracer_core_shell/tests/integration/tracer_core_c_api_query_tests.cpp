@@ -20,18 +20,18 @@ void RunQueryChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime) {
               kMappingNamesContent["names"].is_array(),
           "baseline query mapping names content should include names array");
 
-  const json kActivityAliasMappingsResponse =
+  const json kActivityHierarchyLeafMappingsResponse =
       ParseResponse(api.runtime_query(runtime,
                                       json{{"action", "activity_alias_mappings"}}
                                           .dump()
                                           .c_str()),
                     "baseline query activity alias mappings");
-  Require(kActivityAliasMappingsResponse.value("ok", false),
+  Require(kActivityHierarchyLeafMappingsResponse.value("ok", false),
           "baseline query activity alias mappings should return ok=true");
-  const json kActivityAliasMappingsContent =
-      json::parse(kActivityAliasMappingsResponse.value("content", "{}"));
-  Require(kActivityAliasMappingsContent.contains("entries") &&
-              kActivityAliasMappingsContent["entries"].is_array(),
+  const json kActivityHierarchyLeafMappingsContent =
+      json::parse(kActivityHierarchyLeafMappingsResponse.value("content", "{}"));
+  Require(kActivityHierarchyLeafMappingsContent.contains("entries") &&
+              kActivityHierarchyLeafMappingsContent["entries"].is_array(),
           "baseline query activity alias mappings content should include entries array");
 
   const json kMappingAliasKeysResponse =

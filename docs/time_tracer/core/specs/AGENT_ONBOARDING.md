@@ -68,7 +68,7 @@ without broad repository search.
       [tracer_core Capability Map](../overview/capability_map.md)
     - start in `libs/tracer_core/src/infra/query`
     - then inspect `libs/tracer_core/src/infra/reporting`
-6. Change exchange package / `.tracer` behavior:
+6. Change exchange package / `.zip` behavior:
    - read [Exchange Capability](../capabilities/exchange/README.md)
    - then inspect `libs/tracer_core/src/infra/exchange`
    - pair with [C ABI](../shared/c_abi.md) when runtime JSON behavior changes

@@ -141,7 +141,7 @@ void RunCallbackBridgeChecks(const CoreApiFns& api,
           "callback crypto input directory missing: test/data");
   const fs::path kCryptoOutput = input_root / ".." / "output" /
                                  "tracer_core_c_api_stability" / "callback" /
-                                 "test-data.tracer";
+                                 "test-data.zip";
   std::error_code io_error;
   fs::create_directories(fs::absolute(kCryptoOutput).parent_path(), io_error);
   Require(!io_error, "callback crypto output directory creation failed: " +

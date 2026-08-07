@@ -29,7 +29,6 @@ namespace modtext = tracer::core::shared::canonical_text;
 namespace {
 
 #include "infra/exchange/detail/tracer_exchange_service_common_file_support_impl.inc"
-#include "infra/exchange/detail/tracer_exchange_service_common_progress_impl.inc"
 
 }  // namespace
 
@@ -38,8 +37,5 @@ namespace {
 
 // Active converter config validation, backup, restore, and apply flows.
 #include "infra/exchange/detail/tracer_exchange_service_common_converter_config_impl.inc"
-
-// Progress observer bridge between tracer_exchange DTOs and file_crypto.
-#include "infra/exchange/detail/tracer_exchange_service_common_crypto_options_impl.inc"
 
 }  // namespace tracer_core::infrastructure::crypto::tracer_exchange_internal

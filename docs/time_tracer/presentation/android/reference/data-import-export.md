@@ -30,7 +30,7 @@ Capture the user-visible behavior and core data flow for Data-tab import and exp
   - imports mutable TOML under `config/user/`; `config/program/` is not required
     in the selected folder because it is presentation-owned runtime data
 - `Import Single TRACER`
-  - selects one `.tracer` file
+  - selects one `.zip` file
   - stages it in app cache
   - requests a passphrase
   - imports through the TRACER exchange runtime path
@@ -45,7 +45,7 @@ Capture the user-visible behavior and core data flow for Data-tab import and exp
   - packages the active converter main TOML and activity-hierarchy TOML under
     `config/user/`
   - requests a passphrase
-  - exports one complete `.tracer` package through a native fd sink
+  - exports one complete encrypted standard `.zip` package through a native fd sink
 - `Export Current TXT ZIP`
   - selects a destination tree
   - writes one unencrypted `.zip`
@@ -73,7 +73,9 @@ Capture the user-visible behavior and core data flow for Data-tab import and exp
   requires user converter/hierarchy TOML and TXT input, but does not load or
   copy `config/program/**`; that resource tree is used only after the complete
   application Runtime starts.
-- Record-side UI state owns crypto progress presentation.
+- Record-side UI state owns crypto progress presentation. Complete encrypted ZIP
+  export uses one overall progress bar; it does not show a separate current-file
+  progress bar.
 
 ## First Code Entry Points
 

@@ -22,7 +22,7 @@ constexpr int kQueryActionSearch = 5;
 constexpr int kQueryActionActivitySuggest = 6;
 constexpr int kQueryActionTree = 7;
 constexpr int kQueryActionMappingNames = 8;
-constexpr int kQueryActionActivityAliasMappings = 9;
+constexpr int kQueryActionActivityHierarchyLeafMappings = 9;
 constexpr int kQueryActionReportChart = 10;
 constexpr int kQueryActionMappingAliasKeys = 11;
 constexpr int kQueryActionWakeKeywords = 12;
@@ -96,7 +96,7 @@ constexpr int kReportFormatTypst = 2;
   if (value == kQueryActionMappingNames) {
     return "mapping_names";
   }
-  if (value == kQueryActionActivityAliasMappings) {
+  if (value == kQueryActionActivityHierarchyLeafMappings) {
     return "activity_alias_mappings";
   }
   if (value == kQueryActionReportChart) {

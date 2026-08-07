@@ -116,13 +116,6 @@ auto NativeUpdateDayRemarkAtomically(
 
 auto NativeConfig(JNIEnv* env, jobject thiz, jstring request_json) -> jstring;
 
-auto NativeEncryptFile(JNIEnv* env, jobject thiz, jstring input_path,
-                       jstring output_path, jstring passphrase,
-                       jstring security_level) -> jstring;
-
-auto NativeDecryptFile(JNIEnv* env, jobject thiz, jstring input_path,
-                       jstring output_path, jstring passphrase) -> jstring;
-
 auto NativeExportTracerExchange(JNIEnv* env, jobject thiz, jstring input_path,
                                 jstring output_path, jstring passphrase,
                                 jstring security_level, jint date_check_mode)
@@ -152,7 +145,7 @@ auto NativeQuery(JNIEnv* env, jobject thiz, jint action, jint year, jint month,
 auto NativeReportJson(JNIEnv* env, jobject thiz, jstring request_json)
     -> jstring;
 
-extern const std::array<JNINativeMethod, 21> kNativeMethods;
+extern const std::array<JNINativeMethod, 19> kNativeMethods;
 
 auto TryRegisterNativeMethods(JNIEnv* env, const char* class_name) -> bool;
 

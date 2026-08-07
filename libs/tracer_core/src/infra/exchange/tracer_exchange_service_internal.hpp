@@ -12,7 +12,6 @@
 #include "application/dto/exchange_responses.hpp"
 #include "application/interfaces/i_workflow_handler.hpp"
 #include "application/ports/exchange/i_tracer_exchange_service.hpp"
-#include "infra/crypto/file_crypto_service.hpp"
 
 namespace tracer::core::infrastructure::crypto::exchange {
 
@@ -27,7 +26,6 @@ namespace app_ports = tracer_core::application::ports;
 namespace app_workflow = tracer::core::application::workflow;
 namespace exchange_pkg = tracer::core::infrastructure::crypto::exchange;
 namespace fs = std::filesystem;
-namespace file_crypto = tracer_core::infrastructure::crypto;
 
 struct InputPayloadFile {
   fs::path source_path;
@@ -76,8 +74,6 @@ class TracerExchangeService final : public app_ports::ITracerExchangeService {
       -> app_dto::TracerExchangeExportResult override;
   auto RunImport(const app_dto::TracerExchangeImportRequest& request)
       -> app_dto::TracerExchangeImportResult override;
-  auto RunUnpack(const app_dto::TracerExchangeUnpackRequest& request)
-      -> app_dto::TracerExchangeUnpackResult override;
   auto RunInspect(const app_dto::TracerExchangeInspectRequest& request)
       -> app_dto::TracerExchangeInspectResult override;
 
@@ -114,9 +110,6 @@ auto CanonicalizePackageTextBytes(std::string_view text,
     -> std::vector<std::uint8_t>;
 auto EnsureRegularFileExists(const fs::path& path, std::string_view label)
     -> void;
-auto EnsureCryptoResultOk(const file_crypto::FileCryptoResult& result,
-                          std::string_view action, const fs::path& input_path)
-    -> void;
 auto ResolveActiveConverterConfigPaths(
     const fs::path& active_converter_main_config_path)
     -> ActiveConverterConfigPaths;
@@ -124,10 +117,6 @@ auto EnsureActiveConverterConfigExists(
     const ActiveConverterConfigPaths& active_paths) -> void;
 auto BackupActiveConverterConfig(const ActiveConverterConfigPaths& active_paths,
                                  const fs::path& backup_root) -> void;
-auto BuildCryptoOptions(
-    app_dto::TracerExchangeSecurityLevel security_level,
-    const app_dto::TracerExchangeProgressObserver& progress_observer)
-    -> file_crypto::FileCryptoOptions;
 auto WriteDecodedPackageToRoot(
     const exchange_pkg::DecodedTracerExchangePackage& package,
     const fs::path& root) -> void;

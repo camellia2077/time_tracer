@@ -4,7 +4,7 @@ This directory is the capability-first entry for `tracer_core` exchange docs.
 
 Use it when you need to understand:
 1. tracer-exchange package ownership
-2. `.tracer` import/export/inspect routing
+2. `.zip` import/export/inspect routing
 3. exchange package and runtime crypto contracts
 
 ## Read First

@@ -325,7 +325,7 @@ class RefreshGoldenCommand:
             / self.REPORTING_GOLDEN_DB_SNAPSHOT_NAME
         )
         # Refresh should use the same stable reporting snapshot as verify/gates.
-        # Otherwise exchange-stage replace-all imports (for example config-refresh.tracer)
+        # Otherwise exchange-stage replace-all imports (for example config-refresh.zip)
         # can overwrite DB content and produce non-deterministic golden inputs.
         db_path = snapshot_db_path if snapshot_db_path.is_file() else workspace_db_path
         cases_config_path = (

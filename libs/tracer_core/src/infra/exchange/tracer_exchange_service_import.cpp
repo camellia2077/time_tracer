@@ -58,8 +58,8 @@ auto TracerExchangeService::RunImport(
     throw std::invalid_argument(
         "Decrypt input path must be an existing file: " + kInputPath.string());
   }
-  if (!HasExtensionCaseInsensitive(kInputPath, ".tracer")) {
-    throw std::invalid_argument("Decrypt input file must be .tracer: " +
+  if (!HasExtensionCaseInsensitive(kInputPath, ".zip")) {
+    throw std::invalid_argument("Decrypt input file must be .zip: " +
                                 kInputPath.string());
   }
 
@@ -82,18 +82,9 @@ auto TracerExchangeService::RunImport(
         request.progress_observer, "decrypt_package", 1U, kPhaseCount,
         kInputPath.filename().string(), 0U, 1U, kInputPath, kActiveTextRoot,
         kInputPath, kTransactionPaths.extracted_root);
-    const file_crypto::FileCryptoPathContext kPathContext{
-        .input_root_path = kInputPath.parent_path(),
-        .output_root_path = kTransactionPaths.transaction_root,
-        .current_input_path = kInputPath,
-        .current_output_path =
-            kTransactionPaths.transaction_root / "exchange.ttpkg",
-    };
-    auto [decrypt_result, package_bytes] = file_crypto::DecryptFileToBytes(
-        kInputPath, request.passphrase, kPathContext,
-        BuildCryptoOptions(app_dto::TracerExchangeSecurityLevel::kInteractive,
-                           {}));
-    EnsureCryptoResultOk(decrypt_result, "Decrypt", kInputPath);
+    const auto encrypted_zip = ReadFileBytes(kInputPath);
+    const exchange_pkg::DecodedTracerExchangePackage kPackage =
+        exchange_pkg::DecodeZipBytes(encrypted_zip, request.passphrase);
     EmitImportTransactionProgress(
         request.progress_observer, "decrypt_package", 1U, kPhaseCount,
         kInputPath.filename().string(), 1U, 1U, kInputPath, kActiveTextRoot,
@@ -103,8 +94,6 @@ auto TracerExchangeService::RunImport(
         request.progress_observer, "validate_package_contract", 2U, kPhaseCount,
         kInputPath.filename().string(), 0U, 1U, kInputPath, kActiveTextRoot,
         kInputPath, kTransactionPaths.extracted_root);
-    const exchange_pkg::DecodedTracerExchangePackage kPackage =
-        DecodePackageBytes(package_bytes);
     EmitImportTransactionProgress(
         request.progress_observer, "validate_package_contract", 2U, kPhaseCount,
         kInputPath.filename().string(), 1U, 1U, kInputPath, kActiveTextRoot,

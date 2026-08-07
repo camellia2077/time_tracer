@@ -244,7 +244,7 @@ class TestEngine:
         #
         # Why:
         # - exchange stage includes `exchange import` fixtures.
-        # - a later fixture imports `config-refresh.tracer` with "replace all" semantics.
+        # - a later fixture imports `config-refresh.zip` with "replace all" semantics.
         # - "replace all" clears and rebuilds runtime DB from the imported package.
         # - therefore data drift is expected when import source packages differ:
         #   this is not import instability, but deterministic overwrite by another source.

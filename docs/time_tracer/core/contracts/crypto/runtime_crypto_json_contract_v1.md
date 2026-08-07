@@ -21,7 +21,7 @@
 
 ### 3.1 请求字段
 1. `input_path`（必填，string）：输入文本目录路径。
-2. `output_path`（必填，string）：输出 `.tracer` 文件路径或已存在目录。
+2. `output_path`（必填，string）：输出 `.zip` 文件路径或已存在目录。
 3. `passphrase`（必填，string）：口令。
 4. `date_check_mode`（可选，string）：`none|continuity|full`，默认 `none`。
 5. `security_level`（可选，string）：`min|interactive|moderate|high|max`，默认 `interactive`。
@@ -38,10 +38,11 @@
    - `manifest.toml`
    - `config/user/**` 下的全部普通文件
    - `payload/<year>/YYYY-MM.txt`
-   共同组装为 tracer exchange package `v6`，再交给外层 `.tracer` v2 容器压缩加密。
+   共同组装为 tracer exchange package `v6`，再直接写入密码保护的 ZIP
+   AES-256 entries。
 8. 若 `output_path` 已存在且是目录，则实际输出为：
-   - `<output_path>/<input_dir_name>.tracer`
-9. 否则将 `output_path` 的扩展名替换为 `.tracer` 作为最终输出文件。
+   - `<output_path>/<input_dir_name>.zip`
+9. 否则将 `output_path` 的扩展名替换为 `.zip` 作为最终输出文件。
 
 ### 3.3 成功 `content` 文本
 1. 第一行：`Exported complete tracer exchange package: <input_abs> -> <output_abs>`
@@ -52,16 +53,16 @@
 ## 4. Decrypt 接口契约
 
 ### 4.1 请求字段
-1. `input_path`（必填，string）：输入 `.tracer` 文件路径。
+1. `input_path`（必填，string）：输入 `.zip` 文件路径。
 2. `passphrase`（必填，string）：口令。
 3. `output_path`（可选，string）：事务工作根目录；若提供，必须是非空字符串。
    - 用于 staging、备份与失败时保留调试现场。
    - 不是正式导入结果目录。
 
 ### 4.2 处理语义
-1. `input_path` 必须是已存在的单个 `.tracer` 文件。
+1. `input_path` 必须是已存在的单个 `.zip` 文件。
 2. decrypt 的当前业务语义是“事务式完整导入 tracer exchange package”，不是“解包到目录”。
-3. 外层 `.tracer` 解密后，runtime 会解析内层 tracer exchange package `v6`。
+3. runtime 会解密 ZIP AES entries，并解析其中的 tracer exchange package `v6`。
 4. runtime 必须先成功加载并校验包内 `config/user/**` 的全部配置 entry。
 5. runtime 会备份当前 active converter config 与将被覆盖的本地月份 TXT。
 6. 随后包内 `config/user/**` 会覆盖当前 active config 中对应的用户配置内容。
@@ -87,18 +88,18 @@
 ## 5. Inspect 接口契约
 
 ### 5.1 请求字段
-1. `input_path`（必填，string）：目标 `.tracer` 文件路径。
+1. `input_path`（必填，string）：目标 `.zip` 文件路径。
 2. `passphrase`（必填，string）：口令。
 
 ### 5.2 处理语义
-1. `input_path` 必须是已存在的单个 `.tracer` 文件。
+1. `input_path` 必须是已存在的单个 `.zip` 文件。
 2. `output_path` 不属于 inspect 契约；若请求带有该字段，直接失败。
-3. inspect 会先读取外层 `.tracer` 头部元信息，再用 `passphrase` 解密内层 package，并输出包摘要。
+3. inspect 会读取 ZIP central directory，再用 `passphrase` 解密 entries，并输出包摘要。
 4. inspect 使用临时 staging 目录完成解密；命令成功或失败后都不保留这些临时文件。
 
 ### 5.3 成功 `content` 文本字段
 1. `File: <path>`
-2. 外层 `.tracer` 头字段：
+2. ZIP AES 外层字段：
    - `version`
    - `kdf_id`
    - `cipher_id`
@@ -117,7 +118,7 @@
    - `config/user/**` 下每个 config entry 的 present/missing 与大小
 
 ## 6. Exchange Package 校验语义
-1. decrypt / inspect 成功的前提是：外层 `.tracer` 载荷必须是有效的 tracer exchange package。
+1. decrypt / inspect 成功的前提是：ZIP entries 必须组成有效的 tracer exchange package。
 2. 当前 exchange package 载荷契约见：
    - `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v6.md`
 3. 若内层 package 不满足该契约，错误消息通常以：
@@ -147,7 +148,7 @@
 ```json
 {
   "input_path": "C:/data",
-  "output_path": "C:/out/test-data.tracer",
+  "output_path": "C:/out/test-data.zip",
   "passphrase": "phase3pass",
   "date_check_mode": "full",
   "security_level": "high"
@@ -158,7 +159,7 @@
 请求：
 ```json
 {
-  "input_path": "C:/out/test-data.tracer",
+  "input_path": "C:/out/test-data.zip",
   "passphrase": "phase3pass"
 }
 ```
@@ -167,7 +168,7 @@
 请求：
 ```json
 {
-  "input_path": "C:/out/test-data.tracer",
+  "input_path": "C:/out/test-data.zip",
   "output_path": "C:/tmp/tracer_import_work",
   "passphrase": "phase3pass"
 }
@@ -177,7 +178,7 @@
 请求：
 ```json
 {
-  "input_path": "C:/out/test-data.tracer",
+  "input_path": "C:/out/test-data.zip",
   "passphrase": "phase3pass"
 }
 ```
@@ -185,6 +186,4 @@
 ## 9. 关联文档
 1. `docs/time_tracer/core/shared/c_abi.md`
 2. `docs/time_tracer/core/contracts/crypto/error_model_v1.md`
-3. `docs/time_tracer/core/contracts/crypto/file_format_v2.md`
-4. `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v4.md`
-5. `docs/time_tracer/core/contracts/crypto/progress_callback_v1.md`
+3. `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v6.md`

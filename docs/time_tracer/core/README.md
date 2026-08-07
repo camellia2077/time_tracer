@@ -72,7 +72,7 @@ routing. During the transition, both the new and legacy folders remain valid.
 5. Reporting formatter/export/report snapshot changes:
    - [capabilities/reporting/README.md](capabilities/reporting/README.md)
    - [capabilities/reporting/contracts.md](capabilities/reporting/contracts.md)
-6. Exchange `.tracer` package or runtime-crypto behavior:
+6. Exchange `.zip` package or runtime-crypto behavior:
    - [capabilities/exchange/README.md](capabilities/exchange/README.md)
    - [capabilities/exchange/contracts.md](capabilities/exchange/contracts.md)
 7. Config ownership or config-validation changes:

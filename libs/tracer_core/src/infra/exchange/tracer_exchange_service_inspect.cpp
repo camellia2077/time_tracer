@@ -10,8 +10,6 @@ namespace tracer_core::infrastructure::crypto::tracer_exchange_internal {
 
 namespace {
 
-using exchange_pkg::DecodePackageBytes;
-
 auto FindEntrySummary(const exchange_pkg::DecodedTracerExchangePackage& package,
                       std::string_view path)
     -> app_dto::TracerExchangeInspectEntrySummary {
@@ -28,23 +26,22 @@ auto FindEntrySummary(const exchange_pkg::DecodedTracerExchangePackage& package,
 }
 
 auto BuildInspectResult(
-    const fs::path& input_path, const file_crypto::TracerFileMetadata& metadata,
+    const fs::path& input_path, std::uint64_t archive_size,
     const exchange_pkg::DecodedTracerExchangePackage& package)
     -> app_dto::TracerExchangeInspectResult {
   app_dto::TracerExchangeInspectResult result{};
   result.ok = true;
   result.input_tracer_path = input_path;
-  result.outer_metadata = {
-      .version = metadata.version,
-      .kdf_id = metadata.kdf_id,
-      .cipher_id = metadata.cipher_id,
-      .compression_id = metadata.compression_id,
-      .compression_level = metadata.compression_level,
-      .ops_limit = metadata.ops_limit,
-      .mem_limit_kib = metadata.mem_limit_kib,
-      .plaintext_size = metadata.plaintext_size,
-      .ciphertext_size = metadata.ciphertext_size,
-  };
+  result.outer_metadata.version = 3U;
+  result.outer_metadata.kdf_id = 1U;       // PBKDF2-HMAC-SHA1 (ZIP AES)
+  result.outer_metadata.cipher_id = 3U;   // AES-256-CTR + HMAC-SHA1
+  result.outer_metadata.compression_id = 8U;  // ZIP deflate
+  result.outer_metadata.ops_limit = 1000U;    // ZIP AES PBKDF2 rounds
+  result.outer_metadata.plaintext_size = 0U;
+  for (const auto& entry : package.entries) {
+    result.outer_metadata.plaintext_size += entry.data.size();
+  }
+  result.outer_metadata.ciphertext_size = archive_size;
   result.package_type = package.manifest.package_type;
   result.package_version = package.manifest.package_version;
   result.producer_platform = package.manifest.producer_platform;
@@ -81,29 +78,15 @@ auto TracerExchangeService::RunInspect(
     throw std::invalid_argument(
         "Inspect input path must be an existing file: " + kInputPath.string());
   }
-  if (!HasExtensionCaseInsensitive(kInputPath, ".tracer")) {
-    throw std::invalid_argument("Inspect input file must be .tracer: " +
+  if (!HasExtensionCaseInsensitive(kInputPath, ".zip")) {
+    throw std::invalid_argument("Inspect input file must be .zip: " +
                                 kInputPath.string());
   }
 
-  file_crypto::TracerFileMetadata metadata{};
-  EnsureCryptoResultOk(file_crypto::InspectEncryptedFile(kInputPath, &metadata),
-                       "Inspect", kInputPath);
-  const file_crypto::FileCryptoPathContext kPathContext{
-      .input_root_path = kInputPath.parent_path(),
-      .output_root_path = kInputPath.parent_path(),
-      .current_input_path = kInputPath,
-      .current_output_path =
-          kInputPath.parent_path() / (kInputPath.stem().string() + ".ttpkg"),
-  };
-  auto [decrypt_result, package_bytes] = file_crypto::DecryptFileToBytes(
-      kInputPath, request.passphrase, kPathContext,
-      BuildCryptoOptions(app_dto::TracerExchangeSecurityLevel::kInteractive,
-                         request.progress_observer));
-  EnsureCryptoResultOk(decrypt_result, "Inspect", kInputPath);
+  const auto encrypted_zip = ReadFileBytes(kInputPath);
   const exchange_pkg::DecodedTracerExchangePackage kPackage =
-      DecodePackageBytes(package_bytes);
-  return BuildInspectResult(kInputPath, metadata, kPackage);
+      exchange_pkg::DecodeZipBytes(encrypted_zip, request.passphrase);
+  return BuildInspectResult(kInputPath, encrypted_zip.size(), kPackage);
 }
 
 }  // namespace tracer_core::infrastructure::crypto::tracer_exchange_internal

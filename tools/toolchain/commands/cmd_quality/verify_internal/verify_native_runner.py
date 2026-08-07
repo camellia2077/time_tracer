@@ -27,7 +27,6 @@ _DEFAULT_NATIVE_PHASES = (
             "tt_aggregate_runtime_tests",
             "tc_app_aggregate_runtime_smoke_tests",
             "tt_android_runtime_shell_smoke_tests",
-            "tt_file_crypto_runtime_bridge_tests",
         ),
     ),
 )

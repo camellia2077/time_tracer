@@ -48,7 +48,7 @@ dependency of TXT validation or data import.
 
 ## Exchange Import Rule
 
-When importing a `.tracer` package:
+When importing a `.zip` package:
 1. packaged converter `TOML` files are validated first
 2. valid imported config is applied to the effective validation context
 3. only then is the effective TXT set validated

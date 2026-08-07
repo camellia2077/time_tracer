@@ -61,8 +61,7 @@ auto RunTxtMonthHeaderTests(int& failures) -> void;
 auto RunPipelineValidationRegressionTests(int& failures) -> void;
 auto RunReportingErrorReportTests(int& failures) -> void;
 auto RunDataQueryRefactorTests(int& failures) -> void;
-auto RunFileCryptoRuntimeBridgeTests(int& failures) -> void;
-auto RunFileCryptoTracerExchangeTests(int& failures) -> void;
+auto RunTracerExchangeTests(int& failures) -> void;
 
 }  // namespace android_runtime_tests
 

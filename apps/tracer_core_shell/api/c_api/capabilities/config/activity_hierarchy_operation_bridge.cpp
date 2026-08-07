@@ -7,7 +7,7 @@
 #include <string_view>
 #include <vector>
 
-#include "application/ports/config/alias_toml_editor.hpp"
+#include "application/ports/config/activity_hierarchy_toml_editor.hpp"
 
 namespace tracer_core::shell::config_bridge {
 namespace {

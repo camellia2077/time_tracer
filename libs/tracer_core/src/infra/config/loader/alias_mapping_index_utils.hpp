@@ -15,7 +15,7 @@
 #include <utility>
 #include <vector>
 
-#include "infra/config/loader/alias_document.hpp"
+#include "infra/config/loader/activity_hierarchy_document.hpp"
 
 namespace tracer::core::infrastructure::config::loader::detail {
 
@@ -132,7 +132,7 @@ inline auto BuildTomlDiagnostic(const fs::path& path, const toml::node& node,
 }
 
 inline auto BuildTomlDiagnostic(const fs::path& path,
-                                AliasDocumentSourceLocation source,
+                                ActivityHierarchyDocumentSourceLocation source,
                                 std::string_view message) -> std::string {
   return BuildTomlDiagnostic(path, source.line, source.column, message);
 }
@@ -216,7 +216,7 @@ inline auto LoadAliasMappingDefinition(const fs::path& alias_directory_path,
 
   std::unordered_map<std::string, AliasSourceLocation> alias_sources;
   const auto add_expanded_alias = [&](const AliasMappingChildFile& child_file,
-                                      const AliasDocumentAlias& alias,
+                                      const ActivityHierarchyAlias& alias,
                                       std::string_view canonical) -> void {
     const auto [existing_it, inserted] = alias_sources.emplace(
         alias.value,
@@ -251,10 +251,10 @@ inline auto LoadAliasMappingDefinition(const fs::path& alias_directory_path,
       throw std::runtime_error(
           BuildAliasChildParseHint(relative_path, error.what()));
     }
-    AliasDocument document;
+    ActivityHierarchyDocument document;
     try {
-      document = ParseAliasDocument(child_tbl);
-    } catch (const AliasDocumentParseError& error) {
+      document = ParseActivityHierarchyDocument(child_tbl);
+    } catch (const ActivityHierarchyDocumentParseError& error) {
       throw std::runtime_error(
           BuildTomlDiagnostic(absolute_path, error.source(), error.what()));
     }
@@ -275,7 +275,7 @@ inline auto LoadAliasMappingDefinition(const fs::path& alias_directory_path,
     });
 
     for (const auto& canonical_node :
-         CollectAliasDocumentCanonicalNodes(document)) {
+         CollectActivityHierarchyCanonicalNodes(document)) {
       for (const auto& alias : canonical_node.node->aliases) {
         add_expanded_alias(definition.child_files.back(), alias,
                            canonical_node.canonical);

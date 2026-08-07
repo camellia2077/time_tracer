@@ -1,9 +1,9 @@
 # Exchange command tests
 
 [[commands]]
-name = "Exchange Export Tracer Package"
+name = "Exchange Export ZIP Package"
 stage = "exchange"
-args = ["--output", "{output_dir}/crypt/test-data.tracer", "exchange", "export", "--in", "{data_path}"]
+args = ["--output", "{output_dir}/crypt/test-data.zip", "exchange", "export", "--in", "{data_path}"]
 stdin_input = "phase3pass\nphase3pass\n"
 expect_exit = 0
 expect_stdout_contains = [
@@ -12,18 +12,21 @@ expect_stdout_contains = [
   "Included converter TOML files:",
   "Manifest included: yes",
 ]
-expect_files = ["{output_dir}/crypt/test-data.tracer"]
+expect_files = ["{output_dir}/crypt/test-data.zip"]
 
 [[commands]]
-name = "Exchange Inspect Tracer Package"
+name = "Exchange Inspect ZIP Package"
 stage = "exchange"
-args = ["exchange", "inspect", "--in", "{output_dir}/crypt/test-data.tracer"]
+args = ["exchange", "inspect", "--in", "{output_dir}/crypt/test-data.zip"]
 stdin_input = "phase3pass\n"
 expect_exit = 0
 expect_stdout_contains = [
-  "version: 2",
-  "compression_id: 1",
-  "compression_level: 1",
+  "version: 3",
+  "kdf_id: 1",
+  "cipher_id: 3",
+  "compression_id: 8",
+  "compression_level: 0",
+  "ops_limit: 1000",
   "Package:",
   "package_type: tracer_exchange",
   "package_version: 6",
@@ -38,9 +41,9 @@ expect_stdout_contains = [
 ]
 
 [[commands]]
- name = "Exchange Import Tracer Package"
+ name = "Exchange Import ZIP Package"
 stage = "exchange"
-args = ["exchange", "import", "--in", "{output_dir}/crypt/test-data.tracer"]
+args = ["exchange", "import", "--in", "{output_dir}/crypt/test-data.zip"]
 stdin_input = "phase3pass\n"
 expect_exit = 0
 expect_stdout_contains = [
@@ -63,9 +66,9 @@ expect_file_contains = [
 ]
 
 [[commands]]
- name = "Exchange Import Tracer Package Custom Output"
+ name = "Exchange Import ZIP Package Custom Output"
 stage = "exchange"
-args = ["--output", "{output_dir}/custom_decrypt", "exchange", "import", "--in", "{output_dir}/crypt/test-data.tracer"]
+args = ["--output", "{output_dir}/custom_decrypt", "exchange", "import", "--in", "{output_dir}/crypt/test-data.zip"]
 stdin_input = "phase3pass\n"
 expect_exit = 0
 expect_stdout_contains = [
@@ -95,11 +98,11 @@ expect_exit = 0
 expect_stdout_contains = ["[PASS] prepared exchange config refresh fixture"]
 
 [[commands]]
-name = "Exchange Export Tracer Package With Updated Config"
+name = "Exchange Export ZIP Package With Updated Config"
 stage = "exchange"
 args = [
   "--output",
-  "{output_dir}/crypt/config-refresh.tracer",
+  "{output_dir}/crypt/config-refresh.zip",
   "exchange",
   "export",
   "--in",
@@ -107,7 +110,7 @@ args = [
 ]
 stdin_input = "phase3pass\nphase3pass\n"
 expect_exit = 0
-expect_files = ["{output_dir}/crypt/config-refresh.tracer"]
+expect_files = ["{output_dir}/crypt/config-refresh.zip"]
 
 [[commands]]
 name = "Restore Stale Runtime Before Config Refresh Import"
@@ -126,9 +129,9 @@ expect_exit = 0
 expect_stdout_contains = ["[PASS] restored stale runtime config and cleared runtime state"]
 
 [[commands]]
-name = "Exchange Import Tracer Package Refreshes Active Config"
+name = "Exchange Import ZIP Package Refreshes Active Config"
 stage = "exchange"
-args = ["exchange", "import", "--in", "{output_dir}/crypt/config-refresh.tracer"]
+args = ["exchange", "import", "--in", "{output_dir}/crypt/config-refresh.zip"]
 stdin_input = "phase3pass\n"
 expect_exit = 0
 expect_stdout_contains = [

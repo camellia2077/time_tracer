@@ -105,7 +105,7 @@ TT_CORE_API void tracer_core_set_log_callback(TtCoreLogCallback callback,
 TT_CORE_API void tracer_core_set_diagnostics_callback(
     TtCoreDiagnosticsCallback callback, void* user_data);
 
-// Registers host callback for file crypto progress events.
+// Registers host callback for tracer exchange progress events.
 // Passing nullptr clears current callback.
 TT_CORE_API void tracer_core_set_crypto_progress_callback(
     TtCoreCryptoProgressCallback callback, void* user_data);
@@ -185,8 +185,6 @@ TT_CORE_API const char* tracer_core_runtime_report_batch_json(
 TT_CORE_API const char* tracer_core_runtime_crypto_encrypt_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
 TT_CORE_API const char* tracer_core_runtime_crypto_decrypt_json(
-    TtCoreRuntimeHandle* handle, const char* request_json);
-TT_CORE_API const char* tracer_core_runtime_crypto_unpack_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
 TT_CORE_API const char* tracer_core_runtime_crypto_inspect_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
