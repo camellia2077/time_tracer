@@ -2,7 +2,6 @@ pub mod export;
 pub mod import;
 pub mod inspect;
 pub mod support;
-pub mod unpack;
 #[cfg(test)]
 mod tests;
 
@@ -16,7 +15,6 @@ use crate::error::AppError;
 use self::export::ExportHandler;
 use self::import::ImportHandler;
 use self::inspect::InspectHandler;
-use self::unpack::UnpackHandler;
 
 pub struct ExchangeHandler;
 
@@ -33,12 +31,6 @@ pub(crate) trait ExchangeSessionPort {
         request: &Value,
     ) -> Result<String, AppError>;
     fn import_package(
-        &self,
-        command_name: &str,
-        ctx: &CommandContext,
-        request: &Value,
-    ) -> Result<String, AppError>;
-    fn unpack_package(
         &self,
         command_name: &str,
         ctx: &CommandContext,
@@ -91,17 +83,6 @@ impl ExchangeSessionPort for RuntimeExchangeSessionPort {
         session.exchange().import_package(request)
     }
 
-    fn unpack_package(
-        &self,
-        command_name: &str,
-        ctx: &CommandContext,
-        request: &Value,
-    ) -> Result<String, AppError> {
-        let api = CoreApi::load()?;
-        let session = api.bootstrap(command_name, &ctx.without_output())?;
-        session.exchange().unpack_package(request)
-    }
-
     fn inspect_package(
         &self,
         command_name: &str,
@@ -140,7 +121,6 @@ impl CommandHandler<ExchangeArgs> for ExchangeHandler {
         match args.command {
             ExchangeCommand::Export(args) => ExportHandler.handle(args, ctx),
             ExchangeCommand::Import(args) => ImportHandler.handle(args, ctx),
-            ExchangeCommand::Unpack(args) => UnpackHandler.handle(args, ctx),
             ExchangeCommand::Inspect(args) => InspectHandler.handle(args, ctx),
         }
     }

@@ -1,7 +1,7 @@
 use serde_json::Value;
 
 use crate::cli::{
-    ExchangeExportArgs, ExchangeImportArgs, ExchangeInspectArgs, ExchangeUnpackArgs, SecurityLevel,
+    ExchangeExportArgs, ExchangeImportArgs, ExchangeInspectArgs, SecurityLevel,
 };
 use crate::commands::testing::{
     default_context, sample_cli_config, temp_output_path, RecordedExchangeSession,
@@ -44,15 +44,6 @@ impl ExchangeSessionPort for TestExchangePort<'_> {
     }
 
     fn inspect_package(
-        &self,
-        command_name: &str,
-        _ctx: &crate::commands::handler::CommandContext,
-        request: &Value,
-    ) -> Result<String, crate::error::AppError> {
-        self.recorded.record_text(command_name, request)
-    }
-
-    fn unpack_package(
         &self,
         command_name: &str,
         _ctx: &crate::commands::handler::CommandContext,
@@ -105,7 +96,7 @@ fn exchange_export_uses_crypto_bootstrap_token_and_request_shape() {
     let port = TestExchangePort {
         recorded: &recorded,
     };
-    let output_path = temp_output_path("exchange_export", "tracer");
+    let output_path = temp_output_path("exchange_export", "zip");
     let mut ctx = default_context();
     ctx.output_path = Some(output_path.to_string_lossy().to_string());
 
@@ -130,7 +121,7 @@ fn exchange_export_uses_crypto_bootstrap_token_and_request_shape() {
     assert!(request["output_path"]
         .as_str()
         .unwrap_or_default()
-        .ends_with(".tracer"));
+        .ends_with(".zip"));
 }
 
 #[test]
@@ -158,7 +149,6 @@ fn exchange_import_uses_crypto_bootstrap_token() {
         .unwrap_or_default()
         .contains("Cargo.toml"));
 }
-
 #[test]
 fn exchange_inspect_rejects_output() {
     let recorded = RecordedExchangeSession::new(sample_cli_config(), "ok");
@@ -208,33 +198,4 @@ fn exchange_inspect_uses_crypto_bootstrap_token() {
         .as_str()
         .unwrap_or_default()
         .contains("Cargo.toml"));
-}
-
-#[test]
-fn exchange_unpack_uses_crypto_bootstrap_token_and_requires_output() {
-    let recorded = RecordedExchangeSession::new(sample_cli_config(), "ok");
-    let port = TestExchangePort {
-        recorded: &recorded,
-    };
-    let output_path = temp_output_path("exchange_unpack", "dir");
-    let mut ctx = default_context();
-    ctx.output_path = Some(output_path.to_string_lossy().to_string());
-
-    crate::commands::handlers::exchange::unpack::run_unpack_with_port(
-        ExchangeUnpackArgs {
-            input: "Cargo.toml".to_string(),
-        },
-        &ctx,
-        &port,
-        &TestPromptPort,
-    )
-    .expect("exchange unpack should succeed");
-
-    assert_eq!(recorded.command_names(), vec!["crypto".to_string()]);
-    let request = recorded.requests().remove(0);
-    assert_eq!(request["passphrase"], "secret-import");
-    assert!(request["output_path"]
-        .as_str()
-        .unwrap_or_default()
-        .contains("exchange_unpack"));
 }

@@ -13,7 +13,6 @@ pub(crate) use self::activity_invoke::{
 };
 pub(crate) use self::exchange_invoke::{
     run_tracer_exchange_export, run_tracer_exchange_import, run_tracer_exchange_inspect,
-    run_tracer_exchange_unpack,
 };
 pub(crate) use self::pipeline_invoke::{
     run_pipeline_convert, run_pipeline_import, run_pipeline_ingest, run_pipeline_validate_logic,

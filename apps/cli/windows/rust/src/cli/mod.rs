@@ -22,7 +22,7 @@ pub use chart::{ChartArgs, ChartTheme, ChartType};
 pub use doctor::DoctorArgs;
 pub use exchange::{
     ExchangeArgs, ExchangeCommand, ExchangeExportArgs, ExchangeImportArgs, ExchangeInspectArgs,
-    ExchangeUnpackArgs, SecurityLevel,
+    SecurityLevel,
 };
 pub use licenses::LicensesArgs;
 pub use pipeline::{

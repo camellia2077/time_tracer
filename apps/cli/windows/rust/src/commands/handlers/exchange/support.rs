@@ -42,7 +42,7 @@ pub fn validate_exchange_package_input(input: &PathBuf) -> Result<(), AppError> 
         return Ok(());
     }
     Err(AppError::InvalidArguments(
-        "--in must point to a .tracer file.".to_string(),
+        "--in must point to a .zip file.".to_string(),
     ))
 }
 

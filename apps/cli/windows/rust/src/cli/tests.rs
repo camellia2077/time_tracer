@@ -166,32 +166,15 @@ fn exchange_export_still_parses_required_fields() {
 #[test]
 fn exchange_import_still_parses_without_output() {
     let cli =
-        Cli::try_parse_from(["time_tracer_cli", "exchange", "import", "--in", "a.tracer"]).unwrap();
+        Cli::try_parse_from(["time_tracer_cli", "exchange", "import", "--in", "a.zip"]).unwrap();
     assert!(cli.output.is_none());
 
     match cli.command {
         Command::Exchange(args) => match args.command {
             ExchangeCommand::Import(args) => {
-                assert_eq!(args.input, "a.tracer");
+                assert_eq!(args.input, "a.zip");
             }
             _ => panic!("expected exchange import command"),
-        },
-        _ => panic!("expected exchange command"),
-    }
-}
-
-#[test]
-fn exchange_unpack_still_requires_output_before_execution() {
-    let cli =
-        Cli::try_parse_from(["time_tracer_cli", "exchange", "unpack", "--in", "a.tracer"]).unwrap();
-    assert!(cli.output.is_none());
-
-    match cli.command {
-        Command::Exchange(args) => match args.command {
-            ExchangeCommand::Unpack(args) => {
-                assert_eq!(args.input, "a.tracer");
-            }
-            _ => panic!("expected exchange unpack command"),
         },
         _ => panic!("expected exchange command"),
     }

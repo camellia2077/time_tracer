@@ -153,10 +153,10 @@ mod tests {
     #[test]
     fn file_label_prefers_file_name_then_group_label() {
         let event = CryptoProgressEvent {
-            current_input_path: "C:/tmp/input/file.tracer".to_string(),
+            current_input_path: "C:/tmp/input/file.zip".to_string(),
             ..Default::default()
         };
-        assert_eq!(file_label(&event), "file.tracer");
+        assert_eq!(file_label(&event), "file.zip");
 
         let event = CryptoProgressEvent {
             current_group_label: "group-a".to_string(),
@@ -183,7 +183,7 @@ mod tests {
             current_file_total_bytes: 1024,
             speed_bytes_per_sec: 2048,
             eta_seconds: 3,
-            current_input_path: "C:/tmp/input/file.tracer".to_string(),
+            current_input_path: "C:/tmp/input/file.zip".to_string(),
             ..Default::default()
         };
 
@@ -191,7 +191,7 @@ mod tests {
         assert!(line.contains("[core][crypto] enc/write"));
         assert!(line.contains("2/4"));
         assert!(line.contains("50%"));
-        assert!(line.contains("file.tracer"));
+        assert!(line.contains("file.zip"));
         assert!(line.contains("2.0 KB/s"));
         assert!(line.contains("eta 3s"));
     }
