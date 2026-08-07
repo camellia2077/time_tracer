@@ -6,7 +6,7 @@ internal class RuntimeTracerExchangeService(
         inputPath: String,
         outputPath: String,
         passphrase: String,
-        securityLevel: FileCryptoSecurityLevel,
+        securityLevel: TracerExchangeSecurityLevel,
         dateCheckMode: Int
     ) -> String,
     private val nativeExportTracerExchangeFromPayloadJson: (
@@ -29,8 +29,7 @@ internal class RuntimeTracerExchangeService(
     )
     private val importService = RuntimeTracerExchangeImportService(
         responseCodec = responseCodec,
-        nativeImportTracerExchange = nativeImportTracerExchange,
-        setProgressListener = setProgressListener
+        nativeImportTracerExchange = nativeImportTracerExchange
     )
     private val inspectService = RuntimeTracerExchangeInspectService(
         responseCodec = responseCodec,
@@ -42,9 +41,9 @@ internal class RuntimeTracerExchangeService(
         inputPath: String,
         outputPath: String,
         passphrase: String,
-        securityLevel: FileCryptoSecurityLevel = FileCryptoSecurityLevel.INTERACTIVE,
+        securityLevel: TracerExchangeSecurityLevel = TracerExchangeSecurityLevel.INTERACTIVE,
         dateCheckMode: Int = NativeBridge.DATE_CHECK_NONE,
-        onProgress: ((FileCryptoProgressEvent) -> Unit)? = null
+        onProgress: ((TracerExchangeProgressEvent) -> Unit)? = null
     ): TracerExchangeExportResult = exportService.exportTracerExchange(
         inputPath = inputPath,
         outputPath = outputPath,
@@ -58,11 +57,11 @@ internal class RuntimeTracerExchangeService(
         payloads: List<TracerExchangePayloadItem>,
         outputFd: Int,
         passphrase: String,
-        securityLevel: FileCryptoSecurityLevel = FileCryptoSecurityLevel.INTERACTIVE,
+        securityLevel: TracerExchangeSecurityLevel = TracerExchangeSecurityLevel.INTERACTIVE,
         dateCheckMode: Int = NativeBridge.DATE_CHECK_NONE,
         logicalSourceRootName: String = "data",
-        outputDisplayName: String = "data.tracer",
-        onProgress: ((FileCryptoProgressEvent) -> Unit)? = null
+        outputDisplayName: String = "data.zip",
+        onProgress: ((TracerExchangeProgressEvent) -> Unit)? = null
     ): TracerExchangeExportResult = exportService.exportTracerExchangeFromPayload(
         payloads = payloads,
         outputFd = outputFd,
@@ -77,19 +76,17 @@ internal class RuntimeTracerExchangeService(
     suspend fun importTracerExchange(
         inputPath: String,
         workRoot: String,
-        passphrase: String,
-        onProgress: ((FileCryptoProgressEvent) -> Unit)? = null
+        passphrase: String
     ): TracerExchangeImportResult = importService.importTracerExchange(
         inputPath = inputPath,
         workRoot = workRoot,
-        passphrase = passphrase,
-        onProgress = onProgress
+        passphrase = passphrase
     )
 
     suspend fun inspectTracerExchange(
         inputPath: String,
         passphrase: String,
-        onProgress: ((FileCryptoProgressEvent) -> Unit)? = null
+        onProgress: ((TracerExchangeProgressEvent) -> Unit)? = null
     ): TracerExchangeInspectResult = inspectService.inspectTracerExchange(
         inputPath = inputPath,
         passphrase = passphrase,

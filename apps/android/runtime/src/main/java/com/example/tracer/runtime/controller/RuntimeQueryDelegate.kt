@@ -174,14 +174,14 @@ internal class RuntimeQueryDelegate(
     suspend fun listActivityMappingNames(): ActivityMappingNamesResult =
         mappingDelegate.listActivityMappingNames()
 
-    suspend fun listActivityAliasMappings(): ActivityAliasMappingListResult =
-        mappingDelegate.listActivityAliasMappings()
+    suspend fun listActivityHierarchyLeafMappings(): ActivityHierarchyLeafMappingListResult =
+        mappingDelegate.listActivityHierarchyLeafMappings()
 
     suspend fun listCanonicalCatalog(): CanonicalCatalogResult =
         canonicalCatalogDelegate.listCanonicalCatalog()
 
-    suspend fun listActivityAliasKeys(): ActivityMappingNamesResult =
-        mappingDelegate.listActivityAliasKeys()
+    suspend fun listActivityHierarchyLeafKeys(): ActivityMappingNamesResult =
+        mappingDelegate.listActivityHierarchyLeafKeys()
 
     suspend fun listWakeKeywords(): ActivityMappingNamesResult =
         mappingDelegate.listWakeKeywords()

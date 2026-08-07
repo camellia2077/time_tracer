@@ -49,33 +49,11 @@ internal class NativeRuntimeBridge {
     fun nativeClearTxtIngestSyncStatus(): String =
         NativeBridge.nativeClearTxtIngestSyncStatus()
 
-    fun nativeEncryptFile(
-        inputPath: String,
-        outputPath: String,
-        passphrase: String,
-        securityLevel: FileCryptoSecurityLevel
-    ): String = NativeBridge.nativeEncryptFile(
-        inputPath = inputPath,
-        outputPath = outputPath,
-        passphrase = passphrase,
-        securityLevel = securityLevel.wireValue
-    )
-
-    fun nativeDecryptFile(
-        inputPath: String,
-        outputPath: String,
-        passphrase: String
-    ): String = NativeBridge.nativeDecryptFile(
-        inputPath = inputPath,
-        outputPath = outputPath,
-        passphrase = passphrase
-    )
-
     fun nativeExportTracerExchange(
         inputPath: String,
         outputPath: String,
         passphrase: String,
-        securityLevel: FileCryptoSecurityLevel,
+        securityLevel: TracerExchangeSecurityLevel,
         dateCheckMode: Int
     ): String = NativeBridge.nativeExportTracerExchange(
         inputPath = inputPath,

@@ -98,8 +98,8 @@ internal fun TracerTabRouteContent(
     onExportAllMonthsTracer: () -> Unit,
     onExportCurrentTxtTracer: () -> Unit,
     isTracerExportInProgress: Boolean,
-    selectedTracerSecurityLevel: FileCryptoSecurityLevel,
-    onTracerSecurityLevelChange: (FileCryptoSecurityLevel) -> Unit,
+    selectedTracerSecurityLevel: TracerExchangeSecurityLevel,
+    onTracerSecurityLevelChange: (TracerExchangeSecurityLevel) -> Unit,
     onCopyDiagnosticsPayload: () -> Unit,
     onEditDailyStatuses: () -> Unit
 ) {

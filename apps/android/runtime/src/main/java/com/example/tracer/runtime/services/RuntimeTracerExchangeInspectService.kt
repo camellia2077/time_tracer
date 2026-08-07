@@ -11,7 +11,7 @@ internal class RuntimeTracerExchangeInspectService(
     suspend fun inspectTracerExchange(
         inputPath: String,
         passphrase: String,
-        onProgress: ((FileCryptoProgressEvent) -> Unit)?
+        onProgress: ((TracerExchangeProgressEvent) -> Unit)?
     ): TracerExchangeInspectResult = withContext(Dispatchers.IO) {
         val safeInput = inputPath.trim()
         val safePassphrase = passphrase

@@ -63,6 +63,7 @@
 %1$s
 %2$s</string>
     <string name="record_label_activity_name">アクティビティ名</string>
+    <string name="record_activity_hierarchy_created">%1$s を %2$s カテゴリに保存しました</string>
     <string name="record_label_interval_start">開始</string>
     <string name="record_label_interval_end">終了</string>
     <string name="record_time_hour">時</string>

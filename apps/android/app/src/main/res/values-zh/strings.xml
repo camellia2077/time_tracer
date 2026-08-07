@@ -10,9 +10,9 @@
     <string name="tracer_tab_config">配置</string>
 
 
-    <string name="tracer_export_all_tracer_canceled">已取消完整交换包导出。</string>
+    <string name="tracer_export_all_tracer_canceled">已取消压缩包导出。</string>
     <string name="tracer_export_current_txt_canceled">已取消 TXT/TOML 导出。</string>
-    <string name="tracer_export_all_failed_no_months">完整交换包导出失败：没有可用月份。</string>
+    <string name="tracer_export_all_failed_no_months">压缩包导出失败：没有可用月份。</string>
     <string name="tracer_export_current_txt_failed_no_selection">TXT/TOML 导出失败：当前没有可导出的 TXT 或 TOML 文件。</string>
     <string name="tracer_export_error_invalid_month_key">%1$s：月份键无效。</string>
     <string name="tracer_export_error_source_file_not_found">%1$s：未找到源文件。</string>
@@ -22,18 +22,18 @@
     <string name="tracer_export_error_open_output_stream">无法打开输出流。</string>
     <string name="tracer_export_error_write_failed">%1$s：写入失败。</string>
     <plurals name="tracer_export_all_tracer_success">
-        <item quantity="other">完整交换包导出成功 -&gt; 包含 %1$d 个 TXT、%2$d 个配置 TOML、%3$d 个 manifest。</item>
+        <item quantity="other">压缩包导出成功 -&gt; 包含 %1$d 个 TXT、%2$d 个配置 TOML、%3$d 个 manifest。</item>
     </plurals>
     <plurals name="tracer_export_error_tail">
         <item quantity="other"> | ...（%1$d 个错误）</item>
     </plurals>
-    <string name="tracer_export_all_tracer_completed">完整交换包导出完成 -&gt; TXT %1$d/%2$d，配置 TOML %3$d，manifest %4$d。%5$s</string>
-    <string name="tracer_export_all_tracer_failed">完整交换包导出失败：%1$s</string>
+    <string name="tracer_export_all_tracer_completed">压缩包导出完成 -&gt; TXT %1$d/%2$d，配置 TOML %3$d，manifest %4$d。%5$s</string>
+    <string name="tracer_export_all_tracer_failed">压缩包导出失败：%1$s</string>
     <string name="tracer_export_current_txt_completed">TXT/TOML 导出完成 -&gt; TXT %1$d，TOML %2$d。</string>
     <string name="tracer_export_current_txt_failed">TXT/TOML 导出失败：%1$s</string>
     <string name="tracer_export_unknown_error">未知错误</string>
     <string name="tracer_export_already_in_progress">导出已在进行中。</string>
-    <string name="tracer_export_select_tracer_destination">请选择完整交换包导出目标目录。</string>
+    <string name="tracer_export_select_tracer_destination">请选择压缩包导出目标目录。</string>
     <string name="tracer_export_select_current_txt_destination">请选择 TXT/TOML 导出目标目录。</string>
     <string name="tracer_import_select_txt_folder">正在选择 TXT 文件夹...</string>
     <string name="tracer_import_txt_folder_canceled">已取消导入 TXT 文件夹。</string>
@@ -47,12 +47,12 @@
     <string name="tracer_import_toml_folder_no_toml_found">TOML 文件夹导入已跳过：未找到 TOML 文件。</string>
     <string name="tracer_import_toml_folder_completed_success">TOML 文件夹导入完成 -&gt; %1$d/%2$d 个 TOML 文件。</string>
     <string name="tracer_import_toml_folder_completed_with_errors">TOML 文件夹导入完成 -&gt; %1$d/%2$d 个 TOML 文件。%3$s</string>
-    <string name="tracer_import_select_single_tracer">正在选择单个 TRACER...</string>
-    <string name="tracer_import_single_tracer_canceled">已取消导入单个 TRACER。</string>
-    <string name="tracer_import_single_tracer_failed">导入单个 TRACER 失败：%1$s</string>
+    <string name="tracer_import_select_single_tracer">正在选择压缩包...</string>
+    <string name="tracer_import_single_tracer_canceled">已取消导入压缩包。</string>
+    <string name="tracer_import_single_tracer_failed">导入压缩包失败：%1$s</string>
     <string name="tracer_import_error_read_selected_document">无法读取所选文档。</string>
-    <string name="tracer_import_single_tracer_completed_success">单个 TRACER 导入完成 -&gt; %1$d/%2$d 个 TXT 文件。</string>
-    <string name="tracer_import_single_tracer_completed_with_errors">单个 TRACER 导入完成 -&gt; %1$d/%2$d 个 TXT 文件。%3$s</string>
+    <string name="tracer_import_single_tracer_completed_success">压缩包导入完成 -&gt; %1$d/%2$d 个 TXT 文件。</string>
+    <string name="tracer_import_single_tracer_completed_with_errors">压缩包导入完成 -&gt; %1$d/%2$d 个 TXT 文件。%3$s</string>
     <string name="tracer_import_confirm_title">确认导入</string>
     <string name="tracer_import_confirm_import">导入</string>
     <string name="tracer_import_confirm_cancel">取消</string>
@@ -61,22 +61,20 @@
     <plurals name="tracer_import_confirm_payload_count">
         <item quantity="other">%1$d 个 TXT 文件</item>
     </plurals>
-    <string name="tracer_crypto_passphrase_encrypt_title">加密口令</string>
-    <string name="tracer_crypto_passphrase_decrypt_title">解密口令</string>
-    <string name="tracer_crypto_passphrase_hint">输入口令</string>
-    <string name="tracer_crypto_passphrase_confirm_hint">确认口令</string>
-    <string name="tracer_crypto_passphrase_required">必须输入口令。</string>
-    <string name="tracer_crypto_passphrase_mismatch">两次输入口令不一致。</string>
+    <string name="tracer_crypto_passphrase_encrypt_title">加密密码</string>
+    <string name="tracer_crypto_passphrase_decrypt_title">解密密码</string>
+    <string name="tracer_crypto_passphrase_hint">输入密码</string>
+    <string name="tracer_crypto_passphrase_confirm_hint">确认密码</string>
+    <string name="tracer_crypto_passphrase_required">必须输入密码。</string>
+    <string name="tracer_crypto_passphrase_mismatch">两次输入密码不一致。</string>
     <string name="tracer_diagnostics_prepare">正在准备诊断载荷...</string>
-    <string name="tracer_progress_operation_export_tracer">导出完整交换包</string>
-    <string name="tracer_progress_operation_import_tracer">导入 TRACER</string>
+    <string name="tracer_progress_operation_export_tracer">导出压缩包</string>
     <string name="tracer_progress_phase_collect_records">正在收集记录文本</string>
     <string name="tracer_progress_phase_collect_config">正在收集解析配置</string>
     <string name="tracer_progress_phase_generate_manifest">正在生成交换 manifest</string>
     <string name="tracer_progress_phase_package_and_encrypt">正在打包并加密交换包</string>
     <string name="tracer_progress_phase_write_package_output">正在写出交换包文件</string>
     <string name="tracer_progress_overall_stage_detail">阶段 %1$d/%2$d | %3$s</string>
-    <string name="tracer_progress_current_stage_detail">%1$s %2$d%%</string>
     <string name="tracer_progress_detail_collect_records">TXT %1$d/%2$d</string>
     <string name="tracer_progress_detail_collect_config">配置 TOML %1$d/%2$d</string>
     <string name="tracer_progress_detail_generate_manifest">Manifest %1$d/%2$d</string>

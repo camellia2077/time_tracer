@@ -10,9 +10,9 @@
     <string name="tracer_tab_config">設定</string>
 
 
-    <string name="tracer_export_all_tracer_canceled">完全交換パッケージのエクスポートをキャンセルしました。</string>
+    <string name="tracer_export_all_tracer_canceled">圧縮ファイルのエクスポートをキャンセルしました。</string>
     <string name="tracer_export_current_txt_canceled">TXT/TOML のエクスポートをキャンセルしました。</string>
-    <string name="tracer_export_all_failed_no_months">完全交換パッケージのエクスポート失敗: 利用可能な月がありません。</string>
+    <string name="tracer_export_all_failed_no_months">圧縮ファイルのエクスポート失敗: 利用可能な月がありません。</string>
     <string name="tracer_export_current_txt_failed_no_selection">TXT/TOML のエクスポート失敗: エクスポート対象の TXT または TOML がありません。</string>
     <string name="tracer_export_error_invalid_month_key">%1$s: 月キーが無効です。</string>
     <string name="tracer_export_error_source_file_not_found">%1$s: ソースファイルが見つかりません。</string>
@@ -22,18 +22,18 @@
     <string name="tracer_export_error_open_output_stream">出力ストリームを開けません。</string>
     <string name="tracer_export_error_write_failed">%1$s: 書き込みに失敗しました。</string>
     <plurals name="tracer_export_all_tracer_success">
-        <item quantity="other">完全交換パッケージのエクスポート成功 -&gt; %1$d 個の TXT、%2$d 個の設定 TOML、%3$d 個の manifest を含みます。</item>
+        <item quantity="other">圧縮ファイルのエクスポート成功 -&gt; %1$d 個の TXT、%2$d 個の設定 TOML、%3$d 個の manifest を含みます。</item>
     </plurals>
     <plurals name="tracer_export_error_tail">
         <item quantity="other"> | ...(%1$d 件のエラー)</item>
     </plurals>
-    <string name="tracer_export_all_tracer_completed">完全交換パッケージのエクスポート完了 -&gt; TXT %1$d/%2$d、設定 TOML %3$d、manifest %4$d。%5$s</string>
-    <string name="tracer_export_all_tracer_failed">完全交換パッケージのエクスポート失敗: %1$s</string>
+    <string name="tracer_export_all_tracer_completed">圧縮ファイルのエクスポート完了 -&gt; TXT %1$d/%2$d、設定 TOML %3$d、manifest %4$d。%5$s</string>
+    <string name="tracer_export_all_tracer_failed">圧縮ファイルのエクスポート失敗: %1$s</string>
     <string name="tracer_export_current_txt_completed">TXT/TOML のエクスポート完了 -&gt; TXT %1$d、TOML %2$d。</string>
     <string name="tracer_export_current_txt_failed">TXT/TOML のエクスポート失敗: %1$s</string>
     <string name="tracer_export_unknown_error">不明なエラー</string>
     <string name="tracer_export_already_in_progress">エクスポートはすでに進行中です。</string>
-    <string name="tracer_export_select_tracer_destination">完全交換パッケージの出力先フォルダを選択してください。</string>
+    <string name="tracer_export_select_tracer_destination">圧縮ファイルの出力先フォルダを選択してください。</string>
     <string name="tracer_export_select_current_txt_destination">TXT/TOML の出力先フォルダを選択してください。</string>
     <string name="tracer_import_select_txt_folder">TXT フォルダを選択中...</string>
     <string name="tracer_import_txt_folder_canceled">TXT フォルダの取り込みをキャンセルしました。</string>
@@ -47,12 +47,12 @@
     <string name="tracer_import_toml_folder_no_toml_found">TOML フォルダの取り込みをスキップしました: TOML ファイルが見つかりません。</string>
     <string name="tracer_import_toml_folder_completed_success">TOML フォルダの取り込み完了 -&gt; %1$d/%2$d 個の TOML ファイル。</string>
     <string name="tracer_import_toml_folder_completed_with_errors">TOML フォルダの取り込み完了 -&gt; %1$d/%2$d 個の TOML ファイル。%3$s</string>
-    <string name="tracer_import_select_single_tracer">単一 TRACER を選択中...</string>
-    <string name="tracer_import_single_tracer_canceled">単一 TRACER の取り込みをキャンセルしました。</string>
-    <string name="tracer_import_single_tracer_failed">単一 TRACER の取り込み失敗: %1$s</string>
+    <string name="tracer_import_select_single_tracer">圧縮ファイルを選択中...</string>
+    <string name="tracer_import_single_tracer_canceled">圧縮ファイルの取り込みをキャンセルしました。</string>
+    <string name="tracer_import_single_tracer_failed">圧縮ファイルの取り込み失敗: %1$s</string>
     <string name="tracer_import_error_read_selected_document">選択したドキュメントを読み取れません。</string>
-    <string name="tracer_import_single_tracer_completed_success">単一 TRACER の取り込み完了 -&gt; %1$d/%2$d 個の TXT ファイル。</string>
-    <string name="tracer_import_single_tracer_completed_with_errors">単一 TRACER の取り込み完了 -&gt; %1$d/%2$d 個の TXT ファイル。%3$s</string>
+    <string name="tracer_import_single_tracer_completed_success">圧縮ファイルの取り込み完了 -&gt; %1$d/%2$d 個の TXT ファイル。</string>
+    <string name="tracer_import_single_tracer_completed_with_errors">圧縮ファイルの取り込み完了 -&gt; %1$d/%2$d 個の TXT ファイル。%3$s</string>
     <string name="tracer_import_confirm_title">インポート確認</string>
     <string name="tracer_import_confirm_import">インポート</string>
     <string name="tracer_import_confirm_cancel">キャンセル</string>
@@ -61,22 +61,20 @@
     <plurals name="tracer_import_confirm_payload_count">
         <item quantity="other">%1$d 個の TXT ファイル</item>
     </plurals>
-    <string name="tracer_crypto_passphrase_encrypt_title">暗号化パスフレーズ</string>
-    <string name="tracer_crypto_passphrase_decrypt_title">復号パスフレーズ</string>
-    <string name="tracer_crypto_passphrase_hint">パスフレーズを入力</string>
-    <string name="tracer_crypto_passphrase_confirm_hint">パスフレーズを再入力</string>
-    <string name="tracer_crypto_passphrase_required">パスフレーズは必須です。</string>
-    <string name="tracer_crypto_passphrase_mismatch">パスフレーズが一致しません。</string>
+    <string name="tracer_crypto_passphrase_encrypt_title">暗号化パスワード</string>
+    <string name="tracer_crypto_passphrase_decrypt_title">復号パスワード</string>
+    <string name="tracer_crypto_passphrase_hint">パスワードを入力</string>
+    <string name="tracer_crypto_passphrase_confirm_hint">パスワードを再入力</string>
+    <string name="tracer_crypto_passphrase_required">パスワードは必須です。</string>
+    <string name="tracer_crypto_passphrase_mismatch">パスワードが一致しません。</string>
     <string name="tracer_diagnostics_prepare">診断ペイロードを準備中...</string>
-    <string name="tracer_progress_operation_export_tracer">完全交換パッケージをエクスポート</string>
-    <string name="tracer_progress_operation_import_tracer">TRACER を取り込む</string>
+    <string name="tracer_progress_operation_export_tracer">圧縮ファイルをエクスポート</string>
     <string name="tracer_progress_phase_collect_records">記録テキストを収集中</string>
     <string name="tracer_progress_phase_collect_config">解析設定を収集中</string>
     <string name="tracer_progress_phase_generate_manifest">交換 manifest を生成中</string>
     <string name="tracer_progress_phase_package_and_encrypt">交換パッケージを梱包・暗号化中</string>
     <string name="tracer_progress_phase_write_package_output">交換パッケージを書き出し中</string>
     <string name="tracer_progress_overall_stage_detail">ステージ %1$d/%2$d | %3$s</string>
-    <string name="tracer_progress_current_stage_detail">%1$s %2$d%%</string>
     <string name="tracer_progress_detail_collect_records">TXT %1$d/%2$d</string>
     <string name="tracer_progress_detail_collect_config">設定 TOML %1$d/%2$d</string>
     <string name="tracer_progress_detail_generate_manifest">Manifest %1$d/%2$d</string>

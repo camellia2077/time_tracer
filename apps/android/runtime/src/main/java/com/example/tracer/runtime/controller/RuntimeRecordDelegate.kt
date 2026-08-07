@@ -166,7 +166,7 @@ internal class RuntimeRecordDelegate(
                 targetDateIso = targetDateIso,
                 preferredTxtPath = preferredTxtPath,
                 timeOrderMode = timeOrderMode
-            )
+            ).withActivityHierarchyRegistration(registration)
         } catch (error: Exception) {
             buildRecordActionFailure(prefix = "Record failed", error = error)
         }
@@ -361,7 +361,7 @@ internal class RuntimeRecordDelegate(
             txtSaveAndSyncFlow.saveTxtFileAndSync(
                 relativePath = targetRelativePath,
                 content = updatedContent
-            )
+            ).withActivityHierarchyRegistration(registration)
         } catch (error: Exception) {
             buildRecordActionFailure(prefix = "Record interval failed", error = error)
         }
@@ -403,6 +403,14 @@ internal class RuntimeRecordDelegate(
     // dayMarker stays MMDD at the UI/API boundary; dMMDD is only the raw TXT
     // header written to files so it cannot collide with HHMM event records.
     private fun buildDayMarkerLine(dayMarker: String): String = "d$dayMarker"
+
+    private fun RecordActionResult.withActivityHierarchyRegistration(
+        registration: ActivityHierarchyAutoRegistrationResult
+    ): RecordActionResult = copy(
+        activityHierarchyCreated = registration.created,
+        activityHierarchyCategory = registration.categoryName,
+        activityHierarchyActivity = registration.activityName
+    )
 
     private fun normalizeToHhmmss(rawTime: String): String? {
         val time = rawTime.trim()

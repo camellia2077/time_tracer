@@ -95,7 +95,7 @@ class RecordUseCasesTest {
         )
 
         assertEquals("coding\n25m", result.statusText)
-        assertEquals("coding", result.lastRecordedActivityAlias)
+        assertEquals("coding", result.lastRecordedActivityHierarchyLeaf)
         assertEquals("00:25", result.lastRecordedDuration)
     }
 
@@ -260,9 +260,9 @@ class RecordUseCasesTest {
                 )
             ),
             queryGateway = FakeQueryGateway(
-                aliasMappingsResult = ActivityAliasMappingListResult(
+                aliasMappingsResult = ActivityHierarchyLeafMappingListResult(
                     ok = true,
-                    entries = listOf(ActivityAliasMappingEntry("学习", "study")),
+                    entries = listOf(ActivityHierarchyLeafMappingEntry("学习", "study")),
                     message = "ok"
                 )
             ),
@@ -283,7 +283,7 @@ class RecordUseCasesTest {
         )
 
         assertEquals("study\n1h 30m", result.statusText)
-        assertEquals("学习", result.lastRecordedActivityAlias)
+        assertEquals("学习", result.lastRecordedActivityHierarchyLeaf)
         assertEquals("01:30", result.lastRecordedDuration)
     }
 
@@ -418,10 +418,10 @@ class RecordUseCasesTest {
                     suggestions = listOf("recreation_game_clash-royale", "meal"),
                     message = "ok"
                 ),
-                aliasMappingsResult = ActivityAliasMappingListResult(
+                aliasMappingsResult = ActivityHierarchyLeafMappingListResult(
                     ok = true,
                     entries = listOf(
-                        ActivityAliasMappingEntry("皇室战争", "recreation_game_clash-royale")
+                        ActivityHierarchyLeafMappingEntry("皇室战争", "recreation_game_clash-royale")
                     ),
                     message = "ok"
                 )
@@ -563,12 +563,12 @@ class RecordUseCasesTest {
                 readResults = emptyMap()
             ),
             queryGateway = FakeQueryGateway(
-                aliasMappingsResult = ActivityAliasMappingListResult(
+                aliasMappingsResult = ActivityHierarchyLeafMappingListResult(
                     ok = true,
                     entries = listOf(
-                        ActivityAliasMappingEntry("皇室战争", "recreation_game_clash-royale"),
-                        ActivityAliasMappingEntry("cr", "recreation_game_clash-royale"),
-                        ActivityAliasMappingEntry("Clash Royale", "recreation_game_clash-royale")
+                        ActivityHierarchyLeafMappingEntry("皇室战争", "recreation_game_clash-royale"),
+                        ActivityHierarchyLeafMappingEntry("cr", "recreation_game_clash-royale"),
+                        ActivityHierarchyLeafMappingEntry("Clash Royale", "recreation_game_clash-royale")
                     ),
                     message = "ok"
                 )
@@ -597,9 +597,9 @@ class RecordUseCasesTest {
                 readResults = emptyMap()
             ),
             queryGateway = FakeQueryGateway(
-                aliasMappingsResult = ActivityAliasMappingListResult(
+                aliasMappingsResult = ActivityHierarchyLeafMappingListResult(
                     ok = true,
-                    entries = listOf(ActivityAliasMappingEntry("快递", "routine_express")),
+                    entries = listOf(ActivityHierarchyLeafMappingEntry("快递", "routine_express")),
                     message = "ok"
                 )
             )
@@ -1346,7 +1346,7 @@ private class FakeQueryGateway(
         suggestions = emptyList(),
         message = "ok"
     ),
-    private val aliasMappingsResult: ActivityAliasMappingListResult = ActivityAliasMappingListResult(
+    private val aliasMappingsResult: ActivityHierarchyLeafMappingListResult = ActivityHierarchyLeafMappingListResult(
         ok = false,
         entries = emptyList(),
         message = "not implemented"
@@ -1402,7 +1402,7 @@ private class FakeQueryGateway(
     override suspend fun listWakeKeywords(): ActivityMappingNamesResult =
         wakeKeywordsResult
 
-    override suspend fun listActivityAliasMappings(): ActivityAliasMappingListResult =
+    override suspend fun listActivityHierarchyLeafMappings(): ActivityHierarchyLeafMappingListResult =
         aliasMappingsResult
 
     override suspend fun listCanonicalCatalog(): CanonicalCatalogResult =

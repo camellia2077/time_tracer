@@ -11,5 +11,4 @@ interface RuntimeGateway :
     DataFolderSnapshotGateway,
     ActivityHierarchyGateway,
     ActivityHierarchyMigrationGateway,
-    FileCryptoGateway,
     TracerExchangeGateway

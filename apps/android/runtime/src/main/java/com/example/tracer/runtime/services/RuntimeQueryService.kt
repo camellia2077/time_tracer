@@ -33,14 +33,14 @@ internal class RuntimeQueryService(
     suspend fun listActivityMappingNames(): ActivityMappingNamesResult =
         queryDelegate.listActivityMappingNames()
 
-    suspend fun listActivityAliasMappings(): ActivityAliasMappingListResult =
-        queryDelegate.listActivityAliasMappings()
+    suspend fun listActivityHierarchyLeafMappings(): ActivityHierarchyLeafMappingListResult =
+        queryDelegate.listActivityHierarchyLeafMappings()
 
     suspend fun listCanonicalCatalog(): CanonicalCatalogResult =
         queryDelegate.listCanonicalCatalog()
 
-    suspend fun listActivityAliasKeys(): ActivityMappingNamesResult =
-        queryDelegate.listActivityAliasKeys()
+    suspend fun listActivityHierarchyLeafKeys(): ActivityMappingNamesResult =
+        queryDelegate.listActivityHierarchyLeafKeys()
 
     suspend fun listWakeKeywords(): ActivityMappingNamesResult =
         queryDelegate.listWakeKeywords()

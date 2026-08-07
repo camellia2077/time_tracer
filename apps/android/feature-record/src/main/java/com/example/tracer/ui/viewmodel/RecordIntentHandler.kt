@@ -136,22 +136,18 @@ internal class RecordIntentHandler(
 
     fun updateCryptoProgress(
         state: RecordUiState,
-        event: FileCryptoProgressEvent,
+        event: TracerExchangeProgressEvent,
         operationTextOverride: String? = null,
         phaseTextOverride: String? = null,
         overallProgressOverride: Float? = null,
-        overallTextOverride: String? = null,
-        currentTextOverride: String? = null,
-        currentProgressOverride: Float? = null
+        overallTextOverride: String? = null
     ): RecordUiState = RecordStateReducer.updateCryptoProgress(
         state = state,
         event = event,
         operationTextOverride = operationTextOverride,
         phaseTextOverride = phaseTextOverride,
         overallProgressOverride = overallProgressOverride,
-        overallTextOverride = overallTextOverride,
-        currentTextOverride = currentTextOverride,
-        currentProgressOverride = currentProgressOverride
+        overallTextOverride = overallTextOverride
     )
 
     fun finishCryptoProgress(

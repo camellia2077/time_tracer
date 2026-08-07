@@ -167,11 +167,11 @@ class NativeTxtRuntimeCodecTest {
         assertEquals("swimming", hierarchy.nodes[1].children.single().canonicalKey)
         assertEquals(listOf("游泳"), hierarchy.nodes[1].children.single().aliases)
 
-        val presentation = hierarchy.toActivityAliasDocument()
-        assertEquals("walk", (presentation.nodes[0] as ActivityAlias).canonicalLeaf)
-        val cardio = presentation.nodes[1] as ActivityCategory
+        val presentation = hierarchy.toActivityHierarchyDocument()
+        assertEquals("walk", (presentation.nodes[0] as ActivityHierarchyLeaf).canonicalLeaf)
+        val cardio = presentation.nodes[1] as ActivityHierarchyGroup
         assertEquals("cardio", cardio.name)
-        assertEquals("swimming", (cardio.nodes.single() as ActivityAlias).canonicalLeaf)
+        assertEquals("swimming", (cardio.nodes.single() as ActivityHierarchyLeaf).canonicalLeaf)
     }
 
     @Test

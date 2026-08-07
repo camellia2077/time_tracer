@@ -5,9 +5,9 @@ interface TracerExchangeGateway {
         inputPath: String,
         outputPath: String,
         passphrase: String,
-        securityLevel: FileCryptoSecurityLevel = FileCryptoSecurityLevel.INTERACTIVE,
+        securityLevel: TracerExchangeSecurityLevel = TracerExchangeSecurityLevel.INTERACTIVE,
         dateCheckMode: Int = 0,
-        onProgress: ((FileCryptoProgressEvent) -> Unit)? = null
+        onProgress: ((TracerExchangeProgressEvent) -> Unit)? = null
     ): TracerExchangeExportResult = TracerExchangeExportResult(
         ok = false,
         message = "Complete exchange package export is not supported by current runtime.",
@@ -22,11 +22,11 @@ interface TracerExchangeGateway {
         payloads: List<TracerExchangePayloadItem>,
         outputFd: Int,
         passphrase: String,
-        securityLevel: FileCryptoSecurityLevel = FileCryptoSecurityLevel.INTERACTIVE,
+        securityLevel: TracerExchangeSecurityLevel = TracerExchangeSecurityLevel.INTERACTIVE,
         dateCheckMode: Int = 0,
         logicalSourceRootName: String = "data",
-        outputDisplayName: String = "data.tracer",
-        onProgress: ((FileCryptoProgressEvent) -> Unit)? = null
+        outputDisplayName: String = "data.zip",
+        onProgress: ((TracerExchangeProgressEvent) -> Unit)? = null
     ): TracerExchangeExportResult = TracerExchangeExportResult(
         ok = false,
         message = "Complete exchange package export is not supported by current runtime.",
@@ -40,8 +40,7 @@ interface TracerExchangeGateway {
     suspend fun importTracerExchange(
         inputPath: String,
         workRoot: String,
-        passphrase: String,
-        onProgress: ((FileCryptoProgressEvent) -> Unit)? = null
+        passphrase: String
     ): TracerExchangeImportResult = TracerExchangeImportResult(
         ok = false,
         message = "Import tracer exchange is not supported by current runtime.",
@@ -52,7 +51,7 @@ interface TracerExchangeGateway {
     suspend fun inspectTracerExchange(
         inputPath: String,
         passphrase: String,
-        onProgress: ((FileCryptoProgressEvent) -> Unit)? = null
+        onProgress: ((TracerExchangeProgressEvent) -> Unit)? = null
     ): TracerExchangeInspectResult = TracerExchangeInspectResult(
         ok = false,
         message = "Inspect tracer exchange is not supported by current runtime.",

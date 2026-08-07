@@ -49,7 +49,7 @@ internal class ActivityHierarchyMoveCoordinator(
                 )
             }
             val described = activityHierarchyGateway.describeActivityHierarchy(content)
-            val document = described.hierarchy?.toActivityAliasDocument()
+            val document = described.hierarchy?.toActivityHierarchyDocument()
             if (!described.ok || document == null) {
                 return ActivityHierarchyMoveDestinationsOutcome.Failed(
                     described.message.ifBlank {

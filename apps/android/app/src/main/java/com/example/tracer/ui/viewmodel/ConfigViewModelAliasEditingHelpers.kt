@@ -57,7 +57,7 @@ internal suspend fun resolveAliasFilePathForParent(
     activityHierarchyGateway: ActivityHierarchyGateway,
     aliasFiles: List<ConfigTomlFileEntry>,
     currentFilePath: String,
-    currentAliasDocument: AliasTomlDocument?,
+    currentActivityHierarchyDocument: ActivityHierarchyDocument?,
     parent: String
 ): String? {
     val normalizedParent = parent.trim()
@@ -65,7 +65,7 @@ internal suspend fun resolveAliasFilePathForParent(
     val aliasEntries = aliasFiles.filter { isAliasConfigFilePath(it.relativePath) }
     for (entry in aliasEntries) {
         val currentParent = if (entry.relativePath == currentFilePath) {
-            currentAliasDocument?.parent
+            currentActivityHierarchyDocument?.parent
         } else {
             configGateway.readConfigTomlFile(entry.relativePath)
                 .takeIf { it.ok }

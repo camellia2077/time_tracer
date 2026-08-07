@@ -14,14 +14,14 @@ data class ActivityMappingNamesResult(
     val operationId: String = ""
 )
 
-data class ActivityAliasMappingEntry(
+data class ActivityHierarchyLeafMappingEntry(
     val alias: String,
     val canonical: String
 )
 
-data class ActivityAliasMappingListResult(
+data class ActivityHierarchyLeafMappingListResult(
     val ok: Boolean,
-    val entries: List<ActivityAliasMappingEntry>,
+    val entries: List<ActivityHierarchyLeafMappingEntry>,
     val message: String,
     val operationId: String = ""
 )

@@ -203,10 +203,10 @@ class ConfigViewModelTest {
 
         val breakfastEntryId = requireNotNull(viewModel.uiState.aliasDocumentDraft)
             .nodes
-            .filterIsInstance<AliasTomlGroup>()
+            .filterIsInstance<ActivityHierarchyGroup>()
             .first { it.name == "breakfast" }
             .nodes
-            .filterIsInstance<AliasTomlEntry>()
+            .filterIsInstance<ActivityHierarchyLeaf>()
             .first()
             .id
 
@@ -302,12 +302,12 @@ class ConfigViewModelTest {
 
         val document = requireNotNull(viewModel.uiState.aliasDocumentDraft)
         val breakfast = document.nodes
-            .filterIsInstance<AliasTomlGroup>()
+            .filterIsInstance<ActivityHierarchyGroup>()
             .first { it.name == "breakfast" }
         val dinner = document.nodes
-            .filterIsInstance<AliasTomlGroup>()
+            .filterIsInstance<ActivityHierarchyGroup>()
             .first { it.name == "dinner" }
-        val entry = breakfast.nodes.filterIsInstance<AliasTomlEntry>().single()
+        val entry = breakfast.nodes.filterIsInstance<ActivityHierarchyLeaf>().single()
         val originalToml = viewModel.uiState.aliasAdvancedTomlDraft
 
         viewModel.previewAliasEntryMove(entry.id, dinner.id)
@@ -328,10 +328,10 @@ class ConfigViewModelTest {
         advanceUntilIdle()
 
         val document = requireNotNull(viewModel.uiState.aliasDocumentDraft)
-        val breakfast = document.nodes.filterIsInstance<AliasTomlGroup>()
+        val breakfast = document.nodes.filterIsInstance<ActivityHierarchyGroup>()
             .first { it.name == "breakfast" }
-            .nodes.filterIsInstance<AliasTomlEntry>().first()
-        val dinnerGroup = document.nodes.filterIsInstance<AliasTomlGroup>()
+            .nodes.filterIsInstance<ActivityHierarchyLeaf>().first()
+        val dinnerGroup = document.nodes.filterIsInstance<ActivityHierarchyGroup>()
             .first { it.name == "dinner" }
 
         viewModel.previewAliasEntryMove(breakfast.id, dinnerGroup.id)
@@ -349,20 +349,50 @@ class ConfigViewModelTest {
     }
 
     @Test
+    fun preparing_alias_group_move_includes_other_toml_hierarchies() = runTest(dispatcher) {
+        val runtime = FakeConfigRuntime()
+        val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
+        advanceUntilIdle()
+
+        val breakfast = requireNotNull(viewModel.uiState.aliasDocumentDraft).nodes
+            .filterIsInstance<ActivityHierarchyGroup>()
+            .first { it.name == "breakfast" }
+
+        viewModel.prepareAliasGroupMove(breakfast.id)
+        advanceUntilIdle()
+
+        val destinations = viewModel.uiState.aliasEntryMoveDestinations
+        assertEquals(
+            setOf(
+                "user/activity_hierarchy/meal.toml",
+                "user/activity_hierarchy/recreation.toml"
+            ),
+            destinations.map { it.sourceName }.toSet()
+        )
+        assertFalse(destinations.first { it.sourceName.endsWith("meal.toml") }.rootSelectable)
+        assertTrue(destinations.first { it.sourceName.endsWith("recreation.toml") }.rootSelectable)
+        assertTrue(
+            destinations.first { it.sourceName.endsWith("recreation.toml") }.document.nodes
+                .filterIsInstance<ActivityHierarchyGroup>()
+                .any { it.name == "online-platforms" }
+        )
+    }
+
+    @Test
     fun promoting_alias_to_category_preserves_its_record_name_and_canonical_leaf() = runTest(dispatcher) {
         val runtime = FakeConfigRuntime()
         val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
         advanceUntilIdle()
         val breakfast = requireNotNull(viewModel.uiState.aliasDocumentDraft).nodes
-            .filterIsInstance<AliasTomlGroup>().first { it.name == "breakfast" }
-            .nodes.filterIsInstance<AliasTomlEntry>().single()
+            .filterIsInstance<ActivityHierarchyGroup>().first { it.name == "breakfast" }
+            .nodes.filterIsInstance<ActivityHierarchyLeaf>().single()
 
         viewModel.promoteAliasEntryToGroup(breakfast.id)
         advanceUntilIdle()
 
         val category = requireNotNull(viewModel.uiState.aliasDocumentDraft).nodes
-            .filterIsInstance<AliasTomlGroup>().first { it.name == "breakfast" }
-            .nodes.filterIsInstance<AliasTomlGroup>().single()
+            .filterIsInstance<ActivityHierarchyGroup>().first { it.name == "breakfast" }
+            .nodes.filterIsInstance<ActivityHierarchyGroup>().single()
         assertEquals(listOf("早餐"), category.groupAliases)
         assertTrue(category.nodes.isEmpty())
         assertTrue(runtime.lastMigrationRequest != null)
@@ -374,13 +404,13 @@ class ConfigViewModelTest {
         val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
         advanceUntilIdle()
         val entry = requireNotNull(viewModel.uiState.aliasDocumentDraft).nodes
-            .filterIsInstance<AliasTomlGroup>().first { it.name == "breakfast" }
-            .nodes.filterIsInstance<AliasTomlEntry>().single()
+            .filterIsInstance<ActivityHierarchyGroup>().first { it.name == "breakfast" }
+            .nodes.filterIsInstance<ActivityHierarchyLeaf>().single()
         viewModel.promoteAliasEntryToGroup(entry.id)
         advanceUntilIdle()
         val category = requireNotNull(viewModel.uiState.aliasDocumentDraft).nodes
-            .filterIsInstance<AliasTomlGroup>().first { it.name == "breakfast" }
-            .nodes.filterIsInstance<AliasTomlGroup>().single()
+            .filterIsInstance<ActivityHierarchyGroup>().first { it.name == "breakfast" }
+            .nodes.filterIsInstance<ActivityHierarchyGroup>().single()
 
         viewModel.renameGroupAlias(category.id, "早餐", "早饭")
         advanceUntilIdle()
@@ -398,12 +428,12 @@ class ConfigViewModelTest {
         val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
         advanceUntilIdle()
         val entry = requireNotNull(viewModel.uiState.aliasDocumentDraft).nodes
-            .filterIsInstance<AliasTomlGroup>().first { it.name == "dinner" }
-            .nodes.filterIsInstance<AliasTomlEntry>().single()
+            .filterIsInstance<ActivityHierarchyGroup>().first { it.name == "dinner" }
+            .nodes.filterIsInstance<ActivityHierarchyLeaf>().single()
         viewModel.promoteAliasEntryToGroup(entry.id)
         advanceUntilIdle()
         val category = requireNotNull(viewModel.uiState.aliasDocumentDraft).nodes
-            .filterIsInstance<AliasTomlGroup>().first { it.name == "dinner" }
+            .filterIsInstance<ActivityHierarchyGroup>().first { it.name == "dinner" }
 
         viewModel.updateGroupAliases(category.id, listOf("晚饭", "晚餐"))
         advanceUntilIdle()
@@ -419,13 +449,13 @@ class ConfigViewModelTest {
         val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
         advanceUntilIdle()
         val category = requireNotNull(viewModel.uiState.aliasDocumentDraft).nodes
-            .filterIsInstance<AliasTomlGroup>().first { it.name == "breakfast" }
+            .filterIsInstance<ActivityHierarchyGroup>().first { it.name == "breakfast" }
 
         viewModel.addGroupAlias(category.id, "早餐记录")
         advanceUntilIdle()
 
         val updated = requireNotNull(viewModel.uiState.aliasDocumentDraft).nodes
-            .filterIsInstance<AliasTomlGroup>().first { it.name == "breakfast" }
+            .filterIsInstance<ActivityHierarchyGroup>().first { it.name == "breakfast" }
         assertEquals(listOf("早餐记录"), updated.groupAliases)
         assertTrue(runtime.lastMigrationRequest != null)
     }

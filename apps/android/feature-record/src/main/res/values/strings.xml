@@ -63,6 +63,7 @@
 %1$s
 %2$s</string>
     <string name="record_label_activity_name">Activity Name</string>
+    <string name="record_activity_hierarchy_created">%1$s saved to %2$s category</string>
     <string name="record_label_interval_start">Start</string>
     <string name="record_label_interval_end">End</string>
     <string name="record_time_hour">Hour</string>

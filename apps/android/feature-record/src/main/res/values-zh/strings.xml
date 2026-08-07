@@ -63,6 +63,7 @@
 %1$s
 %2$s</string>
     <string name="record_label_activity_name">活动名称</string>
+    <string name="record_activity_hierarchy_created">%1$s 已保存到 %2$s 分类</string>
     <string name="record_label_interval_start">开始时间</string>
     <string name="record_label_interval_end">结束时间</string>
     <string name="record_time_hour">时</string>

@@ -47,7 +47,7 @@ internal fun ConfigAliasEditorCard(
     selectedFileDisplayName: String,
     selectedFileContent: String,
     mode: AliasEditorMode,
-    document: AliasTomlDocument?,
+    document: ActivityHierarchyDocument?,
     movePlan: AliasEntryMovePlan?,
     moveDestinations: List<AliasEntryMoveDestinationDocument>,
     moveDestinationsLoading: Boolean,

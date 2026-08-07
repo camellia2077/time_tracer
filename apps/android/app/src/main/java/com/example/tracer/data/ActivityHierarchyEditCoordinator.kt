@@ -14,7 +14,7 @@ internal class ActivityHierarchyEditCoordinator(
             request.tomlContent,
             request.operation
         )
-        val document = coreResult.hierarchy?.toActivityAliasDocument()
+        val document = coreResult.hierarchy?.toActivityHierarchyDocument()
         if (!coreResult.ok || document == null) {
             return ActivityHierarchyEditOutcome.Failed(
                 coreResult.message.ifBlank { "Activity hierarchy operation failed." }
@@ -34,7 +34,7 @@ internal class ActivityHierarchyEditCoordinator(
             originalTomlContent = request.originalTomlContent,
             updatedTomlContent = request.updatedTomlContent
         )
-        val document = coreResult.hierarchy?.toActivityAliasDocument()
+        val document = coreResult.hierarchy?.toActivityHierarchyDocument()
         if (!coreResult.ok || document == null) {
             return ActivityHierarchyEditOutcome.Failed(
                 coreResult.message.ifBlank { "Activity hierarchy rewrite failed." }
@@ -55,7 +55,7 @@ internal class ActivityHierarchyEditCoordinator(
         configRelativePath: String,
         updatedTomlContent: String,
         replacementPlan: ActivityNameReplacementPlan,
-        document: AliasTomlDocument,
+        document: ActivityHierarchyDocument,
         updatedDocuments: List<ActivityHierarchyDocumentInput> = emptyList(),
         configFileRename: ActivityHierarchyDocumentRename? = null,
         allowMissingConfig: Boolean = false
@@ -84,7 +84,7 @@ internal class ActivityHierarchyEditCoordinator(
 
     private suspend fun persist(
         request: ActivityHierarchyMigrationRequest,
-        document: AliasTomlDocument
+        document: ActivityHierarchyDocument
     ): ActivityHierarchyEditOutcome {
         return when (val migration = migrationUseCase.applyCoreResult(
             configRelativePath = request.configRelativePath,
@@ -135,7 +135,7 @@ internal data class ActivityHierarchyRewriteRequest(
 
 internal sealed interface ActivityHierarchyEditOutcome {
     data class Applied(
-        val document: AliasTomlDocument,
+        val document: ActivityHierarchyDocument,
         val renderedToml: String,
         val migration: ActivityHierarchyMigrationResult
     ) : ActivityHierarchyEditOutcome

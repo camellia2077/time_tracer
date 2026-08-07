@@ -152,7 +152,7 @@ internal class ConfigSaveCoordinator(
             currentTomlContent = result.updatedTomlContent
         )
         if (duplicateMessage != null) return duplicateMessage
-        val document = result.hierarchy?.toActivityAliasDocument()
+        val document = result.hierarchy?.toActivityHierarchyDocument()
             ?: return "Activity hierarchy rewrite did not produce a document."
         return when (val outcome = activityHierarchyEditCoordinator.persistCoreResult(
             configRelativePath = relativePath,
@@ -171,7 +171,7 @@ internal class ConfigSaveCoordinator(
             originalTomlContent = uiState.selectedFileContent,
             updatedTomlContent = uiState.aliasAdvancedTomlDraft
         )
-        val document = rewritten.hierarchy?.toActivityAliasDocument()
+        val document = rewritten.hierarchy?.toActivityHierarchyDocument()
             ?: return uiState.copy(
                 aliasEditorErrorMessage = rewritten.message,
                 autoSaveStatus = ConfigAutoSaveStatus.FAILED,

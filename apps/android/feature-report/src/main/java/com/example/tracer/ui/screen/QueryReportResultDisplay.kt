@@ -124,67 +124,62 @@ internal fun QueryReportResultDisplay(
         )
     }
 
-    if (activeResult != null) {
+    if (activeResult is QueryResult.Tree) {
+        val periodLabel = stringResource(activeResult.period.reportModeResId())
+        Text(
+            text = stringResource(
+                R.string.report_result_title_tree,
+                periodLabel
+            ),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        QueryReportTreeResultContent(
+            result = activeResult,
+            modifier = Modifier.fillMaxWidth()
+        )
+    } else if (activeResult != null) {
         ElevatedCard(
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                when (activeResult) {
-                    is QueryResult.Report -> {
-                        if (parameterSection == ReportParameterSection.TIMELINE &&
-                            reportMode == ReportMode.DAY
-                        ) {
-                            ReportActivityTimeline(
-                                report = dayTimeline ?: StructuredDailyReport(
-                                    date = "",
-                                    totalDurationSeconds = 0L
-                                ),
-                                onUpdateActivityRemark = onUpdateActivityRemark,
-                                onUpdateDayRemark = onUpdateDayRemark
-                            )
-                        } else {
-                            MarkdownResultHeader(
-                                title = stringResource(R.string.report_result_title_report),
-                                markdown = activeResult.text,
-                                showDailyStatusEditor = reportMode == ReportMode.DAY,
-                                onCopyMarkdown = {
-                                    clipboardScope.launch {
-                                        clipboard.setClipEntry(
-                                            ClipEntry(
-                                                ClipData.newPlainText(
-                                                    "Time Tracer report",
-                                                    activeResult.text
-                                                )
-                                            )
+                val report = activeResult as QueryResult.Report
+                if (parameterSection == ReportParameterSection.TIMELINE &&
+                    reportMode == ReportMode.DAY
+                ) {
+                    ReportActivityTimeline(
+                        report = dayTimeline ?: StructuredDailyReport(
+                            date = "",
+                            totalDurationSeconds = 0L
+                        ),
+                        onUpdateActivityRemark = onUpdateActivityRemark,
+                        onUpdateDayRemark = onUpdateDayRemark
+                    )
+                } else {
+                    MarkdownResultHeader(
+                        title = stringResource(R.string.report_result_title_report),
+                        markdown = report.text,
+                        showDailyStatusEditor = reportMode == ReportMode.DAY,
+                        onCopyMarkdown = {
+                            clipboardScope.launch {
+                                clipboard.setClipEntry(
+                                    ClipEntry(
+                                        ClipData.newPlainText(
+                                            "Time Tracer report",
+                                            report.text
                                         )
-                                    }
-                                },
-                                onEditDailyStatuses = onEditDailyStatuses
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            ReportMarkdownText(
-                                markdown = activeResult.text,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                    }
-
-                    is QueryResult.Tree -> {
-                        val periodLabel = stringResource(activeResult.period.reportModeResId())
-                        Text(
-                            text = stringResource(
-                                R.string.report_result_title_tree,
-                                periodLabel
-                            ),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        QueryReportTreeResultContent(
-                            result = activeResult,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
+                                    )
+                                )
+                            }
+                        },
+                        onEditDailyStatuses = onEditDailyStatuses
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    ReportMarkdownText(
+                        markdown = report.text,
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
             }
         }

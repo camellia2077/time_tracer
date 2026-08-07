@@ -264,8 +264,8 @@ private class ReducerTestQueryGateway : QueryGateway {
     override suspend fun listActivityMappingNames(): ActivityMappingNamesResult =
         ActivityMappingNamesResult(ok = true, names = emptyList(), message = "ok")
 
-    override suspend fun listActivityAliasMappings(): ActivityAliasMappingListResult =
-        ActivityAliasMappingListResult(ok = true, entries = emptyList(), message = "ok")
+    override suspend fun listActivityHierarchyLeafMappings(): ActivityHierarchyLeafMappingListResult =
+        ActivityHierarchyLeafMappingListResult(ok = true, entries = emptyList(), message = "ok")
 
     override suspend fun listCanonicalCatalog(): CanonicalCatalogResult =
         CanonicalCatalogResult(ok = true, roots = emptyList(), entries = emptyList(), message = "ok")

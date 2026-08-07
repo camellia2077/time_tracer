@@ -10,13 +10,11 @@ internal class RuntimeTracerExchangeImportService(
         workRoot: String,
         passphrase: String
     ) -> String,
-    private val setProgressListener: (((String) -> Unit)?) -> Unit
 ) {
     suspend fun importTracerExchange(
         inputPath: String,
         workRoot: String,
-        passphrase: String,
-        onProgress: ((FileCryptoProgressEvent) -> Unit)?
+        passphrase: String
     ): TracerExchangeImportResult = withContext(Dispatchers.IO) {
         val safeInput = inputPath.trim()
         val safeWorkRoot = workRoot.trim()
@@ -39,16 +37,11 @@ internal class RuntimeTracerExchangeImportService(
         }
 
         runCatching {
-            val rawResponse = executeWithCryptoProgressListener(
-                onProgress = onProgress,
-                setProgressListener = setProgressListener
-            ) {
-                nativeImportTracerExchange(
-                    safeInput,
-                    safeWorkRoot,
-                    safePassphrase
-                )
-            }
+            val rawResponse = nativeImportTracerExchange(
+                safeInput,
+                safeWorkRoot,
+                safePassphrase
+            )
             val payload = responseCodec.parse(rawResponse)
             val content = RuntimeTracerExchangeResults.parseContentObject(payload.content)
             if (!payload.ok) {
@@ -96,4 +89,3 @@ internal class RuntimeTracerExchangeImportService(
         }
     }
 }
-

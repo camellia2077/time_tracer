@@ -104,7 +104,7 @@ data class RecordUiState(
     val suggestedActivities: List<RecordSuggestedActivity> = emptyList(),
     val canonicalCatalogRoots: List<CanonicalPathNode> = emptyList(),
     val canonicalCatalogStatusText: String = "",
-    val lastRecordedActivityAlias: String = "",
+    val lastRecordedActivityHierarchyLeaf: String = "",
     val lastRecordedDuration: String = "",
     val collapsedCanonicalRootPaths: Set<String> = emptySet(),
     val orderedCanonicalRootPaths: List<String> = emptyList(),
@@ -414,13 +414,11 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
     }
 
     fun updateCryptoProgress(
-        event: FileCryptoProgressEvent,
+        event: TracerExchangeProgressEvent,
         operationTextOverride: String? = null,
         phaseTextOverride: String? = null,
         overallProgressOverride: Float? = null,
-        overallTextOverride: String? = null,
-        currentTextOverride: String? = null,
-        currentProgressOverride: Float? = null
+        overallTextOverride: String? = null
     ) {
         uiState = intentHandler.updateCryptoProgress(
             state = uiState,
@@ -428,9 +426,7 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
             operationTextOverride = operationTextOverride,
             phaseTextOverride = phaseTextOverride,
             overallProgressOverride = overallProgressOverride,
-            overallTextOverride = overallTextOverride,
-            currentTextOverride = currentTextOverride,
-            currentProgressOverride = currentProgressOverride
+            overallTextOverride = overallTextOverride
         )
     }
 

@@ -11,7 +11,7 @@ internal class RuntimeTracerExchangeExportService(
         inputPath: String,
         outputPath: String,
         passphrase: String,
-        securityLevel: FileCryptoSecurityLevel,
+        securityLevel: TracerExchangeSecurityLevel,
         dateCheckMode: Int
     ) -> String,
     private val nativeExportTracerExchangeFromPayloadJson: (
@@ -24,9 +24,9 @@ internal class RuntimeTracerExchangeExportService(
         inputPath: String,
         outputPath: String,
         passphrase: String,
-        securityLevel: FileCryptoSecurityLevel,
+        securityLevel: TracerExchangeSecurityLevel,
         dateCheckMode: Int,
-        onProgress: ((FileCryptoProgressEvent) -> Unit)?
+        onProgress: ((TracerExchangeProgressEvent) -> Unit)?
     ): TracerExchangeExportResult = withContext(Dispatchers.IO) {
         val safeInput = inputPath.trim()
         val safeOutput = outputPath.trim()
@@ -95,15 +95,15 @@ internal class RuntimeTracerExchangeExportService(
         payloads: List<TracerExchangePayloadItem>,
         outputFd: Int,
         passphrase: String,
-        securityLevel: FileCryptoSecurityLevel,
+        securityLevel: TracerExchangeSecurityLevel,
         dateCheckMode: Int,
         logicalSourceRootName: String,
         outputDisplayName: String,
-        onProgress: ((FileCryptoProgressEvent) -> Unit)?
+        onProgress: ((TracerExchangeProgressEvent) -> Unit)?
     ): TracerExchangeExportResult = withContext(Dispatchers.IO) {
         val safePassphrase = passphrase
         val safeSourceRootName = logicalSourceRootName.trim().ifBlank { "data" }
-        val safeOutputDisplayName = outputDisplayName.trim().ifBlank { "data.tracer" }
+        val safeOutputDisplayName = outputDisplayName.trim().ifBlank { "data.zip" }
 
         if (payloads.isEmpty()) {
             return@withContext RuntimeTracerExchangeResults.exportFailure(

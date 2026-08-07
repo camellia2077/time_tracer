@@ -4,13 +4,13 @@ import org.tomlj.Toml
 import org.tomlj.TomlArray
 import org.tomlj.TomlTable
 
-internal typealias CanonicalAliasDocument = ActivityAliasDocument
-internal typealias CanonicalAliasNode = ActivityAliasNode
-internal typealias CanonicalAliasGroup = ActivityCategory
-internal typealias CanonicalAliasEntry = ActivityAlias
+internal typealias CanonicalActivityHierarchyDocument = ActivityHierarchyDocument
+internal typealias CanonicalAliasNode = ActivityHierarchyDocumentNode
+internal typealias CanonicalAliasGroup = ActivityHierarchyGroup
+internal typealias CanonicalAliasEntry = ActivityHierarchyLeaf
 
 internal data class CanonicalAliasParseResult(
-    val document: CanonicalAliasDocument? = null,
+    val document: CanonicalActivityHierarchyDocument? = null,
     val errorMessage: String = ""
 )
 
@@ -38,7 +38,7 @@ internal object RuntimeCanonicalCatalogParser {
 
         return runCatching {
             CanonicalAliasParseResult(
-                document = CanonicalAliasDocument(
+                document = CanonicalActivityHierarchyDocument(
                     parent = parent,
                     nodes = parseNodes(canonicalTable)
                 )
@@ -99,7 +99,7 @@ internal object RuntimeCanonicalCatalogParser {
 internal object RuntimeCanonicalCatalogBuilder {
     private const val CANONICAL_SEGMENT_SEPARATOR = "_"
 
-    fun build(entriesByFile: List<Pair<String, CanonicalAliasDocument>>): CanonicalCatalogResult {
+    fun build(entriesByFile: List<Pair<String, CanonicalActivityHierarchyDocument>>): CanonicalCatalogResult {
         val rootNodes = linkedMapOf<String, MutableCanonicalPathNode>()
         val canonicalEntries = linkedMapOf<String, MutableCanonicalCatalogEntry>()
 

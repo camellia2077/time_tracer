@@ -22,10 +22,10 @@ internal class RuntimeMappingQueryDelegate(
             }
         }
 
-    suspend fun listActivityAliasKeys(): ActivityMappingNamesResult =
+    suspend fun listActivityHierarchyLeafKeys(): ActivityMappingNamesResult =
         withContext(Dispatchers.IO) {
             try {
-                queryActivityAliasKeysFromCore()
+                queryActivityHierarchyLeafKeysFromCore()
             } catch (error: Exception) {
                 ActivityMappingNamesResult(
                     ok = false,
@@ -35,12 +35,12 @@ internal class RuntimeMappingQueryDelegate(
             }
         }
 
-    suspend fun listActivityAliasMappings(): ActivityAliasMappingListResult =
+    suspend fun listActivityHierarchyLeafMappings(): ActivityHierarchyLeafMappingListResult =
         withContext(Dispatchers.IO) {
             try {
-                queryActivityAliasMappingsFromCore()
+                queryActivityHierarchyLeafMappingsFromCore()
             } catch (error: Exception) {
-                ActivityAliasMappingListResult(
+                ActivityHierarchyLeafMappingListResult(
                     ok = false,
                     entries = emptyList(),
                     message = formatNativeFailure("list activity alias mappings failed", error)
@@ -122,7 +122,7 @@ internal class RuntimeMappingQueryDelegate(
         )
     }
 
-    private fun queryActivityAliasMappingsFromCore(): ActivityAliasMappingListResult {
+    private fun queryActivityHierarchyLeafMappingsFromCore(): ActivityHierarchyLeafMappingListResult {
         val queryResult = runDataQuery(
             DataQueryRequest(
                 action = NativeBridge.QUERY_ACTION_ACTIVITY_ALIAS_MAPPINGS,
@@ -130,7 +130,7 @@ internal class RuntimeMappingQueryDelegate(
             )
         )
         if (!queryResult.ok) {
-            return ActivityAliasMappingListResult(
+            return ActivityHierarchyLeafMappingListResult(
                 ok = false,
                 entries = emptyList(),
                 message = appendFailureContext(
@@ -141,9 +141,9 @@ internal class RuntimeMappingQueryDelegate(
             )
         }
 
-        val entries = parseActivityAliasMappingsContent(queryResult.outputText)
+        val entries = parseActivityHierarchyLeafMappingsContent(queryResult.outputText)
         if (entries.isEmpty()) {
-            return ActivityAliasMappingListResult(
+            return ActivityHierarchyLeafMappingListResult(
                 ok = false,
                 entries = emptyList(),
                 message = appendFailureContext(
@@ -154,7 +154,7 @@ internal class RuntimeMappingQueryDelegate(
             )
         }
 
-        return ActivityAliasMappingListResult(
+        return ActivityHierarchyLeafMappingListResult(
             ok = true,
             entries = entries,
             message = "Loaded ${entries.size} activity alias mapping entries.",
@@ -162,7 +162,7 @@ internal class RuntimeMappingQueryDelegate(
         )
     }
 
-    private fun queryActivityAliasKeysFromCore(): ActivityMappingNamesResult {
+    private fun queryActivityHierarchyLeafKeysFromCore(): ActivityMappingNamesResult {
         return queryNamedMappingSet(
             action = NativeBridge.QUERY_ACTION_MAPPING_ALIAS_KEYS,
             failurePrefix = "mapping alias keys query failed",

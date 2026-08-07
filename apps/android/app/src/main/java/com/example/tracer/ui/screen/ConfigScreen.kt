@@ -55,7 +55,7 @@ internal fun ConfigSection(
     selectedFileContent: String,
     editableContent: String,
     aliasEditorMode: AliasEditorMode,
-    aliasDocumentDraft: AliasTomlDocument?,
+    aliasDocumentDraft: ActivityHierarchyDocument?,
     aliasEntryMovePlan: AliasEntryMovePlan?,
     aliasEntryMoveDestinations: List<AliasEntryMoveDestinationDocument>,
     aliasEntryMoveDestinationsLoading: Boolean,

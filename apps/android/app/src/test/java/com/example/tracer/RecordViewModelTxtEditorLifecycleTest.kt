@@ -63,7 +63,7 @@ class RecordViewModelTxtEditorLifecycleTest {
                 inspectionEntries = emptyList(),
                 fileContents = emptyMap(),
                 aliasMappings = listOf(
-                    ActivityAliasMappingEntry("快递", "routine_express")
+                    ActivityHierarchyLeafMappingEntry("快递", "routine_express")
                 )
             )
             val viewModel = RecordViewModel(
@@ -159,7 +159,7 @@ private fun buildViewModelWithTxt(
 private class TxtEditorLifecycleFakeRuntime(
     private val inspectionEntries: List<TxtInspectionEntry>,
     private val fileContents: Map<String, String>,
-    private val aliasMappings: List<ActivityAliasMappingEntry> = emptyList(),
+    private val aliasMappings: List<ActivityHierarchyLeafMappingEntry> = emptyList(),
     private val readDelayByPathMs: Map<String, Long> = emptyMap()
 ) : RecordGateway, TxtStorageGateway, QueryGateway {
     override suspend fun inspectTxtFiles(): TxtInspectionResult = TxtInspectionResult(
@@ -245,8 +245,8 @@ private class TxtEditorLifecycleFakeRuntime(
     override suspend fun listActivityMappingNames(): ActivityMappingNamesResult =
         ActivityMappingNamesResult(ok = true, names = emptyList(), message = "ok")
 
-    override suspend fun listActivityAliasMappings(): ActivityAliasMappingListResult =
-        ActivityAliasMappingListResult(ok = true, entries = aliasMappings, message = "ok")
+    override suspend fun listActivityHierarchyLeafMappings(): ActivityHierarchyLeafMappingListResult =
+        ActivityHierarchyLeafMappingListResult(ok = true, entries = aliasMappings, message = "ok")
 
     override suspend fun listCanonicalCatalog(): CanonicalCatalogResult =
         CanonicalCatalogResult(ok = true, roots = emptyList(), entries = emptyList(), message = "ok")

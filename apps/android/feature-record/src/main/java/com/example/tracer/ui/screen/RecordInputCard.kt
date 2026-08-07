@@ -81,7 +81,7 @@ internal fun RecordInputCard(
     intervalStartedAtEpochMs: Long,
     attributionDateIso: String = "",
     currentTimeMillis: Long,
-    lastRecordedActivityAlias: String,
+    lastRecordedActivityHierarchyLeaf: String,
     lastRecordedDuration: String,
     onOpenCanonicalCatalog: () -> Unit = {},
     onOpenTxtPreview: () -> Unit,
@@ -134,11 +134,11 @@ internal fun RecordInputCard(
                 }
             }
 
-            if (lastRecordedActivityAlias.isNotBlank() && lastRecordedDuration.isNotBlank()) {
+            if (lastRecordedActivityHierarchyLeaf.isNotBlank() && lastRecordedDuration.isNotBlank()) {
                 Text(
                     text = stringResource(
                         R.string.record_last_recorded_summary,
-                        lastRecordedActivityAlias,
+                        lastRecordedActivityHierarchyLeaf,
                         lastRecordedDuration
                     ),
                     style = MaterialTheme.typography.bodyMedium,

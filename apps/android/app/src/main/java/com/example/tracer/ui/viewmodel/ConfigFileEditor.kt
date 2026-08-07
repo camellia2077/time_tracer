@@ -193,7 +193,7 @@ internal class ConfigFileEditor(
             content = readResult.content,
             aliasParentOptions = aliasParentOptions,
             statusText = statusText,
-            coreDocument = hierarchyResult?.hierarchy?.toActivityAliasDocument(),
+            coreDocument = hierarchyResult?.hierarchy?.toActivityHierarchyDocument(),
             coreErrorMessage = hierarchyResult?.takeIf { !it.ok }?.message.orEmpty()
         )
     }

@@ -53,15 +53,13 @@ fun DataManagementSection(
     onExportAllMonthsTracer: () -> Unit,
     onExportCurrentTxtTracer: () -> Unit,
     isTracerExportInProgress: Boolean,
-    selectedTracerSecurityLevel: FileCryptoSecurityLevel,
-    onTracerSecurityLevelChange: (FileCryptoSecurityLevel) -> Unit,
+    selectedTracerSecurityLevel: TracerExchangeSecurityLevel,
+    onTracerSecurityLevelChange: (TracerExchangeSecurityLevel) -> Unit,
     showCryptoProgress: Boolean,
     cryptoProgressTitle: String,
     cryptoProgressPhase: String,
     cryptoOverallProgress: Float,
     cryptoOverallText: String,
-    cryptoCurrentProgress: Float,
-    cryptoCurrentText: String,
     cryptoDetailsText: String,
     cryptoAdvancedDetailsText: String,
     onClearTxt: () -> Unit,
@@ -153,18 +151,6 @@ fun DataManagementSection(
                             text = cryptoOverallText,
                             style = MaterialTheme.typography.bodySmall
                         )
-                        Text(
-                            text = stringResource(R.string.data_progress_current_file),
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                        LinearProgressIndicator(
-                            progress = { cryptoCurrentProgress.coerceIn(0f, 1f) },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Text(
-                            text = cryptoCurrentText,
-                            style = MaterialTheme.typography.bodySmall
-                        )
                         if (cryptoDetailsText.isNotBlank()) {
                             Text(
                                 text = cryptoDetailsText,
@@ -213,9 +199,9 @@ fun DataManagementSection(
                             onDismissRequest = { isSecurityMenuExpanded = false }
                         ) {
                             val levelOptions = listOf(
-                                FileCryptoSecurityLevel.INTERACTIVE,
-                                FileCryptoSecurityLevel.MODERATE,
-                                FileCryptoSecurityLevel.HIGH
+                                TracerExchangeSecurityLevel.INTERACTIVE,
+                                TracerExchangeSecurityLevel.MODERATE,
+                                TracerExchangeSecurityLevel.HIGH
                             )
                             for (levelOption in levelOptions) {
                                 DropdownMenuItem(
@@ -375,15 +361,15 @@ fun DataManagementSection(
 }
 
 @Composable
-private fun tracerSecurityLevelLabel(level: FileCryptoSecurityLevel): String =
+private fun tracerSecurityLevelLabel(level: TracerExchangeSecurityLevel): String =
     when (level) {
-        FileCryptoSecurityLevel.INTERACTIVE -> stringResource(
+        TracerExchangeSecurityLevel.INTERACTIVE -> stringResource(
             R.string.data_security_level_interactive
         )
-        FileCryptoSecurityLevel.MODERATE -> stringResource(
+        TracerExchangeSecurityLevel.MODERATE -> stringResource(
             R.string.data_security_level_moderate
         )
-        FileCryptoSecurityLevel.HIGH -> stringResource(
+        TracerExchangeSecurityLevel.HIGH -> stringResource(
             R.string.data_security_level_high
         )
     }

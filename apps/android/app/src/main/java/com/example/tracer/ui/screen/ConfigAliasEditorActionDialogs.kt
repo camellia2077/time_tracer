@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 internal fun AliasPromoteConfirmDialog(
-    entry: AliasTomlEntry,
+    entry: ActivityHierarchyLeaf,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
 ) {
@@ -171,7 +171,7 @@ internal fun AliasManagementDialog(
 
 @Composable
 internal fun AliasGroupActionsDialog(
-    group: AliasTomlGroup,
+    group: ActivityHierarchyGroup,
     onDismiss: () -> Unit,
     onEditName: () -> Unit,
     onEditAlias: () -> Unit,
@@ -215,7 +215,7 @@ internal fun AliasGroupActionsDialog(
 
 @Composable
 internal fun AliasEntryActionsDialog(
-    entry: AliasTomlEntry,
+    entry: ActivityHierarchyLeaf,
     onDismiss: () -> Unit,
     onEditName: () -> Unit,
     onEditAlias: () -> Unit,
@@ -260,9 +260,9 @@ internal fun AliasEntryActionsDialog(
 
 @Composable
 internal fun AliasEntryMergeTargetDialog(
-    source: AliasTomlEntry,
+    source: ActivityHierarchyLeaf,
     tomlDisplayName: String,
-    document: AliasTomlDocument?,
+    document: ActivityHierarchyDocument?,
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit
 ) {

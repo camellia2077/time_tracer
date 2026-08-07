@@ -10,9 +10,9 @@
     <string name="tracer_tab_config">Config</string>
 
 
-    <string name="tracer_export_all_tracer_canceled">Complete exchange package export canceled.</string>
+    <string name="tracer_export_all_tracer_canceled">Compressed archive export canceled.</string>
     <string name="tracer_export_current_txt_canceled">TXT/TOML export canceled.</string>
-    <string name="tracer_export_all_failed_no_months">Complete exchange package export failed: no available months.</string>
+    <string name="tracer_export_all_failed_no_months">Compressed archive export failed: no available months.</string>
     <string name="tracer_export_current_txt_failed_no_selection">TXT/TOML export failed: no TXT or TOML files are available.</string>
     <string name="tracer_export_error_invalid_month_key">%1$s: invalid month key.</string>
     <string name="tracer_export_error_source_file_not_found">%1$s: source file not found.</string>
@@ -22,20 +22,20 @@
     <string name="tracer_export_error_open_output_stream">cannot open output stream.</string>
     <string name="tracer_export_error_write_failed">%1$s: write failed.</string>
     <plurals name="tracer_export_all_tracer_success">
-        <item quantity="one">Complete exchange package export succeeded -&gt; %1$d TXT file, %2$d config TOML files, %3$d manifest file.</item>
-        <item quantity="other">Complete exchange package export succeeded -&gt; %1$d TXT files, %2$d config TOML files, %3$d manifest file.</item>
+        <item quantity="one">Compressed archive export succeeded -&gt; %1$d TXT file, %2$d config TOML files, %3$d manifest file.</item>
+        <item quantity="other">Compressed archive export succeeded -&gt; %1$d TXT files, %2$d config TOML files, %3$d manifest file.</item>
     </plurals>
     <plurals name="tracer_export_error_tail">
         <item quantity="one"> | ...(%1$d error)</item>
         <item quantity="other"> | ...(%1$d errors)</item>
     </plurals>
-    <string name="tracer_export_all_tracer_completed">Complete exchange package export completed -&gt; TXT %1$d/%2$d, config TOML %3$d, manifest %4$d. %5$s</string>
-    <string name="tracer_export_all_tracer_failed">Complete exchange package export failed: %1$s</string>
+    <string name="tracer_export_all_tracer_completed">Compressed archive export completed -&gt; TXT %1$d/%2$d, config TOML %3$d, manifest %4$d. %5$s</string>
+    <string name="tracer_export_all_tracer_failed">Compressed archive export failed: %1$s</string>
     <string name="tracer_export_current_txt_completed">TXT/TOML export completed -&gt; TXT %1$d, TOML %2$d.</string>
     <string name="tracer_export_current_txt_failed">TXT/TOML export failed: %1$s</string>
     <string name="tracer_export_unknown_error">unknown error</string>
     <string name="tracer_export_already_in_progress">Export already in progress.</string>
-    <string name="tracer_export_select_tracer_destination">Select destination folder for complete exchange package export.</string>
+    <string name="tracer_export_select_tracer_destination">Select destination folder for compressed archive export.</string>
     <string name="tracer_export_select_current_txt_destination">Select destination folder for TXT/TOML export.</string>
     <string name="tracer_import_select_txt_folder">Selecting TXT folder...</string>
     <string name="tracer_import_txt_folder_canceled">TXT folder import canceled.</string>
@@ -49,12 +49,12 @@
     <string name="tracer_import_toml_folder_no_toml_found">TOML folder import skipped: no TOML files found.</string>
     <string name="tracer_import_toml_folder_completed_success">TOML folder import completed -&gt; %1$d/%2$d TOML files.</string>
     <string name="tracer_import_toml_folder_completed_with_errors">TOML folder import completed -&gt; %1$d/%2$d TOML files. %3$s</string>
-    <string name="tracer_import_select_single_tracer">Selecting single TRACER...</string>
-    <string name="tracer_import_single_tracer_canceled">Single TRACER import canceled.</string>
-    <string name="tracer_import_single_tracer_failed">Single TRACER import failed: %1$s</string>
+    <string name="tracer_import_select_single_tracer">Selecting compressed archive...</string>
+    <string name="tracer_import_single_tracer_canceled">Compressed archive import canceled.</string>
+    <string name="tracer_import_single_tracer_failed">Compressed archive import failed: %1$s</string>
     <string name="tracer_import_error_read_selected_document">cannot read selected document.</string>
-    <string name="tracer_import_single_tracer_completed_success">Single TRACER import completed -&gt; %1$d/%2$d TXT files.</string>
-    <string name="tracer_import_single_tracer_completed_with_errors">Single TRACER import completed -&gt; %1$d/%2$d TXT files. %3$s</string>
+    <string name="tracer_import_single_tracer_completed_success">Compressed archive import completed -&gt; %1$d/%2$d TXT files.</string>
+    <string name="tracer_import_single_tracer_completed_with_errors">Compressed archive import completed -&gt; %1$d/%2$d TXT files. %3$s</string>
     <string name="tracer_import_confirm_title">Confirm Import</string>
     <string name="tracer_import_confirm_import">Import</string>
     <string name="tracer_import_confirm_cancel">Cancel</string>
@@ -64,22 +64,20 @@
         <item quantity="one">%1$d TXT file</item>
         <item quantity="other">%1$d TXT files</item>
     </plurals>
-    <string name="tracer_crypto_passphrase_encrypt_title">Encrypt Passphrase</string>
-    <string name="tracer_crypto_passphrase_decrypt_title">Decrypt Passphrase</string>
-    <string name="tracer_crypto_passphrase_hint">Enter passphrase</string>
-    <string name="tracer_crypto_passphrase_confirm_hint">Confirm passphrase</string>
-    <string name="tracer_crypto_passphrase_required">Passphrase is required.</string>
-    <string name="tracer_crypto_passphrase_mismatch">Passphrase does not match.</string>
+    <string name="tracer_crypto_passphrase_encrypt_title">Encrypt Password</string>
+    <string name="tracer_crypto_passphrase_decrypt_title">Decrypt Password</string>
+    <string name="tracer_crypto_passphrase_hint">Enter password</string>
+    <string name="tracer_crypto_passphrase_confirm_hint">Confirm password</string>
+    <string name="tracer_crypto_passphrase_required">Password is required.</string>
+    <string name="tracer_crypto_passphrase_mismatch">Passwords do not match.</string>
     <string name="tracer_diagnostics_prepare">Preparing diagnostics payload...</string>
-    <string name="tracer_progress_operation_export_tracer">Export Complete Exchange Package</string>
-    <string name="tracer_progress_operation_import_tracer">Import TRACER</string>
+    <string name="tracer_progress_operation_export_tracer">Export Compressed Archive</string>
     <string name="tracer_progress_phase_collect_records">Collecting record text</string>
     <string name="tracer_progress_phase_collect_config">Collecting parser config</string>
     <string name="tracer_progress_phase_generate_manifest">Generating exchange manifest</string>
     <string name="tracer_progress_phase_package_and_encrypt">Packaging and encrypting exchange package</string>
     <string name="tracer_progress_phase_write_package_output">Writing exchange package output</string>
     <string name="tracer_progress_overall_stage_detail">Stage %1$d/%2$d | %3$s</string>
-    <string name="tracer_progress_current_stage_detail">%1$s %2$d%%</string>
     <string name="tracer_progress_detail_collect_records">TXT %1$d/%2$d</string>
     <string name="tracer_progress_detail_collect_config">Config TOML %1$d/%2$d</string>
     <string name="tracer_progress_detail_generate_manifest">Manifest %1$d/%2$d</string>

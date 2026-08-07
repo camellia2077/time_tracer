@@ -158,12 +158,6 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         nextOperationId = operationIdGenerator::next,
         errorMapper = errorMapper
     )
-    private val cryptoService = RuntimeCryptoService(
-        responseCodec = responseCodec,
-        nativeEncryptFile = runtimeBridge::nativeEncryptFile,
-        nativeDecryptFile = runtimeBridge::nativeDecryptFile,
-        setProgressListener = runtimeBridge::setCryptoProgressListener
-    )
     private val tracerExchangeService = RuntimeTracerExchangeService(
         responseCodec = responseCodec,
         nativeExportTracerExchange = runtimeBridge::nativeExportTracerExchange,
@@ -372,40 +366,13 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         stagedRootPath: String
     ): DataFolderSnapshotResult = dataFolderSnapshotService.replace(stagedRootPath)
 
-    // file crypto
-    override suspend fun encryptTxtFile(
-        inputPath: String,
-        outputPath: String,
-        passphrase: String,
-        securityLevel: FileCryptoSecurityLevel,
-        onProgress: ((FileCryptoProgressEvent) -> Unit)?
-    ): RecordActionResult = cryptoService.encryptTxtFile(
-        inputPath = inputPath,
-        outputPath = outputPath,
-        passphrase = passphrase,
-        securityLevel = securityLevel,
-        onProgress = onProgress
-    )
-
-    override suspend fun decryptTracerFile(
-        inputPath: String,
-        outputPath: String,
-        passphrase: String,
-        onProgress: ((FileCryptoProgressEvent) -> Unit)?
-    ): RecordActionResult = cryptoService.decryptTracerFile(
-        inputPath = inputPath,
-        outputPath = outputPath,
-        passphrase = passphrase,
-        onProgress = onProgress
-    )
-
     override suspend fun exportTracerExchange(
         inputPath: String,
         outputPath: String,
         passphrase: String,
-        securityLevel: FileCryptoSecurityLevel,
+        securityLevel: TracerExchangeSecurityLevel,
         dateCheckMode: Int,
-        onProgress: ((FileCryptoProgressEvent) -> Unit)?
+        onProgress: ((TracerExchangeProgressEvent) -> Unit)?
     ): TracerExchangeExportResult = tracerExchangeService.exportTracerExchange(
         inputPath = inputPath,
         outputPath = outputPath,
@@ -419,11 +386,11 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         payloads: List<TracerExchangePayloadItem>,
         outputFd: Int,
         passphrase: String,
-        securityLevel: FileCryptoSecurityLevel,
+        securityLevel: TracerExchangeSecurityLevel,
         dateCheckMode: Int,
         logicalSourceRootName: String,
         outputDisplayName: String,
-        onProgress: ((FileCryptoProgressEvent) -> Unit)?
+        onProgress: ((TracerExchangeProgressEvent) -> Unit)?
     ): TracerExchangeExportResult = tracerExchangeService.exportTracerExchangeFromPayload(
         payloads = payloads,
         outputFd = outputFd,
@@ -438,19 +405,17 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     override suspend fun importTracerExchange(
         inputPath: String,
         workRoot: String,
-        passphrase: String,
-        onProgress: ((FileCryptoProgressEvent) -> Unit)?
+        passphrase: String
     ): TracerExchangeImportResult = tracerExchangeService.importTracerExchange(
         inputPath = inputPath,
         workRoot = workRoot,
-        passphrase = passphrase,
-        onProgress = onProgress
+        passphrase = passphrase
     )
 
     override suspend fun inspectTracerExchange(
         inputPath: String,
         passphrase: String,
-        onProgress: ((FileCryptoProgressEvent) -> Unit)?
+        onProgress: ((TracerExchangeProgressEvent) -> Unit)?
     ): TracerExchangeInspectResult = tracerExchangeService.inspectTracerExchange(
         inputPath = inputPath,
         passphrase = passphrase,
@@ -502,14 +467,14 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     override suspend fun listActivityMappingNames(): ActivityMappingNamesResult =
         queryService.listActivityMappingNames()
 
-    override suspend fun listActivityAliasMappings(): ActivityAliasMappingListResult =
-        queryService.listActivityAliasMappings()
+    override suspend fun listActivityHierarchyLeafMappings(): ActivityHierarchyLeafMappingListResult =
+        queryService.listActivityHierarchyLeafMappings()
 
     override suspend fun listCanonicalCatalog(): CanonicalCatalogResult =
         queryService.listCanonicalCatalog()
 
-    override suspend fun listActivityAliasKeys(): ActivityMappingNamesResult =
-        queryService.listActivityAliasKeys()
+    override suspend fun listActivityHierarchyLeafKeys(): ActivityMappingNamesResult =
+        queryService.listActivityHierarchyLeafKeys()
 
     override suspend fun listWakeKeywords(): ActivityMappingNamesResult =
         queryService.listWakeKeywords()

@@ -7,7 +7,7 @@ import org.json.JSONObject
 internal val runtimeCryptoCallMutex = Mutex()
 
 internal suspend fun <T> executeWithCryptoProgressListener(
-    onProgress: ((FileCryptoProgressEvent) -> Unit)?,
+    onProgress: ((TracerExchangeProgressEvent) -> Unit)?,
     setProgressListener: (((String) -> Unit)?) -> Unit,
     block: () -> T
 ): T = runtimeCryptoCallMutex.withLock {
@@ -27,12 +27,12 @@ internal suspend fun <T> executeWithCryptoProgressListener(
     }
 }
 
-internal fun parseCryptoProgressEvent(rawProgress: String): FileCryptoProgressEvent? {
+internal fun parseCryptoProgressEvent(rawProgress: String): TracerExchangeProgressEvent? {
     return runCatching {
         val json = JSONObject(rawProgress)
-        FileCryptoProgressEvent(
-            operation = FileCryptoOperation.fromWireValue(json.optString("operation")),
-            phase = FileCryptoPhase.fromWireValue(json.optString("phase")),
+        TracerExchangeProgressEvent(
+            operation = TracerExchangeOperation.fromWireValue(json.optString("operation")),
+            phase = TracerExchangePhase.fromWireValue(json.optString("phase")),
             currentGroupLabel = json.optString("current_group_label"),
             groupIndex = json.optInt("group_index", 0),
             groupCount = json.optInt("group_count", 0),

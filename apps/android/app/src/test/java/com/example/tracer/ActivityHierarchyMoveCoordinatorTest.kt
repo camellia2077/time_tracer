@@ -88,7 +88,7 @@ class ActivityHierarchyMoveCoordinatorTest {
             aliasDocumentDraft = ActivityHierarchySnapshot(
                 parent = "work",
                 nodes = listOf(sourceGroup, targetGroup)
-            ).toActivityAliasDocument()
+            ).toActivityHierarchyDocument()
         )
     }
 }

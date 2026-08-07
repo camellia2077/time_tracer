@@ -81,8 +81,9 @@ internal fun QueryReportTreeResultContent(
         result.nodes.sumOf { it.durationSeconds ?: 0L }
     }
     val horizontalScrollState = rememberScrollState()
-    val treeContentMinWidth = 320.dp +
-        (result.maxAvailableDepth.coerceAtLeast(0) * 28).dp
+    val treeContentMinWidth = remember(result.nodes) {
+        treeContentMinWidthForDepth(result.nodes.maxTreeDepth())
+    }
 
     ElevatedCard(
         modifier = modifier.fillMaxWidth(),
@@ -90,6 +91,37 @@ internal fun QueryReportTreeResultContent(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         )
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 8.dp, top = 8.dp, end = 8.dp),
+            horizontalArrangement = Arrangement.End
+        ) {
+            AssistChip(
+                onClick = { sortDescending = !sortDescending },
+                label = {
+                    Text(
+                        text = stringResource(
+                            if (sortDescending) {
+                                R.string.report_tree_sort_duration_desc
+                            } else {
+                                R.string.report_tree_sort_duration_asc
+                            }
+                        )
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = if (sortDescending) {
+                            Icons.Default.ArrowDownward
+                        } else {
+                            Icons.Default.ArrowUpward
+                        },
+                        contentDescription = null
+                    )
+                }
+            )
+        }
         BoxWithConstraints(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -102,44 +134,17 @@ internal fun QueryReportTreeResultContent(
                 Column(
                     modifier = Modifier
                         .width(treeContentWidth)
-                        .padding(8.dp),
+                        .padding(
+                            end = 8.dp,
+                            bottom = 8.dp
+                        ),
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        AssistChip(
-                            onClick = { sortDescending = !sortDescending },
-                            label = {
-                                Text(
-                                    text = stringResource(
-                                        if (sortDescending) {
-                                            R.string.report_tree_sort_duration_desc
-                                        } else {
-                                            R.string.report_tree_sort_duration_asc
-                                        }
-                                    )
-                                )
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = if (sortDescending) {
-                                        Icons.Default.ArrowDownward
-                                    } else {
-                                        Icons.Default.ArrowUpward
-                                    },
-                                    contentDescription = null
-                                )
-                            }
-                        )
-                    }
                     for ((index, node) in sortedRoots.withIndex()) {
                         TreeResultNodeItem(
                             node = node,
                             depth = 0,
                             nodeKey = buildNodeKey(parentKey = "root_$index", node = node),
-                            treeRootPath = treeNodePath(node),
                             totalTreeDurationSeconds = totalTreeDurationSeconds,
                             period = result.period,
                             sortDescending = sortDescending,

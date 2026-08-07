@@ -2,12 +2,12 @@
 <resources>
     <string name="data_title_ingestion">Data Ingestion</string>
     <string name="data_action_import_data_folder">Import Data Folder</string>
-    <string name="data_action_import_single_tracer">Import Single TRACER</string>
+    <string name="data_action_import_single_tracer">Import Compressed Archive</string>
 
-    <string name="data_title_tracer_export">Complete Exchange Package Export</string>
+    <string name="data_title_tracer_export">Compressed Archive Export</string>
     <string name="data_action_exporting">Exporting package...</string>
     <string name="data_action_export_current_txt_tracer">Export TXT + TOML</string>
-    <string name="data_action_export_all_months_tracer">Export Complete Exchange Package</string>
+    <string name="data_action_export_all_months_tracer">Export Compressed Archive</string>
     <string name="data_label_tracer_security_level">Encryption Level</string>
     <string name="data_security_level_interactive">Fast (Interactive)</string>
     <string name="data_security_level_moderate">Balanced (Moderate)</string>
@@ -44,5 +44,4 @@
     <string name="data_action_show_progress_details">Show details</string>
     <string name="data_action_hide_progress_details">Hide details</string>
     <string name="data_progress_overall">Overall Progress</string>
-    <string name="data_progress_current_file">Current Stage Progress</string>
 </resources>

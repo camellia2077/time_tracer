@@ -24,8 +24,8 @@ interface QueryGateway {
             message = "report composition query not implemented."
         )
     suspend fun listActivityMappingNames(): ActivityMappingNamesResult
-    suspend fun listActivityAliasMappings(): ActivityAliasMappingListResult =
-        ActivityAliasMappingListResult(
+    suspend fun listActivityHierarchyLeafMappings(): ActivityHierarchyLeafMappingListResult =
+        ActivityHierarchyLeafMappingListResult(
             ok = false,
             entries = emptyList(),
             message = "Activity alias mappings query not implemented."
@@ -39,7 +39,7 @@ interface QueryGateway {
         )
 
     // Keep this API alias-only so callers never have to infer left keys from mixed name sets.
-    suspend fun listActivityAliasKeys(): ActivityMappingNamesResult =
+    suspend fun listActivityHierarchyLeafKeys(): ActivityMappingNamesResult =
         listActivityMappingNames()
 
     // Wake semantics are config-driven. Authoring/runtime callers should not hardcode wake tokens.
@@ -52,5 +52,5 @@ interface QueryGateway {
 
     // Authorable event tokens are alias child-file keys union wake_keywords.
     suspend fun listAuthorableEventTokens(): ActivityMappingNamesResult =
-        listActivityAliasKeys()
+        listActivityHierarchyLeafKeys()
 }

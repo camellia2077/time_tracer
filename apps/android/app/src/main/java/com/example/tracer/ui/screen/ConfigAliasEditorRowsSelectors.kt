@@ -156,7 +156,7 @@ internal fun AliasParentSelector(
 
 @Composable
 internal fun AliasGroupRowCard(
-    group: AliasTomlGroup,
+    group: ActivityHierarchyGroup,
     onEnterGroup: () -> Unit,
     onEdit: () -> Unit
 ) {
@@ -231,7 +231,7 @@ internal fun AliasGroupRowCard(
 
 @Composable
 internal fun AliasEntryRow(
-    entry: AliasTomlEntry,
+    entry: ActivityHierarchyLeaf,
     modifier: Modifier = Modifier,
     onEdit: () -> Unit
 ) {

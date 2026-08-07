@@ -2,12 +2,12 @@
 <resources>
     <string name="data_title_ingestion">数据导入</string>
     <string name="data_action_import_data_folder">导入数据文件夹</string>
-    <string name="data_action_import_single_tracer">导入单个 TRACER</string>
+    <string name="data_action_import_single_tracer">导入压缩包</string>
 
-    <string name="data_title_tracer_export">完整交换包导出</string>
+    <string name="data_title_tracer_export">压缩包导出</string>
     <string name="data_action_exporting">正在导出交换包...</string>
     <string name="data_action_export_current_txt_tracer">导出 TXT + TOML</string>
-    <string name="data_action_export_all_months_tracer">导出完整交换包</string>
+    <string name="data_action_export_all_months_tracer">导出压缩包</string>
     <string name="data_label_tracer_security_level">加密强度</string>
     <string name="data_security_level_interactive">快速（Interactive）</string>
     <string name="data_security_level_moderate">平衡（Moderate）</string>
@@ -44,5 +44,4 @@
     <string name="data_action_show_progress_details">显示详细信息</string>
     <string name="data_action_hide_progress_details">隐藏详细信息</string>
     <string name="data_progress_overall">总体进度</string>
-    <string name="data_progress_current_file">当前阶段进度</string>
 </resources>

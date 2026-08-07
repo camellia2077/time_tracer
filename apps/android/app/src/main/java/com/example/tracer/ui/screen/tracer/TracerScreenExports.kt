@@ -14,8 +14,8 @@ internal data class TracerExportActions(
     val onExportAllMonthsTracer: () -> Unit,
     val onExportCurrentTxtTracer: () -> Unit,
     val isTracerExportInProgress: Boolean,
-    val selectedTracerSecurityLevel: FileCryptoSecurityLevel,
-    val onTracerSecurityLevelChange: (FileCryptoSecurityLevel) -> Unit
+    val selectedTracerSecurityLevel: TracerExchangeSecurityLevel,
+    val onTracerSecurityLevelChange: (TracerExchangeSecurityLevel) -> Unit
 )
 
 @Composable
@@ -30,7 +30,7 @@ internal fun rememberTracerExportActions(
     recordViewModel: RecordViewModel
 ): TracerExportActions {
     var isTracerExportInProgress by remember { mutableStateOf(false) }
-    var tracerSecurityLevel by remember { mutableStateOf(FileCryptoSecurityLevel.INTERACTIVE) }
+    var tracerSecurityLevel by remember { mutableStateOf(TracerExchangeSecurityLevel.INTERACTIVE) }
     val transferCoordinator = rememberTracerScreenTransferCoordinator(
         context = context,
         coroutineScope = coroutineScope

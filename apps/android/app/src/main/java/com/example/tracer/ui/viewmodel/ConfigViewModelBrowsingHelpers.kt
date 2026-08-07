@@ -53,7 +53,7 @@ internal fun applyLoadedConfigFile(
     content: String,
     aliasParentOptions: List<String>,
     statusText: String,
-    coreDocument: AliasTomlDocument? = null,
+    coreDocument: ActivityHierarchyDocument? = null,
     coreErrorMessage: String = ""
 ): ConfigUiState {
     val selectedEntry = findConfigFileEntry(state, filePath)

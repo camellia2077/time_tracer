@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
@@ -37,18 +38,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.example.tracer.feature.report.R
 import java.util.Locale
+
+private val TreeNodeFixedIndent = 16.dp
 
 @Composable
 internal fun TreeResultNodeItem(
     node: TreeNode,
     depth: Int,
     nodeKey: String,
-    treeRootPath: String,
     totalTreeDurationSeconds: Long,
     period: DataTreePeriod,
     sortDescending: Boolean,
@@ -60,11 +61,10 @@ internal fun TreeResultNodeItem(
     val sortedChildren = remember(node.children, sortDescending) {
         node.children.sortedByDuration(descending = sortDescending)
     }
-    val indent = (depth * 14).dp
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = indent),
+            .padding(start = TreeNodeFixedIndent),
         shape = MaterialTheme.shapes.medium,
         border = BorderStroke(
             width = 1.dp,
@@ -96,10 +96,8 @@ internal fun TreeResultNodeItem(
                         tint = if (isTopLevelActivity) colors.root else colors.child,
                         modifier = Modifier.size(22.dp)
                     )
-                } else {
-                    Spacer(modifier = Modifier.width(22.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
                 }
-                Spacer(modifier = Modifier.width(10.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = node.name,
@@ -115,85 +113,69 @@ internal fun TreeResultNodeItem(
                         },
                         maxLines = 1
                     )
-                    formatTreeCanonical(node, treeRootPath)?.let { path ->
-                        Text(
-                            text = path,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            modifier = Modifier.alpha(0.8f)
-                        )
-                    }
-                }
-                node.durationSeconds?.let { duration ->
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = formatTreeDuration(duration, period),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
             }
 
-            treeNodeDurationPercent(
+            val durationPercent = treeNodeDurationPercent(
                 node = node,
                 depth = depth,
                 totalTreeDurationSeconds = totalTreeDurationSeconds
-            )?.let { percent ->
+            )
+            if (node.durationSeconds != null || durationPercent != null) {
                 Column(
-                    modifier = Modifier.padding(start = 66.dp, end = 14.dp, bottom = 12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .widthIn(max = 280.dp)
+                        .padding(start = 14.dp, end = 14.dp, bottom = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(
-                            text = formatTreeParentDurationPercent(percent),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = colors.treeProgressAccent
+                        node.durationSeconds?.let { duration ->
+                            Text(
+                                text = formatTreeDuration(duration, period),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        durationPercent?.let { percent ->
+                            Text(
+                                text = formatTreeParentDurationPercent(percent),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = colors.treeProgressAccent
+                            )
+                        }
+                    }
+                    durationPercent?.let { percent ->
+                        LinearProgressIndicator(
+                            color = colors.treeProgressAccent,
+                            progress = { percent.coerceIn(0f, 100f) / 100f },
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
-                    LinearProgressIndicator(
-                        color = colors.treeProgressAccent,
-                        progress = { percent.coerceIn(0f, 100f) / 100f },
-                        modifier = Modifier.fillMaxWidth()
-                    )
                 }
             }
 
             if (hasChildren && expanded) {
-                Row(
-                    modifier = Modifier.padding(start = 10.dp, end = 10.dp, bottom = 10.dp),
-                    verticalAlignment = Alignment.Top
+                Column(
+                    modifier = Modifier.padding(end = 10.dp, bottom = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .width(2.dp)
-                            .fillMaxHeight()
-                            .background(MaterialTheme.colorScheme.outlineVariant)
-                    )
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(start = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        for ((index, child) in sortedChildren.withIndex()) {
-                            TreeResultNodeItem(
-                                node = child,
-                                depth = depth + 1,
-                                nodeKey = buildNodeKey(
-                                    parentKey = "$nodeKey/$index",
-                                    node = child
-                                ),
-                                treeRootPath = treeRootPath,
-                                totalTreeDurationSeconds = totalTreeDurationSeconds,
-                                period = period,
-                                sortDescending = sortDescending,
-                                colors = colors
-                            )
-                        }
+                    for ((index, child) in sortedChildren.withIndex()) {
+                        TreeResultNodeItem(
+                            node = child,
+                            depth = depth + 1,
+                            nodeKey = buildNodeKey(
+                                parentKey = "$nodeKey/$index",
+                                node = child
+                            ),
+                            totalTreeDurationSeconds = totalTreeDurationSeconds,
+                            period = period,
+                            sortDescending = sortDescending,
+                            colors = colors
+                        )
                     }
                 }
             }

@@ -1,12 +1,12 @@
 package com.example.tracer
 
-enum class FileCryptoOperation {
+enum class TracerExchangeOperation {
     ENCRYPT,
     DECRYPT,
     UNKNOWN;
 
     companion object {
-        fun fromWireValue(value: String): FileCryptoOperation = when (value.lowercase()) {
+        fun fromWireValue(value: String): TracerExchangeOperation = when (value.lowercase()) {
             "encrypt" -> ENCRYPT
             "decrypt" -> DECRYPT
             else -> UNKNOWN
@@ -14,7 +14,7 @@ enum class FileCryptoOperation {
     }
 }
 
-enum class FileCryptoPhase {
+enum class TracerExchangePhase {
     SCAN,
     READ_INPUT,
     COMPRESS,
@@ -32,7 +32,7 @@ enum class FileCryptoPhase {
         get() = this == COMPLETED || this == CANCELLED || this == FAILED
 
     companion object {
-        fun fromWireValue(value: String): FileCryptoPhase = when (value.lowercase()) {
+        fun fromWireValue(value: String): TracerExchangePhase = when (value.lowercase()) {
             "scan" -> SCAN
             "read_input" -> READ_INPUT
             "compress" -> COMPRESS
@@ -49,9 +49,9 @@ enum class FileCryptoPhase {
     }
 }
 
-data class FileCryptoProgressEvent(
-    val operation: FileCryptoOperation = FileCryptoOperation.UNKNOWN,
-    val phase: FileCryptoPhase = FileCryptoPhase.UNKNOWN,
+data class TracerExchangeProgressEvent(
+    val operation: TracerExchangeOperation = TracerExchangeOperation.UNKNOWN,
+    val phase: TracerExchangePhase = TracerExchangePhase.UNKNOWN,
     val currentGroupLabel: String = "",
     val groupIndex: Int = 0,
     val groupCount: Int = 0,

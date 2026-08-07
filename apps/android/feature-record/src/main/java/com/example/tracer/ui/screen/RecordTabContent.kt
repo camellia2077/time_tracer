@@ -163,7 +163,7 @@ fun RecordTabContent(
         canonicalCatalogRoots = recordUiState.canonicalCatalogRoots,
         canonicalCatalogStatusText = recordUiState.canonicalCatalogStatusText,
         canonicalCatalogDisplayMode = recordUiState.canonicalCatalogDisplayMode,
-        lastRecordedActivityAlias = recordUiState.lastRecordedActivityAlias,
+        lastRecordedActivityHierarchyLeaf = recordUiState.lastRecordedActivityHierarchyLeaf,
         lastRecordedDuration = recordUiState.lastRecordedDuration,
         collapsedCanonicalRootPaths = recordUiState.collapsedCanonicalRootPaths,
         orderedCanonicalRootPaths = recordUiState.orderedCanonicalRootPaths,

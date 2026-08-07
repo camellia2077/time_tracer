@@ -101,7 +101,12 @@ internal class RuntimeActivityHierarchyAutoRegistrar(
             "hierarchy.register.write path=$relativePath ok=${saved.ok} message=${saved.message}"
         )
         return if (saved.ok) {
-            ActivityHierarchyAutoRegistrationResult(true)
+            ActivityHierarchyAutoRegistrationResult(
+                ok = true,
+                created = true,
+                categoryName = defaultFileName(),
+                activityName = activityName
+            )
         } else {
             ActivityHierarchyAutoRegistrationResult(false, saved.message)
         }
@@ -125,5 +130,8 @@ internal fun activityHierarchyTomlFileName(language: String): String = when (lan
 
 internal data class ActivityHierarchyAutoRegistrationResult(
     val ok: Boolean,
-    val message: String = ""
+    val message: String = "",
+    val created: Boolean = false,
+    val categoryName: String = "",
+    val activityName: String = ""
 )

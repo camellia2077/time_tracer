@@ -64,7 +64,7 @@ internal class ConfigAliasEditor(
         val rawToml = uiState.aliasAdvancedTomlDraft
         viewModelScope.launch {
             val result = activityHierarchyGateway.describeActivityHierarchy(rawToml)
-            val document = result.hierarchy?.toActivityAliasDocument()
+            val document = result.hierarchy?.toActivityHierarchyDocument()
             if (!result.ok || document == null) {
                 val message = result.message.ifBlank { "Activity hierarchy validation failed." }
                 uiState = uiState.copy(aliasEditorErrorMessage = message, statusText = message)
@@ -93,7 +93,7 @@ internal class ConfigAliasEditor(
                 activityHierarchyGateway = activityHierarchyGateway,
                 aliasFiles = uiState.aliasFiles,
                 currentFilePath = currentFilePath,
-                currentAliasDocument = uiState.aliasDocumentDraft,
+                currentActivityHierarchyDocument = uiState.aliasDocumentDraft,
                 parent = normalizedValue
             )
             if (targetFilePath != null && targetFilePath != currentFilePath) {

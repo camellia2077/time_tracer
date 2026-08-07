@@ -104,14 +104,14 @@ internal fun AliasEntryMovePlanPreview(
 
 @Composable
 internal fun AliasStructuredEditorContent(
-    document: AliasTomlDocument,
+    document: ActivityHierarchyDocument,
     layer: AliasStructuredLayer,
     onNavigateToBreadcrumb: (String?) -> Unit,
     onNavigateToGroup: (String) -> Unit,
     onRequestAddCurrentGroup: () -> Unit,
     onRequestAddCurrentEntry: () -> Unit,
-    onRequestEditGroup: (AliasTomlGroup) -> Unit,
-    onRequestEditEntry: (AliasTomlEntry) -> Unit
+    onRequestEditGroup: (ActivityHierarchyGroup) -> Unit,
+    onRequestEditEntry: (ActivityHierarchyLeaf) -> Unit
 ) {
     AliasPathBar(
         rootLabel = document.parent.ifBlank {
@@ -182,18 +182,18 @@ internal data class AliasBreadcrumbSegment(
 internal data class AliasStructuredLayer(
     val normalizedPathGroupIds: List<String>,
     val breadcrumbs: List<AliasBreadcrumbSegment>,
-    val currentNodes: List<AliasTomlNode>
+    val currentNodes: List<ActivityHierarchyDocumentNode>
 ) {
-    val currentGroups: List<AliasTomlGroup>
-        get() = currentNodes.filterIsInstance<AliasTomlGroup>()
-    val currentEntries: List<AliasTomlEntry>
-        get() = currentNodes.filterIsInstance<AliasTomlEntry>()
+    val currentGroups: List<ActivityHierarchyGroup>
+        get() = currentNodes.filterIsInstance<ActivityHierarchyGroup>()
+    val currentEntries: List<ActivityHierarchyLeaf>
+        get() = currentNodes.filterIsInstance<ActivityHierarchyLeaf>()
     val currentParentGroupId: String?
         get() = normalizedPathGroupIds.lastOrNull()
 }
 
 internal fun resolveAliasStructuredLayer(
-    document: AliasTomlDocument,
+    document: ActivityHierarchyDocument,
     pathGroupIds: List<String>
 ): AliasStructuredLayer {
     // Drill-down design choice: render only one layer at a time and derive that
@@ -201,11 +201,11 @@ internal fun resolveAliasStructuredLayer(
     // This guarantees deterministic fallback to the nearest valid ancestor.
     val normalizedPath = mutableListOf<String>()
     val breadcrumbs = mutableListOf<AliasBreadcrumbSegment>()
-    var currentNodes: List<AliasTomlNode> = document.nodes
+    var currentNodes: List<ActivityHierarchyDocumentNode> = document.nodes
 
     for (candidateId in pathGroupIds) {
         val nextGroup = currentNodes
-            .filterIsInstance<AliasTomlGroup>()
+            .filterIsInstance<ActivityHierarchyGroup>()
             .firstOrNull { group -> group.id == candidateId }
             ?: break
         normalizedPath += nextGroup.id
@@ -226,18 +226,18 @@ internal fun resolveAliasStructuredLayer(
 internal sealed interface AliasEditorDialogState {
     data class AddGroup(val parentGroupId: String?) : AliasEditorDialogState
     data class AddEntry(val parentGroupId: String?) : AliasEditorDialogState
-    data class EditEntryAliases(val entry: AliasTomlEntry) : AliasEditorDialogState
-    data class EditGroupName(val group: AliasTomlGroup) : AliasEditorDialogState
-    data class EditEntryName(val entry: AliasTomlEntry) : AliasEditorDialogState
-    data class GroupActions(val group: AliasTomlGroup) : AliasEditorDialogState
-    data class EntryActions(val entry: AliasTomlEntry) : AliasEditorDialogState
-    data class MergeEntry(val entry: AliasTomlEntry) : AliasEditorDialogState
-    data class PlanEntryMove(val entry: AliasTomlEntry) : AliasEditorDialogState
-    data class PlanGroupMove(val group: AliasTomlGroup) : AliasEditorDialogState
-    data class ConfirmPromote(val entry: AliasTomlEntry) : AliasEditorDialogState
-    data class EditGroupAliases(val group: AliasTomlGroup) : AliasEditorDialogState
+    data class EditEntryAliases(val entry: ActivityHierarchyLeaf) : AliasEditorDialogState
+    data class EditGroupName(val group: ActivityHierarchyGroup) : AliasEditorDialogState
+    data class EditEntryName(val entry: ActivityHierarchyLeaf) : AliasEditorDialogState
+    data class GroupActions(val group: ActivityHierarchyGroup) : AliasEditorDialogState
+    data class EntryActions(val entry: ActivityHierarchyLeaf) : AliasEditorDialogState
+    data class MergeEntry(val entry: ActivityHierarchyLeaf) : AliasEditorDialogState
+    data class PlanEntryMove(val entry: ActivityHierarchyLeaf) : AliasEditorDialogState
+    data class PlanGroupMove(val group: ActivityHierarchyGroup) : AliasEditorDialogState
+    data class ConfirmPromote(val entry: ActivityHierarchyLeaf) : AliasEditorDialogState
+    data class EditGroupAliases(val group: ActivityHierarchyGroup) : AliasEditorDialogState
     data class AddGroupAlias(val groupId: String) : AliasEditorDialogState
-    data class ConfirmDeleteGroup(val group: AliasTomlGroup) : AliasEditorDialogState
-    data class ConfirmDeleteEntry(val entry: AliasTomlEntry) : AliasEditorDialogState
+    data class ConfirmDeleteGroup(val group: ActivityHierarchyGroup) : AliasEditorDialogState
+    data class ConfirmDeleteEntry(val entry: ActivityHierarchyLeaf) : AliasEditorDialogState
 }
 

@@ -138,7 +138,7 @@ internal fun List<String>.toDiagnosticSample(maxItems: Int = 5): String =
         it.replaceLineBreaks()
     }
 
-internal fun List<ActivityAliasMappingEntry>.firstAliasByCanonical(): Map<String, String> {
+internal fun List<ActivityHierarchyLeafMappingEntry>.firstAliasByCanonical(): Map<String, String> {
     val aliasesByCanonical = linkedMapOf<String, String>()
     for (entry in this) {
         val canonical = entry.canonical.trim()

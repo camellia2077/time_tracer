@@ -36,11 +36,11 @@ internal fun buildConfigTomlExportEntries(relativePaths: Iterable<String>): List
 }
 
 private const val TRACER_EXCHANGE_EXPORT_ROOT_NAME = "data"
-private const val TRACER_EXCHANGE_EXPORT_FILE_NAME = "data.tracer"
+private const val TRACER_EXCHANGE_EXPORT_FILE_NAME = "data.zip"
 private const val TRACER_EXCHANGE_STAGE_COUNT = 2
 
-// Complete exchange export remains encrypted .tracer; current TXT export is a
-// plain ZIP for easy human-side backup and sharing.
+// Complete exchange export is an encrypted standard ZIP for easy human-side
+// backup and sharing.
 internal suspend fun exportAllMonthsTracerToTree(
     context: Context,
     treeUri: Uri,
@@ -49,7 +49,7 @@ internal suspend fun exportAllMonthsTracerToTree(
     tracerExchangeGateway: TracerExchangeGateway,
     recordViewModel: RecordViewModel,
     passphrase: String,
-    tracerSecurityLevel: FileCryptoSecurityLevel
+    tracerSecurityLevel: TracerExchangeSecurityLevel
 ): TracerBatchCryptoExportResult {
     val completedText = context.getString(R.string.tracer_progress_status_completed)
     val failedText = context.getString(R.string.tracer_progress_status_failed)
@@ -77,13 +77,7 @@ internal suspend fun exportAllMonthsTracerToTree(
                             processedCount,
                             totalCount
                         )
-                    ),
-                    currentText = buildStageCurrentText(
-                        context = context,
-                        label = context.getString(R.string.tracer_progress_phase_collect_records),
-                        progress = processedCount.toFloat() / totalCount.toFloat()
-                    ),
-                    currentProgress = processedCount.toFloat() / totalCount.toFloat()
+                    )
                 )
             }
         )
@@ -115,7 +109,7 @@ internal suspend fun exportAllMonthsTracerToTree(
             treeUri = treeUri,
             parentDocumentUri = rootDocumentUri,
             fileName = TRACER_EXCHANGE_EXPORT_FILE_NAME,
-            mimeType = "application/octet-stream"
+            mimeType = "application/zip"
         )
         if (outputUri == null) {
             progressStatusText = failedText
@@ -133,7 +127,7 @@ internal suspend fun exportAllMonthsTracerToTree(
         }
 
         val detachedOutputFd = runCatching {
-            // `data.tracer` may already exist. `wt` is required here so a
+            // `data.zip` may already exist. `wt` is required here so a
             // shorter replacement cannot leave stale ciphertext bytes at the
             // end of the SAF document.
             context.contentResolver.openFileDescriptor(outputUri, "wt")?.use { descriptor ->
@@ -169,7 +163,6 @@ internal suspend fun exportAllMonthsTracerToTree(
             outputDisplayName = TRACER_EXCHANGE_EXPORT_FILE_NAME,
             onProgress = { event ->
                 val overallProgress = event.overallProgressFraction.coerceIn(0f, 1f)
-                val currentProgress = event.currentFileProgressFraction.coerceIn(0f, 1f)
                 runBlocking(Dispatchers.Main) {
                     recordViewModel.updateCryptoProgress(
                         event = event,
@@ -188,13 +181,7 @@ internal suspend fun exportAllMonthsTracerToTree(
                                 R.string.tracer_progress_detail_package_percent,
                                 (overallProgress * 100f).toInt()
                             )
-                        ),
-                        currentTextOverride = buildStageCurrentText(
-                            context = context,
-                            label = TRACER_EXCHANGE_EXPORT_FILE_NAME,
-                            progress = currentProgress
-                        ),
-                        currentProgressOverride = currentProgress
+                        )
                     )
                 }
             }
@@ -422,19 +409,15 @@ private fun updateTracerExchangeStageProgress(
     recordViewModel: RecordViewModel,
     phaseText: String,
     overallProgress: Float,
-    overallText: String,
-    currentText: String,
-    currentProgress: Float
+    overallText: String
 ) {
     runBlocking(Dispatchers.Main) {
         recordViewModel.updateCryptoProgress(
-            event = FileCryptoProgressEvent(),
+            event = TracerExchangeProgressEvent(),
             operationTextOverride = context.getString(R.string.tracer_progress_operation_export_tracer),
             phaseTextOverride = phaseText,
             overallProgressOverride = overallProgress,
-            overallTextOverride = overallText,
-            currentTextOverride = currentText,
-            currentProgressOverride = currentProgress
+            overallTextOverride = overallText
         )
     }
 }
@@ -450,12 +433,3 @@ private fun buildStageOverallText(
     stageCount,
     detail
 )
-
-private fun buildStageCurrentText(
-    context: Context,
-    label: String,
-    progress: Float
-): String {
-    val percent = (progress.coerceIn(0f, 1f) * 100f).toInt()
-    return context.getString(R.string.tracer_progress_current_stage_detail, label, percent)
-}

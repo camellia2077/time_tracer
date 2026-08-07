@@ -94,8 +94,8 @@ internal data class TracerTabRouteArgs(
     val onExportAllMonthsTracer: () -> Unit,
     val onExportCurrentTxtTracer: () -> Unit,
     val isTracerExportInProgress: Boolean,
-    val selectedTracerSecurityLevel: FileCryptoSecurityLevel,
-    val onTracerSecurityLevelChange: (FileCryptoSecurityLevel) -> Unit,
+    val selectedTracerSecurityLevel: TracerExchangeSecurityLevel,
+    val onTracerSecurityLevelChange: (TracerExchangeSecurityLevel) -> Unit,
     val onCopyDiagnosticsPayload: () -> Unit,
     val onEditDailyStatuses: () -> Unit
 )
@@ -178,8 +178,6 @@ internal object TracerTabRegistry {
                     cryptoProgressPhase = args.recordUiState.cryptoProgress.phaseText,
                     cryptoOverallProgress = args.recordUiState.cryptoProgress.overallProgress,
                     cryptoOverallText = args.recordUiState.cryptoProgress.overallText,
-                    cryptoCurrentProgress = args.recordUiState.cryptoProgress.currentProgress,
-                    cryptoCurrentText = args.recordUiState.cryptoProgress.currentText,
                     cryptoDetailsText = args.recordUiState.cryptoProgress.detailsText,
                     cryptoAdvancedDetailsText = args.recordUiState.cryptoProgress.advancedDetailsText,
                     onClearTxt = {
@@ -449,7 +447,7 @@ private const val ActivityAuthorableTokenValidationUnavailablePrefix =
     "Activity authorable token validation unavailable:"
 
 private suspend fun refreshRecordMappingValidation(args: TracerTabLifecycleArgs) {
-    val mappingResult = args.queryGateway.listActivityAliasKeys()
+    val mappingResult = args.queryGateway.listActivityHierarchyLeafKeys()
     if (mappingResult.ok) {
         args.onValidAuthorableEventTokensChanged(mappingResult.names.toSet())
         if (args.recordStatusText().startsWith(ActivityAuthorableTokenValidationUnavailablePrefix)) {
@@ -507,12 +505,12 @@ private fun buildStructuredRecordSnackbarVisuals(
         .map { it.trim() }
         .filter { it.isNotEmpty() }
         .toList()
-    if (lines.size != 2) {
+    if (lines.size < 2) {
         return null
     }
     return TracerSnackbarVisuals(
         message = lines[0],
-        supportingText = lines[1],
+        supportingText = lines.drop(1).joinToString("\n"),
         duration = SnackbarDuration.Short,
         withDismissAction = true
     )

@@ -257,26 +257,23 @@ internal object RecordStateReducer {
 
     fun updateCryptoProgress(
         state: RecordUiState,
-        event: FileCryptoProgressEvent,
+        event: TracerExchangeProgressEvent,
         operationTextOverride: String? = null,
         phaseTextOverride: String? = null,
         overallProgressOverride: Float? = null,
-        overallTextOverride: String? = null,
-        currentTextOverride: String? = null,
-        currentProgressOverride: Float? = null
+        overallTextOverride: String? = null
     ): RecordUiState {
         val phaseText = when (event.phase) {
-            FileCryptoPhase.COMPLETED -> "完成"
-            FileCryptoPhase.CANCELLED -> "已取消"
-            FileCryptoPhase.FAILED -> "失败"
+            TracerExchangePhase.COMPLETED -> "完成"
+            TracerExchangePhase.CANCELLED -> "已取消"
+            TracerExchangePhase.FAILED -> "失败"
             else -> "处理中"
         }
         val statusText = phaseText
 
         val overallProgress = (overallProgressOverride ?: event.overallProgressFraction)
             .coerceIn(0f, 1f)
-        val currentProgress = (currentProgressOverride ?: event.currentFileProgressFraction)
-            .coerceIn(0f, 1f)
+        val currentProgress = event.currentFileProgressFraction
 
         val defaultOverallText =
             "${(overallProgress * 100f).roundToInt()}% (${event.currentFileIndex}/${event.totalFiles})"
@@ -322,7 +319,7 @@ internal object RecordStateReducer {
                 overallProgress = overallProgress,
                 overallText = overallTextOverride ?: defaultOverallText,
                 currentProgress = currentProgress,
-                currentText = currentTextOverride ?: defaultCurrentText,
+                currentText = defaultCurrentText,
                 detailsText = detailsText,
                 advancedDetailsText = advancedDetailsText
             )
@@ -412,8 +409,8 @@ internal object RecordStateReducer {
         return "${rounded}${units[index]}"
     }
 
-    private fun formatEta(etaSeconds: Long, remainingBytes: Long, phase: FileCryptoPhase): String {
-        if (phase == FileCryptoPhase.COMPLETED || remainingBytes <= 0L) {
+    private fun formatEta(etaSeconds: Long, remainingBytes: Long, phase: TracerExchangePhase): String {
+        if (phase == TracerExchangePhase.COMPLETED || remainingBytes <= 0L) {
             return "00:00"
         }
         if (etaSeconds <= 0L) {
@@ -432,11 +429,11 @@ internal object RecordStateReducer {
     private fun formatBatchEta(
         overallProgress: Float,
         elapsedSeconds: Long,
-        phase: FileCryptoPhase,
+        phase: TracerExchangePhase,
         fallbackEtaSeconds: Long,
         fallbackRemainingBytes: Long
     ): String {
-        if (phase == FileCryptoPhase.COMPLETED) {
+        if (phase == TracerExchangePhase.COMPLETED) {
             return "00:00"
         }
 

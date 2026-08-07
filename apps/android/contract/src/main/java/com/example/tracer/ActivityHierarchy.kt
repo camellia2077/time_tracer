@@ -9,51 +9,51 @@ import java.util.UUID
  * names resolve to the category's canonical path; child aliases resolve below
  * that path.
  */
-data class ActivityAliasDocument(
+data class ActivityHierarchyDocument(
     val parent: String,
-    val nodes: List<ActivityAliasNode>
+    val nodes: List<ActivityHierarchyDocumentNode>
 )
 
-sealed interface ActivityAliasNode {
+sealed interface ActivityHierarchyDocumentNode {
     val id: String
 }
 
-data class ActivityCategory(
-    override val id: String = randomActivityAliasNodeId(),
+data class ActivityHierarchyGroup(
+    override val id: String = randomActivityHierarchyNodeId(),
     val name: String,
     val groupAliases: List<String> = emptyList(),
-    val nodes: List<ActivityAliasNode> = emptyList()
-) : ActivityAliasNode
+    val nodes: List<ActivityHierarchyDocumentNode> = emptyList()
+) : ActivityHierarchyDocumentNode
 
-data class ActivityAlias(
-    override val id: String = randomActivityAliasNodeId(),
+data class ActivityHierarchyLeaf(
+    override val id: String = randomActivityHierarchyNodeId(),
     val canonicalLeaf: String,
     val aliases: List<String> = emptyList()
-) : ActivityAliasNode {
+) : ActivityHierarchyDocumentNode {
     /** Compatibility display value for flows that operate on one alias. */
     val aliasKey: String
         get() = aliases.firstOrNull().orEmpty()
 }
 
-private fun randomActivityAliasNodeId(): String = UUID.randomUUID().toString()
+private fun randomActivityHierarchyNodeId(): String = UUID.randomUUID().toString()
 
 /** Adapts the core-owned hierarchy snapshot into presentation-only row state. */
-fun ActivityHierarchySnapshot.toActivityAliasDocument(): ActivityAliasDocument =
-    ActivityAliasDocument(
+fun ActivityHierarchySnapshot.toActivityHierarchyDocument(): ActivityHierarchyDocument =
+    ActivityHierarchyDocument(
         parent = parent,
         nodes = nodes.map(ActivityHierarchyNode::toPresentationNode)
     )
 
-private fun ActivityHierarchyNode.toPresentationNode(): ActivityAliasNode =
+private fun ActivityHierarchyNode.toPresentationNode(): ActivityHierarchyDocumentNode =
     if (kind == ActivityHierarchyNodeKind.GROUP) {
-        ActivityCategory(
+        ActivityHierarchyGroup(
             id = path,
             name = canonicalKey,
             groupAliases = aliases,
             nodes = children.map(ActivityHierarchyNode::toPresentationNode)
         )
     } else {
-        ActivityAlias(
+        ActivityHierarchyLeaf(
             id = path,
             canonicalLeaf = canonicalKey,
             aliases = aliases

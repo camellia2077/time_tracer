@@ -30,5 +30,8 @@ data class ClearDatabaseResult(
 data class RecordActionResult(
     val ok: Boolean,
     val message: String,
-    val operationId: String = ""
+    val operationId: String = "",
+    val activityHierarchyCreated: Boolean = false,
+    val activityHierarchyCategory: String = "",
+    val activityHierarchyActivity: String = ""
 )

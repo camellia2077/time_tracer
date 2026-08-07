@@ -2,17 +2,6 @@ package com.example.tracer
 
 import android.content.Context
 
-internal fun buildSingleImportOverallText(overallProgress: Float, isTerminal: Boolean): String {
-    val percent = (overallProgress.coerceIn(0f, 1f) * 100f).toInt()
-    val doneCount = if (isTerminal) 1 else 0
-    return "${percent}% | bundle $doneCount/1"
-}
-
-internal fun buildSingleImportCurrentText(sourceFileName: String, progress: Float): String {
-    val percent = (progress.coerceIn(0f, 1f) * 100f).toInt()
-    return "$sourceFileName $percent%"
-}
-
 internal fun buildSingleTracerImportSummary(
     context: Context,
     successCount: Int,

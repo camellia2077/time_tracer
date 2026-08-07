@@ -25,7 +25,7 @@ host/runtime integration; shared business semantics remain in `tracer_core`.
   `docs/time_tracer/presentation/android/features.md`
 - Exchange, TXT import/export, SAF/document, or fd export:
   - `docs/time_tracer/presentation/android/reference/data-import-export.md`
-  - `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v4.md`
+  - `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v6.md`
   - `docs/time_tracer/core/contracts/crypto/runtime_crypto_json_contract_v1.md`
 - Activity documentation changes:
   `docs/time_tracer/presentation/android/specs/DOC_RULES.md`

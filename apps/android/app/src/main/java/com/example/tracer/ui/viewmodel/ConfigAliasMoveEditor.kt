@@ -79,7 +79,7 @@ internal class ConfigAliasMoveEditor(
             sourcePath,
             groupPath,
             excludeDescendants = true,
-            onlyCurrentDocument = true
+            onlyCurrentDocument = false
         )
     }
 

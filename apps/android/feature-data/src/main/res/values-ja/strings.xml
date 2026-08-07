@@ -2,12 +2,12 @@
 <resources>
     <string name="data_title_ingestion">データ取り込み</string>
     <string name="data_action_import_data_folder">データフォルダを取り込む</string>
-    <string name="data_action_import_single_tracer">単一 TRACER を取り込む</string>
+    <string name="data_action_import_single_tracer">圧縮ファイルを取り込む</string>
 
-    <string name="data_title_tracer_export">完全交換パッケージのエクスポート</string>
+    <string name="data_title_tracer_export">圧縮ファイルのエクスポート</string>
     <string name="data_action_exporting">パッケージをエクスポート中...</string>
     <string name="data_action_export_current_txt_tracer">TXT と TOML をエクスポート</string>
-    <string name="data_action_export_all_months_tracer">完全交換パッケージをエクスポート</string>
+    <string name="data_action_export_all_months_tracer">圧縮ファイルをエクスポート</string>
     <string name="data_label_tracer_security_level">暗号化レベル</string>
     <string name="data_security_level_interactive">高速（Interactive）</string>
     <string name="data_security_level_moderate">標準（Moderate）</string>
@@ -44,5 +44,4 @@
     <string name="data_action_show_progress_details">詳細を表示</string>
     <string name="data_action_hide_progress_details">詳細を非表示</string>
     <string name="data_progress_overall">全体進捗</string>
-    <string name="data_progress_current_file">現在ステージ進捗</string>
 </resources>

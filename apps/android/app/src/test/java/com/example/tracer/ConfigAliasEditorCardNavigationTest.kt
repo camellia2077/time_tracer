@@ -8,11 +8,11 @@ class ConfigAliasEditorCardNavigationTest {
     @Test
     fun resolve_layer_shows_only_target_level_nodes_for_deep_path() {
         // Contract: deep hierarchy should project to one current layer view.
-        val definiteEntry = AliasTomlEntry(id = "entry-def", canonicalLeaf = "integrals", aliases = listOf("变限积分"))
-        val definite = AliasTomlGroup(id = "g-def", name = "definite-integral", nodes = listOf(definiteEntry))
-        val calculus = AliasTomlGroup(id = "g-cal", name = "calculus", nodes = listOf(definite))
-        val math = AliasTomlGroup(id = "g-math", name = "math", nodes = listOf(calculus))
-        val document = AliasTomlDocument(parent = "study", nodes = listOf(math))
+        val definiteEntry = ActivityHierarchyLeaf(id = "entry-def", canonicalLeaf = "integrals", aliases = listOf("变限积分"))
+        val definite = ActivityHierarchyGroup(id = "g-def", name = "definite-integral", nodes = listOf(definiteEntry))
+        val calculus = ActivityHierarchyGroup(id = "g-cal", name = "calculus", nodes = listOf(definite))
+        val math = ActivityHierarchyGroup(id = "g-math", name = "math", nodes = listOf(calculus))
+        val document = ActivityHierarchyDocument(parent = "study", nodes = listOf(math))
 
         val layer = resolveAliasStructuredLayer(
             document = document,
@@ -28,10 +28,10 @@ class ConfigAliasEditorCardNavigationTest {
     @Test
     fun resolve_layer_returns_child_groups_when_entering_parent_group() {
         // Contract: entering a group exposes its immediate children only.
-        val calculus = AliasTomlGroup(id = "g-cal", name = "calculus")
-        val algebra = AliasTomlGroup(id = "g-alg", name = "linear-algebra")
-        val math = AliasTomlGroup(id = "g-math", name = "math", nodes = listOf(calculus, algebra))
-        val document = AliasTomlDocument(parent = "study", nodes = listOf(math))
+        val calculus = ActivityHierarchyGroup(id = "g-cal", name = "calculus")
+        val algebra = ActivityHierarchyGroup(id = "g-alg", name = "linear-algebra")
+        val math = ActivityHierarchyGroup(id = "g-math", name = "math", nodes = listOf(calculus, algebra))
+        val document = ActivityHierarchyDocument(parent = "study", nodes = listOf(math))
 
         val layer = resolveAliasStructuredLayer(
             document = document,
@@ -46,9 +46,9 @@ class ConfigAliasEditorCardNavigationTest {
     @Test
     fun resolve_layer_falls_back_to_nearest_valid_ancestor_for_invalid_path() {
         // Contract: invalid path segments must snap back to nearest valid ancestor.
-        val calculus = AliasTomlGroup(id = "g-cal", name = "calculus")
-        val math = AliasTomlGroup(id = "g-math", name = "math", nodes = listOf(calculus))
-        val document = AliasTomlDocument(parent = "study", nodes = listOf(math))
+        val calculus = ActivityHierarchyGroup(id = "g-cal", name = "calculus")
+        val math = ActivityHierarchyGroup(id = "g-math", name = "math", nodes = listOf(calculus))
+        val document = ActivityHierarchyDocument(parent = "study", nodes = listOf(math))
 
         val layer = resolveAliasStructuredLayer(
             document = document,
@@ -62,9 +62,9 @@ class ConfigAliasEditorCardNavigationTest {
     @Test
     fun resolve_layer_uses_root_nodes_when_path_is_empty() {
         // Contract: empty path always maps to root layer.
-        val rootEntry = AliasTomlEntry(id = "entry-root", canonicalLeaf = "english", aliases = listOf("英语"))
-        val rootGroup = AliasTomlGroup(id = "g-math", name = "math")
-        val document = AliasTomlDocument(parent = "study", nodes = listOf(rootGroup, rootEntry))
+        val rootEntry = ActivityHierarchyLeaf(id = "entry-root", canonicalLeaf = "english", aliases = listOf("英语"))
+        val rootGroup = ActivityHierarchyGroup(id = "g-math", name = "math")
+        val document = ActivityHierarchyDocument(parent = "study", nodes = listOf(rootGroup, rootEntry))
 
         val layer = resolveAliasStructuredLayer(
             document = document,

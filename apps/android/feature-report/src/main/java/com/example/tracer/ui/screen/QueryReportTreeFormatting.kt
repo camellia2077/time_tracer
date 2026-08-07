@@ -38,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.example.tracer.feature.report.R
@@ -54,6 +55,22 @@ internal fun List<TreeNode>.sortedByDuration(descending: Boolean): List<TreeNode
             compareBy<TreeNode> { it.durationSeconds ?: 0L }
                 .thenBy { it.name }
         )
+    }
+
+internal fun List<TreeNode>.maxTreeDepth(): Int =
+    maxOfOrNull { node -> node.maxTreeDepth(depth = 0) } ?: 0
+
+private fun TreeNode.maxTreeDepth(depth: Int): Int =
+    maxOf(
+        depth,
+        children.maxOfOrNull { child -> child.maxTreeDepth(depth + 1) } ?: depth
+    )
+
+internal fun treeContentMinWidthForDepth(maxDepth: Int): Dp =
+    if (maxDepth < 4) {
+        0.dp
+    } else {
+        360.dp + (maxDepth * 48).dp
     }
 
 internal fun buildNodeKey(parentKey: String, node: TreeNode): String {
@@ -90,9 +107,6 @@ internal fun formatTreeDuration(
     }
 }
 
-internal fun treeNodePath(node: TreeNode): String =
-    node.path.ifBlank { node.name }
-
 internal fun treeNodeDurationPercent(
     node: TreeNode,
     depth: Int,
@@ -108,18 +122,6 @@ internal fun treeNodeDurationPercent(
     }
 } else {
     node.parentDurationPercent
-}
-
-internal fun formatTreeCanonical(node: TreeNode, treeRootPath: String): String? {
-    val path = treeNodePath(node)
-    val relativePath = when {
-        path == treeRootPath -> ""
-        path.startsWith("${treeRootPath}_") -> path.removePrefix("${treeRootPath}_")
-        else -> path.substringAfter('_', missingDelimiterValue = "")
-    }
-    return relativePath
-        .takeIf { it.isNotBlank() }
-        ?.replace("_", " > ")
 }
 
 internal fun formatTreeParentDurationPercent(percent: Float): String =

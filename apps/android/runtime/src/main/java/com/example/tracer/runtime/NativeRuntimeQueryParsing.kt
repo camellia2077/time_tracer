@@ -246,7 +246,7 @@ internal fun parseSemanticListContent(content: String, expectedAction: String): 
     }
 }
 
-internal fun parseActivityAliasMappingsContent(content: String): List<ActivityAliasMappingEntry> {
+internal fun parseActivityHierarchyLeafMappingsContent(content: String): List<ActivityHierarchyLeafMappingEntry> {
     if (content.isBlank()) {
         return emptyList()
     }
@@ -254,7 +254,7 @@ internal fun parseActivityAliasMappingsContent(content: String): List<ActivityAl
     return try {
         val payload = JSONObject(content)
         val entriesArray = payload.optJSONArray("entries") ?: return emptyList()
-        val entries = mutableListOf<ActivityAliasMappingEntry>()
+        val entries = mutableListOf<ActivityHierarchyLeafMappingEntry>()
         for (index in 0 until entriesArray.length()) {
             val entry = entriesArray.optJSONObject(index) ?: continue
             val alias = entry.optString("alias", "").trim()
@@ -262,7 +262,7 @@ internal fun parseActivityAliasMappingsContent(content: String): List<ActivityAl
             if (alias.isEmpty() || canonical.isEmpty()) {
                 continue
             }
-            entries += ActivityAliasMappingEntry(
+            entries += ActivityHierarchyLeafMappingEntry(
                 alias = alias,
                 canonical = canonical
             )

@@ -185,34 +185,44 @@ internal class RuntimeActivityHierarchyMigrationService(
     private fun replaceCanonicalNames(
         content: String,
         replacements: List<CanonicalActivityNameReplacement>
-    ): TxtCanonicalActivityReplacementResult {
-        val payload = JSONObject()
-            .put("action", "replace_canonical_activity_names")
-            .put("content", content)
-            .put("replacements", JSONArray().apply {
-                replacements.forEach { replacement ->
-                    put(JSONObject()
-                        .put("old_canonical", replacement.oldCanonical)
-                        .put("new_canonical", replacement.newCanonical))
-                }
-            })
-        return txtCodec.parseCanonicalActivityReplacement(
-            nativeTxt(payload.toString()), content
-        )
-    }
+    ): TxtCanonicalActivityReplacementResult = replaceNames(
+        content = content,
+        action = "replace_canonical_activity_names",
+        oldField = "old_canonical",
+        newField = "new_canonical",
+        replacements = replacements.map {
+            TxtNameReplacement(it.oldCanonical, it.newCanonical)
+        }
+    )
 
     private fun replaceAliasNames(
         content: String,
         replacements: List<AliasKeyReplacement>
+    ): TxtCanonicalActivityReplacementResult = replaceNames(
+        content = content,
+        action = "replace_alias_activity_names",
+        oldField = "old_alias",
+        newField = "new_alias",
+        replacements = replacements.map {
+            TxtNameReplacement(it.oldAlias, it.newAlias)
+        }
+    )
+
+    private fun replaceNames(
+        content: String,
+        action: String,
+        oldField: String,
+        newField: String,
+        replacements: List<TxtNameReplacement>
     ): TxtCanonicalActivityReplacementResult {
         val payload = JSONObject()
-            .put("action", "replace_alias_activity_names")
+            .put("action", action)
             .put("content", content)
             .put("replacements", JSONArray().apply {
                 replacements.forEach { replacement ->
                     put(JSONObject()
-                        .put("old_alias", replacement.oldAlias)
-                        .put("new_alias", replacement.newAlias))
+                        .put(oldField, replacement.oldName)
+                        .put(newField, replacement.newName))
                 }
             })
         return txtCodec.parseCanonicalActivityReplacement(
@@ -268,3 +278,8 @@ internal class RuntimeActivityHierarchyMigrationService(
     }
 
 }
+
+private data class TxtNameReplacement(
+    val oldName: String,
+    val newName: String
+)

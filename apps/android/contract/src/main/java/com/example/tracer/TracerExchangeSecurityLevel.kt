@@ -1,12 +1,12 @@
 package com.example.tracer
 
-enum class FileCryptoSecurityLevel(val wireValue: String) {
+enum class TracerExchangeSecurityLevel(val wireValue: String) {
     INTERACTIVE("interactive"),
     MODERATE("moderate"),
     HIGH("high");
 
     companion object {
-        fun fromWireValue(value: String): FileCryptoSecurityLevel = when (value.lowercase()) {
+        fun fromWireValue(value: String): TracerExchangeSecurityLevel = when (value.lowercase()) {
             "moderate" -> MODERATE
             "high" -> HIGH
             else -> INTERACTIVE

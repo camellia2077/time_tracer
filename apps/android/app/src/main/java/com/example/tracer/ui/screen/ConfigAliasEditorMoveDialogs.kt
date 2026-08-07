@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 internal fun AliasEntryMoveTargetDialog(
-    entry: AliasTomlEntry,
+    entry: ActivityHierarchyLeaf,
     destinations: List<AliasEntryMoveDestinationDocument>,
     loading: Boolean,
     onDismiss: () -> Unit,
@@ -49,7 +49,7 @@ internal fun AliasEntryMoveTargetDialog(
 
 @Composable
 internal fun AliasGroupMoveTargetDialog(
-    group: AliasTomlGroup,
+    group: ActivityHierarchyGroup,
     destinations: List<AliasEntryMoveDestinationDocument>,
     loading: Boolean,
     onDismiss: () -> Unit,
@@ -72,10 +72,11 @@ private fun ActivityHierarchyMoveTargetDialog(
     onDismiss: () -> Unit,
     onConfirm: (AliasEntryMoveTarget) -> Unit
 ) {
+    // Do not imply a destination before the user makes a choice. In
+    // particular, selecting the first other TOML by default makes its root
+    // radio look like an explicit user selection.
     var selectedTarget by remember(destinations) {
-        mutableStateOf(destinations.firstOrNull { it.rootSelectable }?.let {
-            AliasEntryMoveTarget(it.sourceName, emptyList())
-        })
+        mutableStateOf<AliasEntryMoveTarget?>(null)
     }
     var expandedPaths by remember(destinations) { mutableStateOf(emptySet<String>()) }
 
@@ -108,7 +109,7 @@ private fun ActivityHierarchyMoveTargetDialog(
                 )
             }
             destination.document.nodes
-                .filterIsInstance<AliasTomlGroup>()
+                .filterIsInstance<ActivityHierarchyGroup>()
                 .forEach { group ->
                     AliasMoveTargetGroupTree(
                         sourceName = destination.sourceName,
@@ -194,7 +195,7 @@ internal fun ActivityHierarchyTargetSelectionDialog(
 @Composable
 private fun AliasMoveTargetGroupTree(
     sourceName: String,
-    group: AliasTomlGroup,
+    group: ActivityHierarchyGroup,
     groupPath: List<String>,
     excludedGroupPath: List<String>,
     excludeDescendants: Boolean,
@@ -217,7 +218,7 @@ private fun AliasMoveTargetGroupTree(
         label = group.name,
         selected = selectable && selectedTarget == target,
         depth = path.size,
-        expandable = group.nodes.any { it is AliasTomlGroup },
+        expandable = group.nodes.any { it is ActivityHierarchyGroup },
         expanded = expanded,
         onExpand = {
             onExpandedPathsChange(
@@ -227,7 +228,7 @@ private fun AliasMoveTargetGroupTree(
         onSelect = { if (selectable) onSelect(target) }
     )
     if (expanded) {
-        group.nodes.filterIsInstance<AliasTomlGroup>().forEach { child ->
+        group.nodes.filterIsInstance<ActivityHierarchyGroup>().forEach { child ->
             AliasMoveTargetGroupTree(
                 sourceName = sourceName,
                 group = child,

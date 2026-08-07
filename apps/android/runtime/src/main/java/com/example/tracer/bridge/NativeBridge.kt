@@ -120,19 +120,6 @@ object NativeBridge {
         requestJson: String
     ): String
 
-    external fun nativeEncryptFile(
-        inputPath: String,
-        outputPath: String,
-        passphrase: String,
-        securityLevel: String
-    ): String
-
-    external fun nativeDecryptFile(
-        inputPath: String,
-        outputPath: String,
-        passphrase: String
-    ): String
-
     external fun nativeExportTracerExchange(
         inputPath: String,
         outputPath: String,

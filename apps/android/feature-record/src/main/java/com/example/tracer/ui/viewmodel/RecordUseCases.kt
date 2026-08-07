@@ -59,7 +59,10 @@ class RecordUseCases(
         )
         val successSummary = buildRecordSuccessSummary(
             rawActivityToken = state.recordContent,
-            durationClockText = durationClockText
+            durationClockText = durationClockText,
+            activityHierarchyCreated = result.activityHierarchyCreated,
+            activityHierarchyCategory = result.activityHierarchyCategory,
+            activityHierarchyActivity = result.activityHierarchyActivity
         )
         val preferredMonth = datePolicy.resolvePreferredMonthForRecord(targetDateIso)
         // Clear the previous activity/remark only after a successful write. Failed writes keep
@@ -67,7 +70,7 @@ class RecordUseCases(
         val stateAfterRecord = state.copy(
             recordContent = "",
             recordRemark = "",
-            lastRecordedActivityAlias = successSummary.aliasToken,
+            lastRecordedActivityHierarchyLeaf = successSummary.aliasToken,
             lastRecordedDuration = successSummary.inputDurationText
         )
         return historyNavigator.refreshAndOpen(
@@ -113,7 +116,10 @@ class RecordUseCases(
         )
         val successSummary = buildRecordSuccessSummary(
             rawActivityToken = state.recordContent,
-            durationClockText = durationClockText
+            durationClockText = durationClockText,
+            activityHierarchyCreated = result.activityHierarchyCreated,
+            activityHierarchyCategory = result.activityHierarchyCategory,
+            activityHierarchyActivity = result.activityHierarchyActivity
         )
         val preferredMonth = datePolicy.resolvePreferredMonthForRecord(targetDateIso)
         val stateAfterRecord = state.copy(
@@ -123,7 +129,7 @@ class RecordUseCases(
             intervalEnd = "",
             intervalStartedAtEpochMs = 0L,
             attributionDateIso = "",
-            lastRecordedActivityAlias = successSummary.aliasToken,
+            lastRecordedActivityHierarchyLeaf = successSummary.aliasToken,
             lastRecordedDuration = successSummary.inputDurationText
         )
         return historyNavigator.refreshAndOpen(
@@ -266,7 +272,7 @@ class RecordUseCases(
                 statusText = result.message
             )
         }
-        val aliasMappingsResult = queryGateway.listActivityAliasMappings()
+        val aliasMappingsResult = queryGateway.listActivityHierarchyLeafMappings()
         val aliasByCanonical = if (aliasMappingsResult.ok) {
             aliasMappingsResult.entries.firstAliasByCanonical()
         } else {
@@ -357,7 +363,7 @@ class RecordUseCases(
             )
         }
 
-        val mappingResult = queryGateway.listActivityAliasMappings()
+        val mappingResult = queryGateway.listActivityHierarchyLeafMappings()
         if (!mappingResult.ok) {
             logSuggestedActivityApply(
                 canonicalActivityName = trimmedCanonical,
@@ -426,7 +432,7 @@ class RecordUseCases(
             suggestedActivities = emptyList(),
             canonicalCatalogRoots = emptyList(),
             canonicalCatalogStatusText = "",
-            lastRecordedActivityAlias = "",
+            lastRecordedActivityHierarchyLeaf = "",
             lastRecordedDuration = "",
             suggestionsVisible = false,
             isCanonicalCatalogVisible = false,
@@ -514,7 +520,10 @@ class RecordUseCases(
 
     private suspend fun buildRecordSuccessSummary(
         rawActivityToken: String,
-        durationClockText: String
+        durationClockText: String,
+        activityHierarchyCreated: Boolean,
+        activityHierarchyCategory: String,
+        activityHierarchyActivity: String
     ): RecordSuccessSummary {
         val tokenSummary = resolveActivityTokenSummary(rawActivityToken)
         val statusDurationText = formatClockDuration(durationClockText) ?: durationClockText
@@ -527,7 +536,15 @@ class RecordUseCases(
             inputDurationText = durationClockText,
             statusText = textProvider.recordedActivityStatus(
                 canonicalToken = tokenSummary.canonicalToken,
-                durationText = statusDurationText
+                durationText = statusDurationText,
+                activityHierarchyCreatedText = if (activityHierarchyCreated) {
+                    textProvider.activityHierarchyCreated(
+                        activityName = activityHierarchyActivity.ifBlank { tokenSummary.canonicalToken },
+                        categoryName = activityHierarchyCategory
+                    )
+                } else {
+                    null
+                }
             )
         )
     }
@@ -537,7 +554,7 @@ class RecordUseCases(
         if (trimmedToken.isEmpty()) {
             return ActivityTokenSummary(canonicalToken = trimmedToken, aliasToken = trimmedToken)
         }
-        val mappingResult = queryGateway.listActivityAliasMappings()
+        val mappingResult = queryGateway.listActivityHierarchyLeafMappings()
         if (!mappingResult.ok) {
             return ActivityTokenSummary(canonicalToken = trimmedToken, aliasToken = trimmedToken)
         }

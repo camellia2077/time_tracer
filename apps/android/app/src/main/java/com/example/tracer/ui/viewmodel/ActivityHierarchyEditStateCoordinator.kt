@@ -65,9 +65,9 @@ internal class ActivityHierarchyEditStateCoordinator(
     private fun cacheStructuredDraft(
         state: ConfigUiState,
         filePath: String,
-        document: AliasTomlDocument,
+        document: ActivityHierarchyDocument,
         tomlContent: String
-    ): Map<String, AliasTomlDocument> {
+    ): Map<String, ActivityHierarchyDocument> {
         if (filePath.isBlank()) return state.aliasStructuredDraftsByFile
         val nextDrafts = state.aliasStructuredDraftsByFile.toMutableMap()
         if (tomlContent == state.selectedFileContent) {

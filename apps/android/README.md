@@ -60,7 +60,7 @@ Notes:
 For tracer exchange, TXT import/export, SAF/document, or fd export behavior:
 
 - `docs/time_tracer/presentation/android/reference/data-import-export.md`
-- `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v4.md`
+- `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v6.md`
 - `docs/time_tracer/core/contracts/crypto/runtime_crypto_json_contract_v1.md`
 
 ## Boundary Notes
