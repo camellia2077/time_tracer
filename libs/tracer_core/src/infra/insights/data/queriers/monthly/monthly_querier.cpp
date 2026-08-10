@@ -46,8 +46,9 @@ auto JoinPathParts(const std::vector<std::string>& parts) -> std::string {
 }
 }  // namespace
 
-MonthQuerier::MonthQuerier(sqlite3* sqlite_db, std::string_view year_month)
-    : RangeQuerierBase(sqlite_db, year_month) {}
+MonthQuerier::MonthQuerier(sqlite3* sqlite_db, std::string_view year_month,
+                           const DailyStatusConfig* status_config)
+    : RangeQuerierBase(sqlite_db, year_month, status_config) {}
 
 auto MonthQuerier::FetchData() -> MonthlyInsightsData {
   if (!ValidateInput()) {

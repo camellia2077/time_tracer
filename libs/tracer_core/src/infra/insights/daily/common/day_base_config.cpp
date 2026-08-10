@@ -46,10 +46,12 @@ auto DayBaseConfig::BuildStatisticsItems(
 }
 
 void DayBaseConfig::LoadBaseConfig(const DailyInsightsLabels& labels) {
-  title_prefix_ = labels.insights_title_prefix;
-  date_label_ = labels.date_label;
   total_time_label_ = labels.total_time_label;
   activity_count_label_ = labels.activity_count_label;
+  status_count_unit_ = labels.status_count_unit;
+  custom_section_label_ = labels.custom_section_label;
+  summary_section_label_ = labels.summary_section_label;
+  period_label_ = labels.period_label;
   getup_time_label_ = labels.getup_time_label;
   remark_label_ = labels.remark_label;
   no_records_ = labels.no_records_message;
@@ -60,17 +62,23 @@ void DayBaseConfig::LoadBaseConfig(const DailyInsightsLabels& labels) {
   project_breakdown_label_ = labels.project_breakdown_label;
 }
 
-auto DayBaseConfig::GetTitlePrefix() const -> const std::string& {
-  return title_prefix_;
-}
-auto DayBaseConfig::GetDateLabel() const -> const std::string& {
-  return date_label_;
-}
 auto DayBaseConfig::GetTotalTimeLabel() const -> const std::string& {
   return total_time_label_;
 }
 auto DayBaseConfig::GetActivityCountLabel() const -> const std::string& {
   return activity_count_label_;
+}
+auto DayBaseConfig::GetStatusCountUnit() const -> const std::string& {
+  return status_count_unit_;
+}
+auto DayBaseConfig::GetCustomSectionLabel() const -> const std::string& {
+  return custom_section_label_;
+}
+auto DayBaseConfig::GetSummarySectionLabel() const -> const std::string& {
+  return summary_section_label_;
+}
+auto DayBaseConfig::GetPeriodLabel() const -> const std::string& {
+  return period_label_;
 }
 auto DayBaseConfig::GetGetupTimeLabel() const -> const std::string& {
   return getup_time_label_;

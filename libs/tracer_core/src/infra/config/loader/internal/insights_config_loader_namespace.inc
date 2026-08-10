@@ -170,12 +170,11 @@ auto ValidateStatisticsItemsArray(const toml::array& items,
 
 auto ValidateRequiredPeriodLabels(const toml::table& tbl, const fs::path& path)
     -> void {
-  RequireString(tbl, path, "title_template");
+  RequireString(tbl, path, "summary_section_label");
+  RequireString(tbl, path, "period_label");
   RequireString(tbl, path, "actual_days_label");
-  RequireString(tbl, path, "status_days_label");
-  RequireString(tbl, path, "exercise_days_label");
-  RequireString(tbl, path, "cardio_days_label");
-  RequireString(tbl, path, "anaerobic_days_label");
+  RequireString(tbl, path, "status_count_unit");
+  RequireString(tbl, path, "custom_section_label");
   RequireString(tbl, path, "total_time_label");
   RequireString(tbl, path, "no_records_message");
   RequireString(tbl, path, "invalid_range_message");
@@ -183,10 +182,11 @@ auto ValidateRequiredPeriodLabels(const toml::table& tbl, const fs::path& path)
 }
 
 auto ValidateDailyLabels(const toml::table& tbl, const fs::path& path,
-                         std::string_view title_key,
                          bool require_statistics = true) -> void {
-  RequireString(tbl, path, title_key);
-  RequireString(tbl, path, "date_label");
+  RequireString(tbl, path, "summary_section_label");
+  RequireString(tbl, path, "period_label");
+  RequireString(tbl, path, "status_count_unit");
+  RequireString(tbl, path, "custom_section_label");
   RequireString(tbl, path, "total_time_label");
   RequireString(tbl, path, "getup_time_label");
   RequireString(tbl, path, "remark_label");

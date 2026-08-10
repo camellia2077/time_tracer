@@ -67,10 +67,12 @@ auto ParseIsoDate(std::string_view value, std::chrono::year_month_day& out_ymd)
 
 DateRangeQuerier::DateRangeQuerier(sqlite3* sqlite_db,
                                    std::string_view start_date,
-                                   std::string_view end_date)
+                                   std::string_view end_date,
+                                   const DailyStatusConfig* status_config)
     : RangeQuerierBase(
           sqlite_db, DateRangeQueryParam{.start_date = std::string(start_date),
-                                         .end_date = std::string(end_date)}) {}
+                                         .end_date = std::string(end_date)},
+          status_config) {}
 
 auto DateRangeQuerier::ValidateInput() const -> bool {
   int requested_days = 0;

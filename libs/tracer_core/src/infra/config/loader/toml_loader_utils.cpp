@@ -173,18 +173,15 @@ void FillTypStyle(const toml::table& tbl, FontConfig& fonts,
 }
 
 void FillDailyLabels(const toml::table& tbl, DailyInsightsLabels& labels) {
-  labels.insights_title = tbl["insights_title"].value_or("Daily Insights for");
-
-  if (auto val = tbl["title_prefix"].value<std::string>()) {
-    labels.insights_title_prefix = *val;
-  } else {
-    labels.insights_title_prefix = labels.insights_title;
-  }
-
-  labels.date_label = GetRequired<std::string>(tbl, "date_label");
   labels.total_time_label = GetRequired<std::string>(tbl, "total_time_label");
   labels.activity_count_label =
       tbl["activity_count_label"].value_or("Activity Count");
+  labels.status_count_unit = GetRequired<std::string>(tbl, "status_count_unit");
+  labels.custom_section_label =
+      GetRequired<std::string>(tbl, "custom_section_label");
+  labels.summary_section_label =
+      GetRequired<std::string>(tbl, "summary_section_label");
+  labels.period_label = GetRequired<std::string>(tbl, "period_label");
 
   labels.getup_time_label = tbl["getup_time_label"].value_or("Getup Time");
   labels.remark_label = tbl["remark_label"].value_or("Remark");
@@ -201,18 +198,16 @@ void FillDailyLabels(const toml::table& tbl, DailyInsightsLabels& labels) {
 }
 
 void FillRangeLabels(const toml::table& tbl, RangeInsightsLabels& labels) {
-  labels.insights_title = tbl["insights_title"].value_or("Monthly Insights");
-  labels.title_template = GetRequired<std::string>(tbl, "title_template");
   labels.total_time_label = GetRequired<std::string>(tbl, "total_time_label");
   labels.activity_count_label =
       tbl["activity_count_label"].value_or("Activity Count");
+  labels.status_count_unit = GetRequired<std::string>(tbl, "status_count_unit");
+  labels.custom_section_label =
+      GetRequired<std::string>(tbl, "custom_section_label");
+  labels.summary_section_label =
+      GetRequired<std::string>(tbl, "summary_section_label");
+  labels.period_label = GetRequired<std::string>(tbl, "period_label");
   labels.actual_days_label = GetRequired<std::string>(tbl, "actual_days_label");
-  labels.status_days_label = tbl["status_days_label"].value_or("Status Days");
-  labels.exercise_days_label =
-      tbl["exercise_days_label"].value_or("Exercise Days");
-  labels.cardio_days_label = tbl["cardio_days_label"].value_or("Cardio Days");
-  labels.anaerobic_days_label =
-      tbl["anaerobic_days_label"].value_or("Anaerobic Days");
   labels.no_records_message =
       GetRequired<std::string>(tbl, "no_records_message");
   labels.invalid_format_message = tbl["invalid_format_message"].value_or("");

@@ -28,7 +28,7 @@ auto InsightsConfigLoader::LoadDailyTexConfig(const fs::path& path)
     -> DailyTexConfig {
   toml::table tbl = modloader::ReadToml(path);
   ValidateTexStyle(tbl, path);
-  ValidateDailyLabels(tbl, path, "insights_title");
+  ValidateDailyLabels(tbl, path);
   ValidateKeywordColors(tbl, path);
   ValidateDailyStatistics(tbl, path);
 
@@ -45,7 +45,7 @@ auto InsightsConfigLoader::LoadDailyTypConfig(const fs::path& path)
     -> DailyTypConfig {
   toml::table tbl = modloader::ReadToml(path);
   ValidateTypStyle(tbl, path);
-  ValidateDailyLabels(tbl, path, "title_prefix");
+  ValidateDailyLabels(tbl, path);
   ValidateKeywordColors(tbl, path);
   ValidateDailyStatistics(tbl, path);
   ValidateOptionalPositiveIntegerIfPresent(tbl, path, "statistic_font_size");
@@ -68,7 +68,7 @@ auto InsightsConfigLoader::LoadDailyTypConfig(const fs::path& path)
 auto InsightsConfigLoader::LoadDailyMdConfig(const fs::path& path)
     -> DailyMdConfig {
   toml::table tbl = modloader::ReadToml(path);
-  ValidateDailyLabels(tbl, path, "title_prefix", false);
+  ValidateDailyLabels(tbl, path, false);
 
   DailyMdConfig config;
   modloader::FillDailyLabels(tbl, config.labels);

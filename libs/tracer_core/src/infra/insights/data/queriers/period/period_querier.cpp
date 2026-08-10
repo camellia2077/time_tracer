@@ -11,8 +11,9 @@
 
 PeriodQuerier::PeriodQuerier(
     sqlite3* sqlite_db, int days_to_query,
-    const tracer_core::application::ports::IPlatformClock& platform_clock)
-    : RangeQuerierBase(sqlite_db, days_to_query),
+    const tracer_core::application::ports::IPlatformClock& platform_clock,
+    const DailyStatusConfig* status_config)
+    : RangeQuerierBase(sqlite_db, days_to_query, status_config),
       platform_clock_(platform_clock) {}
 
 auto PeriodQuerier::ValidateInput() const -> bool {

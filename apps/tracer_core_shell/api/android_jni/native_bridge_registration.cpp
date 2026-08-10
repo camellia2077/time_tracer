@@ -10,7 +10,8 @@ const std::array<JNINativeMethod, 19> kNativeMethods = {
     JNINativeMethod{
         const_cast<char*>("nativeInit"),
         const_cast<char*>(
-            "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)"
+            "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;"
+            "Ljava/lang/String;)"
             "Ljava/lang/String;"),
         reinterpret_cast<void*>(&NativeInit),
     },

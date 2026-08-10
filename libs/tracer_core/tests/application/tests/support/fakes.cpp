@@ -279,6 +279,7 @@ auto FakeInsightsDataQueryService::QueryMonthly(std::string_view month)
 auto FakeInsightsDataQueryService::QueryPeriod(int days) -> PeriodInsightsData {
   PeriodInsightsData insights;
   insights.requested_days = days;
+  insights.statuses = period_statuses;
   return insights;
 }
 
@@ -288,6 +289,7 @@ auto FakeInsightsDataQueryService::QueryRange(std::string_view start_date,
   PeriodInsightsData insights;
   insights.start_date = std::string(start_date);
   insights.end_date = std::string(end_date);
+  insights.statuses = period_statuses;
   return insights;
 }
 

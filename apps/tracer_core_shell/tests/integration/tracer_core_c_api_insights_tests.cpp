@@ -74,6 +74,47 @@ void RunInsightsChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
               !kStructuredMetadata.contains("exercise"),
           "structured day metadata should not expose fixed status fields");
 
+  const json kStructuredRangeInsightsResponse = ParseResponse(
+      api.runtime_insights(
+          runtime,
+          json{{"operation_kind", "structured_query"},
+               {"display_mode", "range"},
+               {"selection_kind", "date_range"},
+               {"start_date", "2025-01-03"},
+               {"end_date", "2025-01-03"}}
+              .dump()
+              .c_str()),
+      "structured range runtime insights");
+  Require(kStructuredRangeInsightsResponse.value("ok", false),
+          "structured range runtime insights should return ok=true");
+  const auto& kStructuredRangeStatuses =
+      kStructuredRangeInsightsResponse.at("insights").at("statuses");
+  Require(kStructuredRangeStatuses.is_array() &&
+              kStructuredRangeStatuses.size() == 2U,
+          "structured range insights should expose configured statuses");
+  Require(kStructuredRangeStatuses.at(0).contains("occurrence_count") &&
+              kStructuredRangeStatuses.at(0).contains("total_duration"),
+          "structured range statuses should expose occurrence and duration totals");
+
+  const json kRangeInsightsResponse = ParseResponse(
+      api.runtime_insights(
+          runtime,
+          json{{"operation_kind", "query"},
+               {"display_mode", "range"},
+               {"selection_kind", "date_range"},
+               {"start_date", "2025-01-03"},
+               {"end_date", "2025-01-03"},
+               {"format", "markdown"}}
+              .dump()
+              .c_str()),
+      "range runtime insights with configured statuses");
+  Require(kRangeInsightsResponse.value("ok", false),
+          "range runtime insights should return ok=true");
+  Require(kRangeInsightsResponse.value("content", std::string{}).find(
+              kStructuredRangeStatuses.at(0).at("label").get<std::string>()) !=
+              std::string::npos,
+          "range Markdown insights should render configured status labels");
+
   const json kInsightsBatchResponse = ParseResponse(
       api.runtime_insights_batch(
           runtime,

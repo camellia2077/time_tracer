@@ -86,13 +86,13 @@ auto SqliteInsightsDataQueryService::QueryDaily(std::string_view date)
 
 auto SqliteInsightsDataQueryService::QueryMonthly(std::string_view month)
     -> MonthlyInsightsData {
-  MonthQuerier querier(EnsureDbConnection(db_connection_), month);
+  MonthQuerier querier(EnsureDbConnection(db_connection_), month, &status_config_);
   return querier.FetchData();
 }
 
 auto SqliteInsightsDataQueryService::QueryPeriod(int days) -> PeriodInsightsData {
   PeriodQuerier querier(EnsureDbConnection(db_connection_), days,
-                        *platform_clock_);
+                        *platform_clock_, &status_config_);
   return querier.FetchData();
 }
 
@@ -100,19 +100,19 @@ auto SqliteInsightsDataQueryService::QueryRange(std::string_view start_date,
                                               std::string_view end_date)
     -> PeriodInsightsData {
   DateRangeQuerier querier(EnsureDbConnection(db_connection_), start_date,
-                           end_date);
+                           end_date, &status_config_);
   return querier.FetchData();
 }
 
 auto SqliteInsightsDataQueryService::QueryWeekly(std::string_view iso_week)
     -> WeeklyInsightsData {
-  WeekQuerier querier(EnsureDbConnection(db_connection_), iso_week);
+  WeekQuerier querier(EnsureDbConnection(db_connection_), iso_week, &status_config_);
   return querier.FetchData();
 }
 
 auto SqliteInsightsDataQueryService::QueryYearly(std::string_view year)
     -> YearlyInsightsData {
-  YearQuerier querier(EnsureDbConnection(db_connection_), year);
+  YearQuerier querier(EnsureDbConnection(db_connection_), year, &status_config_);
   return querier.FetchData();
 }
 
@@ -164,6 +164,15 @@ auto SqliteInsightsDataQueryService::ListYearlyTargets()
 
 auto SqliteInsightsDataQueryService::QueryPeriodBatch(
     const std::vector<int>& days_list) -> std::map<int, PeriodInsightsData> {
+  if (!status_config_.statuses.empty()) {
+    std::map<int, PeriodInsightsData> results;
+    for (const int days : days_list) {
+      if (days > 0) {
+        results.emplace(days, QueryPeriod(days));
+      }
+    }
+    return results;
+  }
   sqlite3* db_connection = EnsureDbConnection(db_connection_);
   BatchPeriodDataFetcher fetcher(db_connection, *platform_clock_);
   auto insights = fetcher.FetchAllData(days_list);
@@ -195,6 +204,13 @@ auto SqliteInsightsDataQueryService::QueryAllDaily()
 
 auto SqliteInsightsDataQueryService::QueryAllMonthly()
     -> std::map<std::string, MonthlyInsightsData> {
+  if (!status_config_.statuses.empty()) {
+    std::map<std::string, MonthlyInsightsData> results;
+    for (const auto& month : ListMonthlyTargets()) {
+      results.emplace(month, QueryMonthly(month));
+    }
+    return results;
+  }
   sqlite3* db_connection = EnsureDbConnection(db_connection_);
   BatchMonthDataFetcher fetcher(db_connection);
   auto insights = fetcher.FetchAllData();
@@ -210,6 +226,13 @@ auto SqliteInsightsDataQueryService::QueryAllMonthly()
 
 auto SqliteInsightsDataQueryService::QueryAllWeekly()
     -> std::map<std::string, WeeklyInsightsData> {
+  if (!status_config_.statuses.empty()) {
+    std::map<std::string, WeeklyInsightsData> results;
+    for (const auto& week : ListWeeklyTargets()) {
+      results.emplace(week, QueryWeekly(week));
+    }
+    return results;
+  }
   sqlite3* db_connection = EnsureDbConnection(db_connection_);
   BatchWeekDataFetcher fetcher(db_connection);
   auto insights = fetcher.FetchAllData();
@@ -225,6 +248,13 @@ auto SqliteInsightsDataQueryService::QueryAllWeekly()
 
 auto SqliteInsightsDataQueryService::QueryAllYearly()
     -> std::map<std::string, YearlyInsightsData> {
+  if (!status_config_.statuses.empty()) {
+    std::map<std::string, YearlyInsightsData> results;
+    for (const auto& year : ListYearlyTargets()) {
+      results.emplace(year, QueryYearly(year));
+    }
+    return results;
+  }
   sqlite3* db_connection = EnsureDbConnection(db_connection_);
   BatchYearDataFetcher fetcher(db_connection);
   auto insights = fetcher.FetchAllData();

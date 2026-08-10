@@ -14,7 +14,8 @@ class PeriodQuerier : public RangeQuerierBase<PeriodInsightsData, int> {
  public:
   PeriodQuerier(
       sqlite3* sqlite_db, int days_to_query,
-      const tracer_core::application::ports::IPlatformClock& platform_clock);
+      const tracer_core::application::ports::IPlatformClock& platform_clock,
+      const DailyStatusConfig* status_config = nullptr);
 
  protected:
   [[nodiscard]] auto GetDateConditionSql() const -> std::string override;

@@ -53,12 +53,6 @@ auto main() -> int {
         io_error);
     Require(!io_error, "Failed to install insights fixture behavior config");
     fs::copy_file(
-        kRepoRoot / "config" / "user" / "insights.toml",
-        kRuntimeUserRoot / "insights.toml",
-        fs::copy_options::overwrite_existing,
-        io_error);
-    Require(!io_error, "Failed to install insights fixture insights config");
-    fs::copy_file(
         kFixtureConfigRoot / "activity_hierarchy" / "insights.toml",
         kRuntimeUserRoot / "activity_hierarchy" / "insights.toml",
         fs::copy_options::overwrite_existing,

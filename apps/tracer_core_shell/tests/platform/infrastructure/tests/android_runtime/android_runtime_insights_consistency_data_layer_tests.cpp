@@ -77,19 +77,23 @@ auto TestDataLayerStructuredFieldVerification(
     std::cerr << "[FAIL] DataLayer/FieldVerify: configured daily statuses "
                  "should be present as structured fields.\n";
   } else {
-    bool study_present = false;
-    bool exercise_absent = false;
+    bool study_counted = false;
+    bool exercise_empty = false;
     for (const auto& status : daily->metadata.statuses) {
       if (status.id == "status") {
-        study_present = status.label == "Study" && status.value;
+        study_counted = status.label == "Study" &&
+                        status.occurrence_count == 5 &&
+                        status.total_duration == 41008;
       } else if (status.id == "exercise") {
-        exercise_absent = status.label == "Exercise" && !status.value;
+        exercise_empty = status.label == "Exercise" &&
+                         status.occurrence_count == 1 &&
+                         status.total_duration == 48;
       }
     }
-    if (!study_present || !exercise_absent) {
+    if (!study_counted || !exercise_empty) {
       ++failures;
-      std::cerr << "[FAIL] DataLayer/FieldVerify: parent_present values for "
-                   "2025-01-03 should be study=true and exercise=false.\n";
+      std::cerr << "[FAIL] DataLayer/FieldVerify: configured status totals for "
+                   "2025-01-03 should match the expected parent records.\n";
     }
   }
 

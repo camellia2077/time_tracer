@@ -128,6 +128,13 @@ TT_CORE_API TtCoreRuntimeHandle* tracer_core_pipeline_runtime_create(
 // Destroys a runtime handle created by `tracer_core_runtime_create`.
 TT_CORE_API void tracer_core_runtime_destroy(TtCoreRuntimeHandle* handle);
 
+// Applies Android-owned, report-scope status definitions to an initialized runtime.
+// `status_configs_json` uses {"day":[{"id","label","parent"}, ...], ...}
+// with all six scopes: day, week, month, year, recent, and range.
+// Returns TT_CORE_STATUS_OK on success; otherwise inspect tracer_core_last_error().
+TT_CORE_API int tracer_core_runtime_set_insights_statuses_json(
+    TtCoreRuntimeHandle* handle, const char* status_configs_json);
+
 TT_CORE_API const char* tracer_core_pipeline_runtime_ingest_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
 TT_CORE_API const char* tracer_core_pipeline_runtime_validate_structure_json(

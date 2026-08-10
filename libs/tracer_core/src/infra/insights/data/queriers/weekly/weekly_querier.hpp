@@ -14,7 +14,8 @@
 class WeekQuerier
     : public RangeQuerierBase<WeeklyInsightsData, std::string_view> {
  public:
-  WeekQuerier(sqlite3* sqlite_db, std::string_view iso_week);
+  WeekQuerier(sqlite3* sqlite_db, std::string_view iso_week,
+              const DailyStatusConfig* status_config = nullptr);
   [[nodiscard]] auto FetchData() -> WeeklyInsightsData override;
 
  protected:

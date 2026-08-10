@@ -5,11 +5,12 @@
 #include <string>
 
 struct DailyInsightsLabels {
-  std::string insights_title_prefix;
-  std::string insights_title;
-  std::string date_label;
   std::string total_time_label;
   std::string activity_count_label;
+  std::string status_count_unit;
+  std::string custom_section_label;
+  std::string summary_section_label;
+  std::string period_label;
   std::string getup_time_label;
   std::string remark_label;
   std::string no_records_message;
@@ -22,15 +23,13 @@ struct DailyInsightsLabels {
 };
 
 struct RangeInsightsLabels {
-  std::string insights_title;
-  std::string title_template;
   std::string total_time_label;
   std::string activity_count_label;
+  std::string status_count_unit;
+  std::string custom_section_label;
+  std::string summary_section_label;
+  std::string period_label;
   std::string actual_days_label;
-  std::string status_days_label;
-  std::string exercise_days_label;
-  std::string cardio_days_label;
-  std::string anaerobic_days_label;
   std::string no_records_message;
   std::string invalid_format_message;
   std::string invalid_range_message;

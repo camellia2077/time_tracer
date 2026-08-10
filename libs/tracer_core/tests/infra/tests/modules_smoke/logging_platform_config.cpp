@@ -123,13 +123,13 @@ auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int {
   const toml::table kDailyMarkdownTable =
       tracer::core::infrastructure::config::loader::ReadToml(
           kDailyMarkdownConfig);
-  if (!kDailyMarkdownTable.contains("date_label")) {
+  if (!kDailyMarkdownTable.contains("summary_section_label")) {
     return 400;
   }
 
   const auto kDailyMarkdown = tracer::core::infrastructure::config::
       InsightsConfigLoader::LoadDailyMdConfig(kDailyMarkdownConfig);
-  if (kDailyMarkdown.labels.date_label != "Date") {
+  if (kDailyMarkdown.labels.summary_section_label != "Summary") {
     return 401;
   }
 
@@ -209,8 +209,8 @@ auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int {
   const AppConfig kLoadedAppConfig = config_loader.LoadConfiguration();
   if (kLoadedAppConfig.pipeline.converter_main_config_path.filename() !=
           "behavior.toml" ||
-      kLoadedAppConfig.loaded_insights.markdown.day.labels.date_label !=
-          "Date") {
+      kLoadedAppConfig.loaded_insights.markdown.day.labels
+              .summary_section_label != "Summary") {
     return 403;
   }
 

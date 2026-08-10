@@ -32,10 +32,6 @@ auto BuildRuntimeFixture(std::string_view test_name, int& failures)
         repo_root / "config" / "user" / "behavior.toml",
         fixture.config_toml_path,
         std::filesystem::copy_options::overwrite_existing, io_error);
-    std::filesystem::copy_file(
-        repo_root / "config" / "user" / "insights.toml",
-        config_root / "user" / "insights.toml",
-        std::filesystem::copy_options::overwrite_existing, io_error);
     std::filesystem::copy(
         repo_root / "test" / "data" / "activity_hierarchy",
         config_root / "user" / "activity_hierarchy",

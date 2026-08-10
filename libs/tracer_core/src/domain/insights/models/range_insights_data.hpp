@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "domain/insights/models/project_tree.hpp"
+#include "domain/insights/models/insights_status_value.hpp"
 
 struct RangeInsightsData {
   std::string range_label;
@@ -22,6 +23,7 @@ struct RangeInsightsData {
   int exercise_true_days = 0;
   int cardio_true_days = 0;
   int anaerobic_true_days = 0;
+  std::vector<InsightsStatusValue> statuses;
   bool is_valid = true;
 
   std::vector<std::pair<std::int64_t, std::int64_t>> project_stats;

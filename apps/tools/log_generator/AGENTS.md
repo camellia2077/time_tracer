@@ -53,7 +53,6 @@ python tools/run.py verify --app log_generator --build-dir build_fast --concise
 Evidence:
 
 - `out/test/artifact_log_generator/result.json`
-- `out/test/artifact_log_generator/result_cases.json`
 - `out/test/artifact_log_generator/logs/output.log`
 
 ## Local Completion Bar

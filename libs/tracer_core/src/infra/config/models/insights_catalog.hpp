@@ -36,9 +36,18 @@ struct LoadedInsightsConfigs {
   std::unordered_map<std::string, MarkdownInsightsConfigs> markdown_locales;
 };
 
+struct InsightsStatusConfigs {
+  DailyStatusConfig day;
+  DailyStatusConfig week;
+  DailyStatusConfig month;
+  DailyStatusConfig year;
+  DailyStatusConfig recent;
+  DailyStatusConfig range;
+};
+
 struct InsightsCatalog {
   LoadedInsightsConfigs loaded_insights;
-  DailyStatusConfig daily_statuses;
+  InsightsStatusConfigs statuses;
 };
 
 #endif  // INFRASTRUCTURE_CONFIG_MODELS_INSIGHTS_CATALOG_H_

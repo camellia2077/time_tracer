@@ -83,10 +83,10 @@ auto TracerExchangeService::RunInspect(
                                 kInputPath.string());
   }
 
-  const auto encrypted_zip = ReadFileBytes(kInputPath);
+  const auto kEncryptedZip = ReadFileBytes(kInputPath);
   const exchange_pkg::DecodedTracerExchangePackage kPackage =
-      exchange_pkg::DecodeZipBytes(encrypted_zip, request.passphrase);
-  return BuildInspectResult(kInputPath, encrypted_zip.size(), kPackage);
+      exchange_pkg::DecodeZipBytes(kEncryptedZip, request.passphrase);
+  return BuildInspectResult(kInputPath, kEncryptedZip.size(), kPackage);
 }
 
 }  // namespace tracer_core::infrastructure::crypto::tracer_exchange_internal

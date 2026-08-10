@@ -29,7 +29,7 @@ auto DailyInsightsService::GenerateAllInsights(InsightsFormat format)
   ProjectNameCache name_cache =
       ::insights::services::CreateProjectNameCache(db_);
 
-  BatchDayDataFetcher fetcher(db_, name_cache, &insights_catalog_.daily_statuses);
+  BatchDayDataFetcher fetcher(db_, name_cache, &insights_catalog_.statuses.day);
   BatchDataResult batch_data = fetcher.FetchAllData();
 
   auto formatter =

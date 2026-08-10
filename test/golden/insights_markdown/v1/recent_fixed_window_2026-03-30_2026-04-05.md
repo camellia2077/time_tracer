@@ -1,14 +1,11 @@
-## Period Report: Last 7 days (2026-03-30 to 2026-04-05)
+## Summary
 
+- **Period**: 2026-03-30 - 2026-04-05
 - **Total Time Recorded**: 119h 59m 50s (average: 23h 59m 58s/day)
 - **Activity Count**: 50 (average: 7.14/day)
 - **Actual Days with Records**: 5
-- **Status Days**: 5 (100.00%)
-- **Exercise Days**: 5 (100.00%)
-- **Cardio Days**: 2 (40.00%)
-- **Anaerobic Days (False)**: 0 (0.00%)
 
-## Project Breakdown
+## Breakdown
 - **study**: 62h 33m 54s (52.1%)
   *Average: 12h 30m 46s/day · 23 times · 4.60 times/day*
   - math: 54h 21m 3s (86.9%)

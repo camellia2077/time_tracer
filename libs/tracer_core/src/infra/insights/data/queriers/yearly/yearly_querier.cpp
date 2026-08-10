@@ -29,8 +29,9 @@ auto DaysInYear(int year) -> int {
 }
 }  // namespace
 
-YearQuerier::YearQuerier(sqlite3* sqlite_db, std::string_view year_str)
-    : RangeQuerierBase(sqlite_db, year_str) {}
+YearQuerier::YearQuerier(sqlite3* sqlite_db, std::string_view year_str,
+                         const DailyStatusConfig* status_config)
+    : RangeQuerierBase(sqlite_db, year_str, status_config) {}
 
 auto YearQuerier::FetchData() -> YearlyInsightsData {
   if (!ValidateInput()) {

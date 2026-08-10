@@ -159,14 +159,6 @@ auto BuildAndroidInsightsCatalogBridge(
     const AndroidRuntimeConfigPaths& runtime_config_paths) -> InsightsCatalog {
   InsightsCatalog catalog;
 
-  const fs::path insights_status_config_path =
-      runtime_config_paths.converter_config_toml_path.parent_path() /
-      "insights.toml";
-  if (fs::exists(insights_status_config_path)) {
-    catalog.daily_statuses =
-        InsightsConfigLoader::LoadDailyStatusConfig(insights_status_config_path);
-  }
-
   catalog.loaded_insights.markdown.day =
       InsightsConfigLoader::LoadDailyMdConfig(runtime_config_paths.markdown.day);
   catalog.loaded_insights.markdown.month =

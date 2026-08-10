@@ -30,11 +30,11 @@ pub(crate) fn load_chart_assets(args: &ChartArgs) -> Result<ChartAssets, AppErro
 
 fn chart_option_template(args: &ChartArgs) -> &'static str {
     match args.chart_type {
-        ChartType::Line => "templates/insights_chart_option_line.js.tpl",
-        ChartType::Bar => "templates/insights_chart_option_bar.js.tpl",
-        ChartType::Pie => "templates/insights_chart_option_pie.js.tpl",
-        ChartType::HeatmapYear => "templates/insights_chart_option_heatmap_year.js.tpl",
-        ChartType::HeatmapMonth => "templates/insights_chart_option_heatmap_month.js.tpl",
+        ChartType::Line => "templates/report_chart_option_line.js.tpl",
+        ChartType::Bar => "templates/report_chart_option_bar.js.tpl",
+        ChartType::Pie => "templates/report_chart_option_pie.js.tpl",
+        ChartType::HeatmapYear => "templates/report_chart_option_heatmap_year.js.tpl",
+        ChartType::HeatmapMonth => "templates/report_chart_option_heatmap_month.js.tpl",
     }
 }
 

@@ -5,6 +5,7 @@
 
 #include "infra/insights/shared/formatters/typst/typ_utils.hpp"
 #include "infra/insights/shared/utils/format/insights_string_utils.hpp"
+#include "infra/insights/shared/utils/format/status_statistics_format.hpp"
 #include "infra/insights/shared/utils/format/time_format.hpp"
 
 namespace {
@@ -75,14 +76,12 @@ namespace DayTypUtils {
 
 void DisplayHeader(std::string& insights_stream, const DailyInsightsData& data,
                    const std::shared_ptr<DayTypConfig>& config) {
-  std::string title_text = config->GetTitlePrefix();
-  title_text += " ";
-  title_text += data.date;
   insights_stream += TypUtils::BuildTitleText(
-      config->GetTitleFont(), config->GetInsightsTitleFontSize(), title_text);
+      config->GetTitleFont(), config->GetInsightsTitleFontSize(),
+      config->GetSummarySectionLabel());
   insights_stream += "\n\n";
 
-  insights_stream += BuildBulletLine(config->GetDateLabel(), data.date);
+  insights_stream += BuildBulletLine(config->GetPeriodLabel(), data.date);
   insights_stream += "\n";
   insights_stream += BuildBulletLine(config->GetTotalTimeLabel(),
                                    TimeFormatDuration(data.total_duration));
@@ -90,11 +89,6 @@ void DisplayHeader(std::string& insights_stream, const DailyInsightsData& data,
   insights_stream += BuildBulletLine(config->GetActivityCountLabel(),
                                    std::to_string(data.activity_count));
   insights_stream += "\n";
-  for (const auto& status : data.metadata.statuses) {
-    insights_stream +=
-        BuildBulletLine(status.label, status.value ? "true" : "false");
-    insights_stream += "\n";
-  }
   insights_stream +=
       BuildBulletLine(config->GetGetupTimeLabel(), data.metadata.getup_time);
   insights_stream += "\n";
@@ -103,6 +97,20 @@ void DisplayHeader(std::string& insights_stream, const DailyInsightsData& data,
       FormatMultilineForList(data.metadata.remark, 2, " \\");
   insights_stream += BuildBulletLine(config->GetRemarkLabel(), formatted_remark);
   insights_stream += "\n";
+  if (!data.metadata.statuses.empty()) {
+    insights_stream += "\n";
+    insights_stream += TypUtils::BuildTitleText(
+        config->GetCategoryTitleFont(), config->GetCategoryTitleFontSize(),
+        config->GetCustomSectionLabel());
+    insights_stream += "\n\n";
+    for (const auto& status : data.metadata.statuses) {
+      insights_stream += BuildBulletLine(
+          status.label, FormatStatusStatistics(status.occurrence_count,
+                                               status.total_duration,
+                                               config->GetStatusCountUnit()));
+      insights_stream += "\n";
+    }
+  }
 }
 
 void DisplayDetailedActivities(std::string& insights_stream,

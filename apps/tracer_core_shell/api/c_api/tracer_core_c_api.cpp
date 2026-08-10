@@ -5,6 +5,7 @@
 #include <mutex>
 #include <nlohmann/json.hpp>
 #include <optional>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -233,6 +234,55 @@ extern "C" TT_CORE_API auto tracer_core_runtime_create(
 extern "C" TT_CORE_API void tracer_core_runtime_destroy(
     TtCoreRuntimeHandle* handle) {
   delete handle;
+}
+
+extern "C" TT_CORE_API auto tracer_core_runtime_set_insights_statuses_json(
+    TtCoreRuntimeHandle* handle, const char* status_configs_json) -> int {
+  try {
+    ClearLastError();
+    if (handle == nullptr) {
+      throw std::invalid_argument("runtime handle must not be null.");
+    }
+    if (status_configs_json == nullptr) {
+      throw std::invalid_argument("status_configs_json must not be null.");
+    }
+
+    const nlohmann::json payload = nlohmann::json::parse(status_configs_json);
+    const auto parse_scope = [&payload](std::string_view scope) {
+      const auto statuses_iter = payload.find(scope);
+      if (statuses_iter == payload.end() || !statuses_iter->is_array()) {
+        throw std::invalid_argument("status_configs_json." + std::string(scope) +
+                                    " must be an array.");
+      }
+      DailyStatusConfig config;
+      std::set<std::string> ids;
+      for (const auto& item : *statuses_iter) {
+        if (!item.is_object()) {
+          throw std::invalid_argument("status definition must be an object.");
+        }
+        const std::string id = item.value("id", std::string{});
+        const std::string label = item.value("label", std::string{});
+        const std::string parent = item.value("parent", std::string{});
+        if (id.empty() || label.empty() || parent.empty() || !ids.insert(id).second) {
+          throw std::invalid_argument("status definitions require unique id, label, and parent.");
+        }
+        config.statuses.push_back({.id = id, .label = label, .parent = parent});
+      }
+      return config;
+    };
+    infrastructure::bootstrap::SetAndroidRuntimeStatusConfigs(
+        handle->runtime,
+        {.day = parse_scope("day"), .week = parse_scope("week"),
+         .month = parse_scope("month"), .year = parse_scope("year"),
+         .recent = parse_scope("recent"), .range = parse_scope("range")});
+    return TT_CORE_STATUS_OK;
+  } catch (const std::exception& error) {
+    SetLastError(error.what());
+    return TT_CORE_STATUS_ERROR;
+  } catch (...) {
+    SetLastError("tracer_core_runtime_set_insights_statuses_json failed unexpectedly.");
+    return TT_CORE_STATUS_ERROR;
+  }
 }
 
 extern "C" TT_CORE_API auto tracer_core_pipeline_runtime_create(

@@ -19,7 +19,8 @@ class DateRangeQuerier
     : public RangeQuerierBase<PeriodInsightsData, DateRangeQueryParam> {
  public:
   DateRangeQuerier(sqlite3* sqlite_db, std::string_view start_date,
-                   std::string_view end_date);
+                   std::string_view end_date,
+                   const DailyStatusConfig* status_config = nullptr);
 
  protected:
   [[nodiscard]] auto GetDateConditionSql() const -> std::string override;

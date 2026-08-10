@@ -97,7 +97,6 @@ class TestTidyTaskAutoFixOrchestrator(TestCase):
                     fb.context(),
                     task_log_path=str(task_path),
                     dry_run=True,
-                    insights_suffix="fix",
                 )
 
             self.assertEqual(result.action_count, 2)
@@ -147,7 +146,6 @@ class TestTidyTaskAutoFixOrchestrator(TestCase):
                     fb.context(),
                     task_log_path=str(task_path),
                     dry_run=False,
-                    insights_suffix="fix",
                 )
 
             self.assertEqual(result.action_count, 1)

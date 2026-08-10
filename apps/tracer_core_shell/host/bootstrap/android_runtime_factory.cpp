@@ -183,6 +183,16 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
   return runtime;
 }
 
+void SetAndroidRuntimeStatusConfigs(AndroidRuntime& runtime,
+                                    InsightsStatusConfigs status_configs) {
+  const auto state = std::static_pointer_cast<AndroidRuntimeState>(
+      runtime.runtime_state);
+  if (!state || !state->insights_catalog) {
+    throw std::runtime_error("Android insights catalog is not initialized.");
+  }
+  state->insights_catalog->statuses = std::move(status_configs);
+}
+
 auto BuildAndroidPipelineRuntime(const AndroidRuntimeRequest& request)
     -> AndroidPipelineRuntime {
   const fs::path kOutputRoot =

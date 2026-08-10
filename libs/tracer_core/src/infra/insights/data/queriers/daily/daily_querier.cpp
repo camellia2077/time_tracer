@@ -2,7 +2,6 @@
 #include "infra/insights/data/queriers/daily/daily_querier.hpp"
 #include <sqlite3.h>
 
-#include <algorithm>
 #include <cstdint>
 #include <format>
 #include <stdexcept>
@@ -10,6 +9,7 @@
 #include <string_view>
 
 #include "infra/insights/data/cache/project_name_cache.hpp"
+#include "infra/insights/data/utils/daily_status_utils.hpp"
 #include "infra/insights/data/utils/project_tree_builder.hpp"
 #include "infra/insights/data/utils/time_derived_stats.hpp"
 #include "infra/schema/day_schema.hpp"
@@ -29,65 +29,6 @@ auto JoinPathParts(const std::vector<std::string>& parts) -> std::string {
     path += "_" + parts[i];
   }
   return path;
-}
-
-auto SplitParentPath(std::string_view parent) -> std::vector<std::string> {
-  std::vector<std::string> parts;
-  size_t start = 0;
-  while (start <= parent.size()) {
-    const size_t separator = parent.find('/', start);
-    const size_t end =
-        separator == std::string_view::npos ? parent.size() : separator;
-    if (end == start) {
-      return {};
-    }
-    parts.emplace_back(parent.substr(start, end - start));
-    if (separator == std::string_view::npos) {
-      break;
-    }
-    start = separator + 1;
-  }
-  return parts;
-}
-
-auto HasParentActivity(
-    const std::vector<std::pair<std::int64_t, std::int64_t>>& project_stats,
-    const IProjectInfoProvider& provider, std::string_view parent) -> bool {
-  const std::vector<std::string> parent_parts = SplitParentPath(parent);
-  if (parent_parts.empty()) {
-    return false;
-  }
-
-  for (const auto& [project_id, duration_seconds] : project_stats) {
-    if (duration_seconds <= 0) {
-      continue;
-    }
-    const std::vector<std::string> path_parts =
-        provider.GetPathParts(project_id);
-    if (path_parts.size() < parent_parts.size()) {
-      continue;
-    }
-    if (std::equal(parent_parts.begin(), parent_parts.end(),
-                   path_parts.begin())) {
-      return true;
-    }
-  }
-  return false;
-}
-
-auto BuildDailyStatusValues(
-    const std::vector<std::pair<std::int64_t, std::int64_t>>& project_stats,
-    const IProjectInfoProvider& provider, const DailyStatusConfig& config)
-    -> std::vector<DailyStatusValue> {
-  std::vector<DailyStatusValue> values;
-  values.reserve(config.statuses.size());
-  for (const auto& status : config.statuses) {
-    values.push_back(
-        {.id = status.id,
-         .label = status.label,
-         .value = HasParentActivity(project_stats, provider, status.parent)});
-  }
-  return values;
 }
 
 auto ParseRecordKind(const unsigned char* value) -> ActivityRecordKind {
@@ -133,10 +74,13 @@ auto DayQuerier::FetchData() -> DailyInsightsData {
       data.stats = BuildDailyStats(data.project_stats, name_cache);
       BuildProjectTreeFromIds(data.project_tree, data.project_stats,
                               name_cache);
+    } else if (!data.project_stats.empty()) {
+      BuildProjectTreeFromIds(data.project_tree, data.project_stats,
+                              name_cache);
     }
     if (status_config_ != nullptr) {
-      data.metadata.statuses = BuildDailyStatusValues(
-          data.project_stats, name_cache, *status_config_);
+      data.metadata.statuses = BuildStatusValues<InsightsStatusValue>(
+          data.project_tree, *status_config_);
     }
   }
   return data;
@@ -349,12 +293,13 @@ void BatchDayDataFetcher::FetchTimeRecords(BatchDataResult& result) {
       continue;
     }
     data.stats = BuildDailyStats(data.project_stats, provider_);
+    BuildProjectTreeFromIds(data.project_tree, data.project_stats, provider_);
   }
 
   if (status_config_ != nullptr) {
     for (auto& [date, data] : result.data_map) {
-      data.metadata.statuses = BuildDailyStatusValues(
-          data.project_stats, provider_, *status_config_);
+      data.metadata.statuses = BuildStatusValues<InsightsStatusValue>(
+          data.project_tree, *status_config_);
     }
   }
 }

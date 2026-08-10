@@ -10,6 +10,7 @@
 
 #include "domain/model/time_data_models.hpp"
 #include "domain/insights/models/project_tree.hpp"
+#include "domain/insights/models/insights_status_value.hpp"
 
 struct TimeRecord {
   ActivityRecordKind kind = ActivityRecordKind::kInterval;
@@ -21,16 +22,10 @@ struct TimeRecord {
   std::optional<std::string> activityRemark;
 };
 
-struct DailyStatusValue {
-  std::string id;
-  std::string label;
-  bool value = false;
-};
-
 struct DayMetadata {
   std::string remark = "N/A";
   std::string getup_time = "N/A";
-  std::vector<DailyStatusValue> statuses;
+  std::vector<InsightsStatusValue> statuses;
 };
 
 struct DailyInsightsData {

@@ -14,7 +14,8 @@
 class YearQuerier
     : public RangeQuerierBase<YearlyInsightsData, std::string_view> {
  public:
-  YearQuerier(sqlite3* sqlite_db, std::string_view year_str);
+  YearQuerier(sqlite3* sqlite_db, std::string_view year_str,
+              const DailyStatusConfig* status_config = nullptr);
   [[nodiscard]] auto FetchData() -> YearlyInsightsData override;
 
  protected:

@@ -23,10 +23,12 @@ class INSIGHTS_SHARED_API DayBaseConfig {
                 const std::vector<InsightsStatisticsItem>& statistics_items);
   virtual ~DayBaseConfig() = default;
 
-  [[nodiscard]] auto GetTitlePrefix() const -> const std::string&;
-  [[nodiscard]] auto GetDateLabel() const -> const std::string&;
   [[nodiscard]] auto GetTotalTimeLabel() const -> const std::string&;
   [[nodiscard]] auto GetActivityCountLabel() const -> const std::string&;
+  [[nodiscard]] auto GetStatusCountUnit() const -> const std::string&;
+  [[nodiscard]] auto GetCustomSectionLabel() const -> const std::string&;
+  [[nodiscard]] auto GetSummarySectionLabel() const -> const std::string&;
+  [[nodiscard]] auto GetPeriodLabel() const -> const std::string&;
   [[nodiscard]] auto GetGetupTimeLabel() const -> const std::string&;
   [[nodiscard]] auto GetRemarkLabel() const -> const std::string&;
   [[nodiscard]] auto GetNoRecords() const -> const std::string&;
@@ -46,10 +48,12 @@ class INSIGHTS_SHARED_API DayBaseConfig {
  private:
   void LoadBaseConfig(const DailyInsightsLabels& labels);
 
-  std::string title_prefix_;
-  std::string date_label_;
   std::string total_time_label_;
   std::string activity_count_label_;
+  std::string status_count_unit_;
+  std::string custom_section_label_;
+  std::string summary_section_label_;
+  std::string period_label_;
   std::string getup_time_label_;
   std::string remark_label_;
   std::string no_records_;

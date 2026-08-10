@@ -12,13 +12,15 @@ namespace tracer_core::api::android::bridge_internal {
 using nlohmann::json;
 
 auto NativeInit(JNIEnv* env, jobject /*thiz*/, jstring db_path,
-                jstring output_root, jstring converter_config_toml_path)
+                jstring output_root, jstring converter_config_toml_path,
+                jstring status_configs_json)
     -> jstring {
   return ExecuteJniMethod(env, [&]() -> std::string {
     const std::string db_path_utf8 = ToUtf8(env, db_path);
     const std::string output_root_utf8 = ToUtf8(env, output_root);
     const std::string converter_config_toml_path_utf8 =
         ToUtf8(env, converter_config_toml_path);
+    const std::string status_configs_json_utf8 = ToUtf8(env, status_configs_json);
     if (output_root_utf8.empty()) {
       return BuildResponseJson(false, "outputRoot must not be empty.",
                                std::string{});
@@ -39,6 +41,17 @@ auto NativeInit(JNIEnv* env, jobject /*thiz*/, jstring db_path,
           (error_message != nullptr && error_message[0] != '\0')
               ? std::string(error_message)
               : std::string("Failed to initialize core runtime.");
+      return BuildResponseJson(false, details, std::string{});
+    }
+    if (tracer_core_runtime_set_insights_statuses_json(
+            created_runtime, status_configs_json_utf8.c_str()) !=
+        TT_CORE_STATUS_OK) {
+      const char* error_message = tracer_core_last_error();
+      const std::string details =
+          (error_message != nullptr && error_message[0] != '\0')
+              ? std::string(error_message)
+              : std::string("Failed to apply Android insights statuses.");
+      tracer_core_runtime_destroy(created_runtime);
       return BuildResponseJson(false, details, std::string{});
     }
 

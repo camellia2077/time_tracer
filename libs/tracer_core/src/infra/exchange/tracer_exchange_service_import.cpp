@@ -82,9 +82,9 @@ auto TracerExchangeService::RunImport(
         request.progress_observer, "decrypt_package", 1U, kPhaseCount,
         kInputPath.filename().string(), 0U, 1U, kInputPath, kActiveTextRoot,
         kInputPath, kTransactionPaths.extracted_root);
-    const auto encrypted_zip = ReadFileBytes(kInputPath);
+    const auto kEncryptedZip = ReadFileBytes(kInputPath);
     const exchange_pkg::DecodedTracerExchangePackage kPackage =
-        exchange_pkg::DecodeZipBytes(encrypted_zip, request.passphrase);
+        exchange_pkg::DecodeZipBytes(kEncryptedZip, request.passphrase);
     EmitImportTransactionProgress(
         request.progress_observer, "decrypt_package", 1U, kPhaseCount,
         kInputPath.filename().string(), 1U, 1U, kInputPath, kActiveTextRoot,

@@ -39,7 +39,7 @@ InsightsService::InsightsService(
 
 auto InsightsService::RunDailyQuery(std::string_view date,
                                   InsightsFormat format) const -> std::string {
-  DayQuerier querier(db_, date, &insights_catalog_.daily_statuses);
+  DayQuerier querier(db_, date, &insights_catalog_.statuses.day);
   const modinsights::DailyInsightsData insights_data = querier.FetchData();
   auto formatter = GenericFormatterFactory<modinsights::DailyInsightsData>::Create(
       format, insights_catalog_);
@@ -49,13 +49,14 @@ auto InsightsService::RunDailyQuery(std::string_view date,
 auto InsightsService::RunMonthlyQuery(std::string_view year_month_str,
                                     InsightsFormat format) const -> std::string {
   BaseGenerator<MonthlyInsightsData, MonthQuerier, std::string_view> generator(
-      db_, insights_catalog_);
+      db_, insights_catalog_, insights_catalog_.statuses.month);
   return generator.GenerateInsights(year_month_str, format);
 }
 
 auto InsightsService::RunPeriodQuery(int days, InsightsFormat format) const
     -> std::string {
-  PeriodQuerier querier(db_, days, *platform_clock_);
+  PeriodQuerier querier(db_, days, *platform_clock_,
+                        &insights_catalog_.statuses.recent);
   PeriodInsightsData insights_data = querier.FetchData();
   auto& formatter = GetOrCreatePeriodFormatter(format);
   return formatter.FormatInsights(insights_data);
@@ -64,14 +65,14 @@ auto InsightsService::RunPeriodQuery(int days, InsightsFormat format) const
 auto InsightsService::RunWeeklyQuery(std::string_view iso_week_str,
                                    InsightsFormat format) const -> std::string {
   BaseGenerator<WeeklyInsightsData, WeekQuerier, std::string_view> generator(
-      db_, insights_catalog_);
+      db_, insights_catalog_, insights_catalog_.statuses.week);
   return generator.GenerateInsights(iso_week_str, format);
 }
 
 auto InsightsService::RunYearlyQuery(std::string_view year_str,
                                    InsightsFormat format) const -> std::string {
   BaseGenerator<YearlyInsightsData, YearQuerier, std::string_view> generator(
-      db_, insights_catalog_);
+      db_, insights_catalog_, insights_catalog_.statuses.year);
   return generator.GenerateInsights(year_str, format);
 }
 

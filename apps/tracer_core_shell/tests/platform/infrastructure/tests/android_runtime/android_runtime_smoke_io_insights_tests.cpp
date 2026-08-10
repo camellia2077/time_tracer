@@ -32,10 +32,10 @@ auto VerifyInsightsOutputs(const std::shared_ptr<ITracerCoreRuntime>& runtime_ap
        .format = InsightsFormat::kMarkdown},
       "day markdown", failures);
   if (day_insights_result) {
-    if (!Contains(day_insights_result->content, "- **Date**: ")) {
+    if (!Contains(day_insights_result->content, "- **Period**: ")) {
       ++failures;
       std::cerr << "[FAIL] Android day markdown insights should include "
-                   "'Date' label.\n";
+                   "'Period' label.\n";
     }
     if (!Contains(day_insights_result->content, "- **Total Time Recorded**: ")) {
       ++failures;
@@ -53,10 +53,10 @@ auto VerifyInsightsOutputs(const std::shared_ptr<ITracerCoreRuntime>& runtime_ap
        .locale = "zh"},
       "day markdown zh", failures);
   if (localized_day_insights_result &&
-      !Contains(localized_day_insights_result->content, "- **日期**: ")) {
+      !Contains(localized_day_insights_result->content, "- **时间范围**: ")) {
     ++failures;
     std::cerr << "[FAIL] Android localized day markdown insights should use "
-                 "the Chinese Date label.\n";
+                 "the Chinese Period label.\n";
   }
 
   const auto structured_result =

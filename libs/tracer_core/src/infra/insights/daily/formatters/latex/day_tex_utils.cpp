@@ -6,6 +6,7 @@
 #include "infra/insights/shared/formatters/latex/tex_common_utils.hpp"
 #include "infra/insights/shared/formatters/latex/tex_utils.hpp"
 #include "infra/insights/shared/utils/format/insights_string_utils.hpp"
+#include "infra/insights/shared/utils/format/status_statistics_format.hpp"
 #include "infra/insights/shared/utils/format/time_format.hpp"
 
 namespace DayTexUtils {
@@ -14,7 +15,7 @@ void DisplayHeader(std::string& insights_stream, const DailyInsightsData& data,
                    const std::shared_ptr<DayTexConfig>& config) {
   // 1. 渲染标题
   std::string title_content =
-      config->GetInsightsTitle() + " " + TexUtils::EscapeLatex(data.date);
+      TexUtils::EscapeLatex(config->GetSummarySectionLabel());
   TexCommonUtils::RenderTitle(insights_stream, title_content,
                               config->GetInsightsTitleFontSize());
 
@@ -24,14 +25,10 @@ void DisplayHeader(std::string& insights_stream, const DailyInsightsData& data,
   std::string formatted_remark = FormatMultilineForList(safe_remark, 0, "\\\\");
 
   std::vector<TexCommonUtils::SummaryItem> items = {
-      {config->GetDateLabel(), TexUtils::EscapeLatex(data.date)},
+      {config->GetPeriodLabel(), TexUtils::EscapeLatex(data.date)},
       {config->GetTotalTimeLabel(),
        TexUtils::EscapeLatex(TimeFormatDuration(data.total_duration))},
       {config->GetActivityCountLabel(), std::to_string(data.activity_count)}};
-
-  for (const auto& status : data.metadata.statuses) {
-    items.emplace_back(status.label, status.value ? "true" : "false");
-  }
 
   items.emplace_back(config->GetGetupTimeLabel(),
                      TexUtils::EscapeLatex(data.metadata.getup_time));
@@ -41,6 +38,21 @@ void DisplayHeader(std::string& insights_stream, const DailyInsightsData& data,
   TexCommonUtils::RenderSummaryList(insights_stream, items,
                                     config->GetListTopSepPt(),
                                     config->GetListItemSepEx());
+  if (!data.metadata.statuses.empty()) {
+    TexCommonUtils::RenderTitle(insights_stream,
+                                TexUtils::EscapeLatex(config->GetCustomSectionLabel()),
+                                config->GetCategoryTitleFontSize(), true);
+    std::vector<TexCommonUtils::SummaryItem> statuses;
+    statuses.reserve(data.metadata.statuses.size());
+    for (const auto& status : data.metadata.statuses) {
+      statuses.emplace_back(status.label, TexUtils::EscapeLatex(
+          FormatStatusStatistics(status.occurrence_count, status.total_duration,
+                                 config->GetStatusCountUnit())));
+    }
+    TexCommonUtils::RenderSummaryList(insights_stream, statuses,
+                                      config->GetListTopSepPt(),
+                                      config->GetListItemSepEx());
+  }
 }
 
 void DisplayDetailedActivities(std::string& insights_stream,

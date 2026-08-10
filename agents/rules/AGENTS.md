@@ -17,7 +17,7 @@
    - `tools/AGENTS.md`
 2. 按改动类型阅读对应文档：
    - C ABI：`docs/time_tracer/core/shared/c_abi.md`
-   - 报表图表字段或语义：`docs/time_tracer/core/contracts/stats/report_chart_contract_v1.md`，以及该文档点名的 schema/README。
+   - Insights 图表字段或语义：`docs/time_tracer/core/contracts/stats/insights_chart_contract_v1.md`，以及该文档点名的 schema/README。
    - 其余领域或产品契约：从 `docs/` 中与目标模块最接近的说明开始。
 3. 使用命令帮助确认当前参数，再运行最小相关验证：
 
@@ -43,7 +43,7 @@ python tools/test.py -h
 | --- | --- |
 | 核心业务、跨客户端语义 | 最近的 `libs/**/AGENTS.md`、相关 `docs/` contract |
 | C ABI 导出符号或签名 | `docs/time_tracer/core/shared/c_abi.md` |
-| report chart 字段或语义 | `docs/time_tracer/core/contracts/stats/report_chart_contract_v1.md` 及相邻 schema/README |
+| Insights 图表字段或语义 | `docs/time_tracer/core/contracts/stats/insights_chart_contract_v1.md` 及相邻 schema/README |
 | Android 展示 | `apps/android/AGENTS.md` |
 | Windows CLI | `apps/cli/windows/AGENTS.md` |
 | 日志生成器 | `apps/tools/log_generator/AGENTS.md` |

@@ -13,7 +13,6 @@ class DayTexConfig : public DayBaseConfig {
  public:
   explicit DayTexConfig(const DailyTexConfig& config);
 
-  [[nodiscard]] auto GetInsightsTitle() const -> const std::string&;
   [[nodiscard]] auto GetKeywordColors() const
       -> const std::map<std::string, std::string>&;
 
@@ -44,7 +43,6 @@ class DayTexConfig : public DayBaseConfig {
 
  private:
   TexStyleConfig style_;
-  std::string insights_title_;
   std::map<std::string, std::string> keyword_colors_;
 };
 

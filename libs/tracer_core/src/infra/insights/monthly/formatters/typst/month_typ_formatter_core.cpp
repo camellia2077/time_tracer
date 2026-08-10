@@ -4,6 +4,7 @@
 
 #include "infra/insights/monthly/formatters/typst/month_typ_formatter.hpp"
 #include "infra/insights/shared/utils/format/insights_string_utils.hpp"
+#include "infra/insights/shared/utils/format/status_statistics_format.hpp"
 #include "infra/insights/shared/utils/format/time_format.hpp"
 
 namespace {
@@ -19,10 +20,6 @@ auto BuildBulletLine(const std::string& label, const std::string& value)
   line += ":* ";
   line += value;
   return line;
-}
-
-auto FormatRatio(int count, int total_days) -> std::string {
-  return FormatCountWithPercentage(count, total_days);
 }
 
 }  // namespace
@@ -84,11 +81,14 @@ void MonthTypFormatter::FormatPageSetup(std::string& insights_stream) const {
 
 void MonthTypFormatter::FormatHeaderContent(
     std::string& insights_stream, const MonthlyInsightsData& data) const {
-  std::string title_text =
-      FormatTitleTemplate(config_->GetTitleTemplate(), data);
   insights_stream += TypUtils::BuildTitleText(
-      config_->GetTitleFont(), config_->GetInsightsTitleFontSize(), title_text);
+      config_->GetTitleFont(), config_->GetInsightsTitleFontSize(),
+      config_->GetSummarySectionLabel());
   insights_stream += "\n\n";
+
+  insights_stream += BuildBulletLine(config_->GetPeriodLabel(),
+                                     data.start_date + " - " + data.end_date);
+  insights_stream += "\n";
 
   if (data.actual_days > 0) {
     insights_stream += BuildBulletLine(config_->GetActualDaysLabel(),
@@ -102,25 +102,19 @@ void MonthTypFormatter::FormatHeaderContent(
         config_->GetActivityCountLabel(),
         FormatCountWithAverage(data.matched_record_count, data.requested_days));
     insights_stream += "\n";
-    insights_stream +=
-        BuildBulletLine(FormatBooleanCountLabel(config_->GetStatusDaysLabel(),
-                                                data.status_true_days),
-                        FormatRatio(data.status_true_days, data.actual_days));
-    insights_stream += "\n";
-    insights_stream +=
-        BuildBulletLine(FormatBooleanCountLabel(config_->GetExerciseDaysLabel(),
-                                                data.exercise_true_days),
-                        FormatRatio(data.exercise_true_days, data.actual_days));
-    insights_stream += "\n";
-    insights_stream +=
-        BuildBulletLine(FormatBooleanCountLabel(config_->GetCardioDaysLabel(),
-                                                data.cardio_true_days),
-                        FormatRatio(data.cardio_true_days, data.actual_days));
-    insights_stream += "\n";
-    insights_stream += BuildBulletLine(
-        FormatBooleanCountLabel(config_->GetAnaerobicDaysLabel(),
-                                data.anaerobic_true_days),
-        FormatRatio(data.anaerobic_true_days, data.actual_days));
-    insights_stream += "\n";
+    if (!data.statuses.empty()) {
+      insights_stream += "\n";
+      insights_stream += TypUtils::BuildTitleText(
+          config_->GetCategoryTitleFont(), config_->GetCategoryTitleFontSize(),
+          config_->GetCustomSectionLabel());
+      insights_stream += "\n\n";
+      for (const auto& status : data.statuses) {
+        insights_stream += BuildBulletLine(
+            status.label, FormatStatusStatistics(status.occurrence_count,
+                                                 status.total_duration,
+                                                 config_->GetStatusCountUnit()));
+        insights_stream += "\n";
+      }
+    }
   }
 }

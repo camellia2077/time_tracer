@@ -37,15 +37,20 @@ auto RunConfigSmokeSection(int& failures) -> void {
     }
     const auto zh_it = insights_catalog.loaded_insights.markdown_locales.find("zh");
     if (zh_it == insights_catalog.loaded_insights.markdown_locales.end() ||
-        zh_it->second.day.labels.date_label != "日期") {
+        zh_it->second.day.labels.summary_section_label != "摘要") {
       ++failures;
       std::cerr << "[FAIL] Android insights catalog should load Chinese Markdown "
                    "labels.\n";
     }
-    if (insights_catalog.daily_statuses.statuses.size() != 2U) {
+    if (!insights_catalog.statuses.day.statuses.empty() ||
+        !insights_catalog.statuses.week.statuses.empty() ||
+        !insights_catalog.statuses.month.statuses.empty() ||
+        !insights_catalog.statuses.year.statuses.empty() ||
+        !insights_catalog.statuses.recent.statuses.empty() ||
+        !insights_catalog.statuses.range.statuses.empty()) {
       ++failures;
-      std::cerr << "[FAIL] Android insights catalog should load the configured "
-                   "daily parent statuses.\n";
+      std::cerr << "[FAIL] Android insights catalog should receive daily "
+                   "statuses from Android persistence, not TOML.\n";
     }
 
     tracer_core::core::dto::DataQueryRequest chart_empty_request;

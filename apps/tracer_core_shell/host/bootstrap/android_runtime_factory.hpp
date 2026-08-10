@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <memory>
 
+#include "infra/config/models/insights_catalog.hpp"
 #include "application/runtime_bridge/logger.hpp"
 #include "domain/ports/diagnostics.hpp"
 
@@ -45,6 +46,9 @@ struct AndroidPipelineRuntime {
 
 [[nodiscard]] auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
     -> AndroidRuntime;
+
+void SetAndroidRuntimeStatusConfigs(AndroidRuntime& runtime,
+                                    InsightsStatusConfigs status_configs);
 
 [[nodiscard]] auto BuildAndroidPipelineRuntime(
     const AndroidRuntimeRequest& request) -> AndroidPipelineRuntime;

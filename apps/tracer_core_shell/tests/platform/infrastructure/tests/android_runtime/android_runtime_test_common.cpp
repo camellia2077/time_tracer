@@ -156,9 +156,6 @@ auto PrepareAndroidConfigFixture(const std::filesystem::path& target_root)
                              target_root / "program" / "config.toml") &&
          CopyFileWithParents(user_source_root / "behavior.toml",
                              target_root / "user" / "behavior.toml") &&
-         CopyFileWithParents(BuildRepoRoot() / "config" / "user" /
-                                 "insights.toml",
-                             target_root / "user" / "insights.toml") &&
          CopyDirectoryTree(hierarchy_source_root,
                            target_root / "user" / "activity_hierarchy") &&
          copy_required_file("charts/heatmap.toml") &&

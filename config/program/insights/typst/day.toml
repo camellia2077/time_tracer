@@ -1,10 +1,12 @@
 style_source = "common_style.toml"
 statistic_font_size = 10
 statistic_title_font_size = 12
-title_prefix = "Daily Insights for"
-date_label = "Date"
 total_time_label = "Total Time Recorded"
 activity_count_label = "Activity Count"
+status_count_unit = "times"
+custom_section_label = "Custom Items"
+summary_section_label = "Summary"
+period_label = "Period"
 getup_time_label = "Getup Time"
 remark_label = "Remark"
 no_records_message = "No time records for this day."

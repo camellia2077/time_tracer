@@ -4,14 +4,11 @@
 
 #include "infra/insights/range/formatters/markdown/range_md_formatter.hpp"
 #include "infra/insights/shared/utils/format/insights_string_utils.hpp"
+#include "infra/insights/shared/utils/format/status_statistics_format.hpp"
 #include "infra/insights/shared/utils/format/time_format.hpp"
 
 namespace {
 constexpr std::size_t kMarkdownItemLineReservePadding = 8;
-
-auto FormatRatio(int count, int total_days) -> std::string {
-  return FormatCountWithPercentage(count, total_days);
-}
 
 auto BuildMarkdownItemLine(const std::string& label, const std::string& value)
     -> std::string {
@@ -54,10 +51,12 @@ auto RangeMdFormatter::GetNoRecordsMsg() const -> std::string {
 
 void RangeMdFormatter::FormatHeaderContent(std::string& insights_stream,
                                            const RangeInsightsData& data) const {
-  std::string title = FormatTitleTemplate(config_->GetTitleTemplate(), data);
   insights_stream += "## ";
-  insights_stream += title;
+  insights_stream += config_->GetSummarySectionLabel();
   insights_stream += "\n\n";
+
+  insights_stream += BuildMarkdownItemLine(config_->GetPeriodLabel(),
+                                         data.start_date + " - " + data.end_date);
 
   if (data.actual_days <= 0) {
     return;
@@ -71,20 +70,15 @@ void RangeMdFormatter::FormatHeaderContent(std::string& insights_stream,
       FormatCountWithAverage(data.matched_record_count, data.requested_days));
   insights_stream += BuildMarkdownItemLine(config_->GetActualDaysLabel(),
                                          std::to_string(data.actual_days));
-  insights_stream += BuildMarkdownItemLine(
-      FormatBooleanCountLabel(config_->GetStatusDaysLabel(),
-                              data.status_true_days),
-      FormatRatio(data.status_true_days, data.actual_days));
-  insights_stream += BuildMarkdownItemLine(
-      FormatBooleanCountLabel(config_->GetExerciseDaysLabel(),
-                              data.exercise_true_days),
-      FormatRatio(data.exercise_true_days, data.actual_days));
-  insights_stream += BuildMarkdownItemLine(
-      FormatBooleanCountLabel(config_->GetCardioDaysLabel(),
-                              data.cardio_true_days),
-      FormatRatio(data.cardio_true_days, data.actual_days));
-  insights_stream += BuildMarkdownItemLine(
-      FormatBooleanCountLabel(config_->GetAnaerobicDaysLabel(),
-                              data.anaerobic_true_days),
-      FormatRatio(data.anaerobic_true_days, data.actual_days));
+  if (!data.statuses.empty()) {
+    insights_stream += "\n## ";
+    insights_stream += config_->GetCustomSectionLabel();
+    insights_stream += "\n\n";
+    for (const auto& status : data.statuses) {
+      insights_stream += BuildMarkdownItemLine(
+          status.label,
+          FormatStatusStatistics(status.occurrence_count, status.total_duration,
+                                 config_->GetStatusCountUnit()));
+    }
+  }
 }

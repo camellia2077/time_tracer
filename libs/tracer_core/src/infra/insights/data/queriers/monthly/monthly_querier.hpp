@@ -21,7 +21,8 @@ class MonthQuerier
   static constexpr int kMonthStartPosition = 5;
   static constexpr int kMonthEndPosition = 6;
 
-  explicit MonthQuerier(sqlite3* sqlite_db, std::string_view year_month);
+  explicit MonthQuerier(sqlite3* sqlite_db, std::string_view year_month,
+                        const DailyStatusConfig* status_config = nullptr);
   [[nodiscard]] auto FetchData() -> MonthlyInsightsData override;
 
  protected:

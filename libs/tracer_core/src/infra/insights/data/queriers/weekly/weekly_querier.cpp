@@ -16,8 +16,9 @@
 #include "infra/schema/sqlite_schema.hpp"
 #include "shared/types/insights_errors.hpp"
 
-WeekQuerier::WeekQuerier(sqlite3* sqlite_db, std::string_view iso_week)
-    : RangeQuerierBase(sqlite_db, iso_week) {}
+WeekQuerier::WeekQuerier(sqlite3* sqlite_db, std::string_view iso_week,
+                         const DailyStatusConfig* status_config)
+    : RangeQuerierBase(sqlite_db, iso_week, status_config) {}
 
 auto WeekQuerier::FetchData() -> WeeklyInsightsData {
   if (!ValidateInput()) {

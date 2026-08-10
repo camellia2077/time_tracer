@@ -5,6 +5,7 @@ module;
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <iterator>
 #include <limits>
 #include <span>
 #include <stdexcept>
@@ -143,13 +144,13 @@ auto Sha1Transform(Sha1State& state,
       function = b ^ c ^ d;
       constant = 0xCA62C1D6U;
     }
-    const std::uint32_t next = Rotl32(a, 5U) + function + e + constant +
-                                schedule[index];
+    const std::uint32_t kNext = Rotl32(a, 5U) + function + e + constant +
+                                 schedule[index];
     e = d;
     d = c;
     c = Rotl32(b, 30U);
     b = a;
-    a = next;
+    a = kNext;
   }
   state.words[0] += a;
   state.words[1] += b;
@@ -161,11 +162,11 @@ auto Sha1Transform(Sha1State& state,
 auto Sha1Update(Sha1State& state, std::span<const std::uint8_t> data) -> void {
   state.message_size += data.size();
   while (!data.empty()) {
-    const std::size_t count =
+    const std::size_t kCount =
         std::min(kSha1BlockSize - state.buffered, data.size());
-    std::memcpy(state.buffer.data() + state.buffered, data.data(), count);
-    state.buffered += count;
-    data = data.subspan(count);
+    std::memcpy(state.buffer.data() + state.buffered, data.data(), kCount);
+    state.buffered += kCount;
+    data = data.subspan(kCount);
     if (state.buffered == kSha1BlockSize) {
       Sha1Transform(state, std::span<const std::uint8_t, kSha1BlockSize>(
                                state.buffer.data(), kSha1BlockSize));
@@ -175,7 +176,7 @@ auto Sha1Update(Sha1State& state, std::span<const std::uint8_t> data) -> void {
 }
 
 auto Sha1Final(Sha1State state) -> std::array<std::uint8_t, kSha1Size> {
-  const std::uint64_t bit_size = state.message_size * 8U;
+  const std::uint64_t kBitSize = state.message_size * 8U;
   const std::array<std::uint8_t, 1> kOne = {0x80U};
   Sha1Update(state, kOne);
   const std::array<std::uint8_t, 1> kZero = {0U};
@@ -185,7 +186,7 @@ auto Sha1Final(Sha1State state) -> std::array<std::uint8_t, kSha1Size> {
   std::array<std::uint8_t, 8> length{};
   for (std::size_t index = 0U; index < length.size(); ++index) {
     length[7U - index] =
-        static_cast<std::uint8_t>((bit_size >> (index * 8U)) & 0xFFU);
+        static_cast<std::uint8_t>((kBitSize >> (index * 8U)) & 0xFFU);
   }
   Sha1Update(state, length);
 
@@ -206,13 +207,16 @@ auto Sha1(std::span<const std::uint8_t> data)
   return Sha1Final(state);
 }
 
-auto HmacSha1(std::span<const std::uint8_t> key,
-              std::span<const std::uint8_t> data)
+struct HmacData {
+  std::span<const std::uint8_t> bytes;
+};
+
+auto HmacSha1(std::span<const std::uint8_t> key, HmacData data)
     -> std::array<std::uint8_t, kSha1Size> {
   std::array<std::uint8_t, kSha1BlockSize> key_block{};
   if (key.size() > kSha1BlockSize) {
-    const auto digest = Sha1(key);
-    std::copy(digest.begin(), digest.end(), key_block.begin());
+    const auto kDigest = Sha1(key);
+    std::copy(kDigest.begin(), kDigest.end(), key_block.begin());
   } else {
     std::copy(key.begin(), key.end(), key_block.begin());
   }
@@ -224,11 +228,11 @@ auto HmacSha1(std::span<const std::uint8_t> key,
   }
   Sha1State inner{};
   Sha1Update(inner, inner_pad);
-  Sha1Update(inner, data);
-  const auto inner_digest = Sha1Final(inner);
+  Sha1Update(inner, data.bytes);
+  const auto kInnerDigest = Sha1Final(inner);
   Sha1State outer{};
   Sha1Update(outer, outer_pad);
-  Sha1Update(outer, inner_digest);
+  Sha1Update(outer, kInnerDigest);
   return Sha1Final(outer);
 }
 
@@ -239,11 +243,11 @@ auto DeriveZipAesKeys(std::string_view passphrase,
   std::vector<std::uint8_t> password(passphrase.begin(), passphrase.end());
   std::vector<std::uint8_t> block(salt.begin(), salt.end());
   AppendU32(block, 1U);
-  auto u = HmacSha1(password, block);
+  auto u = HmacSha1(password, HmacData{block});
   std::copy(u.begin(), u.end(), derived.begin());
   for (std::uint32_t iteration = 1U; iteration < kPbkdf2Iterations;
        ++iteration) {
-    u = HmacSha1(password, u);
+    u = HmacSha1(password, HmacData{u});
     for (std::size_t index = 0U; index < u.size(); ++index) {
       derived[index] ^= u[index];
     }
@@ -252,18 +256,18 @@ auto DeriveZipAesKeys(std::string_view passphrase,
        (block_number - 1U) * kSha1Size < derived.size(); ++block_number) {
     block.assign(salt.begin(), salt.end());
     AppendU32(block, static_cast<std::uint32_t>(block_number));
-    u = HmacSha1(password, block);
-    const std::size_t offset = (block_number - 1U) * kSha1Size;
+    u = HmacSha1(password, HmacData{block});
+    const std::size_t kOffset = (block_number - 1U) * kSha1Size;
     for (std::uint32_t iteration = 1U; iteration < kPbkdf2Iterations;
          ++iteration) {
-      auto next = HmacSha1(password, u);
+      auto next = HmacSha1(password, HmacData{u});
       for (std::size_t index = 0U; index < u.size(); ++index) {
         u[index] ^= next[index];
       }
     }
-    const std::size_t copy_size =
-        std::min(u.size(), derived.size() - offset);
-    std::copy_n(u.begin(), copy_size, derived.begin() + offset);
+    const std::size_t kCopySize =
+        std::min(u.size(), derived.size() - kOffset);
+    std::copy_n(u.begin(), kCopySize, derived.begin() + kOffset);
   }
   return derived;
 }
@@ -309,11 +313,11 @@ auto AesEncryptBlock(std::span<const std::uint8_t, 16> input,
                                         round_keys[offset - 2U],
                                         round_keys[offset - 1U]};
     if (offset % 32U == 0U) {
-      const std::uint8_t first = temp[0];
+      const std::uint8_t kFirst = temp[0];
       temp[0] = kAesSbox[temp[1]] ^ rcon;
       temp[1] = kAesSbox[temp[2]];
       temp[2] = kAesSbox[temp[3]];
-      temp[3] = kAesSbox[first];
+      temp[3] = kAesSbox[kFirst];
       rcon = Gmul2(rcon);
     } else if (offset % 32U == 16U) {
       for (auto& value : temp) {
@@ -339,24 +343,24 @@ auto AesEncryptBlock(std::span<const std::uint8_t, 16> input,
     }
   };
   auto shift_rows = [&] {
-    const auto old = state;
+    const auto kOld = state;
     for (std::size_t column = 0U; column < 4U; ++column) {
       for (std::size_t row = 0U; row < 4U; ++row) {
-        state[row + column * 4U] = old[row + ((column + row) % 4U) * 4U];
+        state[row + column * 4U] = kOld[row + ((column + row) % 4U) * 4U];
       }
     }
   };
   auto mix_columns = [&] {
     for (std::size_t column = 0U; column < 4U; ++column) {
-      const std::size_t base = column * 4U;
-      const auto a = state[base];
-      const auto b = state[base + 1U];
-      const auto c = state[base + 2U];
-      const auto d = state[base + 3U];
-      state[base] = Gmul2(a) ^ static_cast<std::uint8_t>(b ^ c ^ d);
-      state[base + 1U] = Gmul2(b) ^ static_cast<std::uint8_t>(a ^ c ^ d);
-      state[base + 2U] = Gmul2(c) ^ static_cast<std::uint8_t>(a ^ b ^ d);
-      state[base + 3U] = Gmul2(d) ^ static_cast<std::uint8_t>(a ^ b ^ c);
+      const std::size_t kBase = column * 4U;
+      const auto kA = state[kBase];
+      const auto kB = state[kBase + 1U];
+      const auto kC = state[kBase + 2U];
+      const auto kD = state[kBase + 3U];
+      state[kBase] = Gmul2(kA) ^ static_cast<std::uint8_t>(kB ^ kC ^ kD);
+      state[kBase + 1U] = Gmul2(kB) ^ static_cast<std::uint8_t>(kA ^ kC ^ kD);
+      state[kBase + 2U] = Gmul2(kC) ^ static_cast<std::uint8_t>(kA ^ kB ^ kD);
+      state[kBase + 3U] = Gmul2(kD) ^ static_cast<std::uint8_t>(kA ^ kB ^ kC);
     }
   };
 
@@ -369,7 +373,7 @@ auto AesEncryptBlock(std::span<const std::uint8_t, 16> input,
   }
   sub_bytes();
   shift_rows();
-  add_round_key(14U * 16U);
+  add_round_key(static_cast<std::size_t>(14U) * 16U);
   return state;
 }
 
@@ -380,10 +384,10 @@ auto CryptAesCtr(std::span<const std::uint8_t> input,
   std::array<std::uint8_t, 16> counter{};
   counter[0] = 1U;
   for (std::size_t offset = 0U; offset < output.size(); offset += 16U) {
-    const auto stream = AesEncryptBlock(counter, key);
-    const std::size_t count = std::min<std::size_t>(16U, output.size() - offset);
-    for (std::size_t index = 0U; index < count; ++index) {
-      output[offset + index] ^= stream[index];
+    const auto kStream = AesEncryptBlock(counter, key);
+    const std::size_t kCount = std::min<std::size_t>(16U, output.size() - offset);
+    for (std::size_t index = 0U; index < kCount; ++index) {
+      output[offset + index] ^= kStream[index];
     }
     for (auto& value : counter) {
       if (++value != 0U) {
@@ -408,8 +412,8 @@ auto ConstantTimeEqual(std::span<const std::uint8_t> left,
 
 auto Crc32(std::span<const std::uint8_t> data) -> std::uint32_t {
   std::uint32_t crc = 0xFFFFFFFFU;
-  for (const auto byte : data) {
-    crc ^= byte;
+  for (const auto kByte : data) {
+    crc ^= kByte;
     for (unsigned bit = 0U; bit < 8U; ++bit) {
       crc = (crc >> 1U) ^ (0xEDB88320U & (0U - (crc & 1U)));
     }
@@ -426,15 +430,18 @@ auto DeflateStored(std::span<const std::uint8_t> data)
   }
   std::size_t offset = 0U;
   while (offset < data.size()) {
-    const std::size_t count = std::min<std::size_t>(65535U, data.size() - offset);
-    const bool final = offset + count == data.size();
-    output.push_back(final ? 0x01U : 0x00U);
-    const auto length = static_cast<std::uint16_t>(count);
-    AppendU16(output, length);
-    AppendU16(output, static_cast<std::uint16_t>(~length));
-    output.insert(output.end(), data.begin() + offset,
-                  data.begin() + offset + count);
-    offset += count;
+    const std::size_t kCount = std::min<std::size_t>(65535U, data.size() - offset);
+    const bool kFinal = offset + kCount == data.size();
+    output.push_back(kFinal ? 0x01U : 0x00U);
+    const auto kLength = static_cast<std::uint16_t>(kCount);
+    AppendU16(output, kLength);
+    AppendU16(output, static_cast<std::uint16_t>(~kLength));
+    output.insert(
+        output.end(),
+        std::next(data.begin(), static_cast<std::ptrdiff_t>(offset)),
+        std::next(data.begin(),
+                  static_cast<std::ptrdiff_t>(offset + kCount)));
+    offset += kCount;
   }
   return output;
 }
@@ -448,22 +455,25 @@ auto InflateStored(std::span<const std::uint8_t> data,
     if (offset + 5U > data.size()) {
       throw std::runtime_error("ZIP deflate stream is truncated.");
     }
-    const std::uint8_t header = data[offset++];
-    final = (header & 1U) != 0U;
-    if (((header >> 1U) & 3U) != 0U) {
+    const std::uint8_t kHeader = data[offset++];
+    final = (kHeader & 1U) != 0U;
+    if (((kHeader >> 1U) & 3U) != 0U) {
       throw std::runtime_error(
           "ZIP deflate stream uses an unsupported compressed block.");
     }
-    const std::uint16_t length = ReadU16(data, offset);
-    const std::uint16_t inverse = ReadU16(data, offset + 2U);
+    const std::uint16_t kLength = ReadU16(data, offset);
+    const std::uint16_t kInverse = ReadU16(data, offset + 2U);
     offset += 4U;
-    if (static_cast<std::uint16_t>(~length) != inverse ||
-        offset + length > data.size()) {
+    if (static_cast<std::uint16_t>(~kLength) != kInverse ||
+        offset + kLength > data.size()) {
       throw std::runtime_error("ZIP deflate stored block is invalid.");
     }
-    output.insert(output.end(), data.begin() + offset,
-                  data.begin() + offset + length);
-    offset += length;
+    output.insert(
+        output.end(),
+        std::next(data.begin(), static_cast<std::ptrdiff_t>(offset)),
+        std::next(data.begin(),
+                  static_cast<std::ptrdiff_t>(offset + kLength)));
+    offset += kLength;
   }
   if (output.size() != expected_size) {
     throw std::runtime_error("ZIP uncompressed size does not match header.");
@@ -491,22 +501,22 @@ auto EncryptEntry(std::span<const std::uint8_t> compressed,
 #if defined(TT_HAS_LIBSODIUM) && TT_HAS_LIBSODIUM
   std::array<std::uint8_t, kZipAesSaltSize> salt{};
   randombytes_buf(salt.data(), salt.size());
-  const auto keys = DeriveZipAesKeys(passphrase, salt);
-  const auto encrypted = CryptAesCtr(
+  const auto kKeys = DeriveZipAesKeys(passphrase, salt);
+  const auto kEncrypted = CryptAesCtr(
       compressed,
-      std::span<const std::uint8_t, kZipAesKeySize>(keys.data(),
+      std::span<const std::uint8_t, kZipAesKeySize>(kKeys.data(),
                                                      kZipAesKeySize));
-  const auto verifier = std::span<const std::uint8_t, 2U>(
-      keys.data() + kZipAesKeySize * 2U, 2U);
-  const auto auth = HmacSha1(
-      std::span<const std::uint8_t>(keys.data() + kZipAesKeySize,
+  const auto kVerifier = std::span<const std::uint8_t, 2U>(
+      kKeys.data() + kZipAesKeySize * 2U, 2U);
+  const auto kAuth = HmacSha1(
+      std::span<const std::uint8_t>(kKeys.data() + kZipAesKeySize,
                                     kZipAesKeySize),
-      encrypted);
+      HmacData{kEncrypted});
   std::vector<std::uint8_t> output;
   output.insert(output.end(), salt.begin(), salt.end());
-  output.insert(output.end(), verifier.begin(), verifier.end());
-  output.insert(output.end(), encrypted.begin(), encrypted.end());
-  output.insert(output.end(), auth.begin(), auth.begin() + kZipAesAuthCodeSize);
+  output.insert(output.end(), kVerifier.begin(), kVerifier.end());
+  output.insert(output.end(), kEncrypted.begin(), kEncrypted.end());
+  output.insert(output.end(), kAuth.begin(), kAuth.begin() + kZipAesAuthCodeSize);
   return output;
 #else
   (void)compressed;
@@ -521,33 +531,33 @@ auto DecryptEntry(std::span<const std::uint8_t> encrypted,
                              kZipAesAuthCodeSize) {
     throw std::runtime_error("ZIP AES entry is truncated.");
   }
-  const auto salt = encrypted.subspan(0U, kZipAesSaltSize);
-  const auto keys = DeriveZipAesKeys(passphrase, salt);
-  const auto verifier = std::span<const std::uint8_t, 2U>(
-      keys.data() + kZipAesKeySize * 2U, 2U);
-  const auto actual_verifier = encrypted.subspan(kZipAesSaltSize, 2U);
-  if (!ConstantTimeEqual(verifier, actual_verifier)) {
+  const auto kSalt = encrypted.subspan(0U, kZipAesSaltSize);
+  const auto kKeys = DeriveZipAesKeys(passphrase, kSalt);
+  const auto kVerifier = std::span<const std::uint8_t, 2U>(
+      kKeys.data() + kZipAesKeySize * 2U, 2U);
+  const auto kActualVerifier = encrypted.subspan(kZipAesSaltSize, 2U);
+  if (!ConstantTimeEqual(kVerifier, kActualVerifier)) {
     throw std::runtime_error("ZIP AES password verification failed.");
   }
-  const std::size_t cipher_offset = kZipAesSaltSize + kZipAesVerifierSize;
-  const std::size_t cipher_size = encrypted.size() - cipher_offset -
+  const std::size_t kCipherOffset = kZipAesSaltSize + kZipAesVerifierSize;
+  const std::size_t kCipherSize = encrypted.size() - kCipherOffset -
                                   kZipAesAuthCodeSize;
-  const auto ciphertext = encrypted.subspan(cipher_offset, cipher_size);
-  const auto expected_auth = HmacSha1(
-      std::span<const std::uint8_t>(keys.data() + kZipAesKeySize,
+  const auto kCiphertext = encrypted.subspan(kCipherOffset, kCipherSize);
+  const auto kExpectedAuth = HmacSha1(
+      std::span<const std::uint8_t>(kKeys.data() + kZipAesKeySize,
                                     kZipAesKeySize),
-      ciphertext);
-  const auto actual_auth = encrypted.subspan(encrypted.size() -
+      HmacData{kCiphertext});
+  const auto kActualAuth = encrypted.subspan(encrypted.size() -
                                                  kZipAesAuthCodeSize);
   if (!ConstantTimeEqual(
-          std::span<const std::uint8_t>(expected_auth.data(),
+          std::span<const std::uint8_t>(kExpectedAuth.data(),
                                         kZipAesAuthCodeSize),
-          actual_auth)) {
+          kActualAuth)) {
     throw std::runtime_error("ZIP AES authentication failed.");
   }
   return CryptAesCtr(
-      ciphertext,
-      std::span<const std::uint8_t, kZipAesKeySize>(keys.data(),
+      kCiphertext,
+      std::span<const std::uint8_t, kZipAesKeySize>(kKeys.data(),
                                                      kZipAesKeySize));
 }
 
@@ -558,30 +568,30 @@ auto ValidatePath(std::string_view path) -> void {
   }
   std::size_t start = 0U;
   while (start < path.size()) {
-    const std::size_t end = path.find('/', start);
-    const auto component = path.substr(
-        start, end == std::string_view::npos ? path.size() - start : end - start);
-    if (component.empty() || component == "." || component == "..") {
+    const std::size_t kEnd = path.find('/', start);
+    const auto kComponent = path.substr(
+        start, kEnd == std::string_view::npos ? path.size() - start : kEnd - start);
+    if (kComponent.empty() || kComponent == "." || kComponent == "..") {
       throw std::runtime_error("ZIP entry path may not escape its root.");
     }
-    if (end == std::string_view::npos) {
+    if (kEnd == std::string_view::npos) {
       break;
     }
-    start = end + 1U;
+    start = kEnd + 1U;
   }
 }
 
 auto FindAesExtra(std::span<const std::uint8_t> extra) -> std::uint16_t {
   std::size_t offset = 0U;
   while (offset + 4U <= extra.size()) {
-    const std::uint16_t id = ReadU16(extra, offset);
-    const std::uint16_t size = ReadU16(extra, offset + 2U);
+    const std::uint16_t kId = ReadU16(extra, offset);
+    const std::uint16_t kSize = ReadU16(extra, offset + 2U);
     offset += 4U;
-    if (offset + size > extra.size()) {
+    if (offset + kSize > extra.size()) {
       throw std::runtime_error("ZIP extra field is truncated.");
     }
-    if (id == kZipAesExtraId) {
-      if (size != 7U || ReadU16(extra, offset) != kZipAesVersion ||
+    if (kId == kZipAesExtraId) {
+      if (kSize != 7U || ReadU16(extra, offset) != kZipAesVersion ||
           extra[offset + 2U] != 'A' || extra[offset + 3U] != 'E' ||
           extra[offset + 4U] != kZipAesStrength256 ||
           ReadU16(extra, offset + 5U) != kDeflateMethod) {
@@ -589,25 +599,25 @@ auto FindAesExtra(std::span<const std::uint8_t> extra) -> std::uint16_t {
       }
       return ReadU16(extra, offset + 5U);
     }
-    offset += size;
+    offset += kSize;
   }
   throw std::runtime_error("ZIP AES extra field is missing.");
 }
 
 auto FindEndOfCentralDirectory(std::span<const std::uint8_t> bytes)
     -> std::size_t {
-  const std::size_t minimum = 22U;
-  if (bytes.size() < minimum) {
+  const std::size_t kMinimum = 22U;
+  if (bytes.size() < kMinimum) {
     throw std::runtime_error("ZIP end of central directory is missing.");
   }
-  const std::size_t begin = bytes.size() > minimum + 65535U
-                                ? bytes.size() - minimum - 65535U
+  const std::size_t kBegin = bytes.size() > kMinimum + 65535U
+                                ? bytes.size() - kMinimum - 65535U
                                 : 0U;
-  for (std::size_t offset = bytes.size() - minimum;; --offset) {
+  for (std::size_t offset = bytes.size() - kMinimum;; --offset) {
     if (ReadU32(bytes, offset) == kEndOfCentralDirectory) {
       return offset;
     }
-    if (offset == begin) {
+    if (offset == kBegin) {
       break;
     }
   }
@@ -634,7 +644,7 @@ auto EncodeZipBytes(const std::vector<TracerExchangePackageEntry>& entries,
   };
   std::vector<CentralRecord> central;
   central.reserve(entries.size());
-  const auto extra = BuildAesExtra();
+  const auto kExtra = BuildAesExtra();
 
   for (const auto& entry : entries) {
     ValidatePath(entry.relative_path);
@@ -642,13 +652,13 @@ auto EncodeZipBytes(const std::vector<TracerExchangePackageEntry>& entries,
         entry.data.size() > std::numeric_limits<std::uint32_t>::max()) {
       throw std::runtime_error("ZIP entry is too large.");
     }
-    const auto compressed = DeflateStored(entry.data);
-    const auto encrypted = EncryptEntry(compressed, passphrase);
-    if (encrypted.size() > std::numeric_limits<std::uint32_t>::max() ||
+    const auto kCompressed = DeflateStored(entry.data);
+    const auto kEncrypted = EncryptEntry(kCompressed, passphrase);
+    if (kEncrypted.size() > std::numeric_limits<std::uint32_t>::max() ||
         archive.size() > std::numeric_limits<std::uint32_t>::max()) {
       throw std::runtime_error("ZIP archive is too large.");
     }
-    const auto local_offset = static_cast<std::uint32_t>(archive.size());
+    const auto kLocalOffset = static_cast<std::uint32_t>(archive.size());
     AppendU32(archive, kLocalHeader);
     AppendU16(archive, kZipAesVersionNeeded);
     AppendU16(archive, static_cast<std::uint16_t>(kEncryptedFlag | kUtf8Flag));
@@ -656,24 +666,24 @@ auto EncodeZipBytes(const std::vector<TracerExchangePackageEntry>& entries,
     AppendU16(archive, 0U);
     AppendU16(archive, 0U);
     AppendU32(archive, 0U);
-    AppendU32(archive, static_cast<std::uint32_t>(encrypted.size()));
+    AppendU32(archive, static_cast<std::uint32_t>(kEncrypted.size()));
     AppendU32(archive, static_cast<std::uint32_t>(entry.data.size()));
     AppendU16(archive, static_cast<std::uint16_t>(entry.relative_path.size()));
-    AppendU16(archive, static_cast<std::uint16_t>(extra.size()));
+    AppendU16(archive, static_cast<std::uint16_t>(kExtra.size()));
     archive.insert(archive.end(), entry.relative_path.begin(),
                    entry.relative_path.end());
-    archive.insert(archive.end(), extra.begin(), extra.end());
-    archive.insert(archive.end(), encrypted.begin(), encrypted.end());
+    archive.insert(archive.end(), kExtra.begin(), kExtra.end());
+    archive.insert(archive.end(), kEncrypted.begin(), kEncrypted.end());
     central.push_back({entry.relative_path,
-                       static_cast<std::uint32_t>(encrypted.size()),
+                       static_cast<std::uint32_t>(kEncrypted.size()),
                        static_cast<std::uint32_t>(entry.data.size()),
-                       local_offset});
+                       kLocalOffset});
   }
 
   if (archive.size() > std::numeric_limits<std::uint32_t>::max()) {
     throw std::runtime_error("ZIP central directory offset exceeds ZIP32.");
   }
-  const auto central_offset = static_cast<std::uint32_t>(archive.size());
+  const auto kCentralOffset = static_cast<std::uint32_t>(archive.size());
   for (const auto& record : central) {
     AppendU32(archive, kCentralHeader);
     AppendU16(archive, 0x033FU);
@@ -686,24 +696,24 @@ auto EncodeZipBytes(const std::vector<TracerExchangePackageEntry>& entries,
     AppendU32(archive, record.compressed_size);
     AppendU32(archive, record.uncompressed_size);
     AppendU16(archive, static_cast<std::uint16_t>(record.path.size()));
-    AppendU16(archive, static_cast<std::uint16_t>(extra.size()));
+    AppendU16(archive, static_cast<std::uint16_t>(kExtra.size()));
     AppendU16(archive, 0U);
     AppendU16(archive, 0U);
     AppendU16(archive, 0U);
     AppendU32(archive, 0U);
     AppendU32(archive, record.local_offset);
     archive.insert(archive.end(), record.path.begin(), record.path.end());
-    archive.insert(archive.end(), extra.begin(), extra.end());
+    archive.insert(archive.end(), kExtra.begin(), kExtra.end());
   }
-  const auto central_size = static_cast<std::uint32_t>(archive.size()) -
-                            central_offset;
+  const auto kCentralSize = static_cast<std::uint32_t>(archive.size()) -
+                            kCentralOffset;
   AppendU32(archive, kEndOfCentralDirectory);
   AppendU16(archive, 0U);
   AppendU16(archive, 0U);
   AppendU16(archive, static_cast<std::uint16_t>(central.size()));
   AppendU16(archive, static_cast<std::uint16_t>(central.size()));
-  AppendU32(archive, central_size);
-  AppendU32(archive, central_offset);
+  AppendU32(archive, kCentralSize);
+  AppendU32(archive, kCentralOffset);
   AppendU16(archive, 0U);
   return archive;
 }
@@ -714,68 +724,68 @@ auto DecodeZipBytes(std::span<const std::uint8_t> bytes,
   if (passphrase.empty()) {
     throw std::runtime_error("ZIP AES passphrase must not be empty.");
   }
-  const auto eocd = FindEndOfCentralDirectory(bytes);
-  const auto disk = ReadU16(bytes, eocd + 4U);
-  const auto central_disk = ReadU16(bytes, eocd + 6U);
-  const auto entry_count = ReadU16(bytes, eocd + 10U);
-  const auto central_size = ReadU32(bytes, eocd + 12U);
-  const auto central_offset = ReadU32(bytes, eocd + 16U);
-  if (disk != 0U || central_disk != 0U || entry_count == 0U ||
-      static_cast<std::uint64_t>(central_offset) + central_size > bytes.size()) {
+  const auto kEocd = FindEndOfCentralDirectory(bytes);
+  const auto kDisk = ReadU16(bytes, kEocd + 4U);
+  const auto kCentralDisk = ReadU16(bytes, kEocd + 6U);
+  const auto kEntryCount = ReadU16(bytes, kEocd + 10U);
+  const auto kCentralSize = ReadU32(bytes, kEocd + 12U);
+  const auto kCentralOffset = ReadU32(bytes, kEocd + 16U);
+  if (kDisk != 0U || kCentralDisk != 0U || kEntryCount == 0U ||
+      static_cast<std::uint64_t>(kCentralOffset) + kCentralSize > bytes.size()) {
     throw std::runtime_error("Unsupported ZIP layout.");
   }
 
   std::vector<TracerExchangePackageEntry> entries;
   std::unordered_set<std::string> paths;
-  std::size_t cursor = central_offset;
-  for (std::size_t index = 0U; index < entry_count; ++index) {
+  std::size_t cursor = kCentralOffset;
+  for (std::size_t index = 0U; index < kEntryCount; ++index) {
     if (ReadU32(bytes, cursor) != kCentralHeader || cursor + 46U > bytes.size()) {
       throw std::runtime_error("ZIP central directory is invalid.");
     }
-    const auto flags = ReadU16(bytes, cursor + 8U);
-    const auto method = ReadU16(bytes, cursor + 10U);
-    const auto crc = ReadU32(bytes, cursor + 16U);
-    const auto compressed_size = ReadU32(bytes, cursor + 20U);
-    const auto uncompressed_size = ReadU32(bytes, cursor + 24U);
-    const auto name_size = ReadU16(bytes, cursor + 28U);
-    const auto extra_size = ReadU16(bytes, cursor + 30U);
-    const auto comment_size = ReadU16(bytes, cursor + 32U);
-    const auto local_offset = ReadU32(bytes, cursor + 42U);
-    const std::size_t record_size = 46U + name_size + extra_size + comment_size;
-    if (cursor + record_size > bytes.size() || method != kZipAesMethod ||
-        (flags & (kEncryptedFlag | kUtf8Flag)) !=
+    const auto kFlags = ReadU16(bytes, cursor + 8U);
+    const auto kMethod = ReadU16(bytes, cursor + 10U);
+    const auto kCrc = ReadU32(bytes, cursor + 16U);
+    const auto kCompressedSize = ReadU32(bytes, cursor + 20U);
+    const auto kUncompressedSize = ReadU32(bytes, cursor + 24U);
+    const auto kNameSize = ReadU16(bytes, cursor + 28U);
+    const auto kExtraSize = ReadU16(bytes, cursor + 30U);
+    const auto kCommentSize = ReadU16(bytes, cursor + 32U);
+    const auto kLocalOffset = ReadU32(bytes, cursor + 42U);
+    const std::size_t kRecordSize = 46U + kNameSize + kExtraSize + kCommentSize;
+    if (cursor + kRecordSize > bytes.size() || kMethod != kZipAesMethod ||
+        (kFlags & (kEncryptedFlag | kUtf8Flag)) !=
             (kEncryptedFlag | kUtf8Flag)) {
       throw std::runtime_error("ZIP entry is not a UTF-8 ZIP AES entry.");
     }
-    const auto name_begin = cursor + 46U;
-    std::string path(reinterpret_cast<const char*>(bytes.data() + name_begin),
-                     name_size);
+    const auto kNameBegin = cursor + 46U;
+    std::string path(reinterpret_cast<const char*>(bytes.data() + kNameBegin),
+                     kNameSize);
     ValidatePath(path);
     if (!paths.insert(path).second) {
       throw std::runtime_error("ZIP contains duplicate entry paths.");
     }
-    const auto extra_begin = name_begin + name_size;
-    const auto actual_method = FindAesExtra(
-        bytes.subspan(extra_begin, extra_size));
-    if (actual_method != kDeflateMethod) {
+    const auto kExtraBegin = kNameBegin + kNameSize;
+    const auto kActualMethod = FindAesExtra(
+        bytes.subspan(kExtraBegin, kExtraSize));
+    if (kActualMethod != kDeflateMethod) {
       throw std::runtime_error("ZIP entry compression method is unsupported.");
     }
-    if (static_cast<std::uint64_t>(local_offset) + 30U > bytes.size() ||
-        ReadU32(bytes, local_offset) != kLocalHeader) {
+    if (static_cast<std::uint64_t>(kLocalOffset) + 30U > bytes.size() ||
+        ReadU32(bytes, kLocalOffset) != kLocalHeader) {
       throw std::runtime_error("ZIP local header is invalid.");
     }
-    const auto local_name_size = ReadU16(bytes, local_offset + 26U);
-    const auto local_extra_size = ReadU16(bytes, local_offset + 28U);
-    const std::size_t data_offset = static_cast<std::size_t>(local_offset) +
-                                    30U + local_name_size + local_extra_size;
-    if (data_offset > bytes.size() ||
-        static_cast<std::uint64_t>(data_offset) + compressed_size > bytes.size()) {
+    const auto kLocalNameSize = ReadU16(bytes, kLocalOffset + 26U);
+    const auto kLocalExtraSize = ReadU16(bytes, kLocalOffset + 28U);
+    const std::size_t kDataOffset = static_cast<std::size_t>(kLocalOffset) +
+                                    30U + kLocalNameSize + kLocalExtraSize;
+    if (kDataOffset > bytes.size() ||
+        static_cast<std::uint64_t>(kDataOffset) + kCompressedSize > bytes.size()) {
       throw std::runtime_error("ZIP entry data is out of bounds.");
     }
-    const auto decrypted = DecryptEntry(
-        bytes.subspan(data_offset, compressed_size), passphrase);
-    auto data = InflateStored(decrypted, uncompressed_size);
-    if (crc != 0U && Crc32(data) != crc) {
+    const auto kDecrypted = DecryptEntry(
+        bytes.subspan(kDataOffset, kCompressedSize), passphrase);
+    auto data = InflateStored(kDecrypted, kUncompressedSize);
+    if (kCrc != 0U && Crc32(data) != kCrc) {
       throw std::runtime_error("ZIP entry CRC mismatch.");
     }
     TracerExchangePackageEntry entry{};
@@ -787,16 +797,16 @@ auto DecodeZipBytes(std::span<const std::uint8_t> bytes,
                             : kEntryFlagRequired;
     entry.data = std::move(data);
     entries.push_back(std::move(entry));
-    cursor += record_size;
+    cursor += kRecordSize;
   }
 
-  if (cursor != static_cast<std::size_t>(central_offset) + central_size) {
+  if (cursor != static_cast<std::size_t>(kCentralOffset) + kCentralSize) {
     throw std::runtime_error("ZIP central directory size is inconsistent.");
   }
   // This validates manifest semantics, ordering, required paths and hashes
   // through the existing v6 package decoder.
-  const auto package_bytes = EncodePackageBytes(entries);
-  return DecodePackageBytes(package_bytes);
+  const auto kPackageBytes = EncodePackageBytes(entries);
+  return DecodePackageBytes(kPackageBytes);
 }
 
 }  // namespace tracer::core::infrastructure::crypto::exchange

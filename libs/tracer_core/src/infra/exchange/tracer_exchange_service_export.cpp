@@ -188,8 +188,8 @@ auto ProtectAndWriteEncodedPackage(
                                  ? "Failed to write exchange output."
                                  : error_message);
   }
-  const auto package = exchange_pkg::DecodePackageBytes(package_bytes);
-  const auto emit_progress = [&](std::string_view phase, std::size_t done,
+  const auto kPackage = exchange_pkg::DecodePackageBytes(package_bytes);
+  const auto kEmitProgress = [&](std::string_view phase, std::size_t done,
                                  std::size_t total) {
     if (!request.progress_observer) {
       return;
@@ -214,17 +214,17 @@ auto ProtectAndWriteEncodedPackage(
       throw std::runtime_error("ZIP exchange export was cancelled.");
     }
   };
-  emit_progress("zip_prepare", 0U, package.entries.size());
-  const auto zip_bytes =
-      exchange_pkg::EncodeZipBytes(package.entries, request.passphrase);
-  emit_progress("zip_aes_encrypt", package.entries.size(),
-                package.entries.size());
+  kEmitProgress("zip_prepare", 0U, kPackage.entries.size());
+  const auto kZipBytes =
+      exchange_pkg::EncodeZipBytes(kPackage.entries, request.passphrase);
+  kEmitProgress("zip_aes_encrypt", kPackage.entries.size(),
+                kPackage.entries.size());
   if (kHasOutputPath) {
-    WriteFileBytes(resolved_output, zip_bytes);
+    WriteFileBytes(resolved_output, kZipBytes);
     return;
   }
   std::string error_message;
-  if (!request.encrypted_output_writer(zip_bytes, error_message)) {
+  if (!request.encrypted_output_writer(kZipBytes, error_message)) {
     throw std::runtime_error(error_message.empty()
                                  ? "Failed to write encrypted ZIP exchange "
                                    "output."

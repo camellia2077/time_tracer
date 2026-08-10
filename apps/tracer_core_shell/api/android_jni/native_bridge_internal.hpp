@@ -70,7 +70,8 @@ auto ExecuteJniMethod(JNIEnv* env, Fn&& fn) -> jstring {
 }
 
 auto NativeInit(JNIEnv* env, jobject thiz, jstring db_path, jstring output_root,
-                jstring converter_config_toml_path) -> jstring;
+                jstring converter_config_toml_path,
+                jstring status_configs_json) -> jstring;
 
 auto NativeInitPipeline(JNIEnv* env, jobject thiz, jstring db_path,
                         jstring output_root,

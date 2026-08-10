@@ -194,8 +194,10 @@ auto BuildDailyFixture() -> DailyInsightsData {
   DailyInsightsData insights;
   insights.date = "2021-01-03";
   insights.metadata.statuses = {
-      {.id = "study", .label = "Study", .value = true},
-      {.id = "exercise", .label = "Exercise", .value = true},
+      {.id = "study", .label = "Study", .occurrence_count = 2,
+       .total_duration = 7200},
+      {.id = "exercise", .label = "Exercise", .occurrence_count = 1,
+       .total_duration = 1800},
   };
   insights.metadata.getup_time = "07:30";
   insights.metadata.remark = "Deep work\nEvening workout";
@@ -255,6 +257,16 @@ auto BuildRangeFixture(const std::string& range_label,
   insights.exercise_true_days = exercise_days;
   insights.cardio_true_days = cardio_days;
   insights.anaerobic_true_days = anaerobic_days;
+  insights.statuses = {
+      {.id = "status", .label = "Status Days", .occurrence_count = status_days,
+       .total_duration = static_cast<std::int64_t>(status_days) * 3600},
+      {.id = "exercise", .label = "Exercise Days", .occurrence_count = exercise_days,
+       .total_duration = static_cast<std::int64_t>(exercise_days) * 3600},
+      {.id = "cardio", .label = "Cardio Days", .occurrence_count = cardio_days,
+       .total_duration = static_cast<std::int64_t>(cardio_days) * 3600},
+      {.id = "anaerobic", .label = "Anaerobic Days", .occurrence_count = anaerobic_days,
+       .total_duration = static_cast<std::int64_t>(anaerobic_days) * 3600},
+  };
   insights.is_valid = true;
   insights.project_tree = BuildRangeProjectTree();
   return insights;
@@ -340,12 +352,12 @@ auto CheckDailyActivityCountLabels(const ParityOutputs& outputs, int& failures)
 
 auto CheckDailyStatusLabelsArePresent(const ParityOutputs& outputs,
                                       int& failures) -> void {
-  constexpr std::string_view kMarkdownStudy = "- **Study**: true";
-  constexpr std::string_view kMarkdownExercise = "- **Exercise**: true";
-  constexpr std::string_view kLatexStudy = "\\textbf{Study}: true";
-  constexpr std::string_view kLatexExercise = "\\textbf{Exercise}: true";
-  constexpr std::string_view kTypstStudy = "+ *Study:* true";
-  constexpr std::string_view kTypstExercise = "+ *Exercise:* true";
+  constexpr std::string_view kMarkdownStudy = "- **Study**: 2 times (2h 0m)";
+  constexpr std::string_view kMarkdownExercise = "- **Exercise**: 1 times (0h 30m)";
+  constexpr std::string_view kLatexStudy = "\\textbf{Study}: 2 times (2h 0m)";
+  constexpr std::string_view kLatexExercise = "\\textbf{Exercise}: 1 times (0h 30m)";
+  constexpr std::string_view kTypstStudy = "+ *Study:* 2 times (2h 0m)";
+  constexpr std::string_view kTypstExercise = "+ *Exercise:* 1 times (0h 30m)";
 
   ExpectContains("CLI daily Markdown Study status",
                  outputs.cli_by_format[0].day, kMarkdownStudy, failures);
@@ -552,15 +564,15 @@ auto RunFormatterParityTests() -> int {
     ExpectContains("Chinese localized daily insights",
                    cli_formatter->FormatDailyLocalized(
                        daily_insights, InsightsFormat::kMarkdown, "zh"),
-                   "每日报告", failures);
+                   "摘要", failures);
     ExpectContains("Japanese localized daily insights",
                    cli_formatter->FormatDailyLocalized(
                        daily_insights, InsightsFormat::kMarkdown, "ja"),
-                   "日次レポート", failures);
+                   "サマリー", failures);
     ExpectContains("Unknown locale falls back to English",
                    cli_formatter->FormatDailyLocalized(
                        daily_insights, InsightsFormat::kMarkdown, "fr"),
-                   "Daily Insights for", failures);
+                   "Summary", failures);
     CheckDailyTimelineFormatting(*cli_formatter, daily_insights, failures);
     CheckDurationSecondsFormatting(failures);
     CheckEndOnlyLocalizedMarkdown(*cli_formatter, daily_insights, failures);

@@ -49,6 +49,7 @@ auto CopyRangeFields(const RangeInsightsData& source, RangeInsightsData& target)
   target.exercise_true_days = source.exercise_true_days;
   target.cardio_true_days = source.cardio_true_days;
   target.anaerobic_true_days = source.anaerobic_true_days;
+  target.statuses = source.statuses;
   target.is_valid = source.is_valid;
   target.project_stats = source.project_stats;
   target.project_tree = source.project_tree;

@@ -225,6 +225,7 @@ class FakeInsightsDataQueryService final
  public:
   bool fail_list_targets = false;
   bool fail_target_not_found = false;
+  std::vector<InsightsStatusValue> period_statuses;
 
   std::vector<std::string> daily_targets = {"2026-01-03", "2026-01-04"};
   std::vector<std::string> monthly_targets = {"2026-01", "2026-02"};

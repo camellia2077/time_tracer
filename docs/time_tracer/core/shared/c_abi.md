@@ -26,16 +26,17 @@
 11. `tracer_core_set_crypto_progress_callback`
 12. `tracer_core_runtime_create`
 13. `tracer_core_runtime_destroy`
-14. `tracer_core_runtime_ingest_json`
-15. `tracer_core_runtime_ingest_sync_status_json`
-16. `tracer_core_runtime_clear_ingest_sync_status_json`
-17. `tracer_core_runtime_convert_json`
-18. `tracer_core_runtime_import_json`
-19. `tracer_core_runtime_validate_structure_json`
-20. `tracer_core_runtime_validate_logic_json`
-21. `tracer_core_runtime_query_json`
-22. `tracer_core_runtime_temporal_insights_json`
-23. `tracer_core_runtime_insights_batch_json`
+14. `tracer_core_runtime_set_insights_statuses_json`
+15. `tracer_core_runtime_ingest_json`
+16. `tracer_core_runtime_ingest_sync_status_json`
+17. `tracer_core_runtime_clear_ingest_sync_status_json`
+18. `tracer_core_runtime_convert_json`
+19. `tracer_core_runtime_import_json`
+20. `tracer_core_runtime_validate_structure_json`
+21. `tracer_core_runtime_validate_logic_json`
+22. `tracer_core_runtime_query_json`
+23. `tracer_core_runtime_temporal_insights_json`
+24. `tracer_core_runtime_insights_batch_json`
 25. `tracer_core_runtime_crypto_encrypt_json`
 26. `tracer_core_runtime_crypto_decrypt_json`
 27. `tracer_core_runtime_crypto_inspect_json`
@@ -52,7 +53,11 @@
    `request_json` argument and returns the standard JSON ack envelope.
 4. Request parsing may be implemented by shared codec or local parser, but the
    external contract remains JSON-object based where a request body exists.
-5. JSON evolution is additive unless a dedicated compatibility review approves a
+5. `tracer_core_runtime_set_insights_statuses_json` is Android's runtime
+   bootstrap payload. It requires arrays named `day`, `week`, `month`, `year`,
+   `recent`, and `range`; each item has non-empty unique `id`, `label`, and
+   `parent` fields within its own scope.
+6. JSON evolution is additive unless a dedicated compatibility review approves a
    new struct-based ABI surface.
 
 ## Payload Contract
@@ -170,6 +175,8 @@
      - `selection_kind`
      - `insights_kind`
      - `insights`
+       - `insights.statuses[]` entries contain `id`, `label`,
+         `occurrence_count`, and `total_duration` for each configured status
      - `error_message`
      - `error_code`
      - `error_category`

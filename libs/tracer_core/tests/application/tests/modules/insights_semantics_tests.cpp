@@ -202,6 +202,32 @@ auto TestStructuredInsightsDistinguishesEmptyWindowFromMissingTarget(
          "insights category.");
 }
 
+auto TestStructuredRangePreservesConfiguredStatuses(TestState& state) -> void {
+  FakePipelineWorkflow pipeline_workflow;
+  FakeInsightsHandler insights_handler;
+  auto insights_data_query = std::make_shared<FakeInsightsDataQueryService>();
+  insights_data_query->period_statuses = {
+      {.id = "study", .label = "Study", .occurrence_count = 3,
+       .total_duration = 5400},
+  };
+  auto runtime_api = BuildRuntimeApiForTest(pipeline_workflow, insights_handler,
+                                            insights_data_query);
+
+  const auto result = runtime_api.insights().RunTemporalStructuredInsightsQuery(
+      {.display_mode = InsightsDisplayMode::kRange,
+       .selection = BuildRangeSelection("2026-01-01", "2026-01-07")});
+  const auto* insights = std::get_if<PeriodInsightsData>(&result.insights);
+  Expect(state, result.ok && insights != nullptr,
+         "structured range insights should return period data.");
+  if (insights != nullptr) {
+    Expect(state, insights->statuses.size() == 1U &&
+                      insights->statuses[0].id == "study" &&
+                      insights->statuses[0].occurrence_count == 3 &&
+                      insights->statuses[0].total_duration == 5400,
+           "structured range insights should preserve configured statuses.");
+  }
+}
+
 }  // namespace
 
 auto RunInsightsSemanticsTests(TestState& state) -> void {
@@ -209,6 +235,7 @@ auto RunInsightsSemanticsTests(TestState& state) -> void {
   TestParseRangeArgument(state);
   TestTemporalTextQueryPreservesWindowMetadata(state);
   TestStructuredInsightsDistinguishesEmptyWindowFromMissingTarget(state);
+  TestStructuredRangePreservesConfiguredStatuses(state);
 }
 
 }  // namespace tracer_core::application::tests

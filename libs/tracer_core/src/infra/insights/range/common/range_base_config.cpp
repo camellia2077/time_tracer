@@ -6,21 +6,16 @@ RangeBaseConfig::RangeBaseConfig(const RangeInsightsLabels& labels) {
 }
 
 void RangeBaseConfig::LoadBaseConfig(const RangeInsightsLabels& labels) {
-  title_template_ = labels.title_template;
   total_time_label_ = labels.total_time_label;
   activity_count_label_ = labels.activity_count_label;
+  status_count_unit_ = labels.status_count_unit;
+  custom_section_label_ = labels.custom_section_label;
+  summary_section_label_ = labels.summary_section_label;
+  period_label_ = labels.period_label;
   actual_days_label_ = labels.actual_days_label;
-  status_days_label_ = labels.status_days_label;
-  exercise_days_label_ = labels.exercise_days_label;
-  cardio_days_label_ = labels.cardio_days_label;
-  anaerobic_days_label_ = labels.anaerobic_days_label;
   no_records_message_ = labels.no_records_message;
   invalid_range_message_ = labels.invalid_range_message;
   project_breakdown_label_ = labels.project_breakdown_label;
-}
-
-auto RangeBaseConfig::GetTitleTemplate() const -> const std::string& {
-  return title_template_;
 }
 
 auto RangeBaseConfig::GetTotalTimeLabel() const -> const std::string& {
@@ -29,23 +24,21 @@ auto RangeBaseConfig::GetTotalTimeLabel() const -> const std::string& {
 auto RangeBaseConfig::GetActivityCountLabel() const -> const std::string& {
   return activity_count_label_;
 }
+auto RangeBaseConfig::GetStatusCountUnit() const -> const std::string& {
+  return status_count_unit_;
+}
+auto RangeBaseConfig::GetCustomSectionLabel() const -> const std::string& {
+  return custom_section_label_;
+}
+auto RangeBaseConfig::GetSummarySectionLabel() const -> const std::string& {
+  return summary_section_label_;
+}
+auto RangeBaseConfig::GetPeriodLabel() const -> const std::string& {
+  return period_label_;
+}
 
 auto RangeBaseConfig::GetActualDaysLabel() const -> const std::string& {
   return actual_days_label_;
-}
-
-auto RangeBaseConfig::GetStatusDaysLabel() const -> const std::string& {
-  return status_days_label_;
-}
-
-auto RangeBaseConfig::GetExerciseDaysLabel() const -> const std::string& {
-  return exercise_days_label_;
-}
-auto RangeBaseConfig::GetCardioDaysLabel() const -> const std::string& {
-  return cardio_days_label_;
-}
-auto RangeBaseConfig::GetAnaerobicDaysLabel() const -> const std::string& {
-  return anaerobic_days_label_;
 }
 
 auto RangeBaseConfig::GetNoRecordsMessage() const -> const std::string& {

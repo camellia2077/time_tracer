@@ -39,10 +39,10 @@ auto TestStructureLayerMdSectionIntegrity(
   };
 
   const SectionCheck day_checks[] = {
-      {"title (Daily Insights for)", "# Daily Insights for"},
-      {"All Activities section", "## All Activities"},
-      {"Project Breakdown section", "## Project Breakdown"},
-      {"Date label", "- **Date**:"},
+      {"Summary title", "# Summary"},
+      {"Timeline section", "## Timeline"},
+      {"Breakdown section", "## Breakdown"},
+      {"Period label", "- **Period**:"},
       {"Total Time Recorded label", "- **Total Time Recorded**:"},
   };
 
@@ -72,8 +72,8 @@ auto TestStructureLayerMdSectionIntegrity(
   const std::string& month_md = month_result.content;
 
   const SectionCheck month_checks[] = {
-      {"title (Monthly Summary)", "# Monthly Summary for"},
-      {"Project Breakdown section", "## Project Breakdown"},
+      {"Summary title", "# Summary"},
+      {"Breakdown section", "## Breakdown"},
       {"Total Time Recorded label", "- **Total Time Recorded**:"},
   };
 

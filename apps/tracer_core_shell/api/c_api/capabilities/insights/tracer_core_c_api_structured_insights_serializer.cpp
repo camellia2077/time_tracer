@@ -105,7 +105,8 @@ auto EncodeDailyInsights(const DailyInsightsData& insights) -> json {
   for (const auto& status : insights.metadata.statuses) {
     statuses.push_back(json{{"id", status.id},
                             {"label", status.label},
-                            {"value", status.value}});
+                            {"occurrence_count", status.occurrence_count},
+                            {"total_duration", status.total_duration}});
   }
 
   return json{
@@ -123,6 +124,13 @@ auto EncodeDailyInsights(const DailyInsightsData& insights) -> json {
 }
 
 auto EncodePeriodInsights(const PeriodInsightsData& insights) -> json {
+  json statuses = json::array();
+  for (const auto& status : insights.statuses) {
+    statuses.push_back(json{{"id", status.id},
+                            {"label", status.label},
+                            {"occurrence_count", status.occurrence_count},
+                            {"total_duration", status.total_duration}});
+  }
   return json{
       {"range_label", insights.range_label},
       {"start_date", insights.start_date},
@@ -133,10 +141,7 @@ auto EncodePeriodInsights(const PeriodInsightsData& insights) -> json {
       {"matched_record_count", insights.matched_record_count},
       {"total_duration", insights.total_duration},
       {"actual_days", insights.actual_days},
-      {"status_true_days", insights.status_true_days},
-      {"exercise_true_days", insights.exercise_true_days},
-      {"cardio_true_days", insights.cardio_true_days},
-      {"anaerobic_true_days", insights.anaerobic_true_days},
+      {"statuses", std::move(statuses)},
       {"is_valid", insights.is_valid},
       {"project_stats", EncodeProjectStats(insights.project_stats)},
       {"project_tree", EncodeProjectTree(insights.project_tree)},

@@ -72,9 +72,9 @@
    - `docs/tools/toolchain/workflows/README.md`
 6. clang-tidy 专项：
    - `docs/tools/toolchain/tidy/README.md`
-8. suite 资产层说明：
+7. suite 资产层说明：
    - `tools/suites/README.md`
-9. 工具链历史：
+8. 工具链历史：
    - `docs/tools/toolchain/history/README.md`
 
 ## 维护约束

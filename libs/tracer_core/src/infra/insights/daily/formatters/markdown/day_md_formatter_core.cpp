@@ -3,6 +3,7 @@
 
 #include "infra/insights/daily/formatters/markdown/day_md_formatter.hpp"
 #include "infra/insights/shared/utils/format/insights_string_utils.hpp"
+#include "infra/insights/shared/utils/format/status_statistics_format.hpp"
 #include "infra/insights/shared/utils/format/time_format.hpp"
 
 namespace {
@@ -79,19 +80,13 @@ auto DayMdFormatter::GetNoRecordsMsg() const -> std::string {
 void DayMdFormatter::FormatHeaderContent(std::string& insights_stream,
                                          const DailyInsightsData& data) const {
   insights_stream += "## ";
-  insights_stream += config_->GetTitlePrefix();
-  insights_stream += " ";
-  insights_stream += data.date;
+  insights_stream += config_->GetSummarySectionLabel();
   insights_stream += "\n\n";
-  insights_stream += BuildMarkdownItemLine(config_->GetDateLabel(), data.date);
+  insights_stream += BuildMarkdownItemLine(config_->GetPeriodLabel(), data.date);
   insights_stream += BuildMarkdownItemLine(
       config_->GetTotalTimeLabel(), TimeFormatDuration(data.total_duration));
   insights_stream += BuildMarkdownItemLine(config_->GetActivityCountLabel(),
                                          std::to_string(data.activity_count));
-  for (const auto& status : data.metadata.statuses) {
-    insights_stream +=
-        BuildMarkdownItemLine(status.label, status.value ? "true" : "false");
-  }
   insights_stream += BuildMarkdownItemLine(config_->GetGetupTimeLabel(),
                                          data.metadata.getup_time);
 
@@ -99,6 +94,17 @@ void DayMdFormatter::FormatHeaderContent(std::string& insights_stream,
       data.metadata.remark, kRemarkIndent, kRemarkIndentPrefix);
   insights_stream +=
       BuildMarkdownItemLine(config_->GetRemarkLabel(), formatted_remark);
+  if (!data.metadata.statuses.empty()) {
+    insights_stream += "\n## ";
+    insights_stream += config_->GetCustomSectionLabel();
+    insights_stream += "\n\n";
+    for (const auto& status : data.metadata.statuses) {
+      insights_stream += BuildMarkdownItemLine(
+          status.label, FormatStatusStatistics(status.occurrence_count,
+                                               status.total_duration,
+                                               config_->GetStatusCountUnit()));
+    }
+  }
 }
 
 void DayMdFormatter::FormatExtraContent(std::string& insights_stream,

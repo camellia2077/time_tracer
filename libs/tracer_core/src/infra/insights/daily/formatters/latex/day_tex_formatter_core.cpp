@@ -10,12 +10,7 @@
 DayTexConfig::DayTexConfig(const DailyTexConfig& config)
     : DayBaseConfig(config.labels, config.statistics_items),
       style_(config.fonts, config.layout),
-      insights_title_(config.labels.insights_title),
       keyword_colors_(config.keyword_colors) {}
-
-auto DayTexConfig::GetInsightsTitle() const -> const std::string& {
-  return insights_title_;
-}
 
 auto DayTexConfig::GetKeywordColors() const
     -> const std::map<std::string, std::string>& {
