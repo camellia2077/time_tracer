@@ -171,7 +171,7 @@
     <string name="insights_summary_requested_days">请求天数：%1$d</string>
     <string name="insights_summary_matched_days">匹配天数：%1$d</string>
     <string name="insights_summary_matched_records">匹配记录数：%1$d</string>
-    <string name="insights_cd_edit_daily_statuses">编辑每日状态</string>
+    <string name="insights_cd_edit_statuses">编辑%1$s状态</string>
 
     <string name="insights_error_tree_level_min">时间明细层级必须 &gt;= -1。</string>
     <string name="insights_error_chart_payload_invalid">图表数据载荷无效。</string>

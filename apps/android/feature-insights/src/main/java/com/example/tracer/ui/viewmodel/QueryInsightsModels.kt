@@ -61,6 +61,7 @@ data class QueryInsightsUiState(
     val insightsSummariesByPeriod: Map<DataTreePeriod, InsightsSummary> = emptyMap(),
     val insightsErrorsByPeriod: Map<DataTreePeriod, String> = emptyMap(),
     val dayTimeline: StructuredDailyInsights? = null,
+    val statusValues: List<InsightsStatusValue> = emptyList(),
     // Timeline remark edits are applied locally first to preserve scroll position. The next
     // Markdown/insights load clears this flag after Core has supplied a fresh projection.
     val dayInsightsNeedsRefresh: Boolean = false,

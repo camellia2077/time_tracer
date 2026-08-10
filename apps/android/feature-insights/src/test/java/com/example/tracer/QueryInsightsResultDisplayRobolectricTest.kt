@@ -60,6 +60,9 @@ class QueryInsightsResultDisplayRobolectricTest {
         composeRule.onNodeWithContentDescription(
             context.getString(R.string.insights_cd_copy_markdown)
         ).assertIsDisplayed()
+        composeRule.onNodeWithContentDescription(
+            context.getString(R.string.insights_cd_edit_statuses, recentLabel)
+        ).assertIsDisplayed()
     }
 
     @Test

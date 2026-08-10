@@ -3,6 +3,7 @@ package com.example.tracer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 
@@ -155,28 +156,80 @@ internal fun parseInlineMarkdown(
     val normalizedText = text
         .replace(Regex("(?i)<br\\s*/?>[ \\t]*\\n"), "\n")
         .replace(Regex("(?i)<br\\s*/?>"), "\n")
-    val parts = normalizedText.split("**")
-    parts.forEachIndexed { index, part ->
-        if (index % 2 == 1) {
-            builder.withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
-                append(part)
+    appendInlineMarkdown(normalizedText, builder)
+}
+
+private fun appendInlineMarkdown(
+    text: String,
+    builder: androidx.compose.ui.text.AnnotatedString.Builder
+) {
+    var index = 0
+    while (index < text.length) {
+        when {
+            text.startsWith("**", index) -> {
+                val closingIndex = text.indexOf("**", index + 2)
+                if (closingIndex < 0) {
+                    builder.append("**")
+                    index += 2
+                } else {
+                    builder.withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                        appendInlineMarkdown(text.substring(index + 2, closingIndex), this)
+                    }
+                    index = closingIndex + 2
+                }
             }
-        } else {
-            val subParts = part.split("`")
-            subParts.forEachIndexed { subIndex, subPart ->
-                if (subIndex % 2 == 1) {
+
+            text[index] == '*' -> {
+                val closingIndex = findClosingSingleAsterisk(text, index + 1)
+                if (closingIndex < 0) {
+                    builder.append('*')
+                    index += 1
+                } else {
+                    builder.withStyle(SpanStyle(fontStyle = FontStyle.Italic)) {
+                        appendInlineMarkdown(text.substring(index + 1, closingIndex), this)
+                    }
+                    index = closingIndex + 1
+                }
+            }
+
+            text[index] == '`' -> {
+                val closingIndex = text.indexOf('`', index + 1)
+                if (closingIndex < 0) {
+                    builder.append('`')
+                    index += 1
+                } else {
                     builder.withStyle(
                         SpanStyle(
                             fontFamily = FontFamily.Monospace,
                             background = Color.LightGray.copy(alpha = 0.3f)
                         )
                     ) {
-                        append(subPart)
+                        append(text.substring(index + 1, closingIndex))
                     }
-                } else {
-                    builder.append(subPart)
+                    index = closingIndex + 1
                 }
+            }
+
+            else -> {
+                builder.append(text[index])
+                index += 1
             }
         }
     }
+}
+
+private fun findClosingSingleAsterisk(text: String, startIndex: Int): Int {
+    var index = startIndex
+    while (index < text.length) {
+        if (text[index] == '*') {
+            val isPartOfDoubleMarker =
+                (index > 0 && text[index - 1] == '*') ||
+                    (index + 1 < text.length && text[index + 1] == '*')
+            if (!isPartOfDoubleMarker) {
+                return index
+            }
+        }
+        index += 1
+    }
+    return -1
 }

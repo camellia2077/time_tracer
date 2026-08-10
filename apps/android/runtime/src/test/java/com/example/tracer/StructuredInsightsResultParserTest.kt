@@ -41,6 +41,28 @@ class StructuredInsightsResultParserTest {
         assertTrue(result.errorMessage.isNotBlank())
     }
 
+    @Test
+    fun parse_mapsPeriodStatusStatistics() {
+        val result = parser.parse(
+            InsightsCallResult(
+                initialized = true,
+                operationOk = true,
+                outputText = "",
+                rawResponse = """{"ok":true,"insights_kind":"period","insights":{"statuses":[{"id":"study","label":"Study","occurrence_count":3,"total_duration":7200},{"id":"exercise","label":"Exercise","occurrence_count":0,"total_duration":0}]}}"""
+            )
+        )
+
+        assertTrue(result.operationOk)
+        assertEquals(null, result.insights)
+        assertEquals(
+            listOf(
+                InsightsStatusValue(id = "study", label = "Study", occurrenceCount = 3, totalDurationSeconds = 7200),
+                InsightsStatusValue(id = "exercise", label = "Exercise", occurrenceCount = 0, totalDurationSeconds = 0)
+            ),
+            result.statuses
+        )
+    }
+
     private fun structuredResponse(recordKind: String?): String {
         val recordFields = buildString {
             append("\"logical_id\":1,")

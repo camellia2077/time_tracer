@@ -124,7 +124,7 @@
     <string name="insights_cd_collapse">Collapse</string>
     <string name="insights_cd_expand">Expand</string>
     <string name="insights_cd_copy_markdown">Copy Markdown</string>
-    <string name="insights_cd_edit_daily_statuses">Edit Daily statuses</string>
+    <string name="insights_cd_edit_statuses">Edit %1$s statuses</string>
     <string name="insights_result_title_activity_timeline">Activity Timeline</string>
     <string name="insights_day_remark_label">Day remark</string>
     <string name="insights_edit_day_remark">Edit day remark</string>

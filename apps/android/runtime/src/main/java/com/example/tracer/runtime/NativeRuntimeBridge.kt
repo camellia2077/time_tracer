@@ -7,11 +7,12 @@ package com.example.tracer
  * `external fun` JNI methods directly.
  */
 internal class NativeRuntimeBridge {
-    fun nativeInit(paths: RuntimePaths): String =
+    fun nativeInit(paths: RuntimePaths, statusConfigsJson: String): String =
         NativeBridge.nativeInit(
             dbPath = paths.dbPath,
             outputRoot = paths.outputRoot,
-            converterConfigTomlPath = paths.configTomlPath
+            converterConfigTomlPath = paths.configTomlPath,
+            statusConfigsJson = statusConfigsJson
         )
 
     fun nativeInitPipeline(paths: RuntimePaths): String =

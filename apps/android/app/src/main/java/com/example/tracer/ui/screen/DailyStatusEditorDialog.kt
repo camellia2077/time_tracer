@@ -44,11 +44,15 @@ import kotlinx.coroutines.launch
 @Composable
 internal fun DailyStatusEditorDialog(
     userPreferencesRepository: UserPreferencesRepository,
-    statusValues: List<DailyStatusValue>,
+    runtimeInitializer: RuntimeInitializer,
+    insightsMode: InsightsMode,
+    statusValues: List<InsightsStatusValue>,
     recordUiState: RecordUiState,
     recordViewModel: RecordViewModel,
+    onConfigSaved: () -> Unit,
     onDismissRequest: () -> Unit
 ) {
+    val scopeLabel = stringResource(insightsMode.statusEditorScopeResId())
     var config by remember { mutableStateOf(DailyStatusConfig()) }
     var isLoading by remember { mutableStateOf(true) }
     var isSaving by remember { mutableStateOf(false) }
@@ -58,8 +62,8 @@ internal fun DailyStatusEditorDialog(
     var selectedParentOverride by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(userPreferencesRepository) {
-        config = userPreferencesRepository.dailyStatusConfig.first()
+    LaunchedEffect(userPreferencesRepository, insightsMode) {
+        config = userPreferencesRepository.insightsStatusConfigs.first()[insightsMode]
         isLoading = false
     }
 
@@ -69,9 +73,14 @@ internal fun DailyStatusEditorDialog(
         errorMessage = ""
         coroutineScope.launch {
             runCatching {
-                userPreferencesRepository.setDailyStatusConfig(next)
+                userPreferencesRepository.setStatusConfig(insightsMode, next)
+                val reload = runtimeInitializer.initializeRuntime()
+                check(reload.initialized) {
+                    "Daily statuses were saved but runtime reload failed."
+                }
             }.onSuccess {
                 isSaving = false
+                onConfigSaved()
             }.onFailure { error ->
                 errorMessage = error.message ?: "Cannot save daily statuses."
                 isSaving = false
@@ -108,7 +117,7 @@ internal fun DailyStatusEditorDialog(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = stringResource(R.string.insights_daily_status_editor_title),
+                        text = stringResource(R.string.insights_status_editor_title, scopeLabel),
                         style = MaterialTheme.typography.titleLarge
                     )
                     IconButton(onClick = onDismissRequest) {
@@ -116,12 +125,12 @@ internal fun DailyStatusEditorDialog(
                     }
                 }
                 Text(
-                    text = stringResource(R.string.insights_daily_status_editor_description),
+                    text = stringResource(R.string.insights_status_editor_description, scopeLabel),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 if (isLoading) {
-                    Text(stringResource(R.string.insights_daily_status_editor_loading))
+                    Text(stringResource(R.string.insights_status_editor_loading, scopeLabel))
                 } else {
                     Column(
                         modifier = Modifier
@@ -130,7 +139,7 @@ internal fun DailyStatusEditorDialog(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         config.statuses.forEach { definition ->
-                            val value = statusValues.firstOrNull { it.id == definition.id }?.value ?: false
+                            val status = statusValues.firstOrNull { it.id == definition.id }
                             Card(modifier = Modifier.fillMaxWidth()) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth().padding(12.dp),
@@ -143,7 +152,14 @@ internal fun DailyStatusEditorDialog(
                                             style = MaterialTheme.typography.bodySmall
                                         )
                                     }
-                                    Text(if (value) "Yes" else "No", style = MaterialTheme.typography.bodySmall)
+                                    Text(
+                                        text = stringResource(
+                                            R.string.insights_status_statistics,
+                                            status?.occurrenceCount ?: 0,
+                                            formatStatusDuration(status?.totalDurationSeconds ?: 0L)
+                                        ),
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
                                     IconButton(onClick = {
                                         editingId = definition.id
                                         selectedParentOverride = null
@@ -165,7 +181,7 @@ internal fun DailyStatusEditorDialog(
                             }
                         }
                         if (config.statuses.isEmpty()) {
-                            Text(stringResource(R.string.insights_daily_status_editor_empty))
+                            Text(stringResource(R.string.insights_status_editor_empty, scopeLabel))
                         }
                         OutlinedButton(
                             onClick = {
@@ -201,6 +217,7 @@ internal fun DailyStatusEditorDialog(
     if (editing != null) {
         DailyStatusDefinitionDialog(
             initial = editing,
+            scopeLabel = scopeLabel,
             parentOverride = selectedParentOverride,
             onFinish = { next ->
                 if (next != null) {
@@ -254,6 +271,7 @@ internal fun DailyStatusEditorDialog(
 @Composable
 private fun DailyStatusDefinitionDialog(
     initial: DailyStatusDefinition,
+    scopeLabel: String,
     parentOverride: String?,
     onFinish: (DailyStatusDefinition?) -> Unit,
     onChooseParent: () -> Unit
@@ -293,7 +311,7 @@ private fun DailyStatusDefinitionDialog(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        stringResource(R.string.insights_daily_status_edit_title),
+                        stringResource(R.string.insights_status_editor_edit_title, scopeLabel),
                         style = MaterialTheme.typography.titleMedium
                     )
                     IconButton(onClick = ::finish) {
@@ -317,6 +335,27 @@ private fun DailyStatusDefinitionDialog(
             }
         }
     }
+}
+
+@Composable
+private fun formatStatusDuration(totalSeconds: Long): String {
+    val hours = totalSeconds / 3_600
+    val minutes = (totalSeconds % 3_600) / 60
+    val seconds = totalSeconds % 60
+    return when {
+        hours > 0 -> stringResource(R.string.insights_status_duration_hours_minutes, hours, minutes)
+        minutes > 0 -> stringResource(R.string.insights_status_duration_minutes, minutes)
+        else -> stringResource(R.string.insights_status_duration_seconds, seconds)
+    }
+}
+
+private fun InsightsMode.statusEditorScopeResId(): Int = when (this) {
+    InsightsMode.DAY -> R.string.insights_status_scope_day
+    InsightsMode.WEEK -> R.string.insights_status_scope_week
+    InsightsMode.MONTH -> R.string.insights_status_scope_month
+    InsightsMode.YEAR -> R.string.insights_status_scope_year
+    InsightsMode.RANGE -> R.string.insights_status_scope_range
+    InsightsMode.RECENT -> R.string.insights_status_scope_recent
 }
 
 private fun nextStatusId(statuses: List<DailyStatusDefinition>): String {

@@ -21,7 +21,7 @@ adb devices
 ## 2. 编译与安装命令
 
 从仓库根目录执行。编译和安装是两个独立步骤。
-# 只编译
+# 只编译apk(不安装!!!)
 python tools/run.py android --variant debug
 
 python tools/run.py android --variant release

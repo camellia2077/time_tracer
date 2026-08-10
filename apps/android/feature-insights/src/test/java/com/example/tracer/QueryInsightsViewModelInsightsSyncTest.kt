@@ -278,6 +278,34 @@ class QueryInsightsViewModelInsightsSyncTest {
     }
 
     @Test
+    fun insightsWeek_usesStructuredPeriodStatusValues() = runTest {
+        val fakeInsightsGateway = FakeStructuredInsightsGateway().apply {
+            periodStructuredResult = StructuredInsightsCallResult(
+                initialized = true,
+                operationOk = true,
+                insights = null,
+                rawResponse = """{"ok":true}""",
+                statuses = listOf(
+                    InsightsStatusValue(id = "study", label = "Study", occurrenceCount = 3, totalDurationSeconds = 7200)
+                )
+            )
+        }
+        val viewModel = QueryInsightsViewModel(
+            insightsGateway = fakeInsightsGateway,
+            queryGateway = FakeInsightsSyncQueryGateway()
+        )
+
+        viewModel.onInsightsWeekChange("202607")
+        viewModel.insightsWeek()
+        advanceUntilIdle()
+
+        assertEquals(
+            listOf(InsightsStatusValue(id = "study", label = "Study", occurrenceCount = 3, totalDurationSeconds = 7200)),
+            viewModel.uiState.statusValues
+        )
+    }
+
+    @Test
     fun changingInsightsLocale_requeriesCurrentMarkdownWithNewLocale() = runTest {
         val fakeInsightsGateway = FakeStructuredInsightsGateway()
         val viewModel = QueryInsightsViewModel(
@@ -394,6 +422,7 @@ private class FakeStructuredInsightsGateway : InsightsGateway {
     var recentResult: InsightsCallResult = successResult()
     var rangeResult: InsightsCallResult = successResult()
     var dayStructuredResult: StructuredInsightsCallResult = failedStructuredResult()
+    var periodStructuredResult: StructuredInsightsCallResult = failedStructuredResult()
     var lastTemporalRequest: TemporalInsightsQueryRequest? = null
 
     override suspend fun insightsMarkdown(request: TemporalInsightsQueryRequest): InsightsCallResult {
@@ -413,7 +442,7 @@ private class FakeStructuredInsightsGateway : InsightsGateway {
     ): StructuredInsightsCallResult = if (request.displayMode == InsightsDisplayMode.DAY) {
         dayStructuredResult
     } else {
-        failedStructuredResult()
+        periodStructuredResult
     }
 
     private fun successResult(): InsightsCallResult = InsightsCallResult(

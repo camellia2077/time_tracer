@@ -51,14 +51,15 @@ data class StructuredDailyInsights(
     val date: String,
     val totalDurationSeconds: Long,
     val dayRemark: String = "",
-    val statuses: List<DailyStatusValue> = emptyList(),
+    val statuses: List<InsightsStatusValue> = emptyList(),
     val activities: List<ActivityTimelineItem> = emptyList()
 )
 
-data class DailyStatusValue(
+data class InsightsStatusValue(
     val id: String,
     val label: String,
-    val value: Boolean
+    val occurrenceCount: Int,
+    val totalDurationSeconds: Long
 )
 
 data class StructuredInsightsCallResult(
@@ -66,6 +67,7 @@ data class StructuredInsightsCallResult(
     val operationOk: Boolean,
     val insights: StructuredDailyInsights?,
     val rawResponse: String,
+    val statuses: List<InsightsStatusValue> = emptyList(),
     val errorMessage: String = "",
     val operationId: String = ""
 )

@@ -93,7 +93,6 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         val DEFAULT_INSIGHTS_AVERAGE_DAY_BASIS: InsightsAverageDayBasis =
             InsightsAverageDayBasis.ACTIVE_DAYS
         const val DEFAULT_INSIGHTS_CHART_TREND_ROOT: String = ""
-        val DEFAULT_DAILY_STATUS_CONFIG: DailyStatusConfig = DailyStatusConfig()
         private const val MIN_RECORD_SUGGEST_LOOKBACK_DAYS: Int = 0
         private const val MAX_RECORD_SUGGEST_LOOKBACK_DAYS: Int = 60
         private const val MIN_RECORD_SUGGEST_TOP_N: Int = 0
@@ -142,14 +141,24 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         val INSIGHTS_CHART_SEMANTIC_MODE = stringPreferencesKey("insights_chart_semantic_mode")
         val INSIGHTS_CHART_VISUAL_MODE = stringPreferencesKey("insights_chart_visual_mode")
         val INSIGHTS_MODE = stringPreferencesKey("insights_mode")
-        val INSIGHTS_RESULT_DISPLAY_MODE = stringPreferencesKey("insights_result_display_mode")
+        val INSIGHTS_RESULT_DISPLAY_MODE_DAY = stringPreferencesKey("insights_result_display_mode_day")
+        val INSIGHTS_RESULT_DISPLAY_MODE_WEEK = stringPreferencesKey("insights_result_display_mode_week")
+        val INSIGHTS_RESULT_DISPLAY_MODE_MONTH = stringPreferencesKey("insights_result_display_mode_month")
+        val INSIGHTS_RESULT_DISPLAY_MODE_YEAR = stringPreferencesKey("insights_result_display_mode_year")
+        val INSIGHTS_RESULT_DISPLAY_MODE_RECENT = stringPreferencesKey("insights_result_display_mode_recent")
+        val INSIGHTS_RESULT_DISPLAY_MODE_RANGE = stringPreferencesKey("insights_result_display_mode_range")
         val INSIGHTS_PARAMETER_SECTION = stringPreferencesKey("insights_parameter_section")
         val INSIGHTS_TIME_PARAMETERS_EXPANDED = booleanPreferencesKey("insights_time_parameters_expanded")
         val INSIGHTS_PIE_PALETTE_PRESET = stringPreferencesKey("insights_pie_palette_preset")
         val INSIGHTS_AVERAGE_DAY_BASIS = stringPreferencesKey("insights_average_day_basis")
         val INSIGHTS_CHART_TREND_ROOT = stringPreferencesKey("insights_chart_trend_root")
         val INSIGHTS_HEATMAP_PALETTE_NAME = stringPreferencesKey("insights_heatmap_palette_name")
-        val INSIGHTS_DAILY_STATUSES = stringPreferencesKey("insights_daily_statuses")
+        val INSIGHTS_STATUSES_DAY = stringPreferencesKey("insights_statuses_day")
+        val INSIGHTS_STATUSES_WEEK = stringPreferencesKey("insights_statuses_week")
+        val INSIGHTS_STATUSES_MONTH = stringPreferencesKey("insights_statuses_month")
+        val INSIGHTS_STATUSES_YEAR = stringPreferencesKey("insights_statuses_year")
+        val INSIGHTS_STATUSES_RECENT = stringPreferencesKey("insights_statuses_recent")
+        val INSIGHTS_STATUSES_RANGE = stringPreferencesKey("insights_statuses_range")
     }
 
     val themeConfig: Flow<ThemeConfig> = dataStore.data.map { preferences ->
@@ -281,11 +290,14 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         preferences[PreferencesKeys.INSIGHTS_HEATMAP_PALETTE_NAME].orEmpty()
     }
 
-    val dailyStatusConfig: Flow<DailyStatusConfig> = dataStore.data.map { preferences ->
-        DailyStatusConfig(
-            statuses = deserializeDailyStatusDefinitions(
-                preferences[PreferencesKeys.INSIGHTS_DAILY_STATUSES]
-            )
+    val insightsStatusConfigs: Flow<InsightsStatusConfigs> = dataStore.data.map { preferences ->
+        InsightsStatusConfigs(
+            day = preferences.statusConfigFor(InsightsMode.DAY),
+            week = preferences.statusConfigFor(InsightsMode.WEEK),
+            month = preferences.statusConfigFor(InsightsMode.MONTH),
+            year = preferences.statusConfigFor(InsightsMode.YEAR),
+            recent = preferences.statusConfigFor(InsightsMode.RECENT),
+            range = preferences.statusConfigFor(InsightsMode.RANGE)
         )
     }
 
@@ -330,7 +342,7 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
     }
 
     val insightsResultDisplayMode: Flow<InsightsResultDisplayMode> = dataStore.data.map { preferences ->
-        val rawValue = preferences[PreferencesKeys.INSIGHTS_RESULT_DISPLAY_MODE]
+        val rawValue = preferences[preferences.insightsResultDisplayModeKey()]
             ?: DEFAULT_INSIGHTS_RESULT_DISPLAY_MODE.name
         runCatching { InsightsResultDisplayMode.valueOf(rawValue) }
             .getOrDefault(DEFAULT_INSIGHTS_RESULT_DISPLAY_MODE)
@@ -464,9 +476,9 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         }
     }
 
-    suspend fun setDailyStatusConfig(value: DailyStatusConfig) {
+    suspend fun setStatusConfig(mode: InsightsMode, value: DailyStatusConfig) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.INSIGHTS_DAILY_STATUSES] =
+            preferences[mode.statusConfigKey()] =
                 serializeDailyStatusDefinitions(value.statuses)
         }
     }
@@ -499,7 +511,7 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
 
     private fun deserializeDailyStatusDefinitions(raw: String?): List<DailyStatusDefinition> {
         if (raw.isNullOrBlank()) {
-            return DEFAULT_DAILY_STATUS_CONFIG.statuses
+            return emptyList()
         }
         return raw.lineSequence().mapNotNull { line ->
             val parts = line.split('\t')
@@ -580,8 +592,33 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
 
     suspend fun setInsightsResultDisplayMode(value: InsightsResultDisplayMode) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.INSIGHTS_RESULT_DISPLAY_MODE] = value.name
+            preferences[preferences.insightsResultDisplayModeKey()] = value.name
         }
+    }
+
+    private fun Preferences.insightsResultDisplayModeKey() = when (
+        runCatching {
+            InsightsMode.valueOf(this[PreferencesKeys.INSIGHTS_MODE].orEmpty())
+        }.getOrDefault(DEFAULT_INSIGHTS_MODE)
+    ) {
+        InsightsMode.DAY -> PreferencesKeys.INSIGHTS_RESULT_DISPLAY_MODE_DAY
+        InsightsMode.WEEK -> PreferencesKeys.INSIGHTS_RESULT_DISPLAY_MODE_WEEK
+        InsightsMode.MONTH -> PreferencesKeys.INSIGHTS_RESULT_DISPLAY_MODE_MONTH
+        InsightsMode.YEAR -> PreferencesKeys.INSIGHTS_RESULT_DISPLAY_MODE_YEAR
+        InsightsMode.RECENT -> PreferencesKeys.INSIGHTS_RESULT_DISPLAY_MODE_RECENT
+        InsightsMode.RANGE -> PreferencesKeys.INSIGHTS_RESULT_DISPLAY_MODE_RANGE
+    }
+
+    private fun Preferences.statusConfigFor(mode: InsightsMode): DailyStatusConfig =
+        DailyStatusConfig(statuses = deserializeDailyStatusDefinitions(this[mode.statusConfigKey()]))
+
+    private fun InsightsMode.statusConfigKey() = when (this) {
+        InsightsMode.DAY -> PreferencesKeys.INSIGHTS_STATUSES_DAY
+        InsightsMode.WEEK -> PreferencesKeys.INSIGHTS_STATUSES_WEEK
+        InsightsMode.MONTH -> PreferencesKeys.INSIGHTS_STATUSES_MONTH
+        InsightsMode.YEAR -> PreferencesKeys.INSIGHTS_STATUSES_YEAR
+        InsightsMode.RECENT -> PreferencesKeys.INSIGHTS_STATUSES_RECENT
+        InsightsMode.RANGE -> PreferencesKeys.INSIGHTS_STATUSES_RANGE
     }
 
     suspend fun setInsightsParameterSection(value: InsightsParameterSection) {

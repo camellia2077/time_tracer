@@ -439,9 +439,12 @@ fun TracerScreen(
     if (isDailyStatusEditorVisible) {
         DailyStatusEditorDialog(
             userPreferencesRepository = userPreferencesRepository,
-            statusValues = queryUiState.dayTimeline?.statuses.orEmpty(),
+            runtimeInitializer = runtimeInitializer,
+            insightsMode = queryUiState.insightsMode,
+            statusValues = queryUiState.statusValues,
             recordUiState = recordUiState,
             recordViewModel = recordViewModel,
+            onConfigSaved = queryInsightsViewModel::insightsCurrentSelection,
             onDismissRequest = { isDailyStatusEditorVisible = false }
         )
     }

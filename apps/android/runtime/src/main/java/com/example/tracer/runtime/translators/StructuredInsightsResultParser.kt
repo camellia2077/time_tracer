@@ -16,11 +16,13 @@ internal class StructuredInsightsResultParser(
             )
         }
         return runCatching {
+            val payload = decoder.decode(result.rawResponse)
             StructuredInsightsCallResult(
                 initialized = result.initialized,
                 operationOk = true,
-                insights = translator.translate(decoder.decode(result.rawResponse)),
+                insights = if (payload.isDaily) translator.translate(payload) else null,
                 rawResponse = result.rawResponse,
+                statuses = payload.statuses,
                 operationId = result.operationId
             )
         }.getOrElse { error ->

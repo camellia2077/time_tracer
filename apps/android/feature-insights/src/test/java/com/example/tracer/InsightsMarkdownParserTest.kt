@@ -1,6 +1,7 @@
 package com.example.tracer
 
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -35,5 +36,24 @@ class InsightsMarkdownParserTest {
         }
 
         assertEquals("内容\n内容", rendered.text)
+    }
+
+    @Test
+    fun parseInlineMarkdown_rendersSingleAsterisksAsItalicWithoutMarkers() {
+        val rendered = buildAnnotatedString {
+            parseInlineMarkdown("before *emphasized* after", this)
+        }
+
+        assertEquals("before emphasized after", rendered.text)
+        assertEquals(1, rendered.spanStyles.size)
+        assertEquals(FontStyle.Italic, rendered.spanStyles.single().item.fontStyle)
+    }
+
+    @Test
+    fun parseInsightsMarkdown_recognizesSingleAsteriskListMarkers() {
+        val blocks = parseInsightsMarkdown("* Item")
+
+        val list = blocks.single() as MarkdownBlock.ListBlock
+        assertEquals("Item", list.items.single().text)
     }
 }

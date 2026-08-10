@@ -5,7 +5,8 @@ internal fun QueryInsightsUiState.copyWithInsightsOutcome(
     period: DataTreePeriod,
     result: InsightsCallResult,
     textProvider: QueryInsightsTextProvider,
-    dayTimeline: StructuredDailyInsights? = this.dayTimeline
+    dayTimeline: StructuredDailyInsights? = this.dayTimeline,
+    statusValues: List<InsightsStatusValue> = emptyList()
 ): QueryInsightsUiState {
     val summary = buildInsightsSummary(period, result)
     val insights = if (result.operationOk) {
@@ -37,6 +38,7 @@ internal fun QueryInsightsUiState.copyWithInsightsOutcome(
         insightsSummariesByPeriod = nextInsightsSummaries,
         insightsErrorsByPeriod = nextInsightsErrors,
         dayTimeline = if (period == DataTreePeriod.DAY) dayTimeline else this.dayTimeline,
+        statusValues = statusValues,
         dayInsightsNeedsRefresh = if (period == DataTreePeriod.DAY) false else dayInsightsNeedsRefresh,
         activeResult = insights,
         analysisError = "",

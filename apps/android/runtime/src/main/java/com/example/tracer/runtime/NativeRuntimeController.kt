@@ -2,12 +2,20 @@ package com.example.tracer
 
 import android.content.Context
 
-class NativeRuntimeController(context: Context) : RuntimeGateway {
+class NativeRuntimeController(
+    context: Context,
+    private val statusConfigsJsonProvider: () -> String = {
+        "{\"day\":[],\"week\":[],\"month\":[],\"year\":[],\"recent\":[],\"range\":[]}"
+    }
+) : RuntimeGateway {
     // RuntimeGateway is the aggregate contract that composes all domain gateways.
     private val runtimeEnvironment = RuntimeEnvironment(context)
     private val inputRecordStore = InputRecordStore()
     private val runtimeSession = RuntimeSession(runtimeEnvironment, inputRecordStore)
     private val runtimeBridge = NativeRuntimeBridge()
+    private val nativeInit: (RuntimePaths) -> String = { paths ->
+        runtimeBridge.nativeInit(paths, statusConfigsJsonProvider())
+    }
     private val errorMapper = RuntimeErrorMapper()
     private val operationIdGenerator = RuntimeOperationIdGenerator()
     private val diagnosticsRecorder = RuntimeDiagnosticsRecorder(
@@ -23,7 +31,7 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     private val coreAdapter = RuntimeCoreAdapter(
         ensureRuntimePaths = runtimeSession::ensureRuntimePaths,
         runtimePathsProvider = runtimeSession::runtimePathsOrNull,
-        nativeInit = runtimeBridge::nativeInit,
+        nativeInit = nativeInit,
         nativeQuery = runtimeBridge::nativeQuery,
         responseCodec = responseCodec,
         insightsTranslator = insightsTranslator,
@@ -66,7 +74,7 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         ensureRuntimePaths = runtimeSession::ensureRuntimePaths,
         ensureTextStorage = runtimeSession::ensureTextStorage,
         ensureConfigTomlStorage = runtimeSession::ensureConfigTomlStorage,
-        nativeInit = runtimeBridge::nativeInit,
+        nativeInit = nativeInit,
         nativeInitPipeline = runtimeBridge::nativeInitPipeline,
         nativeShutdown = runtimeBridge::nativeShutdown,
         nativeIngest = runtimeBridge::nativeIngest,
@@ -169,7 +177,7 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     private val dataFolderSnapshotService = RuntimeDataFolderSnapshotService(
         ensureRuntimePaths = runtimeSession::ensureRuntimePaths,
         resetRuntimeCaches = runtimeSession::reset,
-        nativeInit = runtimeBridge::nativeInit,
+        nativeInit = nativeInit,
         nativeInitPipeline = runtimeBridge::nativeInitPipeline,
         nativeShutdown = runtimeBridge::nativeShutdown,
         nativeValidateStructure = runtimeBridge::nativeValidateStructure,

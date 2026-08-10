@@ -54,7 +54,8 @@ object NativeBridge {
     external fun nativeInit(
         dbPath: String,
         outputRoot: String,
-        converterConfigTomlPath: String
+        converterConfigTomlPath: String,
+        statusConfigsJson: String
     ): String
 
     external fun nativeInitPipeline(

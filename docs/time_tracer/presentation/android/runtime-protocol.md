@@ -154,6 +154,16 @@ Android must use this Core-produced kind instead of inferring semantics from
 empty timestamps: an `end_only` record displays a single localized
 "as-of" time point and has no duration segment.
 
+Structured insights return `insights.statuses[]` with each configured status's
+`id`, `label`, `occurrence_count`, and `total_duration`. Android renders those
+statistics directly in the status editor, so the editor and Markdown report
+are derived from the same selected period.
+
+Android persists custom status definitions locally and initializes Core with
+six independent arrays: `day`, `week`, `month`, `year`, `recent`, and `range`.
+Core selects the array matching the temporal display mode; these definitions
+never come from CLI `user/insights.toml`.
+
 ## TXT Runtime Family
 
 Android uses the TXT runtime family for shared month-TXT day-block semantics

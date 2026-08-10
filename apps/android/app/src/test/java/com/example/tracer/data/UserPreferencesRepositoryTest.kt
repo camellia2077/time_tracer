@@ -10,6 +10,7 @@ import com.example.tracer.InsightsChartSemanticMode
 import com.example.tracer.InsightsParameterSection
 import com.example.tracer.InsightsPiePalettePreset
 import com.example.tracer.InsightsResultDisplayMode
+import com.example.tracer.InsightsMode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -205,7 +206,7 @@ class UserPreferencesRepositoryTest {
     }
 
     @Test
-    fun dailyStatusConfig_persistsDefinitionsWithoutToml() = runTest {
+    fun statusConfigs_areStoredIndependentlyForEachInsightsMode() = runTest {
         val repository = buildRepository(
             testName = "persist_daily_statuses",
             scope = backgroundScope
@@ -216,9 +217,16 @@ class UserPreferencesRepositoryTest {
             )
         )
 
-        repository.setDailyStatusConfig(expected)
+        repository.setStatusConfig(InsightsMode.DAY, expected)
+        repository.setStatusConfig(
+            InsightsMode.WEEK,
+            DailyStatusConfig(statuses = listOf(DailyStatusDefinition("exercise", "Exercise", "exercise")))
+        )
 
-        assertEquals(expected, repository.dailyStatusConfig.first())
+        val configs = repository.insightsStatusConfigs.first()
+        assertEquals(expected, configs[InsightsMode.DAY])
+        assertEquals(listOf("exercise"), configs[InsightsMode.WEEK].statuses.map { it.id })
+        assertEquals(emptyList<DailyStatusDefinition>(), configs[InsightsMode.MONTH].statuses)
     }
 
     @Test
@@ -236,7 +244,7 @@ class UserPreferencesRepositoryTest {
     }
 
     @Test
-    fun insightsResultDisplayMode_defaultsToText_andPersistsSelection() = runTest {
+    fun insightsResultDisplayMode_isStoredIndependentlyForEachInsightsMode() = runTest {
         val repository = buildRepository(
             testName = "persist_insights_result_display_mode",
             scope = backgroundScope
@@ -245,6 +253,14 @@ class UserPreferencesRepositoryTest {
         assertEquals(InsightsResultDisplayMode.TEXT, repository.insightsResultDisplayMode.first())
 
         repository.setInsightsResultDisplayMode(InsightsResultDisplayMode.CHART)
+
+        assertEquals(InsightsResultDisplayMode.CHART, repository.insightsResultDisplayMode.first())
+
+        repository.setInsightsMode(InsightsMode.MONTH)
+        assertEquals(InsightsResultDisplayMode.TEXT, repository.insightsResultDisplayMode.first())
+
+        repository.setInsightsResultDisplayMode(InsightsResultDisplayMode.CHART)
+        repository.setInsightsMode(InsightsMode.DAY)
 
         assertEquals(InsightsResultDisplayMode.CHART, repository.insightsResultDisplayMode.first())
     }

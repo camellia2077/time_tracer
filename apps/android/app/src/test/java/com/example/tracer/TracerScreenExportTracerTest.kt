@@ -10,6 +10,9 @@ class TracerScreenExportTracerTest {
             listOf(
                 "user/behavior.toml",
                 "user/activity_hierarchy/study.toml",
+                "user/charts.toml",
+                "user/heatmap.toml",
+                "user/insights.toml",
                 "user/unsupported.toml",
                 "user/unsupported.toml",
                 "program/charts/heatmap.toml"

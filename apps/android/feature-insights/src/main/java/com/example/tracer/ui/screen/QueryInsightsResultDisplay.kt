@@ -160,7 +160,11 @@ internal fun QueryInsightsResultDisplay(
                     MarkdownResultHeader(
                         title = stringResource(R.string.insights_result_title_insights),
                         markdown = insights.text,
-                        showDailyStatusEditor = insightsMode == InsightsMode.DAY,
+                        showDailyStatusEditor = true,
+                        statusEditorContentDescription = stringResource(
+                            R.string.insights_cd_edit_statuses,
+                            stringResource(insightsMode.insightsModeResId())
+                        ),
                         onCopyMarkdown = {
                             clipboardScope.launch {
                                 clipboard.setClipEntry(
@@ -230,6 +234,7 @@ private fun MarkdownResultHeader(
     title: String,
     markdown: String,
     showDailyStatusEditor: Boolean,
+    statusEditorContentDescription: String,
     onCopyMarkdown: () -> Unit,
     onEditDailyStatuses: () -> Unit = {}
 ) {
@@ -253,9 +258,18 @@ private fun MarkdownResultHeader(
             IconButton(onClick = onEditDailyStatuses) {
                 Icon(
                     imageVector = Icons.Default.Edit,
-                    contentDescription = stringResource(R.string.insights_cd_edit_daily_statuses)
+                    contentDescription = statusEditorContentDescription
                 )
             }
         }
     }
+}
+
+private fun InsightsMode.insightsModeResId(): Int = when (this) {
+    InsightsMode.DAY -> R.string.insights_mode_day
+    InsightsMode.WEEK -> R.string.insights_mode_week
+    InsightsMode.MONTH -> R.string.insights_mode_month
+    InsightsMode.YEAR -> R.string.insights_mode_year
+    InsightsMode.RANGE -> R.string.insights_mode_range
+    InsightsMode.RECENT -> R.string.insights_mode_recent
 }

@@ -1,5 +1,13 @@
 package com.example.tracer
 
+private suspend fun InsightsGateway.loadStructuredInsights(
+    request: TemporalInsightsQueryRequest,
+    markdownResult: InsightsCallResult
+): StructuredInsightsCallResult? = if (markdownResult.operationOk) {
+    insightsStructured(request).takeIf { it.operationOk }
+} else {
+    null
+}
 
 internal suspend fun runDayInsightsAction(
     currentState: QueryInsightsUiState,
@@ -30,20 +38,18 @@ internal suspend fun runDayInsightsAction(
     )
     val runningState = currentState.copy(
         dayTimeline = null,
+        statusValues = emptyList(),
         statusText = textProvider.nativeInsightsRunning(textProvider.periodLabel(DataTreePeriod.DAY))
     )
     emit(runningState)
     val result = insightsGateway.insightsMarkdown(request)
-    val structuredResult = if (result.operationOk) {
-        insightsGateway.insightsStructured(request)
-    } else {
-        null
-    }
+    val structuredResult = insightsGateway.loadStructuredInsights(request, result)
     val nextState = runningState.copyWithInsightsOutcome(
         period = DataTreePeriod.DAY,
         result = result,
         textProvider = textProvider,
-        dayTimeline = structuredResult?.insights
+        dayTimeline = structuredResult?.insights,
+        statusValues = structuredResult?.takeIf { it.operationOk }?.statuses.orEmpty()
     )
     return nextState
 }
@@ -63,11 +69,11 @@ internal suspend fun runMonthInsightsAction(
 
     val monthIso = inputValidator.toIsoMonth(monthDigits)
     val runningState = currentState.copy(
+        statusValues = emptyList(),
         statusText = textProvider.nativeInsightsRunning(textProvider.periodLabel(DataTreePeriod.MONTH))
     )
     emit(runningState)
-    val result = insightsGateway.insightsMarkdown(
-        TemporalInsightsQueryRequest(
+    val request = TemporalInsightsQueryRequest(
             displayMode = InsightsDisplayMode.MONTH,
             selection = TemporalSelectionPayload(
                 kind = TemporalSelectionKind.DATE_RANGE,
@@ -76,11 +82,12 @@ internal suspend fun runMonthInsightsAction(
             ),
             locale = locale
         )
-    )
+    val result = insightsGateway.insightsMarkdown(request)
     return runningState.copyWithInsightsOutcome(
         period = DataTreePeriod.MONTH,
         result = result,
-        textProvider = textProvider
+        textProvider = textProvider,
+        statusValues = insightsGateway.loadStructuredInsights(request, result)?.statuses.orEmpty()
     )
 }
 internal suspend fun runYearInsightsAction(
@@ -98,11 +105,11 @@ internal suspend fun runYearInsightsAction(
     }
 
     val runningState = currentState.copy(
+        statusValues = emptyList(),
         statusText = textProvider.nativeInsightsRunning(textProvider.periodLabel(DataTreePeriod.YEAR))
     )
     emit(runningState)
-    val result = insightsGateway.insightsMarkdown(
-        TemporalInsightsQueryRequest(
+    val request = TemporalInsightsQueryRequest(
             displayMode = InsightsDisplayMode.YEAR,
             selection = TemporalSelectionPayload(
                 kind = TemporalSelectionKind.DATE_RANGE,
@@ -111,11 +118,12 @@ internal suspend fun runYearInsightsAction(
             ),
             locale = locale
         )
-    )
+    val result = insightsGateway.insightsMarkdown(request)
     return runningState.copyWithInsightsOutcome(
         period = DataTreePeriod.YEAR,
         result = result,
-        textProvider = textProvider
+        textProvider = textProvider,
+        statusValues = insightsGateway.loadStructuredInsights(request, result)?.statuses.orEmpty()
     )
 }
 
@@ -134,13 +142,13 @@ internal suspend fun runWeekInsightsAction(
     }
 
     val runningState = currentState.copy(
+        statusValues = emptyList(),
         statusText = textProvider.nativeInsightsRunning(textProvider.periodLabel(DataTreePeriod.WEEK))
     )
     emit(runningState)
     val weekRange = resolveIsoWeekSelection(weekDigits)
         ?: return currentState.copy(statusText = textProvider.invalidWeekFormat(), activeResult = null)
-    val result = insightsGateway.insightsMarkdown(
-        TemporalInsightsQueryRequest(
+    val request = TemporalInsightsQueryRequest(
             displayMode = InsightsDisplayMode.WEEK,
             selection = TemporalSelectionPayload(
                 kind = TemporalSelectionKind.DATE_RANGE,
@@ -149,11 +157,12 @@ internal suspend fun runWeekInsightsAction(
             ),
             locale = locale
         )
-    )
+    val result = insightsGateway.insightsMarkdown(request)
     return runningState.copyWithInsightsOutcome(
         period = DataTreePeriod.WEEK,
         result = result,
-        textProvider = textProvider
+        textProvider = textProvider,
+        statusValues = insightsGateway.loadStructuredInsights(request, result)?.statuses.orEmpty()
     )
 }
 
@@ -172,11 +181,11 @@ internal suspend fun runRecentInsightsAction(
     }
 
     val runningState = currentState.copy(
+        statusValues = emptyList(),
         statusText = textProvider.nativeInsightsRunning(textProvider.periodLabel(DataTreePeriod.RECENT))
     )
     emit(runningState)
-    val result = insightsGateway.insightsMarkdown(
-        TemporalInsightsQueryRequest(
+    val request = TemporalInsightsQueryRequest(
             displayMode = InsightsDisplayMode.RECENT,
             selection = TemporalSelectionPayload(
                 kind = TemporalSelectionKind.RECENT_DAYS,
@@ -184,11 +193,12 @@ internal suspend fun runRecentInsightsAction(
             ),
             locale = locale
         )
-    )
+    val result = insightsGateway.insightsMarkdown(request)
     return runningState.copyWithInsightsOutcome(
         period = DataTreePeriod.RECENT,
         result = result,
-        textProvider = textProvider
+        textProvider = textProvider,
+        statusValues = insightsGateway.loadStructuredInsights(request, result)?.statuses.orEmpty()
     )
 }
 
@@ -227,11 +237,11 @@ internal suspend fun runRangeInsightsAction(
     val startIso = inputValidator.toIsoDate(startDateDigits)
     val endIso = inputValidator.toIsoDate(endDateDigits)
     val runningState = currentState.copy(
+        statusValues = emptyList(),
         statusText = textProvider.nativeInsightsRunning(textProvider.periodLabel(DataTreePeriod.RANGE))
     )
     emit(runningState)
-    val result = insightsGateway.insightsMarkdown(
-        TemporalInsightsQueryRequest(
+    val request = TemporalInsightsQueryRequest(
             displayMode = InsightsDisplayMode.RANGE,
             selection = TemporalSelectionPayload(
                 kind = TemporalSelectionKind.DATE_RANGE,
@@ -240,10 +250,11 @@ internal suspend fun runRangeInsightsAction(
             ),
             locale = locale
         )
-    )
+    val result = insightsGateway.insightsMarkdown(request)
     return runningState.copyWithInsightsOutcome(
         period = DataTreePeriod.RANGE,
         result = result,
-        textProvider = textProvider
+        textProvider = textProvider,
+        statusValues = insightsGateway.loadStructuredInsights(request, result)?.statuses.orEmpty()
     )
 }

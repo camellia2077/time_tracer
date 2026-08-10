@@ -13,10 +13,11 @@ internal data class StructuredInsightsWireRecord(
 )
 
 internal data class StructuredInsightsWirePayload(
+    val isDaily: Boolean,
     val date: String,
     val totalDurationSeconds: Long,
     val dayRemark: String,
-    val statuses: List<DailyStatusValue>,
+    val statuses: List<InsightsStatusValue>,
     val records: List<StructuredInsightsWireRecord>
 )
 
@@ -24,19 +25,25 @@ internal class StructuredInsightsJsonDecoder {
     fun decode(rawResponse: String): StructuredInsightsWirePayload {
         val root = JSONObject(rawResponse)
         val insights = root.getJSONObject("insights")
+        val isDaily = root.optString("insights_kind", "day") == "day"
         val metadata = insights.optJSONObject("metadata")
         val statuses = buildList {
-            val statusesJson = metadata?.optJSONArray("statuses")
+            val statusesJson = if (isDaily) {
+                metadata?.optJSONArray("statuses")
+            } else {
+                insights.optJSONArray("statuses")
+            }
             if (statusesJson != null) {
                 for (index in 0 until statusesJson.length()) {
                     val status = statusesJson.optJSONObject(index) ?: continue
                     val id = status.optString("id").trim()
                     if (id.isNotBlank()) {
                         add(
-                            DailyStatusValue(
+                            InsightsStatusValue(
                                 id = id,
                                 label = status.optString("label", id),
-                                value = status.optBoolean("value", false)
+                                occurrenceCount = status.optInt("occurrence_count", 0),
+                                totalDurationSeconds = status.optLong("total_duration", 0L)
                             )
                         )
                     }
@@ -64,8 +71,9 @@ internal class StructuredInsightsJsonDecoder {
             }
         }
         return StructuredInsightsWirePayload(
-            date = insights.getString("date"),
-            totalDurationSeconds = insights.getLong("total_duration"),
+            isDaily = isDaily,
+            date = insights.optString("date"),
+            totalDurationSeconds = insights.optLong("total_duration", 0L),
             dayRemark = metadata?.optString("remark", "").orEmpty(),
             statuses = statuses,
             records = records
