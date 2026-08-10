@@ -110,7 +110,7 @@ private fun String.toLogSnippet(maxLength: Int = 160): String {
                 aliasFiles = emptyList(),
                 chartFiles = emptyList(),
                 metaFiles = emptyList(),
-                reportFiles = emptyList(),
+                insightsFiles = emptyList(),
                 message = formatNativeFailure("list config toml failed", error)
             )
         }

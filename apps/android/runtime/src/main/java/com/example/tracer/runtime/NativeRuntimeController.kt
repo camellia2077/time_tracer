@@ -17,7 +17,7 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     private val atomicRecordCodec = NativeAtomicRecordCodec()
     private val ingestSyncStatusCodec = NativeIngestSyncStatusCodec()
     private val txtRuntimeCodec = NativeTxtRuntimeCodec()
-    private val reportTranslator = NativeReportTranslator(responseCodec)
+    private val insightsTranslator = NativeInsightsTranslator(responseCodec)
     private val queryTranslator = NativeQueryTranslator(responseCodec)
     private val recordTranslator = NativeRecordTranslator(responseCodec)
     private val coreAdapter = RuntimeCoreAdapter(
@@ -26,7 +26,7 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         nativeInit = runtimeBridge::nativeInit,
         nativeQuery = runtimeBridge::nativeQuery,
         responseCodec = responseCodec,
-        reportTranslator = reportTranslator,
+        insightsTranslator = insightsTranslator,
         diagnosticsRecorder = diagnosticsRecorder,
         nextOperationId = operationIdGenerator::next,
         errorMapper = errorMapper
@@ -115,9 +115,9 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         ensureConfigTomlStorage = runtimeSession::ensureConfigTomlStorage,
         inspectTxtFilesInternal = txtInspectionService::inspectTxtFiles
     )
-    private val reportDelegate = RuntimeReportDelegate(
-        executeReportAfterInit = coreAdapter::executeReportAfterInit,
-        nativeReportJson = runtimeBridge::nativeReportJson
+    private val insightsDelegate = RuntimeInsightsDelegate(
+        executeInsightsAfterInit = coreAdapter::executeInsightsAfterInit,
+        nativeInsightsJson = runtimeBridge::nativeInsightsJson
     )
 
     private val initService = RuntimeInitService(
@@ -149,7 +149,7 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         }
     )
     private val queryService = RuntimeQueryService(queryDelegate)
-    private val reportService = RuntimeReportService(reportDelegate)
+    private val insightsService = RuntimeInsightsService(insightsDelegate)
     private val configService = RuntimeConfigService(storageDelegate)
     private val diagnosticsService = RuntimeDiagnosticsService(
         ensureRuntimePaths = runtimeSession::ensureRuntimePaths,
@@ -428,13 +428,13 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     override suspend fun buildDiagnosticsPayload(maxEntries: Int): RuntimeDiagnosticsPayloadResult =
         diagnosticsService.buildDiagnosticsPayload(maxEntries)
 
-    // report
-    override suspend fun reportMarkdown(request: TemporalReportQueryRequest): ReportCallResult =
-        reportService.reportMarkdown(request)
+    // insights
+    override suspend fun insightsMarkdown(request: TemporalInsightsQueryRequest): InsightsCallResult =
+        insightsService.insightsMarkdown(request)
 
-    override suspend fun reportStructured(
-        request: TemporalReportQueryRequest
-    ): StructuredReportCallResult = reportService.reportStructured(request)
+    override suspend fun insightsStructured(
+        request: TemporalInsightsQueryRequest
+    ): StructuredInsightsCallResult = insightsService.insightsStructured(request)
 
     // query
     override suspend fun queryActivitySuggestions(
@@ -453,16 +453,16 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     override suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult =
         queryService.queryProjectTree(params)
 
-    override suspend fun queryReportCalendarAvailability(): ReportCalendarAvailabilityResult =
-        queryService.queryReportCalendarAvailability()
+    override suspend fun queryInsightsCalendarAvailability(): InsightsCalendarAvailabilityResult =
+        queryService.queryInsightsCalendarAvailability()
 
-    override suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult =
-        queryService.queryReportChart(params)
+    override suspend fun queryInsightsChart(params: InsightsChartQueryParams): InsightsChartQueryResult =
+        queryService.queryInsightsChart(params)
 
-    override suspend fun queryReportComposition(
-        params: ReportCompositionQueryParams
-    ): ReportCompositionQueryResult =
-        queryService.queryReportComposition(params)
+    override suspend fun queryInsightsComposition(
+        params: InsightsCompositionQueryParams
+    ): InsightsCompositionQueryResult =
+        queryService.queryInsightsComposition(params)
 
     override suspend fun listActivityMappingNames(): ActivityMappingNamesResult =
         queryService.listActivityMappingNames()

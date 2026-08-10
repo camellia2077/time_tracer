@@ -103,15 +103,15 @@ fun TracerTheme(
     }
 
     val definition = themeConfig.palette.definition()
-    val reportColors = when {
-        !darkTheme -> definition.reportLight
+    val insightsColors = when {
+        !darkTheme -> definition.insightsLight
         themeConfig.darkThemeStyle == DarkThemeStyle.Neutral &&
             themeConfig.palette == ThemePalette.Indigo ->
-            definition.reportDark.copy(treeProgress = Neutral400)
-        else -> definition.reportDark
+            definition.insightsDark.copy(treeProgress = Neutral400)
+        else -> definition.insightsDark
     }
 
-    CompositionLocalProvider(LocalReportColorTokens provides reportColors) {
+    CompositionLocalProvider(LocalInsightsColorTokens provides insightsColors) {
         MaterialTheme(
             colorScheme = if (darkTheme) {
                 buildDarkColorScheme(themeConfig.darkThemeStyle, themeConfig.palette)

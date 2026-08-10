@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,14 +29,15 @@ internal fun ConfigCategorySwitchCard(
     onSelectAlias: () -> Unit,
     onSelectCharts: () -> Unit,
     onSelectMeta: () -> Unit,
-    onSelectReports: () -> Unit,
+    onSelectInsights: () -> Unit,
     onRefreshFiles: () -> Unit
 ) {
-    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
             Text(
                 text = stringResource(R.string.config_title_configuration_files),
                 style = MaterialTheme.typography.titleMedium,
@@ -57,7 +57,7 @@ internal fun ConfigCategorySwitchCard(
                 ConfigCategory.ALIAS to stringResource(R.string.config_category_alias),
                 ConfigCategory.CHARTS to stringResource(R.string.config_category_charts),
                 ConfigCategory.META to stringResource(R.string.config_category_meta),
-                ConfigCategory.REPORTS to stringResource(R.string.config_category_reports)
+                ConfigCategory.INSIGHTS to stringResource(R.string.config_category_insights)
             )
             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                 configCategories.forEachIndexed { index, (category, label) ->
@@ -69,7 +69,7 @@ internal fun ConfigCategorySwitchCard(
                                 ConfigCategory.ALIAS -> onSelectAlias()
                                 ConfigCategory.CHARTS -> onSelectCharts()
                                 ConfigCategory.META -> onSelectMeta()
-                                ConfigCategory.REPORTS -> onSelectReports()
+                                ConfigCategory.INSIGHTS -> onSelectInsights()
                             }
                         },
                         selected = selected,
@@ -89,6 +89,5 @@ internal fun ConfigCategorySwitchCard(
                 }
             }
 
-        }
     }
 }

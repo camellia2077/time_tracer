@@ -30,11 +30,11 @@ object NativeBridge {
     const val QUERY_ACTION_TREE = 7
     const val QUERY_ACTION_MAPPING_NAMES = 8
     const val QUERY_ACTION_ACTIVITY_ALIAS_MAPPINGS = 9
-    const val QUERY_ACTION_REPORT_CHART = 10
+    const val QUERY_ACTION_INSIGHTS_CHART = 10
     const val QUERY_ACTION_MAPPING_ALIAS_KEYS = 11
     const val QUERY_ACTION_WAKE_KEYWORDS = 12
     const val QUERY_ACTION_AUTHORABLE_EVENT_TOKENS = 13
-    const val QUERY_ACTION_REPORT_COMPOSITION = 14
+    const val QUERY_ACTION_INSIGHTS_COMPOSITION = 14
 
     private val cryptoProgressListenerRef = AtomicReference<((String) -> Unit)?>(null)
 
@@ -170,7 +170,7 @@ object NativeBridge {
         averageDayBasis: String
     ): String
 
-    external fun nativeReportJson(
+    external fun nativeInsightsJson(
         requestJson: String
     ): String
 }

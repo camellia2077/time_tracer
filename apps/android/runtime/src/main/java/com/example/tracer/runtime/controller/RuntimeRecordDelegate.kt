@@ -144,13 +144,13 @@ internal class RuntimeRecordDelegate(
         timeOrderMode: RecordTimeOrderMode
     ): RecordActionResult = withContext(Dispatchers.IO) {
         try {
-            Log.i(
+            logInfo(
                 RECORD_LOG_TAG,
                 "record.start activity=${activityName.trim()} targetDate=$targetDateIso " +
                     "preferredTxtPath=$preferredTxtPath timeOrderMode=$timeOrderMode"
             )
             val registration = ensureActivityHierarchyEntry(activityName)
-            Log.i(
+            logInfo(
                 RECORD_LOG_TAG,
                 "record.hierarchy_registration ok=${registration.ok} message=${registration.message}"
             )
@@ -179,7 +179,7 @@ internal class RuntimeRecordDelegate(
         preferredTxtPath: String?
     ): RecordActionResult = withContext(Dispatchers.IO) {
         try {
-            Log.i(
+            logInfo(
                 REMARK_UPDATE_LOG_TAG,
                 "submit targetDate=$targetDateIso logicalId=$logicalId " +
                     "remarkLength=${remark.length} preferredTxtPath=$preferredTxtPath"
@@ -195,7 +195,7 @@ internal class RuntimeRecordDelegate(
             }
             val payload = responseCodec.parse(response.rawResponse)
             val detail = atomicRecordCodec.parse(payload.content)
-            Log.i(
+            logInfo(
                 REMARK_UPDATE_LOG_TAG,
                 "response logicalId=$logicalId initialized=${response.initialized} " +
                     "operationOk=${response.operationOk} payloadOk=${payload.ok} " +
@@ -425,4 +425,10 @@ internal class RuntimeRecordDelegate(
         }
         return if (time.length == 4) "$time" + "00" else time
     }
+}
+
+private fun logInfo(tag: String, message: String) {
+    // Android's local JVM Log stub throws when tests execute without a device.
+    // Logging must never change the result of a recording operation.
+    runCatching { Log.i(tag, message) }
 }

@@ -21,61 +21,61 @@ class ThemePaletteDefinitionTest {
     }
 
     @Test
-    fun reportTokensReuseThemeSemanticRoles() {
+    fun insightsTokensReuseThemeSemanticRoles() {
         ThemePalette.entries.forEach { palette ->
             val definition = palette.definition()
 
-            assertEquals(definition.light.primary, definition.reportLight.treeHierarchy)
-            assertEquals(definition.light.secondary, definition.reportLight.treeProgress)
-            assertEquals(definition.light.tertiary, definition.reportLight.timelineDuration)
-            assertEquals(definition.light.outlineVariant, definition.reportLight.track)
-            assertEquals(definition.light.surfaceVariant, definition.reportLight.gap)
+            assertEquals(definition.light.primary, definition.insightsLight.treeHierarchy)
+            assertEquals(definition.light.secondary, definition.insightsLight.treeProgress)
+            assertEquals(definition.light.tertiary, definition.insightsLight.timelineDuration)
+            assertEquals(definition.light.outlineVariant, definition.insightsLight.track)
+            assertEquals(definition.light.surfaceVariant, definition.insightsLight.gap)
 
-            assertEquals(definition.dark.primary, definition.reportDark.treeHierarchy)
-            assertEquals(definition.dark.secondary, definition.reportDark.treeProgress)
-            assertEquals(definition.dark.tertiary, definition.reportDark.timelineDuration)
-            assertEquals(definition.dark.outlineVariant, definition.reportDark.track)
-            assertEquals(definition.dark.surfaceVariant, definition.reportDark.gap)
+            assertEquals(definition.dark.primary, definition.insightsDark.treeHierarchy)
+            assertEquals(definition.dark.secondary, definition.insightsDark.treeProgress)
+            assertEquals(definition.dark.tertiary, definition.insightsDark.timelineDuration)
+            assertEquals(definition.dark.outlineVariant, definition.insightsDark.track)
+            assertEquals(definition.dark.surfaceVariant, definition.insightsDark.gap)
         }
     }
 
     @Test
-    fun reportProgressColorsRemainStableForAllPalettes() {
+    fun insightsProgressColorsRemainStableForAllPalettes() {
         assertEquals(
             Color(0xFF2563EB),
-            ThemePalette.Indigo.definition().reportLight.treeProgress
+            ThemePalette.Indigo.definition().insightsLight.treeProgress
         )
         assertEquals(
             Color(0xFFD97706),
-            ThemePalette.GraphiteAmber.definition().reportLight.treeProgress
+            ThemePalette.GraphiteAmber.definition().insightsLight.treeProgress
         )
         assertEquals(
             Color(0xFF0D9488),
-            ThemePalette.Teal.definition().reportLight.treeProgress
+            ThemePalette.Teal.definition().insightsLight.treeProgress
         )
         assertEquals(
             Color(0xFF60A5FA),
-            ThemePalette.Indigo.definition().reportDark.treeProgress
+            ThemePalette.Indigo.definition().insightsDark.treeProgress
         )
         assertEquals(
             Color(0xFFFBBF24),
-            ThemePalette.GraphiteAmber.definition().reportDark.treeProgress
+            ThemePalette.GraphiteAmber.definition().insightsDark.treeProgress
         )
         assertEquals(
             Color(0xFF2DD4BF),
-            ThemePalette.Teal.definition().reportDark.treeProgress
+            ThemePalette.Teal.definition().insightsDark.treeProgress
         )
         assertEquals(
             Color(0xFFC78C25),
-            ThemePalette.Parchment.definition().reportLight.treeProgress
+            ThemePalette.Parchment.definition().insightsLight.treeProgress
         )
         assertEquals(
-            ThemePalette.Parchment.definition().reportLight,
-            ThemePalette.Parchment.definition().reportDark
+            ThemePalette.Parchment.definition().insightsLight,
+            ThemePalette.Parchment.definition().insightsDark
         )
         assertEquals(
             Color(0xFF2E3440),
-            ThemePalette.Snowfield.definition().reportLight.treeProgress
+            ThemePalette.Snowfield.definition().insightsLight.treeProgress
         )
         assertEquals(
             Color(0xFFE5E9F0),
@@ -86,40 +86,40 @@ class ThemePaletteDefinitionTest {
             ThemePalette.Snowfield.definition().light.primary
         )
         assertEquals(
-            ThemePalette.Snowfield.definition().reportLight,
-            ThemePalette.Snowfield.definition().reportDark
+            ThemePalette.Snowfield.definition().insightsLight,
+            ThemePalette.Snowfield.definition().insightsDark
         )
         assertEquals(
             Color(0xFFEA580C),
-            ThemePalette.Orange.definition().reportLight.treeProgress
+            ThemePalette.Orange.definition().insightsLight.treeProgress
         )
         assertEquals(
             Color(0xFFE11D48),
-            ThemePalette.Rose.definition().reportLight.treeProgress
+            ThemePalette.Rose.definition().insightsLight.treeProgress
         )
         assertEquals(
             Color(0xFFD97706),
-            ThemePalette.Amber.definition().reportLight.treeProgress
+            ThemePalette.Amber.definition().insightsLight.treeProgress
         )
         assertEquals(
             Color(0xFF4EA5D9),
-            ThemePalette.Blueprint.definition().reportLight.treeProgress
+            ThemePalette.Blueprint.definition().insightsLight.treeProgress
         )
         assertEquals(
             Color(0xFFA33F3F),
-            ThemePalette.Newsprint.definition().reportLight.treeProgress
+            ThemePalette.Newsprint.definition().insightsLight.treeProgress
         )
         assertEquals(
             Color(0xFFB23A2B),
-            ThemePalette.InkWash.definition().reportLight.treeProgress
+            ThemePalette.InkWash.definition().insightsLight.treeProgress
         )
         assertEquals(
             Color(0xFF9A5B2F),
-            ThemePalette.Kraft.definition().reportLight.treeProgress
+            ThemePalette.Kraft.definition().insightsLight.treeProgress
         )
         assertEquals(
-            ThemePalette.Blueprint.definition().reportLight,
-            ThemePalette.Blueprint.definition().reportDark
+            ThemePalette.Blueprint.definition().insightsLight,
+            ThemePalette.Blueprint.definition().insightsDark
         )
         assertEquals(
             Color(0xFF6D5B45),

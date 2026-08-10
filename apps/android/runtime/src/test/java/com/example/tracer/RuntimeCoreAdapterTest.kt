@@ -22,7 +22,7 @@ class RuntimeCoreAdapterTest {
             nativeInit = { """{"ok":true,"content":"","error_message":""}""" },
             nativeQuery = { """{"ok":true,"content":"","error_message":""}""" },
             responseCodec = NativeResponseCodec(),
-            reportTranslator = NativeReportTranslator(NativeResponseCodec()),
+            insightsTranslator = NativeInsightsTranslator(NativeResponseCodec()),
             diagnosticsRecorder = recorder,
             nextOperationId = { stage -> "op-$stage" },
             errorMapper = RuntimeErrorMapper()
@@ -45,7 +45,7 @@ class RuntimeCoreAdapterTest {
             nativeInit = { """{"ok":true,"content":"","error_message":""}""" },
             nativeQuery = { """{"ok":true,"content":"","error_message":""}""" },
             responseCodec = NativeResponseCodec(),
-            reportTranslator = NativeReportTranslator(NativeResponseCodec()),
+            insightsTranslator = NativeInsightsTranslator(NativeResponseCodec()),
             diagnosticsRecorder = recorder,
             nextOperationId = { stage -> "op-$stage" },
             errorMapper = RuntimeErrorMapper()
@@ -81,7 +81,7 @@ class RuntimeCoreAdapterTest {
                 """{"ok":true,"content":"query-ok","error_message":""}"""
             },
             responseCodec = NativeResponseCodec(),
-            reportTranslator = NativeReportTranslator(NativeResponseCodec()),
+            insightsTranslator = NativeInsightsTranslator(NativeResponseCodec()),
             diagnosticsRecorder = RuntimeDiagnosticsRecorder(runtimePathsProvider = { currentPaths }),
             nextOperationId = { stage -> "op-$stage" },
             errorMapper = RuntimeErrorMapper()
@@ -111,7 +111,7 @@ class RuntimeCoreAdapterTest {
                 """{"ok":true,"content":"query-ok","error_message":""}"""
             },
             responseCodec = NativeResponseCodec(),
-            reportTranslator = NativeReportTranslator(NativeResponseCodec()),
+            insightsTranslator = NativeInsightsTranslator(NativeResponseCodec()),
             diagnosticsRecorder = RuntimeDiagnosticsRecorder(runtimePathsProvider = { paths }),
             nextOperationId = { stage -> "op-$stage" },
             errorMapper = RuntimeErrorMapper()

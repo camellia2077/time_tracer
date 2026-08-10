@@ -15,7 +15,7 @@ internal class DataUseCases(
         return runningState.copy(
             initialized = result.initialized,
             statusText = if (result.initialized && result.operationOk) {
-                "Runtime initialized."
+                ""
             } else {
                 "Runtime initialization failed."
             }

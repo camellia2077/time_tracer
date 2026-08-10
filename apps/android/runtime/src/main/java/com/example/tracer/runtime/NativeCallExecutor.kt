@@ -2,9 +2,9 @@ package com.example.tracer
 
 import android.util.Log
 
-private const val REPORT_LOG_TAG = "TimeTracerReport"
+private const val INSIGHTS_LOG_TAG = "TimeTracerInsights"
 
-// Report failures are logged with the native error code/message so a logcat
+// Insights failures are logged with the native error code/message so a logcat
 // capture can distinguish request construction problems from JNI startup or
 // runtime initialization failures.
 
@@ -12,7 +12,7 @@ internal class NativeCallExecutor(
     private val initializeRuntime: () -> NativeCallResult,
     private val runtimePathsProvider: () -> RuntimePaths?,
     private val responseCodec: NativeResponseCodec,
-    private val reportTranslator: NativeReportTranslator,
+    private val insightsTranslator: NativeInsightsTranslator,
     private val diagnosticsRecorder: RuntimeDiagnosticsRecorder,
     private val nextOperationId: (String) -> String,
     private val formatFailure: (String, Exception) -> String
@@ -160,16 +160,16 @@ internal class NativeCallExecutor(
         return result
     }
 
-    fun executeReportAfterInit(
-        operationName: String = "runtime_report",
+    fun executeInsightsAfterInit(
+        operationName: String = "runtime_insights",
         action: (RuntimePaths) -> String
-    ): ReportCallResult {
+    ): InsightsCallResult {
         val operationId = nextOperationId(operationName)
         val initResult = try {
             initializeRuntime()
         } catch (error: Exception) {
             val message = formatFailure("nativeInit failed", error)
-            Log.e(REPORT_LOG_TAG, "report init threw operation=$operationName id=$operationId message=$message", error)
+            Log.e(INSIGHTS_LOG_TAG, "insights init threw operation=$operationName id=$operationId message=$message", error)
             diagnosticsRecorder.record(
                 RuntimeDiagnosticRecord(
                     timestampEpochMs = System.currentTimeMillis(),
@@ -181,7 +181,7 @@ internal class NativeCallExecutor(
                     errorLogPath = ""
                 )
             )
-            return reportTranslator.fromInitFailure(
+            return insightsTranslator.fromInitFailure(
                 NativeCallResult(
                     initialized = false,
                     operationOk = false,
@@ -198,8 +198,8 @@ internal class NativeCallExecutor(
                 .errorMessage
                 .ifEmpty { "native init failed." }
             Log.e(
-                REPORT_LOG_TAG,
-                "report init failed operation=$operationName id=$operationId " +
+                INSIGHTS_LOG_TAG,
+                "insights init failed operation=$operationName id=$operationId " +
                     "message=$initMessage errorLogPath=${initResult.errorLogPath}"
             )
             diagnosticsRecorder.record(
@@ -217,15 +217,15 @@ internal class NativeCallExecutor(
                     errorLogPath = initResult.errorLogPath
                 )
             )
-            return reportTranslator.fromInitFailure(initResult.copy(operationId = operationId))
+            return insightsTranslator.fromInitFailure(initResult.copy(operationId = operationId))
         }
 
         val paths = runtimePathsProvider()
-            ?: return reportTranslator.fromRuntimePathsMissing(operationId)
+            ?: return insightsTranslator.fromRuntimePathsMissing(operationId)
                 .also {
                     Log.e(
-                        REPORT_LOG_TAG,
-                        "report runtime paths missing operation=$operationName id=$operationId"
+                        INSIGHTS_LOG_TAG,
+                        "insights runtime paths missing operation=$operationName id=$operationId"
                     )
                     diagnosticsRecorder.record(
                         RuntimeDiagnosticRecord(
@@ -246,10 +246,10 @@ internal class NativeCallExecutor(
         val response = try {
             action(paths)
         } catch (error: Exception) {
-            val message = formatFailure("runtime report failed", error)
+            val message = formatFailure("runtime insights failed", error)
             Log.e(
-                REPORT_LOG_TAG,
-                "report native call threw operation=$operationName id=$operationId message=$message",
+                INSIGHTS_LOG_TAG,
+                "insights native call threw operation=$operationName id=$operationId message=$message",
                 error
             )
             diagnosticsRecorder.record(
@@ -263,7 +263,7 @@ internal class NativeCallExecutor(
                     errorLogPath = ""
                 )
             )
-            return reportTranslator.fromExecutionFailure(
+            return insightsTranslator.fromExecutionFailure(
                 message = message,
                 rawResponse = buildNativeErrorResponseJson(
                     errorMessage = message,
@@ -273,25 +273,25 @@ internal class NativeCallExecutor(
             )
         }
 
-        val result = reportTranslator.fromNativeResponse(
+        val result = insightsTranslator.fromNativeResponse(
             response = response,
             operationId = operationId
         )
         Log.i(
-            REPORT_LOG_TAG,
-            "report result operation=$operationName id=$operationId " +
+            INSIGHTS_LOG_TAG,
+            "insights result operation=$operationName id=$operationId " +
                 "initialized=${result.initialized} ok=${result.operationOk} " +
                 "errorCode=${result.errorContract?.errorCode.orEmpty()} " +
                 "errorCategory=${result.errorContract?.errorCategory.orEmpty()} " +
                 "errorLogPath=${result.errorLogPath} " +
-                "window=${result.reportWindowMetadata?.toLogSummary().orEmpty()} " +
+                "window=${result.insightsWindowMetadata?.toLogSummary().orEmpty()} " +
                 "outputPreview=${result.outputText.logPreview()}"
         )
         val diagnosticMessage = if (result.operationOk) {
             "ok"
         } else {
             appendFailureContext(
-                message = result.outputText.ifBlank { "runtime report failed." },
+                message = result.outputText.ifBlank { "runtime insights failed." },
                 operationId = operationId,
                 errorLogPath = result.errorLogPath
             )
@@ -310,7 +310,7 @@ internal class NativeCallExecutor(
         return result
     }
 
-    private fun ReportWindowMetadata.toLogSummary(): String =
+    private fun InsightsWindowMetadata.toLogSummary(): String =
         "${startDate}..${endDate}, requestedDays=$requestedDays, " +
             "hasRecords=$hasRecords, matchedDays=$matchedDayCount, " +
             "matchedRecords=$matchedRecordCount"

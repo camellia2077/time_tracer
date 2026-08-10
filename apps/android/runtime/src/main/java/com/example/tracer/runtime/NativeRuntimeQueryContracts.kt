@@ -31,7 +31,7 @@ internal object DataQueryOutputMode {
     const val SEMANTIC_JSON: String = "semantic_json"
 }
 
-internal const val REPORT_CHART_SCHEMA_VERSION_V1: Int = 1
+internal const val INSIGHTS_CHART_SCHEMA_VERSION_V1: Int = 1
 
 internal data class PeriodArgumentValidationResult(
     val argument: String,

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="data_title_data_management">データ管理</string>
     <string name="data_title_ingestion">データ取り込み</string>
     <string name="data_action_import_data_folder">データフォルダを取り込む</string>
     <string name="data_action_import_single_tracer">圧縮ファイルを取り込む</string>
@@ -13,7 +14,7 @@
     <string name="data_security_level_moderate">標準（Moderate）</string>
     <string name="data_security_level_high">高強度（High）</string>
 
-    <string name="data_title_maintenance_debug">データ管理</string>
+    <string name="data_title_maintenance_debug">メンテナンス</string>
     <string name="data_action_clear_txt">TXT をクリア</string>
     <string name="data_action_clear_database">データベースをクリア</string>
     <string name="data_action_rebuild_database">データベースを再構築</string>

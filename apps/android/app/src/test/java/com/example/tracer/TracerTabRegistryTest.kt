@@ -33,18 +33,31 @@ class TracerTabRegistryTest {
     }
 
     @Test
-    fun registry_contains_all_tabs_in_expected_order() {
+    fun registry_contains_primary_tabs_in_expected_order() {
         val ids = TracerTabRegistry.entries.map { it.meta.id }
         assertEquals(
             listOf(
-                TracerTab.DATA,
-                TracerTab.REPORT,
+                TracerTab.INSIGHTS,
                 TracerTab.RECORD,
-                TracerTab.TXT,
                 TracerTab.CONFIG
             ),
             ids
         )
+    }
+
+    @Test
+    fun config_status_uses_data_status_when_config_status_is_empty() {
+        val status = TracerTabRegistry.statusText(
+            tab = TracerTab.CONFIG,
+            args = TracerTabStatusArgs(
+                dataStatusText = "Database rebuilt from TXT.",
+                queryStatusText = "",
+                recordStatusText = "",
+                configStatusText = ""
+            )
+        )
+
+        assertEquals("Database rebuilt from TXT.", status)
     }
 
     @Test
@@ -77,8 +90,8 @@ class TracerTabRegistryTest {
             tab = TracerTab.RECORD,
             args = TracerTabLifecycleArgs(
                 queryGateway = runtime,
-                queryReportViewModel = QueryReportViewModel(
-                    reportGateway = runtime,
+                queryInsightsViewModel = QueryInsightsViewModel(
+                    insightsGateway = runtime,
                     queryGateway = runtime
                 ),
                 recordViewModel = recordViewModel,
@@ -93,7 +106,7 @@ class TracerTabRegistryTest {
     }
 
     @Test
-    fun onLeave_txt_discards_unsaved_editor_draft() = runTest(dispatcher) {
+    fun onLeave_config_discards_unsaved_txt_editor_draft() = runTest(dispatcher) {
         val runtime = FakeRuntimeServices(
             inspectionEntries = listOf(
                 TxtInspectionEntry(
@@ -127,11 +140,11 @@ class TracerTabRegistryTest {
         assertEquals("draft-content", recordViewModel.uiState.editableHistoryContent)
 
         TracerTabRegistry.onLeave(
-            tab = TracerTab.TXT,
+            tab = TracerTab.CONFIG,
             args = TracerTabLifecycleArgs(
                 queryGateway = runtime,
-                queryReportViewModel = QueryReportViewModel(
-                    reportGateway = runtime,
+                queryInsightsViewModel = QueryInsightsViewModel(
+                    insightsGateway = runtime,
                     queryGateway = runtime
                 ),
                 recordViewModel = recordViewModel,
@@ -168,8 +181,8 @@ class TracerTabRegistryTest {
             tab = TracerTab.CONFIG,
             args = TracerTabLifecycleArgs(
                 queryGateway = runtime,
-                queryReportViewModel = QueryReportViewModel(
-                    reportGateway = runtime,
+                queryInsightsViewModel = QueryInsightsViewModel(
+                    insightsGateway = runtime,
                     queryGateway = runtime
                 ),
                 recordViewModel = recordViewModel,
@@ -183,14 +196,14 @@ class TracerTabRegistryTest {
     }
 
     @Test
-    fun statusEvent_txt_tab_is_suppressed() {
+    fun statusEvent_insights_query_data_status_is_suppressed() {
         val event = TracerTabRegistry.statusEvent(
-            tab = TracerTab.TXT,
+            tab = TracerTab.INSIGHTS,
             args = TracerTabStatusEventArgs(
-                selectedTab = TracerTab.TXT,
-                statusText = "any status update",
-                lastObservedTab = TracerTab.TXT,
-                lastObservedStatus = "previous"
+                selectedTab = TracerTab.INSIGHTS,
+                statusText = "query data insights-chart -> OK=true",
+                lastObservedTab = TracerTab.INSIGHTS,
+                lastObservedStatus = "query data insights-chart running..."
             )
         )
 
@@ -198,29 +211,14 @@ class TracerTabRegistryTest {
     }
 
     @Test
-    fun statusEvent_report_query_data_status_is_suppressed() {
+    fun statusEvent_insights_markdown_generation_status_is_suppressed() {
         val event = TracerTabRegistry.statusEvent(
-            tab = TracerTab.REPORT,
+            tab = TracerTab.INSIGHTS,
             args = TracerTabStatusEventArgs(
-                selectedTab = TracerTab.REPORT,
-                statusText = "query data report-chart -> OK=true",
-                lastObservedTab = TracerTab.REPORT,
-                lastObservedStatus = "query data report-chart running..."
-            )
-        )
-
-        assertNull(event)
-    }
-
-    @Test
-    fun statusEvent_report_markdown_generation_status_is_suppressed() {
-        val event = TracerTabRegistry.statusEvent(
-            tab = TracerTab.REPORT,
-            args = TracerTabStatusEventArgs(
-                selectedTab = TracerTab.REPORT,
-                statusText = "nativeReportJson(Day, md) -> OK=true",
-                lastObservedTab = TracerTab.REPORT,
-                lastObservedStatus = "nativeReportJson(Day, md) running..."
+                selectedTab = TracerTab.INSIGHTS,
+                statusText = "nativeInsightsJson(Day, md) -> OK=true",
+                lastObservedTab = TracerTab.INSIGHTS,
+                lastObservedStatus = "nativeInsightsJson(Day, md) running..."
             )
         )
 
@@ -246,10 +244,10 @@ class TracerTabRegistryTest {
     }
 
     @Test
-    fun onEnter_report_refreshes_day_parameter_to_current_logical_day() = runTest(dispatcher) {
+    fun onEnter_insights_refreshes_day_parameter_to_current_logical_day() = runTest(dispatcher) {
         val runtime = FakeRuntimeServices()
-        val queryReportViewModel = QueryReportViewModel(
-            reportGateway = runtime,
+        val queryInsightsViewModel = QueryInsightsViewModel(
+            insightsGateway = runtime,
             queryGateway = runtime,
             clock = fixedClock("2026-03-29T21:30:00Z", "Asia/Shanghai")
         )
@@ -265,13 +263,13 @@ class TracerTabRegistryTest {
             runtime,
             FakeQuickActivitiesPreferenceGateway()
         )
-        queryReportViewModel.onReportDateChange("20260330")
+        queryInsightsViewModel.onInsightsDateChange("20260330")
 
         TracerTabRegistry.onEnter(
-            tab = TracerTab.REPORT,
+            tab = TracerTab.INSIGHTS,
             args = TracerTabLifecycleArgs(
                 queryGateway = runtime,
-                queryReportViewModel = queryReportViewModel,
+                queryInsightsViewModel = queryInsightsViewModel,
                 recordViewModel = recordViewModel,
                 configViewModel = configViewModel,
                 recordStatusText = { recordViewModel.uiState.statusText },
@@ -279,7 +277,7 @@ class TracerTabRegistryTest {
             )
         )
 
-        assertEquals("20260329", queryReportViewModel.uiState.reportDate)
+        assertEquals("20260329", queryInsightsViewModel.uiState.insightsDate)
     }
 
     @Test
@@ -404,7 +402,7 @@ private class FakeRuntimeServices(
     )
 ) : RuntimeInitializer,
     RecordGateway,
-    ReportGateway,
+    InsightsGateway,
     TxtStorageGateway,
     QueryGateway,
     ConfigGateway {
@@ -479,10 +477,10 @@ private class FakeRuntimeServices(
     override suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult =
         TreeQueryResult(ok = true, found = false, message = "ok")
 
-    override suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult =
-        ReportChartQueryResult(
+    override suspend fun queryInsightsChart(params: InsightsChartQueryParams): InsightsChartQueryResult =
+        InsightsChartQueryResult(
             ok = true,
-            data = ReportChartData(
+            data = InsightsChartData(
                 roots = emptyList(),
                 selectedRoot = "",
                 lookbackDays = params.lookbackDays,
@@ -491,8 +489,8 @@ private class FakeRuntimeServices(
             message = "ok"
         )
 
-    override suspend fun reportMarkdown(request: TemporalReportQueryRequest): ReportCallResult =
-        ReportCallResult(
+    override suspend fun insightsMarkdown(request: TemporalInsightsQueryRequest): InsightsCallResult =
+        InsightsCallResult(
             initialized = true,
             operationOk = true,
             outputText = "",
@@ -533,7 +531,7 @@ private class FakeRuntimeServices(
         aliasFiles = emptyList(),
         chartFiles = emptyList(),
         metaFiles = emptyList(),
-        reportFiles = emptyList(),
+        insightsFiles = emptyList(),
         message = "ok"
     )
 

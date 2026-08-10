@@ -106,7 +106,7 @@ fun RecordCanonicalCatalogScreen(
                             text = stringResource(
                                 if (target == CanonicalBrowserTarget.QUICK_ACCESS) {
                                     R.string.record_canonical_catalog_quick_access_title
-                                } else if (target == CanonicalBrowserTarget.REPORT_STATUS_PARENT) {
+                                } else if (target == CanonicalBrowserTarget.INSIGHTS_STATUS_PARENT) {
                                     R.string.record_canonical_catalog_parent_title
                                 } else {
                                     R.string.record_canonical_catalog_title

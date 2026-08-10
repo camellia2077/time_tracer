@@ -160,16 +160,16 @@ internal class RuntimeQueryDelegate(
     suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult =
         dataDelegate.queryProjectTree(params)
 
-    suspend fun queryReportCalendarAvailability(): ReportCalendarAvailabilityResult =
-        dataDelegate.queryReportCalendarAvailability()
+    suspend fun queryInsightsCalendarAvailability(): InsightsCalendarAvailabilityResult =
+        dataDelegate.queryInsightsCalendarAvailability()
 
-    suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult =
-        dataDelegate.queryReportChart(params)
+    suspend fun queryInsightsChart(params: InsightsChartQueryParams): InsightsChartQueryResult =
+        dataDelegate.queryInsightsChart(params)
 
-    suspend fun queryReportComposition(
-        params: ReportCompositionQueryParams
-    ): ReportCompositionQueryResult =
-        dataDelegate.queryReportComposition(params)
+    suspend fun queryInsightsComposition(
+        params: InsightsCompositionQueryParams
+    ): InsightsCompositionQueryResult =
+        dataDelegate.queryInsightsComposition(params)
 
     suspend fun listActivityMappingNames(): ActivityMappingNamesResult =
         mappingDelegate.listActivityMappingNames()

@@ -177,8 +177,8 @@ internal class NativeRuntimeBridge {
         averageDayBasis = request.averageDayBasis.orEmpty()
     )
 
-    fun nativeReportJson(requestJson: String): String =
-        NativeBridge.nativeReportJson(requestJson)
+    fun nativeInsightsJson(requestJson: String): String =
+        NativeBridge.nativeInsightsJson(requestJson)
 
     fun setCryptoProgressListener(listener: ((String) -> Unit)?) {
         NativeBridge.setCryptoProgressListener(listener)

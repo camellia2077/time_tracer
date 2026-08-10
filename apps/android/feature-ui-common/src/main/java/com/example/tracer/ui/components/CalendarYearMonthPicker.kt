@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.dp
 data class CalendarAvailability(
     val monthsByYear: Map<String, List<String>>
 ) {
-    // Report and TXT share the same data-backed calendar options so a user
+    // Insights and TXT share the same data-backed calendar options so a user
     // cannot select a year/month for which no TXT month file is available.
     val years: List<String> = monthsByYear.keys.sorted()
 

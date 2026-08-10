@@ -5,7 +5,6 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.test.core.app.ApplicationProvider
-import com.example.tracer.data.AppLanguage
 import com.example.tracer.data.DarkThemeStyle
 import com.example.tracer.data.ThemeConfig
 import com.example.tracer.data.ThemeMode
@@ -24,31 +23,31 @@ class ConfigAppearanceSettingsCardRobolectricTest {
 
     private fun summarySwatches() =
         composeRule.onAllNodesWithTag(
-            "config_report_palette_summary_swatches",
+            "config_insights_palette_summary_swatches",
             useUnmergedTree = true
         )
 
     private fun expandedContent() =
         composeRule.onAllNodesWithTag(
-            "config_report_palette_expanded_content",
+            "config_insights_palette_expanded_content",
             useUnmergedTree = true
         )
 
     private fun expandedBarPreview() =
         composeRule.onAllNodesWithTag(
-            "config_report_palette_expanded_bar_preview",
+            "config_insights_palette_expanded_bar_preview",
             useUnmergedTree = true
         )
 
     private fun presetSwatches() =
         composeRule.onAllNodesWithTag(
-            "config_report_palette_preset_swatches",
+            "config_insights_palette_preset_swatches",
             useUnmergedTree = true
         )
 
     @Test
-    fun reportPaletteCollapsed_showsOnlySummarySwatches() {
-        setAppearanceCardContent(initialReportPaletteExpanded = false)
+    fun insightsPaletteCollapsed_showsOnlySummarySwatches() {
+        setInsightsSettingsCardContent(initialInsightsPaletteExpanded = false)
 
         summarySwatches().assertCountEquals(1)
         expandedContent().assertCountEquals(0)
@@ -57,17 +56,17 @@ class ConfigAppearanceSettingsCardRobolectricTest {
     }
 
     @Test
-    fun reportPaletteExpanded_keepsBarPreviewOnlyInMainExpandedArea() {
-        setAppearanceCardContent(initialReportPaletteExpanded = true)
+    fun insightsPaletteExpanded_keepsBarPreviewOnlyInMainExpandedArea() {
+        setInsightsSettingsCardContent(initialInsightsPaletteExpanded = true)
 
         summarySwatches().assertCountEquals(1)
         expandedContent().assertCountEquals(1)
         expandedBarPreview().assertCountEquals(1)
-        presetSwatches().assertCountEquals(ReportPiePalettePreset.entries.size)
+        presetSwatches().assertCountEquals(InsightsPiePalettePreset.entries.size)
     }
 
-    private fun setAppearanceCardContent(
-        initialReportPaletteExpanded: Boolean
+    private fun setInsightsSettingsCardContent(
+        initialInsightsPaletteExpanded: Boolean
     ) {
         val themeConfig = ThemeConfig(
             themeMode = ThemeMode.Light,
@@ -76,14 +75,12 @@ class ConfigAppearanceSettingsCardRobolectricTest {
 
         composeRule.setContent {
             TracerTheme(themeConfig = themeConfig) {
-                AppearanceSettingsCard(
-                    themeConfig = themeConfig,
-                    onThemeEvent = {},
-                    reportPiePalettePreset = ReportPiePalettePreset.SOFT,
-                    onReportPiePalettePresetChange = {},
-                    appLanguage = AppLanguage.English,
-                    onSetAppLanguage = {},
-                    initialReportPaletteExpanded = initialReportPaletteExpanded
+                ConfigInsightsAverageDayBasisCard(
+                    insightsPiePalettePreset = InsightsPiePalettePreset.SOFT,
+                    onInsightsPiePalettePresetChange = {},
+                    initialInsightsPaletteExpanded = initialInsightsPaletteExpanded,
+                    selected = InsightsAverageDayBasis.ACTIVE_DAYS,
+                    onSelected = {}
                 )
             }
         }

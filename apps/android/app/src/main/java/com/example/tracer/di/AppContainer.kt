@@ -8,7 +8,7 @@ import com.example.tracer.NativeRuntimeController
 import com.example.tracer.QueryGateway
 import com.example.tracer.QuickAccessGateway
 import com.example.tracer.RecordGateway
-import com.example.tracer.ReportGateway
+import com.example.tracer.InsightsGateway
 import com.example.tracer.RuntimeInitializer
 import com.example.tracer.TracerExchangeGateway
 import com.example.tracer.TxtStorageGateway
@@ -26,7 +26,7 @@ class AppContainer(private val appContext: Context) {
     val recordGateway: RecordGateway
         get() = nativeRuntimeController
 
-    val reportGateway: ReportGateway
+    val insightsGateway: InsightsGateway
         get() = nativeRuntimeController
 
     val queryGateway: QueryGateway

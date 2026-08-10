@@ -4,7 +4,7 @@ internal enum class ConfigCategory {
     ALIAS,
     CHARTS,
     META,
-    REPORTS
+    INSIGHTS
 }
 
 internal enum class ConfigAutoSaveStatus {
@@ -19,7 +19,7 @@ internal data class ConfigUiState(
     val aliasFiles: List<ConfigTomlFileEntry> = emptyList(),
     val chartFiles: List<ConfigTomlFileEntry> = emptyList(),
     val metaFiles: List<ConfigTomlFileEntry> = emptyList(),
-    val reportFiles: List<ConfigTomlFileEntry> = emptyList(),
+    val insightsFiles: List<ConfigTomlFileEntry> = emptyList(),
     val selectedFilePath: String = "",
     val selectedFileDisplayName: String = "",
     val selectedFileContent: String = "",

@@ -33,7 +33,7 @@ class RuntimeDiagnosticsRecorderTest {
                 RuntimeDiagnosticRecord(
                     timestampEpochMs = 2_000L,
                     operationId = "op-2",
-                    stage = "native_report_day",
+                    stage = "native_insights_day",
                     ok = false,
                     initialized = true,
                     message = "failed",

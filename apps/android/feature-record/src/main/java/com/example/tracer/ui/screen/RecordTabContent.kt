@@ -245,7 +245,7 @@ fun RecordTabContent(
                     }
                 }
 
-                CanonicalBrowserTarget.REPORT_STATUS_PARENT -> false
+                CanonicalBrowserTarget.INSIGHTS_STATUS_PARENT -> false
             }
         },
         onOpenTxtPreview = recordViewModel::openTxtPreview,

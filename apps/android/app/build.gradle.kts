@@ -520,7 +520,7 @@ dependencies {
     implementation(project(":contract"))
     implementation(project(":runtime"))
     implementation(project(":feature-data"))
-    implementation(project(":feature-report"))
+    implementation(project(":feature-insights"))
     implementation(project(":feature-record"))
     implementation(project(":feature-ui-common"))
 

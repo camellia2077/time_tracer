@@ -1,9 +1,0 @@
-schema_version = 1
-
-[daily_statuses.parent_present.status]
-parent = "study"
-label = "Study"
-
-[daily_statuses.parent_present.exercise]
-parent = "exercise"
-label = "Exercise"

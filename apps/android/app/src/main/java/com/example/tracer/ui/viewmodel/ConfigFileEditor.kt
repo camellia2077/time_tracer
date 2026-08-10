@@ -24,7 +24,7 @@ internal class ConfigFileEditor(
             aliasFiles = listResult.aliasFiles,
             chartFiles = listResult.chartFiles,
             metaFiles = listResult.metaFiles,
-            reportFiles = listResult.reportFiles
+            insightsFiles = listResult.insightsFiles
         )
         val files = configFilesForCategory(updated, updated.selectedCategory)
         val targetFile = preferredConfigFilePath(updated, files)
@@ -128,7 +128,7 @@ internal class ConfigFileEditor(
             listResult.aliasFiles,
             listResult.chartFiles,
             listResult.metaFiles,
-            listResult.reportFiles
+            listResult.insightsFiles
         ).flatten().map { entry -> entry.relativePath }
         if (existingPaths.any { path -> path.equals(targetFilePath, ignoreCase = true) }) {
             return state.copy(statusText = "TOML file already exists: $targetFilePath")
@@ -147,7 +147,7 @@ internal class ConfigFileEditor(
             aliasFiles = refreshedListResult.aliasFiles,
             chartFiles = refreshedListResult.chartFiles,
             metaFiles = refreshedListResult.metaFiles,
-            reportFiles = refreshedListResult.reportFiles
+            insightsFiles = refreshedListResult.insightsFiles
         )
         return load(
             baseState = updated,

@@ -21,9 +21,8 @@ internal data class ConfigTomlExportEntry(
 internal fun buildConfigTomlExportEntries(relativePaths: Iterable<String>): List<ConfigTomlExportEntry> {
     return relativePaths
         .map { it.replace('\\', '/').trim('/') }
-        .filter { it.isNotBlank() }
         .mapNotNull { sourcePath ->
-            if (sourcePath.startsWith("user/") && sourcePath.endsWith(".toml")) {
+            if (isAndroidImportExportUserConfigTomlPath(sourcePath)) {
                 ConfigTomlExportEntry(sourcePath = sourcePath, exportPath = sourcePath)
             } else {
                 null
@@ -33,6 +32,13 @@ internal fun buildConfigTomlExportEntries(relativePaths: Iterable<String>): List
         .values
         .map { entries -> entries.minBy { it.sourcePath } }
         .sortedBy { it.exportPath }
+}
+
+internal fun isAndroidImportExportUserConfigTomlPath(relativePath: String): Boolean {
+    val normalized = relativePath.replace('\\', '/').trim('/')
+    return normalized == "user/behavior.toml" ||
+        (normalized.startsWith("user/activity_hierarchy/") &&
+            normalized.endsWith(".toml", ignoreCase = true))
 }
 
 private const val TRACER_EXCHANGE_EXPORT_ROOT_NAME = "data"

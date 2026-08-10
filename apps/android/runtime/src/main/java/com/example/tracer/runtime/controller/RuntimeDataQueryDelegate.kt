@@ -12,7 +12,7 @@ internal class RuntimeDataQueryDelegate(
     ) -> NativeCallResult
 ) {
     private companion object {
-        const val REPORT_QUERY_LOG_TAG = "TracerReportChart"
+        const val INSIGHTS_QUERY_LOG_TAG = "TracerInsightsChart"
     }
 
     suspend fun queryDayDurations(params: DataDurationQueryParams): DataQueryTextResult =
@@ -87,7 +87,7 @@ internal class RuntimeDataQueryDelegate(
             }
         }
 
-    suspend fun queryReportCalendarAvailability(): ReportCalendarAvailabilityResult =
+    suspend fun queryInsightsCalendarAvailability(): InsightsCalendarAvailabilityResult =
         withContext(Dispatchers.IO) {
             try {
                 val yearsResult = runDataQuery(
@@ -97,16 +97,16 @@ internal class RuntimeDataQueryDelegate(
                     )
                 )
                 if (!yearsResult.ok) {
-                    return@withContext ReportCalendarAvailabilityResult(
+                    return@withContext InsightsCalendarAvailabilityResult(
                         ok = false,
                         message = yearsResult.message,
                         operationId = yearsResult.operationId
                     )
                 }
                 val years = parseSemanticListContent(yearsResult.outputText, "years")
-                    ?: return@withContext ReportCalendarAvailabilityResult(
+                    ?: return@withContext InsightsCalendarAvailabilityResult(
                         ok = false,
-                        message = "report years query returned invalid payload.",
+                        message = "insights years query returned invalid payload.",
                         operationId = yearsResult.operationId
                     )
 
@@ -117,7 +117,7 @@ internal class RuntimeDataQueryDelegate(
                     )
                 )
                 if (!monthsResult.ok) {
-                    return@withContext ReportCalendarAvailabilityResult(
+                    return@withContext InsightsCalendarAvailabilityResult(
                         ok = false,
                         years = years,
                         message = monthsResult.message,
@@ -125,48 +125,48 @@ internal class RuntimeDataQueryDelegate(
                     )
                 }
                 val months = parseSemanticListContent(monthsResult.outputText, "months")
-                    ?: return@withContext ReportCalendarAvailabilityResult(
+                    ?: return@withContext InsightsCalendarAvailabilityResult(
                         ok = false,
                         years = years,
-                        message = "report months query returned invalid payload.",
+                        message = "insights months query returned invalid payload.",
                         operationId = monthsResult.operationId
                     )
 
-                ReportCalendarAvailabilityResult(
+                InsightsCalendarAvailabilityResult(
                     ok = true,
                     years = years,
                     months = months,
-                    message = "report calendar availability loaded.",
+                    message = "insights calendar availability loaded.",
                     operationId = monthsResult.operationId
                 )
             } catch (error: Exception) {
-                ReportCalendarAvailabilityResult(
+                InsightsCalendarAvailabilityResult(
                     ok = false,
                     message = formatNativeFailure(
-                        "query report calendar availability failed",
+                        "query insights calendar availability failed",
                         error
                     )
                 )
             }
         }
 
-    suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult =
+    suspend fun queryInsightsChart(params: InsightsChartQueryParams): InsightsChartQueryResult =
         withContext(Dispatchers.IO) {
             val fromDateIso = params.fromDateIso?.trim()?.takeIf { it.isNotEmpty() }
             val toDateIso = params.toDateIso?.trim()?.takeIf { it.isNotEmpty() }
             Log.i(
-                REPORT_QUERY_LOG_TAG,
+                INSIGHTS_QUERY_LOG_TAG,
                 "native trend request; root=${params.root.orEmpty()} " +
                     "lookbackDays=${params.lookbackDays} from=$fromDateIso to=$toDateIso"
             )
-            val validationFailure = validateReportChartQueryParams(
+            val validationFailure = validateInsightsChartQueryParams(
                 lookbackDays = params.lookbackDays,
                 fromDateIso = fromDateIso,
                 toDateIso = toDateIso
             )
             if (validationFailure != null) {
                 Log.i(
-                    REPORT_QUERY_LOG_TAG,
+                    INSIGHTS_QUERY_LOG_TAG,
                     "native trend validation failed; message=${validationFailure.message}"
                 )
                 return@withContext validationFailure
@@ -176,7 +176,7 @@ internal class RuntimeDataQueryDelegate(
                 val root = params.root?.trim()?.takeIf { it.isNotEmpty() }
                 val queryResult = runDataQuery(
                     request = DataQueryRequest(
-                        action = NativeBridge.QUERY_ACTION_REPORT_CHART,
+                        action = NativeBridge.QUERY_ACTION_INSIGHTS_CHART,
                         outputMode = DataQueryOutputMode.SEMANTIC_JSON,
                         root = root,
                         lookbackDays = params.lookbackDays,
@@ -188,11 +188,11 @@ internal class RuntimeDataQueryDelegate(
 
                 if (!queryResult.ok) {
                     Log.i(
-                        REPORT_QUERY_LOG_TAG,
+                        INSIGHTS_QUERY_LOG_TAG,
                         "native trend failed; operationId=${queryResult.operationId} " +
                             "message=${queryResult.message}"
                     )
-                    return@withContext ReportChartQueryResult(
+                    return@withContext InsightsChartQueryResult(
                         ok = false,
                         data = null,
                         message = queryResult.message,
@@ -200,17 +200,17 @@ internal class RuntimeDataQueryDelegate(
                     )
                 }
 
-                val parsed = parseReportChartContent(queryResult.outputText)
+                val parsed = parseInsightsChartContent(queryResult.outputText)
                     ?: run {
                         Log.i(
-                            REPORT_QUERY_LOG_TAG,
+                            INSIGHTS_QUERY_LOG_TAG,
                             "native trend payload invalid; operationId=${queryResult.operationId}"
                         )
-                        return@withContext ReportChartQueryResult(
+                        return@withContext InsightsChartQueryResult(
                         ok = false,
                         data = null,
                         message = appendFailureContext(
-                            message = "report chart query returned invalid payload.",
+                            message = "insights chart query returned invalid payload.",
                             operationId = queryResult.operationId
                         ),
                         operationId = queryResult.operationId
@@ -218,49 +218,49 @@ internal class RuntimeDataQueryDelegate(
                     }
 
                 Log.i(
-                    REPORT_QUERY_LOG_TAG,
+                    INSIGHTS_QUERY_LOG_TAG,
                     "native trend succeeded; operationId=${queryResult.operationId} " +
                         "points=${parsed.points.size} roots=${parsed.roots.size} " +
                         "lookbackDays=${parsed.lookbackDays}"
                 )
 
-                ReportChartQueryResult(
+                InsightsChartQueryResult(
                     ok = true,
                     data = parsed,
-                    message = buildReportChartResultMessage(parsed.points.size),
+                    message = buildInsightsChartResultMessage(parsed.points.size),
                     operationId = queryResult.operationId
                 )
             } catch (error: Exception) {
                 Log.i(
-                    REPORT_QUERY_LOG_TAG,
+                    INSIGHTS_QUERY_LOG_TAG,
                     "native trend exception; type=${error::class.simpleName} message=${error.message}"
                 )
-                ReportChartQueryResult(
+                InsightsChartQueryResult(
                     ok = false,
                     data = null,
-                    message = formatNativeFailure("query report chart failed", error)
+                    message = formatNativeFailure("query insights chart failed", error)
                 )
             }
         }
 
-    suspend fun queryReportComposition(
-        params: ReportCompositionQueryParams
-    ): ReportCompositionQueryResult = withContext(Dispatchers.IO) {
+    suspend fun queryInsightsComposition(
+        params: InsightsCompositionQueryParams
+    ): InsightsCompositionQueryResult = withContext(Dispatchers.IO) {
         val fromDateIso = params.fromDateIso?.trim()?.takeIf { it.isNotEmpty() }
         val toDateIso = params.toDateIso?.trim()?.takeIf { it.isNotEmpty() }
         Log.i(
-            REPORT_QUERY_LOG_TAG,
+            INSIGHTS_QUERY_LOG_TAG,
             "native composition request; lookbackDays=${params.lookbackDays} " +
                 "from=$fromDateIso to=$toDateIso"
         )
-        val validationFailure = validateReportCompositionQueryParams(
+        val validationFailure = validateInsightsCompositionQueryParams(
             lookbackDays = params.lookbackDays,
             fromDateIso = fromDateIso,
             toDateIso = toDateIso
         )
         if (validationFailure != null) {
             Log.i(
-                REPORT_QUERY_LOG_TAG,
+                INSIGHTS_QUERY_LOG_TAG,
                 "native composition validation failed; message=${validationFailure.message}"
             )
             return@withContext validationFailure
@@ -269,7 +269,7 @@ internal class RuntimeDataQueryDelegate(
         try {
             val queryResult = runDataQuery(
                 request = DataQueryRequest(
-                    action = NativeBridge.QUERY_ACTION_REPORT_COMPOSITION,
+                    action = NativeBridge.QUERY_ACTION_INSIGHTS_COMPOSITION,
                     outputMode = DataQueryOutputMode.SEMANTIC_JSON,
                     lookbackDays = params.lookbackDays,
                     fromDateIso = fromDateIso,
@@ -280,11 +280,11 @@ internal class RuntimeDataQueryDelegate(
 
             if (!queryResult.ok) {
                 Log.i(
-                    REPORT_QUERY_LOG_TAG,
+                    INSIGHTS_QUERY_LOG_TAG,
                     "native composition failed; operationId=${queryResult.operationId} " +
                         "message=${queryResult.message}"
                 )
-                return@withContext ReportCompositionQueryResult(
+                return@withContext InsightsCompositionQueryResult(
                     ok = false,
                     data = null,
                     message = queryResult.message,
@@ -292,17 +292,17 @@ internal class RuntimeDataQueryDelegate(
                 )
             }
 
-            val parsed = parseReportCompositionContent(queryResult.outputText)
+            val parsed = parseInsightsCompositionContent(queryResult.outputText)
                 ?: run {
                     Log.i(
-                        REPORT_QUERY_LOG_TAG,
+                        INSIGHTS_QUERY_LOG_TAG,
                         "native composition payload invalid; operationId=${queryResult.operationId}"
                     )
-                    return@withContext ReportCompositionQueryResult(
+                    return@withContext InsightsCompositionQueryResult(
                     ok = false,
                     data = null,
                     message = appendFailureContext(
-                        message = "report composition query returned invalid payload.",
+                        message = "insights composition query returned invalid payload.",
                         operationId = queryResult.operationId
                     ),
                     operationId = queryResult.operationId
@@ -310,26 +310,26 @@ internal class RuntimeDataQueryDelegate(
                 }
 
             Log.i(
-                REPORT_QUERY_LOG_TAG,
+                INSIGHTS_QUERY_LOG_TAG,
                 "native composition succeeded; operationId=${queryResult.operationId} " +
                     "items=${parsed.tree.size} roots=${parsed.activeRootCount}"
             )
 
-            ReportCompositionQueryResult(
+            InsightsCompositionQueryResult(
                 ok = true,
                 data = parsed,
-                message = buildReportCompositionResultMessage(parsed.tree.size),
+                message = buildInsightsCompositionResultMessage(parsed.tree.size),
                 operationId = queryResult.operationId
             )
         } catch (error: Exception) {
             Log.i(
-                REPORT_QUERY_LOG_TAG,
+                INSIGHTS_QUERY_LOG_TAG,
                 "native composition exception; type=${error::class.simpleName} message=${error.message}"
             )
-            ReportCompositionQueryResult(
+            InsightsCompositionQueryResult(
                 ok = false,
                 data = null,
-                message = formatNativeFailure("query report composition failed", error)
+                message = formatNativeFailure("query insights composition failed", error)
             )
         }
     }

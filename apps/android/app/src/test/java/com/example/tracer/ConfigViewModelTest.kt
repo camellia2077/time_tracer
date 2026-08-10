@@ -734,7 +734,7 @@ private class FakeConfigRuntime(
         aliasFiles = fileEntriesUnder("user/activity_hierarchy/"),
         chartFiles = fileEntriesUnder("charts/"),
         metaFiles = fileEntriesUnder("meta/"),
-        reportFiles = fileEntriesUnder("reports/"),
+        insightsFiles = fileEntriesUnder("insights/"),
         message = "ok"
     )
 
@@ -857,7 +857,7 @@ private class FakeConfigRuntime(
                 displayName = when {
                     path.startsWith("user/activity_hierarchy/") -> path.removePrefix("user/activity_hierarchy/")
                     path.startsWith("charts/") -> path.removePrefix("charts/")
-                    path.startsWith("reports/") -> path.removePrefix("reports/")
+                    path.startsWith("insights/") -> path.removePrefix("insights/")
                     else -> path
                 }
             )

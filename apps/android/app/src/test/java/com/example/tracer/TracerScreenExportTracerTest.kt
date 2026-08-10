@@ -5,14 +5,13 @@ import org.junit.Test
 
 class TracerScreenExportTracerTest {
     @Test
-    fun buildConfigTomlExportEntries_exportsAllUserConfigFiles() {
+    fun buildConfigTomlExportEntries_exportsOnlyAndroidSupportedUserConfig() {
         val result = buildConfigTomlExportEntries(
             listOf(
                 "user/behavior.toml",
                 "user/activity_hierarchy/study.toml",
-                "user/charts.toml",
-                "user/heatmap.toml",
-                "user/heatmap.toml",
+                "user/unsupported.toml",
+                "user/unsupported.toml",
                 "program/charts/heatmap.toml"
             )
         )
@@ -20,9 +19,7 @@ class TracerScreenExportTracerTest {
         assertEquals(
             listOf(
                 ConfigTomlExportEntry("user/activity_hierarchy/study.toml", "user/activity_hierarchy/study.toml"),
-                ConfigTomlExportEntry("user/behavior.toml", "user/behavior.toml"),
-                ConfigTomlExportEntry("user/charts.toml", "user/charts.toml"),
-                ConfigTomlExportEntry("user/heatmap.toml", "user/heatmap.toml")
+                ConfigTomlExportEntry("user/behavior.toml", "user/behavior.toml")
             ),
             result
         )

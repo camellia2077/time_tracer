@@ -5,7 +5,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.time.LocalDate
 
-internal fun parseReportChartContent(content: String): ReportChartData? {
+internal fun parseInsightsChartContent(content: String): InsightsChartData? {
     if (content.isBlank()) {
         return null
     }
@@ -28,18 +28,18 @@ internal fun parseReportChartContent(content: String): ReportChartData? {
         val lookbackDays = payload.optInt("lookback_days", 0)
         val schemaVersion = payload.optNullableInt("schema_version")
         val usesSchemaVersionFallback = schemaVersion == null ||
-            schemaVersion != REPORT_CHART_SCHEMA_VERSION_V1
+            schemaVersion != INSIGHTS_CHART_SCHEMA_VERSION_V1
         val averageDurationSeconds = payload.optNullableLong("average_duration_seconds")
         val totalDurationSeconds = payload.optNullableLong("total_duration_seconds")
         val activeDays = payload.optNullableInt("active_days")
         val rangeDays = payload.optNullableInt("range_days")
         val averageDayBasis = when (payload.optString("average_day_basis", "active_days")) {
-            "calendar_days" -> ReportAverageDayBasis.CALENDAR_DAYS
-            else -> ReportAverageDayBasis.ACTIVE_DAYS
+            "calendar_days" -> InsightsAverageDayBasis.CALENDAR_DAYS
+            else -> InsightsAverageDayBasis.ACTIVE_DAYS
         }
         val averageDenominatorDays = payload.optNullableInt("average_denominator_days")
         val seriesArray = payload.optJSONArray("series")
-        val points = mutableListOf<ReportChartPoint>()
+        val points = mutableListOf<InsightsChartPoint>()
         if (seriesArray != null) {
             for (index in 0 until seriesArray.length()) {
                 val row = seriesArray.optJSONObject(index) ?: continue
@@ -49,7 +49,7 @@ internal fun parseReportChartContent(content: String): ReportChartData? {
                 }
                 val durationSeconds = row.optLong("duration_seconds", 0L).coerceAtLeast(0L)
                 val epochDay = row.optNullableLong("epoch_day") ?: parseEpochDayOrNull(date)
-                points += ReportChartPoint(
+                points += InsightsChartPoint(
                     date = date,
                     durationSeconds = durationSeconds,
                     epochDay = epochDay
@@ -74,14 +74,14 @@ internal fun parseReportChartContent(content: String): ReportChartData? {
         val resolvedRangeDays = rangeDays?.coerceAtLeast(0) ?: fallbackRangeDays
         val resolvedAverageDurationSeconds =
             averageDurationSeconds?.coerceAtLeast(0L) ?: if ((averageDenominatorDays
-                    ?: if (averageDayBasis == ReportAverageDayBasis.CALENDAR_DAYS) {
+                    ?: if (averageDayBasis == InsightsAverageDayBasis.CALENDAR_DAYS) {
                         resolvedRangeDays
                     } else {
                         resolvedActiveDays
                     }) > 0
             ) {
                 resolvedTotalDurationSeconds / (averageDenominatorDays
-                    ?: if (averageDayBasis == ReportAverageDayBasis.CALENDAR_DAYS) {
+                    ?: if (averageDayBasis == InsightsAverageDayBasis.CALENDAR_DAYS) {
                         resolvedRangeDays
                     } else {
                         resolvedActiveDays
@@ -90,7 +90,7 @@ internal fun parseReportChartContent(content: String): ReportChartData? {
                 0L
             }
 
-        ReportChartData(
+        InsightsChartData(
             roots = roots.toList(),
             selectedRoot = selectedRoot,
             lookbackDays = lookbackDays,
@@ -110,9 +110,9 @@ internal fun parseReportChartContent(content: String): ReportChartData? {
     }
 }
 
-internal fun parseReportCompositionContent(content: String): ReportCompositionData? {
+internal fun parseInsightsCompositionContent(content: String): InsightsCompositionData? {
     if (content.isBlank()) {
-        logReportCompositionWarning("Report composition payload is blank")
+        logInsightsCompositionWarning("Insights composition payload is blank")
         return null
     }
 
@@ -123,8 +123,8 @@ internal fun parseReportCompositionContent(content: String): ReportCompositionDa
         val activeDays = payload.optInt("active_days", 0).coerceAtLeast(0)
         val rangeDays = payload.optInt("range_days", 0).coerceAtLeast(0)
         val averageDayBasis = when (payload.optString("average_day_basis", "active_days")) {
-            "calendar_days" -> ReportAverageDayBasis.CALENDAR_DAYS
-            else -> ReportAverageDayBasis.ACTIVE_DAYS
+            "calendar_days" -> InsightsAverageDayBasis.CALENDAR_DAYS
+            else -> InsightsAverageDayBasis.ACTIVE_DAYS
         }
         val averageDenominatorDays = payload.optInt("average_denominator_days", 0)
         val displayLevel = payload.optInt("display_level", 0).coerceAtLeast(0)
@@ -135,14 +135,14 @@ internal fun parseReportCompositionContent(content: String): ReportCompositionDa
         val positiveOccurrenceNodeCount = tree.countNodes {
             (it.occurrenceCount ?: 0L) > 0L
         }
-        logReportCompositionInfo(
-            "Parsed report composition: roots=${tree.size}, " +
+        logInsightsCompositionInfo(
+            "Parsed insights composition: roots=${tree.size}, " +
                 "nodes=${countTreeNodes(tree)}, " +
                 "occurrenceFieldNodes=$occurrenceFieldNodeCount, " +
                 "positiveOccurrenceNodes=$positiveOccurrenceNodeCount"
         )
 
-        ReportCompositionData(
+        InsightsCompositionData(
             totalDurationSeconds = totalDurationSeconds,
             activeRootCount = activeRootCount,
             activeDays = activeDays,
@@ -154,7 +154,7 @@ internal fun parseReportCompositionContent(content: String): ReportCompositionDa
             tree = tree
         )
     } catch (error: Exception) {
-        logReportCompositionWarning("Invalid report composition payload", error)
+        logInsightsCompositionWarning("Invalid insights composition payload", error)
         null
     }
 }
@@ -387,18 +387,18 @@ private fun List<TreeNode>.countNodes(predicate: (TreeNode) -> Boolean): Int = s
     (if (predicate(node)) 1 else 0) + node.children.countNodes(predicate)
 }
 
-private const val REPORT_COMPOSITION_LOG_TAG = "TracerComposition"
+private const val INSIGHTS_COMPOSITION_LOG_TAG = "TracerComposition"
 
-private fun logReportCompositionInfo(message: String) {
-    runCatching { Log.i(REPORT_COMPOSITION_LOG_TAG, message) }
+private fun logInsightsCompositionInfo(message: String) {
+    runCatching { Log.i(INSIGHTS_COMPOSITION_LOG_TAG, message) }
 }
 
-private fun logReportCompositionWarning(message: String, error: Throwable? = null) {
+private fun logInsightsCompositionWarning(message: String, error: Throwable? = null) {
     runCatching {
         if (error == null) {
-            Log.w(REPORT_COMPOSITION_LOG_TAG, message)
+            Log.w(INSIGHTS_COMPOSITION_LOG_TAG, message)
         } else {
-            Log.w(REPORT_COMPOSITION_LOG_TAG, message, error)
+            Log.w(INSIGHTS_COMPOSITION_LOG_TAG, message, error)
         }
     }
 }

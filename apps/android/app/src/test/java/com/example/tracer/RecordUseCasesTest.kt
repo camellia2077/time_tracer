@@ -81,7 +81,7 @@ class RecordUseCasesTest {
                 )
             ),
             queryGateway = FakeQueryGateway(),
-            reportGateway = FakeReportGateway(
+            insightsGateway = FakeInsightsGateway(
                 activityName = "coding",
                 durationSeconds = 1500L
             )
@@ -125,7 +125,7 @@ class RecordUseCasesTest {
                     message = "ok"
                 )
             ),
-            reportGateway = FakeReportGateway(
+            insightsGateway = FakeInsightsGateway(
                 activityName = "sleep_night",
                 durationSeconds = 9 * 60 * 60L
             )
@@ -266,7 +266,7 @@ class RecordUseCasesTest {
                     message = "ok"
                 )
             ),
-            reportGateway = FakeReportGateway(
+            insightsGateway = FakeInsightsGateway(
                 activityName = "study",
                 durationSeconds = 5400L
             )
@@ -307,7 +307,7 @@ class RecordUseCasesTest {
                 )
             ),
             queryGateway = FakeQueryGateway(),
-            reportGateway = FakeReportGateway(
+            insightsGateway = FakeInsightsGateway(
                 activityName = "study",
                 durationSeconds = 125L
             )
@@ -1393,8 +1393,8 @@ private class FakeQueryGateway(
     override suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult =
         TreeQueryResult(ok = true, found = false, message = "ok")
 
-    override suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult =
-        ReportChartQueryResult(ok = true, data = null, message = "ok")
+    override suspend fun queryInsightsChart(params: InsightsChartQueryParams): InsightsChartQueryResult =
+        InsightsChartQueryResult(ok = true, data = null, message = "ok")
 
     override suspend fun listActivityMappingNames(): ActivityMappingNamesResult =
         ActivityMappingNamesResult(ok = true, names = emptyList(), message = "ok")
@@ -1409,24 +1409,24 @@ private class FakeQueryGateway(
         canonicalCatalogResult
 }
 
-private class FakeReportGateway(
+private class FakeInsightsGateway(
     private val activityName: String,
     private val durationSeconds: Long
-) : ReportGateway {
-    override suspend fun reportMarkdown(request: TemporalReportQueryRequest): ReportCallResult =
-        ReportCallResult(
+) : InsightsGateway {
+    override suspend fun insightsMarkdown(request: TemporalInsightsQueryRequest): InsightsCallResult =
+        InsightsCallResult(
             initialized = true,
             operationOk = true,
             outputText = "",
             rawResponse = ""
         )
 
-    override suspend fun reportStructured(
-        request: TemporalReportQueryRequest
-    ): StructuredReportCallResult = StructuredReportCallResult(
+    override suspend fun insightsStructured(
+        request: TemporalInsightsQueryRequest
+    ): StructuredInsightsCallResult = StructuredInsightsCallResult(
         initialized = true,
         operationOk = true,
-        report = StructuredDailyReport(
+        insights = StructuredDailyInsights(
             date = request.selection.date.orEmpty(),
             totalDurationSeconds = durationSeconds,
             activities = listOf(

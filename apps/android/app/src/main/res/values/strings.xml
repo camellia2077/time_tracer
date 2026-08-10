@@ -3,10 +3,8 @@
     <!-- Keep the product name fixed as "Tracer" in every locale. Do not localize or rename. -->
     <string name="app_name">Tracer</string>
 
-    <string name="tracer_tab_data">Data</string>
-    <string name="tracer_tab_report">Report</string>
+    <string name="tracer_tab_insights">Insights</string>
     <string name="tracer_tab_record">Record</string>
-    <string name="tracer_tab_txt">TXT</string>
     <string name="tracer_tab_config">Config</string>
 
 
@@ -87,7 +85,10 @@
     <string name="tracer_progress_status_failed">Failed</string>
     <string name="tracer_progress_status_partial">Partial</string>
 
+    <string name="config_title_app_preferences">App preferences</string>
     <string name="config_title_appearance">Appearance</string>
+    <string name="config_title_insights_settings">Insights display</string>
+    <string name="config_title_advanced_files">Advanced files</string>
     <string name="config_title_theme_mode">Theme Mode</string>
     <string name="config_title_theme_palette">Theme Palette</string>
     <string name="config_theme_palette_indigo">Indigo</string>
@@ -112,17 +113,17 @@
     <string name="config_language_chinese">中文</string>
     <string name="config_language_english">English</string>
     <string name="config_language_japanese">日本語</string>
-    <string name="config_title_report_chart_style">Report Chart Style</string>
-    <string name="config_label_report_breakdown_palette">Breakdown Chart Palette</string>
-    <string name="config_report_breakdown_palette_current">Breakdown Chart Palette (Current: %1$s)</string>
-    <string name="config_report_breakdown_palette_tap_expand">Breakdown Chart Palette (Tap to Expand)</string>
-    <string name="config_report_breakdown_palette_preview_hint">Used by breakdown pie and horizontal bar charts. Colors are ordered from the largest share to the smallest; preview both visuals below before applying.</string>
-    <string name="config_report_breakdown_palette_pie_preview">Breakdown Pie Preview</string>
-    <string name="config_report_breakdown_palette_bar_preview">Breakdown Horizontal Bar Preview</string>
-    <string name="config_report_breakdown_palette_soft">Soft</string>
-    <string name="config_report_breakdown_palette_editorial">Editorial</string>
-    <string name="config_report_breakdown_palette_vivid">Vivid</string>
-    <string name="config_report_breakdown_palette_mono_accent">Mono Accent</string>
+    <string name="config_title_insights_chart_style">Insights Chart Style</string>
+    <string name="config_label_insights_breakdown_palette">Breakdown Chart Palette</string>
+    <string name="config_insights_breakdown_palette_current">Breakdown Chart Palette (Current: %1$s)</string>
+    <string name="config_insights_breakdown_palette_tap_expand">Breakdown Chart Palette (Tap to Expand)</string>
+    <string name="config_insights_breakdown_palette_preview_hint">Used by breakdown pie and horizontal bar charts. Colors are ordered from the largest share to the smallest; preview both visuals below before applying.</string>
+    <string name="config_insights_breakdown_palette_pie_preview">Breakdown Pie Preview</string>
+    <string name="config_insights_breakdown_palette_bar_preview">Breakdown Horizontal Bar Preview</string>
+    <string name="config_insights_breakdown_palette_soft">Soft</string>
+    <string name="config_insights_breakdown_palette_editorial">Editorial</string>
+    <string name="config_insights_breakdown_palette_vivid">Vivid</string>
+    <string name="config_insights_breakdown_palette_mono_accent">Mono Accent</string>
 
     <string name="config_title_dark_theme_style">Dark Theme Style</string>
     <string name="config_dark_theme_style_tinted">Tinted</string>
@@ -144,7 +145,7 @@
     <string name="config_category_alias">Categories</string>
     <string name="config_category_charts">Charts</string>
     <string name="config_category_meta">Meta</string>
-    <string name="config_category_reports">Reports</string>
+    <string name="config_category_insights">Insights</string>
     <string name="config_no_toml_files_in_category">No items in %1$s.</string>
     <string name="config_action_select_toml_file">Select item</string>
 
@@ -244,20 +245,20 @@
     <string name="config_open_source_licenses_unavailable">Open source licenses are temporarily unavailable.</string>
     <string name="config_action_back">Back</string>
     <string name="config_action_copy_diagnostics">Copy Diagnostics Payload</string>
-    <string name="config_title_report_average_day_basis">Report average denominator</string>
-    <string name="config_report_average_day_basis_description">Choose which days are used when calculating averages.</string>
-    <string name="config_report_average_day_basis_active">Days with activity records</string>
-    <string name="config_report_average_day_basis_calendar">All calendar days in the selected range</string>
-    <string name="report_daily_status_editor_title">Daily statuses</string>
-    <string name="report_daily_status_editor_description">Choose the activity parents used to calculate the Daily report status fields.</string>
-    <string name="report_daily_status_editor_loading">Loading Daily status configuration…</string>
-    <string name="report_daily_status_editor_empty">No Daily statuses configured.</string>
-    <string name="report_daily_status_saving">Saving…</string>
-    <string name="report_daily_status_add">Add status</string>
-    <string name="report_daily_status_edit">Edit status</string>
-    <string name="report_daily_status_delete">Delete status</string>
-    <string name="report_daily_status_edit_title">Edit Daily status</string>
-    <string name="report_daily_status_choose_parent">Choose activity parent</string>
-    <string name="report_daily_status_parent">Parent: %1$s</string>
+    <string name="config_title_insights_average_day_basis">Insights average denominator</string>
+    <string name="config_insights_average_day_basis_description">Choose which days are used when calculating averages.</string>
+    <string name="config_insights_average_day_basis_active">Days with activity records</string>
+    <string name="config_insights_average_day_basis_calendar">All calendar days in the selected range</string>
+    <string name="insights_daily_status_editor_title">Daily statuses</string>
+    <string name="insights_daily_status_editor_description">Choose the activity parents used to calculate the Daily insights status fields.</string>
+    <string name="insights_daily_status_editor_loading">Loading Daily status configuration…</string>
+    <string name="insights_daily_status_editor_empty">No Daily statuses configured.</string>
+    <string name="insights_daily_status_saving">Saving…</string>
+    <string name="insights_daily_status_add">Add status</string>
+    <string name="insights_daily_status_edit">Edit status</string>
+    <string name="insights_daily_status_delete">Delete status</string>
+    <string name="insights_daily_status_edit_title">Edit Daily status</string>
+    <string name="insights_daily_status_choose_parent">Choose activity parent</string>
+    <string name="insights_daily_status_parent">Parent: %1$s</string>
     <string name="daily_status_action_close">Close</string>
 </resources>

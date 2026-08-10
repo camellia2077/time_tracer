@@ -15,14 +15,16 @@ import com.example.tracer.RecordAuthoringMode
 import com.example.tracer.TxtOutputMode
 import com.example.tracer.RecordLogicalDayTarget
 import com.example.tracer.RecordSuggestionOutputMode
-import com.example.tracer.ReportChartSemanticMode
-import com.example.tracer.ReportChartVisualMode
-import com.example.tracer.ReportAverageDayBasis
-import com.example.tracer.ReportParameterSection
-import com.example.tracer.ReportPiePalettePreset
-import com.example.tracer.ReportResultDisplayMode
-import com.example.tracer.ReportMode
-import com.example.tracer.defaultReportPiePalettePreset
+import com.example.tracer.InsightsChartSemanticMode
+import com.example.tracer.InsightsChartVisualMode
+import com.example.tracer.InsightsAverageDayBasis
+import com.example.tracer.InsightsParameterSection
+import com.example.tracer.InsightsPiePalettePreset
+import com.example.tracer.InsightsResultDisplayMode
+import com.example.tracer.InsightsMode
+import com.example.tracer.defaultInsightsPiePalettePreset
+import java.nio.charset.StandardCharsets
+import java.util.Base64
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -75,22 +77,23 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         val DEFAULT_RECORD_CANONICAL_CATALOG_DISPLAY_MODE: RecordSuggestionOutputMode =
             RecordSuggestionOutputMode.CANONICAL
         val DEFAULT_RECORD_QUICK_ACTIVITIES: List<String> = emptyList()
-        const val DEFAULT_REPORT_CHART_SHOW_AVERAGE_LINE: Boolean = false
-        val DEFAULT_REPORT_CHART_SEMANTIC_MODE: ReportChartSemanticMode =
-            ReportChartSemanticMode.COMPOSITION
-        val DEFAULT_REPORT_CHART_VISUAL_MODE: ReportChartVisualMode =
-            ReportChartVisualMode.LINE
-        val DEFAULT_REPORT_MODE: ReportMode = ReportMode.DAY
-        val DEFAULT_REPORT_RESULT_DISPLAY_MODE: ReportResultDisplayMode =
-            ReportResultDisplayMode.TEXT
-        val DEFAULT_REPORT_PARAMETER_SECTION: ReportParameterSection =
-            ReportParameterSection.DAY
-        const val DEFAULT_REPORT_TIME_PARAMETERS_EXPANDED: Boolean = true
-        val DEFAULT_REPORT_PIE_PALETTE_PRESET: ReportPiePalettePreset =
-            defaultReportPiePalettePreset()
-        val DEFAULT_REPORT_AVERAGE_DAY_BASIS: ReportAverageDayBasis =
-            ReportAverageDayBasis.ACTIVE_DAYS
-        const val DEFAULT_REPORT_CHART_TREND_ROOT: String = ""
+        const val DEFAULT_INSIGHTS_CHART_SHOW_AVERAGE_LINE: Boolean = false
+        val DEFAULT_INSIGHTS_CHART_SEMANTIC_MODE: InsightsChartSemanticMode =
+            InsightsChartSemanticMode.COMPOSITION
+        val DEFAULT_INSIGHTS_CHART_VISUAL_MODE: InsightsChartVisualMode =
+            InsightsChartVisualMode.LINE
+        val DEFAULT_INSIGHTS_MODE: InsightsMode = InsightsMode.DAY
+        val DEFAULT_INSIGHTS_RESULT_DISPLAY_MODE: InsightsResultDisplayMode =
+            InsightsResultDisplayMode.TEXT
+        val DEFAULT_INSIGHTS_PARAMETER_SECTION: InsightsParameterSection =
+            InsightsParameterSection.DAY
+        const val DEFAULT_INSIGHTS_TIME_PARAMETERS_EXPANDED: Boolean = true
+        val DEFAULT_INSIGHTS_PIE_PALETTE_PRESET: InsightsPiePalettePreset =
+            defaultInsightsPiePalettePreset()
+        val DEFAULT_INSIGHTS_AVERAGE_DAY_BASIS: InsightsAverageDayBasis =
+            InsightsAverageDayBasis.ACTIVE_DAYS
+        const val DEFAULT_INSIGHTS_CHART_TREND_ROOT: String = ""
+        val DEFAULT_DAILY_STATUS_CONFIG: DailyStatusConfig = DailyStatusConfig()
         private const val MIN_RECORD_SUGGEST_LOOKBACK_DAYS: Int = 0
         private const val MAX_RECORD_SUGGEST_LOOKBACK_DAYS: Int = 60
         private const val MIN_RECORD_SUGGEST_TOP_N: Int = 0
@@ -135,16 +138,18 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         val RECORD_DRAFT_INTERVAL_STARTED_AT = longPreferencesKey("record_draft_interval_started_at")
         val RECORD_DRAFT_ATTRIBUTION_DATE = stringPreferencesKey("record_draft_attribution_date")
         val RECORD_DRAFT_LOGICAL_DAY_TARGET = stringPreferencesKey("record_draft_logical_day_target")
-        val REPORT_CHART_SHOW_AVERAGE_LINE = booleanPreferencesKey("report_chart_show_average_line")
-        val REPORT_CHART_SEMANTIC_MODE = stringPreferencesKey("report_chart_semantic_mode")
-        val REPORT_CHART_VISUAL_MODE = stringPreferencesKey("report_chart_visual_mode")
-        val REPORT_MODE = stringPreferencesKey("report_mode")
-        val REPORT_RESULT_DISPLAY_MODE = stringPreferencesKey("report_result_display_mode")
-        val REPORT_PARAMETER_SECTION = stringPreferencesKey("report_parameter_section")
-        val REPORT_TIME_PARAMETERS_EXPANDED = booleanPreferencesKey("report_time_parameters_expanded")
-        val REPORT_PIE_PALETTE_PRESET = stringPreferencesKey("report_pie_palette_preset")
-        val REPORT_AVERAGE_DAY_BASIS = stringPreferencesKey("report_average_day_basis")
-        val REPORT_CHART_TREND_ROOT = stringPreferencesKey("report_chart_trend_root")
+        val INSIGHTS_CHART_SHOW_AVERAGE_LINE = booleanPreferencesKey("insights_chart_show_average_line")
+        val INSIGHTS_CHART_SEMANTIC_MODE = stringPreferencesKey("insights_chart_semantic_mode")
+        val INSIGHTS_CHART_VISUAL_MODE = stringPreferencesKey("insights_chart_visual_mode")
+        val INSIGHTS_MODE = stringPreferencesKey("insights_mode")
+        val INSIGHTS_RESULT_DISPLAY_MODE = stringPreferencesKey("insights_result_display_mode")
+        val INSIGHTS_PARAMETER_SECTION = stringPreferencesKey("insights_parameter_section")
+        val INSIGHTS_TIME_PARAMETERS_EXPANDED = booleanPreferencesKey("insights_time_parameters_expanded")
+        val INSIGHTS_PIE_PALETTE_PRESET = stringPreferencesKey("insights_pie_palette_preset")
+        val INSIGHTS_AVERAGE_DAY_BASIS = stringPreferencesKey("insights_average_day_basis")
+        val INSIGHTS_CHART_TREND_ROOT = stringPreferencesKey("insights_chart_trend_root")
+        val INSIGHTS_HEATMAP_PALETTE_NAME = stringPreferencesKey("insights_heatmap_palette_name")
+        val INSIGHTS_DAILY_STATUSES = stringPreferencesKey("insights_daily_statuses")
     }
 
     val themeConfig: Flow<ThemeConfig> = dataStore.data.map { preferences ->
@@ -260,25 +265,37 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         }
     }
 
-    val reportChartShowAverageLine: Flow<Boolean> = dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.REPORT_CHART_SHOW_AVERAGE_LINE]
-            ?: DEFAULT_REPORT_CHART_SHOW_AVERAGE_LINE
+    val insightsChartShowAverageLine: Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.INSIGHTS_CHART_SHOW_AVERAGE_LINE]
+            ?: DEFAULT_INSIGHTS_CHART_SHOW_AVERAGE_LINE
     }
 
-    val reportPiePalettePreset: Flow<ReportPiePalettePreset> = dataStore.data.map { preferences ->
-        val rawValue = preferences[PreferencesKeys.REPORT_PIE_PALETTE_PRESET]
-            ?: DEFAULT_REPORT_PIE_PALETTE_PRESET.name
-        runCatching { ReportPiePalettePreset.valueOf(rawValue) }
-            .getOrDefault(DEFAULT_REPORT_PIE_PALETTE_PRESET)
+    val insightsPiePalettePreset: Flow<InsightsPiePalettePreset> = dataStore.data.map { preferences ->
+        val rawValue = preferences[PreferencesKeys.INSIGHTS_PIE_PALETTE_PRESET]
+            ?: DEFAULT_INSIGHTS_PIE_PALETTE_PRESET.name
+        runCatching { InsightsPiePalettePreset.valueOf(rawValue) }
+            .getOrDefault(DEFAULT_INSIGHTS_PIE_PALETTE_PRESET)
     }
 
-    val reportAverageDayBasis: Flow<ReportAverageDayBasis> = dataStore.data.map { preferences ->
-        runCatching {
-            ReportAverageDayBasis.valueOf(
-                preferences[PreferencesKeys.REPORT_AVERAGE_DAY_BASIS]
-                    ?: DEFAULT_REPORT_AVERAGE_DAY_BASIS.name
+    val insightsHeatmapPaletteName: Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.INSIGHTS_HEATMAP_PALETTE_NAME].orEmpty()
+    }
+
+    val dailyStatusConfig: Flow<DailyStatusConfig> = dataStore.data.map { preferences ->
+        DailyStatusConfig(
+            statuses = deserializeDailyStatusDefinitions(
+                preferences[PreferencesKeys.INSIGHTS_DAILY_STATUSES]
             )
-        }.getOrDefault(DEFAULT_REPORT_AVERAGE_DAY_BASIS)
+        )
+    }
+
+    val insightsAverageDayBasis: Flow<InsightsAverageDayBasis> = dataStore.data.map { preferences ->
+        runCatching {
+            InsightsAverageDayBasis.valueOf(
+                preferences[PreferencesKeys.INSIGHTS_AVERAGE_DAY_BASIS]
+                    ?: DEFAULT_INSIGHTS_AVERAGE_DAY_BASIS.name
+            )
+        }.getOrDefault(DEFAULT_INSIGHTS_AVERAGE_DAY_BASIS)
     }
 
     suspend fun setAppLanguage(language: AppLanguage) {
@@ -305,25 +322,25 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         }
     }
 
-    val reportChartSemanticMode: Flow<ReportChartSemanticMode> = dataStore.data.map { preferences ->
-        val rawValue = preferences[PreferencesKeys.REPORT_CHART_SEMANTIC_MODE]
-            ?: DEFAULT_REPORT_CHART_SEMANTIC_MODE.name
-        runCatching { ReportChartSemanticMode.valueOf(rawValue) }
-            .getOrDefault(DEFAULT_REPORT_CHART_SEMANTIC_MODE)
+    val insightsChartSemanticMode: Flow<InsightsChartSemanticMode> = dataStore.data.map { preferences ->
+        val rawValue = preferences[PreferencesKeys.INSIGHTS_CHART_SEMANTIC_MODE]
+            ?: DEFAULT_INSIGHTS_CHART_SEMANTIC_MODE.name
+        runCatching { InsightsChartSemanticMode.valueOf(rawValue) }
+            .getOrDefault(DEFAULT_INSIGHTS_CHART_SEMANTIC_MODE)
     }
 
-    val reportResultDisplayMode: Flow<ReportResultDisplayMode> = dataStore.data.map { preferences ->
-        val rawValue = preferences[PreferencesKeys.REPORT_RESULT_DISPLAY_MODE]
-            ?: DEFAULT_REPORT_RESULT_DISPLAY_MODE.name
-        runCatching { ReportResultDisplayMode.valueOf(rawValue) }
-            .getOrDefault(DEFAULT_REPORT_RESULT_DISPLAY_MODE)
+    val insightsResultDisplayMode: Flow<InsightsResultDisplayMode> = dataStore.data.map { preferences ->
+        val rawValue = preferences[PreferencesKeys.INSIGHTS_RESULT_DISPLAY_MODE]
+            ?: DEFAULT_INSIGHTS_RESULT_DISPLAY_MODE.name
+        runCatching { InsightsResultDisplayMode.valueOf(rawValue) }
+            .getOrDefault(DEFAULT_INSIGHTS_RESULT_DISPLAY_MODE)
     }
 
-    val reportParameterSection: Flow<ReportParameterSection> = dataStore.data.map { preferences ->
-        val rawValue = preferences[PreferencesKeys.REPORT_PARAMETER_SECTION]
-            ?: DEFAULT_REPORT_PARAMETER_SECTION.name
-        runCatching { ReportParameterSection.valueOf(rawValue) }
-            .getOrDefault(DEFAULT_REPORT_PARAMETER_SECTION)
+    val insightsParameterSection: Flow<InsightsParameterSection> = dataStore.data.map { preferences ->
+        val rawValue = preferences[PreferencesKeys.INSIGHTS_PARAMETER_SECTION]
+            ?: DEFAULT_INSIGHTS_PARAMETER_SECTION.name
+        runCatching { InsightsParameterSection.valueOf(rawValue) }
+            .getOrDefault(DEFAULT_INSIGHTS_PARAMETER_SECTION)
     }
 
     suspend fun setRecordCanonicalCatalogDisplayMode(value: RecordSuggestionOutputMode) {
@@ -378,21 +395,21 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         }
     }
 
-    val reportTimeParametersExpanded: Flow<Boolean> = dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.REPORT_TIME_PARAMETERS_EXPANDED]
-            ?: DEFAULT_REPORT_TIME_PARAMETERS_EXPANDED
+    val insightsTimeParametersExpanded: Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.INSIGHTS_TIME_PARAMETERS_EXPANDED]
+            ?: DEFAULT_INSIGHTS_TIME_PARAMETERS_EXPANDED
     }
 
-    val reportChartVisualMode: Flow<ReportChartVisualMode> = dataStore.data.map { preferences ->
-        val rawValue = preferences[PreferencesKeys.REPORT_CHART_VISUAL_MODE]
-            ?: DEFAULT_REPORT_CHART_VISUAL_MODE.name
-        runCatching { ReportChartVisualMode.valueOf(rawValue) }
-            .getOrDefault(DEFAULT_REPORT_CHART_VISUAL_MODE)
+    val insightsChartVisualMode: Flow<InsightsChartVisualMode> = dataStore.data.map { preferences ->
+        val rawValue = preferences[PreferencesKeys.INSIGHTS_CHART_VISUAL_MODE]
+            ?: DEFAULT_INSIGHTS_CHART_VISUAL_MODE.name
+        runCatching { InsightsChartVisualMode.valueOf(rawValue) }
+            .getOrDefault(DEFAULT_INSIGHTS_CHART_VISUAL_MODE)
     }
 
-    val reportMode: Flow<ReportMode> = dataStore.data.map { preferences ->
-        val rawValue = preferences[PreferencesKeys.REPORT_MODE] ?: DEFAULT_REPORT_MODE.name
-        runCatching { ReportMode.valueOf(rawValue) }.getOrDefault(DEFAULT_REPORT_MODE)
+    val insightsMode: Flow<InsightsMode> = dataStore.data.map { preferences ->
+        val rawValue = preferences[PreferencesKeys.INSIGHTS_MODE] ?: DEFAULT_INSIGHTS_MODE.name
+        runCatching { InsightsMode.valueOf(rawValue) }.getOrDefault(DEFAULT_INSIGHTS_MODE)
     }
 
     suspend fun setRecordLastTxtOutputMode(value: TxtOutputMode) {
@@ -429,26 +446,39 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         }
     }
 
-    suspend fun setReportChartShowAverageLine(value: Boolean) {
+    suspend fun setInsightsChartShowAverageLine(value: Boolean) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.REPORT_CHART_SHOW_AVERAGE_LINE] = value
+            preferences[PreferencesKeys.INSIGHTS_CHART_SHOW_AVERAGE_LINE] = value
         }
     }
 
-    suspend fun setReportPiePalettePreset(value: ReportPiePalettePreset) {
+    suspend fun setInsightsPiePalettePreset(value: InsightsPiePalettePreset) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.REPORT_PIE_PALETTE_PRESET] = value.name
+            preferences[PreferencesKeys.INSIGHTS_PIE_PALETTE_PRESET] = value.name
         }
     }
 
-    val reportChartTrendRoot: Flow<String> = dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.REPORT_CHART_TREND_ROOT]
-            ?: DEFAULT_REPORT_CHART_TREND_ROOT
+    suspend fun setInsightsHeatmapPaletteName(value: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.INSIGHTS_HEATMAP_PALETTE_NAME] = value.trim()
+        }
     }
 
-    suspend fun setReportAverageDayBasis(value: ReportAverageDayBasis) {
+    suspend fun setDailyStatusConfig(value: DailyStatusConfig) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.REPORT_AVERAGE_DAY_BASIS] = value.name
+            preferences[PreferencesKeys.INSIGHTS_DAILY_STATUSES] =
+                serializeDailyStatusDefinitions(value.statuses)
+        }
+    }
+
+    val insightsChartTrendRoot: Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.INSIGHTS_CHART_TREND_ROOT]
+            ?: DEFAULT_INSIGHTS_CHART_TREND_ROOT
+    }
+
+    suspend fun setInsightsAverageDayBasis(value: InsightsAverageDayBasis) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.INSIGHTS_AVERAGE_DAY_BASIS] = value.name
         }
     }
 
@@ -459,6 +489,39 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
     private fun normalizeTopN(value: Int): Int {
         return value.coerceIn(MIN_RECORD_SUGGEST_TOP_N, MAX_RECORD_SUGGEST_TOP_N)
     }
+
+    private fun serializeDailyStatusDefinitions(values: List<DailyStatusDefinition>): String {
+        return values.joinToString(separator = "\n") { status ->
+            listOf(status.id, status.label, status.parent)
+                .joinToString(separator = "\t", transform = ::encodeDailyStatusPart)
+        }
+    }
+
+    private fun deserializeDailyStatusDefinitions(raw: String?): List<DailyStatusDefinition> {
+        if (raw.isNullOrBlank()) {
+            return DEFAULT_DAILY_STATUS_CONFIG.statuses
+        }
+        return raw.lineSequence().mapNotNull { line ->
+            val parts = line.split('\t')
+            if (parts.size != 3) {
+                return@mapNotNull null
+            }
+            val (id, label, parent) = parts.map(::decodeDailyStatusPart)
+            if (id.isBlank() || label.isBlank() || parent.isBlank()) {
+                null
+            } else {
+                DailyStatusDefinition(id = id, label = label, parent = parent)
+            }
+        }.toList()
+    }
+
+    private fun encodeDailyStatusPart(value: String): String =
+        Base64.getUrlEncoder().withoutPadding()
+            .encodeToString(value.toByteArray(StandardCharsets.UTF_8))
+
+    private fun decodeDailyStatusPart(value: String): String = runCatching {
+        String(Base64.getUrlDecoder().decode(value), StandardCharsets.UTF_8)
+    }.getOrDefault("")
 
     private fun parseQuickActivities(raw: String?, hasStoredValue: Boolean): List<String> {
         // An unconfigured list must stay empty so the UI does not render placeholder activities
@@ -497,45 +560,45 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         return unique.toList()
     }
 
-    suspend fun setReportChartSemanticMode(value: ReportChartSemanticMode) {
+    suspend fun setInsightsChartSemanticMode(value: InsightsChartSemanticMode) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.REPORT_CHART_SEMANTIC_MODE] = value.name
+            preferences[PreferencesKeys.INSIGHTS_CHART_SEMANTIC_MODE] = value.name
         }
     }
 
-    suspend fun setReportChartVisualMode(value: ReportChartVisualMode) {
+    suspend fun setInsightsChartVisualMode(value: InsightsChartVisualMode) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.REPORT_CHART_VISUAL_MODE] = value.name
+            preferences[PreferencesKeys.INSIGHTS_CHART_VISUAL_MODE] = value.name
         }
     }
 
-    suspend fun setReportChartTrendRoot(value: String) {
+    suspend fun setInsightsChartTrendRoot(value: String) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.REPORT_CHART_TREND_ROOT] = value.trim()
+            preferences[PreferencesKeys.INSIGHTS_CHART_TREND_ROOT] = value.trim()
         }
     }
 
-    suspend fun setReportResultDisplayMode(value: ReportResultDisplayMode) {
+    suspend fun setInsightsResultDisplayMode(value: InsightsResultDisplayMode) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.REPORT_RESULT_DISPLAY_MODE] = value.name
+            preferences[PreferencesKeys.INSIGHTS_RESULT_DISPLAY_MODE] = value.name
         }
     }
 
-    suspend fun setReportParameterSection(value: ReportParameterSection) {
+    suspend fun setInsightsParameterSection(value: InsightsParameterSection) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.REPORT_PARAMETER_SECTION] = value.name
+            preferences[PreferencesKeys.INSIGHTS_PARAMETER_SECTION] = value.name
         }
     }
 
-    suspend fun setReportTimeParametersExpanded(value: Boolean) {
+    suspend fun setInsightsTimeParametersExpanded(value: Boolean) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.REPORT_TIME_PARAMETERS_EXPANDED] = value
+            preferences[PreferencesKeys.INSIGHTS_TIME_PARAMETERS_EXPANDED] = value
         }
     }
 
-    suspend fun setReportMode(value: ReportMode) {
+    suspend fun setInsightsMode(value: InsightsMode) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.REPORT_MODE] = value.name
+            preferences[PreferencesKeys.INSIGHTS_MODE] = value.name
         }
     }
 

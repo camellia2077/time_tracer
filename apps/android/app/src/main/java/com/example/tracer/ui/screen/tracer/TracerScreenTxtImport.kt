@@ -150,7 +150,7 @@ internal fun rememberTracerTxtFolderImportAction(
                 )
             },
             afterTransfer = { _, _ ->
-                // Keep Data tab export availability in sync with TXT store state,
+                // Keep Config > Data Management export availability in sync with TXT store state,
                 // even when ingest returns non-ok (e.g. partial/diagnostic response).
                 recordViewModel.refreshHistory()
             }

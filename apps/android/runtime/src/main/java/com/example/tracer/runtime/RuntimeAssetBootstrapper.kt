@@ -10,11 +10,13 @@ internal class RuntimeAssetBootstrapper(
     private val runtimeAssetRoot: String
 ) {
     fun bootstrap(rootDir: File) {
-        copyAssetTree(
-            assetPath = runtimeAssetRoot,
-            targetPath = File(rootDir, "config"),
-            overwriteExistingFiles = false
-        )
+        runtimeAssetBootstrapEntries(runtimeAssetRoot).forEach { entry ->
+            copyAssetTreeIfPresent(
+                assetPath = entry.assetPath,
+                targetPath = File(rootDir, entry.targetRelativePath),
+                overwriteExistingFiles = entry.overwriteExistingFiles
+            )
+        }
     }
 
     private fun copyAssetTreeIfPresent(
@@ -81,4 +83,27 @@ internal class RuntimeAssetBootstrapper(
         }
     }
 
+}
+
+internal data class RuntimeAssetBootstrapEntry(
+    val assetPath: String,
+    val targetRelativePath: String,
+    val overwriteExistingFiles: Boolean
+)
+
+internal fun runtimeAssetBootstrapEntries(
+    runtimeAssetRoot: String
+): List<RuntimeAssetBootstrapEntry> {
+    return listOf(
+        RuntimeAssetBootstrapEntry(
+            assetPath = "$runtimeAssetRoot/program",
+            targetRelativePath = "config/program",
+            overwriteExistingFiles = true
+        ),
+        RuntimeAssetBootstrapEntry(
+            assetPath = "$runtimeAssetRoot/user",
+            targetRelativePath = "config/user",
+            overwriteExistingFiles = false
+        )
+    )
 }

@@ -115,13 +115,13 @@ class ConfigTomlStorageTest {
     fun deleteTomlFile_rejectsProgramResourcePaths() {
         val root = Files.createTempDirectory("config-toml-storage-program-delete").toFile()
         try {
-            val target = File(root, "program/reports/markdown/en/day.toml").apply {
+            val target = File(root, "program/insights/markdown/en/day.toml").apply {
                 parentFile?.mkdirs()
                 writeText("seed")
             }
 
             val result = ConfigTomlStorage(root.absolutePath).deleteTomlFile(
-                relativePath = "program/reports/markdown/en/day.toml"
+                relativePath = "program/insights/markdown/en/day.toml"
             )
 
             assertFalse(result.ok)
@@ -150,7 +150,7 @@ class ConfigTomlStorageTest {
     }
 
     @Test
-    fun listTomlFiles_separates_alias_chart_and_report_categories() {
+    fun listTomlFiles_separates_alias_chart_and_insights_categories() {
         val root = Files.createTempDirectory("config-toml-storage-list").toFile()
         try {
             File(root, "program/config.toml").apply {
@@ -173,21 +173,13 @@ class ConfigTomlStorageTest {
                 parentFile?.mkdirs()
                 writeText("behavior = true\n")
             }
-            File(root, "user/charts.toml").apply {
-                parentFile?.mkdirs()
-                writeText("charts = true\n")
-            }
-            File(root, "user/heatmap.toml").apply {
-                parentFile?.mkdirs()
-                writeText("thresholds = true\n")
-            }
             File(root, "program/charts/heatmap.toml").apply {
                 parentFile?.mkdirs()
                 writeText("chart = true\n")
             }
-            File(root, "program/reports/markdown/en/day.toml").apply {
+            File(root, "program/insights/markdown/en/day.toml").apply {
                 parentFile?.mkdirs()
-                writeText("report = true\n")
+                writeText("insights = true\n")
             }
 
             val result = ConfigTomlStorage(root.absolutePath).listTomlFiles()
@@ -206,14 +198,6 @@ class ConfigTomlStorageTest {
                     ConfigTomlFileEntry(
                         relativePath = "user/behavior.toml",
                         displayName = "user/behavior.toml"
-                    ),
-                    ConfigTomlFileEntry(
-                        relativePath = "user/charts.toml",
-                        displayName = "user/charts.toml"
-                    ),
-                    ConfigTomlFileEntry(
-                        relativePath = "user/heatmap.toml",
-                        displayName = "user/heatmap.toml"
                     )
                 ),
                 result.userFiles
@@ -256,14 +240,15 @@ class ConfigTomlStorageTest {
             assertEquals(
                 listOf(
                     ConfigTomlFileEntry(
-                        relativePath = "program/reports/markdown/en/day.toml",
+                        relativePath = "program/insights/markdown/en/day.toml",
                         displayName = "markdown/en/day.toml"
                     )
                 ),
-                result.reportFiles
+                result.insightsFiles
             )
         } finally {
             root.deleteRecursively()
         }
     }
+
 }

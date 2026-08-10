@@ -126,7 +126,7 @@ class NativeRuntimeQueryOpsTest {
     }
 
     @Test
-    fun parseReportChartContent_parsesCoreStatsFields() {
+    fun parseInsightsChartContent_parsesCoreStatsFields() {
         val content = """
             {
               "schema_version": 1,
@@ -144,7 +144,7 @@ class NativeRuntimeQueryOpsTest {
             }
         """.trimIndent()
 
-        val parsed = parseReportChartContent(content)
+        val parsed = parseInsightsChartContent(content)
         assertNotNull(parsed)
         val data = checkNotNull(parsed)
 
@@ -166,7 +166,7 @@ class NativeRuntimeQueryOpsTest {
     }
 
     @Test
-    fun parseReportChartContent_missingStatsFields_resolvesFallbackStats() {
+    fun parseInsightsChartContent_missingStatsFields_resolvesFallbackStats() {
         val content = """
             {
               "roots": ["sleep", "", "sleep"],
@@ -179,7 +179,7 @@ class NativeRuntimeQueryOpsTest {
             }
         """.trimIndent()
 
-        val parsed = parseReportChartContent(content)
+        val parsed = parseInsightsChartContent(content)
         assertNotNull(parsed)
         val data = checkNotNull(parsed)
 
@@ -200,7 +200,7 @@ class NativeRuntimeQueryOpsTest {
     }
 
     @Test
-    fun parseReportChartContent_newerSchemaVersion_marksCompatibilityFallback() {
+    fun parseInsightsChartContent_newerSchemaVersion_marksCompatibilityFallback() {
         val content = """
             {
               "schema_version": 2,
@@ -213,7 +213,7 @@ class NativeRuntimeQueryOpsTest {
             }
         """.trimIndent()
 
-        val parsed = parseReportChartContent(content)
+        val parsed = parseInsightsChartContent(content)
         assertNotNull(parsed)
         val data = checkNotNull(parsed)
 
@@ -222,7 +222,7 @@ class NativeRuntimeQueryOpsTest {
     }
 
     @Test
-    fun parseReportChartContent_missingStatsAndSeries_usesLookbackForRangeFallback() {
+    fun parseInsightsChartContent_missingStatsAndSeries_usesLookbackForRangeFallback() {
         val content = """
             {
               "roots": ["study"],
@@ -232,7 +232,7 @@ class NativeRuntimeQueryOpsTest {
             }
         """.trimIndent()
 
-        val parsed = parseReportChartContent(content)
+        val parsed = parseInsightsChartContent(content)
         assertNotNull(parsed)
         val data = checkNotNull(parsed)
 
@@ -244,7 +244,7 @@ class NativeRuntimeQueryOpsTest {
     }
 
     @Test
-    fun parseReportChartContent_missingStats_usesActiveDaysAsAverageDenominator() {
+    fun parseInsightsChartContent_missingStats_usesActiveDaysAsAverageDenominator() {
         val content = """
             {
               "roots": ["study"],
@@ -257,7 +257,7 @@ class NativeRuntimeQueryOpsTest {
             }
         """.trimIndent()
 
-        val parsed = parseReportChartContent(content)
+        val parsed = parseInsightsChartContent(content)
         assertNotNull(parsed)
         val data = checkNotNull(parsed)
 
@@ -268,7 +268,7 @@ class NativeRuntimeQueryOpsTest {
     }
 
     @Test
-    fun parseReportCompositionContent_parsesWeightedTree() {
+    fun parseInsightsCompositionContent_parsesWeightedTree() {
         val content = """
             {
               "total_duration_seconds": 9000,
@@ -296,7 +296,7 @@ class NativeRuntimeQueryOpsTest {
             }
         """.trimIndent()
 
-        val parsed = parseReportCompositionContent(content)
+        val parsed = parseInsightsCompositionContent(content)
         assertNotNull(parsed)
         val data = checkNotNull(parsed)
 

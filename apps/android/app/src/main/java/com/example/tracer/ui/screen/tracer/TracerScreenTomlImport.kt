@@ -62,6 +62,9 @@ internal fun rememberTracerTomlFolderImportAction(
                 var successCount = 0
 
                 for ((index, document) in documents.withIndex()) {
+                    if (!isAndroidImportExportUserConfigTomlPath(document.relativePath)) {
+                        continue
+                    }
                     dataViewModel.setStatusText(
                         buildTomlFolderImportProgressText(
                             current = index + 1,

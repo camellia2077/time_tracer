@@ -239,8 +239,8 @@ private class TxtEditorLifecycleFakeRuntime(
     override suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult =
         TreeQueryResult(ok = true, found = false, message = "ok")
 
-    override suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult =
-        ReportChartQueryResult(ok = true, data = null, message = "ok")
+    override suspend fun queryInsightsChart(params: InsightsChartQueryParams): InsightsChartQueryResult =
+        InsightsChartQueryResult(ok = true, data = null, message = "ok")
 
     override suspend fun listActivityMappingNames(): ActivityMappingNamesResult =
         ActivityMappingNamesResult(ok = true, names = emptyList(), message = "ok")

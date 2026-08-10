@@ -49,7 +49,7 @@ internal fun ConfigSection(
     aliasFiles: List<ConfigTomlFileEntry>,
     chartFiles: List<ConfigTomlFileEntry>,
     metaFiles: List<ConfigTomlFileEntry>,
-    reportFiles: List<ConfigTomlFileEntry>,
+    insightsFiles: List<ConfigTomlFileEntry>,
     selectedFilePath: String,
     selectedFileDisplayName: String,
     selectedFileContent: String,
@@ -66,7 +66,7 @@ internal fun ConfigSection(
     onSelectAlias: () -> Unit,
     onSelectCharts: () -> Unit,
     onSelectMeta: () -> Unit,
-    onSelectReports: () -> Unit,
+    onSelectInsights: () -> Unit,
     onRefreshFiles: () -> Unit,
     onOpenFile: (String) -> Unit,
     onCreateAliasTomlFile: (String) -> Unit,
@@ -96,19 +96,20 @@ internal fun ConfigSection(
     onDiscardAliasEntryMovePlan: () -> Unit,
     onSaveCurrentFile: () -> Unit,
     onThemeEvent: (com.example.tracer.ui.viewmodel.ThemeEvent) -> Unit,
-    reportPiePalettePreset: ReportPiePalettePreset,
-    onReportPiePalettePresetChange: (ReportPiePalettePreset) -> Unit,
-    reportAverageDayBasis: ReportAverageDayBasis,
-    onReportAverageDayBasisChange: (ReportAverageDayBasis) -> Unit,
+    insightsPiePalettePreset: InsightsPiePalettePreset,
+    onInsightsPiePalettePresetChange: (InsightsPiePalettePreset) -> Unit,
+    insightsAverageDayBasis: InsightsAverageDayBasis,
+    onInsightsAverageDayBasisChange: (InsightsAverageDayBasis) -> Unit,
     appLanguage: com.example.tracer.data.AppLanguage,
-    onSetAppLanguage: (com.example.tracer.data.AppLanguage) -> Unit
+    onSetAppLanguage: (com.example.tracer.data.AppLanguage) -> Unit,
+    extraContent: @Composable () -> Unit = {}
 ) {
     var showAboutPage by rememberSaveable { mutableStateOf(false) }
     val visibleFiles = when (selectedCategory) {
         ConfigCategory.ALIAS -> aliasFiles.filter { isAliasConfigFilePath(it.relativePath) }
         ConfigCategory.CHARTS -> chartFiles
         ConfigCategory.META -> metaFiles
-        ConfigCategory.REPORTS -> reportFiles
+        ConfigCategory.INSIGHTS -> insightsFiles
     }.map { entry ->
         entry.copy(displayName = displayNameForCurrentScope(entry, selectedCategory))
     }
@@ -129,31 +130,39 @@ internal fun ConfigSection(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        AppearanceSettingsCard(
-            themeConfig = themeConfig,
-            onThemeEvent = onThemeEvent,
-            reportPiePalettePreset = reportPiePalettePreset,
-            onReportPiePalettePresetChange = onReportPiePalettePresetChange,
+        ConfigApplicationPreferencesCard(
             appLanguage = appLanguage,
             onSetAppLanguage = onSetAppLanguage
         )
-        ConfigReportAverageDayBasisCard(
-            selected = reportAverageDayBasis,
-            onSelected = onReportAverageDayBasisChange
+        AppearanceSettingsCard(
+            themeConfig = themeConfig,
+            onThemeEvent = onThemeEvent
+        )
+        ConfigInsightsAverageDayBasisCard(
+            insightsPiePalettePreset = insightsPiePalettePreset,
+            onInsightsPiePalettePresetChange = onInsightsPiePalettePresetChange,
+            selected = insightsAverageDayBasis,
+            onSelected = onInsightsAverageDayBasisChange
         )
 
-        ConfigCategorySwitchCard(
-            selectedCategory = selectedCategory,
-            onSelectAlias = onSelectAlias,
-            onSelectCharts = onSelectCharts,
-            onSelectMeta = onSelectMeta,
-            onSelectReports = onSelectReports,
-            onRefreshFiles = onRefreshFiles
-        )
+        ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                ConfigCategorySwitchCard(
+                    selectedCategory = selectedCategory,
+                    onSelectAlias = onSelectAlias,
+                    onSelectCharts = onSelectCharts,
+                    onSelectMeta = onSelectMeta,
+                    onSelectInsights = onSelectInsights,
+                    onRefreshFiles = onRefreshFiles
+                )
 
-        if (visibleFiles.isNotEmpty()) {
-            if (usesAliasStructuredEditor) {
-                ConfigAliasEditorCard(
+                if (visibleFiles.isNotEmpty() || selectedCategory == ConfigCategory.ALIAS) {
+                    HorizontalDivider()
+                }
+
+                if (visibleFiles.isNotEmpty()) {
+                    if (usesAliasStructuredEditor) {
+                        ConfigAliasEditorCard(
                     aliasFiles = visibleFiles,
                     selectedFileDisplayName = scopedSelectedFileDisplayName,
                     selectedFileContent = selectedFileContent,
@@ -189,9 +198,9 @@ internal fun ConfigSection(
                     onConfirmMovePlan = onConfirmAliasEntryMovePlan,
                     onDiscardMovePlan = onDiscardAliasEntryMovePlan,
                     onSave = onSaveCurrentFile
-                )
-            } else {
-                ConfigEditorCard(
+                        )
+                    } else {
+                        ConfigEditorCard(
                     selectedFileDisplayName = scopedSelectedFileDisplayName,
                     selectedFileContent = selectedFileContent,
                     editableContent = editableContent,
@@ -199,13 +208,17 @@ internal fun ConfigSection(
                     onEditableContentChange = onEditableContentChange,
                     onSaveCurrentFile = onSaveCurrentFile,
                     readOnly = selectedCategory != ConfigCategory.ALIAS
-                )
+                        )
+                    }
+                } else if (selectedCategory == ConfigCategory.ALIAS) {
+                    ConfigAliasEmptyFileCard(
+                        onCreateAliasTomlFile = onCreateAliasTomlFile
+                    )
+                }
             }
-        } else if (selectedCategory == ConfigCategory.ALIAS) {
-            ConfigAliasEmptyFileCard(
-                onCreateAliasTomlFile = onCreateAliasTomlFile
-            )
         }
+
+        extraContent()
 
         ConfigAboutCard(
             onOpenAbout = { showAboutPage = true },
@@ -218,11 +231,12 @@ internal fun ConfigSection(
 private fun ConfigAliasEmptyFileCard(
     onCreateAliasTomlFile: (String) -> Unit
 ) {
-    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
             Text(
                 text = stringResource(R.string.config_alias_empty_title),
                 style = MaterialTheme.typography.titleMedium,
@@ -235,7 +249,6 @@ private fun ConfigAliasEmptyFileCard(
             ConfigEditorFileControls(
                 onCreateAliasTomlFile = onCreateAliasTomlFile
             )
-        }
     }
 }
 

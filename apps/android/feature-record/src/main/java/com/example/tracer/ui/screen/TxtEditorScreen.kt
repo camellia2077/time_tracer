@@ -65,6 +65,7 @@ fun TxtEditorSection(
     initialOutputMode: TxtOutputMode = TxtOutputMode.DAY,
     onOutputModePersist: (TxtOutputMode) -> Unit = {},
     bottomContentPadding: Dp = 0.dp,
+    embeddedInScrollableParent: Boolean = false,
     inlineStatusText: String,
     onCreateCurrentMonthTxt: () -> Unit
 ) {
@@ -282,8 +283,20 @@ fun TxtEditorSection(
         )
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = if (embeddedInScrollableParent) {
+            Modifier.fillMaxWidth()
+        } else {
+            Modifier.fillMaxSize()
+        }
+    ) {
+        Column(
+            modifier = if (embeddedInScrollableParent) {
+                Modifier.fillMaxWidth()
+            } else {
+                Modifier.fillMaxSize()
+            }
+        ) {
             TxtMonthNavigationCard(
                 selectedMonth = selectedMonth,
                 currentDay = currentDay,
@@ -329,10 +342,17 @@ fun TxtEditorSection(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
-                    .padding(top = 16.dp)
-                    .verticalScroll(rememberScrollState())
-                    .padding(bottom = bottomContentPadding),
+                    .then(
+                        if (embeddedInScrollableParent) {
+                            Modifier.padding(top = 16.dp)
+                        } else {
+                            Modifier
+                                .weight(1f)
+                                .padding(top = 16.dp)
+                                .verticalScroll(rememberScrollState())
+                                .padding(bottom = bottomContentPadding)
+                        }
+                    ),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 if (showEmptyState) {

@@ -20,7 +20,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tracer.PersistedRecordInputSnapshot
-import com.example.tracer.data.ReportChartPaletteUserConfigStore
 import com.example.tracer.data.UserPreferencesRecordInputPersistence
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -30,7 +29,7 @@ fun TracerScreen(
     runtimeInitializer: RuntimeInitializer,
     recordGateway: RecordGateway,
     txtStorageGateway: TxtStorageGateway,
-    reportGateway: ReportGateway,
+    insightsGateway: InsightsGateway,
     queryGateway: QueryGateway,
     configGateway: ConfigGateway,
     quickAccessGateway: QuickAccessGateway,
@@ -55,18 +54,18 @@ fun TracerScreen(
             DataViewModelFactory(runtimeInitializer, recordGateway)
         }
     )
-    val queryReportViewModel: QueryReportViewModel = viewModel(
-        factory = remember(reportGateway, queryGateway, recordGateway, context) {
-            QueryReportViewModelFactory(
-                reportGateway = reportGateway,
+    val queryInsightsViewModel: QueryInsightsViewModel = viewModel(
+        factory = remember(insightsGateway, queryGateway, recordGateway, context) {
+            QueryInsightsViewModelFactory(
+                insightsGateway = insightsGateway,
                 queryGateway = queryGateway,
                 recordGateway = recordGateway,
-                textProvider = AndroidQueryReportTextProvider(context)
+                textProvider = AndroidQueryInsightsTextProvider(context)
             )
         }
     )
     LaunchedEffect(appLanguage) {
-        queryReportViewModel.onReportLocaleChange(
+        queryInsightsViewModel.onInsightsLocaleChange(
             when (appLanguage) {
                 com.example.tracer.data.AppLanguage.System -> when (Locale.getDefault().language) {
                     "zh" -> "zh"
@@ -93,14 +92,14 @@ fun TracerScreen(
         factory = remember(
             recordGateway,
             txtStorageGateway,
-            reportGateway,
+            insightsGateway,
             queryGateway,
             recordInputPersistence
         ) {
             RecordViewModelFactory(
                 recordGateway = recordGateway,
                 txtStorageGateway = txtStorageGateway,
-                reportGateway = reportGateway,
+                insightsGateway = insightsGateway,
                 queryGateway = queryGateway,
                 recordInputPersistence = recordInputPersistence,
                 textProvider = AndroidRecordTextProvider(context)
@@ -126,7 +125,7 @@ fun TracerScreen(
     )
 
     val dataUiState = dataViewModel.uiState
-    val queryUiState = queryReportViewModel.uiState
+    val queryUiState = queryInsightsViewModel.uiState
     val recordUiState = recordViewModel.uiState
     val configUiState = configViewModel.uiState
     val recordSuggestionPreferences by userPreferencesRepository.recordSuggestionPreferences.collectAsState(
@@ -143,44 +142,40 @@ fun TracerScreen(
             orderedCanonicalRootPaths = com.example.tracer.data.UserPreferencesRepository.DEFAULT_ORDERED_CANONICAL_ROOT_PATHS
         )
     )
-    val reportChartShowAverageLine by userPreferencesRepository.reportChartShowAverageLine.collectAsState(
-        initial = com.example.tracer.data.UserPreferencesRepository.DEFAULT_REPORT_CHART_SHOW_AVERAGE_LINE
+    val insightsChartShowAverageLine by userPreferencesRepository.insightsChartShowAverageLine.collectAsState(
+        initial = com.example.tracer.data.UserPreferencesRepository.DEFAULT_INSIGHTS_CHART_SHOW_AVERAGE_LINE
     )
-    val reportChartSemanticMode by userPreferencesRepository.reportChartSemanticMode.collectAsState(
+    val insightsChartSemanticMode by userPreferencesRepository.insightsChartSemanticMode.collectAsState(
         initial = null
     )
-    val reportChartVisualMode by userPreferencesRepository.reportChartVisualMode.collectAsState(
+    val insightsChartVisualMode by userPreferencesRepository.insightsChartVisualMode.collectAsState(
         initial = null
     )
-    val reportChartTrendRoot by userPreferencesRepository.reportChartTrendRoot.collectAsState(
+    val insightsChartTrendRoot by userPreferencesRepository.insightsChartTrendRoot.collectAsState(
         initial = null
     )
-    val reportAverageDayBasis by userPreferencesRepository.reportAverageDayBasis.collectAsState(
+    val insightsAverageDayBasis by userPreferencesRepository.insightsAverageDayBasis.collectAsState(
         initial = null
     )
-    val reportMode by userPreferencesRepository.reportMode.collectAsState(initial = null)
-    val reportResultDisplayMode by userPreferencesRepository.reportResultDisplayMode.collectAsState(
+    val insightsMode by userPreferencesRepository.insightsMode.collectAsState(initial = null)
+    val insightsResultDisplayMode by userPreferencesRepository.insightsResultDisplayMode.collectAsState(
         initial = null
     )
-    val reportParameterSection by userPreferencesRepository.reportParameterSection.collectAsState(
+    val insightsParameterSection by userPreferencesRepository.insightsParameterSection.collectAsState(
         initial = null
     )
-    val reportTimeParametersExpanded by userPreferencesRepository.reportTimeParametersExpanded
+    val insightsTimeParametersExpanded by userPreferencesRepository.insightsTimeParametersExpanded
         .collectAsState(initial = null)
     val persistedRecordInput by userPreferencesRepository.recordPersistedInput.collectAsState(
         initial = null as PersistedRecordInputSnapshot?
     )
-    var reportPiePalettePreset by remember {
-        mutableStateOf(com.example.tracer.data.UserPreferencesRepository.DEFAULT_REPORT_PIE_PALETTE_PRESET)
-    }
-    LaunchedEffect(configGateway) {
-        ReportChartPaletteUserConfigStore.load(configGateway).piePalettePreset?.let {
-            reportPiePalettePreset = it
-        }
-    }
-    val reportHeatmapState = rememberTracerScreenReportHeatmapState(
+    val insightsPiePalettePreset by userPreferencesRepository.insightsPiePalettePreset.collectAsState(
+        initial = null
+    )
+    val insightsHeatmapState = rememberTracerScreenInsightsHeatmapState(
         selectedTab = selectedTab,
-        configGateway = configGateway
+        configGateway = configGateway,
+        userPreferencesRepository = userPreferencesRepository
     )
     val lifecycleOwner = LocalLifecycleOwner.current
     val isSystemDark = isSystemInDarkTheme()
@@ -194,27 +189,28 @@ fun TracerScreen(
     // hydrate them in a later frame. That state change is rendered by Material as a short
     // selection animation during cold start.
     if (persistedRecordInput == null ||
-        reportChartSemanticMode == null ||
-        reportChartVisualMode == null ||
-        reportChartTrendRoot == null ||
-        reportMode == null ||
-        reportResultDisplayMode == null ||
-        reportParameterSection == null ||
-        reportTimeParametersExpanded == null
-        || reportAverageDayBasis == null
+        insightsChartSemanticMode == null ||
+        insightsChartVisualMode == null ||
+        insightsChartTrendRoot == null ||
+        insightsMode == null ||
+        insightsResultDisplayMode == null ||
+        insightsParameterSection == null ||
+        insightsTimeParametersExpanded == null
+        || insightsAverageDayBasis == null || insightsPiePalettePreset == null
     ) {
         return
     }
 
     val loadedPersistedRecordInput = requireNotNull(persistedRecordInput)
-    val loadedReportChartSemanticMode = requireNotNull(reportChartSemanticMode)
-    val loadedReportChartVisualMode = requireNotNull(reportChartVisualMode)
-    val loadedReportChartTrendRoot = requireNotNull(reportChartTrendRoot)
-    val loadedReportMode = requireNotNull(reportMode)
-    val loadedReportResultDisplayMode = requireNotNull(reportResultDisplayMode)
-    val loadedReportParameterSection = requireNotNull(reportParameterSection)
-    val loadedReportTimeParametersExpanded = requireNotNull(reportTimeParametersExpanded)
-    val loadedReportAverageDayBasis = requireNotNull(reportAverageDayBasis)
+    val loadedInsightsChartSemanticMode = requireNotNull(insightsChartSemanticMode)
+    val loadedInsightsChartVisualMode = requireNotNull(insightsChartVisualMode)
+    val loadedInsightsChartTrendRoot = requireNotNull(insightsChartTrendRoot)
+    val loadedInsightsMode = requireNotNull(insightsMode)
+    val loadedInsightsResultDisplayMode = requireNotNull(insightsResultDisplayMode)
+    val loadedInsightsParameterSection = requireNotNull(insightsParameterSection)
+    val loadedInsightsTimeParametersExpanded = requireNotNull(insightsTimeParametersExpanded)
+    val loadedInsightsAverageDayBasis = requireNotNull(insightsAverageDayBasis)
+    val loadedInsightsPiePalettePreset = requireNotNull(insightsPiePalettePreset)
 
     val displayedRecordUiState = if (!recordViewModel.hasAppliedInitialPersistedRecordInputForUi) {
         recordUiState.copy(
@@ -293,7 +289,7 @@ fun TracerScreen(
     val tabLifecycleArgs = {
         TracerTabLifecycleArgs(
             queryGateway = queryGateway,
-            queryReportViewModel = queryReportViewModel,
+            queryInsightsViewModel = queryInsightsViewModel,
             recordViewModel = recordViewModel,
             configViewModel = configViewModel,
             recordStatusText = { recordViewModel.uiState.statusText },
@@ -340,7 +336,7 @@ fun TracerScreen(
         onCoordinatorEvent = actions.onCoordinatorEvent,
         dataViewModel = dataViewModel,
         queryUiState = queryUiState,
-        queryReportViewModel = queryReportViewModel,
+        queryInsightsViewModel = queryInsightsViewModel,
         txtStorageGateway = txtStorageGateway,
         recordUiState = displayedRecordUiState,
         recordViewModel = recordViewModel,
@@ -348,70 +344,69 @@ fun TracerScreen(
         configViewModel = configViewModel,
         themeConfig = themeConfig,
         onThemeEvent = onThemeEvent,
-        reportPiePalettePreset = reportPiePalettePreset,
-        onReportPiePalettePresetChange = { value ->
-            reportPiePalettePreset = value
+        insightsPiePalettePreset = loadedInsightsPiePalettePreset,
+        onInsightsPiePalettePresetChange = { value ->
             coroutineScope.launch {
-                ReportChartPaletteUserConfigStore.savePiePalette(configGateway, value)
+                userPreferencesRepository.setInsightsPiePalettePreset(value)
             }
         },
-        reportChartShowAverageLine = reportChartShowAverageLine,
-        onReportChartShowAverageLineChange = { value ->
+        insightsChartShowAverageLine = insightsChartShowAverageLine,
+        onInsightsChartShowAverageLineChange = { value ->
             coroutineScope.launch {
-                userPreferencesRepository.setReportChartShowAverageLine(value)
+                userPreferencesRepository.setInsightsChartShowAverageLine(value)
             }
         },
-        reportChartSemanticMode = loadedReportChartSemanticMode,
-        onReportChartSemanticModeChange = { value ->
+        insightsChartSemanticMode = loadedInsightsChartSemanticMode,
+        onInsightsChartSemanticModeChange = { value ->
             coroutineScope.launch {
-                userPreferencesRepository.setReportChartSemanticMode(value)
+                userPreferencesRepository.setInsightsChartSemanticMode(value)
             }
         },
-        reportChartVisualMode = loadedReportChartVisualMode,
-        onReportChartVisualModeChange = { value ->
+        insightsChartVisualMode = loadedInsightsChartVisualMode,
+        onInsightsChartVisualModeChange = { value ->
             coroutineScope.launch {
-                userPreferencesRepository.setReportChartVisualMode(value)
+                userPreferencesRepository.setInsightsChartVisualMode(value)
             }
         },
-        reportChartTrendRoot = loadedReportChartTrendRoot,
-        onReportChartTrendRootChange = { value ->
+        insightsChartTrendRoot = loadedInsightsChartTrendRoot,
+        onInsightsChartTrendRootChange = { value ->
             coroutineScope.launch {
-                userPreferencesRepository.setReportChartTrendRoot(value)
+                userPreferencesRepository.setInsightsChartTrendRoot(value)
             }
         },
-        reportAverageDayBasis = loadedReportAverageDayBasis,
-        onReportAverageDayBasisChange = { value ->
-            coroutineScope.launch { userPreferencesRepository.setReportAverageDayBasis(value) }
+        insightsAverageDayBasis = loadedInsightsAverageDayBasis,
+        onInsightsAverageDayBasisChange = { value ->
+            coroutineScope.launch { userPreferencesRepository.setInsightsAverageDayBasis(value) }
         },
-        reportMode = loadedReportMode,
-        onReportModeChange = { value ->
+        insightsMode = loadedInsightsMode,
+        onInsightsModeChange = { value ->
             coroutineScope.launch {
-                userPreferencesRepository.setReportMode(value)
+                userPreferencesRepository.setInsightsMode(value)
             }
         },
-        reportResultDisplayMode = loadedReportResultDisplayMode,
-        onReportResultDisplayModeChange = { value ->
+        insightsResultDisplayMode = loadedInsightsResultDisplayMode,
+        onInsightsResultDisplayModeChange = { value ->
             coroutineScope.launch {
-                userPreferencesRepository.setReportResultDisplayMode(value)
+                userPreferencesRepository.setInsightsResultDisplayMode(value)
             }
         },
-        reportParameterSection = loadedReportParameterSection,
-        onReportParameterSectionChange = { value ->
+        insightsParameterSection = loadedInsightsParameterSection,
+        onInsightsParameterSectionChange = { value ->
             coroutineScope.launch {
-                userPreferencesRepository.setReportParameterSection(value)
+                userPreferencesRepository.setInsightsParameterSection(value)
             }
         },
-        reportTimeParametersExpanded = loadedReportTimeParametersExpanded,
-        onReportTimeParametersExpandedChange = { value ->
+        insightsTimeParametersExpanded = loadedInsightsTimeParametersExpanded,
+        onInsightsTimeParametersExpandedChange = { value ->
             coroutineScope.launch {
-                userPreferencesRepository.setReportTimeParametersExpanded(value)
+                userPreferencesRepository.setInsightsTimeParametersExpanded(value)
             }
         },
-        reportHeatmapTomlConfig = reportHeatmapState.config,
-        reportHeatmapStylePreference = reportHeatmapState.stylePreference,
-        onReportHeatmapThemePolicyChange = reportHeatmapState.onThemePolicyChange,
-        onReportHeatmapPaletteNameChange = reportHeatmapState.onPaletteNameChange,
-        reportHeatmapApplyMessage = reportHeatmapState.applyMessage,
+        insightsHeatmapTomlConfig = insightsHeatmapState.config,
+        insightsHeatmapStylePreference = insightsHeatmapState.stylePreference,
+        onInsightsHeatmapThemePolicyChange = insightsHeatmapState.onThemePolicyChange,
+        onInsightsHeatmapPaletteNameChange = insightsHeatmapState.onPaletteNameChange,
+        insightsHeatmapApplyMessage = insightsHeatmapState.applyMessage,
         isAppDarkThemeActive = isAppDarkThemeActive,
         appLanguage = appLanguage,
         onSetAppLanguage = onSetAppLanguage,
@@ -443,7 +438,7 @@ fun TracerScreen(
 
     if (isDailyStatusEditorVisible) {
         DailyStatusEditorDialog(
-            configGateway = configGateway,
+            userPreferencesRepository = userPreferencesRepository,
             statusValues = queryUiState.dayTimeline?.statuses.orEmpty(),
             recordUiState = recordUiState,
             recordViewModel = recordViewModel,

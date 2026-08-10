@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,11 +36,12 @@ internal fun ConfigEditorCard(
         }
     }
 
-    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
             Text(
                 text = stringResource(R.string.config_title_editor_file, selectedFileDisplayName),
                 style = MaterialTheme.typography.titleMedium,
@@ -75,7 +75,6 @@ internal fun ConfigEditorCard(
                 monospace = true,
                 readOnly = readOnly
             )
-        }
     }
 }
 

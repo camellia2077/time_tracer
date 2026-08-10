@@ -1,0 +1,261 @@
+package com.example.tracer
+
+import android.content.ClipData
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.platform.LocalClipboard
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.example.tracer.feature.insights.R
+import kotlinx.coroutines.launch
+
+
+@Composable
+internal fun QueryInsightsResultDisplay(
+    resultDisplayMode: InsightsResultDisplayMode,
+    activeResult: QueryResult?,
+    insightsSummary: InsightsSummary?,
+    dayTimeline: StructuredDailyInsights?,
+    parameterSection: InsightsParameterSection,
+    insightsError: String,
+    analysisError: String,
+    chartSemanticMode: InsightsChartSemanticMode,
+    chartVisualMode: InsightsChartVisualMode,
+    compositionVisualMode: InsightsCompositionVisualMode,
+    trendChartRoots: List<String>,
+    trendChartSelectedRoot: String,
+    insightsMode: InsightsMode,
+    trendChartLoading: Boolean,
+    trendChartError: String,
+    trendChartRenderModel: ChartRenderModel?,
+    trendChartLastTrace: ChartQueryTrace?,
+    compositionChartLoading: Boolean,
+    compositionChartError: String,
+    compositionChartRenderModel: CompositionChartRenderModel?,
+    compositionChartLastTrace: ChartQueryTrace?,
+    chartShowAverageLine: Boolean,
+    piePalettePreset: InsightsPiePalettePreset,
+    heatmapTomlConfig: InsightsHeatmapTomlConfig,
+    heatmapStylePreference: InsightsHeatmapStylePreference,
+    onHeatmapThemePolicyChange: (InsightsHeatmapThemePolicy) -> Unit,
+    onHeatmapPaletteNameChange: (String) -> Unit,
+    heatmapApplyMessage: String,
+    isAppDarkThemeActive: Boolean,
+    onCompositionVisualModeChange: (InsightsCompositionVisualMode) -> Unit,
+    onChartRootChange: (String) -> Unit,
+    onChartShowAverageLineChange: (Boolean) -> Unit,
+    onChartVisualModeChange: (InsightsChartVisualMode) -> Unit,
+    onUpdateActivityRemark: suspend (ActivityTimelineItem, String) -> RecordActionResult = { _, _ ->
+        RecordActionResult(ok = false, message = "Activity remark editing is unavailable.")
+    },
+    onUpdateDayRemark: suspend (String) -> RecordActionResult = {
+        RecordActionResult(ok = false, message = "Day remark editing is unavailable.")
+    },
+    onEditDailyStatuses: () -> Unit = {}
+) {
+    val clipboard = LocalClipboard.current
+    val clipboardScope = rememberCoroutineScope()
+
+
+    if (resultDisplayMode == InsightsResultDisplayMode.CHART) {
+        ElevatedCard(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = stringResource(R.string.insights_result_title_chart),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                InsightsChartResultContent(
+                    chartSemanticMode = chartSemanticMode,
+                    chartVisualMode = chartVisualMode,
+                    compositionVisualMode = compositionVisualMode,
+                    trendChartRoots = trendChartRoots,
+                    trendChartSelectedRoot = trendChartSelectedRoot,
+                    insightsMode = insightsMode,
+                    trendChartLoading = trendChartLoading,
+                    trendChartError = trendChartError,
+                    trendChartRenderModel = trendChartRenderModel,
+                    trendChartLastTrace = trendChartLastTrace,
+                    compositionChartLoading = compositionChartLoading,
+                    compositionChartError = compositionChartError,
+                    compositionChartRenderModel = compositionChartRenderModel,
+                    compositionChartLastTrace = compositionChartLastTrace,
+                    chartShowAverageLine = chartShowAverageLine,
+                    piePalettePreset = piePalettePreset,
+                    heatmapTomlConfig = heatmapTomlConfig,
+                    heatmapStylePreference = heatmapStylePreference,
+                    onHeatmapThemePolicyChange = onHeatmapThemePolicyChange,
+                    onHeatmapPaletteNameChange = onHeatmapPaletteNameChange,
+                    heatmapApplyMessage = heatmapApplyMessage,
+                    isAppDarkThemeActive = isAppDarkThemeActive,
+                    onCompositionVisualModeChange = onCompositionVisualModeChange,
+                    onChartRootChange = onChartRootChange,
+                    onChartShowAverageLineChange = onChartShowAverageLineChange,
+                    onChartVisualModeChange = onChartVisualModeChange
+                )
+            }
+        }
+        return
+    }
+
+    if (insightsSummary != null) {
+        QueryInsightsSummaryCard(
+            summary = insightsSummary,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+
+    if (activeResult is QueryResult.Tree) {
+        val periodLabel = stringResource(activeResult.period.insightsModeResId())
+        Text(
+            text = stringResource(
+                R.string.insights_result_title_tree,
+                periodLabel
+            ),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        QueryInsightsTreeResultContent(
+            result = activeResult,
+            modifier = Modifier.fillMaxWidth()
+        )
+    } else if (activeResult != null) {
+        ElevatedCard(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                val insights = activeResult as QueryResult.Insights
+                if (parameterSection == InsightsParameterSection.TIMELINE &&
+                    insightsMode == InsightsMode.DAY
+                ) {
+                    InsightsActivityTimeline(
+                        insights = dayTimeline ?: StructuredDailyInsights(
+                            date = "",
+                            totalDurationSeconds = 0L
+                        ),
+                        onUpdateActivityRemark = onUpdateActivityRemark,
+                        onUpdateDayRemark = onUpdateDayRemark
+                    )
+                } else {
+                    MarkdownResultHeader(
+                        title = stringResource(R.string.insights_result_title_insights),
+                        markdown = insights.text,
+                        showDailyStatusEditor = insightsMode == InsightsMode.DAY,
+                        onCopyMarkdown = {
+                            clipboardScope.launch {
+                                clipboard.setClipEntry(
+                                    ClipEntry(
+                                        ClipData.newPlainText(
+                                            "Time Tracer insights",
+                                            insights.text
+                                        )
+                                    )
+                                )
+                            }
+                        },
+                        onEditDailyStatuses = onEditDailyStatuses
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    InsightsMarkdownText(
+                        markdown = insights.text,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        }
+    }
+
+    if (insightsError.isNotBlank()) {
+        ElevatedCard(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = stringResource(R.string.insights_result_title_insights_error),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.error
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = insightsError,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+    }
+
+    if (analysisError.isNotBlank()) {
+        ElevatedCard(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = stringResource(R.string.insights_result_title_analysis_error),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.error
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = analysisError,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+    }
+}
+@Composable
+private fun MarkdownResultHeader(
+    title: String,
+    markdown: String,
+    showDailyStatusEditor: Boolean,
+    onCopyMarkdown: () -> Unit,
+    onEditDailyStatuses: () -> Unit = {}
+) {
+    Row(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = title,
+            modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
+        IconButton(
+            onClick = onCopyMarkdown,
+            enabled = markdown.isNotBlank()
+        ) {
+            Icon(
+                imageVector = Icons.Default.ContentCopy,
+                contentDescription = stringResource(R.string.insights_cd_copy_markdown)
+            )
+        }
+        if (showDailyStatusEditor) {
+            IconButton(onClick = onEditDailyStatuses) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = stringResource(R.string.insights_cd_edit_daily_statuses)
+                )
+            }
+        }
+    }
+}

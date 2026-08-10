@@ -35,7 +35,7 @@ internal class RuntimeRecordAtomicFlow(
             )
         }
         val logicalDate = logicalDateResult.date
-        Log.i(
+        logInfo(
             RECORD_LOG_TAG,
             "record.atomic.start activity=${activityName.trim()} logicalDate=$logicalDate " +
                 "preferredTxtPath=$preferredTxtPath timeOrderMode=$timeOrderMode"
@@ -57,7 +57,7 @@ internal class RuntimeRecordAtomicFlow(
             ?.takeIf { it.isNotBlank() }
             ?: payload.errorMessage.takeIf { it.isNotBlank() }
             ?: if (atomicResult.operationOk) "record: ok\nsync: ok" else "Record failed."
-        Log.i(
+        logInfo(
             RECORD_LOG_TAG,
             "record.atomic.result initialized=${atomicResult.initialized} " +
                 "operationOk=${atomicResult.operationOk} payloadOk=${atomicPayload?.ok} " +
@@ -82,4 +82,10 @@ internal class RuntimeRecordAtomicFlow(
             operationId = atomicResult.operationId
         )
     }
+}
+
+private fun logInfo(tag: String, message: String) {
+    // Android's local JVM Log stub throws when tests execute without a device.
+    // Logging must never change the result of a recording operation.
+    runCatching { Log.i(tag, message) }
 }

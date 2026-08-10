@@ -1,7 +1,0 @@
-schema_version = 1
-
-[heatmap]
-palette = "GREEN_LIGHT"
-
-[pie]
-palette = "VIVID"

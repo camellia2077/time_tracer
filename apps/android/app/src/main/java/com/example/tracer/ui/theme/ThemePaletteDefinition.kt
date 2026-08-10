@@ -518,8 +518,8 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
             accent = IndigoLightTokens.secondary,
             surface = IndigoLightTokens.background
         ),
-        reportLight = IndigoLightTokens.toReportColorTokens(),
-        reportDark = IndigoDarkTokens.toReportColorTokens()
+        insightsLight = IndigoLightTokens.toInsightsColorTokens(),
+        insightsDark = IndigoDarkTokens.toInsightsColorTokens()
     )
     ThemePalette.GraphiteAmber -> ThemePaletteDefinition(
         light = GraphiteLightTokens,
@@ -529,8 +529,8 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
             accent = GraphiteLightTokens.secondary,
             surface = GraphiteLightTokens.background
         ),
-        reportLight = GraphiteLightTokens.toReportColorTokens(),
-        reportDark = GraphiteDarkTokens.toReportColorTokens()
+        insightsLight = GraphiteLightTokens.toInsightsColorTokens(),
+        insightsDark = GraphiteDarkTokens.toInsightsColorTokens()
     )
     ThemePalette.Teal -> ThemePaletteDefinition(
         light = TealLightTokens,
@@ -540,8 +540,8 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
             accent = TealLightTokens.secondary,
             surface = TealLightTokens.background
         ),
-        reportLight = TealLightTokens.toReportColorTokens(),
-        reportDark = TealDarkTokens.toReportColorTokens()
+        insightsLight = TealLightTokens.toInsightsColorTokens(),
+        insightsDark = TealDarkTokens.toInsightsColorTokens()
     )
     ThemePalette.Orange -> ThemePaletteDefinition(
         light = OrangeLightTokens,
@@ -551,8 +551,8 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
             accent = OrangeLightTokens.secondary,
             surface = OrangeLightTokens.background
         ),
-        reportLight = OrangeLightTokens.toReportColorTokens(),
-        reportDark = OrangeDarkTokens.toReportColorTokens()
+        insightsLight = OrangeLightTokens.toInsightsColorTokens(),
+        insightsDark = OrangeDarkTokens.toInsightsColorTokens()
     )
     ThemePalette.Rose -> ThemePaletteDefinition(
         light = RoseLightTokens,
@@ -562,8 +562,8 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
             accent = RoseLightTokens.secondary,
             surface = RoseLightTokens.background
         ),
-        reportLight = RoseLightTokens.toReportColorTokens(),
-        reportDark = RoseDarkTokens.toReportColorTokens()
+        insightsLight = RoseLightTokens.toInsightsColorTokens(),
+        insightsDark = RoseDarkTokens.toInsightsColorTokens()
     )
     ThemePalette.Amber -> ThemePaletteDefinition(
         light = AmberLightTokens,
@@ -573,8 +573,8 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
             accent = AmberLightTokens.secondary,
             surface = AmberLightTokens.background
         ),
-        reportLight = AmberLightTokens.toReportColorTokens(),
-        reportDark = AmberDarkTokens.toReportColorTokens()
+        insightsLight = AmberLightTokens.toInsightsColorTokens(),
+        insightsDark = AmberDarkTokens.toInsightsColorTokens()
     )
     ThemePalette.Parchment -> ThemePaletteDefinition(
         light = ParchmentTokens,
@@ -586,8 +586,8 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
             accent = ParchmentTokens.onSurfaceVariant,
             surface = ParchmentTokens.background
         ),
-        reportLight = ParchmentTokens.toReportColorTokens(),
-        reportDark = ParchmentTokens.toReportColorTokens()
+        insightsLight = ParchmentTokens.toInsightsColorTokens(),
+        insightsDark = ParchmentTokens.toInsightsColorTokens()
     )
     ThemePalette.Snowfield -> ThemePaletteDefinition(
         light = SnowfieldTokens,
@@ -598,8 +598,8 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
             accent = Color(0xFF81A1C1),
             surface = SnowfieldTokens.background
         ),
-        reportLight = SnowfieldTokens.toReportColorTokens(),
-        reportDark = SnowfieldTokens.toReportColorTokens()
+        insightsLight = SnowfieldTokens.toInsightsColorTokens(),
+        insightsDark = SnowfieldTokens.toInsightsColorTokens()
     )
     ThemePalette.Blueprint -> ThemePaletteDefinition(
         light = BlueprintTokens,
@@ -609,8 +609,8 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
             accent = BlueprintTokens.tertiary,
             surface = BlueprintTokens.background
         ),
-        reportLight = BlueprintTokens.toReportColorTokens(),
-        reportDark = BlueprintTokens.toReportColorTokens()
+        insightsLight = BlueprintTokens.toInsightsColorTokens(),
+        insightsDark = BlueprintTokens.toInsightsColorTokens()
     )
     ThemePalette.Newsprint -> ThemePaletteDefinition(
         light = NewsprintTokens,
@@ -620,8 +620,8 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
             accent = NewsprintTokens.tertiary,
             surface = NewsprintTokens.background
         ),
-        reportLight = NewsprintTokens.toReportColorTokens(),
-        reportDark = NewsprintTokens.toReportColorTokens()
+        insightsLight = NewsprintTokens.toInsightsColorTokens(),
+        insightsDark = NewsprintTokens.toInsightsColorTokens()
     )
     ThemePalette.InkWash -> ThemePaletteDefinition(
         light = InkWashTokens,
@@ -631,8 +631,8 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
             accent = InkWashTokens.tertiary,
             surface = InkWashTokens.background
         ),
-        reportLight = InkWashTokens.toReportColorTokens(),
-        reportDark = InkWashTokens.toReportColorTokens()
+        insightsLight = InkWashTokens.toInsightsColorTokens(),
+        insightsDark = InkWashTokens.toInsightsColorTokens()
     )
     ThemePalette.Kraft -> ThemePaletteDefinition(
         light = KraftTokens,
@@ -642,7 +642,7 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
             accent = KraftTokens.tertiary,
             surface = KraftTokens.background
         ),
-        reportLight = KraftTokens.toReportColorTokens(),
-        reportDark = KraftTokens.toReportColorTokens()
+        insightsLight = KraftTokens.toInsightsColorTokens(),
+        insightsDark = KraftTokens.toInsightsColorTokens()
     )
 }

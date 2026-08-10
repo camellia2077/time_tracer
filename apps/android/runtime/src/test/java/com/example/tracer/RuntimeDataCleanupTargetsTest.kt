@@ -51,7 +51,7 @@ class RuntimeDataCleanupTargetsTest {
             parentFile?.mkdirs()
             writeText("keep")
         }
-        val outputTxt = root.resolve("output/report.txt").apply {
+        val outputTxt = root.resolve("output/insights.txt").apply {
             parentFile?.mkdirs()
             writeText("keep")
         }

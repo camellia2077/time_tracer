@@ -3,7 +3,7 @@ package com.example.tracer
 interface RuntimeGateway :
     RuntimeInitializer,
     RecordGateway,
-    ReportGateway,
+    InsightsGateway,
     QueryGateway,
     TxtStorageGateway,
     ConfigGateway,

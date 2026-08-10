@@ -9,19 +9,19 @@ interface QueryGateway {
     suspend fun queryDayDurations(params: DataDurationQueryParams): DataQueryTextResult
     suspend fun queryDayDurationStats(params: DataDurationQueryParams): DataQueryTextResult
     suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult
-    suspend fun queryReportCalendarAvailability(): ReportCalendarAvailabilityResult =
-        ReportCalendarAvailabilityResult(
+    suspend fun queryInsightsCalendarAvailability(): InsightsCalendarAvailabilityResult =
+        InsightsCalendarAvailabilityResult(
             ok = false,
-            message = "report calendar availability query not implemented."
+            message = "insights calendar availability query not implemented."
         )
-    suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult
-    suspend fun queryReportComposition(
-        params: ReportCompositionQueryParams
-    ): ReportCompositionQueryResult =
-        ReportCompositionQueryResult(
+    suspend fun queryInsightsChart(params: InsightsChartQueryParams): InsightsChartQueryResult
+    suspend fun queryInsightsComposition(
+        params: InsightsCompositionQueryParams
+    ): InsightsCompositionQueryResult =
+        InsightsCompositionQueryResult(
             ok = false,
             data = null,
-            message = "report composition query not implemented."
+            message = "insights composition query not implemented."
         )
     suspend fun listActivityMappingNames(): ActivityMappingNamesResult
     suspend fun listActivityHierarchyLeafMappings(): ActivityHierarchyLeafMappingListResult =

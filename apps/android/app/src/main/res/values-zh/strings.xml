@@ -3,10 +3,8 @@
     <!-- Keep the product name fixed as "Tracer" in every locale. Do not localize or rename. -->
     <string name="app_name">Tracer</string>
 
-    <string name="tracer_tab_data">数据</string>
-    <string name="tracer_tab_report">报表</string>
+    <string name="tracer_tab_insights">分析</string>
     <string name="tracer_tab_record">记录</string>
-    <string name="tracer_tab_txt">TXT</string>
     <string name="tracer_tab_config">配置</string>
 
 
@@ -84,7 +82,10 @@
     <string name="tracer_progress_status_failed">失败</string>
     <string name="tracer_progress_status_partial">部分失败</string>
 
+    <string name="config_title_app_preferences">应用偏好</string>
     <string name="config_title_appearance">外观</string>
+    <string name="config_title_insights_settings">分析展示</string>
+    <string name="config_title_advanced_files">高级文件</string>
     <string name="config_title_theme_mode">主题模式</string>
     <string name="config_title_theme_palette">主题配色</string>
     <string name="config_theme_palette_indigo">靛蓝</string>
@@ -109,17 +110,17 @@
     <string name="config_language_chinese">中文</string>
     <string name="config_language_english">English</string>
     <string name="config_language_japanese">日本語</string>
-    <string name="config_title_report_chart_style">报告图表样式</string>
-    <string name="config_label_report_breakdown_palette">分布图配色</string>
-    <string name="config_report_breakdown_palette_current">分布图配色（当前：%1$s）</string>
-    <string name="config_report_breakdown_palette_tap_expand">分布图配色（点击展开）</string>
-    <string name="config_report_breakdown_palette_preview_hint">用于分布饼图和横向条形图。颜色按占比从大到小排列；可先看下面两种预览，再决定是否应用这套配色。</string>
-    <string name="config_report_breakdown_palette_pie_preview">分布饼图预览</string>
-    <string name="config_report_breakdown_palette_bar_preview">分布横向条形图预览</string>
-    <string name="config_report_breakdown_palette_soft">柔和</string>
-    <string name="config_report_breakdown_palette_editorial">杂志风</string>
-    <string name="config_report_breakdown_palette_vivid">鲜明</string>
-    <string name="config_report_breakdown_palette_mono_accent">单色强调</string>
+    <string name="config_title_insights_chart_style">分析图表样式</string>
+    <string name="config_label_insights_breakdown_palette">分布图配色</string>
+    <string name="config_insights_breakdown_palette_current">分布图配色（当前：%1$s）</string>
+    <string name="config_insights_breakdown_palette_tap_expand">分布图配色（点击展开）</string>
+    <string name="config_insights_breakdown_palette_preview_hint">用于分布饼图和横向条形图。颜色按占比从大到小排列；可先看下面两种预览，再决定是否应用这套配色。</string>
+    <string name="config_insights_breakdown_palette_pie_preview">分布饼图预览</string>
+    <string name="config_insights_breakdown_palette_bar_preview">分布横向条形图预览</string>
+    <string name="config_insights_breakdown_palette_soft">柔和</string>
+    <string name="config_insights_breakdown_palette_editorial">杂志风</string>
+    <string name="config_insights_breakdown_palette_vivid">鲜明</string>
+    <string name="config_insights_breakdown_palette_mono_accent">单色强调</string>
 
     <string name="config_title_dark_theme_style">深色主题风格</string>
     <string name="config_dark_theme_style_tinted">色调</string>
@@ -141,7 +142,7 @@
     <string name="config_category_alias">分类</string>
     <string name="config_category_charts">图表</string>
     <string name="config_category_meta">元信息</string>
-    <string name="config_category_reports">报表</string>
+    <string name="config_category_insights">分析</string>
     <string name="config_no_toml_files_in_category">%1$s 下暂无内容。</string>
     <string name="config_action_select_toml_file">选择项目</string>
 
@@ -241,20 +242,20 @@
     <string name="config_open_source_licenses_unavailable">开源许可证暂时不可用。</string>
     <string name="config_action_back">返回</string>
     <string name="config_action_copy_diagnostics">复制诊断载荷</string>
-    <string name="config_title_report_average_day_basis">报告平均值分母</string>
-    <string name="config_report_average_day_basis_description">选择计算平均值时使用的天数。</string>
-    <string name="config_report_average_day_basis_active">有活动记录的天数</string>
-    <string name="config_report_average_day_basis_calendar">筛选范围内的所有自然日</string>
-    <string name="report_daily_status_editor_title">Daily 状态</string>
-    <string name="report_daily_status_editor_description">选择用于计算 Daily 报告状态字段的活动父级。</string>
-    <string name="report_daily_status_editor_loading">正在加载 Daily 状态配置…</string>
-    <string name="report_daily_status_editor_empty">未配置 Daily 状态。</string>
-    <string name="report_daily_status_saving">正在保存…</string>
-    <string name="report_daily_status_add">添加状态</string>
-    <string name="report_daily_status_edit">编辑状态</string>
-    <string name="report_daily_status_delete">删除状态</string>
-    <string name="report_daily_status_edit_title">编辑 Daily 状态</string>
-    <string name="report_daily_status_choose_parent">选择活动父级</string>
-    <string name="report_daily_status_parent">父级：%1$s</string>
+    <string name="config_title_insights_average_day_basis">分析平均值的计算基准</string>
+    <string name="config_insights_average_day_basis_description">选择计算平均值时使用的天数。</string>
+    <string name="config_insights_average_day_basis_active">有活动记录的天数</string>
+    <string name="config_insights_average_day_basis_calendar">筛选范围内的所有自然日</string>
+    <string name="insights_daily_status_editor_title">每日状态</string>
+    <string name="insights_daily_status_editor_description">选择用于计算每日分析状态字段的活动父级。</string>
+    <string name="insights_daily_status_editor_loading">正在加载每日状态配置…</string>
+    <string name="insights_daily_status_editor_empty">未配置每日状态。</string>
+    <string name="insights_daily_status_saving">正在保存…</string>
+    <string name="insights_daily_status_add">添加状态</string>
+    <string name="insights_daily_status_edit">编辑状态</string>
+    <string name="insights_daily_status_delete">删除状态</string>
+    <string name="insights_daily_status_edit_title">编辑每日状态</string>
+    <string name="insights_daily_status_choose_parent">选择活动父级</string>
+    <string name="insights_daily_status_parent">父级：%1$s</string>
     <string name="daily_status_action_close">关闭</string>
 </resources>

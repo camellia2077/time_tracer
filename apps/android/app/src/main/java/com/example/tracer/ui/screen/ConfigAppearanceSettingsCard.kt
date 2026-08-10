@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.example.tracer.data.AppLanguage
 import com.example.tracer.data.DarkThemeStyle
 import com.example.tracer.data.ThemeConfig
 import com.example.tracer.data.ThemeMode
@@ -23,12 +22,7 @@ import com.example.tracer.ui.viewmodel.ThemeEvent
 @Composable
 internal fun AppearanceSettingsCard(
     themeConfig: ThemeConfig,
-    onThemeEvent: (ThemeEvent) -> Unit,
-    reportPiePalettePreset: ReportPiePalettePreset,
-    onReportPiePalettePresetChange: (ReportPiePalettePreset) -> Unit,
-    appLanguage: AppLanguage,
-    onSetAppLanguage: (AppLanguage) -> Unit,
-    initialReportPaletteExpanded: Boolean = false
+    onThemeEvent: (ThemeEvent) -> Unit
 ) {
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(
@@ -42,9 +36,6 @@ internal fun AppearanceSettingsCard(
             )
 
             HorizontalDivider()
-            LanguageSection(appLanguage, onSetAppLanguage)
-
-            HorizontalDivider()
             ThemeModeSection(
                 selectedThemeMode = themeConfig.themeMode,
                 supportsLightDarkMode = themeConfig.palette.supportsLightDarkMode,
@@ -53,13 +44,6 @@ internal fun AppearanceSettingsCard(
 
             HorizontalDivider()
             ThemePaletteSection(themeConfig.palette) { onThemeEvent(ThemeEvent.SetPalette(it)) }
-
-            HorizontalDivider()
-            ReportChartStyleSection(
-                reportPiePalettePreset = reportPiePalettePreset,
-                onReportPiePalettePresetChange = onReportPiePalettePresetChange,
-                initialExpanded = initialReportPaletteExpanded
-            )
 
             val isSystemDark = isSystemInDarkTheme()
             val isDarkActive = themeConfig.palette.supportsLightDarkMode && (

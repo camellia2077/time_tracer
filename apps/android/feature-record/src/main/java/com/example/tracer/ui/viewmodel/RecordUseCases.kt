@@ -7,7 +7,7 @@ class RecordUseCases(
     private val recordGateway: RecordGateway,
     private val txtStorageGateway: TxtStorageGateway,
     private val queryGateway: QueryGateway,
-    private val reportGateway: ReportGateway = UnavailableRecordReportGateway,
+    private val insightsGateway: InsightsGateway = UnavailableRecordInsightsGateway,
     internal val recordInputPersistence: RecordInputPersistence = NoOpRecordInputPersistence,
     private val textProvider: RecordTextProvider = DefaultRecordTextProvider,
     private val clock: Clock = Clock.systemDefaultZone()
@@ -582,10 +582,10 @@ class RecordUseCases(
         rawActivityToken: String
     ): String {
         val tokenSummary = resolveActivityTokenSummary(rawActivityToken)
-        val reportResult = runCatching {
-            reportGateway.reportStructured(
-                TemporalReportQueryRequest(
-                    displayMode = ReportDisplayMode.DAY,
+        val insightsResult = runCatching {
+            insightsGateway.insightsStructured(
+                TemporalInsightsQueryRequest(
+                    displayMode = InsightsDisplayMode.DAY,
                     selection = TemporalSelectionPayload(
                         kind = TemporalSelectionKind.SINGLE_DAY,
                         date = targetDateIso
@@ -593,8 +593,8 @@ class RecordUseCases(
                 )
             )
         }.getOrNull()
-        val report = reportResult?.report
-        if (reportResult?.operationOk != true || report == null) {
+        val insights = insightsResult?.insights
+        if (insightsResult?.operationOk != true || insights == null) {
             return textProvider.unavailableDuration()
         }
 
@@ -611,7 +611,7 @@ class RecordUseCases(
         } else {
             listOf(tokenSummary.canonicalToken.trim())
         }
-        val durationSeconds = report.activities
+        val durationSeconds = insights.activities
             .asSequence()
             .filter { activity -> activity.activityName.trim() in candidateNames }
             .maxByOrNull { it.logicalId }
@@ -629,9 +629,9 @@ class RecordUseCases(
     }
 }
 
-internal object UnavailableRecordReportGateway : ReportGateway {
-    override suspend fun reportMarkdown(request: TemporalReportQueryRequest): ReportCallResult =
-        ReportCallResult(
+internal object UnavailableRecordInsightsGateway : InsightsGateway {
+    override suspend fun insightsMarkdown(request: TemporalInsightsQueryRequest): InsightsCallResult =
+        InsightsCallResult(
             initialized = false,
             operationOk = false,
             outputText = "",

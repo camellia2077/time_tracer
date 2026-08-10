@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="data_title_ingestion">Data Ingestion</string>
+    <string name="data_title_data_management">Data management</string>
+    <string name="data_title_ingestion">Data ingestion</string>
     <string name="data_action_import_data_folder">Import Data Folder</string>
     <string name="data_action_import_single_tracer">Import Compressed Archive</string>
 
@@ -13,7 +14,7 @@
     <string name="data_security_level_moderate">Balanced (Moderate)</string>
     <string name="data_security_level_high">Strong (High)</string>
 
-    <string name="data_title_maintenance_debug">Data Management</string>
+    <string name="data_title_maintenance_debug">Maintenance</string>
     <string name="data_action_clear_txt">Clear TXT</string>
     <string name="data_action_clear_database">Clear Database</string>
     <string name="data_action_rebuild_database">Rebuild Database</string>

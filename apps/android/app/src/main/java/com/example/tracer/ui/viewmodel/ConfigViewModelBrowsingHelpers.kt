@@ -9,7 +9,7 @@ internal fun configFilesForCategory(
 
         ConfigCategory.CHARTS -> state.chartFiles
         ConfigCategory.META -> state.metaFiles
-        ConfigCategory.REPORTS -> state.reportFiles
+        ConfigCategory.INSIGHTS -> state.insightsFiles
     }
 }
 
@@ -146,7 +146,7 @@ internal fun findConfigFileEntry(
         state.aliasFiles,
         state.chartFiles,
         state.metaFiles,
-        state.reportFiles
+        state.insightsFiles
     ).flatten().firstOrNull { entry -> entry.relativePath == filePath }
 }
 

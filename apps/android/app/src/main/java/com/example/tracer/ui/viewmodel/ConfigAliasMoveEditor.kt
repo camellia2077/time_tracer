@@ -231,7 +231,7 @@ internal class ConfigAliasMoveEditor(
                     aliasFiles = refreshed.aliasFiles,
                     chartFiles = refreshed.chartFiles,
                     metaFiles = refreshed.metaFiles,
-                    reportFiles = refreshed.reportFiles,
+                    insightsFiles = refreshed.insightsFiles,
                     aliasEntryMovePlan = null,
                     aliasEntryMoveDestinations = emptyList(),
                     aliasEntryMoveDestinationsLoading = false,

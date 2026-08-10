@@ -6,7 +6,7 @@ internal class RuntimeCoreAdapter(
     private val nativeInit: (RuntimePaths) -> String,
     private val nativeQuery: (DataQueryRequest) -> String,
     private val responseCodec: NativeResponseCodec,
-    private val reportTranslator: NativeReportTranslator,
+    private val insightsTranslator: NativeInsightsTranslator,
     private val diagnosticsRecorder: RuntimeDiagnosticsRecorder,
     private val nextOperationId: (String) -> String,
     private val errorMapper: RuntimeErrorMapper
@@ -15,7 +15,7 @@ internal class RuntimeCoreAdapter(
         initializeRuntime = { initializeRuntimeInternal() },
         runtimePathsProvider = runtimePathsProvider,
         responseCodec = responseCodec,
-        reportTranslator = reportTranslator,
+        insightsTranslator = insightsTranslator,
         diagnosticsRecorder = diagnosticsRecorder,
         nextOperationId = nextOperationId,
         formatFailure = errorMapper::formatFailure
@@ -88,11 +88,11 @@ internal class RuntimeCoreAdapter(
         )
     }
 
-    fun executeReportAfterInit(
+    fun executeInsightsAfterInit(
         operationName: String,
         action: (RuntimePaths) -> String
-    ): ReportCallResult {
-        return callExecutor.executeReportAfterInit(
+    ): InsightsCallResult {
+        return callExecutor.executeInsightsAfterInit(
             operationName = operationName,
             action = action
         )

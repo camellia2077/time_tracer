@@ -15,7 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tracer.data.AppLanguage
-import com.example.tracer.data.ReportPiePaletteTomlLoader
+import com.example.tracer.data.InsightsPiePaletteTomlLoader
 import com.example.tracer.ui.theme.TracerTheme
 import com.example.tracer.ui.viewmodel.ThemeViewModel
 import com.example.tracer.ui.viewmodel.ThemeViewModelFactory
@@ -31,14 +31,14 @@ class MainActivity : ComponentActivity() {
         val runtimeInitializer = appContainer.runtimeInitializer
         val recordGateway = appContainer.recordGateway
         val txtStorageGateway = appContainer.txtStorageGateway
-        val reportGateway = appContainer.reportGateway
+        val insightsGateway = appContainer.insightsGateway
         val queryGateway = appContainer.queryGateway
         val configGateway = appContainer.configGateway
         val activityHierarchyGateway = appContainer.activityHierarchyGateway
         val activityHierarchyMigrationGateway = appContainer.activityHierarchyMigrationGateway
         val tracerExchangeGateway = appContainer.tracerExchangeGateway
         val userPreferencesRepository = appContainer.userPreferencesRepository
-        ReportPiePaletteTomlLoader.installFromAssets(assets)
+        InsightsPiePaletteTomlLoader.installFromAssets(assets)
 
         setContent {
             val themeViewModel: ThemeViewModel = viewModel(
@@ -60,7 +60,7 @@ class MainActivity : ComponentActivity() {
                             runtimeInitializer = runtimeInitializer,
                             recordGateway = recordGateway,
                             txtStorageGateway = txtStorageGateway,
-                            reportGateway = reportGateway,
+                            insightsGateway = insightsGateway,
                             queryGateway = queryGateway,
                             configGateway = configGateway,
                             quickAccessGateway = appContainer.quickAccessGateway,

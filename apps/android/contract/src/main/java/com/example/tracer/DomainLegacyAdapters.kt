@@ -7,8 +7,8 @@ data class DomainNativeEnvelope(
     val outputText: String = "",
     val errorLogPath: String = "",
     val operationId: String = "",
-    val errorContract: ReportErrorContract? = null,
-    val reportWindowMetadata: ReportWindowMetadata? = null
+    val errorContract: InsightsErrorContract? = null,
+    val insightsWindowMetadata: InsightsWindowMetadata? = null
 )
 
 fun DomainResult<DomainNativeEnvelope>.toLegacyNativeCallResult(
@@ -35,13 +35,13 @@ fun DomainResult<DomainNativeEnvelope>.toLegacyNativeCallResult(
         }
     )
 }
-fun DomainResult<DomainNativeEnvelope>.toLegacyReportCallResult(
+fun DomainResult<DomainNativeEnvelope>.toLegacyInsightsCallResult(
     failureRawResponse: (DomainError) -> String = { error -> error.legacyMessage() },
     failureOutput: (DomainError) -> String = { error -> error.legacyMessage() }
-): ReportCallResult {
+): InsightsCallResult {
     return fold(
         onSuccess = { envelope ->
-            ReportCallResult(
+            InsightsCallResult(
                 initialized = envelope.initialized,
                 operationOk = envelope.operationOk,
                 outputText = envelope.outputText,
@@ -49,11 +49,11 @@ fun DomainResult<DomainNativeEnvelope>.toLegacyReportCallResult(
                 errorLogPath = envelope.errorLogPath,
                 operationId = envelope.operationId,
                 errorContract = envelope.errorContract,
-                reportWindowMetadata = envelope.reportWindowMetadata
+                insightsWindowMetadata = envelope.insightsWindowMetadata
             )
         },
         onFailure = { error ->
-            ReportCallResult(
+            InsightsCallResult(
                 initialized = false,
                 operationOk = false,
                 outputText = failureOutput(error),

@@ -35,7 +35,7 @@ private fun logDebug(tag: String, message: String) {
 enum class CanonicalBrowserTarget {
     RECORD_INPUT,
     QUICK_ACCESS,
-    REPORT_STATUS_PARENT
+    INSIGHTS_STATUS_PARENT
 }
 
 data class RecordSuggestedActivity(
@@ -381,7 +381,7 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
     }
 
     fun openDailyStatusParentCatalog() {
-        openCanonicalCatalog(CanonicalBrowserTarget.REPORT_STATUS_PARENT)
+        openCanonicalCatalog(CanonicalBrowserTarget.INSIGHTS_STATUS_PARENT)
     }
 
     private fun openCanonicalCatalog(target: CanonicalBrowserTarget) {
@@ -602,7 +602,7 @@ class RecordViewModelFactory(
     private val recordGateway: RecordGateway,
     private val txtStorageGateway: TxtStorageGateway,
     private val queryGateway: QueryGateway,
-    private val reportGateway: ReportGateway = UnavailableRecordReportGateway,
+    private val insightsGateway: InsightsGateway = UnavailableRecordInsightsGateway,
     private val initialPersistedRecordInput: PersistedRecordInputSnapshot = PersistedRecordInputSnapshot(),
     private val recordInputPersistence: RecordInputPersistence = NoOpRecordInputPersistence,
     private val textProvider: RecordTextProvider = DefaultRecordTextProvider,
@@ -616,7 +616,7 @@ class RecordViewModelFactory(
                     recordGateway = recordGateway,
                     txtStorageGateway = txtStorageGateway,
                     queryGateway = queryGateway,
-                    reportGateway = reportGateway,
+                    insightsGateway = insightsGateway,
                     recordInputPersistence = recordInputPersistence,
                     textProvider = textProvider,
                     clock = clock

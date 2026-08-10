@@ -10,21 +10,21 @@ internal class NativeResponseCodec {
                 ok = json.optBoolean("ok", false),
                 content = json.optString("content", ""),
                 errorMessage = json.optString("error_message", ""),
-                reportHashSha256 = json.optString("report_hash_sha256", ""),
+                insightsHashSha256 = json.optString("insights_hash_sha256", ""),
                 errorContract = parseErrorContract(json),
-                reportWindowMetadata = parseReportWindowMetadata(json)
+                insightsWindowMetadata = parseInsightsWindowMetadata(json)
             )
         } catch (_: Exception) {
             NativeResponsePayload(
                 ok = false,
                 content = "",
                 errorMessage = "Invalid native response.",
-                reportHashSha256 = ""
+                insightsHashSha256 = ""
             )
         }
     }
 
-    private fun parseErrorContract(json: JSONObject): ReportErrorContract? {
+    private fun parseErrorContract(json: JSONObject): InsightsErrorContract? {
         val errorCode = json.optString("error_code", "")
         val errorCategory = json.optString("error_category", "")
         val hints = mutableListOf<String>()
@@ -40,14 +40,14 @@ internal class NativeResponseCodec {
         if (errorCode.isBlank() && errorCategory.isBlank() && hints.isEmpty()) {
             return null
         }
-        return ReportErrorContract(
+        return InsightsErrorContract(
             errorCode = errorCode,
             errorCategory = errorCategory,
             hints = hints
         )
     }
 
-    private fun parseReportWindowMetadata(json: JSONObject): ReportWindowMetadata? {
+    private fun parseInsightsWindowMetadata(json: JSONObject): InsightsWindowMetadata? {
         val hasAnyWindowField = json.has("has_records") ||
             json.has("matched_day_count") ||
             json.has("matched_record_count") ||
@@ -57,7 +57,7 @@ internal class NativeResponseCodec {
         if (!hasAnyWindowField) {
             return null
         }
-        return ReportWindowMetadata(
+        return InsightsWindowMetadata(
             hasRecords = json.optBoolean("has_records", false),
             matchedDayCount = json.optInt("matched_day_count", 0),
             matchedRecordCount = json.optInt("matched_record_count", 0),

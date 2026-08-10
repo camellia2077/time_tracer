@@ -9,14 +9,14 @@ class NativeResponseCodecTest {
     private val codec = NativeResponseCodec()
 
     @Test
-    fun parse_readsStructuredReportFields_whenPresent() {
+    fun parse_readsStructuredInsightsFields_whenPresent() {
         val response = """
             {
               "ok": false,
               "content": "",
-              "error_message": "missing report target",
-              "error_code": "reporting.target.not_found",
-              "error_category": "reporting",
+              "error_message": "missing insights target",
+              "error_code": "insights.target.not_found",
+              "error_category": "insights",
               "hints": ["Try another day.", "Inspect available dates."],
               "has_records": false,
               "matched_day_count": 0,
@@ -30,24 +30,24 @@ class NativeResponseCodecTest {
         val payload = codec.parse(response)
 
         assertEquals(false, payload.ok)
-        assertEquals("reporting.target.not_found", payload.errorContract?.errorCode)
-        assertEquals("reporting", payload.errorContract?.errorCategory)
+        assertEquals("insights.target.not_found", payload.errorContract?.errorCode)
+        assertEquals("insights", payload.errorContract?.errorCategory)
         assertEquals(
             listOf("Try another day.", "Inspect available dates."),
             payload.errorContract?.hints
         )
-        assertEquals(false, payload.reportWindowMetadata?.hasRecords)
-        assertEquals(0, payload.reportWindowMetadata?.matchedDayCount)
-        assertEquals("2026-02-01", payload.reportWindowMetadata?.startDate)
-        assertEquals(7, payload.reportWindowMetadata?.requestedDays)
+        assertEquals(false, payload.insightsWindowMetadata?.hasRecords)
+        assertEquals(0, payload.insightsWindowMetadata?.matchedDayCount)
+        assertEquals("2026-02-01", payload.insightsWindowMetadata?.startDate)
+        assertEquals(7, payload.insightsWindowMetadata?.requestedDays)
     }
 
     @Test
     fun parse_leavesStructuredFieldsNull_whenAbsent() {
-        val payload = codec.parse("""{"ok":true,"content":"# Report","error_message":""}""")
+        val payload = codec.parse("""{"ok":true,"content":"# Insights","error_message":""}""")
 
         assertNull(payload.errorContract)
-        assertNull(payload.reportWindowMetadata)
+        assertNull(payload.insightsWindowMetadata)
         assertNotNull(payload)
     }
 }

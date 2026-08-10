@@ -81,7 +81,7 @@ internal fun RecordCanonicalCatalogSection(
     onCanonicalParentClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val parentSelectionEnabled = target == CanonicalBrowserTarget.REPORT_STATUS_PARENT
+    val parentSelectionEnabled = target == CanonicalBrowserTarget.INSIGHTS_STATUS_PARENT
     val orderedRoots = remember(roots, orderedRootPaths) {
         roots.orderCanonicalRoots(orderedRootPaths)
     }
@@ -162,7 +162,7 @@ internal fun RecordCanonicalCatalogSection(
             text = stringResource(
                 if (target == CanonicalBrowserTarget.QUICK_ACCESS) {
                     R.string.record_canonical_catalog_quick_access_title
-                } else if (target == CanonicalBrowserTarget.REPORT_STATUS_PARENT) {
+                } else if (target == CanonicalBrowserTarget.INSIGHTS_STATUS_PARENT) {
                     R.string.record_canonical_catalog_parent_title
                 } else {
                     R.string.record_canonical_catalog_title
@@ -175,7 +175,7 @@ internal fun RecordCanonicalCatalogSection(
             text = stringResource(
                 if (target == CanonicalBrowserTarget.QUICK_ACCESS) {
                     R.string.record_canonical_catalog_quick_access_description
-                } else if (target == CanonicalBrowserTarget.REPORT_STATUS_PARENT) {
+                } else if (target == CanonicalBrowserTarget.INSIGHTS_STATUS_PARENT) {
                     R.string.record_canonical_catalog_parent_description
                 } else {
                     R.string.record_canonical_catalog_description

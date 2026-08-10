@@ -40,12 +40,12 @@ internal data class ThemePaletteDefinition(
     val light: ThemeColorTokens,
     val dark: ThemeColorTokens,
     val preview: ThemePreviewColors,
-    val reportLight: ReportColorTokens,
-    val reportDark: ReportColorTokens
+    val insightsLight: InsightsColorTokens,
+    val insightsDark: InsightsColorTokens
 )
 
-internal fun ThemeColorTokens.toReportColorTokens(): ReportColorTokens =
-    ReportColorTokens(
+internal fun ThemeColorTokens.toInsightsColorTokens(): InsightsColorTokens =
+    InsightsColorTokens(
         treeHierarchy = primary,
         treeProgress = secondary,
         timelineDuration = tertiary,

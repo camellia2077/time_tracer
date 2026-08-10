@@ -37,13 +37,13 @@ import androidx.compose.ui.window.DialogProperties
 import com.example.tracer.data.DailyStatusConfig
 import com.example.tracer.data.DailyStatusConfigStore
 import com.example.tracer.data.DailyStatusDefinition
-import kotlinx.coroutines.Dispatchers
+import com.example.tracer.data.UserPreferencesRepository
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @Composable
 internal fun DailyStatusEditorDialog(
-    configGateway: ConfigGateway,
+    userPreferencesRepository: UserPreferencesRepository,
     statusValues: List<DailyStatusValue>,
     recordUiState: RecordUiState,
     recordViewModel: RecordViewModel,
@@ -58,12 +58,8 @@ internal fun DailyStatusEditorDialog(
     var selectedParentOverride by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(configGateway) {
-        val result = withContext(Dispatchers.IO) {
-            configGateway.readConfigTomlFile(com.example.tracer.data.DailyStatusConfigStore.ConfigPath)
-        }
-        config = if (result.ok) DailyStatusConfigStore.parse(result.content) else DailyStatusConfig()
-        errorMessage = if (result.ok) "" else result.message
+    LaunchedEffect(userPreferencesRepository) {
+        config = userPreferencesRepository.dailyStatusConfig.first()
         isLoading = false
     }
 
@@ -72,15 +68,12 @@ internal fun DailyStatusEditorDialog(
         isSaving = true
         errorMessage = ""
         coroutineScope.launch {
-            val result = configGateway.saveConfigTomlFile(
-                DailyStatusConfigStore.ConfigPath,
-                DailyStatusConfigStore.serialize(next)
-            )
-            if (result.ok) {
-                (configGateway as? RuntimeInitializer)?.initializeRuntime()
+            runCatching {
+                userPreferencesRepository.setDailyStatusConfig(next)
+            }.onSuccess {
                 isSaving = false
-            } else {
-                errorMessage = result.message
+            }.onFailure { error ->
+                errorMessage = error.message ?: "Cannot save daily statuses."
                 isSaving = false
             }
         }
@@ -115,7 +108,7 @@ internal fun DailyStatusEditorDialog(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = stringResource(R.string.report_daily_status_editor_title),
+                        text = stringResource(R.string.insights_daily_status_editor_title),
                         style = MaterialTheme.typography.titleLarge
                     )
                     IconButton(onClick = onDismissRequest) {
@@ -123,12 +116,12 @@ internal fun DailyStatusEditorDialog(
                     }
                 }
                 Text(
-                    text = stringResource(R.string.report_daily_status_editor_description),
+                    text = stringResource(R.string.insights_daily_status_editor_description),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 if (isLoading) {
-                    Text(stringResource(R.string.report_daily_status_editor_loading))
+                    Text(stringResource(R.string.insights_daily_status_editor_loading))
                 } else {
                     Column(
                         modifier = Modifier
@@ -146,7 +139,7 @@ internal fun DailyStatusEditorDialog(
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(definition.label, style = MaterialTheme.typography.titleSmall)
                                         Text(
-                                            text = stringResource(R.string.report_daily_status_parent, definition.parent),
+                                            text = stringResource(R.string.insights_daily_status_parent, definition.parent),
                                             style = MaterialTheme.typography.bodySmall
                                         )
                                     }
@@ -155,7 +148,7 @@ internal fun DailyStatusEditorDialog(
                                         editingId = definition.id
                                         selectedParentOverride = null
                                     }) {
-                                        Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.report_daily_status_edit))
+                                        Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.insights_daily_status_edit))
                                     }
                                     IconButton(onClick = {
                                         persistConfig(
@@ -166,13 +159,13 @@ internal fun DailyStatusEditorDialog(
                                             )
                                         )
                                     }) {
-                                        Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.report_daily_status_delete))
+                                        Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.insights_daily_status_delete))
                                     }
                                 }
                             }
                         }
                         if (config.statuses.isEmpty()) {
-                            Text(stringResource(R.string.report_daily_status_editor_empty))
+                            Text(stringResource(R.string.insights_daily_status_editor_empty))
                         }
                         OutlinedButton(
                             onClick = {
@@ -186,7 +179,7 @@ internal fun DailyStatusEditorDialog(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(Icons.Default.Add, contentDescription = null)
-                            Text(stringResource(R.string.report_daily_status_add))
+                            Text(stringResource(R.string.insights_daily_status_add))
                         }
                     }
                 }
@@ -195,7 +188,7 @@ internal fun DailyStatusEditorDialog(
                 }
                 if (isSaving) {
                     Text(
-                        text = stringResource(R.string.report_daily_status_saving),
+                        text = stringResource(R.string.insights_daily_status_saving),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -232,7 +225,7 @@ internal fun DailyStatusEditorDialog(
             roots = recordUiState.canonicalCatalogRoots,
             statusText = recordUiState.canonicalCatalogStatusText,
             displayMode = RecordSuggestionOutputMode.CANONICAL,
-            target = CanonicalBrowserTarget.REPORT_STATUS_PARENT,
+            target = CanonicalBrowserTarget.INSIGHTS_STATUS_PARENT,
             collapsedRootPaths = recordUiState.collapsedCanonicalRootPaths,
             orderedRootPaths = recordUiState.orderedCanonicalRootPaths,
             onDismissRequest = {
@@ -300,7 +293,7 @@ private fun DailyStatusDefinitionDialog(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        stringResource(R.string.report_daily_status_edit_title),
+                        stringResource(R.string.insights_daily_status_edit_title),
                         style = MaterialTheme.typography.titleMedium
                     )
                     IconButton(onClick = ::finish) {
@@ -319,7 +312,7 @@ private fun DailyStatusDefinitionDialog(
                     singleLine = true
                 )
                 OutlinedButton(onClick = onChooseParent, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(R.string.report_daily_status_choose_parent))
+                    Text(stringResource(R.string.insights_daily_status_choose_parent))
                 }
             }
         }

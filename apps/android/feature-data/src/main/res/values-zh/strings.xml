@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="data_title_data_management">数据管理</string>
     <string name="data_title_ingestion">数据导入</string>
     <string name="data_action_import_data_folder">导入数据文件夹</string>
     <string name="data_action_import_single_tracer">导入压缩包</string>
@@ -13,7 +14,7 @@
     <string name="data_security_level_moderate">平衡（Moderate）</string>
     <string name="data_security_level_high">高强度（High）</string>
 
-    <string name="data_title_maintenance_debug">数据管理</string>
+    <string name="data_title_maintenance_debug">维护</string>
     <string name="data_action_clear_txt">清空 TXT</string>
     <string name="data_action_clear_database">清空数据库</string>
     <string name="data_action_rebuild_database">重建数据库</string>

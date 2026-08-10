@@ -10,11 +10,16 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -24,11 +29,14 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,7 +47,10 @@ private val FloatingBottomNavHeight: Dp = 60.dp
 private val FloatingBottomNavHorizontalPadding: Dp = 12.dp
 private val FloatingBottomNavBottomPadding: Dp = 20.dp
 private val FloatingBottomNavSnackbarGap: Dp = 12.dp
-private val FloatingBottomNavCornerRadius: Dp = 26.dp
+private val FloatingBottomNavItemWidth: Dp = 88.dp
+private val FloatingBottomNavSelectedIndicatorHorizontalPadding: Dp = 12.dp
+private val FloatingBottomNavSelectedIndicatorVerticalPadding: Dp = 4.dp
+private val FloatingBottomNavShape = RoundedCornerShape(percent = 50)
 
 @Composable
 internal fun TracerBottomNavShell(
@@ -116,6 +127,7 @@ internal fun TracerBottomNavShell(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BoxScope.TracerFloatingBottomNavigation(
     selectedTab: TracerTab,
@@ -127,26 +139,28 @@ private fun BoxScope.TracerFloatingBottomNavigation(
         selectedTextColor = MaterialTheme.colorScheme.primary,
         unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
         unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-        indicatorColor = MaterialTheme.colorScheme.primary
+        indicatorColor = Color.Transparent
     )
 
     val navContainerColor = MaterialTheme.colorScheme.surfaceContainer
     Surface(
         modifier = Modifier
             .align(Alignment.BottomCenter)
-            .fillMaxWidth()
+            .wrapContentWidth()
             .padding(
                 start = FloatingBottomNavHorizontalPadding,
                 end = FloatingBottomNavHorizontalPadding,
                 bottom = bottomPadding
             ),
-        shape = RoundedCornerShape(FloatingBottomNavCornerRadius),
+        shape = FloatingBottomNavShape,
         color = navContainerColor,
         tonalElevation = 0.dp,
         shadowElevation = 6.dp
     ) {
         NavigationBar(
-            modifier = Modifier.height(FloatingBottomNavHeight),
+            modifier = Modifier
+                .width(FloatingBottomNavItemWidth * TracerTabRegistry.entries.size)
+                .height(FloatingBottomNavHeight),
             windowInsets = WindowInsets(0, 0, 0, 0),
             containerColor = navContainerColor,
             tonalElevation = 0.dp
@@ -155,26 +169,76 @@ private fun BoxScope.TracerFloatingBottomNavigation(
                 val tabMeta = entry.meta
                 val isSelected = selectedTab == tabMeta.id
                 val tabTitle = stringResource(tabMeta.titleRes)
-                NavigationBarItem(
-                    modifier = if (tabMeta.testTag.isNullOrBlank()) {
-                        Modifier
-                    } else {
-                        Modifier.testTag(tabMeta.testTag)
-                    },
-                    selected = isSelected,
-                    onClick = { onTabSelected(tabMeta.id) },
-                    icon = { Icon(tabMeta.icon, contentDescription = tabTitle) },
-                    label = {
-                        Text(
-                            text = tabTitle,
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
-                            )
-                        )
-                    },
-                    alwaysShowLabel = true,
-                    colors = navItemColors
-                )
+                CompositionLocalProvider(LocalRippleConfiguration provides null) {
+                    NavigationBarItem(
+                        modifier = if (tabMeta.testTag.isNullOrBlank()) {
+                            Modifier
+                        } else {
+                            Modifier.testTag(tabMeta.testTag)
+                        },
+                        selected = isSelected,
+                        onClick = { onTabSelected(tabMeta.id) },
+                        icon = {
+                            Column(
+                                modifier = Modifier
+                                    .background(
+                                        color = if (isSelected) {
+                                            MaterialTheme.colorScheme.primary
+                                        } else {
+                                            Color.Transparent
+                                        },
+                                        shape = FloatingBottomNavShape
+                                    )
+                                    .padding(
+                                        horizontal = if (isSelected) {
+                                            FloatingBottomNavSelectedIndicatorHorizontalPadding
+                                        } else {
+                                            0.dp
+                                        },
+                                        vertical = if (isSelected) {
+                                            FloatingBottomNavSelectedIndicatorVerticalPadding
+                                        } else {
+                                            0.dp
+                                        }
+                                    ),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                Icon(
+                                    imageVector = tabMeta.icon,
+                                    contentDescription = tabTitle,
+                                    tint = if (isSelected) {
+                                        MaterialTheme.colorScheme.onPrimary
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                    }
+                                )
+                                Text(
+                                    text = tabTitle,
+                                    modifier = if (tabMeta.testTag.isNullOrBlank()) {
+                                        Modifier
+                                    } else {
+                                        Modifier.testTag("${tabMeta.testTag}_label")
+                                    },
+                                    color = if (isSelected) {
+                                        MaterialTheme.colorScheme.onPrimary
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                    },
+                                    maxLines = 1,
+                                    softWrap = false,
+                                    overflow = TextOverflow.Ellipsis,
+                                    style = MaterialTheme.typography.labelMedium.copy(
+                                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
+                                    )
+                                )
+                            }
+                        },
+                        label = null,
+                        alwaysShowLabel = false,
+                        colors = navItemColors
+                    )
+                }
             }
         }
     }

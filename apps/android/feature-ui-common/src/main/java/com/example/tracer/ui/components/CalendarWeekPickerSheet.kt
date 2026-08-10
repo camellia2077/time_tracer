@@ -47,7 +47,7 @@ data class CalendarWeekRow(
 )
 
 // The sheet is month-scoped for user recognition, but every row still resolves
-// to a canonical ISO week based on that row's Monday so report queries remain
+// to a canonical ISO week based on that row's Monday so insights queries remain
 // aligned with ISO week semantics.
 fun buildMonthWeekRows(
     displayMonth: YearMonth,

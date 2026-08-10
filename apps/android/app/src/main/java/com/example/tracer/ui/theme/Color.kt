@@ -20,7 +20,7 @@ val Indigo400 = Color(0xFF818CF8)
 val Indigo600 = Color(0xFF4F46E5)
 val Indigo900 = Color(0xFF312E81)
 
-// Sky blue is reserved for report progress and duration indicators.
+// Sky blue is reserved for insights progress and duration indicators.
 val Sky400 = Color(0xFF38BDF8)
 val Sky600 = Color(0xFF0284C7)
 

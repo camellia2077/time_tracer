@@ -22,15 +22,9 @@ internal class RuntimeEnvironment(private val context: Context) {
 
     fun prepareRuntimePaths(): RuntimePaths {
         val rootDir = context.filesDir
-        // Program config is an APK-owned runtime resource, not exchange data.
-        // Re-bootstrap when a data-folder replacement or an older installation
-        // left the marker behind but the immutable program bundle is missing.
-        val programBundleFile = File(rootDir, "config/program/meta/bundle.toml")
-        if (!File(rootDir, DATA_FOLDER_SNAPSHOT_MARKER).isFile ||
-            !programBundleFile.isFile
-        ) {
-            assetBootstrapper.bootstrap(rootDir)
-        }
+        // Program config is APK-owned and must be refreshed during every
+        // process start. The bootstrapper only preserves config/user.
+        assetBootstrapper.bootstrap(rootDir)
 
         val configRootDir = File(rootDir, "config")
         val programRootDir = File(configRootDir, "program")
@@ -98,4 +92,5 @@ internal class RuntimeEnvironment(private val context: Context) {
     fun clearTxtData(): ClearTxtResult {
         return RuntimeDataCleanupTargets.clearTxtData(listOf(context.filesDir))
     }
+
 }

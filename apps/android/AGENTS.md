@@ -33,12 +33,12 @@ host/runtime integration; shared business semantics remain in `tracer_core`.
 ## Ownership And Routing
 
 - `app`: composition root and app-local wiring.
-- `feature-data`, `feature-record`, `feature-report`: feature UI and state.
+- `feature-data`, `feature-record`, `feature-insights`: feature UI and state.
 - `runtime`: runtime/JNI implementation.
 - `contract`: gateway interfaces and shared presentation models.
 - UI routes and app-side tests should depend on the smallest gateway interface;
   `RuntimeGateway` remains an aggregate composition boundary.
-- Do not reimplement core TXT, validation, report, query, or exchange semantics
+- Do not reimplement core TXT, validation, insights, query, or exchange semantics
   in Kotlin presentation code.
 
 ## Local Invariants

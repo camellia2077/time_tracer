@@ -6,10 +6,10 @@ import com.example.tracer.RecordAuthoringMode
 import com.example.tracer.RecordLogicalDayTarget
 import com.example.tracer.RecordSuggestionOutputMode
 import com.example.tracer.TxtOutputMode
-import com.example.tracer.ReportChartSemanticMode
-import com.example.tracer.ReportParameterSection
-import com.example.tracer.ReportPiePalettePreset
-import com.example.tracer.ReportResultDisplayMode
+import com.example.tracer.InsightsChartSemanticMode
+import com.example.tracer.InsightsParameterSection
+import com.example.tracer.InsightsPiePalettePreset
+import com.example.tracer.InsightsResultDisplayMode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -83,30 +83,30 @@ class UserPreferencesRepositoryTest {
     }
 
     @Test
-    fun reportPiePalettePreset_defaultsToSoft() = runTest {
+    fun insightsPiePalettePreset_defaultsToSoft() = runTest {
         val repository = buildRepository(
             testName = "default_pie_palette",
             scope = backgroundScope
         )
 
         assertEquals(
-            UserPreferencesRepository.DEFAULT_REPORT_PIE_PALETTE_PRESET,
-            repository.reportPiePalettePreset.first()
+            UserPreferencesRepository.DEFAULT_INSIGHTS_PIE_PALETTE_PRESET,
+            repository.insightsPiePalettePreset.first()
         )
     }
 
     @Test
-    fun setReportPiePalettePreset_persistsSelection() = runTest {
+    fun setInsightsPiePalettePreset_persistsSelection() = runTest {
         val repository = buildRepository(
             testName = "persist_pie_palette",
             scope = backgroundScope
         )
 
-        repository.setReportPiePalettePreset(ReportPiePalettePreset.EDITORIAL)
+        repository.setInsightsPiePalettePreset(InsightsPiePalettePreset.EDITORIAL)
 
         assertEquals(
-            ReportPiePalettePreset.EDITORIAL,
-            repository.reportPiePalettePreset.first()
+            InsightsPiePalettePreset.EDITORIAL,
+            repository.insightsPiePalettePreset.first()
         )
     }
 
@@ -173,79 +173,108 @@ class UserPreferencesRepositoryTest {
     }
 
     @Test
-    fun reportChartSemanticMode_defaultsToBreakdown_andPersistsSelection() = runTest {
+    fun insightsChartSemanticMode_defaultsToBreakdown_andPersistsSelection() = runTest {
         val repository = buildRepository(
             testName = "persist_chart_semantic_mode",
             scope = backgroundScope
         )
 
         assertEquals(
-            ReportChartSemanticMode.COMPOSITION,
-            repository.reportChartSemanticMode.first()
+            InsightsChartSemanticMode.COMPOSITION,
+            repository.insightsChartSemanticMode.first()
         )
 
-        repository.setReportChartSemanticMode(ReportChartSemanticMode.TREND)
+        repository.setInsightsChartSemanticMode(InsightsChartSemanticMode.TREND)
 
         assertEquals(
-            ReportChartSemanticMode.TREND,
-            repository.reportChartSemanticMode.first()
+            InsightsChartSemanticMode.TREND,
+            repository.insightsChartSemanticMode.first()
         )
     }
 
     @Test
-    fun reportChartTrendRoot_defaultsToAllActivities_andPersistsSelection() = runTest {
+    fun insightsHeatmapPaletteName_persistsSelection() = runTest {
+        val repository = buildRepository(
+            testName = "persist_heatmap_palette",
+            scope = backgroundScope
+        )
+
+        repository.setInsightsHeatmapPaletteName("BLUE_LIGHT")
+
+        assertEquals("BLUE_LIGHT", repository.insightsHeatmapPaletteName.first())
+    }
+
+    @Test
+    fun dailyStatusConfig_persistsDefinitionsWithoutToml() = runTest {
+        val repository = buildRepository(
+            testName = "persist_daily_statuses",
+            scope = backgroundScope
+        )
+        val expected = DailyStatusConfig(
+            statuses = listOf(
+                DailyStatusDefinition("study__math", "Study\tMath", "study/math")
+            )
+        )
+
+        repository.setDailyStatusConfig(expected)
+
+        assertEquals(expected, repository.dailyStatusConfig.first())
+    }
+
+    @Test
+    fun insightsChartTrendRoot_defaultsToAllActivities_andPersistsSelection() = runTest {
         val repository = buildRepository(
             testName = "persist_chart_trend_root",
             scope = backgroundScope
         )
 
-        assertEquals("", repository.reportChartTrendRoot.first())
+        assertEquals("", repository.insightsChartTrendRoot.first())
 
-        repository.setReportChartTrendRoot(" study ")
+        repository.setInsightsChartTrendRoot(" study ")
 
-        assertEquals("study", repository.reportChartTrendRoot.first())
+        assertEquals("study", repository.insightsChartTrendRoot.first())
     }
 
     @Test
-    fun reportResultDisplayMode_defaultsToText_andPersistsSelection() = runTest {
+    fun insightsResultDisplayMode_defaultsToText_andPersistsSelection() = runTest {
         val repository = buildRepository(
-            testName = "persist_report_result_display_mode",
+            testName = "persist_insights_result_display_mode",
             scope = backgroundScope
         )
 
-        assertEquals(ReportResultDisplayMode.TEXT, repository.reportResultDisplayMode.first())
+        assertEquals(InsightsResultDisplayMode.TEXT, repository.insightsResultDisplayMode.first())
 
-        repository.setReportResultDisplayMode(ReportResultDisplayMode.CHART)
+        repository.setInsightsResultDisplayMode(InsightsResultDisplayMode.CHART)
 
-        assertEquals(ReportResultDisplayMode.CHART, repository.reportResultDisplayMode.first())
+        assertEquals(InsightsResultDisplayMode.CHART, repository.insightsResultDisplayMode.first())
     }
 
     @Test
-    fun reportParameterSection_defaultsToDay_andPersistsSelection() = runTest {
+    fun insightsParameterSection_defaultsToDay_andPersistsSelection() = runTest {
         val repository = buildRepository(
-            testName = "persist_report_parameter_section",
+            testName = "persist_insights_parameter_section",
             scope = backgroundScope
         )
 
-        assertEquals(ReportParameterSection.DAY, repository.reportParameterSection.first())
+        assertEquals(InsightsParameterSection.DAY, repository.insightsParameterSection.first())
 
-        repository.setReportParameterSection(ReportParameterSection.TIMELINE)
+        repository.setInsightsParameterSection(InsightsParameterSection.TIMELINE)
 
-        assertEquals(ReportParameterSection.TIMELINE, repository.reportParameterSection.first())
+        assertEquals(InsightsParameterSection.TIMELINE, repository.insightsParameterSection.first())
     }
 
     @Test
-    fun reportTimeParametersExpanded_defaultsExpanded_andPersistsCollapsedState() = runTest {
+    fun insightsTimeParametersExpanded_defaultsExpanded_andPersistsCollapsedState() = runTest {
         val repository = buildRepository(
-            testName = "persist_report_time_parameters_expanded",
+            testName = "persist_insights_time_parameters_expanded",
             scope = backgroundScope
         )
 
-        assertEquals(true, repository.reportTimeParametersExpanded.first())
+        assertEquals(true, repository.insightsTimeParametersExpanded.first())
 
-        repository.setReportTimeParametersExpanded(false)
+        repository.setInsightsTimeParametersExpanded(false)
 
-        assertEquals(false, repository.reportTimeParametersExpanded.first())
+        assertEquals(false, repository.insightsTimeParametersExpanded.first())
     }
 
     @Test

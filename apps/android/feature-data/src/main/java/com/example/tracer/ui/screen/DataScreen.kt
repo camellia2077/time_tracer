@@ -3,7 +3,6 @@ package com.example.tracer
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,6 +16,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -40,8 +40,6 @@ private enum class DestructiveAction {
     RebuildDatabase,
     ClearAllData
 }
-
-private val DataScreenBottomContentPadding = 96.dp
 
 @Composable
 fun DataManagementSection(
@@ -77,18 +75,19 @@ fun DataManagementSection(
         }
     }
 
-    androidx.compose.foundation.lazy.LazyColumn(
-        modifier = modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(bottom = DataScreenBottomContentPadding),
-        verticalArrangement = Arrangement.spacedBy(16.dp, androidx.compose.ui.Alignment.Bottom)
-    ) {
-        item {
-            // Data Ingestion Card
-            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
+    ElevatedCard(modifier = modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+                    Text(
+                        text = stringResource(R.string.data_title_data_management),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    HorizontalDivider()
+
+                    // Data ingestion
                     Text(
                         text = stringResource(R.string.data_title_ingestion),
                         style = MaterialTheme.typography.titleMedium,
@@ -112,17 +111,9 @@ fun DataManagementSection(
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(stringResource(R.string.data_action_import_single_tracer))
                     }
-                }
-            }
-        }
+                    HorizontalDivider()
 
-        item {
-            // Complete exchange package export card
-            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
+                    // Complete exchange package export
                     Text(
                         text = stringResource(R.string.data_title_tracer_export),
                         style = MaterialTheme.typography.titleMedium,
@@ -242,17 +233,9 @@ fun DataManagementSection(
                             }
                         )
                     }
-                }
-            }
-        }
+                    HorizontalDivider()
 
-        item {
-            // Maintenance & Debug Card
-            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
+                    // Maintenance
                     Text(
                         text = stringResource(R.string.data_title_maintenance_debug),
                         style = MaterialTheme.typography.titleMedium,
@@ -303,8 +286,6 @@ fun DataManagementSection(
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(stringResource(R.string.data_action_clear_all_app_data))
                     }
-                }
-            }
         }
     }
 

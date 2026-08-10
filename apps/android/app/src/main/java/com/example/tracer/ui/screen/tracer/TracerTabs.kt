@@ -1,27 +1,29 @@
 package com.example.tracer
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.padding
 import com.example.tracer.feature.data.R as DataFeatureR
 import com.example.tracer.data.AppLanguage
 import com.example.tracer.data.ThemeConfig
 import com.example.tracer.ui.viewmodel.ThemeEvent
 
 internal enum class TracerTab {
-    DATA,
-    REPORT,
+    INSIGHTS,
     RECORD,
-    TXT,
     CONFIG
 }
 
@@ -41,8 +43,8 @@ internal enum class TracerTabScrollBehavior {
 
 internal data class TracerTabRouteArgs(
     val dataViewModel: DataViewModel,
-    val queryUiState: QueryReportUiState,
-    val queryReportViewModel: QueryReportViewModel,
+    val queryUiState: QueryInsightsUiState,
+    val queryInsightsViewModel: QueryInsightsViewModel,
     val txtStorageGateway: TxtStorageGateway,
     val recordUiState: RecordUiState,
     val recordViewModel: RecordViewModel,
@@ -50,31 +52,31 @@ internal data class TracerTabRouteArgs(
     val configViewModel: ConfigViewModel,
     val themeConfig: ThemeConfig,
     val onThemeEvent: (ThemeEvent) -> Unit,
-    val reportPiePalettePreset: ReportPiePalettePreset,
-    val onReportPiePalettePresetChange: (ReportPiePalettePreset) -> Unit,
-    val reportChartShowAverageLine: Boolean,
-    val onReportChartShowAverageLineChange: (Boolean) -> Unit,
-    val reportChartSemanticMode: ReportChartSemanticMode,
-    val onReportChartSemanticModeChange: (ReportChartSemanticMode) -> Unit,
-    val reportChartVisualMode: ReportChartVisualMode,
-    val onReportChartVisualModeChange: (ReportChartVisualMode) -> Unit,
-    val reportChartTrendRoot: String,
-    val onReportChartTrendRootChange: (String) -> Unit,
-    val reportAverageDayBasis: ReportAverageDayBasis,
-    val onReportAverageDayBasisChange: (ReportAverageDayBasis) -> Unit,
-    val reportMode: ReportMode,
-    val onReportModeChange: (ReportMode) -> Unit,
-    val reportResultDisplayMode: ReportResultDisplayMode,
-    val onReportResultDisplayModeChange: (ReportResultDisplayMode) -> Unit,
-    val reportParameterSection: ReportParameterSection,
-    val onReportParameterSectionChange: (ReportParameterSection) -> Unit,
-    val reportTimeParametersExpanded: Boolean,
-    val onReportTimeParametersExpandedChange: (Boolean) -> Unit,
-    val reportHeatmapTomlConfig: ReportHeatmapTomlConfig,
-    val reportHeatmapStylePreference: ReportHeatmapStylePreference,
-    val onReportHeatmapThemePolicyChange: (ReportHeatmapThemePolicy) -> Unit,
-    val onReportHeatmapPaletteNameChange: (String) -> Unit,
-    val reportHeatmapApplyMessage: String,
+    val insightsPiePalettePreset: InsightsPiePalettePreset,
+    val onInsightsPiePalettePresetChange: (InsightsPiePalettePreset) -> Unit,
+    val insightsChartShowAverageLine: Boolean,
+    val onInsightsChartShowAverageLineChange: (Boolean) -> Unit,
+    val insightsChartSemanticMode: InsightsChartSemanticMode,
+    val onInsightsChartSemanticModeChange: (InsightsChartSemanticMode) -> Unit,
+    val insightsChartVisualMode: InsightsChartVisualMode,
+    val onInsightsChartVisualModeChange: (InsightsChartVisualMode) -> Unit,
+    val insightsChartTrendRoot: String,
+    val onInsightsChartTrendRootChange: (String) -> Unit,
+    val insightsAverageDayBasis: InsightsAverageDayBasis,
+    val onInsightsAverageDayBasisChange: (InsightsAverageDayBasis) -> Unit,
+    val insightsMode: InsightsMode,
+    val onInsightsModeChange: (InsightsMode) -> Unit,
+    val insightsResultDisplayMode: InsightsResultDisplayMode,
+    val onInsightsResultDisplayModeChange: (InsightsResultDisplayMode) -> Unit,
+    val insightsParameterSection: InsightsParameterSection,
+    val onInsightsParameterSectionChange: (InsightsParameterSection) -> Unit,
+    val insightsTimeParametersExpanded: Boolean,
+    val onInsightsTimeParametersExpandedChange: (Boolean) -> Unit,
+    val insightsHeatmapTomlConfig: InsightsHeatmapTomlConfig,
+    val insightsHeatmapStylePreference: InsightsHeatmapStylePreference,
+    val onInsightsHeatmapThemePolicyChange: (InsightsHeatmapThemePolicy) -> Unit,
+    val onInsightsHeatmapPaletteNameChange: (String) -> Unit,
+    val insightsHeatmapApplyMessage: String,
     val isAppDarkThemeActive: Boolean,
     val appLanguage: AppLanguage,
     val onSetAppLanguage: (AppLanguage) -> Unit,
@@ -102,7 +104,7 @@ internal data class TracerTabRouteArgs(
 
 internal data class TracerTabLifecycleArgs(
     val queryGateway: QueryGateway,
-    val queryReportViewModel: QueryReportViewModel,
+    val queryInsightsViewModel: QueryInsightsViewModel,
     val recordViewModel: RecordViewModel,
     val configViewModel: ConfigViewModel,
     val recordStatusText: () -> String,
@@ -130,124 +132,55 @@ internal object TracerTabRegistry {
     val entries: List<TracerTabEntry> = listOf(
         TracerTabEntry(
             meta = TabMeta(
-                id = TracerTab.DATA,
-                titleRes = R.string.tracer_tab_data,
-                icon = Icons.Default.Home,
-                testTag = "tab_data"
+                id = TracerTab.INSIGHTS,
+                titleRes = R.string.tracer_tab_insights,
+                icon = Icons.Default.BarChart,
+                testTag = "tab_insights"
             ),
             scrollBehavior = TracerTabScrollBehavior.NONE,
-            statusText = { args -> args.dataStatusText },
-            statusEvent = { args -> defaultStatusUiEvent(args) },
-            content = { modifier, args ->
-                val clearTxtStatusText = DestructiveActionStatusText(
-                    running = stringResource(DataFeatureR.string.data_status_clear_txt_running),
-                    success = stringResource(DataFeatureR.string.data_status_clear_txt_success),
-                    failure = stringResource(DataFeatureR.string.data_status_clear_txt_failure)
-                )
-                val clearDatabaseStatusText = DestructiveActionStatusText(
-                    running = stringResource(DataFeatureR.string.data_status_clear_database_running),
-                    success = stringResource(DataFeatureR.string.data_status_clear_database_success),
-                    failure = stringResource(DataFeatureR.string.data_status_clear_database_failure)
-                )
-                val rebuildDatabaseStatusText = DestructiveActionStatusText(
-                    running = stringResource(DataFeatureR.string.data_status_rebuild_database_running),
-                    success = stringResource(DataFeatureR.string.data_status_rebuild_database_success),
-                    failure = stringResource(DataFeatureR.string.data_status_rebuild_database_failure)
-                )
-                val clearAllDataStatusText = DestructiveActionStatusText(
-                    running = stringResource(DataFeatureR.string.data_status_clear_all_data_running),
-                    success = stringResource(DataFeatureR.string.data_status_clear_all_data_success),
-                    failure = stringResource(DataFeatureR.string.data_status_clear_all_data_failure)
-                )
-                DataManagementSection(
-                    modifier = modifier,
-                    onImportDataFolder = args.onImportDataFolder,
-                    onImportSingleTracer = args.onImportSingleTracer,
-                    // Export performs its own authoritative TXT inspection when started.
-                    // Do not gate it on RecordViewModel's lazy TXT-tab cache: entering the
-                    // TXT tab should not be required before exporting from the Data tab.
-                    canExportAllMonthsTracer = true,
-                    canExportCurrentTxtTracer = true,
-                    onExportAllMonthsTracer = args.onExportAllMonthsTracer,
-                    onExportCurrentTxtTracer = args.onExportCurrentTxtTracer,
-                    isTracerExportInProgress = args.isTracerExportInProgress,
-                    selectedTracerSecurityLevel = args.selectedTracerSecurityLevel,
-                    onTracerSecurityLevelChange = args.onTracerSecurityLevelChange,
-                    showCryptoProgress = args.recordUiState.cryptoProgress.isVisible,
-                    cryptoProgressTitle = args.recordUiState.cryptoProgress.operationText,
-                    cryptoProgressPhase = args.recordUiState.cryptoProgress.phaseText,
-                    cryptoOverallProgress = args.recordUiState.cryptoProgress.overallProgress,
-                    cryptoOverallText = args.recordUiState.cryptoProgress.overallText,
-                    cryptoDetailsText = args.recordUiState.cryptoProgress.detailsText,
-                    cryptoAdvancedDetailsText = args.recordUiState.cryptoProgress.advancedDetailsText,
-                    onClearTxt = {
-                        args.dataViewModel.clearTxt(clearTxtStatusText)
-                        args.recordViewModel.clearTxtEditorState()
-                    },
-                    onClearDatabase = {
-                        args.dataViewModel.clearDatabase(clearDatabaseStatusText)
-                    },
-                    onRebuildDatabase = {
-                        args.dataViewModel.rebuildDatabase(rebuildDatabaseStatusText)
-                    },
-                    onClearData = {
-                        args.onClearQuickAccessCache()
-                        args.dataViewModel.clearDataAndReinitialize(clearAllDataStatusText)
-                    }
-                )
-            }
-        ),
-        TracerTabEntry(
-            meta = TabMeta(
-                id = TracerTab.REPORT,
-                titleRes = R.string.tracer_tab_report,
-                icon = Icons.Default.DateRange,
-                testTag = "tab_report"
-            ),
-            scrollBehavior = TracerTabScrollBehavior.NONE,
-            // The ViewModel defers its first refresh until the report presentation preferences
+            // The ViewModel defers its first refresh until the insights presentation preferences
             // are available, preventing the default Text query from racing the persisted Chart.
-            onEnter = { args -> args.queryReportViewModel.onReportTabEntered() },
+            onEnter = { args -> args.queryInsightsViewModel.onInsightsTabEntered() },
             statusText = { args -> args.queryStatusText },
             statusEvent = { args ->
                 if (args.statusText.startsWith("query data ", ignoreCase = true) ||
-                    // Markdown report output is rendered directly in the Report result card.
-                    // Showing the nativeReportJson progress/result text as a global snackbar
+                    // Markdown insights output is rendered directly in the Insights result card.
+                    // Showing the nativeInsightsJson progress/result text as a global snackbar
                     // duplicates that feedback and obscures the floating navigation.
-                    args.statusText.startsWith("nativeReportJson(", ignoreCase = true)) {
+                    args.statusText.startsWith("nativeInsightsJson(", ignoreCase = true)) {
                     null
                 } else {
                     defaultStatusUiEvent(args)
                 }
             },
             content = { modifier, args ->
-                QueryReportTabContent(
+                QueryInsightsTabContent(
                     modifier = modifier,
                     queryUiState = args.queryUiState,
-                    queryReportViewModel = args.queryReportViewModel,
-                    preferredReportMode = args.reportMode,
-                    onPreferredReportModeChange = args.onReportModeChange,
-                    preferredResultDisplayMode = args.reportResultDisplayMode,
-                    onPreferredResultDisplayModeChange = args.onReportResultDisplayModeChange,
-                    preferredParameterSection = args.reportParameterSection,
-                    onPreferredParameterSectionChange = args.onReportParameterSectionChange,
-                    timeParametersExpanded = args.reportTimeParametersExpanded,
-                    onTimeParametersExpandedChange = args.onReportTimeParametersExpandedChange,
-                    preferredChartSemanticMode = args.reportChartSemanticMode,
-                    onPreferredChartSemanticModeChange = args.onReportChartSemanticModeChange,
-                    preferredChartVisualMode = args.reportChartVisualMode,
-                    onPreferredChartVisualModeChange = args.onReportChartVisualModeChange,
-                    preferredTrendChartRoot = args.reportChartTrendRoot,
-                    onPreferredTrendChartRootChange = args.onReportChartTrendRootChange,
-                    preferredAverageDayBasis = args.reportAverageDayBasis,
-                    chartShowAverageLine = args.reportChartShowAverageLine,
-                    piePalettePreset = args.reportPiePalettePreset,
-                    onChartShowAverageLineChange = args.onReportChartShowAverageLineChange,
-                    heatmapTomlConfig = args.reportHeatmapTomlConfig,
-                    heatmapStylePreference = args.reportHeatmapStylePreference,
-                    onHeatmapThemePolicyChange = args.onReportHeatmapThemePolicyChange,
-                    onHeatmapPaletteNameChange = args.onReportHeatmapPaletteNameChange,
-                    heatmapApplyMessage = args.reportHeatmapApplyMessage,
+                    queryInsightsViewModel = args.queryInsightsViewModel,
+                    preferredInsightsMode = args.insightsMode,
+                    onPreferredInsightsModeChange = args.onInsightsModeChange,
+                    preferredResultDisplayMode = args.insightsResultDisplayMode,
+                    onPreferredResultDisplayModeChange = args.onInsightsResultDisplayModeChange,
+                    preferredParameterSection = args.insightsParameterSection,
+                    onPreferredParameterSectionChange = args.onInsightsParameterSectionChange,
+                    timeParametersExpanded = args.insightsTimeParametersExpanded,
+                    onTimeParametersExpandedChange = args.onInsightsTimeParametersExpandedChange,
+                    preferredChartSemanticMode = args.insightsChartSemanticMode,
+                    onPreferredChartSemanticModeChange = args.onInsightsChartSemanticModeChange,
+                    preferredChartVisualMode = args.insightsChartVisualMode,
+                    onPreferredChartVisualModeChange = args.onInsightsChartVisualModeChange,
+                    preferredTrendChartRoot = args.insightsChartTrendRoot,
+                    onPreferredTrendChartRootChange = args.onInsightsChartTrendRootChange,
+                    preferredAverageDayBasis = args.insightsAverageDayBasis,
+                    chartShowAverageLine = args.insightsChartShowAverageLine,
+                    piePalettePreset = args.insightsPiePalettePreset,
+                    onChartShowAverageLineChange = args.onInsightsChartShowAverageLineChange,
+                    heatmapTomlConfig = args.insightsHeatmapTomlConfig,
+                    heatmapStylePreference = args.insightsHeatmapStylePreference,
+                    onHeatmapThemePolicyChange = args.onInsightsHeatmapThemePolicyChange,
+                    onHeatmapPaletteNameChange = args.onInsightsHeatmapPaletteNameChange,
+                    heatmapApplyMessage = args.insightsHeatmapApplyMessage,
                     isAppDarkThemeActive = args.isAppDarkThemeActive,
                     onEditDailyStatuses = args.onEditDailyStatuses,
                     bottomContentPadding = floatingBottomNavScrollPadding()
@@ -258,13 +191,13 @@ internal object TracerTabRegistry {
             meta = TabMeta(
                 id = TracerTab.RECORD,
                 titleRes = R.string.tracer_tab_record,
-                icon = Icons.Default.AddCircle,
+                icon = Icons.Default.Edit,
                 testTag = "tab_record"
             ),
             scrollBehavior = TracerTabScrollBehavior.VERTICAL,
             // Do not clear logical-day override on tab leave.
-            // Yesterday/today is shared session state across Record and TXT so users keep one
-            // target-day intent while switching tabs.
+            // Yesterday/today is shared session state across Record and the Config-embedded TXT
+            // editor so users keep one target-day intent while switching views.
             onEnter = { args ->
                 refreshRecordMappingValidation(args)
                 // Refresh only updates when no user override is active.
@@ -296,126 +229,98 @@ internal object TracerTabRegistry {
         ),
         TracerTabEntry(
             meta = TabMeta(
-                id = TracerTab.TXT,
-                titleRes = R.string.tracer_tab_txt,
-                icon = Icons.Default.Edit,
-                testTag = "tab_txt"
-            ),
-            scrollBehavior = TracerTabScrollBehavior.NONE,
-            onEnter = { args ->
-                refreshRecordMappingValidation(args)
-            },
-            // TXT remains a file-backed editor surface: if users leave the tab without ingesting,
-            // return to the last saved month content instead of preserving a hidden in-memory
-            // draft that looks like persisted data on the next open.
-            onLeave = { args -> args.recordViewModel.discardUnsavedHistoryDraft() },
-            statusText = { args -> args.recordStatusText },
-            statusEvent = { null },
-            content = { _, args ->
-                TxtEditorSection(
-                    txtStorageGateway = args.txtStorageGateway,
-                    inspectionEntries = args.recordUiState.txtInspectionEntries,
-                    availableMonths = args.recordUiState.availableMonths,
-                    selectedMonth = args.recordUiState.selectedMonth,
-                    logicalDayTarget = args.recordUiState.logicalDayTarget,
-                    txtHistoryLoaded = args.recordUiState.txtHistoryLoaded,
-                    initialDayMarker = args.recordUiState.txtDayMarker,
-                    logicalDayClock = args.recordViewModel.logicalDayClock,
-                    onOpenPreviousMonth = args.recordViewModel::openPreviousMonth,
-                    onOpenNextMonth = args.recordViewModel::openNextMonth,
-                    onOpenMonth = args.recordViewModel::openMonth,
-                    selectedHistoryFile = args.recordUiState.selectedHistoryFile,
-                    selectedHistoryContent = args.recordUiState.selectedHistoryContent,
-                    onRefreshHistory = args.recordViewModel::refreshHistory,
-                    editableHistoryContent = args.recordUiState.editableHistoryContent,
-                    onEditableHistoryContentChange = args.recordViewModel::updateEditableHistoryContent,
-                    onDayMarkerPersist = args.recordViewModel::onTxtDayMarkerChange,
-                    onDiscardUnsavedHistoryDraft = args.recordViewModel::discardUnsavedHistoryDraft,
-                    onSaveHistoryFile = args.recordViewModel::saveHistoryFileAndSync,
-                    onSaveHistoryRepresentationOnly = args.recordViewModel::saveHistoryFileRepresentationOnly,
-                    initialOutputMode = args.recordUiState.txtOutputMode,
-                    onOutputModePersist = args.recordViewModel::onTxtOutputModeChange,
-                    bottomContentPadding = floatingBottomNavScrollPadding(),
-                    inlineStatusText = args.recordUiState.statusText,
-                    onCreateCurrentMonthTxt = args.recordViewModel::createCurrentMonthTxt
-                )
-            }
-        ),
-        TracerTabEntry(
-            meta = TabMeta(
                 id = TracerTab.CONFIG,
                 titleRes = R.string.tracer_tab_config,
                 icon = Icons.Default.Settings,
                 testTag = "tab_config"
             ),
             scrollBehavior = TracerTabScrollBehavior.VERTICAL,
-            onEnter = { args -> args.configViewModel.refreshConfigFiles(showStatus = false) },
-            statusText = { args -> args.configStatusText },
+            onEnter = { args ->
+                args.configViewModel.refreshConfigFiles(showStatus = false)
+                refreshRecordMappingValidation(args)
+            },
+            onLeave = { args -> args.recordViewModel.discardUnsavedHistoryDraft() },
+            statusText = { args -> args.configStatusText.ifBlank { args.dataStatusText } },
             statusEvent = { args -> defaultStatusUiEvent(args) },
-            content = { _, args ->
-                ConfigSection(
-                    selectedCategory = args.configUiState.selectedCategory,
-                    aliasFiles = args.configUiState.aliasFiles,
-                    chartFiles = args.configUiState.chartFiles,
-                    metaFiles = args.configUiState.metaFiles,
-                    reportFiles = args.configUiState.reportFiles,
-                    selectedFilePath = args.configUiState.selectedFilePath,
-                    selectedFileDisplayName = args.configUiState.selectedFileDisplayName,
-                    selectedFileContent = args.configUiState.selectedFileContent,
-                    editableContent = args.configUiState.editableContent,
-                    aliasEditorMode = args.configUiState.aliasEditorMode,
-                    aliasDocumentDraft = args.configUiState.aliasDocumentDraft,
-                    aliasEntryMovePlan = args.configUiState.aliasEntryMovePlan,
-                    aliasEntryMoveDestinations = args.configUiState.aliasEntryMoveDestinations,
-                    aliasEntryMoveDestinationsLoading = args.configUiState.aliasEntryMoveDestinationsLoading,
-                    aliasAdvancedTomlDraft = args.configUiState.aliasAdvancedTomlDraft,
-                    aliasEditorErrorMessage = args.configUiState.aliasEditorErrorMessage,
-                    autoSaveStatus = args.configUiState.autoSaveStatus,
-                    themeConfig = args.themeConfig,
-                    onSelectAlias = { args.configViewModel.selectCategory(ConfigCategory.ALIAS) },
-                    onSelectCharts = { args.configViewModel.selectCategory(ConfigCategory.CHARTS) },
-                    onSelectMeta = { args.configViewModel.selectCategory(ConfigCategory.META) },
-                    onSelectReports = { args.configViewModel.selectCategory(ConfigCategory.REPORTS) },
-                    onRefreshFiles = args.configViewModel::refreshConfigFiles,
-                    onOpenFile = args.configViewModel::openFile,
-                    onCreateAliasTomlFile = args.configViewModel::createAliasTomlFile,
-                    onDeleteAliasTomlFile = args.configViewModel::deleteCurrentAliasTomlFile,
-                    onRenameAliasCategory = args.configViewModel::renameAliasCategory,
-                    onCopyDiagnosticsPayload = args.onCopyDiagnosticsPayload,
-                    onEditableContentChange = args.configViewModel::onEditableContentChange,
-                    onSelectAliasStructuredMode = {
-                        args.configViewModel.selectAliasEditorMode(AliasEditorMode.STRUCTURED)
-                    },
-                    onSelectAliasAdvancedMode = {
-                        args.configViewModel.selectAliasEditorMode(AliasEditorMode.ADVANCED)
-                    },
-                    onAliasAdvancedTomlChange = args.configViewModel::onAliasAdvancedTomlChange,
-                    onAddAliasGroup = args.configViewModel::addAliasGroup,
-                    onDeleteAliasGroup = args.configViewModel::deleteAliasGroup,
-                    onRenameAliasGroup = args.configViewModel::renameAliasGroup,
-                    onAddAliasEntry = args.configViewModel::addAliasEntry,
-                    onUpdateAliasEntry = args.configViewModel::updateAliasEntry,
-                    onMergeAliasEntry = args.configViewModel::mergeAliasEntry,
-                    onPromoteAliasEntry = args.configViewModel::promoteAliasEntryToGroup,
-                    onRenameGroupAlias = args.configViewModel::renameGroupAlias,
-                    onAddGroupAlias = args.configViewModel::addGroupAlias,
-                    onUpdateGroupAliases = args.configViewModel::updateGroupAliases,
-                    onDeleteAliasEntry = args.configViewModel::deleteAliasEntry,
-                    onPrepareAliasEntryMove = args.configViewModel::prepareAliasEntryMove,
-                    onPrepareAliasGroupMove = args.configViewModel::prepareAliasGroupMove,
-                    onPreviewAliasEntryMove = args.configViewModel::previewAliasEntryMove,
-                    onPreviewAliasGroupMove = args.configViewModel::previewAliasGroupMove,
-                    onConfirmAliasEntryMovePlan = args.configViewModel::confirmAliasEntryMovePlan,
-                    onDiscardAliasEntryMovePlan = args.configViewModel::discardAliasEntryMovePlan,
-                    onSaveCurrentFile = args.configViewModel::saveCurrentFile,
-                    onThemeEvent = args.onThemeEvent,
-                    reportPiePalettePreset = args.reportPiePalettePreset,
-                    onReportPiePalettePresetChange = args.onReportPiePalettePresetChange,
-                    reportAverageDayBasis = args.reportAverageDayBasis,
-                    onReportAverageDayBasisChange = args.onReportAverageDayBasisChange,
-                    appLanguage = args.appLanguage,
-                    onSetAppLanguage = args.onSetAppLanguage
-                )
+            content = { modifier, args ->
+                Column(
+                    modifier = modifier,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    ConfigSection(
+                        selectedCategory = args.configUiState.selectedCategory,
+                        aliasFiles = args.configUiState.aliasFiles,
+                        chartFiles = args.configUiState.chartFiles,
+                        metaFiles = args.configUiState.metaFiles,
+                        insightsFiles = args.configUiState.insightsFiles,
+                        selectedFilePath = args.configUiState.selectedFilePath,
+                        selectedFileDisplayName = args.configUiState.selectedFileDisplayName,
+                        selectedFileContent = args.configUiState.selectedFileContent,
+                        editableContent = args.configUiState.editableContent,
+                        aliasEditorMode = args.configUiState.aliasEditorMode,
+                        aliasDocumentDraft = args.configUiState.aliasDocumentDraft,
+                        aliasEntryMovePlan = args.configUiState.aliasEntryMovePlan,
+                        aliasEntryMoveDestinations = args.configUiState.aliasEntryMoveDestinations,
+                        aliasEntryMoveDestinationsLoading = args.configUiState.aliasEntryMoveDestinationsLoading,
+                        aliasAdvancedTomlDraft = args.configUiState.aliasAdvancedTomlDraft,
+                        aliasEditorErrorMessage = args.configUiState.aliasEditorErrorMessage,
+                        autoSaveStatus = args.configUiState.autoSaveStatus,
+                        themeConfig = args.themeConfig,
+                        onSelectAlias = { args.configViewModel.selectCategory(ConfigCategory.ALIAS) },
+                        onSelectCharts = { args.configViewModel.selectCategory(ConfigCategory.CHARTS) },
+                        onSelectMeta = { args.configViewModel.selectCategory(ConfigCategory.META) },
+                        onSelectInsights = { args.configViewModel.selectCategory(ConfigCategory.INSIGHTS) },
+                        onRefreshFiles = args.configViewModel::refreshConfigFiles,
+                        onOpenFile = args.configViewModel::openFile,
+                        onCreateAliasTomlFile = args.configViewModel::createAliasTomlFile,
+                        onDeleteAliasTomlFile = args.configViewModel::deleteCurrentAliasTomlFile,
+                        onRenameAliasCategory = args.configViewModel::renameAliasCategory,
+                        onCopyDiagnosticsPayload = args.onCopyDiagnosticsPayload,
+                        onEditableContentChange = args.configViewModel::onEditableContentChange,
+                        onSelectAliasStructuredMode = {
+                            args.configViewModel.selectAliasEditorMode(AliasEditorMode.STRUCTURED)
+                        },
+                        onSelectAliasAdvancedMode = {
+                            args.configViewModel.selectAliasEditorMode(AliasEditorMode.ADVANCED)
+                        },
+                        onAliasAdvancedTomlChange = args.configViewModel::onAliasAdvancedTomlChange,
+                        onAddAliasGroup = args.configViewModel::addAliasGroup,
+                        onDeleteAliasGroup = args.configViewModel::deleteAliasGroup,
+                        onRenameAliasGroup = args.configViewModel::renameAliasGroup,
+                        onAddAliasEntry = args.configViewModel::addAliasEntry,
+                        onUpdateAliasEntry = args.configViewModel::updateAliasEntry,
+                        onMergeAliasEntry = args.configViewModel::mergeAliasEntry,
+                        onPromoteAliasEntry = args.configViewModel::promoteAliasEntryToGroup,
+                        onRenameGroupAlias = args.configViewModel::renameGroupAlias,
+                        onAddGroupAlias = args.configViewModel::addGroupAlias,
+                        onUpdateGroupAliases = args.configViewModel::updateGroupAliases,
+                        onDeleteAliasEntry = args.configViewModel::deleteAliasEntry,
+                        onPrepareAliasEntryMove = args.configViewModel::prepareAliasEntryMove,
+                        onPrepareAliasGroupMove = args.configViewModel::prepareAliasGroupMove,
+                        onPreviewAliasEntryMove = args.configViewModel::previewAliasEntryMove,
+                        onPreviewAliasGroupMove = args.configViewModel::previewAliasGroupMove,
+                        onConfirmAliasEntryMovePlan = args.configViewModel::confirmAliasEntryMovePlan,
+                        onDiscardAliasEntryMovePlan = args.configViewModel::discardAliasEntryMovePlan,
+                        onSaveCurrentFile = args.configViewModel::saveCurrentFile,
+                        onThemeEvent = args.onThemeEvent,
+                        insightsPiePalettePreset = args.insightsPiePalettePreset,
+                        onInsightsPiePalettePresetChange = args.onInsightsPiePalettePresetChange,
+                        insightsAverageDayBasis = args.insightsAverageDayBasis,
+                        onInsightsAverageDayBasisChange = args.onInsightsAverageDayBasisChange,
+                        appLanguage = args.appLanguage,
+                        onSetAppLanguage = args.onSetAppLanguage,
+                        extraContent = {
+                            DataManagementRouteContent(args)
+                            Text(
+                                text = stringResource(R.string.config_title_advanced_files),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                            TxtEditorRouteContent(args)
+                        }
+                    )
+                }
             }
         )
     )
@@ -441,6 +346,95 @@ internal object TracerTabRegistry {
     fun statusEvent(tab: TracerTab, args: TracerTabStatusEventArgs): TracerTabUiEvent? {
         return entry(tab).statusEvent(args)
     }
+}
+
+@Composable
+private fun DataManagementRouteContent(args: TracerTabRouteArgs) {
+    val clearTxtStatusText = DestructiveActionStatusText(
+        running = stringResource(DataFeatureR.string.data_status_clear_txt_running),
+        success = stringResource(DataFeatureR.string.data_status_clear_txt_success),
+        failure = stringResource(DataFeatureR.string.data_status_clear_txt_failure)
+    )
+    val clearDatabaseStatusText = DestructiveActionStatusText(
+        running = stringResource(DataFeatureR.string.data_status_clear_database_running),
+        success = stringResource(DataFeatureR.string.data_status_clear_database_success),
+        failure = stringResource(DataFeatureR.string.data_status_clear_database_failure)
+    )
+    val rebuildDatabaseStatusText = DestructiveActionStatusText(
+        running = stringResource(DataFeatureR.string.data_status_rebuild_database_running),
+        success = stringResource(DataFeatureR.string.data_status_rebuild_database_success),
+        failure = stringResource(DataFeatureR.string.data_status_rebuild_database_failure)
+    )
+    val clearAllDataStatusText = DestructiveActionStatusText(
+        running = stringResource(DataFeatureR.string.data_status_clear_all_data_running),
+        success = stringResource(DataFeatureR.string.data_status_clear_all_data_success),
+        failure = stringResource(DataFeatureR.string.data_status_clear_all_data_failure)
+    )
+    DataManagementSection(
+        onImportDataFolder = args.onImportDataFolder,
+        onImportSingleTracer = args.onImportSingleTracer,
+        // Export performs its own authoritative TXT inspection when started.
+        // It is available directly from Config > Data Management.
+        canExportAllMonthsTracer = true,
+        canExportCurrentTxtTracer = true,
+        onExportAllMonthsTracer = args.onExportAllMonthsTracer,
+        onExportCurrentTxtTracer = args.onExportCurrentTxtTracer,
+        isTracerExportInProgress = args.isTracerExportInProgress,
+        selectedTracerSecurityLevel = args.selectedTracerSecurityLevel,
+        onTracerSecurityLevelChange = args.onTracerSecurityLevelChange,
+        showCryptoProgress = args.recordUiState.cryptoProgress.isVisible,
+        cryptoProgressTitle = args.recordUiState.cryptoProgress.operationText,
+        cryptoProgressPhase = args.recordUiState.cryptoProgress.phaseText,
+        cryptoOverallProgress = args.recordUiState.cryptoProgress.overallProgress,
+        cryptoOverallText = args.recordUiState.cryptoProgress.overallText,
+        cryptoDetailsText = args.recordUiState.cryptoProgress.detailsText,
+        cryptoAdvancedDetailsText = args.recordUiState.cryptoProgress.advancedDetailsText,
+        onClearTxt = {
+            args.dataViewModel.clearTxt(clearTxtStatusText)
+            args.recordViewModel.clearTxtEditorState()
+        },
+        onClearDatabase = {
+            args.dataViewModel.clearDatabase(clearDatabaseStatusText)
+        },
+        onRebuildDatabase = {
+            args.dataViewModel.rebuildDatabase(rebuildDatabaseStatusText)
+        },
+        onClearData = {
+            args.onClearQuickAccessCache()
+            args.dataViewModel.clearDataAndReinitialize(clearAllDataStatusText)
+        }
+    )
+}
+
+@Composable
+private fun TxtEditorRouteContent(args: TracerTabRouteArgs) {
+    TxtEditorSection(
+        txtStorageGateway = args.txtStorageGateway,
+        inspectionEntries = args.recordUiState.txtInspectionEntries,
+        availableMonths = args.recordUiState.availableMonths,
+        selectedMonth = args.recordUiState.selectedMonth,
+        logicalDayTarget = args.recordUiState.logicalDayTarget,
+        txtHistoryLoaded = args.recordUiState.txtHistoryLoaded,
+        initialDayMarker = args.recordUiState.txtDayMarker,
+        logicalDayClock = args.recordViewModel.logicalDayClock,
+        onOpenPreviousMonth = args.recordViewModel::openPreviousMonth,
+        onOpenNextMonth = args.recordViewModel::openNextMonth,
+        onOpenMonth = args.recordViewModel::openMonth,
+        selectedHistoryFile = args.recordUiState.selectedHistoryFile,
+        selectedHistoryContent = args.recordUiState.selectedHistoryContent,
+        onRefreshHistory = args.recordViewModel::refreshHistory,
+        editableHistoryContent = args.recordUiState.editableHistoryContent,
+        onEditableHistoryContentChange = args.recordViewModel::updateEditableHistoryContent,
+        onDayMarkerPersist = args.recordViewModel::onTxtDayMarkerChange,
+        onDiscardUnsavedHistoryDraft = args.recordViewModel::discardUnsavedHistoryDraft,
+        onSaveHistoryFile = args.recordViewModel::saveHistoryFileAndSync,
+        onSaveHistoryRepresentationOnly = args.recordViewModel::saveHistoryFileRepresentationOnly,
+        initialOutputMode = args.recordUiState.txtOutputMode,
+        onOutputModePersist = args.recordViewModel::onTxtOutputModeChange,
+        embeddedInScrollableParent = true,
+        inlineStatusText = args.recordUiState.statusText,
+        onCreateCurrentMonthTxt = args.recordViewModel::createCurrentMonthTxt
+    )
 }
 
 private const val ActivityAuthorableTokenValidationUnavailablePrefix =

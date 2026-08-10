@@ -32,12 +32,12 @@ class RuntimeConfigBundleValidatorTest {
         try {
             writeBundleToml(configRoot, profile = "android")
             writeRequiredFiles(configRoot)
-            File(configRoot, "program/reports/markdown/en/year.toml").delete()
+            File(configRoot, "program/insights/markdown/en/year.toml").delete()
 
             val result = validateRuntimeConfigBundle(configRoot)
 
             assertFalse(result.ok)
-            assertTrue(result.missingFiles.contains("program/reports/markdown/en/year.toml"))
+            assertTrue(result.missingFiles.contains("program/insights/markdown/en/year.toml"))
         } finally {
             configRoot.deleteRecursively()
         }
@@ -91,11 +91,11 @@ class RuntimeConfigBundleValidatorTest {
               "program/config.toml",
               "program/charts/heatmap.toml",
               "program/charts/pie.toml",
-              "program/reports/markdown/en/day.toml",
-              "program/reports/markdown/en/month.toml",
-              "program/reports/markdown/en/period.toml",
-              "program/reports/markdown/en/week.toml",
-              "program/reports/markdown/en/year.toml",
+              "program/insights/markdown/en/day.toml",
+              "program/insights/markdown/en/month.toml",
+              "program/insights/markdown/en/period.toml",
+              "program/insights/markdown/en/week.toml",
+              "program/insights/markdown/en/year.toml",
             ]
             """.trimIndent()
         )
@@ -106,11 +106,11 @@ class RuntimeConfigBundleValidatorTest {
             "program/config.toml",
             "program/charts/heatmap.toml",
             "program/charts/pie.toml",
-            "program/reports/markdown/en/day.toml",
-            "program/reports/markdown/en/month.toml",
-            "program/reports/markdown/en/period.toml",
-            "program/reports/markdown/en/week.toml",
-            "program/reports/markdown/en/year.toml"
+            "program/insights/markdown/en/day.toml",
+            "program/insights/markdown/en/month.toml",
+            "program/insights/markdown/en/period.toml",
+            "program/insights/markdown/en/week.toml",
+            "program/insights/markdown/en/year.toml"
         )
         for (relativePath in requiredFiles) {
             val file = File(configRoot, relativePath)

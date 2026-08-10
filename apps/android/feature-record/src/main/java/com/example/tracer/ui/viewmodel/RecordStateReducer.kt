@@ -376,7 +376,8 @@ internal object RecordStateReducer {
         target: RecordLogicalDayTarget
     ): RecordUiState {
         // Once users explicitly choose yesterday/today, keep that override for the current app
-        // session so Record and TXT tabs stay aligned on the same target-day intent.
+        // session so Record and the Config-embedded TXT editor stay aligned on the same
+        // target-day intent.
         if (state.logicalDayTarget == target && state.logicalDayIsUserOverride) {
             return state
         }

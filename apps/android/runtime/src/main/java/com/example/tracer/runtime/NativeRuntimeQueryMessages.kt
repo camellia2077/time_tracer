@@ -1,6 +1,6 @@
 package com.example.tracer
 
-internal fun buildReportChartResultMessage(
+internal fun buildInsightsChartResultMessage(
     pointCount: Int
 ): String {
     return if (pointCount <= 0) {
@@ -10,7 +10,7 @@ internal fun buildReportChartResultMessage(
     }
 }
 
-internal fun buildReportCompositionResultMessage(
+internal fun buildInsightsCompositionResultMessage(
     sliceCount: Int
 ): String {
     return if (sliceCount <= 0) {

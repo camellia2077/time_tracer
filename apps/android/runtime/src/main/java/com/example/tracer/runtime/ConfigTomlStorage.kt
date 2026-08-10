@@ -11,7 +11,7 @@ internal class ConfigTomlStorage(private val configRootPath: String) {
                 aliasFiles = emptyList(),
                 chartFiles = emptyList(),
                 metaFiles = emptyList(),
-                reportFiles = emptyList(),
+                insightsFiles = emptyList(),
                 message = "No config directory.",
                 userFiles = emptyList()
             )
@@ -26,14 +26,14 @@ internal class ConfigTomlStorage(private val configRootPath: String) {
         val aliasFiles = mutableListOf<ConfigTomlFileEntry>()
         val chartFiles = mutableListOf<ConfigTomlFileEntry>()
         val metaFiles = mutableListOf<ConfigTomlFileEntry>()
-        val reportFiles = mutableListOf<ConfigTomlFileEntry>()
+        val insightsFiles = mutableListOf<ConfigTomlFileEntry>()
         val userFiles = mutableListOf<ConfigTomlFileEntry>()
         for (path in allTomlFiles) {
             if (path.startsWith("user/")) {
                 userFiles += path.toConfigTomlFileEntry(prefixToTrim = null)
             }
-            if (path.startsWith("program/reports/")) {
-                reportFiles += path.toConfigTomlFileEntry(prefixToTrim = "program/reports/")
+            if (path.startsWith("program/insights/")) {
+                insightsFiles += path.toConfigTomlFileEntry(prefixToTrim = "program/insights/")
             } else if (path.startsWith("program/charts/")) {
                 chartFiles += path.toConfigTomlFileEntry(prefixToTrim = "program/charts/")
             } else if (path == "program/config.toml" || path.startsWith("program/meta/")) {
@@ -48,7 +48,7 @@ internal class ConfigTomlStorage(private val configRootPath: String) {
             aliasFiles = aliasFiles,
             chartFiles = chartFiles,
             metaFiles = metaFiles,
-            reportFiles = reportFiles,
+            insightsFiles = insightsFiles,
             message = "Found ${allTomlFiles.size} TOML file(s).",
             userFiles = userFiles
         )

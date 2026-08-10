@@ -26,44 +26,44 @@ class DomainResultCompatibilityTest {
     }
 
     @Test
-    fun domainFailure_maps_to_reportCallResult_with_fallback_payload() {
+    fun domainFailure_maps_to_insightsCallResult_with_fallback_payload() {
         val result = DomainResult.Failure(
             CoreError(
-                userMessage = "report failed",
+                userMessage = "insights failed",
                 debugMessage = "native crash",
-                errorLogPath = "/tmp/report.log",
-                operationId = "op-report-1"
+                errorLogPath = "/tmp/insights.log",
+                operationId = "op-insights-1"
             )
-        ).toLegacyReportCallResult(
+        ).toLegacyInsightsCallResult(
             failureRawResponse = { error -> "raw:${error.debugMessage}" },
             failureOutput = { error -> "out:${error.userMessage}" }
         )
 
         assertFalse(result.initialized)
         assertFalse(result.operationOk)
-        assertEquals("out:report failed", result.outputText)
+        assertEquals("out:insights failed", result.outputText)
         assertEquals("raw:native crash", result.rawResponse)
-        assertEquals("/tmp/report.log", result.errorLogPath)
-        assertEquals("op-report-1", result.operationId)
+        assertEquals("/tmp/insights.log", result.errorLogPath)
+        assertEquals("op-insights-1", result.operationId)
         assertEquals(null, result.errorContract)
-        assertEquals(null, result.reportWindowMetadata)
+        assertEquals(null, result.insightsWindowMetadata)
     }
 
     @Test
-    fun domainNativeEnvelope_reportFields_map_to_reportCallResult() {
+    fun domainNativeEnvelope_insightsFields_map_to_insightsCallResult() {
         val result = DomainResult.Success(
             DomainNativeEnvelope(
                 initialized = true,
                 operationOk = true,
                 rawResponse = """{"ok":true}""",
-                outputText = "# Report",
-                operationId = "op-report-structured",
-                errorContract = ReportErrorContract(
-                    errorCode = "reporting.target.not_found",
-                    errorCategory = "reporting",
+                outputText = "# Insights",
+                operationId = "op-insights-structured",
+                errorContract = InsightsErrorContract(
+                    errorCode = "insights.target.not_found",
+                    errorCategory = "insights",
                     hints = listOf("Try another date.")
                 ),
-                reportWindowMetadata = ReportWindowMetadata(
+                insightsWindowMetadata = InsightsWindowMetadata(
                     hasRecords = false,
                     matchedDayCount = 0,
                     matchedRecordCount = 0,
@@ -72,15 +72,15 @@ class DomainResultCompatibilityTest {
                     requestedDays = 7
                 )
             )
-        ).toLegacyReportCallResult()
+        ).toLegacyInsightsCallResult()
 
         assertTrue(result.initialized)
         assertTrue(result.operationOk)
-        assertEquals("reporting.target.not_found", result.errorContract?.errorCode)
-        assertEquals("reporting", result.errorContract?.errorCategory)
+        assertEquals("insights.target.not_found", result.errorContract?.errorCode)
+        assertEquals("insights", result.errorContract?.errorCategory)
         assertEquals(listOf("Try another date."), result.errorContract?.hints)
-        assertEquals(false, result.reportWindowMetadata?.hasRecords)
-        assertEquals(7, result.reportWindowMetadata?.requestedDays)
+        assertEquals(false, result.insightsWindowMetadata?.hasRecords)
+        assertEquals(7, result.insightsWindowMetadata?.requestedDays)
     }
 
     @Test

@@ -3,35 +3,35 @@ package com.example.tracer
 import java.time.LocalDate
 import java.time.format.DateTimeParseException
 
-internal fun validateReportChartQueryParams(
+internal fun validateInsightsChartQueryParams(
     lookbackDays: Int,
     fromDateIso: String?,
     toDateIso: String?
-): ReportChartQueryResult? {
-    val error = validateReportWindowQueryParams(lookbackDays, fromDateIso, toDateIso)
+): InsightsChartQueryResult? {
+    val error = validateInsightsWindowQueryParams(lookbackDays, fromDateIso, toDateIso)
         ?: return null
-    return ReportChartQueryResult(
+    return InsightsChartQueryResult(
         ok = false,
         data = null,
         message = error
     )
 }
 
-internal fun validateReportCompositionQueryParams(
+internal fun validateInsightsCompositionQueryParams(
     lookbackDays: Int,
     fromDateIso: String?,
     toDateIso: String?
-): ReportCompositionQueryResult? {
-    val error = validateReportWindowQueryParams(lookbackDays, fromDateIso, toDateIso)
+): InsightsCompositionQueryResult? {
+    val error = validateInsightsWindowQueryParams(lookbackDays, fromDateIso, toDateIso)
         ?: return null
-    return ReportCompositionQueryResult(
+    return InsightsCompositionQueryResult(
         ok = false,
         data = null,
         message = error
     )
 }
 
-private fun validateReportWindowQueryParams(
+private fun validateInsightsWindowQueryParams(
     lookbackDays: Int,
     fromDateIso: String?,
     toDateIso: String?
