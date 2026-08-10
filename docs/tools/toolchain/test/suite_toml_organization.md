@@ -40,7 +40,7 @@
 
 - capability 子入口。
 - 只拼 capability 需要的 `base` 与对应 `commands_<capability>.toml`。
-- 用于快速执行某一职责面，例如 reporting、query、exchange。
+- 用于快速执行某一职责面，例如 insights、query、exchange。
 
 ### `config_<profile>.toml`
 
@@ -63,7 +63,7 @@
 
 - 这是职责命令层。
 - 一个文件对应一个明确职责域，例如：
-  - `commands_reporting.toml`
+  - `commands_insights.toml`
   - `commands_version.toml`
   - `commands_query_tree.toml`
   - `commands_query_data.toml`
@@ -102,7 +102,7 @@ includes = ["env.toml", "tests.toml"]
 ```toml
 includes = [
   "tests/base.toml",
-  "tests/commands_reporting.toml",
+  "tests/commands_insights.toml",
   "tests/commands_query_data.toml",
 ]
 ```
@@ -113,7 +113,7 @@ capability 入口：
 includes = [
   "env.toml",
   "tests/base.toml",
-  "tests/commands_reporting.toml",
+  "tests/commands_insights.toml",
 ]
 ```
 

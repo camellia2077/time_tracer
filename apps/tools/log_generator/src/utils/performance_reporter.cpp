@@ -1,4 +1,4 @@
-﻿// utils/performance_reporter.cpp
+// utils/performance_reporter.cpp
 #include "utils/performance_reporter.hpp"
 
 #include <format>

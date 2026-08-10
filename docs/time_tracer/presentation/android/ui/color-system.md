@@ -4,7 +4,7 @@
 
 Define the shared Android UI color roles and their current HEX values.
 
-Runtime theme colors are defined in `apps/android/app/src/main/java/com/example/tracer/ui/theme/ThemePaletteDefinition.kt`. Report semantic token types are shared through `apps/android/feature-ui-common/src/main/java/com/example/tracer/ui/theme/ReportColorTokens.kt`. This document records the same roles as HEX references for design and review.
+Runtime theme colors are defined in `apps/android/app/src/main/java/com/example/tracer/ui/theme/ThemePaletteDefinition.kt`. Insights semantic token types are shared through `apps/android/feature-ui-common/src/main/java/com/example/tracer/ui/theme/InsightsColorTokens.kt`. This document records the same roles as HEX references for design and review.
 
 ## When To Open
 
@@ -13,7 +13,7 @@ Runtime theme colors are defined in `apps/android/app/src/main/java/com/example/
 
 ## What This Doc Does Not Cover
 
-- Report-specific semantic usage; see `report/README.md`.
+- Insights-specific semantic usage; see `insights/README.md`.
 - User preference persistence; see `../specs/preference-storage.md`.
 
 ## Design Direction
@@ -30,7 +30,7 @@ The Theme Palette selector uses a compact three-swatch preview for every theme. 
 | 2 | Auxiliary | Auxiliary theme color for secondary emphasis |
 | 3 | Page background | Theme's primary large-area background |
 
-The preview is an overview of the theme and does not represent every implementation token. It must not add separate swatches for progress, text, outline, surface, or container colors. The auxiliary swatch may reuse a theme token when appropriate, but it must represent general secondary emphasis rather than Report progress specifically. Report progress remains a Report-specific semantic role.
+The preview is an overview of the theme and does not represent every implementation token. It must not add separate swatches for progress, text, outline, surface, or container colors. The auxiliary swatch may reuse a theme token when appropriate, but it must represent general secondary emphasis rather than Insights progress specifically. Insights progress remains a Insights-specific semantic role.
 
 ## Light Theme
 
@@ -45,7 +45,7 @@ The preview is an overview of the theme and does not represent every implementat
 | Divider and outline | `#E2E8F0` | Borders and separators |
 | Strong outline | `#CBD5E1` | Higher-contrast borders |
 | Primary | `#4F46E5` | Primary actions and shared emphasis |
-| Secondary | `#0D9488` | Secondary UI states outside Report structure |
+| Secondary | `#0D9488` | Secondary UI states outside Insights structure |
 | Progress accent | `#0284C7` | Shared progress and duration emphasis |
 | Main text | `#0F172A` | Primary readable text |
 | Secondary text | `#475569` | Supporting text |
@@ -63,7 +63,7 @@ The preview is an overview of the theme and does not represent every implementat
 | Divider and outline | `#334155` | Borders and separators |
 | Strong outline | `#64748B` | Higher-contrast borders |
 | Primary | `#818CF8` | Primary actions and shared emphasis |
-| Secondary | `#2DD4BF` | Secondary UI states outside Report structure |
+| Secondary | `#2DD4BF` | Secondary UI states outside Insights structure |
 | Progress accent | `#38BDF8` | Shared progress and duration emphasis |
 | Main text | `#F1F5F9` | Primary readable text |
 | Secondary text | `#CBD5E1` | Supporting text |
@@ -162,7 +162,7 @@ The Snowfield palette is a fixed cool neutral appearance. It does not change whe
 
 ## Orange Theme
 
-The Orange palette uses restrained neutral Slate surfaces with orange reserved for primary actions and Report emphasis.
+The Orange palette uses restrained neutral Slate surfaces with orange reserved for primary actions and Insights emphasis.
 
 | Mode | Page background | Primary | Progress accent | Main text |
 | --- | --- | --- | --- | --- |
@@ -171,7 +171,7 @@ The Orange palette uses restrained neutral Slate surfaces with orange reserved f
 
 ## Rose Theme
 
-The Rose palette uses restrained neutral Slate surfaces with rose reserved for primary actions and Report emphasis.
+The Rose palette uses restrained neutral Slate surfaces with rose reserved for primary actions and Insights emphasis.
 
 | Mode | Page background | Primary | Progress accent | Main text |
 | --- | --- | --- | --- | --- |
@@ -180,7 +180,7 @@ The Rose palette uses restrained neutral Slate surfaces with rose reserved for p
 
 ## Amber Theme
 
-The Amber palette uses restrained neutral Slate surfaces with amber reserved for primary actions and Report emphasis.
+The Amber palette uses restrained neutral Slate surfaces with amber reserved for primary actions and Insights emphasis.
 
 | Mode | Page background | Primary | Progress accent | Main text |
 | --- | --- | --- | --- | --- |
@@ -213,7 +213,7 @@ The Newsprint palette evokes cool gray newspaper stock with black ink and a rest
 
 ## Ink Wash Theme (Fixed)
 
-The Ink Wash palette uses rice-paper surfaces, ink-black hierarchy, and cinnabar report emphasis.
+The Ink Wash palette uses rice-paper surfaces, ink-black hierarchy, and cinnabar insights emphasis.
 
 | Role | HEX | Usage |
 | --- | --- | --- |

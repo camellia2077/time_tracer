@@ -167,8 +167,7 @@ function(enforce_core_target_link_boundary)
             "taio_lib"
             "tc_adapters_iface"
             "tc_infra_full_lib"
-            "tc_infra_reports_lib"
-            "tc_infra_reporting_lib"
+            "tc_infra_insights_lib"
             "tc_infra_query_lib"
             "tc_infra_config_lib"
             "tc_infra_exchange_lib"
@@ -176,11 +175,11 @@ function(enforce_core_target_link_boundary)
             "tc_infra_persistence_runtime_lib"
             "tc_cap_pipeline_lib"
             "tc_cap_query_lib"
-            "tc_cap_reporting_lib"
+            "tc_cap_insights_lib"
             "tc_cap_config_lib"
             "tc_cap_exchange_lib"
-            "tc_rpt_shared_lib"
-            "tc_rpt_data_lib"
+            "tc_insights_shared_lib"
+            "tc_insights_data_lib"
         )
     endif()
 

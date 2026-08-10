@@ -4,7 +4,7 @@
 #include "application/tests/support/test_support.hpp"
 #include "application/use_cases/pipeline_api.hpp"
 #include "application/use_cases/query_api.hpp"
-#include "application/use_cases/report_api.hpp"
+#include "application/use_cases/insights_api.hpp"
 #include "application/aggregate_runtime/tracer_core_runtime.hpp"
 #include "application/use_cases/tracer_exchange_api.hpp"
 
@@ -14,29 +14,29 @@ namespace {
 
 auto TestRuntimeAccessorsAndForwarding(TestState& state) -> void {
   FakePipelineWorkflow pipeline_workflow;
-  FakeReportHandler report_handler;
+  FakeInsightsHandler insights_handler;
   auto repository = std::make_shared<FakeProjectRepository>();
   auto data_query = std::make_shared<FakeDataQueryService>();
   auto tracer_exchange = std::make_shared<FakeTracerExchangeService>();
-  auto report_data_query = std::make_shared<FakeReportDataQueryService>();
+  auto insights_data_query = std::make_shared<FakeInsightsDataQueryService>();
 
   auto pipeline_api = std::make_shared<PipelineApi>(pipeline_workflow);
   auto query_api = std::make_shared<QueryApi>(repository, data_query);
-  auto report_formatter = std::make_shared<FakeReportDtoFormatter>();
-  auto report_api = std::make_shared<ReportApi>(
-      report_handler, report_data_query, report_formatter);
+  auto insights_formatter = std::make_shared<FakeInsightsDtoFormatter>();
+  auto insights_api = std::make_shared<InsightsApi>(
+      insights_handler, insights_data_query, insights_formatter);
   auto tracer_exchange_api =
       std::make_shared<TracerExchangeApi>(tracer_exchange);
 
-  TracerCoreRuntime runtime(pipeline_api, query_api, report_api,
+  TracerCoreRuntime runtime(pipeline_api, query_api, insights_api,
                             tracer_exchange_api);
 
   Expect(state, &runtime.pipeline() == pipeline_api.get(),
          "TracerCoreRuntime should expose the same pipeline API instance.");
   Expect(state, &runtime.query() == query_api.get(),
          "TracerCoreRuntime should expose the same query API instance.");
-  Expect(state, &runtime.report() == report_api.get(),
-         "TracerCoreRuntime should expose the same report API instance.");
+  Expect(state, &runtime.insights() == insights_api.get(),
+         "TracerCoreRuntime should expose the same insights API instance.");
   Expect(
       state, &runtime.tracer_exchange() == tracer_exchange_api.get(),
       "TracerCoreRuntime should expose the same tracer-exchange API instance.");
@@ -47,7 +47,7 @@ auto TestRuntimeAccessorsAndForwarding(TestState& state) -> void {
        .save_processed_output = true,
        .ingest_mode = IngestMode::kStandard});
   Expect(state, ingest_result.ok,
-         "Pipeline API should still report ingest success through runtime "
+         "Pipeline API should still insights ingest success through runtime "
          "accessors.");
 
   auto data_request = tracer_core::core::dto::DataQueryRequest{};
@@ -56,14 +56,14 @@ auto TestRuntimeAccessorsAndForwarding(TestState& state) -> void {
   Expect(state, data_result.ok && data_result.content == "data-query-result",
          "Query API should still return the delegated data query result.");
 
-  const auto report_result = runtime.report().RunTemporalReportQuery(
-      {.display_mode = tracer_core::core::dto::ReportDisplayMode::kDay,
+  const auto insights_result = runtime.insights().RunTemporalInsightsQuery(
+      {.display_mode = tracer_core::core::dto::InsightsDisplayMode::kDay,
        .selection =
            {.kind = tracer_core::core::dto::TemporalSelectionKind::kSingleDay,
             .date = "2026-03-21"},
-       .format = ReportFormat::kMarkdown});
-  Expect(state, report_result.ok && report_result.content == "daily:2026-03-21",
-         "Report API should still return the delegated report result.");
+       .format = InsightsFormat::kMarkdown});
+  Expect(state, insights_result.ok && insights_result.content == "daily:2026-03-21",
+         "Insights API should still return the delegated insights result.");
 
   const auto exchange_result =
       runtime.tracer_exchange().RunTracerExchangeInspect(

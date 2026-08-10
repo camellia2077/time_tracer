@@ -12,7 +12,7 @@
    - 负责命令到 handler 的路由，不承载业务逻辑。
 4. 命令实现层：`src/commands/handlers/*.rs`
    - 每个命令独立处理参数组装、调用 runtime、渲染输出。
-   - `report render`、`report export`、`report chart` 共同组成 report family。
+   - `insights render`、`insights export`、`insights chart` 共同组成 insights family。
 5. Core 适配层：`src/core/runtime.rs`
    - 负责动态加载 `tracer_core.dll` 并调用 C ABI。
 6. 错误模型层：`src/error/mod.rs`
@@ -51,7 +51,7 @@
    - `src/cli/mod.rs` 增加子命令定义。
    - `src/commands/mod.rs` 增加路由。
    - `src/commands/handlers/` 增加实现文件。
-   - 若是报表相关能力，优先挂到 `report` family，而不是新增独立顶层命令族。
+   - 若是报表相关能力，优先挂到 `insights` family，而不是新增独立顶层命令族。
 2. 改参数校验或帮助文案：
    - `src/cli/mod.rs`
 3. 改 Core 调用或字段映射：
@@ -73,7 +73,7 @@
 
 1. 套件入口：`tools/suites/tracer_windows_rust_cli/tests.toml`
 2. capability 命令集：
-   - `tools/suites/tracer_windows_rust_cli/tests/commands_reporting.toml`
+   - `tools/suites/tracer_windows_rust_cli/tests/commands_insights.toml`
    - `tools/suites/tracer_windows_rust_cli/tests/commands_pipeline.toml`
 3. 细分用例：
    - `commands_txt_view_day.toml`
@@ -92,7 +92,7 @@
 3. The handler reads the file, infers `selected_month`, and builds the TXT
    runtime request.
 4. `src/core/runtime/*.rs` loads and calls `tracer_core_runtime_config_json`.
-5. The handler prints the returned `day_body` or reports the normalized error.
+5. The handler prints the returned `day_body` or insights the normalized error.
 
 ## 5. 最小验证命令
 

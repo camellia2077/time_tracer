@@ -35,4 +35,4 @@
 
 [[nodiscard]] auto QueryProjectTree(sqlite3* db_conn,
                                     const QueryFilters& filters)
-    -> reporting::ProjectTree;
+    -> insights::ProjectTree;

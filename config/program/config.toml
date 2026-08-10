@@ -2,7 +2,7 @@
 
 [system]
 error_log = "../output/error_log.txt"
-export_root = "exported_reports"
+export_root = "exported_insights"
 save_processed_output = true
 
 [defaults]
@@ -36,13 +36,13 @@ main_config = "../user/behavior.toml"
 heatmap = "charts/heatmap.toml"
 pie = "charts/pie.toml"
 
-[reports.typst]
-root = "reports/typst"
+[insights.typst]
+root = "insights/typst"
 
-[reports.latex]
-root = "reports/latex"
+[insights.latex]
+root = "insights/latex"
 
-[reports.markdown]
-root = "reports/markdown"
+[insights.markdown]
+root = "insights/markdown"
 default_locale = "en"
 supported_locales = ["en", "zh", "ja"]

@@ -23,22 +23,22 @@ constexpr int kQueryActionActivitySuggest = 6;
 constexpr int kQueryActionTree = 7;
 constexpr int kQueryActionMappingNames = 8;
 constexpr int kQueryActionActivityHierarchyLeafMappings = 9;
-constexpr int kQueryActionReportChart = 10;
+constexpr int kQueryActionInsightsChart = 10;
 constexpr int kQueryActionMappingAliasKeys = 11;
 constexpr int kQueryActionWakeKeywords = 12;
 constexpr int kQueryActionAuthorableEventTokens = 13;
-constexpr int kQueryActionReportComposition = 14;
+constexpr int kQueryActionInsightsComposition = 14;
 
-constexpr int kReportTypeDay = 0;
-constexpr int kReportTypeMonth = 1;
-constexpr int kReportTypeRecent = 2;
-constexpr int kReportTypeWeek = 3;
-constexpr int kReportTypeYear = 4;
-constexpr int kReportTypeRange = 5;
+constexpr int kInsightsTypeDay = 0;
+constexpr int kInsightsTypeMonth = 1;
+constexpr int kInsightsTypeRecent = 2;
+constexpr int kInsightsTypeWeek = 3;
+constexpr int kInsightsTypeYear = 4;
+constexpr int kInsightsTypeRange = 5;
 
-constexpr int kReportFormatMarkdown = 0;
-constexpr int kReportFormatLatex = 1;
-constexpr int kReportFormatTypst = 2;
+constexpr int kInsightsFormatMarkdown = 0;
+constexpr int kInsightsFormatLatex = 1;
+constexpr int kInsightsFormatTypst = 2;
 
 }  // namespace
 
@@ -99,8 +99,8 @@ constexpr int kReportFormatTypst = 2;
   if (value == kQueryActionActivityHierarchyLeafMappings) {
     return "activity_alias_mappings";
   }
-  if (value == kQueryActionReportChart) {
-    return "report_chart";
+  if (value == kQueryActionInsightsChart) {
+    return "insights_chart";
   }
   if (value == kQueryActionMappingAliasKeys) {
     return "mapping_alias_keys";
@@ -111,47 +111,47 @@ constexpr int kReportFormatTypst = 2;
   if (value == kQueryActionAuthorableEventTokens) {
     return "authorable_event_tokens";
   }
-  if (value == kQueryActionReportComposition) {
-    return "report_composition";
+  if (value == kQueryActionInsightsComposition) {
+    return "insights_composition";
   }
   throw std::invalid_argument("Unsupported query action code: " +
                               std::to_string(value));
 }
 
-[[nodiscard]] auto ParseReportTypeCode(int value) -> std::string {
-  if (value == kReportTypeDay) {
+[[nodiscard]] auto ParseInsightsTypeCode(int value) -> std::string {
+  if (value == kInsightsTypeDay) {
     return "day";
   }
-  if (value == kReportTypeMonth) {
+  if (value == kInsightsTypeMonth) {
     return "month";
   }
-  if (value == kReportTypeRecent) {
+  if (value == kInsightsTypeRecent) {
     return "recent";
   }
-  if (value == kReportTypeWeek) {
+  if (value == kInsightsTypeWeek) {
     return "week";
   }
-  if (value == kReportTypeYear) {
+  if (value == kInsightsTypeYear) {
     return "year";
   }
-  if (value == kReportTypeRange) {
+  if (value == kInsightsTypeRange) {
     return "range";
   }
-  throw std::invalid_argument("Unsupported report type code: " +
+  throw std::invalid_argument("Unsupported insights type code: " +
                               std::to_string(value));
 }
 
-[[nodiscard]] auto ParseReportFormatCode(int value) -> std::string {
-  if (value == kReportFormatMarkdown) {
+[[nodiscard]] auto ParseInsightsFormatCode(int value) -> std::string {
+  if (value == kInsightsFormatMarkdown) {
     return "markdown";
   }
-  if (value == kReportFormatLatex) {
+  if (value == kInsightsFormatLatex) {
     return "latex";
   }
-  if (value == kReportFormatTypst) {
+  if (value == kInsightsFormatTypst) {
     return "typst";
   }
-  throw std::invalid_argument("Unsupported report format code: " +
+  throw std::invalid_argument("Unsupported insights format code: " +
                               std::to_string(value));
 }
 

@@ -39,7 +39,7 @@ Important rules:
 Current Android JNI integration uses C ABI entrypoints in these categories:
 
 - runtime create/destroy
-- ingest/query/report
+- ingest/query/insights
 - record-atomic pipeline calls (including explicit `time_order_mode` passthrough)
 - activity and day remark atomic update calls
 - Config runtime calls (`tracer_core_runtime_config_json`) for TXT day-block,
@@ -76,12 +76,12 @@ Some operations may add operation-specific fields, but the envelope shape stays 
 
 Current status:
 
-- JNI request encoding for main ingest/query/report paths is unified through shared transport helpers.
-- Reporting now uses `TemporalReportQueryRequest` on Kotlin side and
-  `tracer_core_runtime_temporal_report_json` as the only canonical reporting
+- JNI request encoding for main ingest/query/insights paths is unified through shared transport helpers.
+- Insights now uses `TemporalInsightsQueryRequest` on Kotlin side and
+  `tracer_core_runtime_temporal_insights_json` as the only canonical insights
   C ABI entrypoint.
-- Android reporting JNI keeps `nativeReportJson(requestJson)` as the single raw
-  reporting native method; legacy `nativeReport(...)` no longer exists.
+- Android insights JNI keeps `nativeInsightsJson(requestJson)` as the single raw
+  insights native method; legacy `nativeInsights(...)` no longer exists.
 - Atomic record requests carry explicit `time_order_mode` (`strict_calendar` / `logical_day_0600`) from Kotlin -> JNI -> C ABI.
 - Config requests use the shared `tracer_core_runtime_config_json` family and keep
   month-TXT business semantics in core rather than Kotlin UI helpers.
@@ -127,28 +127,28 @@ Current status:
 - Kotlin-visible response shape remains `{ok,error_message,content}`.
 - JNI native method signatures remain stable.
 
-## Reporting Runtime Family
+## Insights Runtime Family
 
-Android reporting currently follows this path:
+Android insights currently follows this path:
 
-1. feature/app code builds `TemporalReportQueryRequest`.
-2. `RuntimeReportDelegate.reportMarkdown(request)` encodes that request as the
+1. feature/app code builds `TemporalInsightsQueryRequest`.
+2. `RuntimeInsightsDelegate.insightsMarkdown(request)` encodes that request as the
    temporal JSON payload.
 3. `NativeRuntimeBridge` forwards the JSON string to
-   `NativeBridge.nativeReportJson(...)`.
-4. JNI forwards the payload to `tracer_core_runtime_temporal_report_json`.
+   `NativeBridge.nativeInsightsJson(...)`.
+4. JNI forwards the payload to `tracer_core_runtime_temporal_insights_json`.
 5. Core multiplexes `query|structured_query|targets|export` through that single
-   temporal reporting entrypoint.
+   temporal insights entrypoint.
 
 Notes:
 
 - Android UI in this refactor does not expose a recent anchor picker.
 - The Android contract already supports optional `anchorDate` so future product
   work can send anchored recent requests without another ABI change.
-- Markdown report requests carry the current Android UI language as `locale`;
-  Core selects `reports/markdown/<locale>/` and falls back to English.
+- Markdown insights requests carry the current Android UI language as `locale`;
+  Core selects `insights/markdown/<locale>/` and falls back to English.
 
-Structured day reports return `detailed_records` for the Report tab timeline.
+Structured day insights return `detailed_records` for the Insights tab timeline.
 Each record includes `record_kind`, currently `interval` or `end_only`.
 Android must use this Core-produced kind instead of inferring semantics from
 empty timestamps: an `end_only` record displays a single localized
@@ -184,7 +184,7 @@ Current Android-facing responsibilities are:
 ## Crypto Progress Note
 
 - Android crypto progress uses the same snapshot-to-JSON callback path as the core C ABI.
-- Encrypted ZIP export reports only the package-level overall progress. Android's
+- Encrypted ZIP export insights only the package-level overall progress. Android's
   export card consumes that value and renders one progress bar; current-file
   progress remains available for import/other exchange operations.
 - Android host intentionally exposes only the Android-supported security levels.

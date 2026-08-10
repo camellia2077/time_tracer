@@ -20,8 +20,8 @@ Point to the active Android behavior reference pages.
   - `docs/time_tracer/presentation/android/reference/data-import-export.md`
 - Record flow and TXT editing:
   - `docs/time_tracer/presentation/android/reference/record-and-txt.md`
-- Report and chart presentation:
-  - `docs/time_tracer/presentation/android/reference/report-presentation.md`
+- Insights and chart presentation:
+  - `docs/time_tracer/presentation/android/reference/insights-presentation.md`
 - Config editing and diagnostics:
   - `docs/time_tracer/presentation/android/reference/config-and-diagnostics.md`
 

@@ -55,22 +55,22 @@ If the task is specifically about multiline TXT input behavior, then also open:
 
 - `apps/android/feature-ui-common/src/main/java/com/example/tracer/ui/components/NativeMultilineTextEditor.kt`
 
-### Report or chart presentation
+### Insights or chart presentation
 
 Start here:
 
-- `apps/android/feature-report/src/main/java/com/example/tracer/ui/screen/QueryReportTabContent.kt`
-- `apps/android/feature-report/src/main/java/com/example/tracer/ui/screen/QueryReportResultDisplay.kt`
-- `apps/android/feature-report/src/main/java/com/example/tracer/ui/screen/ReportActivityTimeline.kt`
-- `apps/android/feature-report/src/main/java/com/example/tracer/ui/screen/ReportTimelineEntries.kt`
-- `apps/android/feature-report/src/main/java/com/example/tracer/ui/screen/ReportChartResultContent.kt`
+- `apps/android/feature-insights/src/main/java/com/example/tracer/ui/screen/QueryInsightsTabContent.kt`
+- `apps/android/feature-insights/src/main/java/com/example/tracer/ui/screen/QueryInsightsResultDisplay.kt`
+- `apps/android/feature-insights/src/main/java/com/example/tracer/ui/screen/InsightsActivityTimeline.kt`
+- `apps/android/feature-insights/src/main/java/com/example/tracer/ui/screen/InsightsTimelineEntries.kt`
+- `apps/android/feature-insights/src/main/java/com/example/tracer/ui/screen/InsightsChartResultContent.kt`
 
 ### Config, diagnostics, or app appearance
 
 Start here:
 
 - `apps/android/app/src/main/java/com/example/tracer/ui/viewmodel/ConfigViewModel.kt`
-- `apps/android/app/src/main/java/com/example/tracer/data/ReportHeatmapTomlLoader.kt`
+- `apps/android/app/src/main/java/com/example/tracer/data/InsightsHeatmapTomlLoader.kt`
 - `apps/android/app/src/main/java/com/example/tracer/ui/screen/ConfigScreen.kt`
 
 If the task is specifically about raw TOML editing behavior, then also open:

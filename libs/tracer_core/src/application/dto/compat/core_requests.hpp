@@ -5,6 +5,6 @@
 #include "application/dto/exchange_requests.hpp"
 #include "application/dto/pipeline_requests.hpp"
 #include "application/dto/query_requests.hpp"
-#include "application/dto/reporting_requests.hpp"
+#include "application/dto/insights_requests.hpp"
 
 #endif  // APPLICATION_DTO_COMPAT_CORE_REQUESTS_H_

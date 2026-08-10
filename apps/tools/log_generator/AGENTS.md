@@ -3,7 +3,7 @@
 ## Scope
 
 Applies to `apps/tools/log_generator/**`. This tool app generates canonical TXT
-datasets consumed by repository validation, ingest, query, report, and golden
+datasets consumed by repository validation, ingest, query, insights, and golden
 comparison flows.
 
 ## Required Read Set
@@ -61,6 +61,6 @@ Evidence:
 - Generator behavior, self-checks, and suite guards agree on the TXT shape and
   the required verify flow passes.
 - Canonical asset refreshes occur only when explicitly in scope and include a
-  reviewable downstream-impact report.
+  reviewable downstream-impact insights.
 - A generation-policy change has deterministic seeded coverage for its new or
   changed branches.

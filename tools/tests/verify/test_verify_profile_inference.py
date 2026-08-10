@@ -69,13 +69,13 @@ class TestVerifyProfileInference(TestCase):
         self.assertEqual(inference.profiles, ("fast",))
         self.assertIn("unmapped paths", inference.reason)
 
-    def test_classify_reporting_golden_path_maps_to_reporting(self):
+    def test_classify_insights_golden_path_maps_to_insights(self):
         inference = classify_changed_paths(
-            ["test/golden/report_formatter_parity/v1/day.md"]
+            ["test/golden/insights_formatter_parity/v1/day.md"]
         )
 
         self.assertFalse(inference.fallback_to_fast)
-        self.assertEqual(inference.profiles, ("cap_reporting",))
+        self.assertEqual(inference.profiles, ("cap_insights",))
 
     def test_classify_root_level_shell_runtime_helper_maps_to_shell_aggregate(self):
         inference = classify_changed_paths(
@@ -110,7 +110,7 @@ class TestVerifyProfileInference(TestCase):
         inference = classify_changed_paths(
             [
                 "apps/tracer_core_shell/tests/integration/tracer_core_c_api_stability_internal.hpp",
-                "apps/tracer_core_shell/api/c_api/capabilities/reporting/tracer_core_c_api_reporting.cpp",
+                "apps/tracer_core_shell/api/c_api/capabilities/insights/tracer_core_c_api_insights.cpp",
                 "apps/tracer_core_shell/api/c_api/capabilities/query/tracer_core_c_api_query.cpp",
             ]
         )
@@ -118,7 +118,7 @@ class TestVerifyProfileInference(TestCase):
         self.assertFalse(inference.fallback_to_fast)
         self.assertEqual(
             inference.profiles,
-            ("cap_query", "cap_reporting", "shell_aggregate"),
+            ("cap_query", "cap_insights", "shell_aggregate"),
         )
 
     @patch(
@@ -129,7 +129,7 @@ class TestVerifyProfileInference(TestCase):
     ):
         mock_run_git.return_value = [
             " M .github/workflows/windows-build-matrix.yml",
-            "RM apps/tracer_core_shell/api/c_api/tracer_core_c_api_reporting.cpp -> apps/tracer_core_shell/api/c_api/capabilities/query/tracer_core_c_api_query.cpp",
+            "RM apps/tracer_core_shell/api/c_api/tracer_core_c_api_insights.cpp -> apps/tracer_core_shell/api/c_api/capabilities/query/tracer_core_c_api_query.cpp",
         ]
 
         paths = list_worktree_changed_paths(Path("C:/code/time_tracer"))

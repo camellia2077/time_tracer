@@ -20,7 +20,7 @@ namespace fs = std::filesystem;
 using nlohmann::json;
 
 constexpr std::string_view kCoreLibraryName = "tracer_core.dll";
-constexpr std::string_view kReportsSharedLibraryName = "reports_shared.dll";
+constexpr std::string_view kInsightsSharedLibraryName = "insights_shared.dll";
 constexpr std::string_view kSqliteLibraryName = "libsqlite3-0.dll";
 constexpr std::string_view kTomlLibraryName = "libtomlplusplus-3.dll";
 constexpr std::string_view kLibgccRuntimeName = "libgcc_s_seh-1.dll";
@@ -235,7 +235,7 @@ extern "C" TT_CORE_API auto tracer_core_runtime_check_environment_json(
     std::vector<std::string> errors;
     std::vector<fs::path> required_files = {
         kBinDir / kCoreLibraryName,
-        kBinDir / kReportsSharedLibraryName,
+        kBinDir / kInsightsSharedLibraryName,
         kBinDir / "config" / "program" / "config.toml",
     };
     if (TT_RUNTIME_REQUIRE_SQLITE_DLL != 0) {

@@ -36,7 +36,7 @@ WorkflowHandler::WorkflowHandler(FileSystem& file_system,
     : file_system_(file_system), generator_factory_(generator_factory) {}
 
 auto WorkflowHandler::run(const Core::AppContext& context,
-                          ReportHandler& report_handler) -> int {
+                          InsightsHandler& insights_handler) -> int {
   const std::filesystem::path kOutputRoot = context.config.output_directory;
 
   const YearRange kYearRange{.start_year = context.config.start_year,
@@ -45,7 +45,7 @@ auto WorkflowHandler::run(const Core::AppContext& context,
     return -1;
   }
 
-  auto& reporter = report_handler.get_reporter();
+  auto& reporter = insights_handler.get_reporter();
 
   unsigned int max_concurrent = std::thread::hardware_concurrency();
   if (max_concurrent == 0) {
@@ -56,7 +56,7 @@ auto WorkflowHandler::run(const Core::AppContext& context,
             << " concurrent threads...\n";
 
   const bool kEnableMonthlyAverage =
-      context.config.enable_monthly_average_report;
+      context.config.enable_monthly_average_insights;
   const std::unordered_set<std::string> kWakeKeywords(context.wake_keywords
                                                           .begin(),
                                                       context.wake_keywords
@@ -152,7 +152,7 @@ auto WorkflowHandler::run(const Core::AppContext& context,
   }
 
   if (kEnableMonthlyAverage) {
-    workflow_stats::PrintMonthlyAverageReport(std::move(all_monthly_stats));
+    workflow_stats::PrintMonthlyAverageInsights(std::move(all_monthly_stats));
   }
 
   return total_files_generated;

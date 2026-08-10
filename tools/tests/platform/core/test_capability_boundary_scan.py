@@ -7,9 +7,9 @@ class TestCapabilityBoundaryScan(TestCase):
         '#include "application/dto/core_requests.hpp"',
         '#include "application/dto/core_responses.hpp"',
         '#include "application/dto/tree_query_response.hpp"',
-        '#include "application/interfaces/i_report_handler.hpp"',
-        '#include "application/interfaces/i_report_exporter.hpp"',
-        '#include "application/interfaces/i_report_query_service.hpp"',
+        '#include "application/interfaces/i_insights_handler.hpp"',
+        '#include "application/interfaces/i_insights_exporter.hpp"',
+        '#include "application/interfaces/i_insights_query_service.hpp"',
         '#include "application/use_cases/i_tracer_core_runtime.hpp"',
         '#include "application/use_cases/tracer_core_runtime.hpp"',
     )
@@ -63,21 +63,21 @@ class TestCapabilityBoundaryScan(TestCase):
             / "src"
             / "application"
             / "interfaces"
-            / "i_report_handler.hpp",
+            / "i_insights_handler.hpp",
             repo_root
             / "libs"
             / "tracer_core"
             / "src"
             / "application"
             / "interfaces"
-            / "i_report_exporter.hpp",
+            / "i_insights_exporter.hpp",
             repo_root
             / "libs"
             / "tracer_core"
             / "src"
             / "application"
             / "interfaces"
-            / "i_report_query_service.hpp",
+            / "i_insights_query_service.hpp",
             repo_root
             / "libs"
             / "tracer_core"
@@ -97,7 +97,7 @@ class TestCapabilityBoundaryScan(TestCase):
         for path in removed_shims:
             self.assertFalse(path.exists(), msg=str(path))
 
-    def test_non_reporting_capability_roots_do_not_include_compat_or_aggregate(self):
+    def test_non_insights_capability_roots_do_not_include_compat_or_aggregate(self):
         repo_root = Path(__file__).resolve().parents[4]
         scan_targets = [
             repo_root / "libs" / "tracer_core" / "src" / "application" / "pipeline",

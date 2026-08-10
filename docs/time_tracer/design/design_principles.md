@@ -37,13 +37,13 @@ Time Tracer 的核心目标是：**以文本为中心管理时间记录**。
 
 推荐数据流：
 
-`TXT（源数据） -> Ingest -> Database（查询/聚合） -> Report（Markdown 等）`
+`TXT（源数据） -> Ingest -> Database（查询/聚合） -> Insights（Markdown 等）`
 
 其中：
 
 - TXT 负责记录与编辑体验。
 - Database 负责高效查询与统计。
-- Report 负责结构化展示结果。
+- Insights 负责结构化展示结果。
 
 ## 4. 记录格式示例
 

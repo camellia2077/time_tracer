@@ -20,13 +20,13 @@ Describe stable Android module boundaries and dependency direction.
 - `app`
   - composition root, screen-level orchestration, cross-feature wiring
 - `feature-data`
-  - Data tab presentation
+  - Data management presentation rendered from the Config route
 - `feature-record`
   - Record/TXT presentation, shared record-side UI state, and TXT editor session orchestration
 - `feature-ui-common`
   - shared reusable presentation primitives, including the native multiline text editor used by TXT and Config raw editing
-- `feature-report`
-  - report/query/chart presentation
+- `feature-insights`
+  - insights/query/chart presentation
 - `runtime`
   - runtime implementation, JNI integration, services, coreadapter, translators
 - `contract`
@@ -37,7 +37,7 @@ Describe stable Android module boundaries and dependency direction.
 - `app -> contract + feature-* + runtime`
 - `feature-data -> contract`
 - `feature-record -> contract + feature-ui-common`
-- `feature-report -> contract + feature-ui-common`
+- `feature-insights -> contract + feature-ui-common`
 - `feature-ui-common -> (no Android project-module dependency)`
 - `runtime -> contract`
 

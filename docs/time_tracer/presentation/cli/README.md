@@ -24,14 +24,14 @@
 2. `apps/cli/windows/rust/runtime/`
 3. `apps/cli/windows/scripts/`
 
-## Report Family
+## Insights Family
 
-1. `report` is the canonical reporting family in the Windows CLI.
-2. `report render` and `report export` are text-report commands.
-3. `report chart` is the chart-presentation command.
+1. `insights` is the canonical insights family in the Windows CLI.
+2. `insights render` and `insights export` are text-insights commands.
+3. `insights chart` is the chart-presentation command.
 4. The implementation side follows the same ownership:
-   - `apps/cli/windows/rust/src/commands/handlers/report/*`
-   - `report chart` presenter helpers also live under the same report family.
+   - `apps/cli/windows/rust/src/commands/handlers/insights/*`
+   - `insights chart` presenter helpers also live under the same insights family.
 
 ## TXT Runtime Family
 
@@ -64,38 +64,38 @@
    - `tools/suites/tracer_windows_rust_cli/tests/commands_txt_view_day.toml`
    - stage/log group: `txt-view-day`
 
-## Report 日期参数约定
+## Insights 日期参数约定
 
-1. `report render day` / `report export day`
+1. `insights render day` / `insights export day`
    - 接受 `YYYYMMDD` 或 `YYYY-MM-DD`
    - CLI 会在调用 runtime 前统一归一化为 ISO `YYYY-MM-DD`
-2. `report render month` / `report export month`
+2. `insights render month` / `insights export month`
    - 接受 `YYYYMM` 或 `YYYY-MM`
    - CLI 会在调用 runtime 前统一归一化为 ISO `YYYY-MM`
-3. `report render range`
+3. `insights render range`
    - 接受 `<from>|<to>`
    - 两端都接受 `YYYYMMDD` 或 `YYYY-MM-DD`
    - CLI 会在调用 runtime 前把两端分别归一化为 ISO，再拼成 `YYYY-MM-DD|YYYY-MM-DD`
-4. `report render/export week`、`year`、`recent`
+4. `insights render/export week`、`year`、`recent`
    - 继续使用各自 canonical 参数形式，不做 day/month 风格的紧凑日期归一化
 
-## Report Chart 语义约定
+## Insights Chart 语义约定
 
-1. `report chart --type line|bar|heatmap-*`
+1. `insights chart --type line|bar|heatmap-*`
    - 使用 trend / daily series 数据
-2. `report chart --type pie`
+2. `insights chart --type pie`
    - 使用当前时间窗口的 period root breakdown 数据
-   - 底层映射到 `report-composition`
-3. `report chart --type pie` 不允许再带 `--root`
+   - 底层映射到 `insights-composition`
+3. `insights chart --type pie` 不允许再带 `--root`
    - 因为 breakdown pie 固定展示整个窗口的 root 构成
 
-## Reporting Fixture Range
+## Insights Fixture Range
 
 1. `test/data/` 当前共享报表 fixture 覆盖范围是 `2025-01-01` 到 `2026-12-31`。
-2. 编写 `tracer_windows_rust_cli` reporting suite 目标日期时，应保证 canonical ISO 目标落在这个闭区间内。
+2. 编写 `tracer_windows_rust_cli` insights suite 目标日期时，应保证 canonical ISO 目标落在这个闭区间内。
 3. 若扩展 fixture 年份范围，需同步更新：
    - `test/data/README.md`
-   - `tools/suites/tracer_windows_rust_cli/tests/commands_reporting.toml`
+   - `tools/suites/tracer_windows_rust_cli/tests/commands_insights.toml`
 
 ## 文档维护规则
 
@@ -113,4 +113,4 @@
 1. `ingest` 必须先完成输入收集、解析、结构校验与逻辑校验，再进入数据库持久化阶段。
 2. 若运行前数据库不存在，则失败的 `ingest` 不得留下新的 `.sqlite3`、`-wal`、`-shm` 或 `-journal`。
 3. Windows CLI 不应依赖“失败后删除空库文件”的补偿逻辑；该规则由 core/runtime 持久化边界直接保证。
-4. `query` / `report` 在数据库缺失时应返回明确错误，而不是隐式建库掩盖问题。
+4. `query` / `insights` 在数据库缺失时应返回明确错误，而不是隐式建库掩盖问题。

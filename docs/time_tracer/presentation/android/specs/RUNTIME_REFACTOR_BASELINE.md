@@ -34,9 +34,9 @@ python tools/run.py verify --app tracer_android --profile android_ci --concise
 
 - `apps/android/app/src/test/java/com/example/tracer/TracerTabRegistryTest.kt`
 - `apps/android/app/src/test/java/com/example/tracer/DomainResultCompatibilityTest.kt`
-- `apps/android/feature-report/src/test/java/com/example/tracer/QueryPeriodArgumentResolverTest.kt`
-- `apps/android/feature-report/src/test/java/com/example/tracer/QueryReportViewModelChartTest.kt`
-- `apps/android/feature-report/src/test/java/com/example/tracer/QueryReportViewModelStatsTest.kt`
+- `apps/android/feature-insights/src/test/java/com/example/tracer/QueryPeriodArgumentResolverTest.kt`
+- `apps/android/feature-insights/src/test/java/com/example/tracer/QueryInsightsViewModelChartTest.kt`
+- `apps/android/feature-insights/src/test/java/com/example/tracer/QueryInsightsViewModelStatsTest.kt`
 - `apps/android/runtime/src/test/java/com/example/tracer/NativeRuntimeQueryOpsTest.kt`
 
 ## Runtime Layout Rule

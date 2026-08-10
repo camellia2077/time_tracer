@@ -16,7 +16,7 @@
 
 The goal of Time Tracer is not simply to record “how long you studied” or “how long you exercised,” but to help users understand where their time actually goes across detailed sub-activities, without introducing significant input overhead. For example, “study” can be decomposed into “computer science” and “mathematics”; “computer science” can further be decomposed into “algorithms,” “computer architecture,” and “computer networks,” while “mathematics” can be decomposed into “calculus” and “linear algebra.” Similarly, “fitness” can be broken down into “strength training” and “cardio.”
 
-The system is built with an **Android + Core Engine** architecture: Android serves as the primary interface for fast daily input and interaction, while the core engine handles parsing, normalization, aggregation, querying, and report generation. Raw records are stored as plain-text logs, while SQLite is used as a query and analytics layer to improve retrieval, aggregation, and report generation efficiency.
+The system is built with an **Android + Core Engine** architecture: Android serves as the primary interface for fast daily input and interaction, while the core engine handles parsing, normalization, aggregation, querying, and insights generation. Raw records are stored as plain-text logs, while SQLite is used as a query and analytics layer to improve retrieval, aggregation, and insights generation efficiency.
 
 ---
 
@@ -32,10 +32,10 @@ The system is built with an **Android + Core Engine** architecture: Android serv
    Time recorded at leaf nodes is automatically accumulated into all parent nodes, enabling both fine-grained and high-level analysis simultaneously.
 
 4. **Text as source of truth**  
-   All raw records are stored as readable TXT files. Users fully own their data and can back it up, edit it, or migrate it freely. SQLite and reports are derived from these logs.
+   All raw records are stored as readable TXT files. Users fully own their data and can back it up, edit it, or migrate it freely. SQLite and insights are derived from these logs.
 
 5. **Unified cross-platform data model**  
-   Android, CLI, and reporting tools share the same activity mapping and statistical semantics, reducing format fragmentation across platforms.
+   Android, CLI, and insights tools share the same activity mapping and statistical semantics, reducing format fragmentation across platforms.
 
 ---
 
@@ -86,14 +86,14 @@ Moving a leaf or renaming a group record name affects historical data. The syste
 
 ## How Data Is Displayed
 
-Queries and reports aggregate by canonical activity path rather than treating different input aliases as separate activities. Reports provide:
+Queries and insights aggregate by canonical activity path rather than treating different input aliases as separate activities. Insights provide:
 
 * total recorded time, recorded days, and activity counts for the selected period;
 * a hierarchical activity breakdown in which parent durations include child durations;
 * daily, weekly, monthly, yearly, and custom-range summaries;
 * Markdown, LaTeX, and Typst exports. Markdown supports English, Chinese, and Japanese text.
 
-Thus, `strength training`, `strength`, and any other aliases that resolve to the same canonical path appear as one activity node in queries and reports. TOML defines aliases and hierarchy; detailed configuration and migration constraints are documented under `docs/time_tracer/core/capabilities/config/`.
+Thus, `strength training`, `strength`, and any other aliases that resolve to the same canonical path appear as one activity node in queries and insights. TOML defines aliases and hierarchy; detailed configuration and migration constraints are documented under `docs/time_tracer/core/capabilities/config/`.
 
 ## Android Query Displays
 
@@ -110,7 +110,7 @@ Activity composition charts support path-by-path drill-down. Tapping an activity
 
 ### Core Components
 
-* **`time_tracer_cli` (C++23)**: The core command-line application. It uses a pipeline pattern to process raw text logs and offers efficient SQLite-based queries and multi-format report exports (Markdown, LaTeX, Typst).
+* **`time_tracer_cli` (C++23)**: The core command-line application. It uses a pipeline pattern to process raw text logs and offers efficient SQLite-based queries and multi-format insights exports (Markdown, LaTeX, Typst).
 * **`graph_generator` (Python)**: A data visualization tool that reads the database and generates dynamic charts like timelines and heatmaps.
 * **`log_generator` (C++)**: A helper utility for generating standardized test logs.
 ---
@@ -150,10 +150,10 @@ time_tracer_cli blink -a "path/to/target_logs"
 time_tracer_cli query data days --year 2026
 ```
 
-**Example 3: Export Formatted Reports**
+**Example 3: Export Formatted Insights**
 
 ```bash
-# Export the weekly report for 2026-W05 as Markdown
+# Export the weekly insights for 2026-W05 as Markdown
 time_tracer_cli export week 2026-W05 -f md
 ```
 
@@ -207,7 +207,7 @@ Third-party dependencies remain under their respective licenses.
 * **[nlohmann/json](https://github.com/nlohmann/json)**: JSON parsing (MIT).
 * **[tomlplusplus](https://github.com/marzer/tomlplusplus)**: TOML configuration (MIT).
 * **[libsodium](https://github.com/jedisct1/libsodium)**: Cryptography library (planned for `tracer_core` encrypted export/share capability) (ISC License).
-* **[Apache ECharts](https://echarts.apache.org/)**: Used by Windows CLI `report-chart` single-file HTML chart rendering (Line/Bar/Pie/Heatmap-Year/Heatmap-Month) (Apache License 2.0).
+* **[Apache ECharts](https://echarts.apache.org/)**: Used by Windows CLI `insights-chart` single-file HTML chart rendering (Line/Bar/Pie/Heatmap-Year/Heatmap-Month) (Apache License 2.0).
 * **[Matplotlib](https://matplotlib.org/)**: Plotting engine (BSD-style license).
 
 ### Windows Rust CLI (`apps/cli/windows/rust`)

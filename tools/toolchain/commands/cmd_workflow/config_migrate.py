@@ -54,12 +54,12 @@ class ConfigMigrateCommand:
 
         up_to_date = exists_before and old_text == generated_text
         mode = "apply" if apply_changes else "dry-run"
-        report_formats = "configured in config.toml"
+        insights_formats = "configured in config.toml"
         print(f"--- config-migrate mode: {mode}")
         print(f"--- source: {source_config_path}")
         print(f"--- target: {bundle_path}")
         print(f"--- profile: {effective_profile}")
-        print(f"--- report formats: {report_formats}")
+        print(f"--- insights formats: {insights_formats}")
         print(f"--- required files: {len(model['file_list']['required'])}")
         print(f"--- optional files: {len(model['file_list']['optional'])}")
 

@@ -56,7 +56,7 @@ flowchart LR
 该流程由 `query` 或 `export` 指令触发，专注于从结构化存储中重构人类可读的多维报告。
 
 **执行路径:**
-`SQLite` -> **[基础设施: reports/data/queriers]** -> `ReportData (domain)` -> **[基础设施: 报表树构建 + 格式化策略]** -> `可视化报表 (MD, Tex, Typ)`
+`SQLite` -> **[基础设施: insights/data/queriers]** -> `InsightsData (domain)` -> **[基础设施: 报表树构建 + 格式化策略]** -> `可视化报表 (MD, Tex, Typ)`
 
 **核心逻辑阶段:**
 1.  **数据提取 (Fetch)**: 从数据库中按时间范围检索所有相关的原始活动记录。

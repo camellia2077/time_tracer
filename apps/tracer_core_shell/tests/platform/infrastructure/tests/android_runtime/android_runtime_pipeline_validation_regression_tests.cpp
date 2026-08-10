@@ -118,8 +118,8 @@ class CapturingDiagnosticsSink final : public modports::IDiagnosticsSink {
 
 class CapturingErrorReportWriter final : public modports::IErrorReportWriter {
  public:
-  auto Append(std::string_view report_content) -> bool override {
-    appended_.append(report_content);
+  auto Append(std::string_view insights_content) -> bool override {
+    appended_.append(insights_content);
     return true;
   }
 
@@ -198,7 +198,7 @@ auto TestValidateLogicRejectsWakeKeywordAfterFirstEvent(int& failures) -> void {
   if (!Contains(diagnostics_sink->Errors(), kExpectedText) ||
       !Contains(diagnostics_sink->Errors(), kSourceFile.string() + ":6")) {
     ++failures;
-    std::cerr << "[FAIL] RunValidateLogic should report clickable wake-order "
+    std::cerr << "[FAIL] RunValidateLogic should insights clickable wake-order "
                  "diagnostic with source line.\n";
   }
 
@@ -336,7 +336,7 @@ auto TestValidateLogicRejectsBadTimeRangeFixture(int& failures) -> void {
       !Contains(diagnostics_sink->Errors(),
                 "Activity duration must be positive")) {
     ++failures;
-    std::cerr << "[FAIL] RunValidateLogic should report the bad-time-range "
+    std::cerr << "[FAIL] RunValidateLogic should insights the bad-time-range "
                  "fixture as a positive-duration violation.\n";
   }
 
@@ -770,12 +770,12 @@ auto TestConvertLogsActualConversionFailure(int& failures) -> void {
   }
   if (!Contains(kLogs, "[Pipeline] 转换阶段失败，流程终止。")) {
     ++failures;
-    std::cerr << "[FAIL] RunConvert should report actual conversion-stage "
+    std::cerr << "[FAIL] RunConvert should insights actual conversion-stage "
                  "failure with dedicated wording.\n";
   }
   if (Contains(kLogs, "转换前结构预检失败")) {
     ++failures;
-    std::cerr << "[FAIL] RunConvert should not report structure precheck "
+    std::cerr << "[FAIL] RunConvert should not insights structure precheck "
                  "failure wording when conversion actually failed.\n";
   }
 
@@ -797,13 +797,13 @@ auto TestConvertLogsActualConversionFailure(int& failures) -> void {
                 "Full error report: captured-validate-logic-report.log")) {
     ++failures;
     std::cerr << "[FAIL] RunConvert should still advertise the saved error "
-                 "report path.\n";
+                 "insights path.\n";
   }
 
   cleanup();
 }
 
-auto TestValidateStructureReportsInvalidUtf8(int& failures) -> void {
+auto TestValidateStructureInsightsInvalidUtf8(int& failures) -> void {
   const RuntimeTestPaths kPaths = BuildTempTestPaths(
       "time_tracer_android_runtime_validate_structure_invalid_utf8_test");
   RemoveTree(kPaths.test_root);
@@ -890,7 +890,7 @@ auto RunPipelineValidationRegressionTests(int& failures) -> void {
   TestRecordActivityAtomicallyWarnsForOvernightContinuationDay(failures);
   TestRecordActivityAtomicallySkipsCompletenessWarningForCompleteDay(failures);
   TestConvertLogsActualConversionFailure(failures);
-  TestValidateStructureReportsInvalidUtf8(failures);
+  TestValidateStructureInsightsInvalidUtf8(failures);
 }
 
 }  // namespace android_runtime_tests

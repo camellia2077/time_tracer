@@ -6,9 +6,9 @@ Define the visual language and presentation rules for the Android UI.
 
 ## When To Open
 
-- Open this when changing colors, typography, reusable components, or Report presentation.
+- Open this when changing colors, typography, reusable components, or Insights presentation.
 - Start with `color-system.md` for the current color contract.
-- Use `report/` for Report-specific visual semantics.
+- Use `insights/` for Insights-specific visual semantics.
 
 ## What This Doc Does Not Cover
 
@@ -20,8 +20,8 @@ Define the visual language and presentation rules for the Android UI.
 
 - Common UI theme:
   - `color-system.md`
-- Report presentation:
-  - `report/README.md`
+- Insights presentation:
+  - `insights/README.md`
 
 ## Rules
 

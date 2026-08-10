@@ -41,11 +41,11 @@ Open only when needed:
 1. `apps/android/app`
    - composition root, screen-level coordination, cross-feature wiring
 2. `apps/android/feature-data`
-   - Data tab UI and actions
+   - Data management UI and actions, rendered from Config
 3. `apps/android/feature-record`
    - Record and TXT editor UI state
-4. `apps/android/feature-report`
-   - report, query, and chart presentation
+4. `apps/android/feature-insights`
+   - insights, query, and chart presentation
 5. `apps/android/runtime`
    - runtime implementation, JNI bridge integration, services, coreadapter
 6. `apps/android/feature-ui-common`
@@ -61,8 +61,8 @@ Open only when needed:
   - start at `apps/android/app/src/main/java/com/example/tracer/ui/screen/tracer`
 - Record or TXT behavior:
   - start at `apps/android/feature-record`
-- Report or chart behavior:
-  - start at `apps/android/feature-report`
+- Insights or chart behavior:
+  - start at `apps/android/feature-insights`
 - Runtime init, query, diagnostics, JNI, or path/bootstrap behavior:
   - start at `apps/android/runtime`
 - Shared models or gateway signatures:

@@ -14,8 +14,8 @@ auto RunInfrastructureModuleQueryStatsRepositorySmoke() -> int {
   const auto kComputeDayDurationStats =
       &tracer::core::infrastructure::query::data::stats::
           ComputeDayDurationStats;
-  const auto kBuildReportChartSeries =
-      &tracer::core::infrastructure::query::data::stats::BuildReportChartSeries;
+  const auto kBuildInsightsChartSeries =
+      &tracer::core::infrastructure::query::data::stats::BuildInsightsChartSeries;
   const auto kStatsBoundaryReady =
       &tracer::core::infrastructure::query::data::stats::BoundaryReady;
   const auto kQueryYears =
@@ -30,7 +30,7 @@ auto RunInfrastructureModuleQueryStatsRepositorySmoke() -> int {
   const auto kRenderersBoundaryReady =
       &tracer::core::infrastructure::query::data::renderers::BoundaryReady;
   (void)kComputeDayDurationStats;
-  (void)kBuildReportChartSeries;
+  (void)kBuildInsightsChartSeries;
   (void)kStatsBoundaryReady;
   (void)kQueryYears;
   (void)kQueryProjectTree;
@@ -60,7 +60,7 @@ auto RunInfrastructureModuleQueryStatsRepositorySmoke() -> int {
   }
 
   const auto kSeries =
-      tracer::core::infrastructure::query::data::stats::BuildReportChartSeries(
+      tracer::core::infrastructure::query::data::stats::BuildInsightsChartSeries(
           {.start_date = "2026-02-01", .end_date = "2026-02-03"}, kRows);
   if (kSeries.series.size() != 3U ||
       kSeries.series.front().date != "2026-02-01" ||

@@ -7,7 +7,7 @@ mod exchange;
 mod licenses;
 mod pipeline;
 mod query;
-mod report;
+mod insights;
 mod root;
 mod system;
 mod txt;
@@ -34,9 +34,9 @@ pub use query::{
     DataOutputMode, QueryArgs, QueryCommand, QueryDataArgs, QueryPeriod, QueryTreeArgs,
     SuggestScoreMode,
 };
-pub use report::{
-    ReportArgs, ReportCommand, ReportExportArgs, ReportExportPeriod, ReportFormat,
-    ReportRenderArgs, ReportRenderPeriod,
+pub use insights::{
+    InsightsArgs, InsightsCommand, InsightsExportArgs, InsightsExportPeriod, InsightsFormat,
+    InsightsRenderArgs, InsightsRenderPeriod,
 };
 pub use system::{SystemArgs, SystemCommand};
 pub use txt::{TxtAppendEventArgs, TxtArgs, TxtCommand, TxtViewDayArgs};

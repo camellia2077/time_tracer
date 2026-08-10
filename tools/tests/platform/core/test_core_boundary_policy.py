@@ -13,7 +13,7 @@ class TestCoreBoundaryPolicy(TestCase):
         self.assertIn("application/aggregate_runtime/", core_targets)
         self.assertIn("application/dto/core_requests\\\\.hpp", core_targets)
         self.assertIn("application/dto/core_responses\\\\.hpp", core_targets)
-        self.assertIn("application/interfaces/i_report_", core_targets)
+        self.assertIn("application/interfaces/i_insights_", core_targets)
         self.assertIn("application/use_cases/tracer_core_runtime\\\\.hpp", core_targets)
         self.assertIn('"api/c_api/tracer_core_c_api.cpp"', core_targets)
         self.assertNotIn('"api/c_api/tracer_core_c_api_crypto.cpp"', core_targets)

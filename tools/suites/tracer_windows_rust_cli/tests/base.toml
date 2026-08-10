@@ -64,5 +64,5 @@ subdir = "txt-authoring"
 
 [[log_routing.rules]]
 stage = "txt-authoring"
-command_prefix = ["report"]
+command_prefix = ["insights"]
 subdir = "txt-authoring"

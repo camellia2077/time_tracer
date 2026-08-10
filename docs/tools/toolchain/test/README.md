@@ -75,7 +75,7 @@
 1. `log_generator` 生成 canonical TXT 数据
 2. `test/data/**` 保存共享输入 TXT
 3. core / shell / Android 对这些 TXT 执行 validate / convert / ingest
-4. query / report / export 的稳定对账结果进入 `test/golden/**`
+4. query / insights / export 的稳定对账结果进入 `test/golden/**`
 5. 所有运行时生成物进入 `out/test/**`
 
 `test/fixtures/**` 的推荐结构：
@@ -120,9 +120,9 @@ python tools/lint_suites.py --suite tracer_windows_rust_cli
    - `cap_query`
      - `tt_query_api_tests`
      - `tc_c_api_query_tests`
-   - `cap_reporting`
-     - `tt_reporting_api_tests`
-     - `tc_c_api_reporting_tests`
+   - `cap_insights`
+     - `tt_insights_api_tests`
+     - `tc_c_api_insights_tests`
    - `cap_pipeline`
      - `tt_pipeline_api_tests`
      - `tc_c_api_pipeline_tests`

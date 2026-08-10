@@ -28,7 +28,7 @@ TimeTracer 利用多种经典设计模式来解决现代 C++ 环境中的架构�
 通过简化接口，为 CLI 隐藏了复杂的内部核心流程。
 
 *   **解决问题**: CLI 命令不应感知流水线是如何初始化的，也不应关心数据库是如何连接的。
-*   **解决方案**: 如 **`ImportService`** 和 **`ReportHandler`** 等服务提供高层级的 API（如 `run_ingest()`），将复杂的跨模块调度隐藏在接口之后。
+*   **解决方案**: 如 **`ImportService`** 和 **`InsightsHandler`** 等服务提供高层级的 API（如 `run_ingest()`），将复杂的跨模块调度隐藏在接口之后。
 
 ## 4. 依赖注入 (Dependency Injection)
 

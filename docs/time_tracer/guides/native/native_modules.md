@@ -58,8 +58,8 @@
    - `tracer.core.domain.model.*`
    - `tracer.core.domain.types.*`
    - `tracer.core.domain.errors.error_record`
-   - `tracer.core.domain.reports.types.report_types`
-   - `tracer.core.domain.reports.models.*`
+   - `tracer.core.domain.insights.types.insights_types`
+   - `tracer.core.domain.insights.models.*`
    - `tracer.core.domain.logic`（聚合）
    - `tracer.core.domain.logic.converter.core`
    - `tracer.core.domain.logic.converter.log_processor`
@@ -81,7 +81,7 @@
      - `config/**`
      - `persistence/**`
      - `query/**`
-     - `reports/**`
+     - `insights/**`
 
 ### 2.1 迁移后构建归属（2026-03-05）
 
@@ -89,8 +89,8 @@
 2. `tracer.core.domain.*` 的构建归属在 `libs/tracer_core/CMakeLists.txt`（`tracer_core_domain_lib`）。
 3. `tracer.core.application.*` 的构建归属在 `libs/tracer_core/CMakeLists.txt`（`tracer_core_application_lib`）。
 4. `tracer.core.infrastructure.*` 低耦合模块构建归属在 `libs/tracer_core/CMakeLists.txt`（`tracer_core_infrastructure_lite_lib`）。
-5. `infrastructure` 剩余业务实现（含 reports/query/persistence/config/crypto）的构建归属在
-   `libs/tracer_core/infra/CMakeLists.txt`（`tti`/`ttri`/`reports_*`）。
+5. `infrastructure` 剩余业务实现（含 insights/query/persistence/config/crypto）的构建归属在
+   `libs/tracer_core/infra/CMakeLists.txt`（`tti`/`ttri`/`insights_*`）。
 6. `libs/tracer_core/src/infra/CMakeLists.txt` 仅保留壳层接线，不再维护业务源码清单。
 
 ## 3. 命名规则

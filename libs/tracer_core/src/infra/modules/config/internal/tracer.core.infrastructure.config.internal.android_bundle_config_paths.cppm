@@ -16,7 +16,7 @@ export namespace tracer::core::infrastructure::modconfig::internal {
 
 using tracer::core::infrastructure::config::internal::AndroidBundleConfigPaths;
 using tracer::core::infrastructure::config::internal::
-    AndroidBundleReportConfigPathSet;
+    AndroidBundleInsightsConfigPathSet;
 using tracer::core::infrastructure::config::internal::
     TryResolveAndroidBundleConfigPaths;
 

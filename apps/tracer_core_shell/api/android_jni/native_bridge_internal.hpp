@@ -49,7 +49,7 @@ auto DestroyRuntimeLocked() -> void;
 
 [[nodiscard]] auto ParseDataQueryAction(jint value) -> std::string;
 
-[[nodiscard]] auto ParseReportFormat(jint value) -> std::string;
+[[nodiscard]] auto ParseInsightsFormat(jint value) -> std::string;
 
 [[nodiscard]] auto ParseCoreResponse(const char* response_json,
                                      std::string_view context)
@@ -142,7 +142,7 @@ auto NativeQuery(JNIEnv* env, jobject thiz, jint action, jint year, jint month,
                  jstring tree_period_argument, jint tree_max_depth,
                  jstring output_mode, jstring average_day_basis) -> jstring;
 
-auto NativeReportJson(JNIEnv* env, jobject thiz, jstring request_json)
+auto NativeInsightsJson(JNIEnv* env, jobject thiz, jstring request_json)
     -> jstring;
 
 extern const std::array<JNINativeMethod, 19> kNativeMethods;

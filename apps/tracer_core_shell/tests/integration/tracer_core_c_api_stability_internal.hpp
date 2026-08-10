@@ -50,8 +50,8 @@ using RuntimeRecordActivityAtomicallyFn = const char* (*)(TtCoreRuntimeHandle*,
                                                           const char*);
 using RuntimeTxtFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
 using RuntimeQueryFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
-using RuntimeReportFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
-using RuntimeReportBatchFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
+using RuntimeInsightsFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
+using RuntimeInsightsBatchFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
 using RuntimeCryptoEncryptFn = const char* (*)(TtCoreRuntimeHandle*,
                                                const char*);
 using RuntimeCryptoDecryptFn = const char* (*)(TtCoreRuntimeHandle*,
@@ -84,8 +84,8 @@ struct CoreApiFns {
       nullptr;
   RuntimeTxtFn runtime_txt = nullptr;
   RuntimeQueryFn runtime_query = nullptr;
-  RuntimeReportFn runtime_report = nullptr;
-  RuntimeReportBatchFn runtime_report_batch = nullptr;
+  RuntimeInsightsFn runtime_insights = nullptr;
+  RuntimeInsightsBatchFn runtime_insights_batch = nullptr;
   RuntimeCryptoEncryptFn runtime_crypto_encrypt = nullptr;
   RuntimeCryptoDecryptFn runtime_crypto_decrypt = nullptr;
   RuntimeCryptoInspectFn runtime_crypto_inspect = nullptr;
@@ -148,7 +148,7 @@ void RunCallbackBridgeChecks(const CoreApiFns& api,
                              const fs::path& input_root);
 
 void RunQueryChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime);
-void RunReportingChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
+void RunInsightsChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
                         const fs::path& output_root);
 void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
                        const fs::path& input_root);

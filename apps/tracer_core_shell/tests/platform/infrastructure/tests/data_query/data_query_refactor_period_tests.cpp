@@ -21,12 +21,12 @@ auto TestDateRangeResolver(int& failures) -> void {
 
   const ExplicitDateRangeErrors kRangeErrors{
       .missing_boundary_error =
-          "report-chart requires both --from-date and --to-date.",
+          "insights-chart requires both --from-date and --to-date.",
       .validation =
           {
               .invalid_range_error =
-                  "report-chart invalid range: from_date must be <= to_date.",
-              .invalid_date_error = "report-chart resolved invalid date range.",
+                  "insights-chart invalid range: from_date must be <= to_date.",
+              .invalid_date_error = "insights-chart resolved invalid date range.",
           },
   };
 

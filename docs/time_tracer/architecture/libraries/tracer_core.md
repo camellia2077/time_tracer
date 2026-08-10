@@ -46,14 +46,14 @@ Detailed navigation for the core business-logic library.
    and as a composition bridge over prebuilt capability APIs rather than a
    capability-specific wiring entrypoint
 4. Capability APIs, capability-owned `application/ports/<capability>/**` subtrees,
-   and capability-owned DTO headers under `src/application/dto/{pipeline,query,reporting,exchange}_*.hpp`
+   and capability-owned DTO headers under `src/application/dto/{pipeline,query,insights,exchange}_*.hpp`
    consumed by shell-facing code and tests
 5. Explicit non-owner families under `src/application/dto/compat/**`,
-   `src/application/compat/reporting/**`, `src/application/aggregate_runtime/**`,
+   `src/application/compat/insights/**`, `src/application/aggregate_runtime/**`,
    and `src/application/runtime_bridge/**`
 6. Retained workflow declaration boundary under `src/application/interfaces/i_workflow_handler.hpp`
 7. Legacy forwarding shim paths under `src/application/dto/core_*`,
-   `src/application/interfaces/i_report_*`, and
+   `src/application/interfaces/i_insights_*`, and
    `src/application/use_cases/tracer_core_runtime*` are retired
 8. Pipeline-owned TXT day-block semantics under
    `src/application/pipeline/txt_day_block_support.*`
@@ -64,11 +64,11 @@ Detailed navigation for the core business-logic library.
 ## Reviewer Shortcut
 
 1. Classify owner by capability-owned port subtree first:
-   `src/application/ports/pipeline|query|reporting|exchange/**`
+   `src/application/ports/pipeline|query|insights|exchange/**`
 2. If the touched path is a capability-owned DTO header, route by DTO family:
-   `src/application/dto/pipeline_*`, `query_*`, `reporting_*`, `exchange_*`
-3. If the touched path is `src/application/compat/reporting/**`, treat it as
-   retained `reporting` compatibility surface, not as canonical owner path
+   `src/application/dto/pipeline_*`, `query_*`, `insights_*`, `exchange_*`
+3. If the touched path is `src/application/compat/insights/**`, treat it as
+   retained `insights` compatibility surface, not as canonical owner path
 4. If the touched path is `src/application/interfaces/i_workflow_handler.hpp`,
    treat it as retained `pipeline` declaration boundary
 5. Treat canonical module locations as the authority surface for reviewers:
@@ -87,11 +87,11 @@ Detailed navigation for the core business-logic library.
      and `docs/time_tracer/core/design/tracer_core_capability_boundary_contract.md`
    - start in `src/application/use_cases`, `src/application/workflow`, or `src/application/pipeline`
    - if the change is shell-visible, also inspect `apps/tracer_core_shell/api/c_api`
-2. Change reporting/query semantics:
+2. Change insights/query semantics:
    - read `docs/time_tracer/core/architecture/tracer_core_capability_dependency_map.md`
-     first to confirm whether the work belongs to `query` or `reporting`
-   - start in `src/application/query/tree`, `src/application/reporting`, `src/infra/query`,
-     or `src/infra/reporting`
+     first to confirm whether the work belongs to `query` or `insights`
+   - start in `src/application/query/tree`, `src/application/insights`, `src/infra/query`,
+     or `src/infra/insights`
    - read stats contract docs first if external meaning changes
 3. Change config ownership or shell config bridges:
    - start in `src/infra/config`
@@ -103,7 +103,7 @@ Detailed navigation for the core business-logic library.
 6. Change shell/runtime bridge, aggregate runtime, or compatibility envelope:
    - start in `src/application/runtime_bridge`, `src/application/aggregate_runtime`,
      `src/application/dto/shared_envelopes.hpp`, `src/application/dto/compat`, or
-     `src/application/compat/reporting`
+     `src/application/compat/insights`
    - then inspect `apps/tracer_core_shell/host` and `apps/tracer_core_shell/api/c_api`
 7. Change shared month-TXT day-block semantics or default `MMDD` selection:
    - start in `src/application/pipeline/txt_day_block_support.*`
@@ -147,14 +147,14 @@ of those behavioral rules.
 
 1. `libs/tracer_core/tests/**` 主要保护业务语义，而不是 transport 级 JSON
    细节。
-2. reporting / query 语义测试应优先说明“成功但为空”和“真正错误”之间的边界。
-3. reporting 里的
+2. insights / query 语义测试应优先说明“成功但为空”和“真正错误”之间的边界。
+3. insights 里的
    `empty success vs target not found`
    回归用于保护以下含义：
-   - 空时间窗口的 report/range 结果仍然是成功结果
+   - 空时间窗口的 insights/range 结果仍然是成功结果
    - `has_records=false`、`matched_* = 0` 属于有效业务结果
    - 只有命名 target 不存在时，才返回稳定错误
-     `reporting.target.not_found`
+     `insights.target.not_found`
 4. 当测试覆盖 capability-owned DTO、structured output 或 error contract
    传播时，文档应强调这是 `tracer_core` 语义边界，而不是 `tracer_transport`
    的 envelope 归一化职责。
@@ -191,7 +191,7 @@ of those behavioral rules.
 2. CLI host code infers `selected_month` from the filename when possible.
 3. CLI sends the full month content to `tracer_core_runtime_config_json`.
 4. Core pipeline TXT semantics resolve the requested block.
-5. CLI prints `day_body` or reports a host-formatted error without re-encoding
+5. CLI prints `day_body` or insights a host-formatted error without re-encoding
    the month-TXT business rules locally.
 
 ## Refactoring Guidance
@@ -205,8 +205,8 @@ orchestrator.
 | Concern | Owner path | Refactoring focus |
 |---|---|---|
 | Ingest and pipeline | `src/application/pipeline/**` | Keep parsing, structural validation, logical validation, and persistence gating explicit and ordered. |
-| Query | `src/application/query/**`, `src/infra/query/**` | Separate query orchestration, ports, SQL construction, row mapping, and report enrichment. |
-| Reporting | `src/application/reporting/**`, `src/infra/reporting/**` | Keep report semantics and statistics separate from formatting and generic data access. |
+| Query | `src/application/query/**`, `src/infra/query/**` | Separate query orchestration, ports, SQL construction, row mapping, and insights enrichment. |
+| Insights | `src/application/insights/**`, `src/infra/insights/**` | Keep insights semantics and statistics separate from formatting and generic data access. |
 | Exchange | `tracer_exchange` and `src/infra/exchange/**` | Separate exchange policy from package/file crypto mechanics. |
 | Config | `src/infra/config/**` | Keep config parsing/editing, runtime resolution, and business defaults distinct. |
 | Persistence write | `src/infra/persistence/importer/**` | Protect collect -> validate -> persistence gate -> transactional write. |
@@ -225,13 +225,13 @@ snapshot construction and sync mutations, and `PipelineOrchestrator` owns the
 collect/validate/convert stage sequence. New pipeline changes should preserve
 these boundaries instead of adding more post-processing branches to the facade.
 
-Reporting application orchestration is similarly split: `ReportApi` remains
-the public use-case facade, `report_query_support.*` owns temporal selection,
+Insights application orchestration is similarly split: `InsightsApi` remains
+the public use-case facade, `insights_query_support.*` owns temporal selection,
 window normalization, structured DTO wrapping, and formatter dispatch, and
-`report_export_support.*` owns export path policy and UTF-8 file writes.
+`insights_export_support.*` owns export path policy and UTF-8 file writes.
 Android static formatter registration is separated into policy registration and
-formatter builders. Windows CLI report output keeps window diagnostics in its
-presentation module; Core remains the owner of report semantics.
+formatter builders. Windows CLI insights output keeps window diagnostics in its
+presentation module; Core remains the owner of insights semantics.
 
 When a large file is selected, classify its functions as orchestration, domain
 rule, port/DTO, parsing, validation, SQL/repository, serialization, or
@@ -243,13 +243,13 @@ module surface or a narrow port.
 - Pipeline order remains collect -> parse -> structural validation -> logical
   validation -> persistence gate -> DB open/init -> transactional import.
 - Domain/application layers do not expose runtime JSON.
-- Query, reporting, persistence-write, and persistence-runtime remain separate
+- Query, insights, persistence-write, and persistence-runtime remain separate
   capability concerns; reuse crosses them through explicit ports or composition.
 - Existing capability APIs and module surfaces remain stable while internals
   move.
 
 For core validation, use the capability profiles `cap_pipeline`, `cap_query`,
-`cap_reporting`, `cap_exchange`, `cap_config`, `cap_persistence_write`, and
+`cap_insights`, `cap_exchange`, `cap_config`, `cap_persistence_write`, and
 `cap_persistence_runtime`. Use
 `python tools/run.py verify --app tracer_core_shell --profile fast --concise`
 for cross-boundary changes.

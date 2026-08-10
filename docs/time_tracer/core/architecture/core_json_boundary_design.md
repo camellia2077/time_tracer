@@ -190,7 +190,7 @@ JSON 允许存在于以下边界层：
 
 1. `libs/tracer_core/src/domain/logic/validator/json/rules/json_rules.*`
    - 旧的 domain 层 JSON 结构校验链路。
-2. `libs/tracer_core/src/infra/reporting/shared/utils/config/config_utils.*`
+2. `libs/tracer_core/src/infra/insights/shared/utils/config/config_utils.*`
    - 未继续使用的旧 JSON 配置工具口子。
 3. `libs/tracer_core/src/infra/serialization/core/log_codec.*`
    - 旧的内部 JSON codec 头接口。
@@ -271,7 +271,7 @@ JSON 允许存在于以下边界层：
 4. 不新增“为了兼容旧逻辑而保留 raw json + typed model 双轨”的接口。
 5. 如果是 AI 相关功能，优先扩展 typed semantic result，再由 adapter 编码成 provider 需要的 JSON。
 6. 如果变更 `semantic_json` 字段语义，优先同步：
-   - `docs/time_tracer/core/contracts/stats/report_chart_contract_v1.md`
+   - `docs/time_tracer/core/contracts/stats/insights_chart_contract_v1.md`
    - `docs/time_tracer/core/contracts/stats/json_schema_v1.md`
    - `docs/time_tracer/core/contracts/stats/README.md`
 

@@ -17,7 +17,7 @@ library, client, and workflow documents before you search the repository.
    - Implementation guides, data flow details, and supporting technical notes.
 
 ## Common Change Routes
-1. Change core business logic, use cases, workflow, config, query, or reports:
+1. Change core business logic, use cases, workflow, config, query, or insights:
    - start with [architecture/libraries/tracer_core.md](architecture/libraries/tracer_core.md)
    - then use [Core Docs](core/README.md)
    - for current TXT authored-event semantics (`HHMMtoken` point events,
@@ -37,7 +37,7 @@ library, client, and workflow documents before you search the repository.
 2. [Android Runtime Protocol](presentation/android/runtime-protocol.md)
 3. [Stats Contracts](core/contracts/stats/README.md)
 4. [Core JSON Boundary Design](core/architecture/core_json_boundary_design.md)
-5. [Reporting Data Consistency Spec](core/contracts/reporting/report_data_consistency_spec_v1.md)
+5. [Insights Data Consistency Spec](core/contracts/insights/insights_data_consistency_spec_v1.md)
 
 ## Other Useful Entry Points
 1. [Cross-layer workflow](workflows/workflow.md)

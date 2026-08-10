@@ -2,7 +2,7 @@ module;
 
 #include "application/use_cases/i_pipeline_api.hpp"
 #include "application/use_cases/i_query_api.hpp"
-#include "application/use_cases/i_report_api.hpp"
+#include "application/use_cases/i_insights_api.hpp"
 #include "application/use_cases/i_tracer_exchange_api.hpp"
 #include "application/aggregate_runtime/i_tracer_core_runtime.hpp"
 
@@ -12,7 +12,7 @@ export namespace tracer::core::application::use_cases {
 
 using ::tracer::core::application::use_cases::IPipelineApi;
 using ::tracer::core::application::use_cases::IQueryApi;
-using ::tracer::core::application::use_cases::IReportApi;
+using ::tracer::core::application::use_cases::IInsightsApi;
 using ::tracer::core::application::use_cases::ITracerCoreRuntime;
 using ::tracer::core::application::use_cases::ITracerExchangeApi;
 
@@ -22,7 +22,7 @@ export namespace tracer::core::application::modusecases {
 
 using ::tracer::core::application::use_cases::IPipelineApi;
 using ::tracer::core::application::use_cases::IQueryApi;
-using ::tracer::core::application::use_cases::IReportApi;
+using ::tracer::core::application::use_cases::IInsightsApi;
 using ::tracer::core::application::use_cases::ITracerCoreRuntime;
 using ::tracer::core::application::use_cases::ITracerExchangeApi;
 

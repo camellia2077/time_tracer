@@ -40,7 +40,7 @@ auto TestRendererGateway(int& failures) -> void {
          "semantic renderer should emit output_mode.", failures);
 
   const std::string kWrappedRaw = data_query_renderers::RenderJsonObjectOutput(
-      "report_chart", "not-json", DataQueryOutputMode::kSemanticJson);
+      "insights_chart", "not-json", DataQueryOutputMode::kSemanticJson);
   const auto kWrappedRawJson = json::parse(kWrappedRaw);
   Expect(kWrappedRawJson.contains("raw_content"),
          "semantic json wrapper should preserve raw payload on parse failure.",
@@ -114,26 +114,26 @@ auto TestAdapterBoundaryGuardrails(int& failures) -> void {
   const std::vector<AdapterGuardRule> kRules = {
       {
           "apps/cli/windows/rust/src/commands/handlers/query/data.rs",
-          {"ComputeDayDurationStats(", "BuildReportChartSeries(",
+          {"ComputeDayDurationStats(", "BuildInsightsChartSeries(",
            "ResolveExplicitDateRange(", "ResolveRollingDateRange(",
            "variance_seconds", "stddev_seconds", "mad_seconds"},
       },
       {
           "apps/cli/windows/rust/src/commands/handlers/query/tree.rs",
-          {"ComputeDayDurationStats(", "BuildReportChartSeries(",
+          {"ComputeDayDurationStats(", "BuildInsightsChartSeries(",
            "ResolveExplicitDateRange(", "ResolveRollingDateRange(",
            "variance_seconds", "stddev_seconds", "mad_seconds"},
       },
       {
-          "apps/cli/windows/rust/src/commands/handlers/report/"
+          "apps/cli/windows/rust/src/commands/handlers/insights/"
           "chart_request.rs",
-          {"ComputeDayDurationStats(", "BuildReportChartSeries(",
+          {"ComputeDayDurationStats(", "BuildInsightsChartSeries(",
            "ResolveExplicitDateRange(", "ResolveRollingDateRange(",
            "variance_seconds", "stddev_seconds", "mad_seconds"},
       },
       {
           "apps/cli/windows/rust/src/core/runtime/invoke.rs",
-          {"ComputeDayDurationStats(", "BuildReportChartSeries(",
+          {"ComputeDayDurationStats(", "BuildInsightsChartSeries(",
            "ResolveExplicitDateRange(", "ResolveRollingDateRange(",
            "variance_seconds", "stddev_seconds", "mad_seconds"},
       },
@@ -141,7 +141,7 @@ auto TestAdapterBoundaryGuardrails(int& failures) -> void {
           "apps/android/runtime/src/main/java/com/example/tracer/"
           "runtime/"
           "controller/RuntimeQueryDelegate.kt",
-          {"ComputeDayDurationStats(", "BuildReportChartSeries(",
+          {"ComputeDayDurationStats(", "BuildInsightsChartSeries(",
            "ResolveExplicitDateRange(", "ResolveRollingDateRange(",
            "variance_seconds", "stddev_seconds", "mad_seconds"},
       },
@@ -166,7 +166,7 @@ auto TestAdapterBoundaryGuardrails(int& failures) -> void {
       },
       {
           "libs/tracer_core/src/infra/query/data/repository/"
-          "query_runtime_service_report_content.cpp",
+          "query_runtime_service_insights_content.cpp",
           {"std::sqrt(", "nearest-rank",
            "variance_seconds =", "stddev_seconds ="},
       },

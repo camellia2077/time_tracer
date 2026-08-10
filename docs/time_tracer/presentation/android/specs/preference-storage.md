@@ -31,17 +31,23 @@ Do not store UI preferences in the runtime SQLite database.
   - theme mode
   - dark theme style
   - theme palette
-  - the selected UI and Report color systems are defined in `../ui/color-system.md` and `../ui/report/README.md`; the selected palette is user-persisted
+  - the selected UI and Insights color systems are defined in `../ui/color-system.md` and `../ui/insights/README.md`; the selected palette is user-persisted
 - App language
 - Record assistance preferences:
   - suggestion lookback days
   - suggestion top-N
   - quick activities
   - assist panel expansion flags
-- Report chart preference:
+- Insights chart preference:
   - show average line
   - preferred chart semantic mode (Breakdown or Trend)
   - preferred Trend top-level activity
+  - pie and heatmap palette selections
+  - daily status definitions
+
+Android does not read, write, import, or export `config/user/charts.toml`,
+`config/user/heatmap.toml`, or `config/user/insights.toml`. Their values are
+not migrated.
 
 ## Ownership
 
@@ -49,7 +55,7 @@ Do not store UI preferences in the runtime SQLite database.
   - `app` module
 - Theme and language write path:
   - `ThemeViewModel`
-- Record/report preference bridge into feature state:
+- Record/insights preference bridge into feature state:
   - `TracerScreen` and its route helpers
 - Feature modules consume injected state/callbacks; they should not depend on `DataStore` directly.
 

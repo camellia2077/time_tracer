@@ -38,12 +38,12 @@ auto ExpectDataQueryFailureWithoutDb(
   }
 }
 
-auto ExpectReportQueryFailureWithoutDb(
+auto ExpectInsightsQueryFailureWithoutDb(
     const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
-    const tracer_core::core::dto::TemporalReportQueryRequest& request,
+    const tracer_core::core::dto::TemporalInsightsQueryRequest& request,
     const std::filesystem::path& db_path, std::string_view context,
     int& failures) -> void {
-  const auto result = runtime_api->report().RunTemporalReportQuery(request);
+  const auto result = runtime_api->insights().RunTemporalInsightsQuery(request);
   if (result.ok) {
     ++failures;
     std::cerr << "[FAIL] " << context
@@ -361,15 +361,15 @@ auto RunBootstrapSmokeSection(int& failures) -> void {
                                     fixture.paths.db_path, "RunDataQuery(tree)",
                                     failures);
 
-    ExpectReportQueryFailureWithoutDb(
+    ExpectInsightsQueryFailureWithoutDb(
         fixture.runtime.runtime_api,
-        {.display_mode = tracer_core::core::dto::ReportDisplayMode::kRecent,
+        {.display_mode = tracer_core::core::dto::InsightsDisplayMode::kRecent,
          .selection =
              {.kind =
                   tracer_core::core::dto::TemporalSelectionKind::kRecentDays,
               .days = 1},
-         .format = ReportFormat::kMarkdown},
-        fixture.paths.db_path, "RunTemporalReportQuery(recent)", failures);
+         .format = InsightsFormat::kMarkdown},
+        fixture.paths.db_path, "RunTemporalInsightsQuery(recent)", failures);
   } catch (const std::exception& exception) {
     ++failures;
     std::cerr << "[FAIL] Android runtime bootstrap smoke test threw exception: "

@@ -15,9 +15,9 @@ namespace tracer::core::infrastructure::config::internal {
 
 namespace {
 
-[[nodiscard]] auto ToAndroidBundleReportConfigPathSet(
-    const config_parser_internal::AndroidBundleReportConfigPathSet& paths)
-    -> AndroidBundleReportConfigPathSet {
+[[nodiscard]] auto ToAndroidBundleInsightsConfigPathSet(
+    const config_parser_internal::AndroidBundleInsightsConfigPathSet& paths)
+    -> AndroidBundleInsightsConfigPathSet {
   return {
       .day = paths.day,
       .month = paths.month,
@@ -32,14 +32,14 @@ namespace {
     -> AndroidBundleConfigPaths {
   return {
       .converter_config_toml_path = paths.converter_config_toml_path,
-      .markdown = ToAndroidBundleReportConfigPathSet(paths.markdown),
+      .markdown = ToAndroidBundleInsightsConfigPathSet(paths.markdown),
       .latex = paths.latex.has_value()
-                   ? std::optional<AndroidBundleReportConfigPathSet>(
-                         ToAndroidBundleReportConfigPathSet(*paths.latex))
+                   ? std::optional<AndroidBundleInsightsConfigPathSet>(
+                         ToAndroidBundleInsightsConfigPathSet(*paths.latex))
                    : std::nullopt,
       .typst = paths.typst.has_value()
-                   ? std::optional<AndroidBundleReportConfigPathSet>(
-                         ToAndroidBundleReportConfigPathSet(*paths.typst))
+                   ? std::optional<AndroidBundleInsightsConfigPathSet>(
+                         ToAndroidBundleInsightsConfigPathSet(*paths.typst))
                    : std::nullopt,
   };
 }

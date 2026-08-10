@@ -6,14 +6,14 @@
 #include <system_error>
 #include <string>
 
-#include "infra/config/loader/report_config_loader.hpp"
+#include "infra/config/loader/insights_config_loader.hpp"
 #include "infrastructure/tests/android_runtime/android_runtime_test_common.hpp"
 
 namespace android_runtime_tests {
 namespace {
 
-using ReportConfigLoader =
-    tracer::core::infrastructure::config::ReportConfigLoader;
+using InsightsConfigLoader =
+    tracer::core::infrastructure::config::InsightsConfigLoader;
 
 auto CopyFixtureFile(const std::filesystem::path& relative_path,
                      const std::filesystem::path& target_path) -> bool {
@@ -254,25 +254,25 @@ auto TestAndroidPipelineRuntimeDoesNotRequireProgramConfig(int& failures)
   RemoveTree(paths.test_root);
 }
 
-auto TestReportConfigLoaderRejectsInvalidDailyMarkdown(int& failures) -> void {
+auto TestInsightsConfigLoaderRejectsInvalidDailyMarkdown(int& failures) -> void {
   const RuntimeTestPaths paths =
-      BuildTempTestPaths("time_tracer_report_config_loader_invalid_test");
-  const std::filesystem::path kInvalidReportPath =
+      BuildTempTestPaths("time_tracer_insights_config_loader_invalid_test");
+  const std::filesystem::path kInvalidInsightsPath =
       paths.test_root / "day_invalid.toml";
 
   RemoveTree(paths.test_root);
   std::filesystem::create_directories(paths.test_root);
 
   {
-    std::ofstream file(kInvalidReportPath);
-    file << "title_prefix = \"Daily Report for\"\n";
+    std::ofstream file(kInvalidInsightsPath);
+    file << "title_prefix = \"Daily Insights for\"\n";
   }
 
   bool threw = false;
   std::string message;
   try {
     static_cast<void>(
-        ReportConfigLoader::LoadDailyMdConfig(kInvalidReportPath));
+        InsightsConfigLoader::LoadDailyMdConfig(kInvalidInsightsPath));
   } catch (const std::exception& exception) {
     threw = true;
     message = exception.what();
@@ -281,12 +281,12 @@ auto TestReportConfigLoaderRejectsInvalidDailyMarkdown(int& failures) -> void {
   if (!threw) {
     ++failures;
     std::cerr
-        << "[FAIL] LoadDailyMdConfig should fail for invalid report config.\n";
-  } else if (!Contains(message, "Invalid report config [") ||
+        << "[FAIL] LoadDailyMdConfig should fail for invalid insights config.\n";
+  } else if (!Contains(message, "Invalid insights config [") ||
              !Contains(message, "date_label")) {
     ++failures;
     std::cerr
-        << "[FAIL] Invalid report config error should include context and "
+        << "[FAIL] Invalid insights config error should include context and "
            "missing key, actual: "
         << message << '\n';
   }
@@ -294,10 +294,10 @@ auto TestReportConfigLoaderRejectsInvalidDailyMarkdown(int& failures) -> void {
   RemoveTree(paths.test_root);
 }
 
-auto TestReportConfigLoaderLoadsDailyParentStatuses(int& failures) -> void {
+auto TestInsightsConfigLoaderLoadsDailyParentStatuses(int& failures) -> void {
   const RuntimeTestPaths paths =
-      BuildTempTestPaths("time_tracer_report_config_loader_status_test");
-  const std::filesystem::path config_path = paths.test_root / "report.toml";
+      BuildTempTestPaths("time_tracer_insights_config_loader_status_test");
+  const std::filesystem::path config_path = paths.test_root / "insights.toml";
 
   RemoveTree(paths.test_root);
   std::filesystem::create_directories(paths.test_root);
@@ -314,7 +314,7 @@ auto TestReportConfigLoaderLoadsDailyParentStatuses(int& failures) -> void {
 
   try {
     const DailyStatusConfig config =
-        ReportConfigLoader::LoadDailyStatusConfig(config_path);
+        InsightsConfigLoader::LoadDailyStatusConfig(config_path);
     if (config.schema_version != 1 || config.statuses.size() != 2U) {
       ++failures;
       std::cerr << "[FAIL] Daily status config should load two statuses.\n";
@@ -355,8 +355,8 @@ auto RunCoreConfigValidationTests(int& failures) -> void {
   TestAndroidRuntimeRejectsInvalidUtf8ConverterConfig(failures);
   TestAndroidRuntimeBootstrapsWithMinimalCustomConfig(failures);
   TestAndroidPipelineRuntimeDoesNotRequireProgramConfig(failures);
-  TestReportConfigLoaderRejectsInvalidDailyMarkdown(failures);
-  TestReportConfigLoaderLoadsDailyParentStatuses(failures);
+  TestInsightsConfigLoaderRejectsInvalidDailyMarkdown(failures);
+  TestInsightsConfigLoaderLoadsDailyParentStatuses(failures);
 }
 
 }  // namespace android_runtime_tests

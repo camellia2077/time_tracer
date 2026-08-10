@@ -1,7 +1,7 @@
 module;
 
 #include "application/use_cases/core_api_failure.hpp"
-#include "application/use_cases/report_api_support.hpp"
+#include "application/use_cases/insights_api_support.hpp"
 
 export module tracer.core.application.use_cases.helpers;
 
@@ -11,9 +11,9 @@ using ::tracer::core::application::use_cases::failure::BuildErrorMessage;
 using ::tracer::core::application::use_cases::failure::BuildOperationFailure;
 using ::tracer::core::application::use_cases::failure::BuildTextFailure;
 using ::tracer::core::application::use_cases::failure::BuildTreeFailure;
-using ::tracer::core::application::use_cases::report_support::
+using ::tracer::core::application::use_cases::insights_support::
     BuildPeriodBatchErrorLine;
-using ::tracer::core::application::use_cases::report_support::
+using ::tracer::core::application::use_cases::insights_support::
     BuildStructuredPeriodBatchFailure;
 
 }  // namespace tracer::core::application::use_cases::helpers

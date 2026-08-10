@@ -2,8 +2,8 @@ use clap::{error::ErrorKind, Parser};
 
 use super::{
     AboutCommand, ActivityCommand, AliasCommand, Cli, Command, DataOutputMode, DateCheckMode,
-    ExchangeCommand, PipelineCommand, PipelineValidateCommand, ReportCommand, ReportExportPeriod,
-    ReportRenderPeriod, SystemCommand, TxtCommand,
+    ExchangeCommand, PipelineCommand, PipelineValidateCommand, InsightsCommand, InsightsExportPeriod,
+    InsightsRenderPeriod, SystemCommand, TxtCommand,
 };
 
 #[test]
@@ -129,7 +129,7 @@ fn query_data_still_parses_data_output() {
 fn chart_palette_listing_still_conflicts_with_filters() {
     let error = Cli::try_parse_from([
         "time_tracer_cli",
-        "report",
+        "insights",
         "chart",
         "--list-heatmap-palettes",
         "--root",
@@ -449,10 +449,10 @@ fn alias_tree_parses_file_and_show_aliases() {
 }
 
 #[test]
-fn report_export_all_recent_still_parses_argument() {
+fn insights_export_all_recent_still_parses_argument() {
     let cli = Cli::try_parse_from([
         "time_tracer_cli",
-        "report",
+        "insights",
         "export",
         "recent",
         "7,10",
@@ -461,24 +461,24 @@ fn report_export_all_recent_still_parses_argument() {
     .unwrap();
 
     match cli.command {
-        Command::Report(args) => match args.command {
-            ReportCommand::Export(args) => {
+        Command::Insights(args) => match args.command {
+            InsightsCommand::Export(args) => {
                 assert!(args.all);
                 assert_eq!(args.argument.as_deref(), Some("7,10"));
                 assert_eq!(args.as_of, None);
-                assert!(matches!(args.period, ReportExportPeriod::Recent));
+                assert!(matches!(args.period, InsightsExportPeriod::Recent));
             }
-            _ => panic!("expected report export command"),
+            _ => panic!("expected insights export command"),
         },
-        _ => panic!("expected report command"),
+        _ => panic!("expected insights command"),
     }
 }
 
 #[test]
-fn report_recent_as_of_still_parses_for_render_and_export() {
+fn insights_recent_as_of_still_parses_for_render_and_export() {
     let render_cli = Cli::try_parse_from([
         "time_tracer_cli",
-        "report",
+        "insights",
         "render",
         "recent",
         "7",
@@ -488,7 +488,7 @@ fn report_recent_as_of_still_parses_for_render_and_export() {
     .unwrap();
     let export_cli = Cli::try_parse_from([
         "time_tracer_cli",
-        "report",
+        "insights",
         "export",
         "recent",
         "7",
@@ -498,32 +498,32 @@ fn report_recent_as_of_still_parses_for_render_and_export() {
     .unwrap();
 
     match render_cli.command {
-        Command::Report(args) => match args.command {
-            ReportCommand::Render(args) => {
-                assert!(matches!(args.period, ReportRenderPeriod::Recent));
+        Command::Insights(args) => match args.command {
+            InsightsCommand::Render(args) => {
+                assert!(matches!(args.period, InsightsRenderPeriod::Recent));
                 assert_eq!(args.as_of.as_deref(), Some("2026-03-07"));
             }
-            _ => panic!("expected report render command"),
+            _ => panic!("expected insights render command"),
         },
-        _ => panic!("expected report command"),
+        _ => panic!("expected insights command"),
     }
     match export_cli.command {
-        Command::Report(args) => match args.command {
-            ReportCommand::Export(args) => {
-                assert!(matches!(args.period, ReportExportPeriod::Recent));
+        Command::Insights(args) => match args.command {
+            InsightsCommand::Export(args) => {
+                assert!(matches!(args.period, InsightsExportPeriod::Recent));
                 assert_eq!(args.as_of.as_deref(), Some("2026-03-07"));
             }
-            _ => panic!("expected report export command"),
+            _ => panic!("expected insights export command"),
         },
-        _ => panic!("expected report command"),
+        _ => panic!("expected insights command"),
     }
 }
 
 #[test]
-fn report_render_range_still_parses_period_and_argument() {
+fn insights_render_range_still_parses_period_and_argument() {
     let cli = Cli::try_parse_from([
         "time_tracer_cli",
-        "report",
+        "insights",
         "render",
         "range",
         "20260101|20260131",
@@ -531,20 +531,20 @@ fn report_render_range_still_parses_period_and_argument() {
     .unwrap();
 
     match cli.command {
-        Command::Report(args) => match args.command {
-            ReportCommand::Render(args) => {
-                assert!(matches!(args.period, ReportRenderPeriod::Range));
+        Command::Insights(args) => match args.command {
+            InsightsCommand::Render(args) => {
+                assert!(matches!(args.period, InsightsRenderPeriod::Range));
                 assert_eq!(args.argument, "20260101|20260131");
             }
-            _ => panic!("expected report render command"),
+            _ => panic!("expected insights render command"),
         },
-        _ => panic!("expected report command"),
+        _ => panic!("expected insights command"),
     }
 }
 
 #[test]
-fn report_render_help_mentions_iso_normalization_rules() {
-    let error = Cli::try_parse_from(["time_tracer_cli", "report", "render", "--help"]).unwrap_err();
+fn insights_render_help_mentions_iso_normalization_rules() {
+    let error = Cli::try_parse_from(["time_tracer_cli", "insights", "render", "--help"]).unwrap_err();
     assert_eq!(error.kind(), ErrorKind::DisplayHelp);
     let help = error.to_string();
     assert!(help.contains("day: YYYYMMDD or YYYY-MM-DD"));
@@ -555,8 +555,8 @@ fn report_render_help_mentions_iso_normalization_rules() {
 }
 
 #[test]
-fn report_export_help_mentions_iso_normalization_rules() {
-    let error = Cli::try_parse_from(["time_tracer_cli", "report", "export", "--help"]).unwrap_err();
+fn insights_export_help_mentions_iso_normalization_rules() {
+    let error = Cli::try_parse_from(["time_tracer_cli", "insights", "export", "--help"]).unwrap_err();
     assert_eq!(error.kind(), ErrorKind::DisplayHelp);
     let help = error.to_string();
     assert!(help.contains("day: YYYYMMDD or YYYY-MM-DD"));
@@ -591,8 +591,8 @@ fn global_out_alias_is_removed() {
     let error = Cli::try_parse_from([
         "time_tracer_cli",
         "--out",
-        "report.md",
-        "report",
+        "insights.md",
+        "insights",
         "render",
         "day",
         "20260101",
@@ -633,10 +633,10 @@ fn about_licenses_full_parses_under_about_family() {
 }
 
 #[test]
-fn report_chart_parses_under_report_family() {
+fn insights_chart_parses_under_insights_family() {
     let cli = Cli::try_parse_from([
         "time_tracer_cli",
-        "report",
+        "insights",
         "chart",
         "--type",
         "line",
@@ -648,14 +648,14 @@ fn report_chart_parses_under_report_family() {
     .unwrap();
 
     match cli.command {
-        Command::Report(args) => match args.command {
-            ReportCommand::Chart(args) => {
+        Command::Insights(args) => match args.command {
+            InsightsCommand::Chart(args) => {
                 assert_eq!(args.from.as_deref(), Some("20260101"));
                 assert_eq!(args.to.as_deref(), Some("20260107"));
             }
-            _ => panic!("expected report chart command"),
+            _ => panic!("expected insights chart command"),
         },
-        _ => panic!("expected report command"),
+        _ => panic!("expected insights command"),
     }
 }
 

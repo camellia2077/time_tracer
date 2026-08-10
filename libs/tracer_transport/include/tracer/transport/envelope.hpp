@@ -9,7 +9,7 @@
 
 namespace tracer::transport {
 
-struct ReportWindowMetadataPayload {
+struct InsightsWindowMetadataPayload {
   bool has_records = false;
   int matched_day_count = 0;
   int matched_record_count = 0;
@@ -25,8 +25,8 @@ struct ResponseEnvelope {
   std::string error_category;
   std::vector<std::string> hints;
   std::string content;
-  std::optional<std::string> report_hash_sha256;
-  std::optional<ReportWindowMetadataPayload> report_window_metadata;
+  std::optional<std::string> insights_hash_sha256;
+  std::optional<InsightsWindowMetadataPayload> insights_window_metadata;
 };
 
 struct ParseResponseEnvelopeResult {

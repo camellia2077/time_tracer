@@ -9,5 +9,5 @@ query/stats layer can return and how those capabilities are sliced.
      filtering, and empty-data behavior.
 2. [../capability_matrix_v1.md](../capability_matrix_v1.md)
    - Action-level capability matrix, field contract, and fallback policy.
-3. [../report_chart_contract_v1.md](../report_chart_contract_v1.md)
-   - Cross-host `report-chart` field contract and output alignment.
+3. [../insights_chart_contract_v1.md](../insights_chart_contract_v1.md)
+   - Cross-host `insights-chart` field contract and output alignment.

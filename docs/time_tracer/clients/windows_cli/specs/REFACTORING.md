@@ -16,10 +16,10 @@ to see and test without moving core business semantics into the client.
 | Area | CLI owns | CLI must not own |
 | --- | --- | --- |
 | `src/cli/**` | clap command/argument models, defaults, help shape | validation rules, canonical domain models, business decisions |
-| `src/commands/**` | dispatch, command orchestration, filesystem and terminal UX | TXT, alias, report, ingest, or exchange semantics already owned by Core |
+| `src/commands/**` | dispatch, command orchestration, filesystem and terminal UX | TXT, alias, insights, ingest, or exchange semantics already owned by Core |
 | `src/core/runtime/**` | session bootstrap, capability-client calls, ABI transport, callback adaptation | a second business service layer, semantic caches, or a second Runtime protocol |
 | `src/error/**` | exit-code and user-facing diagnostic shaping | recovery by reimplementing Core rules |
-| `tracer_core.dll` / `libs/**` | canonical parsing, validation, persistence, query, report and exchange semantics | — |
+| `tracer_core.dll` / `libs/**` | canonical parsing, validation, persistence, query, insights and exchange semantics | — |
 
 The dependency direction remains:
 
@@ -43,7 +43,7 @@ transport seam.
    duplicate DTO, semantic cache, protocol representation, or pass-through
    facade merely to reduce file size.
 4. Keep command handlers thin. Date/path normalization, validation, alias
-   resolution, report semantics, ingest ordering, and exchange semantics must
+   resolution, insights semantics, ingest ordering, and exchange semantics must
    remain delegated to the canonical Core contract unless the CLI-only part is
    explicitly presentation or input-shape adaptation.
 5. Keep filesystem mutation and runtime invocation sequencing explicit. In
@@ -68,12 +68,12 @@ split instructions:
 - `src/commands/handlers/alias.rs`: distinguish file/TOML editing UX,
   Core-backed canonical migration orchestration, and result presentation before
   extracting anything. Canonical alias semantics remain in Core.
-- `src/commands/handlers/report/{mod,tests,requests,dates,formats}.rs` and
-  `report/**`: retain `report/mod.rs` as the session/dispatch facade; keep
+- `src/commands/handlers/insights/{mod,tests,requests,dates,formats}.rs` and
+  `insights/**`: retain `insights/mod.rs` as the session/dispatch facade; keep
   parser/request construction, date normalization, format/path handling, and
   render/export/chart presentation separated by reason to change. Do not
-  split `ReportSession` methods merely by operation while they share the same
-  runtime bootstrap and reporting contract.
+  split `InsightsSession` methods merely by operation while they share the same
+  runtime bootstrap and insights contract.
 - `src/core/runtime/invoke/**`: preserve the single FFI transport boundary;
   keep ABI response DTOs, transport/error mapping, and capability-specific
   calls inside the runtime invoke subtree rather than spreading unsafe calls

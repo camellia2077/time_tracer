@@ -40,8 +40,8 @@ impl CommandHandler<DoctorArgs> for DoctorHandler {
         let checks = vec![
             required_check("core_dll", exe_dir.join(libraries.core_dll)),
             required_check(
-                "reports_shared_dll",
-                exe_dir.join(libraries.reports_shared_dll),
+                "insights_shared_dll",
+                exe_dir.join(libraries.insights_shared_dll),
             ),
             required_check(
                 "config_toml",
@@ -93,7 +93,7 @@ impl CommandHandler<DoctorArgs> for DoctorHandler {
                 "Doctor check failed: missing required config files.".to_string(),
             ));
         }
-        if has_failure(&checks, "core_dll") || has_failure(&checks, "reports_shared_dll") {
+        if has_failure(&checks, "core_dll") || has_failure(&checks, "insights_shared_dll") {
             return Err(AppError::DllCompatibility(
                 "Doctor check failed: missing required runtime dependencies.".to_string(),
             ));
@@ -163,13 +163,13 @@ fn has_failure(checks: &[Check], id: &str) -> bool {
 
 struct RuntimeLibraries {
     core_dll: String,
-    reports_shared_dll: String,
+    insights_shared_dll: String,
 }
 
 fn load_runtime_libraries(exe_dir: &PathBuf) -> RuntimeLibraries {
     let mut result = RuntimeLibraries {
         core_dll: "tracer_core.dll".to_string(),
-        reports_shared_dll: "reports_shared.dll".to_string(),
+        insights_shared_dll: "insights_shared.dll".to_string(),
     };
     let manifest_path = exe_dir.join("runtime_manifest.json");
     let Ok(content) = fs::read_to_string(&manifest_path) else {
@@ -184,8 +184,8 @@ fn load_runtime_libraries(exe_dir: &PathBuf) -> RuntimeLibraries {
     if let Some(value) = libraries.get("core").and_then(Value::as_str) {
         result.core_dll = value.to_string();
     }
-    if let Some(value) = libraries.get("reports_shared").and_then(Value::as_str) {
-        result.reports_shared_dll = value.to_string();
+    if let Some(value) = libraries.get("insights_shared").and_then(Value::as_str) {
+        result.insights_shared_dll = value.to_string();
     }
     result
 }

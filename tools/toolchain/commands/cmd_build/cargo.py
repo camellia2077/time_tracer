@@ -155,7 +155,7 @@ def _sync_windows_runtime_layout_for_rust(
     manifest_source = _first_existing_path(
         [candidate / "runtime_manifest.json" for candidate in runtime_bin_candidates]
     )
-    required_files = ["tracer_core.dll", "reports_shared.dll"]
+    required_files = ["tracer_core.dll", "insights_shared.dll"]
     if manifest_source:
         loaded = _load_runtime_manifest_required_files(manifest_source)
         if loaded:

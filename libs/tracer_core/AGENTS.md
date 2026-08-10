@@ -28,7 +28,7 @@ Before changing core code, read:
 - Tracer exchange or crypto:
   - `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v6.md`
   - `docs/time_tracer/core/contracts/crypto/runtime_crypto_json_contract_v1.md`
-- Reporting or statistics semantics:
+- Insights or statistics semantics:
   `docs/time_tracer/core/contracts/stats/README.md`
 - Validation behavior or error codes:
   - `docs/time_tracer/core/errors/error-codes.md`

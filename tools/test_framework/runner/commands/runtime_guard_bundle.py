@@ -16,7 +16,7 @@ DEFAULT_CLI_EXE = "time_tracer_cli.exe"
 DEFAULT_RUNTIME_FILES = [
     "time_tracer_cli.exe",
     "tracer_core.dll",
-    "reports_shared.dll",
+    "insights_shared.dll",
     "libsqlite3-0.dll",
     "libtomlplusplus-3.dll",
     "libgcc_s_seh-1.dll",
@@ -25,7 +25,7 @@ DEFAULT_RUNTIME_FILES = [
 ]
 DEFAULT_RUNTIME_FOLDERS = ["config"]
 DEFAULT_CORE_DLL = "tracer_core.dll"
-DEFAULT_REPORTS_SHARED_DLL = "reports_shared.dll"
+DEFAULT_INSIGHTS_SHARED_DLL = "insights_shared.dll"
 
 
 def auto_detect_build_dir(repo_root: Path, app_name: str) -> str | None:
@@ -92,23 +92,23 @@ def _load_runtime_manifest(source_bin: Path) -> tuple[list[str], list[str]] | No
 def resolve_runtime_library_names(source_bin: Path) -> tuple[str, str]:
     manifest_path = source_bin / "runtime_manifest.json"
     if not manifest_path.is_file():
-        return DEFAULT_CORE_DLL, DEFAULT_REPORTS_SHARED_DLL
+        return DEFAULT_CORE_DLL, DEFAULT_INSIGHTS_SHARED_DLL
     try:
         payload = json.loads(manifest_path.read_text(encoding="utf-8"))
     except Exception:
-        return DEFAULT_CORE_DLL, DEFAULT_REPORTS_SHARED_DLL
+        return DEFAULT_CORE_DLL, DEFAULT_INSIGHTS_SHARED_DLL
     if not isinstance(payload, dict):
-        return DEFAULT_CORE_DLL, DEFAULT_REPORTS_SHARED_DLL
+        return DEFAULT_CORE_DLL, DEFAULT_INSIGHTS_SHARED_DLL
     libraries = payload.get("libraries")
     if not isinstance(libraries, dict):
-        return DEFAULT_CORE_DLL, DEFAULT_REPORTS_SHARED_DLL
+        return DEFAULT_CORE_DLL, DEFAULT_INSIGHTS_SHARED_DLL
     core_dll = libraries.get("core")
-    reports_shared_dll = libraries.get("reports_shared")
+    insights_shared_dll = libraries.get("insights_shared")
     if not isinstance(core_dll, str) or not core_dll:
         core_dll = DEFAULT_CORE_DLL
-    if not isinstance(reports_shared_dll, str) or not reports_shared_dll:
-        reports_shared_dll = DEFAULT_REPORTS_SHARED_DLL
-    return core_dll, reports_shared_dll
+    if not isinstance(insights_shared_dll, str) or not insights_shared_dll:
+        insights_shared_dll = DEFAULT_INSIGHTS_SHARED_DLL
+    return core_dll, insights_shared_dll
 
 
 def copy_runtime_bundle(
@@ -134,7 +134,7 @@ def ensure_source_runtime_ready(source_bin: Path) -> None:
         required.extend(
             [
                 source_bin / DEFAULT_CORE_DLL,
-                source_bin / DEFAULT_REPORTS_SHARED_DLL,
+                source_bin / DEFAULT_INSIGHTS_SHARED_DLL,
                 source_bin / "config" / "config.toml",
             ]
         )

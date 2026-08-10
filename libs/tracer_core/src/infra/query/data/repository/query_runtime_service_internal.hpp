@@ -4,7 +4,7 @@
 
 #include "infra/sqlite_fwd.hpp"
 #include "infra/query/data/internal/period.hpp"
-#include "infra/query/data/internal/report_mapping.hpp"
+#include "infra/query/data/internal/insights_mapping.hpp"
 
 namespace tracer::core::infrastructure::query::data::repository::internal {
 

@@ -59,7 +59,7 @@
   - `NativeValidateStructure`
   - `NativeValidateLogic`
   - `NativeQuery`
-  - `NativeReport`
+  - `NativeInsights`
 - 责任：JNI 参数读取 -> runtime request 构造 -> core C API 调用 -> envelope 返回。
 
 ### Registration

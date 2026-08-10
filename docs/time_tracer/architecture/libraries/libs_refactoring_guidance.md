@@ -18,7 +18,7 @@ protocol, ABI, or business-rule contracts.
 
 | Library | Primary owner | Must not become owner of |
 |---|---|---|
-| `tracer_core` | Domain rules, application capabilities, parsing, validation, query/report semantics, persistence and exchange implementations | Runtime JSON, filesystem orchestration, C ABI/JNI glue, host lifecycle |
+| `tracer_core` | Domain rules, application capabilities, parsing, validation, query/insights semantics, persistence and exchange implementations | Runtime JSON, filesystem orchestration, C ABI/JNI glue, host lifecycle |
 | `tracer_adapters_io` | Filesystem ingest input and processed-data IO | Business validation, TXT semantics, use-case orchestration, runtime protocol |
 | `tracer_core_bridge_common` | Shared C API/JNI boundary mechanics | Business rules, filesystem behavior, use-case orchestration |
 | `tracer_transport` | Runtime envelopes, fields, DTOs, codecs, wire defaults | Core business rules, database access, filesystem access, host lifecycle |

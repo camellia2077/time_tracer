@@ -26,26 +26,26 @@ def validate_config_keys(config_data: dict[str, Any], target: str) -> None:
     if "pie" not in visualization:
         raise ValueError("sync gate failed: config.toml missing visualization.pie.")
 
-    reports = config_data.get("reports")
+    insights = config_data.get("insights")
     if target == "windows":
-        if not isinstance(reports, dict) or "markdown" not in reports:
-            raise ValueError("sync gate failed: windows config must contain reports.markdown.")
+        if not isinstance(insights, dict) or "markdown" not in insights:
+            raise ValueError("sync gate failed: windows config must contain insights.markdown.")
     elif target == "android":
-        if not isinstance(reports, dict) or "markdown" not in reports:
-            raise ValueError("sync gate failed: android config must contain reports.markdown.")
-    markdown = reports.get("markdown") if isinstance(reports, dict) else None
+        if not isinstance(insights, dict) or "markdown" not in insights:
+            raise ValueError("sync gate failed: android config must contain insights.markdown.")
+    markdown = insights.get("markdown") if isinstance(insights, dict) else None
     if not isinstance(markdown, dict):
-        raise ValueError("sync gate failed: reports.markdown must be a table.")
+        raise ValueError("sync gate failed: insights.markdown must be a table.")
     for key in ("root", "default_locale", "supported_locales"):
         if key not in markdown:
-            raise ValueError(f"sync gate failed: config.toml missing reports.markdown.{key}.")
+            raise ValueError(f"sync gate failed: config.toml missing insights.markdown.{key}.")
     if not isinstance(markdown["supported_locales"], list) or not markdown["supported_locales"]:
-        raise ValueError("sync gate failed: reports.markdown.supported_locales must be non-empty.")
+        raise ValueError("sync gate failed: insights.markdown.supported_locales must be non-empty.")
     if target == "windows":
         for format_name in ("typst", "latex"):
-            section = reports.get(format_name)
+            section = insights.get(format_name)
             if not isinstance(section, dict) or "root" not in section:
-                raise ValueError(f"sync gate failed: config.toml missing reports.{format_name}.root.")
+                raise ValueError(f"sync gate failed: config.toml missing insights.{format_name}.root.")
 
 
 def validate_sync_output(

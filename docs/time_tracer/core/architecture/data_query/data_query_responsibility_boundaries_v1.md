@@ -9,8 +9,8 @@
 代码位置：
 1. `libs/tracer_core/src/infra/query/data/stats/day_duration_stats_calculator.cpp`
 2. `libs/tracer_core/src/infra/query/data/stats/day_duration_stats_calculator.hpp`
-3. `libs/tracer_core/src/infra/query/data/stats/report_chart_stats_calculator.cpp`
-4. `libs/tracer_core/src/infra/query/data/stats/report_chart_stats_calculator.hpp`
+3. `libs/tracer_core/src/infra/query/data/stats/insights_chart_stats_calculator.cpp`
+4. `libs/tracer_core/src/infra/query/data/stats/insights_chart_stats_calculator.hpp`
 5. `libs/tracer_core/src/infra/query/data/stats/stats_models.hpp`
 
 ## 2. 时间范围编排（Period Orchestration）
@@ -24,8 +24,8 @@
 4. `libs/tracer_core/src/infra/query/data/orchestrators/list_query_orchestrator.hpp`
 5. `libs/tracer_core/src/infra/query/data/orchestrators/days_stats_orchestrator.cpp`
 6. `libs/tracer_core/src/infra/query/data/orchestrators/days_stats_orchestrator.hpp`
-7. `libs/tracer_core/src/infra/query/data/orchestrators/report_chart_orchestrator.cpp`
-8. `libs/tracer_core/src/infra/query/data/orchestrators/report_chart_orchestrator.hpp`
+7. `libs/tracer_core/src/infra/query/data/orchestrators/insights_chart_orchestrator.cpp`
+8. `libs/tracer_core/src/infra/query/data/orchestrators/insights_chart_orchestrator.hpp`
 9. `libs/tracer_core/src/infra/query/data/orchestrators/tree_orchestrator.cpp`
 10. `libs/tracer_core/src/infra/query/data/orchestrators/tree_orchestrator.hpp`
 
@@ -50,7 +50,7 @@
 1. `libs/tracer_core/src/infra/query/data/repository/query_runtime_service.cpp`
 2. `libs/tracer_core/src/infra/query/data/repository/query_runtime_service_request.cpp`
 3. `libs/tracer_core/src/infra/query/data/repository/query_runtime_service_dispatch.cpp`
-4. `libs/tracer_core/src/infra/query/data/repository/query_runtime_service_report_mapping.cpp`
+4. `libs/tracer_core/src/infra/query/data/repository/query_runtime_service_insights_mapping.cpp`
 5. `libs/tracer_core/src/infra/query/data/repository/query_runtime_service_period.cpp`
 
 ### 4.2 Windows CLI adapter
@@ -68,15 +68,15 @@
 5. `apps/android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryMessages.kt`
 6. `apps/android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeController.kt`
 
-## 5. 主链路示例（report-chart）
+## 5. 主链路示例（insights-chart）
 
 1. CLI 参数解析：`apps/cli/windows/src/api/cli/impl/commands/query/data_query_parser.cpp`
 2. CLI 转发 Core：`apps/cli/windows/src/bootstrap/cli_runtime_factory_proxy.cpp`
 3. Core 入口接收：`libs/tracer_core/src/infra/query/data/repository/query_runtime_service.cpp`
 4. action 分发：`libs/tracer_core/src/infra/query/data/repository/query_runtime_service_dispatch.cpp`
-5. 编排器：`libs/tracer_core/src/infra/query/data/orchestrators/report_chart_orchestrator.cpp`
-6. report-chart 语义组装：`libs/tracer_core/src/infra/query/data/repository/query_runtime_service_report_mapping.cpp`
-7. 统计计算：`libs/tracer_core/src/infra/query/data/stats/report_chart_stats_calculator.cpp`
+5. 编排器：`libs/tracer_core/src/infra/query/data/orchestrators/insights_chart_orchestrator.cpp`
+6. insights-chart 语义组装：`libs/tracer_core/src/infra/query/data/repository/query_runtime_service_insights_mapping.cpp`
+7. 统计计算：`libs/tracer_core/src/infra/query/data/stats/insights_chart_stats_calculator.cpp`
 8. 输出渲染：`libs/tracer_core/src/infra/query/data/renderers/data_query_renderer.cpp`
 
 ## 6. 变更时改哪里（快速指引）

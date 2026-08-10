@@ -109,12 +109,12 @@ struct CapabilitiesFeaturesPayload {
   bool runtime_update_activity_remark_atomically_json = false;
   bool runtime_config_json = false;
   bool runtime_query_json = false;
-  bool runtime_temporal_report_json = false;
-  bool runtime_report_batch_json = false;
+  bool runtime_temporal_insights_json = false;
+  bool runtime_insights_batch_json = false;
   bool processed_json_io = false;
-  bool report_markdown = false;
-  bool report_latex = false;
-  bool report_typst = false;
+  bool insights_markdown = false;
+  bool insights_latex = false;
+  bool insights_typst = false;
 };
 
 struct CapabilitiesResponsePayload {
@@ -129,21 +129,21 @@ struct QueryResponsePayload {
   ErrorContractPayload error_contract;
 };
 
-struct ReportResponsePayload {
+struct InsightsResponsePayload {
   bool ok = false;
   std::string error_message;
   std::string content;
   ErrorContractPayload error_contract;
 };
 
-struct ReportBatchResponsePayload {
+struct InsightsBatchResponsePayload {
   bool ok = false;
   std::string error_message;
   std::string content;
   ErrorContractPayload error_contract;
 };
 
-struct ReportTargetsResponsePayload {
+struct InsightsTargetsResponsePayload {
   bool ok = false;
   std::string error_message;
   std::string type;

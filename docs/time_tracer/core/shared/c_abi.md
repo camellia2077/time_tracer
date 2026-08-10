@@ -34,8 +34,8 @@
 19. `tracer_core_runtime_validate_structure_json`
 20. `tracer_core_runtime_validate_logic_json`
 21. `tracer_core_runtime_query_json`
-22. `tracer_core_runtime_temporal_report_json`
-23. `tracer_core_runtime_report_batch_json`
+22. `tracer_core_runtime_temporal_insights_json`
+23. `tracer_core_runtime_insights_batch_json`
 25. `tracer_core_runtime_crypto_encrypt_json`
 26. `tracer_core_runtime_crypto_decrypt_json`
 27. `tracer_core_runtime_crypto_inspect_json`
@@ -74,16 +74,16 @@
      - `runtime_validate_structure_json`
      - `runtime_validate_logic_json`
      - `runtime_query_json`
-     - `runtime_temporal_report_json`
-     - `runtime_report_batch_json`
+     - `runtime_temporal_insights_json`
+     - `runtime_insights_batch_json`
      - `runtime_record_activity_atomically_json`
      - `runtime_update_activity_remark_atomically_json`
      - `runtime_update_day_remark_atomically_json`
      - `runtime_config_json`
      - `processed_json_io`
-     - `report_markdown`
-     - `report_latex`
-     - `report_typst`
+     - `insights_markdown`
+     - `insights_latex`
+     - `insights_typst`
 4. `tracer_core_get_build_info_json` returns:
    - `ok`
    - `error_message`
@@ -143,8 +143,8 @@
      - `error_code`
      - `error_category`
      - `hints`
-11. `tracer_core_runtime_temporal_report_json` is the single canonical
-    reporting ABI surface:
+11. `tracer_core_runtime_temporal_insights_json` is the single canonical
+    insights ABI surface:
    - request fields:
      - `operation_kind` (`query|structured_query|targets|export`)
      - `display_mode` (`day|week|month|year|range|recent`)
@@ -161,15 +161,15 @@
      - optional `recent_days_list`
    - `query` response fields:
      - standard text envelope fields
-     - optional `report_window_metadata`-derived fields for recent/range text
+     - optional `insights_window_metadata`-derived fields for recent/range text
        responses
-     - optional `report_hash_sha256`
+     - optional `insights_hash_sha256`
    - `structured_query` response fields:
      - `ok`
      - `display_mode`
      - `selection_kind`
-     - `report_kind`
-     - `report`
+     - `insights_kind`
+     - `insights`
      - `error_message`
      - `error_code`
      - `error_category`
@@ -183,14 +183,14 @@
      - `error_category`
      - `hints`
    - `export` response follows the standard ack-style envelope
-12. `tracer_core_runtime_report_batch_json` remains a separate helper for
+12. `tracer_core_runtime_insights_batch_json` remains a separate helper for
     multi-days recent text rendering:
    - request fields:
      - `days_list`
      - optional `format`
    - response fields:
      - standard text envelope fields
-     - optional `report_hash_sha256`
+     - optional `insights_hash_sha256`
 13. `tracer_core_runtime_crypto_*_json` contracts:
    - request/response payloads are UTF-8 JSON objects
    - encrypt request fields:
@@ -279,7 +279,7 @@ the JSON response for compatibility; new consumers should use kind.
    - `error_category`
    - `hints`
    - optional `content`
-   - optional `report_hash_sha256`
+   - optional `insights_hash_sha256`
 2. `ok` and `error_message` are required semantic fields.
 3. Operations may add fields without breaking the envelope.
 4. Envelope normalization is implemented in `tracer_transport`.

@@ -33,7 +33,7 @@ def _resolve_runtime_platform_targets(
         return []
     if app_name not in {"tracer_core", "tracer_core_shell"}:
         return []
-    return ["tc_rpt_shared_lib", "tc_shared_dll"]
+    return ["tc_insights_shared_lib", "tc_shared_dll"]
 
 
 def _merge_build_targets(*target_groups: list[str]) -> list[str]:

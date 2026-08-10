@@ -177,49 +177,49 @@ auto ParseRuntimeConfigPaths(const toml::table& config_tbl,
       NormalizeConfigRelativePath(config_dir, kHeatmap);
   EnsureFileExists(source_path, "visualization.heatmap", kHeatmapPath);
 
-  const toml::table* reports_tbl =
-      TryReadTableField(config_tbl, "reports", source_path, "");
-  if (reports_tbl == nullptr) {
-    ThrowConfigFieldError(source_path, "reports",
+  const toml::table* insights_tbl =
+      TryReadTableField(config_tbl, "insights", source_path, "");
+  if (insights_tbl == nullptr) {
+    ThrowConfigFieldError(source_path, "insights",
                           "is required and must be a table.");
   }
-  const ReportPathSource kReportSource{
+  const InsightsPathSource kInsightsSource{
       .config_dir = config_dir,
       .source_path = source_path,
   };
-  bool has_any_report_format = false;
+  bool has_any_insights_format = false;
   if (const toml::table* typst_tbl =
-          TryReadTableField(*reports_tbl, "typst", source_path, "reports")) {
-    has_any_report_format = true;
-    LoadReportPathsFromTable(*typst_tbl, kReportSource, "reports.typst",
-                             config.reports.day_typ_config_path,
-                             config.reports.month_typ_config_path,
-                             config.reports.period_typ_config_path,
-                             config.reports.week_typ_config_path,
-                             config.reports.year_typ_config_path);
+          TryReadTableField(*insights_tbl, "typst", source_path, "insights")) {
+    has_any_insights_format = true;
+    LoadInsightsPathsFromTable(*typst_tbl, kInsightsSource, "insights.typst",
+                             config.insights.day_typ_config_path,
+                             config.insights.month_typ_config_path,
+                             config.insights.period_typ_config_path,
+                             config.insights.week_typ_config_path,
+                             config.insights.year_typ_config_path);
   }
   if (const toml::table* latex_tbl =
-          TryReadTableField(*reports_tbl, "latex", source_path, "reports")) {
-    has_any_report_format = true;
-    LoadReportPathsFromTable(*latex_tbl, kReportSource, "reports.latex",
-                             config.reports.day_tex_config_path,
-                             config.reports.month_tex_config_path,
-                             config.reports.period_tex_config_path,
-                             config.reports.week_tex_config_path,
-                             config.reports.year_tex_config_path);
+          TryReadTableField(*insights_tbl, "latex", source_path, "insights")) {
+    has_any_insights_format = true;
+    LoadInsightsPathsFromTable(*latex_tbl, kInsightsSource, "insights.latex",
+                             config.insights.day_tex_config_path,
+                             config.insights.month_tex_config_path,
+                             config.insights.period_tex_config_path,
+                             config.insights.week_tex_config_path,
+                             config.insights.year_tex_config_path);
   }
   if (const toml::table* markdown_tbl =
-          TryReadTableField(*reports_tbl, "markdown", source_path, "reports")) {
-    has_any_report_format = true;
-    LoadReportPathsFromTable(
-        *markdown_tbl, kReportSource, "reports.markdown",
-        config.reports.day_md_config_path, config.reports.month_md_config_path,
-        config.reports.period_md_config_path,
-        config.reports.week_md_config_path, config.reports.year_md_config_path);
+          TryReadTableField(*insights_tbl, "markdown", source_path, "insights")) {
+    has_any_insights_format = true;
+    LoadInsightsPathsFromTable(
+        *markdown_tbl, kInsightsSource, "insights.markdown",
+        config.insights.day_md_config_path, config.insights.month_md_config_path,
+        config.insights.period_md_config_path,
+        config.insights.week_md_config_path, config.insights.year_md_config_path);
   }
-  if (!has_any_report_format) {
-    ThrowConfigFieldError(source_path, "reports",
-                          "must contain at least one report format table.");
+  if (!has_any_insights_format) {
+    ThrowConfigFieldError(source_path, "insights",
+                          "must contain at least one insights format table.");
   }
 }
 

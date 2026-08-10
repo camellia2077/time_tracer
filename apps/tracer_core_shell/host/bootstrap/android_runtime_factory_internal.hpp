@@ -5,12 +5,12 @@
 #include <filesystem>
 #include <optional>
 
-#include "infra/config/models/report_catalog.hpp"
-#include "infra/reporting/facade/android_static_report_formatter_registrar.hpp"
+#include "infra/config/models/insights_catalog.hpp"
+#include "infra/insights/facade/android_static_insights_formatter_registrar.hpp"
 
 namespace infrastructure::bootstrap::android_runtime_detail {
 
-struct AndroidReportConfigPathSet {
+struct AndroidInsightsConfigPathSet {
   std::filesystem::path day;
   std::filesystem::path month;
   std::filesystem::path period;
@@ -20,10 +20,10 @@ struct AndroidReportConfigPathSet {
 
 struct AndroidRuntimeConfigPaths {
   std::filesystem::path converter_config_toml_path;
-  AndroidReportConfigPathSet markdown;
-  std::optional<AndroidReportConfigPathSet> latex;
-  std::optional<AndroidReportConfigPathSet> typst;
-  infrastructure::reports::AndroidStaticReportFormatterPolicy formatter_policy;
+  AndroidInsightsConfigPathSet markdown;
+  std::optional<AndroidInsightsConfigPathSet> latex;
+  std::optional<AndroidInsightsConfigPathSet> typst;
+  infrastructure::insights::AndroidStaticInsightsFormatterPolicy formatter_policy;
 };
 
 [[nodiscard]] auto ResolveOutputRoot(const std::filesystem::path& output_root)
@@ -40,9 +40,9 @@ struct AndroidRuntimeConfigPaths {
     const std::filesystem::path& requested_converter_config_toml_path)
     -> std::filesystem::path;
 
-[[nodiscard]] auto BuildAndroidReportCatalog(
+[[nodiscard]] auto BuildAndroidInsightsCatalog(
     const std::filesystem::path& output_root,
-    const AndroidRuntimeConfigPaths& runtime_config_paths) -> ReportCatalog;
+    const AndroidRuntimeConfigPaths& runtime_config_paths) -> InsightsCatalog;
 
 }  // namespace infrastructure::bootstrap::android_runtime_detail
 

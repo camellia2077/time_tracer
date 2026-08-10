@@ -1,0 +1,71 @@
+// infra/insights/data/utils/project_tree_builder.cpp
+#include "infra/insights/data/utils/project_tree_builder.hpp"
+
+#include <cstddef>
+#include <cstdint>
+
+import tracer.core.shared.string_utils;
+
+using tracer::core::shared::string_utils::SplitString;
+
+void BuildProjectTreeFromRecords(
+    insights::ProjectTree& tree,
+    const std::vector<std::pair<std::string, std::int64_t>>& records) {
+  // ... 保持不变 ...
+  for (const auto& record : records) {
+    const std::string& project_path = record.first;
+    std::int64_t duration = record.second;
+
+    std::vector<std::string> parts = SplitString(project_path, '_');
+    if (parts.empty()) {
+      continue;
+    }
+
+    std::string top_level_category_key = parts[0];
+    tree[top_level_category_key].duration += duration;
+    ++tree[top_level_category_key].occurrence_count;
+
+    insights::ProjectNode* current_node = &tree[top_level_category_key];
+
+    for (size_t i = 1; i < parts.size(); ++i) {
+      current_node->children[parts[i]].duration += duration;
+      ++current_node->children[parts[i]].occurrence_count;
+      current_node = &current_node->children[parts[i]];
+    }
+  }
+}
+
+// [修改] 实现变更
+void BuildProjectTreeFromIds(
+    insights::ProjectTree& tree,
+    const std::vector<std::pair<std::int64_t, std::int64_t>>& id_records,
+    const IProjectInfoProvider& provider)  // [修改] 参数
+{
+  // 1. 移除 ensure_loaded 调用，假设传入的 provider 已经是可用的
+  // 或者由调用者(Service)负责 ensure_loaded
+
+  // 2. 遍历聚合后的 ID 记录
+  for (const auto& record : id_records) {
+    std::int64_t project_id = record.first;
+    std::int64_t duration = record.second;
+
+    // [修改] 使用 provider 接口调用
+    std::vector<std::string> parts = provider.GetPathParts(project_id);
+    if (parts.empty()) {
+      continue;
+    }
+
+    // 3. 构建树
+    std::string top_level_category_key = parts[0];
+    tree[top_level_category_key].duration += duration;
+    ++tree[top_level_category_key].occurrence_count;
+
+    insights::ProjectNode* current_node = &tree[top_level_category_key];
+
+    for (size_t i = 1; i < parts.size(); ++i) {
+      current_node->children[parts[i]].duration += duration;
+      ++current_node->children[parts[i]].occurrence_count;
+      current_node = &current_node->children[parts[i]];
+    }
+  }
+}

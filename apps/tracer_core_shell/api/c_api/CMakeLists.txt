@@ -10,9 +10,9 @@ set(TRACER_CORE_C_API_SOURCES
     "capabilities/pipeline/tracer_core_c_api_pipeline_runtime.cpp"
     "capabilities/txt/tracer_core_c_api_txt.cpp"
     "capabilities/query/tracer_core_c_api_query.cpp"
-    "capabilities/reporting/tracer_core_c_api_reporting.cpp"
-    "capabilities/reporting/tracer_core_c_api_structured_report_serializer.cpp"
-    "capabilities/reporting/tracer_core_c_api_reporting_response.cpp"
+    "capabilities/insights/tracer_core_c_api_insights.cpp"
+    "capabilities/insights/tracer_core_c_api_structured_insights_serializer.cpp"
+    "capabilities/insights/tracer_core_c_api_insights_response.cpp"
     "capabilities/exchange/tracer_core_c_api_exchange.cpp"
     "${PROJECT_SOURCE_DIR}/host/exchange/crypto_progress_bridge.cpp"
     "${PROJECT_SOURCE_DIR}/host/exchange/tracer_exchange_inspect_formatter.cpp"
@@ -30,8 +30,8 @@ set_source_files_properties(
     "capabilities/pipeline/tracer_core_c_api_pipeline_runtime.cpp"
     "capabilities/txt/tracer_core_c_api_txt.cpp"
     "capabilities/query/tracer_core_c_api_query.cpp"
-    "capabilities/reporting/tracer_core_c_api_reporting.cpp"
-    "capabilities/reporting/tracer_core_c_api_structured_report_serializer.cpp"
+    "capabilities/insights/tracer_core_c_api_insights.cpp"
+    "capabilities/insights/tracer_core_c_api_structured_insights_serializer.cpp"
     "${PROJECT_SOURCE_DIR}/host/bootstrap/android_runtime_config_bridge.cpp"
     "${PROJECT_SOURCE_DIR}/host/bootstrap/android_runtime_factory.cpp"
     PROPERTIES
@@ -98,10 +98,10 @@ if(BUILD_TESTING)
         "${TRACER_CORE_SHELL_INTEGRATION_TEST_ROOT}/tracer_core_c_api_query_test_main.cpp"
     )
 
-    add_executable(tc_c_api_reporting_tests
+    add_executable(tc_c_api_insights_tests
         "${TRACER_CORE_SHELL_INTEGRATION_TEST_ROOT}/tracer_core_c_api_runtime_support.cpp"
-        "${TRACER_CORE_SHELL_INTEGRATION_TEST_ROOT}/tracer_core_c_api_reporting_tests.cpp"
-        "${TRACER_CORE_SHELL_INTEGRATION_TEST_ROOT}/tracer_core_c_api_reporting_test_main.cpp"
+        "${TRACER_CORE_SHELL_INTEGRATION_TEST_ROOT}/tracer_core_c_api_insights_tests.cpp"
+        "${TRACER_CORE_SHELL_INTEGRATION_TEST_ROOT}/tracer_core_c_api_insights_test_main.cpp"
     )
 
     add_executable(tc_c_api_pipeline_tests
@@ -119,7 +119,7 @@ if(BUILD_TESTING)
 
     foreach(tc_c_api_target
         tc_c_api_query_tests
-        tc_c_api_reporting_tests
+        tc_c_api_insights_tests
         tc_c_api_pipeline_tests
         tc_c_api_shell_aggregate_tests
     )

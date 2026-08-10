@@ -97,7 +97,7 @@ class TestTidyTaskAutoFixOrchestrator(TestCase):
                     fb.context(),
                     task_log_path=str(task_path),
                     dry_run=True,
-                    report_suffix="fix",
+                    insights_suffix="fix",
                 )
 
             self.assertEqual(result.action_count, 2)
@@ -115,7 +115,7 @@ class TestTidyTaskAutoFixOrchestrator(TestCase):
         with TemporaryDirectory() as temp_dir:
             fb = AutoFixFixtureBuilder(temp_dir)
             source_file = fb.write_source(
-                "libs/tracer_core/src/application/use_cases/report_guard.cpp",
+                "libs/tracer_core/src/application/use_cases/insights_guard.cpp",
                 [
                     "#if defined(_WIN32)",
                     "void UseWinApi();",
@@ -147,7 +147,7 @@ class TestTidyTaskAutoFixOrchestrator(TestCase):
                     fb.context(),
                     task_log_path=str(task_path),
                     dry_run=False,
-                    report_suffix="fix",
+                    insights_suffix="fix",
                 )
 
             self.assertEqual(result.action_count, 1)

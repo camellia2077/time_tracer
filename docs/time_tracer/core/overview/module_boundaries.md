@@ -41,11 +41,11 @@ This is an internal architecture/design contract, not an external ABI contract.
      - `src/application/query/tree/**`
      - `src/application/use_cases/query_api.*`
      - `src/infra/query/**`
-3. `reporting`
+3. `insights`
    - owner paths:
-     - `src/application/reporting/**`
-     - `src/application/use_cases/report_api*`
-     - `src/infra/reporting/**`
+     - `src/application/insights/**`
+     - `src/application/use_cases/insights_api*`
+     - `src/infra/insights/**`
 4. `exchange`
    - owner paths:
      - `src/application/use_cases/tracer_exchange_api.*`
@@ -68,7 +68,7 @@ This is an internal architecture/design contract, not an external ABI contract.
 
 These paths are not capability-local ownership surfaces:
 1. `src/application/dto/compat/**`
-2. `src/application/compat/reporting/**`
+2. `src/application/compat/insights/**`
 3. `src/application/aggregate_runtime/**`
 4. `src/application/runtime_bridge/**`
 5. shell aggregate/runtime glue under:

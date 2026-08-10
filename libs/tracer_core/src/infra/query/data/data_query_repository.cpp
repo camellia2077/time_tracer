@@ -130,14 +130,14 @@ auto QueryLatestTrackedDate(sqlite3* db_conn) -> std::optional<std::string> {
 }
 
 auto QueryProjectTree(sqlite3* db_conn, const QueryFilters& filters)
-    -> reporting::ProjectTree {
+    -> insights::ProjectTree {
   std::vector<query_data_detail::SqlParam> params;
   const std::string kSql =
       query_data_internal::BuildProjectTreeSql(db_conn, filters, params);
   std::vector<query_data_internal::ProjectTreeRecord> records =
       query_data_internal::ExecuteProjectTreeRecords(db_conn, kSql, params);
 
-  reporting::ProjectTree tree;
+  insights::ProjectTree tree;
   query_data_internal::BuildProjectTreeFromRecords(tree, records);
   return tree;
 }

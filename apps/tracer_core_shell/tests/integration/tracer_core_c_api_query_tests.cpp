@@ -87,56 +87,56 @@ void RunQueryChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime) {
           "baseline query authorable event tokens should include canonical "
           "activity names.");
 
-  const json kReportChartResponse = ParseResponse(
+  const json kInsightsChartResponse = ParseResponse(
       api.runtime_query(runtime,
-                        json{{"action", "report_chart"}, {"lookback_days", 7}}
+                        json{{"action", "insights_chart"}, {"lookback_days", 7}}
                             .dump()
                             .c_str()),
-      "baseline query report_chart");
-  Require(kReportChartResponse.value("ok", false),
-          "baseline query report_chart should return ok=true");
-  const json kReportChartContent =
-      json::parse(kReportChartResponse.value("content", "{}"));
-  Require(kReportChartContent.contains("roots") &&
-              kReportChartContent["roots"].is_array(),
-          "baseline query report_chart content should include roots array");
-  Require(kReportChartContent.contains("series") &&
-              kReportChartContent["series"].is_array(),
-          "baseline query report_chart content should include series array");
+      "baseline query insights_chart");
+  Require(kInsightsChartResponse.value("ok", false),
+          "baseline query insights_chart should return ok=true");
+  const json kInsightsChartContent =
+      json::parse(kInsightsChartResponse.value("content", "{}"));
+  Require(kInsightsChartContent.contains("roots") &&
+              kInsightsChartContent["roots"].is_array(),
+          "baseline query insights_chart content should include roots array");
+  Require(kInsightsChartContent.contains("series") &&
+              kInsightsChartContent["series"].is_array(),
+          "baseline query insights_chart content should include series array");
 
-  const json kReportChartRangeResponse =
-      ParseResponse(api.runtime_query(runtime, json{{"action", "report_chart"},
+  const json kInsightsChartRangeResponse =
+      ParseResponse(api.runtime_query(runtime, json{{"action", "insights_chart"},
                                                     {"from_date", "2026-01-01"},
                                                     {"to_date", "2026-01-07"}}
                                                    .dump()
                                                    .c_str()),
-                    "baseline query report_chart range");
-  Require(kReportChartRangeResponse.value("ok", false),
-          "baseline query report_chart range should return ok=true");
-  const json kReportChartRangeContent =
-      json::parse(kReportChartRangeResponse.value("content", "{}"));
+                    "baseline query insights_chart range");
+  Require(kInsightsChartRangeResponse.value("ok", false),
+          "baseline query insights_chart range should return ok=true");
+  const json kInsightsChartRangeContent =
+      json::parse(kInsightsChartRangeResponse.value("content", "{}"));
   Require(
-      kReportChartRangeContent.contains("series") &&
-          kReportChartRangeContent["series"].is_array(),
-      "baseline query report_chart range content should include series array");
+      kInsightsChartRangeContent.contains("series") &&
+          kInsightsChartRangeContent["series"].is_array(),
+      "baseline query insights_chart range content should include series array");
 
-  const json kReportCompositionResponse = ParseResponse(
+  const json kInsightsCompositionResponse = ParseResponse(
       api.runtime_query(runtime,
-                        json{{"action", "report_composition"},
+                        json{{"action", "insights_composition"},
                              {"lookback_days", 7}}
                             .dump()
                             .c_str()),
-      "baseline query report_composition");
-  Require(kReportCompositionResponse.value("ok", false),
-          "baseline query report_composition should return ok=true");
-  const json kReportCompositionContent =
-      json::parse(kReportCompositionResponse.value("content", "{}"));
-  Require(kReportCompositionContent.contains("active_root_count") &&
-              kReportCompositionContent["active_root_count"].is_number_integer(),
-          "baseline query report_composition should include active_root_count");
-  Require(kReportCompositionContent.contains("tree") &&
-              kReportCompositionContent["tree"].is_array(),
-          "baseline query report_composition should include weighted tree array");
+      "baseline query insights_composition");
+  Require(kInsightsCompositionResponse.value("ok", false),
+          "baseline query insights_composition should return ok=true");
+  const json kInsightsCompositionContent =
+      json::parse(kInsightsCompositionResponse.value("content", "{}"));
+  Require(kInsightsCompositionContent.contains("active_root_count") &&
+              kInsightsCompositionContent["active_root_count"].is_number_integer(),
+          "baseline query insights_composition should include active_root_count");
+  Require(kInsightsCompositionContent.contains("tree") &&
+              kInsightsCompositionContent["tree"].is_array(),
+          "baseline query insights_composition should include weighted tree array");
 
   const json kTreeResponse = ParseResponse(
       api.runtime_query(runtime,
@@ -187,34 +187,34 @@ void RunQueryChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime) {
           "baseline query invalid action should explain supported query actions");
 
   const json kInvalidChartRangeResponse =
-      ParseResponse(api.runtime_query(runtime, json{{"action", "report_chart"},
+      ParseResponse(api.runtime_query(runtime, json{{"action", "insights_chart"},
                                                     {"from_date", "2026-01-07"},
                                                     {"to_date", "2026-01-01"}}
                                                    .dump()
                                                    .c_str()),
-                    "baseline query invalid report_chart range");
+                    "baseline query invalid insights_chart range");
   Require(!kInvalidChartRangeResponse.value("ok", true),
-          "baseline query invalid report_chart range should return ok=false");
+          "baseline query invalid insights_chart range should return ok=false");
   Require(kInvalidChartRangeResponse.value("error_code", std::string{}) ==
               "runtime.generic_error",
-          "baseline query invalid report_chart range should use generic runtime error code");
+          "baseline query invalid insights_chart range should use generic runtime error code");
   Require(kInvalidChartRangeResponse.value("error_message", std::string{}).find(
-              "report-chart invalid range") != std::string::npos,
-          "baseline query invalid report_chart range should explain descending ranges");
+              "insights-chart invalid range") != std::string::npos,
+          "baseline query invalid insights_chart range should explain descending ranges");
 
   const json kInvalidCompositionRangeResponse =
       ParseResponse(api.runtime_query(runtime,
-                                      json{{"action", "report_composition"},
+                                      json{{"action", "insights_composition"},
                                            {"from_date", "2026-01-07"},
                                            {"to_date", "2026-01-01"}}
                                           .dump()
                                           .c_str()),
-                    "baseline query invalid report_composition range");
+                    "baseline query invalid insights_composition range");
   Require(!kInvalidCompositionRangeResponse.value("ok", true),
-          "baseline query invalid report_composition range should return ok=false");
+          "baseline query invalid insights_composition range should return ok=false");
   Require(kInvalidCompositionRangeResponse.value("error_message", std::string{})
-              .find("report-composition invalid range") != std::string::npos,
-          "baseline query invalid report_composition range should explain descending ranges");
+              .find("insights-composition invalid range") != std::string::npos,
+          "baseline query invalid insights_composition range should explain descending ranges");
 }
 
 }  // namespace tracer_core_c_api_stability_internal

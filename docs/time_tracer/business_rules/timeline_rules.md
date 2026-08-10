@@ -185,7 +185,7 @@ is invalid under the normal 16-hour activity duration limit unless the authored
 event explicitly opts into the long-duration override.
 
 Cross-midnight activity intervals remain assigned to the logical day bucket in
-which their `start_time` is authored. Query and report date filters use that
+which their `start_time` is authored. Query and insights date filters use that
 logical-day bucket, not the civil date of the interval's `end_time`.
 
 ## Cross-Midnight Activity Query Fact

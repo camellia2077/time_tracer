@@ -19,19 +19,19 @@ auto GetRequired(const toml::table& tbl, const std::string& key) -> T {
 }
 
 void ParseStatisticsItems(const toml::array* arr,
-                          std::vector<ReportStatisticsItem>& out_items);
+                          std::vector<InsightsStatisticsItem>& out_items);
 
 void FillTexStyle(const toml::table& tbl, FontConfig& fonts,
                   LayoutConfig& layout);
 void FillTypStyle(const toml::table& tbl, FontConfig& fonts,
                   LayoutConfig& layout);
 
-void FillDailyLabels(const toml::table& tbl, DailyReportLabels& labels);
-void FillRangeLabels(const toml::table& tbl, RangeReportLabels& labels);
-void FillMonthlyLabels(const toml::table& tbl, MonthlyReportLabels& labels);
-void FillPeriodLabels(const toml::table& tbl, PeriodReportLabels& labels);
-void FillWeeklyLabels(const toml::table& tbl, WeeklyReportLabels& labels);
-void FillYearlyLabels(const toml::table& tbl, YearlyReportLabels& labels);
+void FillDailyLabels(const toml::table& tbl, DailyInsightsLabels& labels);
+void FillRangeLabels(const toml::table& tbl, RangeInsightsLabels& labels);
+void FillMonthlyLabels(const toml::table& tbl, MonthlyInsightsLabels& labels);
+void FillPeriodLabels(const toml::table& tbl, PeriodInsightsLabels& labels);
+void FillWeeklyLabels(const toml::table& tbl, WeeklyInsightsLabels& labels);
+void FillYearlyLabels(const toml::table& tbl, YearlyInsightsLabels& labels);
 
 void FillKeywordColors(const toml::table& tbl,
                        std::map<std::string, std::string>& colors);

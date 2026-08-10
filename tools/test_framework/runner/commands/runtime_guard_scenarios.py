@@ -29,7 +29,7 @@ def remove_required(path: Path) -> None:
 def build_scenarios(
     *,
     core_dll_name: str = "tracer_core.dll",
-    reports_shared_dll_name: str = "reports_shared.dll",
+    insights_shared_dll_name: str = "insights_shared.dll",
 ) -> list[RuntimeGuardScenario]:
     return [
         RuntimeGuardScenario(
@@ -70,9 +70,9 @@ def build_scenarios(
             ],
         ),
         RuntimeGuardScenario(
-            name="missing_reports_shared_dll",
+            name="missing_insights_shared_dll",
             description="缺失 core 依赖 dll 时，core 动态加载应 fail-fast。",
-            mutate=lambda bin_dir: remove_required(bin_dir / reports_shared_dll_name),
+            mutate=lambda bin_dir: remove_required(bin_dir / insights_shared_dll_name),
             expect_success=False,
             expected_exits=(10, 3221225781),
             expected_tokens=[],

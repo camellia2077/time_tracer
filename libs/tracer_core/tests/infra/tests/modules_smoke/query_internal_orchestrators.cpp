@@ -15,12 +15,12 @@ auto RunInfrastructureModuleQueryInternalOrchestratorsSmoke() -> int {
       &tracer::core::infrastructure::query::data::internal::BuildCliFilters;
   const auto kApplyTreePeriod =
       &tracer::core::infrastructure::query::data::internal::ApplyTreePeriod;
-  const auto kValidateReportChartRequest =
+  const auto kValidateInsightsChartRequest =
       &tracer::core::infrastructure::query::data::internal::
-          ValidateReportChartRequest;
-  const auto kBuildReportChartContent =
+          ValidateInsightsChartRequest;
+  const auto kBuildInsightsChartContent =
       &tracer::core::infrastructure::query::data::internal::
-          BuildReportChartContent;
+          BuildInsightsChartContent;
   const auto kResolveExplicitDateRange =
       &tracer::core::infrastructure::query::data::orchestrators::
           ResolveExplicitDateRange;
@@ -36,9 +36,9 @@ auto RunInfrastructureModuleQueryInternalOrchestratorsSmoke() -> int {
   const auto kHandleDaysStatsQuery =
       &tracer::core::infrastructure::query::data::orchestrators::
           HandleDaysStatsQuery;
-  const auto kHandleReportChartQuery =
+  const auto kHandleInsightsChartQuery =
       &tracer::core::infrastructure::query::data::orchestrators::
-          HandleReportChartQuery;
+          HandleInsightsChartQuery;
   const auto kHandleTreeQuery = &tracer::core::infrastructure::query::data::
                                     orchestrators::HandleTreeQuery;
   const auto kBoundaryReady =
@@ -46,15 +46,15 @@ auto RunInfrastructureModuleQueryInternalOrchestratorsSmoke() -> int {
   (void)kTrimCopy;
   (void)kBuildCliFilters;
   (void)kApplyTreePeriod;
-  (void)kValidateReportChartRequest;
-  (void)kBuildReportChartContent;
+  (void)kValidateInsightsChartRequest;
+  (void)kBuildInsightsChartContent;
   (void)kResolveExplicitDateRange;
   (void)kResolveRollingDateRange;
   (void)kHandleYearsQuery;
   (void)kHandleMonthsQuery;
   (void)kHandleDaysQuery;
   (void)kHandleDaysStatsQuery;
-  (void)kHandleReportChartQuery;
+  (void)kHandleInsightsChartQuery;
   (void)kHandleTreeQuery;
   (void)kBoundaryReady;
 
@@ -90,7 +90,7 @@ auto RunInfrastructureModuleQueryInternalOrchestratorsSmoke() -> int {
   chart_request.to_date = "2026-02-02";
   try {
     tracer::core::infrastructure::query::data::internal::
-        ValidateReportChartRequest(chart_request);
+        ValidateInsightsChartRequest(chart_request);
   } catch (...) {
     return 103;
   }
@@ -133,7 +133,7 @@ auto RunInfrastructureModuleQueryInternalOrchestratorsSmoke() -> int {
     tracer::core::infrastructure::persistence::importer::sqlite::Connection
         connection(kDbPath.string());
     const auto chart_content = tracer::core::infrastructure::query::data::
-        internal::BuildReportChartContent(connection.GetDb(), chart_request);
+        internal::BuildInsightsChartContent(connection.GetDb(), chart_request);
     if (chart_content.find("\"series\":[]") == std::string::npos) {
       return 103;
     }
@@ -178,11 +178,11 @@ auto RunInfrastructureModuleQueryInternalOrchestratorsSmoke() -> int {
       return 19;
     }
 
-    const auto report_chart_output = tracer::core::infrastructure::query::data::
-        orchestrators::HandleReportChartQuery(
+    const auto insights_chart_output = tracer::core::infrastructure::query::data::
+        orchestrators::HandleInsightsChartQuery(
             connection.GetDb(), chart_request,
             tracer_core::core::dto::DataQueryOutputMode::kText);
-    if (!report_chart_output.ok || report_chart_output.content.find(
+    if (!insights_chart_output.ok || insights_chart_output.content.find(
                                        "\"series\":[]") == std::string::npos) {
       return 20;
     }

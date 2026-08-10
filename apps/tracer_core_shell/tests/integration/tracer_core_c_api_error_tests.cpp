@@ -16,7 +16,7 @@ void RunErrorPathChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
   RequireNotOk(api.runtime_query(runtime, "{bad json"),
                "error-injection invalid query json");
   RequireNotOk(
-      api.runtime_report(
+      api.runtime_insights(
           runtime,
           json{{"operation_kind", "export"}, {"format", "md"}}.dump().c_str()),
       "error-injection missing export type");

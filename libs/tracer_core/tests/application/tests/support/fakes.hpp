@@ -8,12 +8,12 @@
 #include <string>
 #include <vector>
 
-#include "application/compat/reporting/i_report_handler.hpp"
+#include "application/compat/insights/i_insights_handler.hpp"
 #include "application/pipeline/i_pipeline_workflow.hpp"
 #include "application/dto/pipeline_responses.hpp"
 #include "application/ports/query/i_data_query_service.hpp"
-#include "application/ports/reporting/i_report_dto_formatter.hpp"
-#include "application/ports/reporting/i_report_data_query_service.hpp"
+#include "application/ports/insights/i_insights_dto_formatter.hpp"
+#include "application/ports/insights/i_insights_data_query_service.hpp"
 #include "application/ports/exchange/i_tracer_exchange_service.hpp"
 #include "application/aggregate_runtime/tracer_core_runtime.hpp"
 #include "domain/model/daily_log.hpp"
@@ -194,7 +194,7 @@ class FakePipelineWorkflow final
           ActiveConverterConfigInstallRequest& request) -> void override;
 };
 
-class FakeReportHandler final : public IReportHandler {
+class FakeInsightsHandler final : public IInsightsHandler {
  public:
   bool fail_query = false;
   bool fail_period_batch_query = false;
@@ -207,21 +207,21 @@ class FakeReportHandler final : public IReportHandler {
   std::string recent_query_result = "recent";
   std::string period_batch_result = "period-batch";
 
-  auto RunDailyQuery(std::string_view date, ReportFormat format)
+  auto RunDailyQuery(std::string_view date, InsightsFormat format)
       -> std::string override;
-  auto RunMonthlyQuery(std::string_view month, ReportFormat format)
+  auto RunMonthlyQuery(std::string_view month, InsightsFormat format)
       -> std::string override;
-  auto RunPeriodQuery(int days, ReportFormat format) -> std::string override;
-  auto RunWeeklyQuery(std::string_view iso_week, ReportFormat format)
+  auto RunPeriodQuery(int days, InsightsFormat format) -> std::string override;
+  auto RunWeeklyQuery(std::string_view iso_week, InsightsFormat format)
       -> std::string override;
-  auto RunYearlyQuery(std::string_view year, ReportFormat format)
+  auto RunYearlyQuery(std::string_view year, InsightsFormat format)
       -> std::string override;
-  auto RunPeriodQueries(const std::vector<int>& days_list, ReportFormat format)
+  auto RunPeriodQueries(const std::vector<int>& days_list, InsightsFormat format)
       -> std::string override;
 };
 
-class FakeReportDataQueryService final
-    : public tracer_core::application::ports::IReportDataQueryService {
+class FakeInsightsDataQueryService final
+    : public tracer_core::application::ports::IInsightsDataQueryService {
  public:
   bool fail_list_targets = false;
   bool fail_target_not_found = false;
@@ -231,13 +231,13 @@ class FakeReportDataQueryService final
   std::vector<std::string> weekly_targets = {"2026-W01", "2026-W02"};
   std::vector<std::string> yearly_targets = {"2025", "2026"};
 
-  auto QueryDaily(std::string_view date) -> DailyReportData override;
-  auto QueryMonthly(std::string_view month) -> MonthlyReportData override;
-  auto QueryPeriod(int days) -> PeriodReportData override;
+  auto QueryDaily(std::string_view date) -> DailyInsightsData override;
+  auto QueryMonthly(std::string_view month) -> MonthlyInsightsData override;
+  auto QueryPeriod(int days) -> PeriodInsightsData override;
   auto QueryRange(std::string_view start_date, std::string_view end_date)
-      -> PeriodReportData override;
-  auto QueryWeekly(std::string_view iso_week) -> WeeklyReportData override;
-  auto QueryYearly(std::string_view year) -> YearlyReportData override;
+      -> PeriodInsightsData override;
+  auto QueryWeekly(std::string_view iso_week) -> WeeklyInsightsData override;
+  auto QueryYearly(std::string_view year) -> YearlyInsightsData override;
 
   auto ListDailyTargets() -> std::vector<std::string> override;
   auto ListMonthlyTargets() -> std::vector<std::string> override;
@@ -245,25 +245,25 @@ class FakeReportDataQueryService final
   auto ListYearlyTargets() -> std::vector<std::string> override;
 
   auto QueryPeriodBatch(const std::vector<int>& days_list)
-      -> std::map<int, PeriodReportData> override;
-  auto QueryAllDaily() -> std::map<std::string, DailyReportData> override;
-  auto QueryAllMonthly() -> std::map<std::string, MonthlyReportData> override;
-  auto QueryAllWeekly() -> std::map<std::string, WeeklyReportData> override;
-  auto QueryAllYearly() -> std::map<std::string, YearlyReportData> override;
+      -> std::map<int, PeriodInsightsData> override;
+  auto QueryAllDaily() -> std::map<std::string, DailyInsightsData> override;
+  auto QueryAllMonthly() -> std::map<std::string, MonthlyInsightsData> override;
+  auto QueryAllWeekly() -> std::map<std::string, WeeklyInsightsData> override;
+  auto QueryAllYearly() -> std::map<std::string, YearlyInsightsData> override;
 };
 
-class FakeReportDtoFormatter final
-    : public tracer_core::application::ports::IReportDtoFormatter {
+class FakeInsightsDtoFormatter final
+    : public tracer_core::application::ports::IInsightsDtoFormatter {
  public:
-  auto FormatDaily(const DailyReportData& report, ReportFormat format)
+  auto FormatDaily(const DailyInsightsData& insights, InsightsFormat format)
       -> std::string override;
-  auto FormatMonthly(const MonthlyReportData& report, ReportFormat format)
+  auto FormatMonthly(const MonthlyInsightsData& insights, InsightsFormat format)
       -> std::string override;
-  auto FormatPeriod(const PeriodReportData& report, ReportFormat format)
+  auto FormatPeriod(const PeriodInsightsData& insights, InsightsFormat format)
       -> std::string override;
-  auto FormatWeekly(const WeeklyReportData& report, ReportFormat format)
+  auto FormatWeekly(const WeeklyInsightsData& insights, InsightsFormat format)
       -> std::string override;
-  auto FormatYearly(const YearlyReportData& report, ReportFormat format)
+  auto FormatYearly(const YearlyInsightsData& insights, InsightsFormat format)
       -> std::string override;
 };
 
@@ -367,13 +367,13 @@ class FakeTracerExchangeService final
 };
 
 auto BuildRuntimeApi(
-    FakePipelineWorkflow& pipeline_workflow, FakeReportHandler& report_handler,
+    FakePipelineWorkflow& pipeline_workflow, FakeInsightsHandler& insights_handler,
     const std::shared_ptr<FakeProjectRepository>& repository,
     const std::shared_ptr<FakeDataQueryService>& data_query,
     const std::shared_ptr<FakeTracerExchangeService>& tracer_exchange_service =
         nullptr,
-    const std::shared_ptr<FakeReportDataQueryService>&
-        report_data_query_service = nullptr) -> TracerCoreRuntime;
+    const std::shared_ptr<FakeInsightsDataQueryService>&
+        insights_data_query_service = nullptr) -> TracerCoreRuntime;
 
 }  // namespace tracer_core::application::tests
 

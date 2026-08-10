@@ -33,25 +33,25 @@ class TestRunCliDispatchCoreMisc(RunCliDispatchTestBase):
         self.assertIn("--app-path requires --app", stderr.getvalue())
         self.assertEqual(stdout.getvalue(), "")
 
-    def test_report_markdown_gate_dispatches_build_dir_and_refresh(self):
-        class FakeReportMarkdownGateCommand:
+    def test_insights_markdown_gate_dispatches_build_dir_and_refresh(self):
+        class FakeInsightsMarkdownGateCommand:
             last_kwargs = None
 
             def __init__(self, _ctx):
                 pass
 
             def execute(self, **kwargs):
-                FakeReportMarkdownGateCommand.last_kwargs = kwargs
+                FakeInsightsMarkdownGateCommand.last_kwargs = kwargs
                 return 0
 
         with patch(
-            "tools.toolchain.cli.handlers.quality.report_markdown_gate.ReportMarkdownGateCommand",
-            FakeReportMarkdownGateCommand,
+            "tools.toolchain.cli.handlers.quality.insights_markdown_gate.InsightsMarkdownGateCommand",
+            FakeInsightsMarkdownGateCommand,
         ):
             self._assert_return_zero(
                 [
                     "run.py",
-                    "report-markdown-gate",
+                    "insights-markdown-gate",
                     "--app",
                     "tracer_core_shell",
                     "--build-dir",
@@ -61,14 +61,14 @@ class TestRunCliDispatchCoreMisc(RunCliDispatchTestBase):
             )
 
         self.assertEqual(
-            FakeReportMarkdownGateCommand.last_kwargs["app_name"],
+            FakeInsightsMarkdownGateCommand.last_kwargs["app_name"],
             "tracer_core_shell",
         )
         self.assertEqual(
-            FakeReportMarkdownGateCommand.last_kwargs["build_dir_name"],
+            FakeInsightsMarkdownGateCommand.last_kwargs["build_dir_name"],
             "build_release",
         )
-        self.assertTrue(FakeReportMarkdownGateCommand.last_kwargs["refresh_golden"])
+        self.assertTrue(FakeInsightsMarkdownGateCommand.last_kwargs["refresh_golden"])
 
     def test_config_migrate_defaults_to_dry_run(self):
         class FakeConfigMigrateCommand:

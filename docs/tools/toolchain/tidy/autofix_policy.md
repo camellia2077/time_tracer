@@ -16,7 +16,7 @@
    - 不解析 `task_*.log`
 2. `toon` / `log` 是阅读视图，不是机器契约
 3. Python auto-fix 只能做确定性替换
-4. 所有自动修改都必须能落成结构化 report
+4. 所有自动修改都必须能落成结构化 insights
 5. 规则必须能通过后续 build sanity check 和 clang-tidy re-check 验证
 
 ## 2. 为什么机器消费统一走 JSON
@@ -179,7 +179,7 @@
    - 不命中样例
    - 负例
    - 幂等性
-   - report 内容
+   - insights 内容
 
 ## 7. 规则实现优先级
 
@@ -190,7 +190,7 @@
 2. 受诊断锚定的局部文本替换
 3. 受限目录下的块替换
 4. preview-only suggestion
-5. 放弃自动修复，只输出 suggest/report
+5. 放弃自动修复，只输出 suggest/insights
 
 如果某规则只能通过“大范围正则扫全仓”实现，默认不进入 auto-fix。
 
@@ -236,7 +236,7 @@
 如果一个规则还不能满足本文件的准入条件，先放在：
 
 - `tidy-task-suggest`
-- 或 report / preview-only
+- 或 insights / preview-only
 
 不要直接进 apply 路径。
 

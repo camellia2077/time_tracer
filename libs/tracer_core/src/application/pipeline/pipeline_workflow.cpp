@@ -137,7 +137,7 @@ auto PipelineWorkflow::RunValidateStructure(const std::string& source_path)
     -> void {
   modports::ClearBufferedDiagnostics();
   const AppOptions kOptions = BuildStructureValidationOptions(source_path);
-  const ScopedErrorReportWriterOverride kDisableErrorReports(nullptr);
+  const ScopedErrorReportWriterOverride kDisableErrorReport(nullptr);
 
   PipelineOrchestrator pipeline(output_root_path_, converter_config_provider_,
                                 ingest_input_provider_, processed_data_storage_,
@@ -150,7 +150,7 @@ auto PipelineWorkflow::RunValidateLogic(const std::string& source_path,
   modports::ClearBufferedDiagnostics();
   const AppOptions kOptions =
       BuildLogicValidationOptions(source_path, date_check_mode);
-  const ScopedErrorReportWriterOverride kDisableErrorReports(nullptr);
+  const ScopedErrorReportWriterOverride kDisableErrorReport(nullptr);
 
   PipelineOrchestrator pipeline(output_root_path_, converter_config_provider_,
                                 ingest_input_provider_, processed_data_storage_,

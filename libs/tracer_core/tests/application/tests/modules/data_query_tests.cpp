@@ -15,10 +15,10 @@ namespace {
 
 auto TestDataQueryResponses(TestState& state) -> void {
   FakePipelineWorkflow pipeline_workflow;
-  FakeReportHandler report_handler;
+  FakeInsightsHandler insights_handler;
   auto data_query = std::make_shared<FakeDataQueryService>();
   auto runtime_api =
-      BuildRuntimeApiForTest(pipeline_workflow, report_handler, data_query);
+      BuildRuntimeApiForTest(pipeline_workflow, insights_handler, data_query);
 
   data_query->response = {.ok = true, .content = "years", .error_message = ""};
   DataQueryRequest success_request;
@@ -52,7 +52,7 @@ auto TestDataQueryResponses(TestState& state) -> void {
 
 auto TestTreeQueryResponses(TestState& state) -> void {
   FakePipelineWorkflow pipeline_workflow;
-  FakeReportHandler report_handler;
+  FakeInsightsHandler insights_handler;
   auto data_query = std::make_shared<FakeDataQueryService>();
   auto repository = std::make_shared<FakeProjectRepository>();
   constexpr int kRootBId = 5;
@@ -63,7 +63,7 @@ auto TestTreeQueryResponses(TestState& state) -> void {
       {.id = 4, .parent_id = 1, .name = "focus"},
       {.id = kRootBId, .parent_id = std::nullopt, .name = "root_b"},
   };
-  auto runtime_api = BuildRuntimeApi(pipeline_workflow, report_handler,
+  auto runtime_api = BuildRuntimeApi(pipeline_workflow, insights_handler,
                                      repository, data_query);
 
   TreeQueryRequest list_roots_request{};

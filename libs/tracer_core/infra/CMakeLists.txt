@@ -1,6 +1,6 @@
 #
 # Infrastructure assembly owned here:
-# - reporting shared/data/full reporting adapters
+# - insights shared/data/full insights adapters
 # - capability-aligned query/config/exchange/persistence targets
 # - compatibility aggregation for tracer_core.dll consumers
 #
@@ -12,7 +12,7 @@ include("${TRACER_CORE_INFRA_LIB_CMAKE_SOURCES_ROOT}/infrastructure_core_sources
 include("${TRACER_CORE_INFRA_LIB_CMAKE_SOURCES_ROOT}/infrastructure_query_sources.cmake")
 include("${TRACER_CORE_INFRA_LIB_CMAKE_SOURCES_ROOT}/infrastructure_exchange_sources.cmake")
 include("${TRACER_CORE_INFRA_LIB_CMAKE_SOURCES_ROOT}/infrastructure_persistence_sources.cmake")
-include("${TRACER_CORE_INFRA_LIB_CMAKE_SOURCES_ROOT}/infrastructure_reports_sources.cmake")
+include("${TRACER_CORE_INFRA_LIB_CMAKE_SOURCES_ROOT}/infrastructure_insights_sources.cmake")
 include("${TRACER_CORE_INFRA_LIB_CMAKE_SOURCES_ROOT}/infrastructure_config_sources.cmake")
 
 if(NOT TARGET taio_lib)
@@ -35,7 +35,7 @@ endif()
 set(TRACER_CORE_INFRA_LIB_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../src/infra")
 set(TRACER_CORE_INFRA_MODULE_ROOT "${TRACER_CORE_INFRA_LIB_ROOT}/modules")
 set(TRACER_CORE_SOURCE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../src")
-set(TRACER_CORE_REPORTS_ROOT "${TRACER_CORE_INFRA_LIB_ROOT}/reporting")
+set(TRACER_CORE_INSIGHTS_ROOT "${TRACER_CORE_INFRA_LIB_ROOT}/insights")
 
 function(tc_prepend_infra_root out_var)
     set(_files)
@@ -53,62 +53,62 @@ function(tc_prepend_module_root out_var)
     set(${out_var} "${_files}" PARENT_SCOPE)
 endfunction()
 
-set(TRACER_CORE_REPORTS_SHARED_SOURCES
-    "${TRACER_CORE_REPORTS_ROOT}/daily/common/day_base_config.cpp"
-    "${TRACER_CORE_REPORTS_ROOT}/monthly/common/month_base_config.cpp"
-    "${TRACER_CORE_REPORTS_ROOT}/range/common/range_base_config.cpp"
-    "${TRACER_CORE_REPORTS_ROOT}/daily/formatters/statistics/stat_formatter.cpp"
-    "${TRACER_CORE_REPORTS_ROOT}/shared/utils/format/report_string_utils.cpp"
-    "${TRACER_CORE_REPORTS_ROOT}/shared/utils/format/time_format.cpp"
-    "${TRACER_CORE_REPORTS_ROOT}/shared/config/tex_style_config.cpp"
-    "${TRACER_CORE_REPORTS_ROOT}/shared/config/typst_style_config.cpp"
-    "${TRACER_CORE_REPORTS_ROOT}/shared/formatters/base/project_tree_formatter.cpp"
-    "${TRACER_CORE_REPORTS_ROOT}/shared/formatters/markdown/markdown_formatter.cpp"
-    "${TRACER_CORE_REPORTS_ROOT}/shared/formatters/typst/typ_utils.cpp"
-    "${TRACER_CORE_REPORTS_ROOT}/shared/formatters/latex/tex_utils.cpp"
-    "${TRACER_CORE_REPORTS_ROOT}/shared/formatters/latex/tex_common_utils.cpp"
+set(TRACER_CORE_INSIGHTS_SHARED_SOURCES
+    "${TRACER_CORE_INSIGHTS_ROOT}/daily/common/day_base_config.cpp"
+    "${TRACER_CORE_INSIGHTS_ROOT}/monthly/common/month_base_config.cpp"
+    "${TRACER_CORE_INSIGHTS_ROOT}/range/common/range_base_config.cpp"
+    "${TRACER_CORE_INSIGHTS_ROOT}/daily/formatters/statistics/stat_formatter.cpp"
+    "${TRACER_CORE_INSIGHTS_ROOT}/shared/utils/format/insights_string_utils.cpp"
+    "${TRACER_CORE_INSIGHTS_ROOT}/shared/utils/format/time_format.cpp"
+    "${TRACER_CORE_INSIGHTS_ROOT}/shared/config/tex_style_config.cpp"
+    "${TRACER_CORE_INSIGHTS_ROOT}/shared/config/typst_style_config.cpp"
+    "${TRACER_CORE_INSIGHTS_ROOT}/shared/formatters/base/project_tree_formatter.cpp"
+    "${TRACER_CORE_INSIGHTS_ROOT}/shared/formatters/markdown/markdown_formatter.cpp"
+    "${TRACER_CORE_INSIGHTS_ROOT}/shared/formatters/typst/typ_utils.cpp"
+    "${TRACER_CORE_INSIGHTS_ROOT}/shared/formatters/latex/tex_utils.cpp"
+    "${TRACER_CORE_INSIGHTS_ROOT}/shared/formatters/latex/tex_common_utils.cpp"
 )
 
-add_library(tc_rpt_shared_lib SHARED)
-target_sources(tc_rpt_shared_lib PRIVATE
-    ${TRACER_CORE_REPORTS_SHARED_SOURCES}
+add_library(tc_insights_shared_lib SHARED)
+target_sources(tc_insights_shared_lib PRIVATE
+    ${TRACER_CORE_INSIGHTS_SHARED_SOURCES}
 )
-target_compile_definitions(tc_rpt_shared_lib PRIVATE REPORTS_SHARED_EXPORTS)
-set_target_properties(tc_rpt_shared_lib PROPERTIES
+target_compile_definitions(tc_insights_shared_lib PRIVATE INSIGHTS_SHARED_EXPORTS)
+set_target_properties(tc_insights_shared_lib PROPERTIES
     PREFIX ""
-    OUTPUT_NAME "reports_shared"
+    OUTPUT_NAME "insights_shared"
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
 )
-setup_app_target(tc_rpt_shared_lib NO_STDCXXEXP NO_APP_SOURCE_ROOT_INCLUDE)
-target_link_libraries(tc_rpt_shared_lib PUBLIC
+setup_app_target(tc_insights_shared_lib NO_STDCXXEXP NO_APP_SOURCE_ROOT_INCLUDE)
+target_link_libraries(tc_insights_shared_lib PUBLIC
     nlohmann_json::nlohmann_json
     tc_domain_lib
 )
 
-set(TRACER_CORE_REPORTS_DATA_SOURCES
-    "${TRACER_CORE_REPORTS_ROOT}/data/utils/project_tree_builder.cpp"
-    "${TRACER_CORE_REPORTS_ROOT}/data/queriers/daily/daily_querier.cpp"
-    "${TRACER_CORE_REPORTS_ROOT}/data/queriers/monthly/monthly_querier.cpp"
-    "${TRACER_CORE_REPORTS_ROOT}/data/queriers/period/period_querier.cpp"
-    "${TRACER_CORE_REPORTS_ROOT}/data/queriers/period/batch_period_data_fetcher.cpp"
-    "${TRACER_CORE_REPORTS_ROOT}/data/queriers/range/date_range_querier.cpp"
-    "${TRACER_CORE_REPORTS_ROOT}/data/queriers/weekly/weekly_querier.cpp"
-    "${TRACER_CORE_REPORTS_ROOT}/data/queriers/yearly/yearly_querier.cpp"
+set(TRACER_CORE_INSIGHTS_DATA_SOURCES
+    "${TRACER_CORE_INSIGHTS_ROOT}/data/utils/project_tree_builder.cpp"
+    "${TRACER_CORE_INSIGHTS_ROOT}/data/queriers/daily/daily_querier.cpp"
+    "${TRACER_CORE_INSIGHTS_ROOT}/data/queriers/monthly/monthly_querier.cpp"
+    "${TRACER_CORE_INSIGHTS_ROOT}/data/queriers/period/period_querier.cpp"
+    "${TRACER_CORE_INSIGHTS_ROOT}/data/queriers/period/batch_period_data_fetcher.cpp"
+    "${TRACER_CORE_INSIGHTS_ROOT}/data/queriers/range/date_range_querier.cpp"
+    "${TRACER_CORE_INSIGHTS_ROOT}/data/queriers/weekly/weekly_querier.cpp"
+    "${TRACER_CORE_INSIGHTS_ROOT}/data/queriers/yearly/yearly_querier.cpp"
 )
 
-add_library(tc_rpt_data_lib STATIC)
-target_sources(tc_rpt_data_lib PRIVATE
-    ${TRACER_CORE_REPORTS_DATA_SOURCES}
+add_library(tc_insights_data_lib STATIC)
+target_sources(tc_insights_data_lib PRIVATE
+    ${TRACER_CORE_INSIGHTS_DATA_SOURCES}
 )
 setup_plugin_target(
-    tc_rpt_data_lib
+    tc_insights_data_lib
     NO_STDCXXEXP
     PCH_HEADER "${PROJECT_SOURCE_DIR}/pch_sqlite.hpp"
     NO_APP_SOURCE_ROOT_INCLUDE
 )
-target_link_libraries(tc_rpt_data_lib PUBLIC
-    tc_rpt_shared_lib
+target_link_libraries(tc_insights_data_lib PUBLIC
+    tc_insights_shared_lib
     SQLite3
     tc_domain_lib
 )
@@ -140,7 +140,7 @@ tc_prepend_module_root(
     "config/tracer.core.infrastructure.config.file_converter_config_provider.cppm"
     "config/loader/tracer.core.infrastructure.config.loader.cppm"
     "config/loader/tracer.core.infrastructure.config.loader.converter_config_loader.cppm"
-    "config/loader/tracer.core.infrastructure.config.loader.report_config_loader.cppm"
+    "config/loader/tracer.core.infrastructure.config.loader.insights_config_loader.cppm"
     "config/loader/tracer.core.infrastructure.config.loader.toml_loader_utils.cppm"
     "config/internal/tracer.core.infrastructure.config.internal.cppm"
     "config/internal/tracer.core.infrastructure.config.internal.android_bundle_config_paths.cppm"
@@ -157,12 +157,12 @@ tc_prepend_module_root(
     ${TIME_TRACKER_INFRA_QUERY_MODULE_FILES}
 )
 tc_prepend_infra_root(
-    TRACER_CORE_INFRA_REPORTING_SOURCES_ABS
-    ${TIME_TRACKER_INFRA_REPORTING_SOURCES}
+    TRACER_CORE_INFRA_INSIGHTS_SOURCES_ABS
+    ${TIME_TRACKER_INFRA_INSIGHTS_SOURCES}
 )
 tc_prepend_module_root(
-    TRACER_CORE_INFRA_REPORTING_MODULE_FILES_ABS
-    ${TIME_TRACKER_INFRA_REPORTING_MODULE_FILES}
+    TRACER_CORE_INFRA_INSIGHTS_MODULE_FILES_ABS
+    ${TIME_TRACKER_INFRA_INSIGHTS_MODULE_FILES}
 )
 tc_prepend_infra_root(
     TRACER_CORE_INFRA_EXCHANGE_SOURCES_ABS
@@ -285,34 +285,34 @@ target_link_libraries(tc_infra_query_lib PUBLIC
     nlohmann_json::nlohmann_json
 )
 
-add_library(tc_infra_reporting_lib STATIC)
-target_sources(tc_infra_reporting_lib PRIVATE
-    ${TRACER_CORE_INFRA_REPORTING_SOURCES_ABS}
+add_library(tc_infra_insights_lib STATIC)
+target_sources(tc_infra_insights_lib PRIVATE
+    ${TRACER_CORE_INFRA_INSIGHTS_SOURCES_ABS}
 )
-target_sources(tc_infra_reporting_lib PUBLIC
-    FILE_SET core_infrastructure_reporting_modules TYPE CXX_MODULES
+target_sources(tc_infra_insights_lib PUBLIC
+    FILE_SET core_infrastructure_insights_modules TYPE CXX_MODULES
     BASE_DIRS
         "${TRACER_CORE_INFRA_MODULE_ROOT}"
     FILES
-        ${TRACER_CORE_INFRA_REPORTING_MODULE_FILES_ABS}
+        ${TRACER_CORE_INFRA_INSIGHTS_MODULE_FILES_ABS}
 )
-set_target_properties(tc_infra_reporting_lib PROPERTIES
+set_target_properties(tc_infra_insights_lib PROPERTIES
     CXX_SCAN_FOR_MODULES ON
 )
 setup_app_target(
-    tc_infra_reporting_lib
+    tc_infra_insights_lib
     NO_PCH
     NO_APP_SOURCE_ROOT_INCLUDE
 )
-target_include_directories(tc_infra_reporting_lib PUBLIC
+target_include_directories(tc_infra_insights_lib PUBLIC
     "${TRACER_CORE_SOURCE_ROOT}"
 )
-target_link_libraries(tc_infra_reporting_lib PUBLIC
+target_link_libraries(tc_infra_insights_lib PUBLIC
     tc_all_lib
     tc_infra_config_lib
     tc_infra_persistence_runtime_lib
-    tc_rpt_data_lib
-    tc_rpt_shared_lib
+    tc_insights_data_lib
+    tc_insights_shared_lib
     SQLite3
     tomlplusplus::tomlplusplus
     nlohmann_json::nlohmann_json
@@ -347,8 +347,6 @@ target_link_libraries(tc_infra_exchange_lib PUBLIC
     zstd::libzstd
 )
 
-add_library(tc_infra_reports_lib ALIAS tc_infra_reporting_lib)
-
 add_library(tc_cap_config_lib INTERFACE)
 target_link_libraries(tc_cap_config_lib INTERFACE
     tc_all_lib
@@ -371,12 +369,12 @@ target_link_libraries(tc_cap_query_lib INTERFACE
     tc_infra_query_lib
 )
 
-add_library(tc_cap_reporting_lib INTERFACE)
-target_link_libraries(tc_cap_reporting_lib INTERFACE
+add_library(tc_cap_insights_lib INTERFACE)
+target_link_libraries(tc_cap_insights_lib INTERFACE
     tc_all_lib
     tc_cap_config_lib
     tc_infra_persistence_runtime_lib
-    tc_infra_reporting_lib
+    tc_infra_insights_lib
 )
 
 add_library(tc_cap_exchange_lib INTERFACE)
@@ -390,7 +388,7 @@ add_library(tc_infra_full_lib INTERFACE)
 target_link_libraries(tc_infra_full_lib INTERFACE
     tc_cap_pipeline_lib
     tc_cap_query_lib
-    tc_cap_reporting_lib
+    tc_cap_insights_lib
     tc_cap_exchange_lib
 )
 

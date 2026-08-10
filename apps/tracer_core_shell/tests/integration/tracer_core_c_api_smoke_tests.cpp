@@ -31,7 +31,7 @@ using RuntimeDestroyFn = void (*)(TtCoreRuntimeHandle*);
 using RuntimeIngestFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
 using RuntimeTxtFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
 using RuntimeQueryFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
-using RuntimeReportFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
+using RuntimeInsightsFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
 
 #ifdef _WIN32
 using LibHandle = HMODULE;
@@ -175,8 +175,8 @@ auto main() -> int {
         LookupSymbol(library, "tracer_core_runtime_config_json"));
     const auto kRuntimeQuery = reinterpret_cast<RuntimeQueryFn>(
         LookupSymbol(library, "tracer_core_runtime_query_json"));
-    const auto kRuntimeReport = reinterpret_cast<RuntimeReportFn>(
-        LookupSymbol(library, "tracer_core_runtime_temporal_report_json"));
+    const auto kRuntimeInsights = reinterpret_cast<RuntimeInsightsFn>(
+        LookupSymbol(library, "tracer_core_runtime_temporal_insights_json"));
 
     if (kGetVersion == nullptr || kPing == nullptr ||
         kGetCapabilities == nullptr || kGetBuildInfo == nullptr ||
@@ -185,7 +185,7 @@ auto main() -> int {
         kSetCryptoProgressCallback == nullptr || kRuntimeCreate == nullptr ||
         kRuntimeDestroy == nullptr || kRuntimeIngest == nullptr ||
         kRuntimeTxt == nullptr || kRuntimeQuery == nullptr ||
-        kRuntimeReport == nullptr) {
+        kRuntimeInsights == nullptr) {
       std::cerr << "[FAIL] missing required exported symbols in "
                 << kLibraryName << '\n';
       CloseLibrary(library);
@@ -360,7 +360,7 @@ auto main() -> int {
       return 1;
     }
 
-    const std::string kReportRequest =
+    const std::string kInsightsRequest =
         nlohmann::json{{"operation_kind", "query"},
                        {"display_mode", "day"},
                        // The test data spans exclusively 2025-01-01,
@@ -369,8 +369,8 @@ auto main() -> int {
                        {"date", "2026-01-01"},
                        {"format", "markdown"}}
             .dump();
-    if (!IsOkResponse(kRuntimeReport(runtime_handle, kReportRequest.c_str()),
-                      "report", &response_error)) {
+    if (!IsOkResponse(kRuntimeInsights(runtime_handle, kInsightsRequest.c_str()),
+                      "insights", &response_error)) {
       std::cerr << "[FAIL] " << response_error << '\n';
       kRuntimeDestroy(runtime_handle);
       CloseLibrary(library);

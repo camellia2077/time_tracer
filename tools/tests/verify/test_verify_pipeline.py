@@ -38,7 +38,7 @@ class TestVerifyPipeline(TestCase):
                 repo_root=Path.cwd(),
                 setup_env_fn=lambda: {},
                 run_command_fn=fake_run_command,
-                run_report_markdown_gates_fn=fake_markdown_gates,
+                run_insights_markdown_gates_fn=fake_markdown_gates,
                 run_native_core_runtime_tests_fn=fake_native,
             )
 
@@ -75,7 +75,7 @@ class TestVerifyPipeline(TestCase):
             repo_root=Path.cwd(),
             setup_env_fn=lambda: {},
             run_command_fn=fake_run_command,
-            run_report_markdown_gates_fn=fake_markdown_gates,
+            run_insights_markdown_gates_fn=fake_markdown_gates,
             run_native_core_runtime_tests_fn=fake_native,
         )
 

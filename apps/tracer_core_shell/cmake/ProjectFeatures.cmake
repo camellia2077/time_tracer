@@ -24,13 +24,13 @@ _tt_define_bool_feature(
 )
 _tt_define_bool_feature(
     tt_feature_flags
-    TT_REPORT_ENABLE_LATEX
-    "${TT_REPORT_ENABLE_LATEX}"
+    TT_INSIGHTS_ENABLE_LATEX
+    "${TT_INSIGHTS_ENABLE_LATEX}"
 )
 _tt_define_bool_feature(
     tt_feature_flags
-    TT_REPORT_ENABLE_TYPST
-    "${TT_REPORT_ENABLE_TYPST}"
+    TT_INSIGHTS_ENABLE_TYPST
+    "${TT_INSIGHTS_ENABLE_TYPST}"
 )
 _tt_define_bool_feature(
     tt_feature_flags

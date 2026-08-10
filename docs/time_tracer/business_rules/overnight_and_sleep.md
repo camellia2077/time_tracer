@@ -71,7 +71,7 @@ It is not the same as recorded sleep.
 `missing wake anchor` means day metadata does not contain a valid wake anchor.
 
 This can be useful for authoring warnings or query filters, but it must not be
-reported as sleep duration or overnight sleep by itself.
+insightsed as sleep duration or overnight sleep by itself.
 
 ## Business Rules
 

@@ -32,7 +32,7 @@ struct ActivityStats {
 
 // A canonical activity record may be a resolved interval or an authored point
 // whose start boundary is not currently knowable. The latter is still a
-// reportable activity fact, but it must not contribute to duration totals.
+// insightsable activity fact, but it must not contribute to duration totals.
 enum class ActivityRecordKind {
   kInterval,
   kEndOnly,

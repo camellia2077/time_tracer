@@ -3,7 +3,7 @@
 This directory is the entry point for TimeTracer business rules.
 
 Read these documents before changing parsing, conversion, validation, query,
-reporting, CLI authoring, or Android authoring behavior. They define what the
+insights, CLI authoring, or Android authoring behavior. They define what the
 project means by time, events, intervals, logical days, recorded duration, and
 validity.
 
@@ -39,7 +39,7 @@ notes and should not be reverse-engineered from current code.
 
 1. Users write authored events.
 2. The system converts authored events into activity intervals.
-3. Query and reporting operate on activity intervals.
+3. Query and insights operate on activity intervals.
 4. A logical day is the user's domain day and can cross civil midnight.
 5. A civil day is the calendar day from local `00:00` to the next local
    `00:00`.

@@ -163,7 +163,7 @@ The generated point-event activity is:
 ```
 
 on the next civil day within the same logical-day bucket. If that duration is
-longer than the normal single-activity limit, validation reports a duration
+longer than the normal single-activity limit, validation insights a duration
 problem unless the event has the long-duration override token.
 
 ## Selective Recording

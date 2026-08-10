@@ -64,12 +64,12 @@
    - Windows 输出校验 activity hierarchy TOML 全部为 `[canonical]` 根表下的 canonical key + alias 数组格式；
      Android 输出不包含 activity hierarchy TOML；层级只在运行时进入私有目录
    - 校验 `config.toml` 关键键（如 `defaults.*`、`converter.main_config`、
-     `reports.markdown.root/default_locale/supported_locales` 以及 Typst/LaTeX
+     `insights.markdown.root/default_locale/supported_locales` 以及 Typst/LaTeX
      的报告根目录）
    - `meta/bundle.toml` 只声明包元数据和 `file_list`；路径配置统一来自
      `config.toml`
 4. 结构化观测日志
-   - 每次同步输出：`sync_report=<json>`
+   - 每次同步输出：`sync_insights=<json>`
    - 字段包含：`target/source/output/planned_files/added/changed/removed/cache_hit/applied/duration_ms`
 
 ## 6. 路径常量治理

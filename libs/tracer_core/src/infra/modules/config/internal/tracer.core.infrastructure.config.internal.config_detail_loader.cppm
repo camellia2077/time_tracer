@@ -12,6 +12,6 @@ export namespace tracer::core::infrastructure::config::internal {
 
 export namespace tracer::core::infrastructure::modconfig::internal {
 
-using tracer::core::infrastructure::config::internal::LoadDetailedReports;
+using tracer::core::infrastructure::config::internal::LoadDetailedInsights;
 
 }  // namespace tracer::core::infrastructure::modconfig::internal

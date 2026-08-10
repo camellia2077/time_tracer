@@ -2,7 +2,7 @@
 #include "application/application.hpp"
 
 #include "application/config/config_handler.hpp"
-#include "application/reporting/report_handler.hpp"
+#include "application/insights/insights_handler.hpp"
 #include "application/workflow/workflow_handler.hpp"
 #include "utils/utils.hpp"
 
@@ -22,15 +22,15 @@ auto Application::run(const Config& config,
     return ExitCode::kRuntimeConfigLoadFailed;
   }
 
-  ReportHandler report_handler;
+  InsightsHandler insights_handler;
   WorkflowHandler workflow(file_system_, generator_factory_);
 
-  int files_generated = workflow.run(*context_opt, report_handler);
+  int files_generated = workflow.run(*context_opt, insights_handler);
   if (files_generated < 0) {
     return ExitCode::kGenerationFailed;
   }
 
-  report_handler.finish(context_opt->config, files_generated);
+  insights_handler.finish(context_opt->config, files_generated);
   return ExitCode::kSuccess;
 }
 }  // namespace App

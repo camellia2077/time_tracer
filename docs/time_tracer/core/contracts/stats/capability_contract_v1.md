@@ -14,8 +14,8 @@
 1. 列表查询：`years`、`months`、`days`、`search`
 2. 时长序列：`days-duration`
 3. 统计汇总：`days-stats`
-4. 图表统计：`report-chart`
-5. 分布图：`report-composition`
+4. 图表统计：`insights-chart`
+5. 分布图：`insights-composition`
 6. 项目树：`tree`
 
 ## 输入语义
@@ -25,7 +25,7 @@
 2. `root` 过滤
    - `root` 非空时优先使用 `root`。
    - 否则回退使用 `project` 的 root 语义。
-3. `report-chart` 时间范围
+3. `insights-chart` 时间范围
    - 显式范围要求同时提供 `from_date` 与 `to_date`。
    - 范围为闭区间（包含首尾日期）。
    - 要求 `from_date <= to_date`。
@@ -35,7 +35,7 @@
 1. 通用
    - 时间单位统一为 `seconds`。
    - 空数据时返回 0 或空数组，不返回未定义值。
-2. `report-chart`
+2. `insights-chart`
    - `total_duration_seconds = sum(series[].duration_seconds)`
    - `range_days = 日期范围内的总天数（闭区间）`
    - `active_days = 至少存在一条活动事实（包括 end-only）的天数`
@@ -52,14 +52,14 @@
 4. `days-stats` 的 `top_n`
    - `top_longest_rows`：最长时长前 N
    - `top_shortest_rows`：最短时长前 N
-5. `report-composition`
+5. `insights-composition`
    - `total_duration_seconds` 为 `tree[]` 根节点时长的总和。
    - `tree[]` 为完整加权活动树；每个节点的 `duration_seconds` 单位为秒。
    - 不提供扁平 `slices[]` 或 `Others` 聚合；端侧以树逐层下钻。
 
 ## 错误与边界
-1. `report-chart` 或 `report-composition` 仅提供 `from_date` 或仅提供 `to_date`：返回错误。
-2. `report-chart` 或 `report-composition` 日期非法或范围反转：返回错误。
+1. `insights-chart` 或 `insights-composition` 仅提供 `from_date` 或仅提供 `to_date`：返回错误。
+2. `insights-chart` 或 `insights-composition` 日期非法或范围反转：返回错误。
 3. 无可用数据时：返回结构化空结果（字段存在，值为 0/空数组）。
 
 ## 兼容与演进
@@ -69,8 +69,8 @@
 4. 版本升级流程详见：`docs/time_tracer/core/contracts/stats/semantic_json_versioning_policy.md`。
 
 ## 相关文档
-1. report-chart 专项契约：`docs/time_tracer/core/contracts/stats/report_chart_contract_v1.md`
-2. report-composition 专项契约：`docs/time_tracer/core/contracts/stats/report_composition_contract_v1.md`
+1. insights-chart 专项契约：`docs/time_tracer/core/contracts/stats/insights_chart_contract_v1.md`
+2. insights-composition 专项契约：`docs/time_tracer/core/contracts/stats/insights_composition_contract_v1.md`
 3. 能力矩阵：`docs/time_tracer/core/contracts/stats/capability_matrix_v1.md`
 4. JSON 字段：`docs/time_tracer/core/contracts/stats/json_schema_v1.md`
 5. 代码映射：`docs/time_tracer/core/contracts/stats/code_map.md`

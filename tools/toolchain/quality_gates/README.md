@@ -2,12 +2,12 @@
 
 本目录存放 `verify` 使用的质量门禁脚本实现。
 
-## reporting
+## insights
 
-- `collect_report_markdown_cases.py`
+- `collect_insights_markdown_cases.py`
 - `gate_cases_loader.py`
-- `report_consistency_audit.py`
-- `report_markdown_render_snapshot_check.py`
+- `insights_consistency_audit.py`
+- `insights_markdown_render_snapshot_check.py`
 
 测试样本来源统一由
 `tools/suites/tracer_windows_rust_cli/tests/gate_cases.toml` 定义，

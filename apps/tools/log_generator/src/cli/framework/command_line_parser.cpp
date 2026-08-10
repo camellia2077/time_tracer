@@ -164,7 +164,7 @@ auto ParseOptions(const std::vector<std::string>& args) -> ParsedOptions {
         parsed.config.enable_sleep_intervals = true;
         break;
       case OptionType::kMonthlyAverage:
-        parsed.config.enable_monthly_average_report = true;
+        parsed.config.enable_monthly_average_insights = true;
         break;
       case OptionType::kOutput:
         parsed.config.output_directory = ParseNextString(args, i, "--output");

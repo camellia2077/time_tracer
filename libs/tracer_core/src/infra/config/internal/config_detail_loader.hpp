@@ -12,7 +12,7 @@ namespace tracer::core::infrastructure::config::internal {
 
 namespace ConfigDetailLoader {
 
-using tracer::core::infrastructure::config::internal::LoadDetailedReports;
+using tracer::core::infrastructure::config::internal::LoadDetailedInsights;
 
 }  // namespace ConfigDetailLoader
 

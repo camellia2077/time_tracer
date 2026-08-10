@@ -18,7 +18,7 @@ auto BuildMonthlyAverageStat(
     int year, int month, const std::string& month_content,
     const std::unordered_set<std::string>& wake_keywords) -> MonthlyAverageStat;
 
-void PrintMonthlyAverageReport(std::vector<MonthlyAverageStat> stats);
+void PrintMonthlyAverageInsights(std::vector<MonthlyAverageStat> stats);
 
 }  // namespace App::workflow_stats
 

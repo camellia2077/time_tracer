@@ -5,7 +5,7 @@ export import tracer.core.infrastructure.query.data.orchestrators
 export import tracer.core.infrastructure.query.data.orchestrators
     .days_stats_orchestrator;
 export import tracer.core.infrastructure.query.data.orchestrators
-    .report_chart_orchestrator;
+    .insights_chart_orchestrator;
 export import tracer.core.infrastructure.query.data.orchestrators
     .tree_orchestrator;
 export import tracer.core.infrastructure.query.data.orchestrators

@@ -287,7 +287,7 @@ auto RestoreOfficialTxt(const fs::path& target_txt_path,
     const IngestInputModel& input, const DateCheckMode date_check_mode)
     -> PipelineSession {
   modports::ClearBufferedDiagnostics();
-  const ScopedErrorReportWriterOverride disable_error_reports(nullptr);
+  const ScopedErrorReportWriterOverride disable_error_report(nullptr);
 
   PipelineSession session(output_root);
   session.config.input_root = fs::path(input.source_id);

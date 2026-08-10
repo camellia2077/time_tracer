@@ -59,7 +59,7 @@ class TestVerifyNativeRunner(TestCase):
             ],
         )
 
-    def test_cap_query_reports_native_phases(self):
+    def test_cap_query_insights_native_phases(self):
         commands: list[list[str]] = []
 
         def fake_run_command(cmd, cwd=None, env=None):

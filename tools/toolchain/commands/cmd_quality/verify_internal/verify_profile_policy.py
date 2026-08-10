@@ -3,7 +3,7 @@ from __future__ import annotations
 _TRACER_WINDOWS_RUST_CLI_PROFILE_CONFIGS = {
     "cap_pipeline": "config_cap_pipeline.toml",
     "cap_query": "config_cap_query.toml",
-    "cap_reporting": "config_cap_reporting.toml",
+    "cap_insights": "config_cap_insights.toml",
     "cap_exchange": "config_cap_exchange.toml",
     "cap_config": "config_cap_config.toml",
     "cap_persistence_runtime": "config_cap_persistence_runtime.toml",
@@ -12,12 +12,12 @@ _TRACER_WINDOWS_RUST_CLI_PROFILE_CONFIGS = {
 }
 
 
-def should_run_reporting_markdown_gates(profile_name: str | None) -> bool:
+def should_run_insights_markdown_gates(profile_name: str | None) -> bool:
     normalized_profile = (profile_name or "").strip().lower()
     if not normalized_profile:
         return True
 
-    if normalized_profile == "cap_reporting":
+    if normalized_profile == "cap_insights":
         return True
 
     if normalized_profile == "shell_aggregate":

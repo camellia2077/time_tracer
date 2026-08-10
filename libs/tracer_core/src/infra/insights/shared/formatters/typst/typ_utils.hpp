@@ -1,0 +1,56 @@
+// infra/insights/shared/formatters/typst/typ_utils.hpp
+#ifndef INFRASTRUCTURE_INSIGHTS_SHARED_FORMATTERS_TYPST_TYP_UTILS_H_
+#define INFRASTRUCTURE_INSIGHTS_SHARED_FORMATTERS_TYPST_TYP_UTILS_H_
+
+#include <cstdint>
+#include <string>
+
+#include "domain/insights/models/project_tree.hpp"
+#include "infra/insights/shared/api/shared_api.hpp"
+
+namespace TypUtils {
+
+// Public API: keep parameter order and naming for ABI compatibility.
+// NOLINTBEGIN(bugprone-easily-swappable-parameters)
+[[nodiscard]] INSIGHTS_SHARED_API auto BuildTextSetup(
+    const std::string& base_font, int base_font_size, double line_spacing_em)
+    -> std::string;
+// NOLINTEND(bugprone-easily-swappable-parameters)
+
+// Public API: keep parameter order and naming for ABI compatibility.
+// NOLINTBEGIN(bugprone-easily-swappable-parameters)
+[[nodiscard]] INSIGHTS_SHARED_API auto BuildPageSetup(double margin_top_cm,
+                                                     double margin_bottom_cm,
+                                                     double margin_left_cm,
+                                                     double margin_right_cm)
+    -> std::string;
+// NOLINTEND(bugprone-easily-swappable-parameters)
+
+// Public API: keep parameter order and naming for ABI compatibility.
+// NOLINTBEGIN(bugprone-easily-swappable-parameters)
+[[nodiscard]] INSIGHTS_SHARED_API auto BuildTitleText(
+    const std::string& category_title_font, int category_title_font_size,
+    const std::string& title_text) -> std::string;
+// NOLINTEND(bugprone-easily-swappable-parameters)
+
+/**
+ * @brief Format a project tree as Typst content.
+ *
+ * @param tree Project tree to format.
+ * @param total_duration Total duration of all projects.
+ * @param avg_days Days count used for averaging.
+ * @param category_title_font Category title font.
+ * @param category_title_font_size Category title font size.
+ * @return Formatted Typst content.
+ */
+// Public API: keep parameter order and naming for ABI compatibility.
+// NOLINTBEGIN(bugprone-easily-swappable-parameters)
+INSIGHTS_SHARED_API auto FormatProjectTree(
+    const insights::ProjectTree& tree, std::int64_t total_duration,
+    int avg_days, const std::string& category_title_font,
+    int category_title_font_size) -> std::string;
+// NOLINTEND(bugprone-easily-swappable-parameters)
+
+}  // namespace TypUtils
+
+#endif  // INFRASTRUCTURE_INSIGHTS_SHARED_FORMATTERS_TYPST_TYP_UTILS_H_

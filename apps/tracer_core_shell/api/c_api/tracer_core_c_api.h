@@ -120,7 +120,7 @@ TT_CORE_API TtCoreRuntimeHandle* tracer_core_runtime_create(
     const char* converter_config_toml_path);
 
 // Creates a pipeline-only runtime for candidate TXT/config validation and
-// ingest. It does not load Android report resources under config/program.
+// ingest. It does not load Android insights resources under config/program.
 TT_CORE_API TtCoreRuntimeHandle* tracer_core_pipeline_runtime_create(
     const char* db_path, const char* output_root,
     const char* converter_config_toml_path);
@@ -135,7 +135,7 @@ TT_CORE_API const char* tracer_core_pipeline_runtime_validate_structure_json(
 TT_CORE_API const char* tracer_core_pipeline_runtime_validate_logic_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
 
-// Runs ingest/query/report with JSON request payload and returns JSON response.
+// Runs ingest/query/insights with JSON request payload and returns JSON response.
 // Returned pointer is thread-local and remains valid until the next API call
 // on the same thread.
 // Standard response envelope fields:
@@ -171,9 +171,9 @@ TT_CORE_API const char* tracer_core_runtime_config_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
 TT_CORE_API const char* tracer_core_runtime_query_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
-TT_CORE_API const char* tracer_core_runtime_temporal_report_json(
+TT_CORE_API const char* tracer_core_runtime_temporal_insights_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
-TT_CORE_API const char* tracer_core_runtime_report_batch_json(
+TT_CORE_API const char* tracer_core_runtime_insights_batch_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
 // Runs file-crypto operations with JSON request payload and returns JSON
 // text-response payload:

@@ -37,11 +37,11 @@ auto RunQueryTreeModuleSmoke(int& failures) -> void {
              root_node.children.front().name == "child",
          "ProjectTreeNode fields should remain writable.", failures);
 
-  const auto build_nodes_fn = &app_tree::BuildProjectTreeNodesFromReportTree;
+  const auto build_nodes_fn = &app_tree::BuildProjectTreeNodesFromInsightsTree;
   const auto find_nodes_fn = &app_tree::FindProjectTreeNodesByPath;
   const auto limit_depth_fn = &app_tree::LimitProjectTreeDepth;
   Expect(build_nodes_fn != nullptr,
-         "BuildProjectTreeNodesFromReportTree should be exported.", failures);
+         "BuildProjectTreeNodesFromInsightsTree should be exported.", failures);
   Expect(find_nodes_fn != nullptr,
          "FindProjectTreeNodesByPath should be exported.", failures);
   Expect(limit_depth_fn != nullptr, "LimitProjectTreeDepth should be exported.",

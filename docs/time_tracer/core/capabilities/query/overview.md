@@ -20,7 +20,7 @@ Query owns:
 5. query-owned repository/runtime service entry points
 
 Query does not own:
-1. report formatter/export flows
+1. insights formatter/export flows
 2. write-side persistence/import
 3. exchange packaging/import
 4. config loading as a standalone capability
@@ -36,7 +36,7 @@ Query does not own:
 2. `persistence_runtime`
 
 ## Forbidden Direct Dependencies
-1. `reporting`
+1. `insights`
 
 ## Read Next
 1. [data_query.md](data_query.md)

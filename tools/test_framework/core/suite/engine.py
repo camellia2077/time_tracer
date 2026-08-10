@@ -19,7 +19,7 @@ from .table_tester import TableTester
 
 
 class TestEngine:
-    REPORTING_GOLDEN_DB_SNAPSHOT_NAME = "reporting_golden_db.sqlite3"
+    INSIGHTS_GOLDEN_DB_SNAPSHOT_NAME = "insights_golden_db.sqlite3"
     SQLITE_SIDECARE_SUFFIXES = ("", "-wal", "-shm", "-journal")
     ACTIVE_RUNNER_LOG_NAME = "python_output.latest.log"
 
@@ -229,7 +229,7 @@ class TestEngine:
             report.duration = time.monotonic() - module_start
             reports.append(report)
             self.reporter.print_module_report(report)
-            self._maybe_snapshot_reporting_db(module_name=module.module_name, report=report)
+            self._maybe_snapshot_insights_db(module_name=module.module_name, report=report)
 
             if report.failed_count > 0:
                 print(
@@ -239,8 +239,8 @@ class TestEngine:
                 break
         return reports
 
-    def _maybe_snapshot_reporting_db(self, module_name: str, report: TestReport) -> None:
-        # Capture a stable DB snapshot after report/report-export stages complete.
+    def _maybe_snapshot_insights_db(self, module_name: str, report: TestReport) -> None:
+        # Capture a stable DB snapshot after insights/insights-export stages complete.
         #
         # Why:
         # - exchange stage includes `exchange import` fixtures.
@@ -249,9 +249,9 @@ class TestEngine:
         # - therefore data drift is expected when import source packages differ:
         #   this is not import instability, but deterministic overwrite by another source.
         #
-        # The snapshot keeps markdown/triplet golden gates pinned to the reporting dataset
+        # The snapshot keeps markdown/triplet golden gates pinned to the insights dataset
         # before exchange fixtures intentionally replace DB contents.
-        if module_name != "report-export" or report.failed_count > 0:
+        if module_name != "insights-export" or report.failed_count > 0:
             return
         db_path = self.paths.DB_DIR
         if not db_path or not db_path.is_file():
@@ -259,7 +259,7 @@ class TestEngine:
 
         snapshot_dir = db_path.parent.parent / "db_snapshots"
         snapshot_dir.mkdir(parents=True, exist_ok=True)
-        snapshot_db_path = snapshot_dir / self.REPORTING_GOLDEN_DB_SNAPSHOT_NAME
+        snapshot_db_path = snapshot_dir / self.INSIGHTS_GOLDEN_DB_SNAPSHOT_NAME
 
         for suffix in self.SQLITE_SIDECARE_SUFFIXES:
             src = Path(f"{db_path}{suffix}")
@@ -269,4 +269,4 @@ class TestEngine:
             elif dst.exists():
                 dst.unlink()
 
-        print(f"  Captured reporting DB snapshot: {snapshot_db_path}")
+        print(f"  Captured insights DB snapshot: {snapshot_db_path}")

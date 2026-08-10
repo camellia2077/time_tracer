@@ -72,31 +72,31 @@ void SetLastError(const char* message) {
   return g_last_response.c_str();
 }
 
-[[nodiscard]] auto BuildReportTargetsResponse(
-    const tracer_core::core::dto::TemporalReportTargetsOutput& output)
+[[nodiscard]] auto BuildInsightsTargetsResponse(
+    const tracer_core::core::dto::TemporalInsightsTargetsOutput& output)
     -> const char* {
-  using tracer_core::core::dto::ReportDisplayMode;
+  using tracer_core::core::dto::InsightsDisplayMode;
 
-  auto target_type = [](ReportDisplayMode value) -> std::string {
+  auto target_type = [](InsightsDisplayMode value) -> std::string {
     switch (value) {
-      case ReportDisplayMode::kDay:
+      case InsightsDisplayMode::kDay:
         return "day";
-      case ReportDisplayMode::kMonth:
+      case InsightsDisplayMode::kMonth:
         return "month";
-      case ReportDisplayMode::kWeek:
+      case InsightsDisplayMode::kWeek:
         return "week";
-      case ReportDisplayMode::kYear:
+      case InsightsDisplayMode::kYear:
         return "year";
-      case ReportDisplayMode::kRange:
+      case InsightsDisplayMode::kRange:
         return "range";
-      case ReportDisplayMode::kRecent:
+      case InsightsDisplayMode::kRecent:
         return "recent";
     }
     return "day";
   };
 
-  g_last_response = tt_transport::EncodeReportTargetsResponse(
-      tt_transport::ReportTargetsResponsePayload{
+  g_last_response = tt_transport::EncodeInsightsTargetsResponse(
+      tt_transport::InsightsTargetsResponsePayload{
           .ok = output.ok,
           .error_message = output.error_message,
           .type = target_type(output.display_mode),
@@ -156,12 +156,12 @@ void SetLastError(const char* message) {
   payload.features.runtime_update_activity_remark_atomically_json = true;
   payload.features.runtime_config_json = true;
   payload.features.runtime_query_json = true;
-  payload.features.runtime_temporal_report_json = true;
-  payload.features.runtime_report_batch_json = true;
+  payload.features.runtime_temporal_insights_json = true;
+  payload.features.runtime_insights_batch_json = true;
   payload.features.processed_json_io = TT_ENABLE_PROCESSED_JSON_IO != 0;
-  payload.features.report_markdown = true;
-  payload.features.report_latex = TT_REPORT_ENABLE_LATEX != 0;
-  payload.features.report_typst = TT_REPORT_ENABLE_TYPST != 0;
+  payload.features.insights_markdown = true;
+  payload.features.insights_latex = TT_INSIGHTS_ENABLE_LATEX != 0;
+  payload.features.insights_typst = TT_INSIGHTS_ENABLE_TYPST != 0;
   g_last_response = tt_transport::EncodeCapabilitiesResponse(payload);
   return g_last_response.c_str();
 }
@@ -212,24 +212,24 @@ void SetLastError(const char* message) {
   return tracer_core::shell::c_api_bridge::ParseDataQueryOutputMode(value);
 }
 
-[[nodiscard]] auto ParseReportAverageDayBasis(const std::string& value)
-    -> tracer_core::core::dto::ReportAverageDayBasis {
-  return tracer_core::shell::c_api_bridge::ParseReportAverageDayBasis(value);
+[[nodiscard]] auto ParseInsightsAverageDayBasis(const std::string& value)
+    -> tracer_core::core::dto::InsightsAverageDayBasis {
+  return tracer_core::shell::c_api_bridge::ParseInsightsAverageDayBasis(value);
 }
 
-[[nodiscard]] auto ParseReportDisplayMode(const std::string& value)
-    -> tracer_core::core::dto::ReportDisplayMode {
-  return tracer_core::shell::c_api_bridge::ParseReportDisplayMode(value);
+[[nodiscard]] auto ParseInsightsDisplayMode(const std::string& value)
+    -> tracer_core::core::dto::InsightsDisplayMode {
+  return tracer_core::shell::c_api_bridge::ParseInsightsDisplayMode(value);
 }
 
-[[nodiscard]] auto ParseReportExportScope(const std::string& value)
-    -> tracer_core::core::dto::ReportExportScope {
-  return tracer_core::shell::c_api_bridge::ParseReportExportScope(value);
+[[nodiscard]] auto ParseInsightsExportScope(const std::string& value)
+    -> tracer_core::core::dto::InsightsExportScope {
+  return tracer_core::shell::c_api_bridge::ParseInsightsExportScope(value);
 }
 
-[[nodiscard]] auto ParseReportOperationKind(const std::string& value)
-    -> tracer_core::core::dto::ReportOperationKind {
-  return tracer_core::shell::c_api_bridge::ParseReportOperationKind(value);
+[[nodiscard]] auto ParseInsightsOperationKind(const std::string& value)
+    -> tracer_core::core::dto::InsightsOperationKind {
+  return tracer_core::shell::c_api_bridge::ParseInsightsOperationKind(value);
 }
 
 [[nodiscard]] auto ParseTemporalSelectionKind(const std::string& value)
@@ -237,6 +237,6 @@ void SetLastError(const char* message) {
   return tracer_core::shell::c_api_bridge::ParseTemporalSelectionKind(value);
 }
 
-[[nodiscard]] auto ParseReportFormat(const std::string& value) -> ReportFormat {
-  return tracer_core::shell::c_api_bridge::ParseReportFormat(value);
+[[nodiscard]] auto ParseInsightsFormat(const std::string& value) -> InsightsFormat {
+  return tracer_core::shell::c_api_bridge::ParseInsightsFormat(value);
 }

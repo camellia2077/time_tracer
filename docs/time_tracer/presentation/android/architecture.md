@@ -21,11 +21,11 @@ Provide a thin overview of the Android documentation and code layering.
 - `contract`
   - stable gateway interfaces and shared models
 - `feature-data`
-  - Data tab presentation
+  - Data management presentation rendered from the Config route
 - `feature-record`
   - Record and TXT presentation
-- `feature-report`
-  - report and chart presentation
+- `feature-insights`
+  - insights and chart presentation
 - `runtime`
   - runtime implementation, JNI integration, services, coreadapter, translators
 
@@ -47,7 +47,7 @@ Provide a thin overview of the Android documentation and code layering.
   path consumes `config/user/behavior.toml` and
   `config/user/activity_hierarchy/**`; it must not require or copy
   `config/program/**`. The complete Runtime still loads program resources for
-  reports, charts, and other presentation capabilities.
+  insights, charts, and other presentation capabilities.
 
 ## Open Next
 

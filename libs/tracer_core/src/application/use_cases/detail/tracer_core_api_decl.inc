@@ -3,19 +3,19 @@ class TracerCoreApi : public ITracerCoreApi {
   using ProjectRepositoryPtr = std::shared_ptr<IProjectRepository>;
   using DataQueryServicePtr =
       std::shared_ptr<tracer_core::application::ports::IDataQueryService>;
-  using ReportDataQueryServicePtr =
-      std::shared_ptr<tracer_core::application::ports::IReportDataQueryService>;
-  using ReportDtoFormatterPtr =
-      std::shared_ptr<tracer_core::application::ports::IReportDtoFormatter>;
+  using InsightsDataQueryServicePtr =
+      std::shared_ptr<tracer_core::application::ports::IInsightsDataQueryService>;
+  using InsightsDtoFormatterPtr =
+      std::shared_ptr<tracer_core::application::ports::IInsightsDtoFormatter>;
   using TracerExchangeServicePtr =
       std::shared_ptr<tracer_core::application::ports::ITracerExchangeService>;
 
   TracerCoreApi(
       ::tracer::core::application::workflow::IWorkflowHandler& workflow_handler,
-      IReportHandler& report_handler, ProjectRepositoryPtr project_repository,
+      IInsightsHandler& insights_handler, ProjectRepositoryPtr project_repository,
       DataQueryServicePtr data_query_service,
-      ReportDataQueryServicePtr report_data_query_service = nullptr,
-      ReportDtoFormatterPtr report_dto_formatter = nullptr,
+      InsightsDataQueryServicePtr insights_data_query_service = nullptr,
+      InsightsDtoFormatterPtr insights_dto_formatter = nullptr,
       TracerExchangeServicePtr tracer_exchange_service = nullptr);
 
   auto RunConvert(const tracer_core::core::dto::ConvertRequest& request)
@@ -35,14 +35,14 @@ class TracerCoreApi : public ITracerCoreApi {
       const tracer_core::core::dto::ValidateLogicRequest& request)
       -> tracer_core::core::dto::OperationAck override;
 
-  auto RunTemporalReportQuery(
-      const tracer_core::core::dto::TemporalReportQueryRequest& request)
+  auto RunTemporalInsightsQuery(
+      const tracer_core::core::dto::TemporalInsightsQueryRequest& request)
       -> tracer_core::core::dto::TextOutput override;
 
-  auto RunTemporalStructuredReportQuery(
-      const tracer_core::core::dto::TemporalStructuredReportQueryRequest&
+  auto RunTemporalStructuredInsightsQuery(
+      const tracer_core::core::dto::TemporalStructuredInsightsQueryRequest&
           request)
-      -> tracer_core::core::dto::TemporalStructuredReportOutput override;
+      -> tracer_core::core::dto::TemporalStructuredInsightsOutput override;
 
   auto RunPeriodBatchQuery(
       const tracer_core::core::dto::PeriodBatchQueryRequest& request)
@@ -52,12 +52,12 @@ class TracerCoreApi : public ITracerCoreApi {
       const tracer_core::core::dto::StructuredPeriodBatchQueryRequest& request)
       -> tracer_core::core::dto::StructuredPeriodBatchOutput override;
 
-  auto RunTemporalReportTargetsQuery(
-      const tracer_core::core::dto::TemporalReportTargetsRequest& request)
-      -> tracer_core::core::dto::TemporalReportTargetsOutput override;
+  auto RunTemporalInsightsTargetsQuery(
+      const tracer_core::core::dto::TemporalInsightsTargetsRequest& request)
+      -> tracer_core::core::dto::TemporalInsightsTargetsOutput override;
 
-  auto RunTemporalReportExport(
-      const tracer_core::core::dto::TemporalReportExportRequest& request)
+  auto RunTemporalInsightsExport(
+      const tracer_core::core::dto::TemporalInsightsExportRequest& request)
       -> tracer_core::core::dto::OperationAck override;
 
   auto RunDataQuery(const tracer_core::core::dto::DataQueryRequest& request)
@@ -80,10 +80,10 @@ class TracerCoreApi : public ITracerCoreApi {
 
  private:
   ::tracer::core::application::workflow::IWorkflowHandler& workflow_handler_;
-  IReportHandler& report_handler_;
+  IInsightsHandler& insights_handler_;
   ProjectRepositoryPtr project_repository_;
   DataQueryServicePtr data_query_service_;
-  ReportDataQueryServicePtr kReport_;
-  ReportDtoFormatterPtr report_dto_formatter_;
+  InsightsDataQueryServicePtr kInsights_;
+  InsightsDtoFormatterPtr insights_dto_formatter_;
   TracerExchangeServicePtr tracer_exchange_service_;
 };

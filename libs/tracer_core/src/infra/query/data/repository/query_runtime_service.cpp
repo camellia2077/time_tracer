@@ -69,12 +69,12 @@ auto QueryRuntimeService::RunDataQuery(
     return {.ok = true, .content = std::move(content), .error_message = ""};
   }
 
-  if (request.action == tracer_core::core::dto::DataQueryAction::kReportChart) {
-    runtime_service_internal::ValidateReportChartRequest(request);
+  if (request.action == tracer_core::core::dto::DataQueryAction::kInsightsChart) {
+    runtime_service_internal::ValidateInsightsChartRequest(request);
   }
   if (request.action ==
-      tracer_core::core::dto::DataQueryAction::kReportComposition) {
-    runtime_service_internal::ValidateReportCompositionRequest(request);
+      tracer_core::core::dto::DataQueryAction::kInsightsComposition) {
+    runtime_service_internal::ValidateInsightsCompositionRequest(request);
   }
 
   DBManager db_manager(db_path_.string());

@@ -14,10 +14,10 @@ namespace {
 
 auto TestDataQueryFailureMessageNormalization(TestState& state) -> void {
   FakePipelineWorkflow pipeline_workflow;
-  FakeReportHandler report_handler;
+  FakeInsightsHandler insights_handler;
   auto data_query = std::make_shared<FakeDataQueryService>();
   auto runtime_api =
-      BuildRuntimeApiForTest(pipeline_workflow, report_handler, data_query);
+      BuildRuntimeApiForTest(pipeline_workflow, insights_handler, data_query);
 
   data_query->response = {.ok = false, .content = "", .error_message = ""};
 
@@ -39,10 +39,10 @@ auto TestDataQueryFailureMessageNormalization(TestState& state) -> void {
 
 auto TestDataQueryPreservesEmptySuccessfulPayload(TestState& state) -> void {
   FakePipelineWorkflow pipeline_workflow;
-  FakeReportHandler report_handler;
+  FakeInsightsHandler insights_handler;
   auto data_query = std::make_shared<FakeDataQueryService>();
   auto runtime_api =
-      BuildRuntimeApiForTest(pipeline_workflow, report_handler, data_query);
+      BuildRuntimeApiForTest(pipeline_workflow, insights_handler, data_query);
 
   data_query->response = {.ok = true, .content = "", .error_message = ""};
 
@@ -60,10 +60,10 @@ auto TestDataQueryPreservesEmptySuccessfulPayload(TestState& state) -> void {
 
 auto TestDataQueryForwardsStableActionPayload(TestState& state) -> void {
   FakePipelineWorkflow pipeline_workflow;
-  FakeReportHandler report_handler;
+  FakeInsightsHandler insights_handler;
   auto data_query = std::make_shared<FakeDataQueryService>();
   auto runtime_api =
-      BuildRuntimeApiForTest(pipeline_workflow, report_handler, data_query);
+      BuildRuntimeApiForTest(pipeline_workflow, insights_handler, data_query);
 
   data_query->response = {
       .ok = true, .content = "[\"alias_a\",\"alias_b\"]", .error_message = ""};

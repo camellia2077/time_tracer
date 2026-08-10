@@ -13,8 +13,8 @@
 #include "host/bootstrap/android_runtime_factory.hpp"
 #include "application/dto/query_requests.hpp"
 #include "application/dto/query_responses.hpp"
-#include "application/dto/reporting_requests.hpp"
-#include "application/dto/reporting_responses.hpp"
+#include "application/dto/insights_requests.hpp"
+#include "application/dto/insights_responses.hpp"
 #include "application/dto/shared_envelopes.hpp"
 
 struct sqlite3;
@@ -45,21 +45,21 @@ auto PrepareAndroidConfigFixture(const std::filesystem::path& target_root)
 auto ExpectBuildRuntimeThrows(
     const infrastructure::bootstrap::AndroidRuntimeRequest& request,
     std::string& message) -> bool;
-auto RunAndCheckReportQuery(
+auto RunAndCheckInsightsQuery(
     const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
-    const tracer_core::core::dto::TemporalReportQueryRequest& request,
+    const tracer_core::core::dto::TemporalInsightsQueryRequest& request,
     std::string_view test_name, int& failures)
     -> std::optional<tracer_core::core::dto::TextOutput>;
 
 auto RunRuntimeSmokeTests(int& failures) -> void;
 auto RunCoreConfigValidationTests(int& failures) -> void;
 auto RunBusinessRegressionTests(int& failures) -> void;
-auto RunReportConsistencyTests(int& failures) -> void;
+auto RunInsightsConsistencyTests(int& failures) -> void;
 auto RunAndroidBundlePolicyTests(int& failures) -> void;
 auto RunValidationIssueReporterTests(int& failures) -> void;
 auto RunTxtMonthHeaderTests(int& failures) -> void;
 auto RunPipelineValidationRegressionTests(int& failures) -> void;
-auto RunReportingErrorReportTests(int& failures) -> void;
+auto RunInsightsErrorReportTests(int& failures) -> void;
 auto RunDataQueryRefactorTests(int& failures) -> void;
 auto RunTracerExchangeTests(int& failures) -> void;
 

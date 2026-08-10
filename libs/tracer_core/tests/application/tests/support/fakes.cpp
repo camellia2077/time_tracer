@@ -5,9 +5,9 @@
 
 #include "application/use_cases/pipeline_api.hpp"
 #include "application/use_cases/query_api.hpp"
-#include "application/use_cases/report_api.hpp"
+#include "application/use_cases/insights_api.hpp"
 #include "application/use_cases/tracer_exchange_api.hpp"
-#include "shared/types/reporting_errors.hpp"
+#include "shared/types/insights_errors.hpp"
 
 namespace tracer_core::application::tests {
 
@@ -191,10 +191,10 @@ auto FakePipelineWorkflow::InstallActiveConverterConfig(
     const tracer::core::application::pipeline::
         ActiveConverterConfigInstallRequest& /*request*/) -> void {}
 
-auto FakeReportHandler::RunDailyQuery(std::string_view /*date*/,
-                                      ReportFormat /*format*/) -> std::string {
+auto FakeInsightsHandler::RunDailyQuery(std::string_view /*date*/,
+                                      InsightsFormat /*format*/) -> std::string {
   if (fail_target_not_found) {
-    throw tracer_core::common::ReportTargetNotFoundError("day", "missing-day");
+    throw tracer_core::common::InsightsTargetNotFoundError("day", "missing-day");
   }
   if (fail_query) {
     throw std::runtime_error("daily query failed");
@@ -202,11 +202,11 @@ auto FakeReportHandler::RunDailyQuery(std::string_view /*date*/,
   return daily_query_result;
 }
 
-auto FakeReportHandler::RunMonthlyQuery(std::string_view /*month*/,
-                                        ReportFormat /*format*/)
+auto FakeInsightsHandler::RunMonthlyQuery(std::string_view /*month*/,
+                                        InsightsFormat /*format*/)
     -> std::string {
   if (fail_target_not_found) {
-    throw tracer_core::common::ReportTargetNotFoundError("month",
+    throw tracer_core::common::InsightsTargetNotFoundError("month",
                                                          "missing-month");
   }
   if (fail_query) {
@@ -215,7 +215,7 @@ auto FakeReportHandler::RunMonthlyQuery(std::string_view /*month*/,
   return monthly_query_result;
 }
 
-auto FakeReportHandler::RunPeriodQuery(int /*days*/, ReportFormat /*format*/)
+auto FakeInsightsHandler::RunPeriodQuery(int /*days*/, InsightsFormat /*format*/)
     -> std::string {
   if (fail_query) {
     throw std::runtime_error("recent query failed");
@@ -223,10 +223,10 @@ auto FakeReportHandler::RunPeriodQuery(int /*days*/, ReportFormat /*format*/)
   return recent_query_result;
 }
 
-auto FakeReportHandler::RunWeeklyQuery(std::string_view /*iso_week*/,
-                                       ReportFormat /*format*/) -> std::string {
+auto FakeInsightsHandler::RunWeeklyQuery(std::string_view /*iso_week*/,
+                                       InsightsFormat /*format*/) -> std::string {
   if (fail_target_not_found) {
-    throw tracer_core::common::ReportTargetNotFoundError("week",
+    throw tracer_core::common::InsightsTargetNotFoundError("week",
                                                          "missing-week");
   }
   if (fail_query) {
@@ -235,10 +235,10 @@ auto FakeReportHandler::RunWeeklyQuery(std::string_view /*iso_week*/,
   return weekly_query_result;
 }
 
-auto FakeReportHandler::RunYearlyQuery(std::string_view /*year*/,
-                                       ReportFormat /*format*/) -> std::string {
+auto FakeInsightsHandler::RunYearlyQuery(std::string_view /*year*/,
+                                       InsightsFormat /*format*/) -> std::string {
   if (fail_target_not_found) {
-    throw tracer_core::common::ReportTargetNotFoundError("year",
+    throw tracer_core::common::InsightsTargetNotFoundError("year",
                                                          "missing-year");
   }
   if (fail_query) {
@@ -247,8 +247,8 @@ auto FakeReportHandler::RunYearlyQuery(std::string_view /*year*/,
   return yearly_query_result;
 }
 
-auto FakeReportHandler::RunPeriodQueries(const std::vector<int>& /*days_list*/,
-                                         ReportFormat /*format*/)
+auto FakeInsightsHandler::RunPeriodQueries(const std::vector<int>& /*days_list*/,
+                                         InsightsFormat /*format*/)
     -> std::string {
   if (fail_period_batch_query) {
     throw std::runtime_error("period-batch query failed");
@@ -256,62 +256,62 @@ auto FakeReportHandler::RunPeriodQueries(const std::vector<int>& /*days_list*/,
   return period_batch_result;
 }
 
-auto FakeReportDataQueryService::QueryDaily(std::string_view date)
-    -> DailyReportData {
+auto FakeInsightsDataQueryService::QueryDaily(std::string_view date)
+    -> DailyInsightsData {
   if (fail_target_not_found) {
-    throw tracer_core::common::ReportTargetNotFoundError("day", date);
+    throw tracer_core::common::InsightsTargetNotFoundError("day", date);
   }
-  DailyReportData report;
-  report.date = std::string(date);
-  return report;
+  DailyInsightsData insights;
+  insights.date = std::string(date);
+  return insights;
 }
 
-auto FakeReportDataQueryService::QueryMonthly(std::string_view month)
-    -> MonthlyReportData {
+auto FakeInsightsDataQueryService::QueryMonthly(std::string_view month)
+    -> MonthlyInsightsData {
   if (fail_target_not_found) {
-    throw tracer_core::common::ReportTargetNotFoundError("month", month);
+    throw tracer_core::common::InsightsTargetNotFoundError("month", month);
   }
-  MonthlyReportData report;
-  report.range_label = std::string(month);
-  return report;
+  MonthlyInsightsData insights;
+  insights.range_label = std::string(month);
+  return insights;
 }
 
-auto FakeReportDataQueryService::QueryPeriod(int days) -> PeriodReportData {
-  PeriodReportData report;
-  report.requested_days = days;
-  return report;
+auto FakeInsightsDataQueryService::QueryPeriod(int days) -> PeriodInsightsData {
+  PeriodInsightsData insights;
+  insights.requested_days = days;
+  return insights;
 }
 
-auto FakeReportDataQueryService::QueryRange(std::string_view start_date,
+auto FakeInsightsDataQueryService::QueryRange(std::string_view start_date,
                                             std::string_view end_date)
-    -> PeriodReportData {
-  PeriodReportData report;
-  report.start_date = std::string(start_date);
-  report.end_date = std::string(end_date);
-  return report;
+    -> PeriodInsightsData {
+  PeriodInsightsData insights;
+  insights.start_date = std::string(start_date);
+  insights.end_date = std::string(end_date);
+  return insights;
 }
 
-auto FakeReportDataQueryService::QueryWeekly(std::string_view iso_week)
-    -> WeeklyReportData {
+auto FakeInsightsDataQueryService::QueryWeekly(std::string_view iso_week)
+    -> WeeklyInsightsData {
   if (fail_target_not_found) {
-    throw tracer_core::common::ReportTargetNotFoundError("week", iso_week);
+    throw tracer_core::common::InsightsTargetNotFoundError("week", iso_week);
   }
-  WeeklyReportData report;
-  report.range_label = std::string(iso_week);
-  return report;
+  WeeklyInsightsData insights;
+  insights.range_label = std::string(iso_week);
+  return insights;
 }
 
-auto FakeReportDataQueryService::QueryYearly(std::string_view year)
-    -> YearlyReportData {
+auto FakeInsightsDataQueryService::QueryYearly(std::string_view year)
+    -> YearlyInsightsData {
   if (fail_target_not_found) {
-    throw tracer_core::common::ReportTargetNotFoundError("year", year);
+    throw tracer_core::common::InsightsTargetNotFoundError("year", year);
   }
-  YearlyReportData report;
-  report.range_label = std::string(year);
-  return report;
+  YearlyInsightsData insights;
+  insights.range_label = std::string(year);
+  return insights;
 }
 
-auto FakeReportDataQueryService::ListDailyTargets()
+auto FakeInsightsDataQueryService::ListDailyTargets()
     -> std::vector<std::string> {
   if (fail_list_targets) {
     throw std::runtime_error("daily target listing failed");
@@ -319,7 +319,7 @@ auto FakeReportDataQueryService::ListDailyTargets()
   return daily_targets;
 }
 
-auto FakeReportDataQueryService::ListMonthlyTargets()
+auto FakeInsightsDataQueryService::ListMonthlyTargets()
     -> std::vector<std::string> {
   if (fail_list_targets) {
     throw std::runtime_error("monthly target listing failed");
@@ -327,7 +327,7 @@ auto FakeReportDataQueryService::ListMonthlyTargets()
   return monthly_targets;
 }
 
-auto FakeReportDataQueryService::ListWeeklyTargets()
+auto FakeInsightsDataQueryService::ListWeeklyTargets()
     -> std::vector<std::string> {
   if (fail_list_targets) {
     throw std::runtime_error("weekly target listing failed");
@@ -335,7 +335,7 @@ auto FakeReportDataQueryService::ListWeeklyTargets()
   return weekly_targets;
 }
 
-auto FakeReportDataQueryService::ListYearlyTargets()
+auto FakeInsightsDataQueryService::ListYearlyTargets()
     -> std::vector<std::string> {
   if (fail_list_targets) {
     throw std::runtime_error("yearly target listing failed");
@@ -343,59 +343,59 @@ auto FakeReportDataQueryService::ListYearlyTargets()
   return yearly_targets;
 }
 
-auto FakeReportDataQueryService::QueryPeriodBatch(
-    const std::vector<int>& /*days_list*/) -> std::map<int, PeriodReportData> {
+auto FakeInsightsDataQueryService::QueryPeriodBatch(
+    const std::vector<int>& /*days_list*/) -> std::map<int, PeriodInsightsData> {
   return {};
 }
 
-auto FakeReportDataQueryService::QueryAllDaily()
-    -> std::map<std::string, DailyReportData> {
+auto FakeInsightsDataQueryService::QueryAllDaily()
+    -> std::map<std::string, DailyInsightsData> {
   return {};
 }
 
-auto FakeReportDataQueryService::QueryAllMonthly()
-    -> std::map<std::string, MonthlyReportData> {
+auto FakeInsightsDataQueryService::QueryAllMonthly()
+    -> std::map<std::string, MonthlyInsightsData> {
   return {};
 }
 
-auto FakeReportDataQueryService::QueryAllWeekly()
-    -> std::map<std::string, WeeklyReportData> {
+auto FakeInsightsDataQueryService::QueryAllWeekly()
+    -> std::map<std::string, WeeklyInsightsData> {
   return {};
 }
 
-auto FakeReportDataQueryService::QueryAllYearly()
-    -> std::map<std::string, YearlyReportData> {
+auto FakeInsightsDataQueryService::QueryAllYearly()
+    -> std::map<std::string, YearlyInsightsData> {
   return {};
 }
 
-auto FakeReportDtoFormatter::FormatDaily(const DailyReportData& report,
-                                         ReportFormat /*format*/)
+auto FakeInsightsDtoFormatter::FormatDaily(const DailyInsightsData& insights,
+                                         InsightsFormat /*format*/)
     -> std::string {
-  return "daily:" + report.date;
+  return "daily:" + insights.date;
 }
 
-auto FakeReportDtoFormatter::FormatMonthly(const MonthlyReportData& report,
-                                           ReportFormat /*format*/)
+auto FakeInsightsDtoFormatter::FormatMonthly(const MonthlyInsightsData& insights,
+                                           InsightsFormat /*format*/)
     -> std::string {
-  return "month:" + report.range_label;
+  return "month:" + insights.range_label;
 }
 
-auto FakeReportDtoFormatter::FormatPeriod(const PeriodReportData& report,
-                                          ReportFormat /*format*/)
+auto FakeInsightsDtoFormatter::FormatPeriod(const PeriodInsightsData& insights,
+                                          InsightsFormat /*format*/)
     -> std::string {
-  return "period:" + report.start_date + "|" + report.end_date;
+  return "period:" + insights.start_date + "|" + insights.end_date;
 }
 
-auto FakeReportDtoFormatter::FormatWeekly(const WeeklyReportData& report,
-                                          ReportFormat /*format*/)
+auto FakeInsightsDtoFormatter::FormatWeekly(const WeeklyInsightsData& insights,
+                                          InsightsFormat /*format*/)
     -> std::string {
-  return "week:" + report.range_label;
+  return "week:" + insights.range_label;
 }
 
-auto FakeReportDtoFormatter::FormatYearly(const YearlyReportData& report,
-                                          ReportFormat /*format*/)
+auto FakeInsightsDtoFormatter::FormatYearly(const YearlyInsightsData& insights,
+                                          InsightsFormat /*format*/)
     -> std::string {
-  return "year:" + report.range_label;
+  return "year:" + insights.range_label;
 }
 
 auto FakeDataQueryService::RunDataQuery(
@@ -467,20 +467,20 @@ auto FakeTracerExchangeService::RunInspect(
 }
 
 auto BuildRuntimeApi(
-    FakePipelineWorkflow& pipeline_workflow, FakeReportHandler& report_handler,
+    FakePipelineWorkflow& pipeline_workflow, FakeInsightsHandler& insights_handler,
     const std::shared_ptr<FakeProjectRepository>& repository,
     const std::shared_ptr<FakeDataQueryService>& data_query,
     const std::shared_ptr<FakeTracerExchangeService>& tracer_exchange_service,
-    const std::shared_ptr<FakeReportDataQueryService>&
-        report_data_query_service) -> TracerCoreRuntime {
+    const std::shared_ptr<FakeInsightsDataQueryService>&
+        insights_data_query_service) -> TracerCoreRuntime {
   auto pipeline_api = std::make_shared<PipelineApi>(pipeline_workflow);
   auto query_api = std::make_shared<QueryApi>(repository, data_query);
-  auto report_formatter = std::make_shared<FakeReportDtoFormatter>();
-  auto report_api = std::make_shared<ReportApi>(
-      report_handler, report_data_query_service, report_formatter);
+  auto insights_formatter = std::make_shared<FakeInsightsDtoFormatter>();
+  auto insights_api = std::make_shared<InsightsApi>(
+      insights_handler, insights_data_query_service, insights_formatter);
   auto tracer_exchange_api =
       std::make_shared<TracerExchangeApi>(tracer_exchange_service);
-  return {std::move(pipeline_api), std::move(query_api), std::move(report_api),
+  return {std::move(pipeline_api), std::move(query_api), std::move(insights_api),
           std::move(tracer_exchange_api)};
 }
 

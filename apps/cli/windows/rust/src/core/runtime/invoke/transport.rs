@@ -59,14 +59,14 @@ mod tests {
     use super::map_runtime_text_error;
 
     #[test]
-    fn reporting_target_not_found_maps_to_dedicated_exit_code() {
+    fn insights_target_not_found_maps_to_dedicated_exit_code() {
         let error = map_runtime_text_error(
-            "Report target not found: day `2024-12-31`.".to_string(),
+            "Insights target not found: day `2024-12-31`.".to_string(),
             &ErrorContract {
-                error_code: "reporting.target.not_found".to_string(),
-                error_category: "reporting".to_string(),
+                error_code: "insights.target.not_found".to_string(),
+                error_category: "insights".to_string(),
                 hints: vec![
-                    "Check that the requested report target exists in the current database."
+                    "Check that the requested insights target exists in the current database."
                         .to_string(),
                 ],
             },
@@ -75,22 +75,22 @@ mod tests {
         assert!(matches!(
             error,
             crate::error::AppError::Plain {
-                code: AppExitCode::ReportTargetNotFound,
+                code: AppExitCode::InsightsTargetNotFound,
                 ..
             }
         ));
         assert!(error
             .render_for_stderr()
-            .contains("reporting.target.not_found"));
+            .contains("insights.target.not_found"));
     }
 }
 
 pub(crate) fn map_runtime_text_error(error_message: String, contract: &ErrorContract) -> AppError {
     let detail = format_error_detail(error_message, contract);
-    if contract.error_code == "reporting.target.not_found" {
+    if contract.error_code == "insights.target.not_found" {
         return AppError::Plain {
             message: detail,
-            code: AppExitCode::ReportTargetNotFound,
+            code: AppExitCode::InsightsTargetNotFound,
         };
     }
     AppError::Logic(detail)

@@ -2,7 +2,7 @@
 #include <stdexcept>
 
 #include "infra/query/data/repository/query_runtime_service_internal.hpp"
-#include "infra/query/data/orchestrators/report_chart_orchestrator.hpp"
+#include "infra/query/data/orchestrators/insights_chart_orchestrator.hpp"
 
 import tracer.core.infrastructure.query.data.orchestrators;
 
@@ -39,11 +39,11 @@ auto DispatchDataQueryAction(
     case infra_data_query::DataQueryAction::kActivitySuggest:
       return infra_data_query_orchestrators::HandleActivitySuggestQuery(
           db_conn, request, request.output_mode);
-    case infra_data_query::DataQueryAction::kReportChart:
-      return infra_data_query_orchestrators::HandleReportChartQuery(
+    case infra_data_query::DataQueryAction::kInsightsChart:
+      return infra_data_query_orchestrators::HandleInsightsChartQuery(
           db_conn, request, request.output_mode);
-    case infra_data_query::DataQueryAction::kReportComposition:
-      return infra_data_query_orchestrators::HandleReportCompositionQuery(
+    case infra_data_query::DataQueryAction::kInsightsComposition:
+      return infra_data_query_orchestrators::HandleInsightsCompositionQuery(
           db_conn, request, request.output_mode);
     case infra_data_query::DataQueryAction::kTree:
       return infra_data_query_orchestrators::HandleTreeQuery(

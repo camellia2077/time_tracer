@@ -16,7 +16,7 @@ struct ErrorContractFields {
   std::vector<std::string> hints;
 };
 
-struct ReportWindowMetadata {
+struct InsightsWindowMetadata {
   bool has_records = false;
   int matched_day_count = 0;
   int matched_record_count = 0;
@@ -36,7 +36,7 @@ struct TextOutput {
   std::string content;
   std::string error_message;
   ErrorContractFields error_contract;
-  std::optional<ReportWindowMetadata> report_window_metadata;
+  std::optional<InsightsWindowMetadata> insights_window_metadata;
 };
 
 }  // namespace tracer_core::core::dto

@@ -20,13 +20,13 @@ Use this file as the fast navigation index for agents.
   - Runner entry: `RunDataQueryRefactorTests(int& failures)` in
     `data_query/data_query_refactor_period_tests.cpp`
 
-- `report_formatter/`
+- `insights_formatter/`
   - Markdown/LaTeX/Typst parity snapshot tests.
   - Files:
-    - `report_formatter/report_formatter_parity_md_tests.cpp`
-    - `report_formatter/report_formatter_parity_tex_tests.cpp`
-    - `report_formatter/report_formatter_parity_typ_tests.cpp`
-    - `report_formatter/report_formatter_parity_internal.hpp`
+    - `insights_formatter/insights_formatter_parity_md_tests.cpp`
+    - `insights_formatter/insights_formatter_parity_tex_tests.cpp`
+    - `insights_formatter/insights_formatter_parity_typ_tests.cpp`
+    - `insights_formatter/insights_formatter_parity_internal.hpp`
 
 - Flat files kept at current level:
   - `validation_issue_reporter_tests.cpp`
@@ -51,4 +51,4 @@ When moving/adding test files, always update this file first.
 
 1. `python tools/run.py build --app tracer_core --build-dir build_fast --concise`
 2. `python tools/run.py verify --app tracer_core --build-dir build_fast --concise`
-3. `rg -n "infrastructure/tests/(android_runtime|data_query|report_formatter|exchange)" apps/tracer_core_shell/tests/platform`
+3. `rg -n "infrastructure/tests/(android_runtime|data_query|insights_formatter|exchange)" apps/tracer_core_shell/tests/platform`

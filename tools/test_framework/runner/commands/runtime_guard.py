@@ -150,10 +150,10 @@ def main(argv: list[str], repo_root: Path) -> int:
     workspace_root.mkdir(parents=True, exist_ok=True)
 
     files_to_copy, folders_to_copy = load_runtime_bundle_spec(repo_root)
-    core_dll_name, reports_shared_dll_name = resolve_runtime_library_names(source_bin)
+    core_dll_name, insights_shared_dll_name = resolve_runtime_library_names(source_bin)
     scenarios = build_scenarios(
         core_dll_name=core_dll_name,
-        reports_shared_dll_name=reports_shared_dll_name,
+        insights_shared_dll_name=insights_shared_dll_name,
     )
     failures: list[str] = []
 

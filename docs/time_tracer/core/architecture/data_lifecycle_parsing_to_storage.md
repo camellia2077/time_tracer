@@ -29,7 +29,7 @@ Time Tracer 采用了清晰的分层架构（Clean Architecture）来处理复�
 - `importer` (内部组件 `ProjectResolver` & `Writer`): 递归解析项目树路径，创建不存在的 `projects` 节点，并将记录行安全地插入至 `days` 和 `time_records` 数据表中。
 
 ### 阶段三：数据查询与聚合统计 (Query & Stats)
-**所在层级**：`application/reports` & `infrastructure` -> UI/CLI
+**所在层级**：`application/insights` & `infrastructure` -> UI/CLI
 **核心职责**：供系统调取历史沉淀的数据进行汇总。不论是日报告、月报告还是终端的可视化树（tree），均从 SQLite 取出结构化结果，而非重新读取文档。
 
 ---

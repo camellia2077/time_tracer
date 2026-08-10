@@ -24,8 +24,8 @@ routing. During the transition, both the new and legacy folders remain valid.
    - Primary entry for ingest docs.
 8. [capabilities/query/README.md](capabilities/query/README.md)
    - Primary entry for query docs.
-9. [capabilities/reporting/README.md](capabilities/reporting/README.md)
-   - Primary entry for reporting docs.
+9. [capabilities/insights/README.md](capabilities/insights/README.md)
+   - Primary entry for insights docs.
 10. [capabilities/exchange/README.md](capabilities/exchange/README.md)
    - Primary entry for exchange docs.
 11. [capabilities/config/README.md](capabilities/config/README.md)
@@ -39,7 +39,7 @@ routing. During the transition, both the new and legacy folders remain valid.
 
 ## What Lives Here
 1. Domain model, business rules, and application orchestration docs.
-2. Core-facing contracts, error semantics, reporting/query contracts, and schema docs.
+2. Core-facing contracts, error semantics, insights/query contracts, and schema docs.
 3. Architecture rules for module boundaries, JSON handling, and dependency direction.
 4. Capability-owned docs that describe SOP, responsibility boundaries, and
    source-of-truth rules.
@@ -69,9 +69,9 @@ routing. During the transition, both the new and legacy folders remain valid.
    - [capabilities/query/README.md](capabilities/query/README.md)
    - [capabilities/query/data_query.md](capabilities/query/data_query.md)
    - [contracts/stats/README.md](contracts/stats/README.md)
-5. Reporting formatter/export/report snapshot changes:
-   - [capabilities/reporting/README.md](capabilities/reporting/README.md)
-   - [capabilities/reporting/contracts.md](capabilities/reporting/contracts.md)
+5. Insights formatter/export/insights snapshot changes:
+   - [capabilities/insights/README.md](capabilities/insights/README.md)
+   - [capabilities/insights/contracts.md](capabilities/insights/contracts.md)
 6. Exchange `.zip` package or runtime-crypto behavior:
    - [capabilities/exchange/README.md](capabilities/exchange/README.md)
    - [capabilities/exchange/contracts.md](capabilities/exchange/contracts.md)

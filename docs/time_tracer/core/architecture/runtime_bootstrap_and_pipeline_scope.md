@@ -14,11 +14,11 @@ different ownership and lifecycle rules.
 | `config/user/behavior.toml` | user data | yes | yes |
 | `config/user/activity_hierarchy/*.toml` | user data | yes | yes |
 | `config/program/meta/bundle.toml` | presentation/runtime | no | yes |
-| `config/program/reports/**` | presentation/runtime | no | yes, for reports |
+| `config/program/insights/**` | presentation/runtime | no | yes, for insights |
 | `config/program/charts/**` | presentation/runtime | no | yes, for charts |
 
 `config/program/**` is not exchange data. It contains immutable or
-presentation-owned resources delivered by the host, such as report templates,
+presentation-owned resources delivered by the host, such as insights templates,
 chart definitions, and the program resource index.
 
 ## Runtime Families
@@ -30,11 +30,11 @@ presentation, including:
 
 - TXT pipeline and persistence;
 - query services;
-- report catalog and formatters;
-- chart/report program resources;
+- insights catalog and formatters;
+- chart/insights program resources;
 - exchange services.
 
-Its bootstrap may require `config/program/meta/bundle.toml` because report and
+Its bootstrap may require `config/program/meta/bundle.toml` because insights and
 formatter capabilities use the program resource index.
 
 ### Pipeline-only Runtime
@@ -67,12 +67,12 @@ installation and keeps program resources out of the exchange/import contract.
 ## Invariants
 
 1. TXT structure and logic validation depend on valid user converter config and
-   activity hierarchy data, not on report or chart resources.
+   activity hierarchy data, not on insights or chart resources.
 2. `bundle.toml` is a program-resource index, not a requirement of TXT data
    exchange.
 3. Exchange content is limited to the exchange contract, currently
    `config/user/**` and `payload/**`; `config/program/**` is excluded.
-4. A change to report resources must not make TXT validation or data import
+4. A change to insights resources must not make TXT validation or data import
    fail when the pipeline-only Runtime has the required user configuration.
 
 ## Implementation References

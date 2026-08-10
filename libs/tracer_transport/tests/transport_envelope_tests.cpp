@@ -52,16 +52,16 @@ void TestParseMissingOptionalDefaults(int& failures) {
          "Missing `error_message` should default to empty string.", failures);
   Expect(parsed.envelope.content.empty(),
          "Missing `content` should default to empty string.", failures);
-  Expect(!parsed.envelope.report_hash_sha256.has_value(),
-         "Missing `report_hash_sha256` should default to nullopt.", failures);
-  Expect(!parsed.envelope.report_window_metadata.has_value(),
-         "Missing report window metadata should default to nullopt.", failures);
+  Expect(!parsed.envelope.insights_hash_sha256.has_value(),
+         "Missing `insights_hash_sha256` should default to nullopt.", failures);
+  Expect(!parsed.envelope.insights_window_metadata.has_value(),
+         "Missing insights window metadata should default to nullopt.", failures);
 }
 
 void TestParseOptionalTypeMismatchDefaults(int& failures) {
   const auto parsed = ParseResponseEnvelope(ResponseEnvelopeParseArgs{
       .response_json = R"({"ok":true,"error_message":123,"content":["x"]})",
-      .context = "nativeReport",
+      .context = "nativeInsights",
   });
   Expect(!parsed.HasError(),
          "Type mismatch on optional fields should not fail parsing.", failures);
@@ -111,12 +111,12 @@ void TestParseEmptyResponse(int& failures) {
 void TestParseInvalidJson(int& failures) {
   const auto parsed = ParseResponseEnvelope(ResponseEnvelopeParseArgs{
       .response_json = "{not-json",
-      .context = "nativeReport",
+      .context = "nativeInsights",
   });
   Expect(parsed.HasError(), "Invalid JSON should fail parsing.", failures);
   Expect(parsed.error.code == TransportErrorCode::kParseFailure,
          "Invalid JSON should be parse failure.", failures);
-  Expect(Contains(parsed.error.message, "nativeReport:"),
+  Expect(Contains(parsed.error.message, "nativeInsights:"),
          "Invalid JSON error should include context prefix.", failures);
 }
 
@@ -148,15 +148,15 @@ void TestSerializeRoundTrip(int& failures) {
          "Roundtrip `error_message` mismatch.", failures);
   Expect(parsed.envelope.content == envelope.content,
          "Roundtrip `content` mismatch.", failures);
-  Expect(!parsed.envelope.report_hash_sha256.has_value(),
+  Expect(!parsed.envelope.insights_hash_sha256.has_value(),
          "Roundtrip missing hash should keep nullopt.", failures);
-  Expect(!parsed.envelope.report_window_metadata.has_value(),
+  Expect(!parsed.envelope.insights_window_metadata.has_value(),
          "Roundtrip missing window metadata should keep nullopt.", failures);
 }
 
 void TestSerializeRoundTripWithHash(int& failures) {
-  auto envelope = BuildResponseEnvelope(true, "", "report body");
-  envelope.report_hash_sha256 =
+  auto envelope = BuildResponseEnvelope(true, "", "insights body");
+  envelope.insights_hash_sha256 =
       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
   const std::string serialized = SerializeResponseEnvelope(envelope);
   const auto parsed = ParseResponseEnvelope(ResponseEnvelopeParseArgs{
@@ -165,8 +165,8 @@ void TestSerializeRoundTripWithHash(int& failures) {
   });
   Expect(!parsed.HasError(), "Serialized envelope with hash should parse back.",
          failures);
-  Expect(parsed.envelope.report_hash_sha256 == envelope.report_hash_sha256,
-         "Roundtrip `report_hash_sha256` mismatch.", failures);
+  Expect(parsed.envelope.insights_hash_sha256 == envelope.insights_hash_sha256,
+         "Roundtrip `insights_hash_sha256` mismatch.", failures);
 }
 
 void TestSerializeRoundTripWithErrorContract(int& failures) {
@@ -196,9 +196,9 @@ void TestSerializeRoundTripWithErrorContract(int& failures) {
 }
 
 void TestSerializeRoundTripWithWindowMetadata(int& failures) {
-  auto envelope = BuildResponseEnvelope(true, "", "report body");
-  envelope.report_window_metadata =
-      tracer::transport::ReportWindowMetadataPayload{
+  auto envelope = BuildResponseEnvelope(true, "", "insights body");
+  envelope.insights_window_metadata =
+      tracer::transport::InsightsWindowMetadataPayload{
           .has_records = false,
           .matched_day_count = 0,
           .matched_record_count = 0,
@@ -214,11 +214,11 @@ void TestSerializeRoundTripWithWindowMetadata(int& failures) {
   Expect(!parsed.HasError(),
          "Serialized envelope with window metadata should parse back.",
          failures);
-  Expect(parsed.envelope.report_window_metadata.has_value(),
+  Expect(parsed.envelope.insights_window_metadata.has_value(),
          "Roundtrip window metadata should be present.", failures);
-  Expect(parsed.envelope.report_window_metadata->requested_days == 31,
+  Expect(parsed.envelope.insights_window_metadata->requested_days == 31,
          "Roundtrip requested_days mismatch.", failures);
-  Expect(parsed.envelope.report_window_metadata->start_date == "2024-12-01",
+  Expect(parsed.envelope.insights_window_metadata->start_date == "2024-12-01",
          "Roundtrip start_date mismatch.", failures);
 }
 

@@ -15,11 +15,11 @@ export import tracer.core.domain.types.ingest_mode;
 export import tracer.core.domain.types.converter_config;
 export import tracer.core.domain.types.app_options;
 
-export import tracer.core.domain.reports.types.report_types;
-export import tracer.core.domain.reports.models.project_tree;
-export import tracer.core.domain.reports.models.range_report_data;
-export import tracer.core.domain.reports.models.period_report_models;
-export import tracer.core.domain.reports.models.daily_report_data;
-export import tracer.core.domain.reports.models.query_data_structs;
+export import tracer.core.domain.insights.types.insights_types;
+export import tracer.core.domain.insights.models.project_tree;
+export import tracer.core.domain.insights.models.range_insights_data;
+export import tracer.core.domain.insights.models.period_insights_models;
+export import tracer.core.domain.insights.models.daily_insights_data;
+export import tracer.core.domain.insights.models.query_data_structs;
 
 export import tracer.core.domain.logic;

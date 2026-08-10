@@ -22,7 +22,7 @@ This page covers the `Record` tab single-line input flow.
 It does not cover:
 
 1. full TXT editor save semantics
-2. report rendering behavior
+2. insights rendering behavior
 3. config asset packaging details
 4. the future explicit interval-event authoring flow
 

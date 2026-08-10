@@ -24,7 +24,7 @@ auto RunIoSmokeSection(int& failures) -> void {
         fixture.runtime.runtime_api->pipeline().RunIngest(ingest_request);
     if (!ingest_result.ok) {
       ++failures;
-      std::cerr << "[FAIL] RunIngest should succeed for report-chart test: "
+      std::cerr << "[FAIL] RunIngest should succeed for insights-chart test: "
                 << ingest_result.error_message << '\n';
     } else {
       ChartProbeContext chart_probe;
@@ -35,7 +35,7 @@ auto RunIoSmokeSection(int& failures) -> void {
                                   failures);
     }
 
-    VerifyReportOutputs(fixture.runtime.runtime_api, failures);
+    VerifyInsightsOutputs(fixture.runtime.runtime_api, failures);
   } catch (const std::exception& exception) {
     ++failures;
     std::cerr << "[FAIL] Android runtime IO smoke test threw exception: "

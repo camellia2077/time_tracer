@@ -14,7 +14,7 @@
 #include "host/bootstrap/android_runtime_factory.hpp"
 
 enum class IngestMode;
-enum class ReportFormat;
+enum class InsightsFormat;
 
 namespace tracer::core::application::use_cases {
 
@@ -27,15 +27,15 @@ namespace tracer_core::core::dto {
 
 enum class DataQueryAction;
 enum class DataQueryOutputMode;
-enum class ReportAverageDayBasis;
-enum class ReportDisplayMode;
-enum class ReportExportScope;
-enum class ReportOperationKind;
+enum class InsightsAverageDayBasis;
+enum class InsightsDisplayMode;
+enum class InsightsExportScope;
+enum class InsightsOperationKind;
 enum class TemporalSelectionKind;
 
 struct OperationAck;
 struct IngestSyncStatusOutput;
-struct TemporalReportTargetsOutput;
+struct TemporalInsightsTargetsOutput;
 struct TextOutput;
 struct TreeQueryResponse;
 
@@ -104,8 +104,8 @@ void SetLastError(const char* message);
 [[nodiscard]] auto BuildIngestSyncStatusResponse(
     const tracer_core::core::dto::IngestSyncStatusOutput& output)
     -> const char*;
-[[nodiscard]] auto BuildReportTargetsResponse(
-    const tracer_core::core::dto::TemporalReportTargetsOutput& output)
+[[nodiscard]] auto BuildInsightsTargetsResponse(
+    const tracer_core::core::dto::TemporalInsightsTargetsOutput& output)
     -> const char*;
 [[nodiscard]] auto BuildTextResponse(
     const tracer_core::core::dto::TextOutput& output) -> const char*;
@@ -136,17 +136,17 @@ void SetLastError(const char* message);
     -> tracer_core::core::dto::DataQueryAction;
 [[nodiscard]] auto ParseDataQueryOutputMode(const std::string& value)
     -> tracer_core::core::dto::DataQueryOutputMode;
-[[nodiscard]] auto ParseReportAverageDayBasis(const std::string& value)
-    -> tracer_core::core::dto::ReportAverageDayBasis;
-[[nodiscard]] auto ParseReportDisplayMode(const std::string& value)
-    -> tracer_core::core::dto::ReportDisplayMode;
-[[nodiscard]] auto ParseReportExportScope(const std::string& value)
-    -> tracer_core::core::dto::ReportExportScope;
-[[nodiscard]] auto ParseReportOperationKind(const std::string& value)
-    -> tracer_core::core::dto::ReportOperationKind;
+[[nodiscard]] auto ParseInsightsAverageDayBasis(const std::string& value)
+    -> tracer_core::core::dto::InsightsAverageDayBasis;
+[[nodiscard]] auto ParseInsightsDisplayMode(const std::string& value)
+    -> tracer_core::core::dto::InsightsDisplayMode;
+[[nodiscard]] auto ParseInsightsExportScope(const std::string& value)
+    -> tracer_core::core::dto::InsightsExportScope;
+[[nodiscard]] auto ParseInsightsOperationKind(const std::string& value)
+    -> tracer_core::core::dto::InsightsOperationKind;
 [[nodiscard]] auto ParseTemporalSelectionKind(const std::string& value)
     -> tracer_core::core::dto::TemporalSelectionKind;
-[[nodiscard]] auto ParseReportFormat(const std::string& value) -> ReportFormat;
+[[nodiscard]] auto ParseInsightsFormat(const std::string& value) -> InsightsFormat;
 
 void SetCryptoProgressCallbackRegistration(
     TtCoreCryptoProgressCallback callback, void* user_data);

@@ -259,10 +259,10 @@ auto ToCliDataQueryAction(tracer_core::core::dto::DataQueryAction action)
       throw std::runtime_error(
           "Authorable event tokens action must be handled before SQL query "
           "conversion.");
-    case CoreAction::kReportChart:
-      return infra_data_query::DataQueryAction::kReportChart;
-    case CoreAction::kReportComposition:
-      return infra_data_query::DataQueryAction::kReportComposition;
+    case CoreAction::kInsightsChart:
+      return infra_data_query::DataQueryAction::kInsightsChart;
+    case CoreAction::kInsightsComposition:
+      return infra_data_query::DataQueryAction::kInsightsComposition;
     case CoreAction::kTree:
       return infra_data_query::DataQueryAction::kTree;
   }

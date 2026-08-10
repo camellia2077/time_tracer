@@ -19,8 +19,8 @@ enum class DataQueryAction {
   kMappingAliasKeys,
   kWakeKeywords,
   kAuthorableEventTokens,
-  kReportChart,
-  kReportComposition,
+  kInsightsChart,
+  kInsightsComposition,
   kTree,
 };
 
@@ -29,7 +29,7 @@ enum class DataQueryOutputMode {
   kSemanticJson,
 };
 
-enum class ReportAverageDayBasis {
+enum class InsightsAverageDayBasis {
   kActiveDays,
   kCalendarDays,
 };
@@ -58,7 +58,7 @@ struct DataQueryRequest {
   std::optional<std::string> tree_period_argument;
   std::optional<int> tree_max_depth;
   std::optional<std::string> root;
-  ReportAverageDayBasis average_day_basis = ReportAverageDayBasis::kActiveDays;
+  InsightsAverageDayBasis average_day_basis = InsightsAverageDayBasis::kActiveDays;
 };
 
 struct TreeQueryRequest {

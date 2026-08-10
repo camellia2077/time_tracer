@@ -4,7 +4,7 @@ This directory is the capability-first entry for `tracer_core` config docs.
 
 Use it when you need to understand:
 1. config ownership and owner paths
-2. how config participates in validation, query, reporting, and exchange
+2. how config participates in validation, query, insights, and exchange
 3. where config loading ends and business-capability use begins
 
 ## Read First

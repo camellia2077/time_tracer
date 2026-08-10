@@ -16,8 +16,8 @@ namespace ConfigParserUtils::internal {
 
 namespace infra_file_io = tracer::core::infrastructure::internal::file_io;
 
-auto LoadReportPathsFromTable(const toml::table& section,
-                              const ReportPathSource& source,
+auto LoadInsightsPathsFromTable(const toml::table& section,
+                              const InsightsPathSource& source,
                               std::string_view section_field_path,
                               fs::path& day_path, fs::path& month_path,
                               fs::path& period_path, fs::path& week_path,
@@ -32,15 +32,15 @@ auto LoadReportPathsFromTable(const toml::table& section,
                           "must point to an existing directory.");
   }
 
-  fs::path report_root = kRootPath;
-  if (section_field_path == "reports.markdown") {
+  fs::path insights_root = kRootPath;
+  if (section_field_path == "insights.markdown") {
     const std::string kLocale = RequireNonEmptyStringField(
         section, "default_locale", source.source_path, section_field_path);
-    report_root /= kLocale;
+    insights_root /= kLocale;
   }
 
   const auto kLoad = [&](std::string_view key, fs::path& output) {
-    output = report_root / (std::string(key) + ".toml");
+    output = insights_root / (std::string(key) + ".toml");
     EnsureFileExists(source.source_path, JoinFieldPath(section_field_path, key),
                      output);
   };
@@ -96,12 +96,12 @@ auto ValidateBundleFileList(const toml::table& bundle_tbl,
   }
 }
 
-auto LoadAndroidReportPathSetFromTable(const toml::table& section,
-                                       const ReportPathSource& source,
+auto LoadAndroidInsightsPathSetFromTable(const toml::table& section,
+                                       const InsightsPathSource& source,
                                        std::string_view section_field_path)
-    -> AndroidBundleReportConfigPathSet {
-  AndroidBundleReportConfigPathSet out{};
-  LoadReportPathsFromTable(section, source, section_field_path, out.day,
+    -> AndroidBundleInsightsConfigPathSet {
+  AndroidBundleInsightsConfigPathSet out{};
+  LoadInsightsPathsFromTable(section, source, section_field_path, out.day,
                            out.month, out.period, out.week, out.year);
   return out;
 }
@@ -158,34 +158,34 @@ auto TryResolveAndroidBundleConfigPathsImpl(const fs::path& config_dir)
   out.converter_config_toml_path =
       parsed_config.pipeline.converter_main_config_path;
   out.markdown = {
-      .day = parsed_config.reports.day_md_config_path,
-      .month = parsed_config.reports.month_md_config_path,
-      .period = parsed_config.reports.period_md_config_path,
-      .week = parsed_config.reports.week_md_config_path,
-      .year = parsed_config.reports.year_md_config_path,
+      .day = parsed_config.insights.day_md_config_path,
+      .month = parsed_config.insights.month_md_config_path,
+      .period = parsed_config.insights.period_md_config_path,
+      .week = parsed_config.insights.week_md_config_path,
+      .year = parsed_config.insights.year_md_config_path,
   };
-  if (!parsed_config.reports.day_typ_config_path.empty()) {
-    out.typst = AndroidBundleReportConfigPathSet{
-        .day = parsed_config.reports.day_typ_config_path,
-        .month = parsed_config.reports.month_typ_config_path,
-        .period = parsed_config.reports.period_typ_config_path,
-        .week = parsed_config.reports.week_typ_config_path,
-        .year = parsed_config.reports.year_typ_config_path,
+  if (!parsed_config.insights.day_typ_config_path.empty()) {
+    out.typst = AndroidBundleInsightsConfigPathSet{
+        .day = parsed_config.insights.day_typ_config_path,
+        .month = parsed_config.insights.month_typ_config_path,
+        .period = parsed_config.insights.period_typ_config_path,
+        .week = parsed_config.insights.week_typ_config_path,
+        .year = parsed_config.insights.year_typ_config_path,
     };
   }
-  if (!parsed_config.reports.day_tex_config_path.empty()) {
-    out.latex = AndroidBundleReportConfigPathSet{
-        .day = parsed_config.reports.day_tex_config_path,
-        .month = parsed_config.reports.month_tex_config_path,
-        .period = parsed_config.reports.period_tex_config_path,
-        .week = parsed_config.reports.week_tex_config_path,
-        .year = parsed_config.reports.year_tex_config_path,
+  if (!parsed_config.insights.day_tex_config_path.empty()) {
+    out.latex = AndroidBundleInsightsConfigPathSet{
+        .day = parsed_config.insights.day_tex_config_path,
+        .month = parsed_config.insights.month_tex_config_path,
+        .period = parsed_config.insights.period_tex_config_path,
+        .week = parsed_config.insights.week_tex_config_path,
+        .year = parsed_config.insights.year_tex_config_path,
     };
   }
   if (kProfile == "android" &&
       (out.latex.has_value() || out.typst.has_value())) {
     ThrowConfigFieldError(
-        kConfigPath, "reports",
+        kConfigPath, "insights",
         "must not contain LaTeX or Typst for profile 'android'.");
   }
   return out;

@@ -3,7 +3,7 @@
 ## Purpose
 
 This contract defines the core operation used to edit one authored activity
-remark from a structured report. The TXT file remains the source of truth and
+remark from a structured insights. The TXT file remains the source of truth and
 the database is rebuilt from the candidate TXT in the first implementation.
 
 ## Request
@@ -51,4 +51,4 @@ they are not decoded into a newline.
 Core owns record-to-TXT resolution, remark-only TXT mutation, validation
 ordering, ingest, and rollback. Transport owns wire encoding. Hosts only
 collect the record identity and new remark, display the result, and refresh
-the report.
+the insights.

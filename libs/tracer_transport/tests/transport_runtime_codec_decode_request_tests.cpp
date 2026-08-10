@@ -193,51 +193,51 @@ void TestDecodeWorkflowRequests(int& failures) {
       failures);
 }
 
-void TestDecodeReportRequests(int& failures) {
+void TestDecodeInsightsRequests(int& failures) {
   const auto batch =
-      DecodeReportBatchRequest(R"({"days_list":[7,14,30],"format":"md"})");
+      DecodeInsightsBatchRequest(R"({"days_list":[7,14,30],"format":"md"})");
   Expect(batch.days_list.size() == 3U,
-         "DecodeReportBatchRequest list size mismatch.", failures);
+         "DecodeInsightsBatchRequest list size mismatch.", failures);
   Expect(batch.days_list[1] == 14,
-         "DecodeReportBatchRequest list value mismatch.", failures);
+         "DecodeInsightsBatchRequest list value mismatch.", failures);
   Expect(batch.format.has_value() && *batch.format == "md",
-         "DecodeReportBatchRequest format mismatch.", failures);
+         "DecodeInsightsBatchRequest format mismatch.", failures);
 
   ExpectInvalidArgument(
-      [] { (void)DecodeReportBatchRequest(R"({"format":"md"})"); },
+      [] { (void)DecodeInsightsBatchRequest(R"({"format":"md"})"); },
       "field `days_list` must be an integer array.",
-      "DecodeReportBatchRequest missing days_list", failures);
+      "DecodeInsightsBatchRequest missing days_list", failures);
 }
 
-void TestDecodeTemporalReportRequest(int& failures) {
-  const auto query = DecodeTemporalReportRequest(
+void TestDecodeTemporalInsightsRequest(int& failures) {
+  const auto query = DecodeTemporalInsightsRequest(
       R"({"operation_kind":"query","display_mode":"week","selection_kind":"date_range","start_date":"2026-03-02","end_date":"2026-03-08","format":"markdown"})");
   Expect(query.operation_kind == "query",
-         "DecodeTemporalReportRequest operation_kind mismatch.", failures);
+         "DecodeTemporalInsightsRequest operation_kind mismatch.", failures);
   Expect(query.display_mode == "week",
-         "DecodeTemporalReportRequest display_mode mismatch.", failures);
+         "DecodeTemporalInsightsRequest display_mode mismatch.", failures);
   Expect(
       query.selection_kind.has_value() && *query.selection_kind == "date_range",
-      "DecodeTemporalReportRequest selection_kind mismatch.", failures);
+      "DecodeTemporalInsightsRequest selection_kind mismatch.", failures);
   Expect(query.start_date.has_value() && *query.start_date == "2026-03-02",
-         "DecodeTemporalReportRequest start_date mismatch.", failures);
+         "DecodeTemporalInsightsRequest start_date mismatch.", failures);
   Expect(query.end_date.has_value() && *query.end_date == "2026-03-08",
-         "DecodeTemporalReportRequest end_date mismatch.", failures);
+         "DecodeTemporalInsightsRequest end_date mismatch.", failures);
   Expect(query.format.has_value() && *query.format == "markdown",
-         "DecodeTemporalReportRequest format mismatch.", failures);
+         "DecodeTemporalInsightsRequest format mismatch.", failures);
 
-  const auto anchored_recent = DecodeTemporalReportRequest(
+  const auto anchored_recent = DecodeTemporalInsightsRequest(
       R"({"operation_kind":"query","display_mode":"recent","selection_kind":"recent_days","days":7,"anchor_date":"2026-03-07","format":"markdown"})");
   Expect(anchored_recent.days.has_value() && *anchored_recent.days == 7,
-         "DecodeTemporalReportRequest anchored days mismatch.", failures);
+         "DecodeTemporalInsightsRequest anchored days mismatch.", failures);
   Expect(anchored_recent.anchor_date.has_value() &&
              *anchored_recent.anchor_date == "2026-03-07",
-         "DecodeTemporalReportRequest anchor_date mismatch.", failures);
+         "DecodeTemporalInsightsRequest anchor_date mismatch.", failures);
 
-  const auto export_request = DecodeTemporalReportRequest(
+  const auto export_request = DecodeTemporalInsightsRequest(
       R"({"operation_kind":"export","display_mode":"recent","export_scope":"batch_recent_list","format":"markdown","recent_days_list":[7,14,30]})");
   Expect(export_request.operation_kind == "export",
-         "DecodeTemporalReportRequest export operation_kind mismatch.",
+         "DecodeTemporalInsightsRequest export operation_kind mismatch.",
          failures);
 
   const auto atomic_remark = DecodeUpdateActivityRemarkAtomicallyRequest(
@@ -258,15 +258,15 @@ void TestDecodeTemporalReportRequest(int& failures) {
       failures);
   Expect(export_request.export_scope.has_value() &&
              *export_request.export_scope == "batch_recent_list",
-         "DecodeTemporalReportRequest export_scope mismatch.", failures);
+         "DecodeTemporalInsightsRequest export_scope mismatch.", failures);
   Expect(export_request.recent_days_list.has_value() &&
              export_request.recent_days_list->size() == 3U,
-         "DecodeTemporalReportRequest recent_days_list mismatch.", failures);
+         "DecodeTemporalInsightsRequest recent_days_list mismatch.", failures);
 
   ExpectInvalidArgument(
-      [] { (void)DecodeTemporalReportRequest(R"({"display_mode":"day"})"); },
+      [] { (void)DecodeTemporalInsightsRequest(R"({"display_mode":"day"})"); },
       "field `operation_kind` must be a string.",
-      "DecodeTemporalReportRequest missing operation_kind", failures);
+      "DecodeTemporalInsightsRequest missing operation_kind", failures);
 }
 
 void TestDecodeTreeRequest(int& failures) {
@@ -299,8 +299,8 @@ auto RunDecodeRequestTests(int& failures) -> void {
   TestDecodeIngestRequest(failures);
   TestDecodeQueryRequest(failures);
   TestDecodeWorkflowRequests(failures);
-  TestDecodeReportRequests(failures);
-  TestDecodeTemporalReportRequest(failures);
+  TestDecodeInsightsRequests(failures);
+  TestDecodeTemporalInsightsRequest(failures);
   TestDecodeTreeRequest(failures);
 }
 

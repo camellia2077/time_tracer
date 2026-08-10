@@ -1,0 +1,4 @@
+parent = "insights"
+
+[canonical]
+work = ["work"]

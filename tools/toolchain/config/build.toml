@@ -51,15 +51,15 @@ build_targets = [
     "tc_c_api_query_tests",
 ]
 
-[build.profiles.cap_reporting]
+[build.profiles.cap_insights]
 extends = "fast"
-description = "Focused capability verification profile for tracer_core reporting surfaces."
+description = "Focused capability verification profile for tracer_core insights surfaces."
 build_targets = [
-    "tt_reporting_api_tests",
-    "tc_reporting_infra_smoke_tests",
+    "tt_insights_api_tests",
+    "tc_insights_infra_smoke_tests",
     "tt_fmt_parity_tests",
-    "tt_android_runtime_reporting_tests",
-    "tc_c_api_reporting_tests",
+    "tt_android_runtime_insights_tests",
+    "tc_c_api_insights_tests",
 ]
 
 [build.profiles.cap_exchange]
@@ -160,8 +160,8 @@ cmake_args = [
     "-D", "DISABLE_OPTIMIZATION=OFF",
     "-D", "ENABLE_LTO=OFF",
     "-D", "TT_ENABLE_PROCESSED_JSON_IO=OFF",
-    "-D", "TT_REPORT_ENABLE_LATEX=OFF",
-    "-D", "TT_REPORT_ENABLE_TYPST=OFF",
+    "-D", "TT_INSIGHTS_ENABLE_LATEX=OFF",
+    "-D", "TT_INSIGHTS_ENABLE_TYPST=OFF",
     "-D", "WARNING_LEVEL=2",
     "-D", "TIDY_WARNINGS_AS_ERRORS=OFF",
 ]

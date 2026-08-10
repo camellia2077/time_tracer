@@ -60,8 +60,8 @@ class IProcessedDataStorage {
 - **输出域契约**：
   `application/ports/pipeline/`
   - `IProcessedDataStorage` (负责处理转换好的 `ParsedData` 数据群落，持久化落库)。
-  `application/ports/reporting/`
-  - `IReportExportWriter` (报表导出服务时，负责把 Markdown/Tex 文本存到具体的系统目录去)。
+  `application/ports/insights/`
+  - `IInsightsExportWriter` (报表导出服务时，负责把 Markdown/Tex 文本存到具体的系统目录去)。
 - **监控契约**：
   `application/ports/pipeline/IValidationIssueReporter`
   与 `application/runtime_bridge/logger.hpp`

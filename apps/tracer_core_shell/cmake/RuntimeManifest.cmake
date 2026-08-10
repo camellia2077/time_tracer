@@ -19,7 +19,7 @@ function(tt_generate_runtime_manifest)
 
     set(_required_files
         "tracer_core.dll"
-        "reports_shared.dll"
+        "insights_shared.dll"
         "config/config.toml"
     )
 

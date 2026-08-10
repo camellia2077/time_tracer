@@ -115,7 +115,7 @@ auto NativeQuery(JNIEnv* env, jobject /*thiz*/, jint action, jint year,
 }
 
 
-auto NativeReportJson(JNIEnv* env, jobject /*thiz*/, jstring request_json)
+auto NativeInsightsJson(JNIEnv* env, jobject /*thiz*/, jstring request_json)
     -> jstring {
   return ExecuteJniMethod(env, [&]() -> std::string {
     const std::string request = ToUtf8(env, request_json);
@@ -127,10 +127,10 @@ auto NativeReportJson(JNIEnv* env, jobject /*thiz*/, jstring request_json)
                                  std::string{});
       }
 
-      const char* response = tracer_core_runtime_temporal_report_json(
+      const char* response = tracer_core_runtime_temporal_insights_json(
           g_runtime.core_runtime, request.c_str());
       if (response == nullptr || response[0] == '\0') {
-        throw std::runtime_error("nativeReportJson received empty core response.");
+        throw std::runtime_error("nativeInsightsJson received empty core response.");
       }
       return response;
     }

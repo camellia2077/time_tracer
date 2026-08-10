@@ -303,7 +303,7 @@ class TestVerifyExecuteFlow(VerifyCommandTestBase):
             ["cap_query", "shell_aggregate"],
         )
 
-    def test_execute_reports_single_inferred_profile(self):
+    def test_execute_insights_single_inferred_profile(self):
         stdout = io.StringIO()
         with (
             patch(
@@ -340,7 +340,7 @@ class TestVerifyExecuteFlow(VerifyCommandTestBase):
         self.assertEqual(result, 0)
         self.assertIn("inferred focused profile `cap_query`", stdout.getvalue())
 
-    def test_execute_reports_fast_fallback_reason(self):
+    def test_execute_insights_fast_fallback_reason(self):
         stdout = io.StringIO()
         with (
             patch(

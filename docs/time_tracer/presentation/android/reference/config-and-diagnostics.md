@@ -18,10 +18,12 @@ Describe the user-visible config editing and diagnostics support behavior.
 
 - Config UI edits the local runtime config snapshot in app-private storage.
 - Config UI is for local browsing/editing and diagnostics support, not for package-style config exchange.
-- Raw TOML editing uses the shared Android native `EditText` multiline editor rather than Compose `OutlinedTextField`.
+- Alias raw TOML editing uses the shared Android native `EditText` multiline editor rather than Compose `OutlinedTextField`.
 - Unsaved config drafts stay in memory per file for the current app session and are written only after explicit `Save changes`.
 - Diagnostics payload copy is a support action, not a runtime behavior authoring surface.
-- Appearance and language settings are persisted as UI preferences in the app layer.
+- Appearance, language, and Android-owned insights/chart settings are persisted
+  as UI preferences in the app layer. The shared CLI user TOMLs for charts,
+  heatmap thresholds, and insights are not part of Android configuration.
 
 ## Core Flow
 

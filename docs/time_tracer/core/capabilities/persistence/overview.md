@@ -17,7 +17,7 @@ Persistence owns:
 3. project repository and other stable persistence support services
 
 Persistence does not own:
-1. ingest/query/reporting/exchange orchestration
+1. ingest/query/insights/exchange orchestration
 2. host UI/CLI path UX
 3. business-level validation semantics
 

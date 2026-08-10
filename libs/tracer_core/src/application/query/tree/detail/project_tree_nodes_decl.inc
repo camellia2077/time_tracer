@@ -1,5 +1,5 @@
-[[nodiscard]] auto BuildProjectTreeNodesFromReportTree(
-    const ::reporting::ProjectTree& tree) -> std::vector<ProjectTreeNode>;
+[[nodiscard]] auto BuildProjectTreeNodesFromInsightsTree(
+    const ::insights::ProjectTree& tree) -> std::vector<ProjectTreeNode>;
 
 [[nodiscard]] auto FindProjectTreeNodesByPath(
     const std::vector<ProjectTreeNode>& roots, std::string_view root_pattern)

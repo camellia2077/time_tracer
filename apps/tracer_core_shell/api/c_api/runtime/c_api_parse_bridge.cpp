@@ -7,8 +7,8 @@
 
 #include "application/dto/pipeline_requests.hpp"
 #include "application/dto/query_requests.hpp"
-#include "application/dto/reporting_requests.hpp"
-#include "domain/reports/types/report_types.hpp"
+#include "application/dto/insights_requests.hpp"
+#include "domain/insights/types/insights_types.hpp"
 
 namespace tracer_core::shell::c_api_bridge {
 
@@ -110,13 +110,13 @@ namespace tracer_core::shell::c_api_bridge {
       normalized == "authorable-tokens") {
     return DataQueryAction::kAuthorableEventTokens;
   }
-  if (normalized == "report_chart" || normalized == "report-chart" ||
+  if (normalized == "insights_chart" || normalized == "insights-chart" ||
       normalized == "chart") {
-    return DataQueryAction::kReportChart;
+    return DataQueryAction::kInsightsChart;
   }
-  if (normalized == "report_composition" ||
-      normalized == "report-composition" || normalized == "composition") {
-    return DataQueryAction::kReportComposition;
+  if (normalized == "insights_composition" ||
+      normalized == "insights-composition" || normalized == "composition") {
+    return DataQueryAction::kInsightsComposition;
   }
   if (normalized == "tree") {
     return DataQueryAction::kTree;
@@ -124,8 +124,8 @@ namespace tracer_core::shell::c_api_bridge {
   throw std::invalid_argument(
       "field `action` must be one of: years|months|days|days_duration|"
       "days_stats|search|activity_suggest|mapping_names|activity_alias_mappings|mapping_alias_keys|"
-      "wake_keywords|authorable_event_tokens|report_chart|"
-      "report_composition|tree.");
+      "wake_keywords|authorable_event_tokens|insights_chart|"
+      "insights_composition|tree.");
 }
 
 [[nodiscard]] auto ParseDataQueryOutputMode(const std::string& value)
@@ -143,79 +143,79 @@ namespace tracer_core::shell::c_api_bridge {
       "field `output_mode` must be one of: text|semantic_json.");
 }
 
-[[nodiscard]] auto ParseReportAverageDayBasis(const std::string& value)
-    -> tracer_core::core::dto::ReportAverageDayBasis {
-  using tracer_core::core::dto::ReportAverageDayBasis;
+[[nodiscard]] auto ParseInsightsAverageDayBasis(const std::string& value)
+    -> tracer_core::core::dto::InsightsAverageDayBasis {
+  using tracer_core::core::dto::InsightsAverageDayBasis;
   const std::string normalized = ToLowerAscii(value);
   if (normalized == "active_days" || normalized == "active-days") {
-    return ReportAverageDayBasis::kActiveDays;
+    return InsightsAverageDayBasis::kActiveDays;
   }
   if (normalized == "calendar_days" || normalized == "calendar-days") {
-    return ReportAverageDayBasis::kCalendarDays;
+    return InsightsAverageDayBasis::kCalendarDays;
   }
   throw std::invalid_argument(
       "field `average_day_basis` must be one of: active_days|calendar_days.");
 }
 
-[[nodiscard]] auto ParseReportDisplayMode(const std::string& value)
-    -> tracer_core::core::dto::ReportDisplayMode {
-  using tracer_core::core::dto::ReportDisplayMode;
+[[nodiscard]] auto ParseInsightsDisplayMode(const std::string& value)
+    -> tracer_core::core::dto::InsightsDisplayMode {
+  using tracer_core::core::dto::InsightsDisplayMode;
   const std::string normalized = ToLowerAscii(value);
   if (normalized == "day") {
-    return ReportDisplayMode::kDay;
+    return InsightsDisplayMode::kDay;
   }
   if (normalized == "week") {
-    return ReportDisplayMode::kWeek;
+    return InsightsDisplayMode::kWeek;
   }
   if (normalized == "month") {
-    return ReportDisplayMode::kMonth;
+    return InsightsDisplayMode::kMonth;
   }
   if (normalized == "year") {
-    return ReportDisplayMode::kYear;
+    return InsightsDisplayMode::kYear;
   }
   if (normalized == "range") {
-    return ReportDisplayMode::kRange;
+    return InsightsDisplayMode::kRange;
   }
   if (normalized == "recent") {
-    return ReportDisplayMode::kRecent;
+    return InsightsDisplayMode::kRecent;
   }
   throw std::invalid_argument(
       "field `display_mode` must be one of: day|week|month|year|range|recent.");
 }
 
-[[nodiscard]] auto ParseReportExportScope(const std::string& value)
-    -> tracer_core::core::dto::ReportExportScope {
-  using tracer_core::core::dto::ReportExportScope;
+[[nodiscard]] auto ParseInsightsExportScope(const std::string& value)
+    -> tracer_core::core::dto::InsightsExportScope {
+  using tracer_core::core::dto::InsightsExportScope;
   const std::string normalized = ToLowerAscii(value);
   if (normalized == "single") {
-    return ReportExportScope::kSingle;
+    return InsightsExportScope::kSingle;
   }
   if (normalized == "all_matching" || normalized == "all-matching") {
-    return ReportExportScope::kAllMatching;
+    return InsightsExportScope::kAllMatching;
   }
   if (normalized == "batch_recent_list" ||
       normalized == "batch-recent-list") {
-    return ReportExportScope::kBatchRecentList;
+    return InsightsExportScope::kBatchRecentList;
   }
   throw std::invalid_argument(
       "field `export_scope` must be one of: single|all_matching|batch_recent_list.");
 }
 
-[[nodiscard]] auto ParseReportOperationKind(const std::string& value)
-    -> tracer_core::core::dto::ReportOperationKind {
-  using tracer_core::core::dto::ReportOperationKind;
+[[nodiscard]] auto ParseInsightsOperationKind(const std::string& value)
+    -> tracer_core::core::dto::InsightsOperationKind {
+  using tracer_core::core::dto::InsightsOperationKind;
   const std::string normalized = ToLowerAscii(value);
   if (normalized == "query") {
-    return ReportOperationKind::kQuery;
+    return InsightsOperationKind::kQuery;
   }
   if (normalized == "structured_query" || normalized == "structured-query") {
-    return ReportOperationKind::kStructuredQuery;
+    return InsightsOperationKind::kStructuredQuery;
   }
   if (normalized == "targets") {
-    return ReportOperationKind::kTargets;
+    return InsightsOperationKind::kTargets;
   }
   if (normalized == "export") {
-    return ReportOperationKind::kExport;
+    return InsightsOperationKind::kExport;
   }
   throw std::invalid_argument(
       "field `operation_kind` must be one of: query|structured_query|targets|export.");
@@ -238,16 +238,16 @@ namespace tracer_core::shell::c_api_bridge {
       "field `selection_kind` must be one of: single_day|date_range|recent_days.");
 }
 
-[[nodiscard]] auto ParseReportFormat(const std::string& value) -> ReportFormat {
+[[nodiscard]] auto ParseInsightsFormat(const std::string& value) -> InsightsFormat {
   const std::string normalized = ToLowerAscii(value);
   if (normalized == "markdown" || normalized == "md") {
-    return ReportFormat::kMarkdown;
+    return InsightsFormat::kMarkdown;
   }
   if (normalized == "latex" || normalized == "tex") {
-    return ReportFormat::kLaTeX;
+    return InsightsFormat::kLaTeX;
   }
   if (normalized == "typst" || normalized == "typ") {
-    return ReportFormat::kTyp;
+    return InsightsFormat::kTyp;
   }
   throw std::invalid_argument(
       "field `format` must be one of: markdown|latex|typst.");

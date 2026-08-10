@@ -4,10 +4,10 @@
 
 namespace infrastructure::bootstrap::android_runtime_detail {
 
-auto BuildAndroidReportCatalog(
+auto BuildAndroidInsightsCatalog(
     const std::filesystem::path& /*output_root*/,
-    const AndroidRuntimeConfigPaths& runtime_config_paths) -> ReportCatalog {
-  return tracer_core::shell::config_bridge::BuildAndroidReportCatalogBridge(
+    const AndroidRuntimeConfigPaths& runtime_config_paths) -> InsightsCatalog {
+  return tracer_core::shell::config_bridge::BuildAndroidInsightsCatalogBridge(
       runtime_config_paths);
 }
 

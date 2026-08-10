@@ -12,7 +12,7 @@ without broad repository search.
 6. Then read the exact contract docs for the boundary you are touching:
    - [C ABI](../shared/c_abi.md)
    - [Query Capability](../capabilities/query/README.md)
-   - [Reporting Capability](../capabilities/reporting/README.md)
+   - [Insights Capability](../capabilities/insights/README.md)
    - [Exchange Capability](../capabilities/exchange/README.md)
    - [Android runtime protocol](../../presentation/android/runtime-protocol.md)
    - [Core JSON boundary design](../architecture/core_json_boundary_design.md)
@@ -32,7 +32,7 @@ without broad repository search.
    - file-system ingest and processed-data adapter behavior
 7. `ITracerCoreRuntime`
    - the only aggregate runtime surface; all application capability entry
-     points flow through `pipeline()/query()/report()/tracer_exchange()`
+     points flow through `pipeline()/query()/insights()/tracer_exchange()`
 
 ## High-Frequency Change Routes
 1. Change C ABI inputs, outputs, or runtime behavior:
@@ -52,7 +52,7 @@ without broad repository search.
       - `libs/tracer_core/src/infra/config`
       - `apps/tracer_core_shell/api/c_api`
       - `apps/tracer_core_shell/host`
-4. Change use cases, workflow, or reporting-tree boundaries:
+4. Change use cases, workflow, or insights-tree boundaries:
     - start in [tracer_core](../../architecture/libraries/tracer_core.md)
     - then confirm the owner capability in
       [tracer_core Module Boundaries](../overview/module_boundaries.md)
@@ -60,14 +60,14 @@ without broad repository search.
       - `libs/tracer_core/src/application/use_cases`
       - `libs/tracer_core/src/application/workflow_handler.cpp`
       - `libs/tracer_core/src/application/query/tree`
-      - `libs/tracer_core/src/application/reporting`
-5. Change query/report/stat output semantics:
+      - `libs/tracer_core/src/application/insights`
+5. Change query/insights/stat output semantics:
     - read [Query Capability](../capabilities/query/README.md)
-    - or [Reporting Capability](../capabilities/reporting/README.md)
-    - then confirm whether the work belongs to `query` or `reporting` in
+    - or [Insights Capability](../capabilities/insights/README.md)
+    - then confirm whether the work belongs to `query` or `insights` in
       [tracer_core Capability Map](../overview/capability_map.md)
     - start in `libs/tracer_core/src/infra/query`
-    - then inspect `libs/tracer_core/src/infra/reporting`
+    - then inspect `libs/tracer_core/src/infra/insights`
 6. Change exchange package / `.zip` behavior:
    - read [Exchange Capability](../capabilities/exchange/README.md)
    - then inspect `libs/tracer_core/src/infra/exchange`
@@ -135,9 +135,9 @@ python tools/run.py verify --app tracer_core_shell --profile fast --concise
     - `docs/time_tracer/core/overview/module_boundaries.md`
     - `apps/tracer_core_shell/api/c_api`
     - `apps/tracer_core_shell/host`
-3. If stats or report output regresses, re-check:
+3. If stats or insights output regresses, re-check:
     - `capabilities/query/README.md`
-    - `capabilities/reporting/README.md`
+    - `capabilities/insights/README.md`
     - `contracts/stats/*`
     - `libs/tracer_core/src/infra/query`
-    - `libs/tracer_core/src/infra/reporting`
+    - `libs/tracer_core/src/infra/insights`

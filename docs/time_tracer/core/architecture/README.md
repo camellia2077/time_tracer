@@ -6,7 +6,7 @@
 1. Core docs are gradually moving to capability-first routing.
 2. Validation should now start from `docs/time_tracer/core/capabilities/validation/README.md`.
 3. Ingest should now start from `docs/time_tracer/core/capabilities/ingest/README.md`.
-4. Query / reporting / exchange / config / persistence should now start from
+4. Query / insights / exchange / config / persistence should now start from
    `docs/time_tracer/core/capabilities/`.
 5. This directory still owns most legacy long-form architecture docs.
 

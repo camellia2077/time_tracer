@@ -6,29 +6,29 @@ from pathlib import Path
 
 from ....core.generated_paths import resolve_build_layout, resolve_test_result_layout
 from ....services.suite_registry import resolve_result_output_name
-from .verify_profile_policy import should_run_reporting_markdown_gates
+from .verify_profile_policy import should_run_insights_markdown_gates
 
-REPORTING_GOLDEN_DB_SNAPSHOT_NAME = "reporting_golden_db.sqlite3"
+INSIGHTS_GOLDEN_DB_SNAPSHOT_NAME = "insights_golden_db.sqlite3"
 
 
-def _resolve_reporting_db_for_gates(result_layout) -> Path:
-    # Prefer the reporting snapshot captured before exchange-stage imports.
+def _resolve_insights_db_for_gates(result_layout) -> Path:
+    # Prefer the insights snapshot captured before exchange-stage imports.
     # Exchange fixtures may later import `config-refresh.zip` with replace-all,
     # which intentionally replaces runtime DB content with a smaller fixture dataset.
     # Using this snapshot prevents golden gates from being affected by that
-    # expected post-report DB overwrite.
+    # expected post-insights DB overwrite.
     snapshot_path = (
         result_layout.workspace_dir
         / "output"
         / "db_snapshots"
-        / REPORTING_GOLDEN_DB_SNAPSHOT_NAME
+        / INSIGHTS_GOLDEN_DB_SNAPSHOT_NAME
     )
     if snapshot_path.is_file():
         return snapshot_path
     return result_layout.workspace_dir / "output" / "db" / "time_data.sqlite3"
 
 
-def run_report_triplet_gates(
+def run_insights_triplet_gates(
     repo_root: Path,
     setup_env_fn,
     run_command_fn,
@@ -45,17 +45,17 @@ def run_report_triplet_gates(
     )
     for format_name, export_dir_name, extension in specs:
         current_cases_dir = (
-            quality_gates_root / "report_triplet_cases" / format_name / "current_v1"
+            quality_gates_root / "insights_triplet_cases" / format_name / "current_v1"
         )
-        golden_dir = repo_root / "test" / "golden" / "report_triplet" / format_name / "v1"
-        export_root = result_layout.artifacts_dir / "reports" / export_dir_name
+        golden_dir = repo_root / "test" / "golden" / "insights_triplet" / format_name / "v1"
+        export_root = result_layout.artifacts_dir / "insights" / export_dir_name
         audit_output_path = (
-            quality_gates_root / "audits" / f"report-triplet-{format_name}-byte-audit.md"
+            quality_gates_root / "audits" / f"insights-triplet-{format_name}-byte-audit.md"
         )
 
         collect_cmd = [
             sys.executable,
-            "tools/toolchain/quality_gates/reporting/collect_report_triplet_cases.py",
+            "tools/toolchain/quality_gates/insights/collect_insights_triplet_cases.py",
             "--format",
             format_name,
             "--export-root",
@@ -80,7 +80,7 @@ def run_report_triplet_gates(
 
         audit_cmd = [
             sys.executable,
-            "tools/toolchain/quality_gates/reporting/report_consistency_audit.py",
+            "tools/toolchain/quality_gates/insights/insights_consistency_audit.py",
             "--left-dir",
             str(golden_dir),
             "--right-dir",
@@ -101,7 +101,7 @@ def run_report_triplet_gates(
     return 0
 
 
-def run_report_markdown_gates(
+def run_insights_markdown_gates(
     repo_root: Path,
     setup_env_fn,
     run_command_fn,
@@ -113,7 +113,7 @@ def run_report_markdown_gates(
     output_name = resolve_result_output_name(app_name)
     if output_name != "artifact_windows_cli":
         return 0
-    if not should_run_reporting_markdown_gates(profile_name):
+    if not should_run_insights_markdown_gates(profile_name):
         return 0
 
     result_layout = resolve_test_result_layout(repo_root, output_name)
@@ -123,18 +123,18 @@ def run_report_markdown_gates(
         "tracer_windows_rust_cli",
         build_dir_name,
     ).bin_dir / ("time_tracer_cli.exe" if os.name == "nt" else "time_tracer_cli")
-    export_root = result_layout.artifacts_dir / "reports" / "markdown"
-    db_path = _resolve_reporting_db_for_gates(result_layout)
-    current_cases_dir = quality_gates_root / "report_markdown_cases" / "current_v1"
-    golden_dir = repo_root / "test" / "golden" / "report_markdown" / "v1"
-    render_check_output = quality_gates_root / "audits" / "report-md-golden-render-check.json"
+    export_root = result_layout.artifacts_dir / "insights" / "markdown"
+    db_path = _resolve_insights_db_for_gates(result_layout)
+    current_cases_dir = quality_gates_root / "insights_markdown_cases" / "current_v1"
+    golden_dir = repo_root / "test" / "golden" / "insights_markdown" / "v1"
+    render_check_output = quality_gates_root / "audits" / "insights-md-golden-render-check.json"
     cases_config_path = (
         repo_root / "tools" / "suites" / "tracer_windows_rust_cli" / "tests" / "gate_cases.toml"
     )
 
     collect_cmd = [
         sys.executable,
-        "tools/toolchain/quality_gates/reporting/collect_report_markdown_cases.py",
+        "tools/toolchain/quality_gates/insights/collect_insights_markdown_cases.py",
         "--export-root",
         str(export_root),
         "--output-dir",
@@ -157,7 +157,7 @@ def run_report_markdown_gates(
 
     render_cmd = [
         sys.executable,
-        "tools/toolchain/quality_gates/reporting/report_markdown_render_snapshot_check.py",
+        "tools/toolchain/quality_gates/insights/insights_markdown_render_snapshot_check.py",
         "--left-dir",
         str(golden_dir),
         "--right-dir",
@@ -176,7 +176,7 @@ def run_report_markdown_gates(
     if render_ret != 0:
         return render_ret
 
-    return run_report_triplet_gates(
+    return run_insights_triplet_gates(
         repo_root=repo_root,
         setup_env_fn=setup_env_fn,
         run_command_fn=run_command_fn,

@@ -1,0 +1,216 @@
+// infra/insights/shared/formatters/typst/typ_utils.cpp
+#include "infra/insights/shared/formatters/typst/typ_utils.hpp"
+
+#include <cstdint>
+#include <memory>
+
+#include "infra/insights/shared/formatters/base/project_tree_formatter.hpp"
+#include "infra/insights/shared/utils/format/time_format.hpp"
+
+namespace TypUtils {
+
+namespace {
+constexpr int kDecimalBase = 10;
+constexpr std::size_t kDecimalOutputReserve = 24;
+constexpr std::size_t kCategoryHeaderReservePadding = 64;
+constexpr std::size_t kTextSetupReservePadding = 64;
+constexpr std::size_t kTitleTextReservePadding = 32;
+
+auto FormatCompactNumber(double value) -> std::string {
+  std::string output = std::to_string(value);
+  while (!output.empty() && output.back() == '0') {
+    output.pop_back();
+  }
+  if (!output.empty() && output.back() == '.') {
+    output.pop_back();
+  }
+  if ((output == "-0") || output.empty()) {
+    return "0";
+  }
+  return output;
+}
+
+auto FormatOneDecimal(double value) -> std::string {
+  const auto kScaled = static_cast<std::int64_t>(
+      (value >= 0.0) ? ((value * 10.0) + 0.5) : ((value * 10.0) - 0.5));
+  std::int64_t abs_scaled = (kScaled < 0) ? -kScaled : kScaled;
+  const auto kWholePart = abs_scaled / kDecimalBase;
+  const auto kFractionalPart = abs_scaled % kDecimalBase;
+
+  std::string output;
+  output.reserve(kDecimalOutputReserve);
+  if (kScaled < 0) {
+    output.push_back('-');
+  }
+  output += std::to_string(kWholePart);
+  output.push_back('.');
+  output += std::to_string(kFractionalPart);
+  return output;
+}
+
+auto FormatAverageOccurrenceCount(std::int64_t occurrence_count, int avg_days)
+    -> std::string {
+  if (avg_days <= 0) {
+    return "0.00";
+  }
+  return FormatCompactNumber(static_cast<double>(occurrence_count) /
+                             static_cast<double>(avg_days));
+}
+
+class TypstFormattingStrategy : public insights::IFormattingStrategy {
+ public:
+  TypstFormattingStrategy(std::string font, int font_size)
+      : font_(std::move(font)), font_size_(font_size) {}
+
+  [[nodiscard]] auto FormatCategoryHeader(const std::string& category_name,
+                                          const std::string& formatted_duration,
+                                          double percentage) const
+      -> std::string override {
+    std::string output;
+    output.reserve(font_.size() + category_name.size() +
+                   formatted_duration.size() + kCategoryHeaderReservePadding);
+    output += R"(#text(font: ")";
+    output += font_;
+    output += R"(", size: )";
+    output += std::to_string(font_size_);
+    output += R"(pt)[== )";
+    output += category_name;
+    output += ": ";
+    output += formatted_duration;
+    output += " (";
+    output += FormatOneDecimal(percentage);
+    output += "%)]\n";
+    return output;
+  }
+
+  [[nodiscard]] auto FormatCategoryHeader(
+      const std::string& category_name,
+      const std::string& /*formatted_duration*/, double percentage,
+      std::int64_t duration_seconds, std::int64_t occurrence_count,
+      int avg_days) const -> std::string override {
+    std::string output = FormatCategoryHeader(
+        category_name, TimeFormatDuration(duration_seconds), percentage);
+    if (occurrence_count > 0) {
+      output += "#emph[Average: ";
+      output += TimeFormatDuration(avg_days > 0 ? duration_seconds / avg_days
+                                                : duration_seconds);
+      output += "/day · ";
+      output += std::to_string(occurrence_count);
+      output += " times · ";
+      output += FormatAverageOccurrenceCount(occurrence_count, avg_days);
+      output += " times/day]\n";
+    }
+    return output;
+  }
+
+  [[nodiscard]] auto FormatTreeNode(const std::string& project_name,
+                                    const std::string& formatted_duration,
+                                    int indent_level) const
+      -> std::string override {
+    constexpr int kIndentMultiplier = 2;
+    return std::string(static_cast<size_t>(indent_level) *
+                           static_cast<size_t>(kIndentMultiplier),
+                       ' ') +
+           "+ " + project_name + ": " + formatted_duration + "\n";
+  }
+
+  [[nodiscard]] auto FormatTreeNode(const std::string& project_name,
+                                    const std::string& formatted_duration,
+                                    int indent_level, double percentage,
+                                    std::int64_t duration_seconds,
+                                    std::int64_t occurrence_count,
+                                    int avg_days) const
+      -> std::string override {
+    constexpr int kIndentMultiplier = 2;
+    const auto kActivityIndent = static_cast<size_t>(indent_level) *
+                                 static_cast<size_t>(kIndentMultiplier);
+    std::string output(kActivityIndent, ' ');
+    output += "+ ";
+    output += project_name;
+    output += ": ";
+    output += formatted_duration;
+    output += " (";
+    output += FormatOneDecimal(percentage);
+    output += "%)\n";
+    if (occurrence_count > 0) {
+      output.append(kActivityIndent + static_cast<size_t>(kIndentMultiplier),
+                    ' ');
+      output += "#emph[Average: ";
+      output += TimeFormatDuration(avg_days > 0 ? duration_seconds / avg_days
+                                                : duration_seconds);
+      output += "/day · ";
+      output += std::to_string(occurrence_count);
+      output += " times · ";
+      output += FormatAverageOccurrenceCount(occurrence_count, avg_days);
+      output += " times/day]\n";
+    }
+    return output;
+  }
+
+ private:
+  std::string font_;
+  int font_size_;
+};
+
+}  // namespace
+
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+auto BuildTextSetup(const std::string& base_font, int base_font_size,
+                    double line_spacing_em) -> std::string {
+  std::string output;
+  output.reserve(base_font.size() + kTextSetupReservePadding);
+  output += R"(#set text(font: ")";
+  output += base_font;
+  output += R"(", size: )";
+  output += std::to_string(base_font_size);
+  output += R"(pt, spacing: )";
+  output += FormatCompactNumber(line_spacing_em);
+  output += R"(em))";
+  return output;
+}
+
+auto BuildPageSetup(double margin_top_cm, double margin_bottom_cm,
+                    double margin_left_cm, double margin_right_cm)
+    -> std::string {
+  std::string output = "#set page(margin: (top: ";
+  output += FormatCompactNumber(margin_top_cm);
+  output += "cm, bottom: ";
+  output += FormatCompactNumber(margin_bottom_cm);
+  output += "cm, left: ";
+  output += FormatCompactNumber(margin_left_cm);
+  output += "cm, right: ";
+  output += FormatCompactNumber(margin_right_cm);
+  output += "cm))";
+  return output;
+}
+
+auto BuildTitleText(const std::string& category_title_font,
+                    int category_title_font_size, const std::string& title_text)
+    -> std::string {
+  std::string output;
+  output.reserve(category_title_font.size() + title_text.size() +
+                 kTitleTextReservePadding);
+  output += R"(#text(font: ")";
+  output += category_title_font;
+  output += R"(", size: )";
+  output += std::to_string(category_title_font_size);
+  output += R"(pt)[= )";
+  output += title_text;
+  output += "])";
+  return output;
+}
+
+// Public API: keep parameter order and naming for ABI compatibility.
+// NOLINTBEGIN(bugprone-easily-swappable-parameters)
+auto FormatProjectTree(const insights::ProjectTree& tree,
+                       std::int64_t total_duration, int avg_days,
+                       const std::string& category_title_font,
+                       int category_title_font_size) -> std::string {
+  auto strategy = std::make_unique<TypstFormattingStrategy>(
+      category_title_font, category_title_font_size);
+  insights::ProjectTreeFormatter formatter(std::move(strategy));
+  return formatter.FormatProjectTree(tree, total_duration, avg_days);
+}
+// NOLINTEND(bugprone-easily-swappable-parameters)
+
+}  // namespace TypUtils

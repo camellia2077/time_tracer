@@ -1,7 +1,7 @@
 #ifndef TRACER_CORE_TESTS_INFRASTRUCTURE_MODULES_SMOKE_SUPPORT_HPP_
 #define TRACER_CORE_TESTS_INFRASTRUCTURE_MODULES_SMOKE_SUPPORT_HPP_
 
-#include "application/ports/reporting/i_platform_clock.hpp"
+#include "application/ports/insights/i_platform_clock.hpp"
 
 #include <filesystem>
 #include <fstream>

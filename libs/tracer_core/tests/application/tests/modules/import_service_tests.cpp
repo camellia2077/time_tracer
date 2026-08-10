@@ -137,7 +137,7 @@ auto TestReplaceMonthUsesReplacePath(TestState& state) -> void {
   Expect(state, repository.replace_days == 1 && repository.replace_records == 1,
          "Replace-month import should pass parsed days/records.");
   Expect(state, kStats.db_open_success && kStats.transaction_success,
-         "Replace-month import should report successful DB transaction.");
+         "Replace-month import should insights successful DB transaction.");
   Expect(
       state,
       kStats.replaced_month.has_value() && *kStats.replaced_month == "2026-02",
@@ -158,11 +158,11 @@ auto TestReplaceMonthStillRunsForEmptyData(TestState& state) -> void {
   Expect(state, repository.replace_days == 0 && repository.replace_records == 0,
          "Empty replace-month import should pass empty data vectors.");
   Expect(state, kStats.db_open_success && kStats.transaction_success,
-         "Empty replace-month import should report successful DB transaction.");
+         "Empty replace-month import should insights successful DB transaction.");
   Expect(
       state,
       kStats.replaced_month.has_value() && *kStats.replaced_month == "2026-02",
-      "Empty replace-month import should still report replaced_month.");
+      "Empty replace-month import should still insights replaced_month.");
 }
 
 auto TestReplaceAllUsesReplaceAllPath(TestState& state) -> void {
@@ -183,10 +183,10 @@ auto TestReplaceAllUsesReplaceAllPath(TestState& state) -> void {
       repository.replace_all_days == 1 && repository.replace_all_records == 1,
       "Replace-all import should pass parsed days/records.");
   Expect(state, stats.db_open_success && stats.transaction_success,
-         "Replace-all import should report successful DB transaction.");
+         "Replace-all import should insights successful DB transaction.");
   Expect(state,
          stats.replaced_month.has_value() && *stats.replaced_month == "ALL",
-         "Replace-all import should report ALL replace scope.");
+         "Replace-all import should insights ALL replace scope.");
 }
 
 }  // namespace

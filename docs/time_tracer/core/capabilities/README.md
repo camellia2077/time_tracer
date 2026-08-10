@@ -9,8 +9,8 @@ This directory groups capability-owned docs for `tracer_core`.
    - Ingest ownership, persistence boundary, and legacy ingest-topic routing.
 3. [query/README.md](query/README.md)
    - Query ownership, data-query routing, and stats-contract entry.
-4. [reporting/README.md](reporting/README.md)
-   - Reporting ownership and reporting-contract entry.
+4. [insights/README.md](insights/README.md)
+   - Insights ownership and insights-contract entry.
 5. [exchange/README.md](exchange/README.md)
    - Exchange ownership and `.zip` contract routing.
 6. [config/README.md](config/README.md)

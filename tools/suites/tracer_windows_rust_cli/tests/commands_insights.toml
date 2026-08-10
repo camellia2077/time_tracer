@@ -1,0 +1,119 @@
+# ==============================================================================
+#                     INSIGHTS COMMAND GROUPS
+# ==============================================================================
+# Shared fixture range for insights targets:
+#   - earliest supported ISO target: 2025-01-01
+#   - latest supported ISO target:   2026-12-31
+# Compact CLI inputs such as YYYYMMDD / YYYYMM are allowed in this suite only
+# when they normalize into the ISO range above.
+[[command_groups]]
+name = "Render Daily"
+stage = "insights"
+name_template = "Render Daily ({date}) [{fmt}]"
+template = ["insights", "render", "day", "{date}", "--format", "{fmt}", "--db", "{db_path}"]
+matrix = { date = ["2026-01-01", "20260101", "20260201"], fmt = ["md", "tex", "typ"] }
+
+[[command_groups]]
+name = "Render Monthly"
+stage = "insights"
+name_template = "Render Monthly ({month}) [{fmt}]"
+template = ["insights", "render", "month", "{month}", "--format", "{fmt}", "--db", "{db_path}"]
+matrix = { month = ["2026-01", "202605", "202606"], fmt = ["md", "tex", "typ"] }
+
+[[command_groups]]
+name = "Render Weekly"
+stage = "insights"
+name_template = "Render Weekly ({week}) [{fmt}]"
+template = ["insights", "render", "week", "{week}", "--format", "{fmt}", "--db", "{db_path}"]
+matrix = { week = ["2026-W01", "2026-W05"], fmt = ["md", "tex", "typ"] }
+
+[[command_groups]]
+name = "Render Yearly"
+stage = "insights"
+name_template = "Render Yearly ({year}) [{fmt}]"
+template = ["insights", "render", "year", "{year}", "--format", "{fmt}", "--db", "{db_path}"]
+matrix = { year = ["2025", "2026"], fmt = ["md", "tex", "typ"] }
+
+[[command_groups]]
+name = "Render Recent"
+stage = "insights"
+name_template = "Render Recent ({days} days) [{fmt}]"
+template = ["insights", "render", "recent", "{days}", "--format", "{fmt}", "--db", "{db_path}"]
+matrix = { days = [7, 10, 15], fmt = ["md", "tex", "typ"] }
+
+[[command_groups]]
+name = "Render Recent Fixed AsOf"
+stage = "insights"
+name_template = "Render Recent AsOf ({days} days @ {as_of}) [{fmt}]"
+template = ["insights", "render", "recent", "{days}", "--as-of", "{as_of}", "--format", "{fmt}", "--db", "{db_path}"]
+matrix = { days = [7], as_of = ["2026-03-07"], fmt = ["md", "tex", "typ"] }
+
+[[commands]]
+name = "Render Range Empty Window Includes Window Hint"
+stage = "insights"
+args = ["insights", "render", "range", "2024-12-01|2024-12-31", "--format", "md", "--db", "{db_path}"]
+expect_stdout_contains = [
+  "No time records found in this period.",
+  "Window query returned no records.",
+  "start_date=2024-12-01",
+  "end_date=2024-12-31",
+  "requested_days=31",
+  "matched_day_count=0",
+  "matched_record_count=0",
+]
+
+[[command_groups]]
+name = "Render Range"
+stage = "insights"
+name_template = "Render Range ({range}) [{fmt}]"
+template = ["insights", "render", "range", "{range}", "--format", "{fmt}", "--db", "{db_path}"]
+matrix = { range = ["2026-01-01|2026-01-31"], fmt = ["md", "tex", "typ"] }
+
+[[command_groups]]
+name = "Insights Export Daily"
+stage = "insights-export"
+name_template = "Insights Export Daily ({date}) [{fmt}]"
+template = ["insights", "export", "day", "{date}", "--format", "{fmt}", "--db", "{db_path}", "--output", "{export_output_dir}"]
+matrix = { date = [ "2026-01-01", "20260102", "2025-01-03", "2026-01-03", "20260201"], fmt = ["md", "tex", "typ"] }
+
+[[command_groups]]
+name = "Insights Export Monthly"
+stage = "insights-export"
+name_template = "Insights Export Monthly ({month}) [{fmt}]"
+template = ["insights", "export", "month", "{month}", "--format", "{fmt}", "--db", "{db_path}", "--output", "{export_output_dir}"]
+matrix = { month = ["2026-01", "202605", "202606"], fmt = ["md", "tex", "typ"] }
+
+[[command_groups]]
+name = "Insights Export Weekly"
+stage = "insights-export"
+name_template = "Insights Export Weekly ({week}) [{fmt}]"
+template = ["insights", "export", "week", "{week}", "--format", "{fmt}", "--db", "{db_path}", "--output", "{export_output_dir}"]
+matrix = { week = ["2026-W01", "2026-W05"], fmt = ["md", "tex", "typ"] }
+
+[[command_groups]]
+name = "Insights Export Yearly"
+stage = "insights-export"
+name_template = "Insights Export Yearly ({year}) [{fmt}]"
+template = ["insights", "export", "year", "{year}", "--format", "{fmt}", "--db", "{db_path}", "--output", "{export_output_dir}"]
+matrix = { year = ["2025", "2026"], fmt = ["md", "tex", "typ"] }
+
+[[command_groups]]
+name = "Insights Export Recent"
+stage = "insights-export"
+name_template = "Insights Export Recent ({days} days) [{fmt}]"
+template = ["insights", "export", "recent", "{days}", "--format", "{fmt}", "--db", "{db_path}", "--output", "{export_output_dir}"]
+matrix = { days = [7, 10, 15], fmt = ["md", "tex", "typ"] }
+
+[[command_groups]]
+name = "Insights Export Recent Fixed AsOf"
+stage = "insights-export"
+name_template = "Insights Export Recent AsOf ({days} days @ {as_of}) [{fmt}]"
+template = ["insights", "export", "recent", "{days}", "--as-of", "{as_of}", "--format", "{fmt}", "--db", "{db_path}", "--output", "{export_output_dir}"]
+matrix = { days = [7], as_of = ["2026-03-07"], fmt = ["md", "tex", "typ"] }
+
+[[command_groups]]
+name = "Insights Export Range"
+stage = "insights-export"
+name_template = "Insights Export Range ({range}) [{fmt}]"
+template = ["insights", "export", "range", "{range}", "--format", "{fmt}", "--db", "{db_path}", "--output", "{export_output_dir}"]
+matrix = { range = ["2026-01-01|2026-01-31", "2026-05-01|2026-05-31"], fmt = ["md", "tex", "typ"] }

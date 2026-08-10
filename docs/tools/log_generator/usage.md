@@ -8,7 +8,7 @@ canonical TXT 契约的月日志文件。
 
 - 生成或刷新 `test/data/**` 使用的月日志样本
 - 为 validate / convert / ingest 提供共享 TXT 输入
-- 为 query / report / export 的 golden 对账提供上游原始数据
+- 为 query / insights / export 的 golden 对账提供上游原始数据
 
 ## 在仓库中的位置
 
@@ -17,7 +17,7 @@ canonical TXT 契约的月日志文件。
 1. `apps/tools/log_generator` 生成 TXT 月日志
 2. `test/data/**` 保存跨 CLI / shell / Android 复用的 canonical 输入资产
 3. 主程序基于这些 TXT 执行 validate / convert / ingest
-4. query / report / export 的稳定结果进入 `test/golden/**`
+4. query / insights / export 的稳定结果进入 `test/golden/**`
 
 因此，`log_generator` 并不是一个孤立的小工具。它生成的 TXT 形状如果发生变化，
 可能会同时影响：

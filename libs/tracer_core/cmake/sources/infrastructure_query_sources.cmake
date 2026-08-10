@@ -1,6 +1,6 @@
 set(TIME_TRACKER_INFRA_QUERY_DATA_STATS_SOURCES
     "query/data/stats/day_duration_stats_calculator.module.cpp"
-    "query/data/stats/report_chart_stats_calculator.module.cpp"
+    "query/data/stats/insights_chart_stats_calculator.module.cpp"
     "query/data/stats/stats_boundary.module.cpp"
 )
 
@@ -17,7 +17,7 @@ set(TIME_TRACKER_INFRA_QUERY_SOURCES
     "query/data/orchestrators/date_range_resolver.cpp"
     "query/data/orchestrators/list_query_orchestrator.cpp"
     "query/data/orchestrators/days_stats_orchestrator.cpp"
-    "query/data/orchestrators/report_chart_orchestrator.cpp"
+    "query/data/orchestrators/insights_chart_orchestrator.cpp"
     "query/data/orchestrators/tree_orchestrator.cpp"
     "query/data/orchestrators/orchestrators_boundary.cpp"
     "query/data/renderers/data_query_renderer.cpp"
@@ -27,7 +27,7 @@ set(TIME_TRACKER_INFRA_QUERY_SOURCES
     "query/data/repository/query_runtime_service.cpp"
     "query/data/repository/query_runtime_service_request.cpp"
     "query/data/repository/query_runtime_service_mapping_content.cpp"
-    "query/data/repository/query_runtime_service_report_content.cpp"
+    "query/data/repository/query_runtime_service_insights_content.cpp"
     "query/data/repository/query_runtime_service_dispatch.cpp"
     "query/data/repository/query_runtime_service_period.cpp"
 )
@@ -41,7 +41,7 @@ set(TIME_TRACKER_INFRA_QUERY_MODULE_FILES
     "query/data/internal/internal.cppm"
     "query/data/internal/internal_request.cppm"
     "query/data/internal/internal_period.cppm"
-    "query/data/internal/internal_report_mapping.cppm"
+    "query/data/internal/internal_insights_mapping.cppm"
     "query/data/renderers/renderers.cppm"
     "query/data/renderers/renderer_data_query.cppm"
     "query/data/renderers/renderer_text.cppm"
@@ -50,13 +50,13 @@ set(TIME_TRACKER_INFRA_QUERY_MODULE_FILES
     "query/data/orchestrators/orchestrators.cppm"
     "query/data/orchestrators/orch_list.cppm"
     "query/data/orchestrators/orch_days_stats.cppm"
-    "query/data/orchestrators/orch_report_chart.cppm"
+    "query/data/orchestrators/orch_insights_chart.cppm"
     "query/data/orchestrators/orch_tree.cppm"
     "query/data/orchestrators/orch_date_range.cppm"
     "query/data/orchestrators/orch_boundary.cppm"
     "query/data/stats/stats.cppm"
     "query/data/stats/stats_models.cppm"
     "query/data/stats/stats_day_duration.cppm"
-    "query/data/stats/stats_report_chart.cppm"
+    "query/data/stats/stats_insights_chart.cppm"
     "query/data/stats/stats_boundary.cppm"
 )

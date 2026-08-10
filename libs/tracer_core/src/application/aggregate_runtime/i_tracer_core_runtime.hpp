@@ -3,7 +3,7 @@
 
 #include "application/use_cases/i_pipeline_api.hpp"
 #include "application/use_cases/i_query_api.hpp"
-#include "application/use_cases/i_report_api.hpp"
+#include "application/use_cases/i_insights_api.hpp"
 #include "application/use_cases/i_tracer_exchange_api.hpp"
 
 namespace tracer::core::application::use_cases {
@@ -14,7 +14,7 @@ class ITracerCoreRuntime {
 
   virtual auto pipeline() -> IPipelineApi& = 0;
   virtual auto query() -> IQueryApi& = 0;
-  virtual auto report() -> IReportApi& = 0;
+  virtual auto insights() -> IInsightsApi& = 0;
   virtual auto tracer_exchange() -> ITracerExchangeApi& = 0;
 };
 

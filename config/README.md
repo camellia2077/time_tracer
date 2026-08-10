@@ -1,7 +1,7 @@
 # Runtime asset sources
 
 `config/program/` contains immutable program resources used by the
-runtime: `config.toml`, charts, bundle metadata, and report templates.
+runtime: `config.toml`, charts, bundle metadata, and insights templates.
 
 `config/user_config/` contains the shared source files for user-editable
 configuration. These files are separate from the immutable program bundle.

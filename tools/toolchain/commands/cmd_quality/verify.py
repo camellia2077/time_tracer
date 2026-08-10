@@ -13,7 +13,7 @@ from ..shared.result_reporting import print_failure_report, print_result_paths
 from ..shared.result_reporting import print_verify_phase_summary
 from .verify_internal.verify_build_stage import execute_build_stage, handle_post_build_state
 from .verify_internal.verify_command_text import build_verify_command_text
-from .verify_internal.verify_markdown_gate_runner import run_report_markdown_gates
+from .verify_internal.verify_markdown_gate_runner import run_insights_markdown_gates
 from .verify_internal.verify_native_runner import run_native_core_runtime_tests
 from .verify_internal.verify_pipeline import run_artifact_pipeline
 from .verify_internal.verify_profile_inference import infer_verify_profiles
@@ -159,7 +159,7 @@ class VerifyCommand:
         print(f"--- verify: inferred focused profiles: {inferred_profiles}")
         unit_ret = self.run_unit_scope_checks(run_command_fn=effective_run_command)
         if unit_ret != 0:
-            self._report_verify_failure(
+            self._insights_verify_failure(
                 app_name=app_name,
                 command_text=self._build_verify_command_text(
                     app_name=app_name,
@@ -317,7 +317,7 @@ class VerifyCommand:
                         build_only=True,
                         verify_phases=verify_phases,
                     )
-                self._report_verify_failure(
+                self._insights_verify_failure(
                     app_name=app_name,
                     command_text=verify_command_text,
                     exit_code=unit_ret,
@@ -368,7 +368,7 @@ class VerifyCommand:
             )
 
         if artifact_ret != 0:
-            self._report_verify_failure(
+            self._insights_verify_failure(
                 app_name=app_name,
                 command_text=verify_command_text,
                 exit_code=artifact_ret,
@@ -379,7 +379,7 @@ class VerifyCommand:
         print_result_paths(app_name=app_name, repo_root=self.ctx.repo_root)
         return artifact_ret
 
-    def _report_verify_failure(
+    def _insights_verify_failure(
         self,
         *,
         app_name: str,
@@ -471,7 +471,7 @@ class VerifyCommand:
             repo_root=self.ctx.repo_root,
             setup_env_fn=self.ctx.setup_env,
             run_command_fn=effective_run_command,
-            run_report_markdown_gates_fn=lambda **kwargs: run_report_markdown_gates(
+            run_insights_markdown_gates_fn=lambda **kwargs: run_insights_markdown_gates(
                 **kwargs,
                 normalize_ext=tuple(self.ctx.config.quality.gate_audit.normalize_ext),
             ),

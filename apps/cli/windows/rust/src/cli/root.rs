@@ -1,7 +1,7 @@
 use clap::{ArgAction, Parser, Subcommand};
 
 use super::{
-    AboutArgs, ActivityArgs, AliasArgs, ExchangeArgs, PipelineArgs, QueryArgs, ReportArgs,
+    AboutArgs, ActivityArgs, AliasArgs, ExchangeArgs, PipelineArgs, QueryArgs, InsightsArgs,
     SystemArgs, TxtArgs,
 };
 
@@ -53,8 +53,8 @@ pub enum Command {
     Query(QueryArgs),
     #[command(about = "Run pipeline operations against source and processed data")]
     Pipeline(PipelineArgs),
-    #[command(about = "Render, export, and chart reports")]
-    Report(ReportArgs),
+    #[command(about = "Render, export, and chart insights")]
+    Insights(InsightsArgs),
     #[command(about = "Export/import/inspect tracer exchange packages")]
     Exchange(ExchangeArgs),
     #[command(about = "Inspect monthly TXT files through shared day-block semantics")]

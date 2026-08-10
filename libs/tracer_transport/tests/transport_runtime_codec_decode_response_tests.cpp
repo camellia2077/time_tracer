@@ -184,14 +184,14 @@ void TestDecodeAckAndTextResponses(int& failures) {
          "DecodeTextResponse content mismatch.", failures);
 
   const auto text_failed = DecodeTextResponse(
-      R"({"ok":false,"error_message":"","error_code":"reporting.target.not_found","error_category":"logic","hints":["check target"],"content":"partial"})",
-      "runtime_report");
+      R"({"ok":false,"error_message":"","error_code":"insights.target.not_found","error_category":"logic","hints":["check target"],"content":"partial"})",
+      "runtime_insights");
   Expect(!text_failed.ok, "DecodeTextResponse failed ok mismatch.", failures);
   Expect(text_failed.error_message == "Core operation failed.",
          "DecodeTextResponse failed fallback error mismatch.", failures);
   Expect(text_failed.content == "partial",
          "DecodeTextResponse failed content mismatch.", failures);
-  Expect(text_failed.error_contract.error_code == "reporting.target.not_found",
+  Expect(text_failed.error_contract.error_code == "insights.target.not_found",
          "DecodeTextResponse failed error_code mismatch.", failures);
   Expect(text_failed.error_contract.error_category == "logic",
          "DecodeTextResponse failed error_category mismatch.", failures);

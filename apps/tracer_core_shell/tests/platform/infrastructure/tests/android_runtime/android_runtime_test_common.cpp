@@ -157,18 +157,18 @@ auto PrepareAndroidConfigFixture(const std::filesystem::path& target_root)
          CopyFileWithParents(user_source_root / "behavior.toml",
                              target_root / "user" / "behavior.toml") &&
          CopyFileWithParents(BuildRepoRoot() / "config" / "user" /
-                                 "report.toml",
-                             target_root / "user" / "report.toml") &&
+                                 "insights.toml",
+                             target_root / "user" / "insights.toml") &&
          CopyDirectoryTree(hierarchy_source_root,
                            target_root / "user" / "activity_hierarchy") &&
          copy_required_file("charts/heatmap.toml") &&
          copy_required_file("charts/pie.toml") &&
-         CopyDirectoryTree(source_root / "reports" / "markdown",
-                           target_root / "program" / "reports" / "markdown") &&
-         CopyDirectoryTree(source_root / "reports" / "latex",
-                           target_root / "program" / "reports" / "latex") &&
-         CopyDirectoryTree(source_root / "reports" / "typst",
-                           target_root / "program" / "reports" / "typst");
+         CopyDirectoryTree(source_root / "insights" / "markdown",
+                           target_root / "program" / "insights" / "markdown") &&
+         CopyDirectoryTree(source_root / "insights" / "latex",
+                           target_root / "program" / "insights" / "latex") &&
+         CopyDirectoryTree(source_root / "insights" / "typst",
+                           target_root / "program" / "insights" / "typst");
 }
 
 auto ExpectBuildRuntimeThrows(
@@ -186,15 +186,15 @@ auto ExpectBuildRuntimeThrows(
   }
 }
 
-auto RunAndCheckReportQuery(
+auto RunAndCheckInsightsQuery(
     const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
-    const tracer_core::core::dto::TemporalReportQueryRequest& request,
+    const tracer_core::core::dto::TemporalInsightsQueryRequest& request,
     std::string_view test_name, int& failures)
     -> std::optional<tracer_core::core::dto::TextOutput> {
-  const auto result = runtime_api->report().RunTemporalReportQuery(request);
+  const auto result = runtime_api->insights().RunTemporalInsightsQuery(request);
   if (!result.ok) {
     ++failures;
-    std::cerr << "[FAIL] RunTemporalReportQuery(" << test_name
+    std::cerr << "[FAIL] RunTemporalInsightsQuery(" << test_name
               << ") should succeed: " << result.error_message << '\n';
     return std::nullopt;
   }

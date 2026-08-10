@@ -61,7 +61,7 @@ class StructureRules {
   bool has_seen_event_in_day_ = false;
   bool has_seen_any_date_ = false;
   bool has_seen_month_ = false;
-  bool has_reported_missing_month_header_ = false;
+  bool has_insightsed_missing_month_header_ = false;
   std::string month_header_;
   int last_seen_year_ = 0;
 };

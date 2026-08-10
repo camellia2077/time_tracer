@@ -15,7 +15,7 @@ Exchange owns:
 
 Exchange does not own:
 1. generic ingest pipeline orchestration
-2. generic query/reporting flows
+2. generic query/insights flows
 3. standalone config ownership
 
 ## Main Owner Paths
@@ -29,7 +29,7 @@ Exchange does not own:
 ## Forbidden Direct Dependencies
 1. `pipeline`
 2. `query`
-3. `reporting`
+3. `insights`
 
 ## Read Next
 1. [contracts.md](contracts.md)

@@ -11,7 +11,7 @@
 
 #include "infra/config/loader/alias_mapping_index_utils.hpp"
 #include "infra/config/loader/toml_loader_utils.hpp"
-#include "infra/query/data/internal/report_mapping.hpp"
+#include "infra/query/data/internal/insights_mapping.hpp"
 
 import tracer.core.infrastructure.config.file_converter_config_provider;
 import tracer.core.domain.types.converter_config;

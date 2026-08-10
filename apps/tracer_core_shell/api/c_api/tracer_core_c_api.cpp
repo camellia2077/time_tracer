@@ -114,7 +114,7 @@ extern "C" TT_CORE_API auto tracer_core_get_command_contract_json(
                      json{{"id", "tree"},
                            {"aliases", json::array()},
                           {"supports", json{{"structured_output", true}}}},
-                     json{{"id", "report"},
+                     json{{"id", "insights"},
                            {"aliases", json::array()},
                           {"supports", json{{"structured_output", false}}}},
                      json{{"id", "txt"},

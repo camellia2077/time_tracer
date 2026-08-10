@@ -1,4 +1,4 @@
-struct AndroidBundleReportConfigPathSet {
+struct AndroidBundleInsightsConfigPathSet {
   std::filesystem::path day;
   std::filesystem::path month;
   std::filesystem::path period;
@@ -8,9 +8,9 @@ struct AndroidBundleReportConfigPathSet {
 
 struct AndroidBundleConfigPaths {
   std::filesystem::path converter_config_toml_path;
-  AndroidBundleReportConfigPathSet markdown;
-  std::optional<AndroidBundleReportConfigPathSet> latex;
-  std::optional<AndroidBundleReportConfigPathSet> typst;
+  AndroidBundleInsightsConfigPathSet markdown;
+  std::optional<AndroidBundleInsightsConfigPathSet> latex;
+  std::optional<AndroidBundleInsightsConfigPathSet> typst;
 };
 
 [[nodiscard]] auto TryResolveAndroidBundleConfigPaths(

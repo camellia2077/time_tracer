@@ -3,7 +3,7 @@ namespace {
 auto PrintImportStats(const ImportStats& stats, std::string_view title)
     -> void {
   std::ostringstream stream;
-  stream << "\n--- " << title << " Report ---";
+  stream << "\n--- " << title << " Insights ---";
   runtime_bridge::LogInfo(stream.str());
 
   if (!stats.db_open_success) {

@@ -29,7 +29,7 @@ class ScopedErrorReportWriterOverride final {
   options.convert = false;
   options.validate_logic = false;
   // Validate commands are intentionally terminal-first checks. We do not
-  // persist processed output or validation report files for them; users are
+  // persist processed output or validation insights files for them; users are
   // expected to fix issues directly from the current terminal diagnostics.
   options.save_processed_output = false;
   options.date_check_mode = DateCheckMode::kNone;
@@ -47,7 +47,7 @@ class ScopedErrorReportWriterOverride final {
   options.run_structure_validation_before_conversion = true;
   // `validate logic` reuses the conversion pipeline for checks, but it keeps
   // the same terminal-first contract as `validate structure`: no processed
-  // output or local validation report files are written for validate runs.
+  // output or local validation insights files are written for validate runs.
   options.save_processed_output = false;
   options.date_check_mode = date_check_mode;
   return options;
@@ -113,7 +113,7 @@ auto WorkflowHandler::RunValidateStructure(const std::string& source_path)
   const AppOptions kOptions = BuildStructureValidationOptions(source_path);
   // Keep validate runs terminal-only: suppress per-run error-report files and
   // rely on the diagnostics already emitted to the active sink/terminal.
-  const ScopedErrorReportWriterOverride kDisableErrorReports(nullptr);
+  const ScopedErrorReportWriterOverride kDisableErrorReport(nullptr);
 
   PipelineOrchestrator pipeline(output_root_path_, converter_config_provider_,
                                 ingest_input_provider_, processed_data_storage_,
@@ -128,7 +128,7 @@ auto WorkflowHandler::RunValidateLogic(const std::string& source_path,
       BuildLogicValidationOptions(source_path, date_check_mode);
   // Keep validate runs terminal-only: suppress per-run error-report files and
   // rely on the diagnostics already emitted to the active sink/terminal.
-  const ScopedErrorReportWriterOverride kDisableErrorReports(nullptr);
+  const ScopedErrorReportWriterOverride kDisableErrorReport(nullptr);
 
   PipelineOrchestrator pipeline(output_root_path_, converter_config_provider_,
                                 ingest_input_provider_, processed_data_storage_,

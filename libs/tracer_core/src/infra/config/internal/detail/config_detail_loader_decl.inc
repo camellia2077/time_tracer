@@ -1,1 +1,1 @@
-void LoadDetailedReports(AppConfig& config);
+void LoadDetailedInsights(AppConfig& config);

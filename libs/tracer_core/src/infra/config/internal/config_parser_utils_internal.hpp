@@ -15,7 +15,7 @@ namespace ConfigParserUtils::internal {
 
 namespace fs = std::filesystem;
 
-struct ReportPathSource {
+struct InsightsPathSource {
   const fs::path& config_dir;
   const fs::path& source_path;
 };
@@ -30,7 +30,7 @@ struct BundlePathSource {
   const fs::path& config_dir;
 };
 
-struct AndroidBundleReportConfigPathSet {
+struct AndroidBundleInsightsConfigPathSet {
   fs::path day;
   fs::path month;
   fs::path period;
@@ -40,9 +40,9 @@ struct AndroidBundleReportConfigPathSet {
 
 struct AndroidBundleConfigPaths {
   fs::path converter_config_toml_path;
-  AndroidBundleReportConfigPathSet markdown;
-  std::optional<AndroidBundleReportConfigPathSet> latex;
-  std::optional<AndroidBundleReportConfigPathSet> typst;
+  AndroidBundleInsightsConfigPathSet markdown;
+  std::optional<AndroidBundleInsightsConfigPathSet> latex;
+  std::optional<AndroidBundleInsightsConfigPathSet> typst;
 };
 
 auto ResolveDefaultPath(const fs::path& exe_path, const std::string& path_value)
@@ -107,8 +107,8 @@ auto EnsureFieldAbsent(const toml::table& tbl, std::string_view key,
                        std::string_view field_prefix,
                        std::string_view replacement_hint) -> void;
 
-auto LoadReportPathsFromTable(const toml::table& section,
-                              const ReportPathSource& source,
+auto LoadInsightsPathsFromTable(const toml::table& section,
+                              const InsightsPathSource& source,
                               std::string_view section_field_path,
                               fs::path& day_path, fs::path& month_path,
                               fs::path& period_path, fs::path& week_path,

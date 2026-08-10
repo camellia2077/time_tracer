@@ -4,7 +4,7 @@
 1. 版本：`v1`
 2. 生效日期：`2026-02-22`
 3. 适用输出模式：`output_mode=semantic_json`
-4. `report-chart` 专项字段约束见：`docs/time_tracer/core/contracts/stats/report_chart_contract_v1.md`
+4. `insights-chart` 专项字段约束见：`docs/time_tracer/core/contracts/stats/insights_chart_contract_v1.md`
 
 ## 通用包络
 语义 JSON 顶层对象应包含以下基础字段：
@@ -82,14 +82,14 @@
 1. `top_n_requested`、`top_longest_rows`、`top_shortest_rows` 仅在请求 `top_n>0` 时出现。
 2. `rows` 为参与统计的样本序列（非仅 top N 子集）。
 
-## `report_chart`
-`report-chart` 的字段定义与跨端口径以
-`docs/time_tracer/core/contracts/stats/report_chart_contract_v1.md` 为准。
+## `insights_chart`
+`insights-chart` 的字段定义与跨端口径以
+`docs/time_tracer/core/contracts/stats/insights_chart_contract_v1.md` 为准。
 
 ```json
 {
   "schema_version": 1,
-  "action": "report_chart",
+  "action": "insights_chart",
   "output_mode": "semantic_json",
   "roots": ["study", "sleep"],
   "selected_root": "study",
@@ -143,14 +143,14 @@
 3. `max_available_depth` 表示当前时间范围内完整树结构的最大层级，根节点为第 0 层；
    它与本次请求的 `max_depth` 独立，供端侧构造层级选择项。
 
-## `report_composition`
-`report-composition` 的完整约束见
-`docs/time_tracer/core/contracts/stats/report_composition_contract_v1.md`。
+## `insights_composition`
+`insights-composition` 的完整约束见
+`docs/time_tracer/core/contracts/stats/insights_composition_contract_v1.md`。
 
 ```json
 {
   "schema_version": 1,
-  "action": "report_composition",
+  "action": "insights_composition",
   "output_mode": "semantic_json",
   "total_duration_seconds": 7200,
   "active_root_count": 1,

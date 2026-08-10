@@ -8,7 +8,7 @@ import subprocess
 _FOCUSED_PROFILE_ORDER = [
     "cap_pipeline",
     "cap_query",
-    "cap_reporting",
+    "cap_insights",
     "cap_exchange",
     "cap_config",
     "cap_persistence_runtime",
@@ -19,19 +19,19 @@ _FOCUSED_PROFILE_ORDER = [
 _OWNER_PROFILE_RULES: tuple[tuple[str, str], ...] = (
     ("apps/tracer_core_shell/api/c_api/capabilities/pipeline/", "cap_pipeline"),
     ("apps/tracer_core_shell/api/c_api/capabilities/query/", "cap_query"),
-    ("apps/tracer_core_shell/api/c_api/capabilities/reporting/", "cap_reporting"),
+    ("apps/tracer_core_shell/api/c_api/capabilities/insights/", "cap_insights"),
     ("apps/tracer_core_shell/api/c_api/capabilities/exchange/", "cap_exchange"),
     ("apps/tracer_core_shell/api/c_api/capabilities/config/", "cap_config"),
     ("apps/tracer_core_shell/tests/integration/tracer_core_c_api_query_", "cap_query"),
-    ("apps/tracer_core_shell/tests/integration/tracer_core_c_api_reporting_", "cap_reporting"),
+    ("apps/tracer_core_shell/tests/integration/tracer_core_c_api_insights_", "cap_insights"),
     ("apps/tracer_core_shell/tests/integration/tracer_core_c_api_pipeline_", "cap_pipeline"),
     (
         "apps/tracer_core_shell/tests/platform/infrastructure/tests/android_runtime/android_runtime_query_",
         "cap_query",
     ),
     (
-        "apps/tracer_core_shell/tests/platform/infrastructure/tests/android_runtime/android_runtime_reporting_",
-        "cap_reporting",
+        "apps/tracer_core_shell/tests/platform/infrastructure/tests/android_runtime/android_runtime_insights_",
+        "cap_insights",
     ),
     (
         "apps/tracer_core_shell/tests/platform/infrastructure/tests/android_runtime/android_runtime_pipeline_",
@@ -65,14 +65,14 @@ _OWNER_PROFILE_RULES: tuple[tuple[str, str], ...] = (
         "cap_query",
     ),
     ("libs/tracer_core/src/application/dto/query_", "cap_query"),
-    ("libs/tracer_core/src/application/reporting/", "cap_reporting"),
-    ("libs/tracer_core/src/application/use_cases/report_api.cpp", "cap_reporting"),
-    ("libs/tracer_core/src/application/use_cases/report_api_support.cpp", "cap_reporting"),
+    ("libs/tracer_core/src/application/insights/", "cap_insights"),
+    ("libs/tracer_core/src/application/use_cases/insights_api.cpp", "cap_insights"),
+    ("libs/tracer_core/src/application/use_cases/insights_api_support.cpp", "cap_insights"),
     (
-        "libs/tracer_core/src/application/use_cases/tracer_core_api_report.module.cpp",
-        "cap_reporting",
+        "libs/tracer_core/src/application/use_cases/tracer_core_api_insights.module.cpp",
+        "cap_insights",
     ),
-    ("libs/tracer_core/src/application/dto/reporting_", "cap_reporting"),
+    ("libs/tracer_core/src/application/dto/insights_", "cap_insights"),
     ("libs/tracer_core/src/application/dto/exchange_", "cap_exchange"),
     ("libs/tracer_core/src/application/use_cases/tracer_exchange_api.cpp", "cap_exchange"),
     (
@@ -80,7 +80,7 @@ _OWNER_PROFILE_RULES: tuple[tuple[str, str], ...] = (
         "cap_exchange",
     ),
     ("libs/tracer_core/src/infra/query/", "cap_query"),
-    ("libs/tracer_core/src/infra/reporting/", "cap_reporting"),
+    ("libs/tracer_core/src/infra/insights/", "cap_insights"),
     ("libs/tracer_core/src/infra/exchange/", "cap_exchange"),
     ("libs/tracer_core/src/infra/config/", "cap_config"),
     (
@@ -105,8 +105,8 @@ _OWNER_PROFILE_RULES: tuple[tuple[str, str], ...] = (
         "cap_query",
     ),
     (
-        "libs/tracer_core/tests/infra/tests/infrastructure_modules_smoke_reporting_",
-        "cap_reporting",
+        "libs/tracer_core/tests/infra/tests/infrastructure_modules_smoke_insights_",
+        "cap_insights",
     ),
     (
         "libs/tracer_core/tests/infra/tests/infrastructure_modules_smoke_exchange_",
@@ -125,7 +125,7 @@ _OWNER_PROFILE_RULES: tuple[tuple[str, str], ...] = (
         "cap_persistence_write",
     ),
     ("libs/tracer_core/tests/infra/tests/modules_smoke/query_", "cap_query"),
-    ("libs/tracer_core/tests/infra/tests/modules_smoke/reports.cpp", "cap_reporting"),
+    ("libs/tracer_core/tests/infra/tests/modules_smoke/insights.cpp", "cap_insights"),
     ("libs/tracer_core/tests/infra/tests/modules_smoke/crypto_exchange.cpp", "cap_exchange"),
     ("libs/tracer_core/tests/infra/tests/modules_smoke/logging_platform_config.cpp", "cap_config"),
     (
@@ -138,7 +138,7 @@ _OWNER_PROFILE_RULES: tuple[tuple[str, str], ...] = (
     ),
     ("tools/suites/tracer_windows_rust_cli/config_cap_pipeline.toml", "cap_pipeline"),
     ("tools/suites/tracer_windows_rust_cli/config_cap_query.toml", "cap_query"),
-    ("tools/suites/tracer_windows_rust_cli/config_cap_reporting.toml", "cap_reporting"),
+    ("tools/suites/tracer_windows_rust_cli/config_cap_insights.toml", "cap_insights"),
     ("tools/suites/tracer_windows_rust_cli/config_cap_exchange.toml", "cap_exchange"),
     ("tools/suites/tracer_windows_rust_cli/config_cap_config.toml", "cap_config"),
     (
@@ -151,7 +151,7 @@ _OWNER_PROFILE_RULES: tuple[tuple[str, str], ...] = (
     ),
     ("tools/suites/tracer_windows_rust_cli/tests/commands_pipeline.toml", "cap_pipeline"),
     ("tools/suites/tracer_windows_rust_cli/tests/commands_query_data.toml", "cap_query"),
-    ("tools/suites/tracer_windows_rust_cli/tests/commands_reporting.toml", "cap_reporting"),
+    ("tools/suites/tracer_windows_rust_cli/tests/commands_insights.toml", "cap_insights"),
     ("tools/suites/tracer_windows_rust_cli/tests/commands_exchange.toml", "cap_exchange"),
     ("tools/suites/tracer_windows_rust_cli/tests/commands_config.toml", "cap_config"),
     (
@@ -162,7 +162,7 @@ _OWNER_PROFILE_RULES: tuple[tuple[str, str], ...] = (
         "tools/suites/tracer_windows_rust_cli/tests/commands_persistence_write.toml",
         "cap_persistence_write",
     ),
-    ("test/golden/report_formatter_parity/", "cap_reporting"),
+    ("test/golden/insights_formatter_parity/", "cap_insights"),
 )
 
 _NON_OWNER_SHELL_PROFILE_RULES: tuple[tuple[str, str], ...] = (

@@ -10,9 +10,9 @@ namespace tracer_core::shell::config_bridge {
     -> ::infrastructure::bootstrap::android_runtime_detail::
         AndroidRuntimeConfigPaths;
 
-[[nodiscard]] auto BuildAndroidReportCatalogBridge(
+[[nodiscard]] auto BuildAndroidInsightsCatalogBridge(
     const ::infrastructure::bootstrap::android_runtime_detail::
-        AndroidRuntimeConfigPaths& runtime_config_paths) -> ReportCatalog;
+        AndroidRuntimeConfigPaths& runtime_config_paths) -> InsightsCatalog;
 
 }  // namespace tracer_core::shell::config_bridge
 

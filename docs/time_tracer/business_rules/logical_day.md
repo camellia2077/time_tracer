@@ -57,7 +57,7 @@ For a cross-midnight interval written under a logical day:
 the activity is stored and queried as part of logical day `0305`, even though
 its `end_time` occurs on the next civil day.
 
-Date filters and report day selection use this logical-day assignment. They do
+Date filters and insights day selection use this logical-day assignment. They do
 not split one activity interval across civil dates, and they do not reassign the
 activity to the civil date of `end_time`.
 

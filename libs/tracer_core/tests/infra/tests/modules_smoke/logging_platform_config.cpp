@@ -63,11 +63,11 @@ auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int {
   const auto load_converter_config = &tracer::core::infrastructure::config::
                                          ConverterConfigLoader::LoadFromFile;
   const auto load_daily_md_config = &tracer::core::infrastructure::config::
-                                        ReportConfigLoader::LoadDailyMdConfig;
+                                        InsightsConfigLoader::LoadDailyMdConfig;
   const auto read_toml =
       &tracer::core::infrastructure::config::loader::ReadToml;
-  const auto load_detailed_reports =
-      &tracer::core::infrastructure::config::internal::LoadDetailedReports;
+  const auto load_detailed_insights =
+      &tracer::core::infrastructure::config::internal::LoadDetailedInsights;
   const auto parse_system_settings =
       &tracer::core::infrastructure::config::internal::ParseSystemSettings;
   const auto load_configuration =
@@ -78,7 +78,7 @@ auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int {
   (void)load_converter_config;
   (void)load_daily_md_config;
   (void)read_toml;
-  (void)load_detailed_reports;
+  (void)load_detailed_insights;
   (void)parse_system_settings;
   (void)load_configuration;
   (void)load_file_provider;
@@ -118,7 +118,7 @@ auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int {
   WriteSmokeFile(kFakeExePath, "smoke");
 
   const std::filesystem::path kDailyMarkdownConfig =
-      kCopiedConfigRoot / "program" / "reports" / "markdown" / "en" /
+      kCopiedConfigRoot / "program" / "insights" / "markdown" / "en" /
       "day.toml";
   const toml::table kDailyMarkdownTable =
       tracer::core::infrastructure::config::loader::ReadToml(
@@ -128,7 +128,7 @@ auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int {
   }
 
   const auto kDailyMarkdown = tracer::core::infrastructure::config::
-      ReportConfigLoader::LoadDailyMdConfig(kDailyMarkdownConfig);
+      InsightsConfigLoader::LoadDailyMdConfig(kDailyMarkdownConfig);
   if (kDailyMarkdown.labels.date_label != "Date") {
     return 401;
   }
@@ -209,7 +209,7 @@ auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int {
   const AppConfig kLoadedAppConfig = config_loader.LoadConfiguration();
   if (kLoadedAppConfig.pipeline.converter_main_config_path.filename() !=
           "behavior.toml" ||
-      kLoadedAppConfig.loaded_reports.markdown.day.labels.date_label !=
+      kLoadedAppConfig.loaded_insights.markdown.day.labels.date_label !=
           "Date") {
     return 403;
   }

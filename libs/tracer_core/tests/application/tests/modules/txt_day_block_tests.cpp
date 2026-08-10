@@ -95,7 +95,7 @@ auto TestTxtDayBlockSemantics(TestState& state) -> void {
   });
   Expect(state, invalid.ok, "invalid marker should still return ok=true.");
   Expect(state, !invalid.is_marker_valid, "invalid marker should be rejected.");
-  Expect(state, !invalid.found, "invalid marker should not report found.");
+  Expect(state, !invalid.found, "invalid marker should not insights found.");
 
   const auto replaced = ReplaceDayBlock({
       .content = std::string(kMonthContent),
@@ -190,8 +190,8 @@ auto TestTxtDayBlockFixtureFiles(TestState& state) -> void {
 
 auto TestTxtDayBlockPipelineApiForwarding(TestState& state) -> void {
   FakePipelineWorkflow pipeline_workflow;
-  FakeReportHandler report_handler;
-  auto runtime_api = BuildRuntimeApiForTest(pipeline_workflow, report_handler);
+  FakeInsightsHandler insights_handler;
+  auto runtime_api = BuildRuntimeApiForTest(pipeline_workflow, insights_handler);
 
   const auto default_response = runtime_api.pipeline().RunDefaultTxtDayMarker({
       .selected_month = "2025-01",

@@ -20,9 +20,9 @@ codec implementation.
 
 - Own JSON envelope encoding/decoding, codec mechanics, default-field fallback,
   and transport capability projection.
-- Own transport encoding for the canonical temporal-report runtime surface and
-  the separate report-batch helper payload.
-- Do not define TXT action meaning, month-TXT day-block rules, report business
+- Own transport encoding for the canonical temporal-insights runtime surface and
+  the separate insights-batch helper payload.
+- Do not define TXT action meaning, month-TXT day-block rules, insights business
   semantics, or application policy. Change those in `tracer_core` first.
 - Do not move filesystem behavior into this library; that belongs to
   `tracer_adapters_io`.

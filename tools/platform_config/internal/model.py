@@ -12,4 +12,4 @@ class BundleModel:
     optional_files: list[str]
     converter_main_config: str
     visualization_heatmap_config: str
-    reports: dict[str, dict[str, object]]
+    insights: dict[str, dict[str, object]]

@@ -36,7 +36,7 @@ struct AndroidRuntime {
 };
 
 // Runtime used by candidate TXT/config validation and ingest. It deliberately
-// contains only the pipeline capability; report resources are not required.
+// contains only the pipeline capability; insights resources are not required.
 struct AndroidPipelineRuntime {
   std::shared_ptr<tracer::core::application::use_cases::IPipelineApi>
       pipeline_api;

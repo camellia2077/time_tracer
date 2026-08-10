@@ -25,7 +25,7 @@ auto BuildLogHeader(std::string_view filename) -> std::string {
   return stream.str();
 }
 
-auto GetEnabledReportDestinationLabel() -> std::optional<std::string> {
+auto GetEnabledInsightsDestinationLabel() -> std::optional<std::string> {
   const std::string kDestinationLabel =
       modports::GetErrorReportDestinationLabel();
   if (kDestinationLabel.empty() || kDestinationLabel == "disabled") {
@@ -34,13 +34,13 @@ auto GetEnabledReportDestinationLabel() -> std::optional<std::string> {
   return kDestinationLabel;
 }
 
-void FlushReportIfEnabled(const std::ostringstream& report_stream) {
-  const auto kDestinationLabel = GetEnabledReportDestinationLabel();
+void FlushInsightsIfEnabled(const std::ostringstream& insights_stream) {
+  const auto kDestinationLabel = GetEnabledInsightsDestinationLabel();
   if (!kDestinationLabel.has_value()) {
     return;
   }
 
-  if (modports::AppendErrorReport(report_stream.str())) {
+  if (modports::AppendErrorReport(insights_stream.str())) {
     modports::EmitInfo("详细的错误日志已保存至: " + *kDestinationLabel);
     return;
   }
@@ -147,29 +147,29 @@ void ValidationIssueReporter::ReportStructureErrors(
     grouped_errors[error.type].push_back(error);
   }
 
-  std::ostringstream report_stream;
-  report_stream << BuildLogHeader(display_label);
+  std::ostringstream insights_stream;
+  insights_stream << BuildLogHeader(display_label);
 
   for (const auto& [error_type, grouped] : grouped_errors) {
     const std::string kHeader = GetErrorTypeHeader(error_type);
     modports::EmitError("\n" + kHeader);
-    report_stream << kHeader << "\n";
+    insights_stream << kHeader << "\n";
     for (const auto& error : grouped) {
       const std::string kErrorMessage =
           BuildLocationPrefix(error, display_label) + error.message;
       modports::EmitError("  " + kErrorMessage);
-      report_stream << "  " << kErrorMessage << "\n";
+      insights_stream << "  " << kErrorMessage << "\n";
 
       if (error.source_span.has_value() &&
           !error.source_span->raw_text.empty()) {
         const std::string kRawLine = "    > " + error.source_span->raw_text;
         modports::EmitError(kRawLine);
-        report_stream << kRawLine << "\n";
+        insights_stream << kRawLine << "\n";
       }
     }
   }
 
-  FlushReportIfEnabled(report_stream);
+  FlushInsightsIfEnabled(insights_stream);
 }
 
 void ValidationIssueReporter::ReportLogicDiagnostics(
@@ -188,30 +188,30 @@ void ValidationIssueReporter::ReportLogicDiagnostics(
     grouped[kCodeKey].push_back(diagnostic);
   }
 
-  std::ostringstream report_stream;
-  report_stream << BuildLogHeader(fallback_label);
+  std::ostringstream insights_stream;
+  insights_stream << BuildLogHeader(fallback_label);
 
   for (const auto& [code, grouped_diagnostics] : grouped) {
     const std::string kHeader = GetDiagnosticHeader(code);
     modports::EmitError("\n" + kHeader);
-    report_stream << kHeader << "\n";
+    insights_stream << kHeader << "\n";
     for (const auto& diagnostic : grouped_diagnostics) {
       const std::string kErrorMessage =
           BuildLocationPrefix(diagnostic, fallback_label) + diagnostic.message;
       modports::EmitError("  " + kErrorMessage);
-      report_stream << "  " << kErrorMessage << "\n";
+      insights_stream << "  " << kErrorMessage << "\n";
 
       if (diagnostic.source_span.has_value() &&
           !diagnostic.source_span->raw_text.empty()) {
         const std::string kRawLine =
             "    > " + diagnostic.source_span->raw_text;
         modports::EmitError(kRawLine);
-        report_stream << kRawLine << "\n";
+        insights_stream << kRawLine << "\n";
       }
     }
   }
 
-  FlushReportIfEnabled(report_stream);
+  FlushInsightsIfEnabled(insights_stream);
 }
 
 }  // namespace tracer::core::infrastructure::logging

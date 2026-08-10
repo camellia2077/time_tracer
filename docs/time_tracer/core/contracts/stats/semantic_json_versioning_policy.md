@@ -40,6 +40,6 @@
 2. `libs/tracer_core/src/infra/tests/data_query/data_query_refactor_tree_tests.cpp`
 3. `libs/tracer_core/src/infra/tests/data_query/data_query_refactor_stats_tests.cpp`
    - 三个测试入口合计必须覆盖 `schema_version/action/output_mode` 基础包络。
-   - 必须覆盖关键 action 的字段快照（至少 `days-stats`、`report-chart`、`tree`）。
+   - 必须覆盖关键 action 的字段快照（至少 `days-stats`、`insights-chart`、`tree`）。
 4. `tools/suites/tracer_windows_rust_cli/tests/commands_query_data.toml`
    - 必须覆盖 `--data-output json` 的关键 fallback 场景。

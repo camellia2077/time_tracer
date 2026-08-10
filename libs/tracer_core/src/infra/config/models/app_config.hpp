@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "infra/config/models/report_catalog.hpp"
+#include "infra/config/models/insights_catalog.hpp"
 
 namespace fs = std::filesystem;
 
@@ -17,22 +17,22 @@ struct PipelineConfig {
   std::unordered_map<fs::path, fs::path> initial_top_parents;
 };
 
-struct ReportConfigPaths {
-  // Typst Report Configs
+struct InsightsConfigPaths {
+  // Typst Insights Configs
   fs::path day_typ_config_path;
   fs::path month_typ_config_path;
   fs::path period_typ_config_path;
   fs::path week_typ_config_path;
   fs::path year_typ_config_path;
 
-  // LaTeX Report Configs
+  // LaTeX Insights Configs
   fs::path day_tex_config_path;
   fs::path month_tex_config_path;
   fs::path period_tex_config_path;
   fs::path week_tex_config_path;
   fs::path year_tex_config_path;
 
-  // Markdown Report Configs
+  // Markdown Insights Configs
   fs::path day_md_config_path;
   fs::path month_md_config_path;
   fs::path period_md_config_path;
@@ -62,11 +62,11 @@ struct AppConfig {
 
   bool default_save_processed_output = false;
   PipelineConfig pipeline;
-  ReportConfigPaths reports;
+  InsightsConfigPaths insights;
   GlobalDefaults defaults;
   CommandDefaults command_defaults;
 
-  LoadedReportConfigs loaded_reports;
+  LoadedInsightsConfigs loaded_insights;
 };
 
 #endif  // INFRASTRUCTURE_CONFIG_MODELS_APP_CONFIG_H_

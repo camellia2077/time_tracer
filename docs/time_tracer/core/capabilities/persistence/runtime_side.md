@@ -15,7 +15,7 @@ used by read-side capabilities.
 2. sqlite support
 
 ## Forbidden Direct Dependencies
-1. pipeline/query/reporting/exchange orchestration
+1. pipeline/query/insights/exchange orchestration
 
 ## Important Boundary
 

@@ -13,12 +13,12 @@ capabilities. Use it when the change is already confirmed to belong to
 
 | Capability | Owns | Direct Capability Deps | Must Not Depend On |
 | --- | --- | --- | --- |
-| `pipeline` | convert / ingest / import / validate orchestration and workflow entry | `config`, `persistence_write` | `query`, `reporting`, `exchange` |
-| `query` | tree query semantics, data-query repository / orchestrators / renderers / stats | `config`, `persistence_runtime` | `reporting` |
-| `reporting` | report query / export / formatter / report-data-query flows | `config`, `persistence_runtime` | `query` |
-| `exchange` | tracer-exchange package flows and file-crypto-backed exchange implementation | `config` | `pipeline`, `query`, `reporting` |
-| `config` | runtime config loading, snapshotting, validators, report/converter config assembly | none | capability orchestration |
-| `persistence_write` | ingest/import write-side repositories and sqlite writer chain | support only | `query`, `reporting`, `exchange` |
+| `pipeline` | convert / ingest / import / validate orchestration and workflow entry | `config`, `persistence_write` | `query`, `insights`, `exchange` |
+| `query` | tree query semantics, data-query repository / orchestrators / renderers / stats | `config`, `persistence_runtime` | `insights` |
+| `insights` | insights query / export / formatter / insights-data-query flows | `config`, `persistence_runtime` | `query` |
+| `exchange` | tracer-exchange package flows and file-crypto-backed exchange implementation | `config` | `pipeline`, `query`, `insights` |
+| `config` | runtime config loading, snapshotting, validators, insights/converter config assembly | none | capability orchestration |
+| `persistence_write` | ingest/import write-side repositories and sqlite writer chain | support only | `query`, `insights`, `exchange` |
 | `persistence_runtime` | read-side project repository, db health, shared sqlite support | none | capability orchestration |
 
 Composition surfaces such as `application/use_cases/tracer_core_api.*`,
@@ -30,7 +30,7 @@ may aggregate multiple capabilities, but they are not capability owners.
 The target graph remains:
 1. `pipeline -> config + persistence_write`
 2. `query -> config + persistence_runtime`
-3. `reporting -> config + persistence_runtime`
+3. `insights -> config + persistence_runtime`
 4. `exchange -> config`
 
 `persistence_write` may reuse `persistence_runtime` sqlite support internally,
@@ -42,8 +42,8 @@ flowchart LR
     Pipeline --> PWrite["persistence_write"]
     Query["query"] --> Config
     Query --> PRuntime["persistence_runtime"]
-    Reporting["reporting"] --> Config
-    Reporting --> PRuntime
+    Insights["insights"] --> Config
+    Insights --> PRuntime
     Exchange["exchange"] --> Config
     PWrite -. "shared sqlite support" .-> PRuntime
 ```
@@ -54,8 +54,8 @@ flowchart LR
    - `python tools/run.py verify --app tracer_core_shell --profile cap_pipeline --concise`
 2. `query`
    - `python tools/run.py verify --app tracer_core_shell --profile cap_query --concise`
-3. `reporting`
-   - `python tools/run.py verify --app tracer_core_shell --profile cap_reporting --concise`
+3. `insights`
+   - `python tools/run.py verify --app tracer_core_shell --profile cap_insights --concise`
 4. `exchange`
    - `python tools/run.py verify --app tracer_core_shell --profile cap_exchange --concise`
 5. `config`

@@ -6,7 +6,7 @@ TXT logic validation runs after config validation, canonical text
 normalization, and successful structure validation.
 
 Its job is to verify that the parsed activity stream is semantically acceptable
-for downstream ingest and reporting.
+for downstream ingest and insights.
 
 ## What It Checks
 
@@ -55,7 +55,7 @@ That document explains:
 1. point events vs interval events
 2. how mixed timelines advance the last-known boundary
 3. why gaps are allowed but overlaps are invalid
-4. why query/reporting should aggregate recorded intervals only
+4. why query/insights should aggregate recorded intervals only
 
 ## Why Config Still Matters Here
 

@@ -131,7 +131,7 @@ void TestValidatorBridge(int& failures) {
   Expect(unknown_event,
          "Unknown activity should remain a structural-valid line.", failures);
   Expect(!unknown_errors.empty(),
-         "Unknown activity should be reported as semantic error.", failures);
+         "Unknown activity should be insightsed as semantic error.", failures);
   Expect(!unknown_errors.empty() &&
              unknown_errors.begin()->type == ErrorType::kUnrecognizedActivity,
          "Unknown activity error type mismatch.", failures);
@@ -227,7 +227,7 @@ void TestStructureValidatorBridge(int& failures) {
   Expect(end_only_ok, "StructValidator should allow an end-only activity.",
          failures);
   Expect(end_only_diagnostics.empty(),
-         "End-only activity should not report zero-duration diagnostics.",
+         "End-only activity should not insights zero-duration diagnostics.",
          failures);
 
   DailyLog invalid_end_only_day;
@@ -412,7 +412,7 @@ void TestStructureValidatorBridge(int& failures) {
                      [](const Diagnostic& diagnostic) -> bool {
                        return diagnostic.code == "timeline.event.overlap";
                      }),
-         "Overlapping explicit intervals should report overlap diagnostic.",
+         "Overlapping explicit intervals should insights overlap diagnostic.",
          failures);
 
   DailyLog interval_wake_day;
@@ -441,7 +441,7 @@ void TestStructureValidatorBridge(int& failures) {
              [](const Diagnostic& diagnostic) -> bool {
                return diagnostic.code == "wake.keyword.interval_not_allowed";
              }),
-         "Interval wake should report a dedicated wake interval diagnostic.",
+         "Interval wake should insights a dedicated wake interval diagnostic.",
          failures);
 
   DailyLog wrapped_interval_day;
@@ -557,7 +557,7 @@ void TestStructureValidatorBridge(int& failures) {
                      [](const Diagnostic& diagnostic) -> bool {
                        return diagnostic.code == "activity.duration.too_long";
                      }),
-         "Too-long point activity after cross-midnight interval should report "
+         "Too-long point activity after cross-midnight interval should insights "
          "duration diagnostic.",
          failures);
 
@@ -688,7 +688,7 @@ void TestStructureValidatorBridge(int& failures) {
              [](const Diagnostic& diagnostic) -> bool {
                return diagnostic.code == "timeline.interval.invalid_range";
              }),
-         "Zero-duration interval should report invalid_range diagnostic.",
+         "Zero-duration interval should insights invalid_range diagnostic.",
          failures);
 
   DailyLog too_long_interval_day;
@@ -723,7 +723,7 @@ void TestStructureValidatorBridge(int& failures) {
                      [](const Diagnostic& diagnostic) -> bool {
                        return diagnostic.code == "activity.duration.too_long";
                      }),
-         "Too-long cross-midnight interval should report duration diagnostic.",
+         "Too-long cross-midnight interval should insights duration diagnostic.",
          failures);
   Expect(std::none_of(too_long_interval_diagnostics.begin(),
                       too_long_interval_diagnostics.end(),
@@ -781,7 +781,7 @@ void TestStructureValidatorBridge(int& failures) {
                      [](const Diagnostic& diagnostic) -> bool {
                        return diagnostic.code == "timeline.event.overlap";
                      }),
-         "Boundary-overlapping cross-midnight interval should report overlap.",
+         "Boundary-overlapping cross-midnight interval should insights overlap.",
          failures);
 
   DailyLog allowed_long_interval_day;

@@ -38,8 +38,8 @@ auto BuildTimelineTestConfig() -> ConverterConfig {
 
 auto TestConvertResponses(TestState& state) -> void {
   FakePipelineWorkflow pipeline_workflow;
-  FakeReportHandler report_handler;
-  auto runtime_api = BuildRuntimeApiForTest(pipeline_workflow, report_handler);
+  FakeInsightsHandler insights_handler;
+  auto runtime_api = BuildRuntimeApiForTest(pipeline_workflow, insights_handler);
 
   const ConvertRequest kRequest = {.input_path = "source-path",
                                    .date_check_mode = DateCheckMode::kFull,
@@ -103,8 +103,8 @@ auto TestConvertResponses(TestState& state) -> void {
 
 auto TestIngestResponses(TestState& state) -> void {
   FakePipelineWorkflow pipeline_workflow;
-  FakeReportHandler report_handler;
-  auto runtime_api = BuildRuntimeApiForTest(pipeline_workflow, report_handler);
+  FakeInsightsHandler insights_handler;
+  auto runtime_api = BuildRuntimeApiForTest(pipeline_workflow, insights_handler);
 
   const IngestRequest kRequest = {.input_path = "source-folder",
                                   .date_check_mode = DateCheckMode::kContinuity,
@@ -141,8 +141,8 @@ auto TestIngestResponses(TestState& state) -> void {
 
 auto TestValidateResponses(TestState& state) -> void {
   FakePipelineWorkflow pipeline_workflow;
-  FakeReportHandler report_handler;
-  auto runtime_api = BuildRuntimeApiForTest(pipeline_workflow, report_handler);
+  FakeInsightsHandler insights_handler;
+  auto runtime_api = BuildRuntimeApiForTest(pipeline_workflow, insights_handler);
 
   const auto kStructureOk = runtime_api.pipeline().RunValidateStructure(
       {.input_path = "input-folder"});

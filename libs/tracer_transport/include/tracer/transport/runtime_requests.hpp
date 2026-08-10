@@ -74,7 +74,7 @@ struct QueryRequestPayload {
   std::optional<std::string> average_day_basis;
 };
 
-struct TemporalReportRequestPayload {
+struct TemporalInsightsRequestPayload {
   std::string operation_kind;
   std::string display_mode;
   std::optional<std::string> selection_kind;
@@ -104,7 +104,7 @@ struct UpdateDayRemarkAtomicallyRequestPayload {
   std::optional<std::string> date_check_mode;
 };
 
-struct ReportBatchRequestPayload {
+struct InsightsBatchRequestPayload {
   std::vector<int> days_list;
   std::optional<std::string> format;
 };

@@ -7,12 +7,12 @@
 #include <string_view>
 
 #include "application/dto/query_responses.hpp"
-#include "application/dto/reporting_responses.hpp"
+#include "application/dto/insights_responses.hpp"
 #include "application/dto/shared_envelopes.hpp"
-#include "domain/reports/types/report_types.hpp"
+#include "domain/insights/types/insights_types.hpp"
 
 namespace tracer_core::application::ports {
-class IReportDtoFormatter;
+class IInsightsDtoFormatter;
 }  // namespace tracer_core::application::ports
 
 namespace tracer::core::application::use_cases::helpers {

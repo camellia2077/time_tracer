@@ -6,7 +6,7 @@
 #include <string_view>
 #include <vector>
 
-#include "domain/reports/models/project_tree.hpp"
+#include "domain/insights/models/project_tree.hpp"
 #include "infra/query/data/data_query_models.hpp"
 #include "infra/query/data/data_query_types.hpp"
 

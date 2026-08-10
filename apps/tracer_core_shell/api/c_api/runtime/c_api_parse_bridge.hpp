@@ -7,16 +7,16 @@
 #include "domain/types/time_order_mode.hpp"
 
 enum class IngestMode;
-enum class ReportFormat;
+enum class InsightsFormat;
 
 namespace tracer_core::core::dto {
 
 enum class DataQueryAction;
 enum class DataQueryOutputMode;
-enum class ReportAverageDayBasis;
-enum class ReportDisplayMode;
-enum class ReportExportScope;
-enum class ReportOperationKind;
+enum class InsightsAverageDayBasis;
+enum class InsightsDisplayMode;
+enum class InsightsExportScope;
+enum class InsightsOperationKind;
 enum class TemporalSelectionKind;
 
 }  // namespace tracer_core::core::dto
@@ -34,17 +34,17 @@ namespace tracer_core::shell::c_api_bridge {
     -> tracer_core::core::dto::DataQueryAction;
 [[nodiscard]] auto ParseDataQueryOutputMode(const std::string& value)
     -> tracer_core::core::dto::DataQueryOutputMode;
-[[nodiscard]] auto ParseReportAverageDayBasis(const std::string& value)
-    -> tracer_core::core::dto::ReportAverageDayBasis;
-[[nodiscard]] auto ParseReportDisplayMode(const std::string& value)
-    -> tracer_core::core::dto::ReportDisplayMode;
-[[nodiscard]] auto ParseReportExportScope(const std::string& value)
-    -> tracer_core::core::dto::ReportExportScope;
-[[nodiscard]] auto ParseReportOperationKind(const std::string& value)
-    -> tracer_core::core::dto::ReportOperationKind;
+[[nodiscard]] auto ParseInsightsAverageDayBasis(const std::string& value)
+    -> tracer_core::core::dto::InsightsAverageDayBasis;
+[[nodiscard]] auto ParseInsightsDisplayMode(const std::string& value)
+    -> tracer_core::core::dto::InsightsDisplayMode;
+[[nodiscard]] auto ParseInsightsExportScope(const std::string& value)
+    -> tracer_core::core::dto::InsightsExportScope;
+[[nodiscard]] auto ParseInsightsOperationKind(const std::string& value)
+    -> tracer_core::core::dto::InsightsOperationKind;
 [[nodiscard]] auto ParseTemporalSelectionKind(const std::string& value)
     -> tracer_core::core::dto::TemporalSelectionKind;
-[[nodiscard]] auto ParseReportFormat(const std::string& value) -> ReportFormat;
+[[nodiscard]] auto ParseInsightsFormat(const std::string& value) -> InsightsFormat;
 
 }  // namespace tracer_core::shell::c_api_bridge
 

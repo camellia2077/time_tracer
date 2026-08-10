@@ -9,7 +9,7 @@ mod invoke;
 mod loader;
 mod pipeline_client;
 mod query_client;
-mod report_client;
+mod insights_client;
 mod tracer_exchange_client;
 mod txt_client;
 
@@ -36,7 +36,7 @@ use self::callbacks::configure_callbacks;
 use self::loader::{load_runtime_symbols, resolve_core_dll_path};
 pub use self::pipeline_client::PipelineClient;
 pub use self::query_client::QueryClient;
-pub use self::report_client::ReportClient;
+pub use self::insights_client::InsightsClient;
 pub use self::tracer_exchange_client::TracerExchangeClient;
 pub use self::txt_client::{
     TxtCanonicalReplaceOutput, TxtClient, TxtReplaceOutput, TxtResolveOutput,
@@ -316,8 +316,8 @@ impl RuntimeSession {
         QueryClient::new(&self.runtime)
     }
 
-    pub fn report(&self) -> ReportClient<'_> {
-        ReportClient::new(&self.runtime)
+    pub fn insights(&self) -> InsightsClient<'_> {
+        InsightsClient::new(&self.runtime)
     }
 
     pub fn exchange(&self) -> TracerExchangeClient<'_> {

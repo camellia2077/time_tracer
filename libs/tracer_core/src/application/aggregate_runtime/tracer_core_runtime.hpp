@@ -6,7 +6,7 @@
 #include "application/aggregate_runtime/i_tracer_core_runtime.hpp"
 #include "application/use_cases/i_pipeline_api.hpp"
 #include "application/use_cases/i_query_api.hpp"
-#include "application/use_cases/i_report_api.hpp"
+#include "application/use_cases/i_insights_api.hpp"
 #include "application/use_cases/i_tracer_exchange_api.hpp"
 
 namespace tracer::core::application::use_cases {
@@ -15,18 +15,18 @@ class TracerCoreRuntime final : public ITracerCoreRuntime {
  public:
   TracerCoreRuntime(std::shared_ptr<IPipelineApi> pipeline_api,
                     std::shared_ptr<IQueryApi> query_api,
-                    std::shared_ptr<IReportApi> report_api,
+                    std::shared_ptr<IInsightsApi> insights_api,
                     std::shared_ptr<ITracerExchangeApi> tracer_exchange_api);
 
   auto pipeline() -> IPipelineApi& override;
   auto query() -> IQueryApi& override;
-  auto report() -> IReportApi& override;
+  auto insights() -> IInsightsApi& override;
   auto tracer_exchange() -> ITracerExchangeApi& override;
 
  private:
   std::shared_ptr<IPipelineApi> pipeline_api_;
   std::shared_ptr<IQueryApi> query_api_;
-  std::shared_ptr<IReportApi> report_api_;
+  std::shared_ptr<IInsightsApi> insights_api_;
   std::shared_ptr<ITracerExchangeApi> tracer_exchange_api_;
 };
 

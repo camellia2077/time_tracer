@@ -6,7 +6,7 @@
 1. Shared cross-capability contracts are gradually moving to `docs/time_tracer/core/shared/` and `docs/time_tracer/core/errors/`.
 2. Validation-owned interpretation docs are moving to
    `docs/time_tracer/core/capabilities/validation/`.
-3. Query / reporting / exchange capability-first routing now starts under
+3. Query / insights / exchange capability-first routing now starts under
    `docs/time_tracer/core/capabilities/`.
 4. This directory remains the legacy home for stable contract references during
    the migration.
@@ -16,7 +16,7 @@
 2. `docs/time_tracer/core/errors/error-model.md`
 3. `docs/time_tracer/core/errors/error-codes.md`
 4. `docs/time_tracer/core/capabilities/query/README.md`
-5. `docs/time_tracer/core/capabilities/reporting/README.md`
+5. `docs/time_tracer/core/capabilities/insights/README.md`
 6. `docs/time_tracer/core/capabilities/exchange/README.md`
 7. `docs/time_tracer/core/contracts/crypto/README.md`
 8. `docs/time_tracer/core/contracts/crypto/file_format/README.md`
@@ -29,9 +29,9 @@
 15. `docs/time_tracer/core/contracts/stats/capability/README.md`
 16. `docs/time_tracer/core/contracts/stats/semantic_json/README.md`
 17. `docs/time_tracer/core/contracts/stats/adapters/README.md`
-18. `docs/time_tracer/core/contracts/reporting/README.md`
-19. `docs/time_tracer/core/contracts/reporting/report_data_consistency_spec_v1.md`
-20. `docs/time_tracer/core/contracts/reporting/report_output_text_contract_v1.md`
+18. `docs/time_tracer/core/contracts/insights/README.md`
+19. `docs/time_tracer/core/contracts/insights/insights_data_consistency_spec_v1.md`
+20. `docs/time_tracer/core/contracts/insights/insights_output_text_contract_v1.md`
 21. `docs/time_tracer/core/contracts/cli_surface_contract_v1.md`
 22. `docs/time_tracer/core/shared/canonical_text_contract_v1.md`
 23. `docs/time_tracer/core/contracts/text/runtime_txt_day_block_json_contract_v1.md`

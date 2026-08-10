@@ -9,7 +9,7 @@ facts.
 an authoring client.
 
 An authored event is input data. It is not yet the normalized activity fact used
-for querying or reporting.
+for querying or insights.
 
 Examples:
 
@@ -83,7 +83,7 @@ only after conversion.
 ## Activity Interval
 
 `activity interval` means the normalized activity fact used by core logic,
-persistence, query, and reporting.
+persistence, query, and insights.
 
 An activity interval has at least:
 

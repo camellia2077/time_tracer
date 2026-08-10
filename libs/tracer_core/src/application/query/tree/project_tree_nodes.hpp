@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "application/query/tree/project_tree_data.hpp"
-#include "domain/reports/models/project_tree.hpp"
+#include "domain/insights/models/project_tree.hpp"
 
 namespace tracer::core::application::query::tree {
 
@@ -17,7 +17,7 @@ namespace tracer::core::application::query::tree {
 namespace tracer_core::application::query::tree {
 
 using tracer::core::application::query::tree::
-    BuildProjectTreeNodesFromReportTree;
+    BuildProjectTreeNodesFromInsightsTree;
 using tracer::core::application::query::tree::FindProjectTreeNodesByPath;
 using tracer::core::application::query::tree::LimitProjectTreeDepth;
 

@@ -29,7 +29,7 @@ Examples:
 5. `runtime.*`: runtime, path, and dependency failures
 6. `io.*`: file-system read/write failures
 7. `config.*`: config load and parse failures
-8. `reporting.*`: report query/export semantic failures
+8. `insights.*`: insights query/export semantic failures
 
 ## Mapping Guidance For Existing Validator Errors
 
@@ -78,7 +78,7 @@ Guidance:
 | Workflow step failed | `pipeline.step.failed` |
 | Import transaction failed | `import.transaction.failed` |
 | Export write failed | `export.write.failed` |
-| Report target not found | `reporting.target.not_found` |
+| Insights target not found | `insights.target.not_found` |
 | Path not found | `runtime.io.path_not_found` |
 | Runtime dependency missing | `runtime.dependency.missing` |
 

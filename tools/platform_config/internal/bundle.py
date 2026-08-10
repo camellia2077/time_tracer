@@ -4,17 +4,17 @@ import tomllib
 from pathlib import Path
 from typing import Any
 
-from .constants import REPORT_FORMAT_ORDER
+from .constants import INSIGHTS_FORMAT_ORDER
 from .model import BundleModel
 from .path_utils import dedupe_keep_order, normalize_rel_path
 from .validation import ensure_dict, ensure_list_of_str, ensure_str
 
 
-def parse_report_paths(
-    reports_table: dict[str, Any], format_name: str, table_prefix: str
+def parse_insights_paths(
+    insights_table: dict[str, Any], format_name: str, table_prefix: str
 ) -> dict[str, object]:
     format_table = ensure_dict(
-        reports_table.get(format_name), f"{table_prefix}.{format_name}"
+        insights_table.get(format_name), f"{table_prefix}.{format_name}"
     )
     parsed: dict[str, object] = {
         "root": normalize_rel_path(
@@ -92,14 +92,14 @@ def build_bundle_model(
         visualization_table.get("pie"), "visualization.pie"
     )
 
-    reports_table = ensure_dict(source_config.get("reports"), "reports")
-    markdown_paths = parse_report_paths(reports_table, "markdown", "reports")
+    insights_table = ensure_dict(source_config.get("insights"), "insights")
+    markdown_paths = parse_insights_paths(insights_table, "markdown", "insights")
     markdown_root = str(markdown_paths["root"])
     markdown_default_locale = str(markdown_paths["default_locale"])
     localized_markdown_files = [
         f"program/{path}"
         for path in source_program_required
-        if path.startswith("reports/markdown/")
+        if path.startswith("insights/markdown/")
         and path.count("/") == 3
     ]
 
@@ -125,17 +125,17 @@ def build_bundle_model(
             optional_files=[],
             converter_main_config="user/behavior.toml",
             visualization_heatmap_config=heatmap_config,
-            reports={"markdown": markdown_paths},
+            insights={"markdown": markdown_paths},
         )
 
-    windows_reports: dict[str, dict[str, object]] = {}
-    for format_name in REPORT_FORMAT_ORDER:
-        if format_name in reports_table:
-            windows_reports[format_name] = parse_report_paths(
-                reports_table, format_name, "reports"
+    windows_insights: dict[str, dict[str, object]] = {}
+    for format_name in INSIGHTS_FORMAT_ORDER:
+        if format_name in insights_table:
+            windows_insights[format_name] = parse_insights_paths(
+                insights_table, format_name, "insights"
             )
-    if "markdown" not in windows_reports:
-        raise ValueError("Windows bundle generation requires reports.markdown.")
+    if "markdown" not in windows_insights:
+        raise ValueError("Windows bundle generation requires insights.markdown.")
 
     required_files = dedupe_keep_order(
         [
@@ -156,7 +156,7 @@ def build_bundle_model(
         optional_files=optional_files,
         converter_main_config="user/behavior.toml",
         visualization_heatmap_config=heatmap_config,
-        reports=windows_reports,
+        insights=windows_insights,
     )
 
 
@@ -186,7 +186,7 @@ def build_android_config_toml(source_root: Path) -> str:
     text = source_config_path.read_text(encoding="utf-8")
     lines = text.splitlines(keepends=True)
 
-    disallowed_tables = {"reports.typst", "reports.latex"}
+    disallowed_tables = {"insights.typst", "insights.latex"}
     output_lines: list[str] = []
     skip_block = False
     for line in lines:

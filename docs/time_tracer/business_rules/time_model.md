@@ -3,7 +3,7 @@
 This document defines TimeTracer's core time model.
 
 The project is based on user-authored events that are converted into activity
-intervals. Statistics and reports should be based on those activity intervals.
+intervals. Statistics and insights should be based on those activity intervals.
 
 ## Time Point
 
@@ -22,7 +22,7 @@ Time points are boundaries. A time point alone is not a duration.
 ## Activity Interval
 
 An `activity interval` is the normalized fact used for storage, query, and
-reporting.
+insights.
 
 It has:
 

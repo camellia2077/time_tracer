@@ -6,14 +6,14 @@ import tracer.core.domain.types.date_check_mode;
 import tracer.core.domain.types.ingest_mode;
 
 #include "application/aggregate_runtime/tracer_core_runtime.hpp"
-#include "application/compat/reporting/i_report_handler.hpp"
+#include "application/compat/insights/i_insights_handler.hpp"
 #include "application/dto/query_requests.hpp"
-#include "application/dto/reporting_requests.hpp"
+#include "application/dto/insights_requests.hpp"
 #include "application/dto/shared_envelopes.hpp"
 #include "application/pipeline/i_pipeline_workflow.hpp"
 #include "application/ports/query/i_data_query_service.hpp"
-#include "application/ports/reporting/i_report_data_query_service.hpp"
-#include "application/ports/reporting/i_report_dto_formatter.hpp"
+#include "application/ports/insights/i_insights_data_query_service.hpp"
+#include "application/ports/insights/i_insights_dto_formatter.hpp"
 
 #include <exception>
 #include <iostream>
@@ -139,24 +139,24 @@ class SmokePipelineWorkflow final
       -> void override {}
 };
 
-class SmokeReportHandler final : public IReportHandler {
+class SmokeInsightsHandler final : public IInsightsHandler {
  public:
-  auto RunDailyQuery(std::string_view, ReportFormat) -> std::string override {
+  auto RunDailyQuery(std::string_view, InsightsFormat) -> std::string override {
     return "smoke-daily";
   }
-  auto RunMonthlyQuery(std::string_view, ReportFormat) -> std::string override {
+  auto RunMonthlyQuery(std::string_view, InsightsFormat) -> std::string override {
     return "smoke-monthly";
   }
-  auto RunPeriodQuery(int, ReportFormat) -> std::string override {
+  auto RunPeriodQuery(int, InsightsFormat) -> std::string override {
     return "smoke-period";
   }
-  auto RunWeeklyQuery(std::string_view, ReportFormat) -> std::string override {
+  auto RunWeeklyQuery(std::string_view, InsightsFormat) -> std::string override {
     return "smoke-weekly";
   }
-  auto RunYearlyQuery(std::string_view, ReportFormat) -> std::string override {
+  auto RunYearlyQuery(std::string_view, InsightsFormat) -> std::string override {
     return "smoke-yearly";
   }
-  auto RunPeriodQueries(const std::vector<int>&, ReportFormat)
+  auto RunPeriodQueries(const std::vector<int>&, InsightsFormat)
       -> std::string override {
     return "smoke-period-batch";
   }
@@ -171,85 +171,85 @@ class SmokeDataQueryService final
   }
 };
 
-class SmokeReportDataQueryService final
-    : public tracer_core::application::ports::IReportDataQueryService {
+class SmokeInsightsDataQueryService final
+    : public tracer_core::application::ports::IInsightsDataQueryService {
  public:
-  auto QueryDaily(std::string_view date) -> DailyReportData override {
-    DailyReportData report;
-    report.date = std::string(date);
-    return report;
+  auto QueryDaily(std::string_view date) -> DailyInsightsData override {
+    DailyInsightsData insights;
+    insights.date = std::string(date);
+    return insights;
   }
-  auto QueryMonthly(std::string_view month) -> MonthlyReportData override {
-    MonthlyReportData report;
-    report.range_label = std::string(month);
-    return report;
+  auto QueryMonthly(std::string_view month) -> MonthlyInsightsData override {
+    MonthlyInsightsData insights;
+    insights.range_label = std::string(month);
+    return insights;
   }
-  auto QueryPeriod(int days) -> PeriodReportData override {
-    PeriodReportData report;
-    report.requested_days = days;
-    return report;
+  auto QueryPeriod(int days) -> PeriodInsightsData override {
+    PeriodInsightsData insights;
+    insights.requested_days = days;
+    return insights;
   }
   auto QueryRange(std::string_view start_date, std::string_view end_date)
-      -> PeriodReportData override {
-    PeriodReportData report;
-    report.start_date = std::string(start_date);
-    report.end_date = std::string(end_date);
-    return report;
+      -> PeriodInsightsData override {
+    PeriodInsightsData insights;
+    insights.start_date = std::string(start_date);
+    insights.end_date = std::string(end_date);
+    return insights;
   }
-  auto QueryWeekly(std::string_view iso_week) -> WeeklyReportData override {
-    WeeklyReportData report;
-    report.range_label = std::string(iso_week);
-    return report;
+  auto QueryWeekly(std::string_view iso_week) -> WeeklyInsightsData override {
+    WeeklyInsightsData insights;
+    insights.range_label = std::string(iso_week);
+    return insights;
   }
-  auto QueryYearly(std::string_view year) -> YearlyReportData override {
-    YearlyReportData report;
-    report.range_label = std::string(year);
-    return report;
+  auto QueryYearly(std::string_view year) -> YearlyInsightsData override {
+    YearlyInsightsData insights;
+    insights.range_label = std::string(year);
+    return insights;
   }
   auto ListDailyTargets() -> std::vector<std::string> override { return {}; }
   auto ListMonthlyTargets() -> std::vector<std::string> override { return {}; }
   auto ListWeeklyTargets() -> std::vector<std::string> override { return {}; }
   auto ListYearlyTargets() -> std::vector<std::string> override { return {}; }
   auto QueryPeriodBatch(const std::vector<int>&)
-      -> std::map<int, PeriodReportData> override {
+      -> std::map<int, PeriodInsightsData> override {
     return {};
   }
-  auto QueryAllDaily() -> std::map<std::string, DailyReportData> override {
+  auto QueryAllDaily() -> std::map<std::string, DailyInsightsData> override {
     return {};
   }
-  auto QueryAllMonthly() -> std::map<std::string, MonthlyReportData> override {
+  auto QueryAllMonthly() -> std::map<std::string, MonthlyInsightsData> override {
     return {};
   }
-  auto QueryAllWeekly() -> std::map<std::string, WeeklyReportData> override {
+  auto QueryAllWeekly() -> std::map<std::string, WeeklyInsightsData> override {
     return {};
   }
-  auto QueryAllYearly() -> std::map<std::string, YearlyReportData> override {
+  auto QueryAllYearly() -> std::map<std::string, YearlyInsightsData> override {
     return {};
   }
 };
 
-class SmokeReportFormatter final
-    : public tracer_core::application::ports::IReportDtoFormatter {
+class SmokeInsightsFormatter final
+    : public tracer_core::application::ports::IInsightsDtoFormatter {
  public:
-  auto FormatDaily(const DailyReportData& report, ReportFormat)
+  auto FormatDaily(const DailyInsightsData& insights, InsightsFormat)
       -> std::string override {
-    return "smoke-daily:" + report.date;
+    return "smoke-daily:" + insights.date;
   }
-  auto FormatMonthly(const MonthlyReportData& report, ReportFormat)
+  auto FormatMonthly(const MonthlyInsightsData& insights, InsightsFormat)
       -> std::string override {
-    return "smoke-month:" + report.range_label;
+    return "smoke-month:" + insights.range_label;
   }
-  auto FormatPeriod(const PeriodReportData& report, ReportFormat)
+  auto FormatPeriod(const PeriodInsightsData& insights, InsightsFormat)
       -> std::string override {
-    return "smoke-period:" + report.start_date + "|" + report.end_date;
+    return "smoke-period:" + insights.start_date + "|" + insights.end_date;
   }
-  auto FormatWeekly(const WeeklyReportData& report, ReportFormat)
+  auto FormatWeekly(const WeeklyInsightsData& insights, InsightsFormat)
       -> std::string override {
-    return "smoke-week:" + report.range_label;
+    return "smoke-week:" + insights.range_label;
   }
-  auto FormatYearly(const YearlyReportData& report, ReportFormat)
+  auto FormatYearly(const YearlyInsightsData& insights, InsightsFormat)
       -> std::string override {
-    return "smoke-year:" + report.range_label;
+    return "smoke-year:" + insights.range_label;
   }
 };
 
@@ -283,8 +283,8 @@ auto RunAggregateRuntimeSmoke(int& failures) -> void {
   Expect(std::is_class_v<app_use_cases::IQueryApi>,
          "IQueryApi should be visible through aggregate runtime path.",
          failures);
-  Expect(std::is_class_v<app_use_cases::IReportApi>,
-         "IReportApi should be visible through aggregate runtime path.",
+  Expect(std::is_class_v<app_use_cases::IInsightsApi>,
+         "IInsightsApi should be visible through aggregate runtime path.",
          failures);
   Expect(std::is_class_v<app_use_cases::ITracerExchangeApi>,
          "ITracerExchangeApi should be visible through aggregate runtime path.",
@@ -309,22 +309,22 @@ auto RunAggregateRuntimeSmoke(int& failures) -> void {
 
   try {
     SmokePipelineWorkflow pipeline_workflow;
-    SmokeReportHandler report_handler;
+    SmokeInsightsHandler insights_handler;
     auto project_repository = std::make_shared<SmokeProjectRepository>();
     auto data_query_service = std::make_shared<SmokeDataQueryService>();
-    auto report_data_query_service =
-        std::make_shared<SmokeReportDataQueryService>();
-    auto report_formatter = std::make_shared<SmokeReportFormatter>();
+    auto insights_data_query_service =
+        std::make_shared<SmokeInsightsDataQueryService>();
+    auto insights_formatter = std::make_shared<SmokeInsightsFormatter>();
     auto pipeline_api =
         std::make_shared<app_use_cases::PipelineApi>(pipeline_workflow);
     auto query_api = std::make_shared<app_use_cases::QueryApi>(
         project_repository, data_query_service);
-    auto report_api = std::make_shared<app_use_cases::ReportApi>(
-        report_handler, report_data_query_service, report_formatter);
+    auto insights_api = std::make_shared<app_use_cases::InsightsApi>(
+        insights_handler, insights_data_query_service, insights_formatter);
     auto tracer_exchange_api =
         std::make_shared<app_use_cases::TracerExchangeApi>();
     app_use_cases::TracerCoreRuntime runtime_api(
-        std::move(pipeline_api), std::move(query_api), std::move(report_api),
+        std::move(pipeline_api), std::move(query_api), std::move(insights_api),
         std::move(tracer_exchange_api));
 
     const auto data_query_result = runtime_api.query().RunDataQuery({});
@@ -332,17 +332,17 @@ auto RunAggregateRuntimeSmoke(int& failures) -> void {
         data_query_result.ok && data_query_result.content == "smoke-data-query",
         "Aggregate runtime should dispatch query API.", failures);
 
-    const auto report_query_result =
-        runtime_api.report().RunTemporalReportQuery(
-            {.display_mode = tracer_core::core::dto::ReportDisplayMode::kDay,
+    const auto insights_query_result =
+        runtime_api.insights().RunTemporalInsightsQuery(
+            {.display_mode = tracer_core::core::dto::InsightsDisplayMode::kDay,
              .selection =
                  {.kind =
                       tracer_core::core::dto::TemporalSelectionKind::kSingleDay,
                   .date = "2026-03-10"},
-             .format = ReportFormat::kMarkdown});
-    Expect(report_query_result.ok &&
-               report_query_result.content == "smoke-daily:2026-03-10",
-           "Aggregate runtime should dispatch report API.", failures);
+             .format = InsightsFormat::kMarkdown});
+    Expect(insights_query_result.ok &&
+               insights_query_result.content == "smoke-daily:2026-03-10",
+           "Aggregate runtime should dispatch insights API.", failures);
   } catch (const std::exception& exception) {
     ++failures;
     std::cerr << "[FAIL] Aggregate runtime smoke should construct and execute: "

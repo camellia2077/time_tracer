@@ -61,7 +61,7 @@ Runtime bootstrap must not:
 
 Read paths include:
 1. query
-2. report
+2. insights
 3. tree
 
 Write paths include:
@@ -94,7 +94,7 @@ If the database already exists before the run:
 2. schema initialization must move to the write phase
 3. database health checks used by ingest must validate write preconditions
    without creating the database
-4. read services must report a missing database as an explicit error, not hide
+4. read services must insights a missing database as an explicit error, not hide
    it by auto-creating a new one
 
 ## Implementation Snapshot (2026-03-07)
@@ -108,8 +108,8 @@ If the database already exists before the run:
 3. `libs/tracer_core/src/infra/persistence/sqlite_database_health_checker.module.cpp`
    validates write preconditions by checking path readiness instead of opening
    SQLite.
-4. `libs/tracer_core/src/infra/reporting/lazy_sqlite_report_query_service.module.cpp`
-   and `lazy_sqlite_report_data_query_service.module.cpp` keep report/query
+4. `libs/tracer_core/src/infra/insights/lazy_sqlite_insights_query_service.module.cpp`
+   and `lazy_sqlite_insights_data_query_service.module.cpp` keep insights/query
    reads lazy and return explicit missing-database errors instead of silently
    creating a new database.
 5. `apps/tracer_core_shell/tests/platform/infrastructure/tests/android_runtime/`

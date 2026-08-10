@@ -1,0 +1,15 @@
+// infrastructure/tests/insights_formatter/insights_formatter_parity_tex_tests.cpp
+#include "infra/tests/insights_formatter/insights_formatter_parity_internal.hpp"
+
+namespace insights_formatter_parity_internal {
+
+auto RunLatexSnapshotCases(const std::filesystem::path& snapshot_root,
+                           const ParityOutputs& outputs, bool update_snapshots,
+                           int& failures) -> void {
+  constexpr size_t kLatexIndex = 1;
+  RunFormatSnapshotCases(
+      "latex", ".tex", snapshot_root, outputs.cli_by_format[kLatexIndex],
+      outputs.android_by_format[kLatexIndex], update_snapshots, failures);
+}
+
+}  // namespace insights_formatter_parity_internal

@@ -215,16 +215,16 @@ class TestTidyTaskAutoFixPlan(TestCase):
         with TemporaryDirectory() as temp_dir:
             fb = AutoFixFixtureBuilder(Path(temp_dir))
             fb.write_source(
-                "libs/tracer_core/src/application/dto/reporting_responses.hpp",
+                "libs/tracer_core/src/application/dto/insights_responses.hpp",
                 [
-                    "#ifndef REPORTING_RESPONSES_HPP_",
-                    "#define REPORTING_RESPONSES_HPP_",
+                    "#ifndef INSIGHTS_RESPONSES_HPP_",
+                    "#define INSIGHTS_RESPONSES_HPP_",
                     "namespace tracer_core::core::dto {",
-                    "enum class StructuredReportKind {",
+                    "enum class StructuredInsightsKind {",
                     "  kDay,",
                     "};",
-                    "struct StructuredReportOutput {",
-                    "  StructuredReportKind kind = StructuredReportKind::kDay;",
+                    "struct StructuredInsightsOutput {",
+                    "  StructuredInsightsKind kind = StructuredInsightsKind::kDay;",
                     "};",
                     "}  // namespace tracer_core::core::dto",
                 ],
@@ -244,11 +244,11 @@ class TestTidyTaskAutoFixPlan(TestCase):
             fb.write_source(
                 "libs/tracer_core/src/application/use_cases/helper.hpp",
                 [
-                    '#include "application/dto/reporting_responses.hpp"',
+                    '#include "application/dto/insights_responses.hpp"',
                     '#include "application/dto/shared_envelopes.hpp"',
                     "namespace tracer::core::application::use_cases {",
                     "auto FormatStructured(",
-                    "    const tracer_core::core::dto::StructuredReportOutput& output)",
+                    "    const tracer_core::core::dto::StructuredInsightsOutput& output)",
                     "    -> tracer_core::core::dto::TextOutput;",
                     "}  // namespace tracer::core::application::use_cases",
                 ],
@@ -262,9 +262,9 @@ class TestTidyTaskAutoFixPlan(TestCase):
                     "",
                     "using namespace tracer_core::core::dto;",
                     "",
-                    "auto FormatStructured(const StructuredReportOutput& output)",
+                    "auto FormatStructured(const StructuredInsightsOutput& output)",
                     "    -> TextOutput {",
-                    "  return {.ok = output.kind == StructuredReportKind::kDay};",
+                    "  return {.ok = output.kind == StructuredInsightsKind::kDay};",
                     "}",
                     "",
                     "}  // namespace tracer::core::application::use_cases",
@@ -290,9 +290,9 @@ class TestTidyTaskAutoFixPlan(TestCase):
             self.assertEqual(
                 actions[0].replacement.splitlines(),
                 [
-                    "using tracer_core::core::dto::StructuredReportOutput;",
+                    "using tracer_core::core::dto::StructuredInsightsOutput;",
                     "using tracer_core::core::dto::TextOutput;",
-                    "using tracer_core::core::dto::StructuredReportKind;",
+                    "using tracer_core::core::dto::StructuredInsightsKind;",
                 ],
             )
 

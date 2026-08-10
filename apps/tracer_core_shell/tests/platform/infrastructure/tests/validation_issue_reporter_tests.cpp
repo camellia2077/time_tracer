@@ -51,13 +51,13 @@ class CapturingDiagnosticsSink final : public modports::IDiagnosticsSink {
 
 class CapturingErrorReportWriter final : public modports::IErrorReportWriter {
  public:
-  auto Append(std::string_view report_content) -> bool override {
-    appended_.append(report_content);
+  auto Append(std::string_view insights_content) -> bool override {
+    appended_.append(insights_content);
     return true;
   }
 
   [[nodiscard]] auto DestinationLabel() const -> std::string override {
-    return "captured-report.log";
+    return "captured-insights.log";
   }
 
   [[nodiscard]] auto Appended() const -> const std::string& {
@@ -221,7 +221,7 @@ auto TestReporterSkipsSaveNoticeWhenErrorReportWriterDisabled(int& failures)
   if (Contains(sink->Infos(), "详细的错误日志已保存至") ||
       Contains(sink->Infos(), "详细错误日志写入失败")) {
     ++failures;
-    std::cerr << "[FAIL] Reporter should stay silent about report files when "
+    std::cerr << "[FAIL] Reporter should stay silent about insights files when "
                  "the error report writer is disabled.\n";
   }
 }

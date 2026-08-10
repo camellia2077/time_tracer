@@ -8,6 +8,6 @@ pub mod licenses;
 pub mod motto;
 pub mod pipeline;
 pub mod query;
-pub mod report;
+pub mod insights;
 pub mod tracer;
 pub mod txt;

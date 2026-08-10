@@ -31,15 +31,15 @@
 7. **[04 语义降维投射 (Semantic Projection)](parsing/04_semantic_projection.md)**
    - 将扁平的数据库明细对象集，提炼、聚合为真正服务于业务的上层结构 `DataQueryData`（统计面板等）。
 
-### 第二部分：报告格式化与树状图实现 (Reports & Tree Generation)
+### 第二部分：报告格式化与树状图实现 (Insights & Tree Generation)
 **核心职责：** **“只管数据的聚合计算与华丽呈现”**
 这部分代码接手了第一部分吐出的 `DataQueryData` 扁平结果集。它不碰任何 SQL 执行，只负责在内存里捏造出立体的结构，甚至渲染出字符画。
 
 8. **[树图生成与渲染核心算法 (Tree Algorithms)](generation/tree_algorithms.md)**
    - **核心必读**。拿到阶段二吐出的一堆扁平路径（比如 `/study/math` 包含了 2 个小时），通过什么样的算法才能把它们合并成一棵携带节点权重的、完美的关联树？
    - 并且，如何利用深度遍历把这棵内存树绘制成带有 `├──` 与 `└──` 分支的字符画艺术？
-9. **[报告格式化引擎 (Report Formatting)](generation/report_formatting.md)**
-   - 记录了在生成了 `DailyReportData` 之后，底层代码是如何通过 `ReportDtoFormatter` 和各个细分语言包（Markdown/LaTeX/Typst），高效利用 C++ 的纯字符流拼接，将冰冷的时长结构体转化为供用户直接外发阅览的 `.md`、`.tex` 的完整实现机理。
+9. **[报告格式化引擎 (Insights Formatting)](generation/insights_formatting.md)**
+   - 记录了在生成了 `DailyInsightsData` 之后，底层代码是如何通过 `InsightsDtoFormatter` 和各个细分语言包（Markdown/LaTeX/Typst），高效利用 C++ 的纯字符流拼接，将冰冷的时长结构体转化为供用户直接外发阅览的 `.md`、`.tex` 的完整实现机理。
 
 ---
 

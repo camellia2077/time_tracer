@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "infra/config/models/report_config_models.hpp"
+#include "infra/config/models/insights_config_models.hpp"
 
 namespace fs = std::filesystem;
 

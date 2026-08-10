@@ -121,9 +121,9 @@ const std::array<JNINativeMethod, 19> kNativeMethods = {
         reinterpret_cast<void*>(&NativeQuery),
     },
     JNINativeMethod{
-        const_cast<char*>("nativeReportJson"),
+        const_cast<char*>("nativeInsightsJson"),
         const_cast<char*>("(Ljava/lang/String;)Ljava/lang/String;"),
-        reinterpret_cast<void*>(&NativeReportJson),
+        reinterpret_cast<void*>(&NativeInsightsJson),
     },
 };
 

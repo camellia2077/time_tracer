@@ -5,7 +5,7 @@ module;
 #include <string_view>
 
 #include "application/dto/query_responses.hpp"
-#include "application/dto/reporting_responses.hpp"
+#include "application/dto/insights_responses.hpp"
 #include "application/dto/shared_envelopes.hpp"
 
 module tracer.core.application.use_cases.helpers;

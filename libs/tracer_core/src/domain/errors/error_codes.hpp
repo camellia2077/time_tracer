@@ -86,7 +86,7 @@ inline constexpr std::string_view kTransactionFailed =
 }  // namespace import_
 
 // ---------------------------------------------------------------------------
-// export_.*   Export / report write failures
+// export_.*   Export / insights write failures
 // ---------------------------------------------------------------------------
 namespace export_ {
 
@@ -126,14 +126,14 @@ inline constexpr std::string_view kFieldInvalid = "config.field.invalid";
 }  // namespace config
 
 // ---------------------------------------------------------------------------
-// reporting.*   Reporting query / export semantic failures
+// insights.*   Insights query / export semantic failures
 // ---------------------------------------------------------------------------
-namespace reporting {
+namespace insights {
 
 inline constexpr std::string_view kTargetNotFound =
-    "reporting.target.not_found";
+    "insights.target.not_found";
 
-}  // namespace reporting
+}  // namespace insights
 
 }  // namespace tracer_core::domain::errors::codes
 

@@ -15,7 +15,7 @@ writer chain.
 
 ## Forbidden Direct Dependencies
 1. `infra/query/**`
-2. `infra/reporting/**`
+2. `infra/insights/**`
 3. `infra/exchange/**`
 
 ## Read Next

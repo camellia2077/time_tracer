@@ -28,7 +28,7 @@ class TestAndroidFailureSummary(TestCase):
                 "\n".join(
                     [
                         "> Task :app:testDebugUnitTest FAILED",
-                        "com.example.tracer.data.UserPreferencesRepositoryTest > setReportPiePalettePreset_persistsSelection FAILED",
+                        "com.example.tracer.data.UserPreferencesRepositoryTest > setInsightsPiePalettePreset_persistsSelection FAILED",
                         "Caused by: java.io.IOException at UserPreferencesRepositoryTest.kt:68",
                         "50 tests completed, 4 failed",
                     ]
@@ -73,7 +73,7 @@ class TestAndroidFailureSummary(TestCase):
             "Caused by: java.io.IOException at UserPreferencesRepositoryTest.kt:68",
         )
         self.assertIn(
-            "com.example.tracer.data.UserPreferencesRepositoryTest > setReportPiePalettePreset_persistsSelection",
+            "com.example.tracer.data.UserPreferencesRepositoryTest > setInsightsPiePalettePreset_persistsSelection",
             summary.suspected_tests,
         )
         self.assertIn("UserPreferencesRepositoryTest.kt:68", summary.source_locations)

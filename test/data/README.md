@@ -16,12 +16,12 @@ In practice this means:
 
 ## Date Input Guidance
 
-When tests exercise CLI report targets:
+When tests exercise CLI insights targets:
 
 - prefer canonical ISO targets that resolve inside `2025-01-01` to `2026-12-31`
 - compact CLI inputs such as `YYYYMMDD` and `YYYYMM` are allowed only when the
   normalized ISO target still falls inside that fixture range
-- do not add report/query/export fixture targets outside this range unless the
+- do not add insights/query/export fixture targets outside this range unless the
   shared test data is expanded in the same change
 
 ## Notes

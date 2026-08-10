@@ -131,10 +131,10 @@ auto LoadApi(LibHandle library) -> CoreApiFns {
       RequireSymbol<RuntimeTxtFn>(library, "tracer_core_runtime_config_json");
   api.runtime_query =
       RequireSymbol<RuntimeQueryFn>(library, "tracer_core_runtime_query_json");
-  api.runtime_report = RequireSymbol<RuntimeReportFn>(
-      library, "tracer_core_runtime_temporal_report_json");
-  api.runtime_report_batch = RequireSymbol<RuntimeReportBatchFn>(
-      library, "tracer_core_runtime_report_batch_json");
+  api.runtime_insights = RequireSymbol<RuntimeInsightsFn>(
+      library, "tracer_core_runtime_temporal_insights_json");
+  api.runtime_insights_batch = RequireSymbol<RuntimeInsightsBatchFn>(
+      library, "tracer_core_runtime_insights_batch_json");
   api.runtime_crypto_encrypt = RequireSymbol<RuntimeCryptoEncryptFn>(
       library, "tracer_core_runtime_crypto_encrypt_json");
   api.runtime_crypto_decrypt = RequireSymbol<RuntimeCryptoDecryptFn>(
@@ -219,12 +219,12 @@ void RunCapabilitiesChecks(const CoreApiFns& api) {
   kRequireBool("runtime_validate_logic_json");
   kRequireBool("runtime_config_json");
   kRequireBool("runtime_query_json");
-  kRequireBool("runtime_temporal_report_json");
-  kRequireBool("runtime_report_batch_json");
+  kRequireBool("runtime_temporal_insights_json");
+  kRequireBool("runtime_insights_batch_json");
   kRequireBool("processed_json_io");
-  kRequireBool("report_markdown");
-  kRequireBool("report_latex");
-  kRequireBool("report_typst");
+  kRequireBool("insights_markdown");
+  kRequireBool("insights_latex");
+  kRequireBool("insights_typst");
 
   const json kBuildInfo = ParseResponse(api.get_build_info(), "build_info");
   Require(kBuildInfo.value("ok", false),

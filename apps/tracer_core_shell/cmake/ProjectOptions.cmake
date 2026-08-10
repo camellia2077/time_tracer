@@ -31,10 +31,10 @@ unset(TT_WINDOWS_DEP_DEFAULT)
 option(ENABLE_APP_ICON "Enable application icon for Windows executables" OFF)
 option(TT_ENABLE_PROCESSED_JSON_IO
        "Enable processed JSON file IO (struct<->json persistence)" ON)
-option(TT_REPORT_ENABLE_LATEX
-       "Enable LaTeX report formatter implementation in core runtime" ON)
-option(TT_REPORT_ENABLE_TYPST
-       "Enable Typst report formatter implementation in core runtime" ON)
+option(TT_INSIGHTS_ENABLE_LATEX
+       "Enable LaTeX insights formatter implementation in core runtime" ON)
+option(TT_INSIGHTS_ENABLE_TYPST
+       "Enable Typst insights formatter implementation in core runtime" ON)
 option(TT_ENABLE_HEAVY_DIAGNOSTICS
        "Enable heavy diagnostics details (diff context/trace payloads)" OFF)
 
@@ -57,8 +57,8 @@ endif()
 
 if(ANDROID)
     set(TT_ENABLE_PROCESSED_JSON_IO OFF CACHE BOOL "" FORCE)
-    set(TT_REPORT_ENABLE_LATEX OFF CACHE BOOL "" FORCE)
-    set(TT_REPORT_ENABLE_TYPST OFF CACHE BOOL "" FORCE)
+    set(TT_INSIGHTS_ENABLE_LATEX OFF CACHE BOOL "" FORCE)
+    set(TT_INSIGHTS_ENABLE_TYPST OFF CACHE BOOL "" FORCE)
 endif()
 
 set(PLUGIN_OUTPUT_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/plugins")
@@ -74,8 +74,8 @@ if(CCACHE_EXECUTABLE)
 endif()
 
 message(STATUS "TT_ENABLE_PROCESSED_JSON_IO=${TT_ENABLE_PROCESSED_JSON_IO}")
-message(STATUS "TT_REPORT_ENABLE_LATEX=${TT_REPORT_ENABLE_LATEX}")
-message(STATUS "TT_REPORT_ENABLE_TYPST=${TT_REPORT_ENABLE_TYPST}")
+message(STATUS "TT_INSIGHTS_ENABLE_LATEX=${TT_INSIGHTS_ENABLE_LATEX}")
+message(STATUS "TT_INSIGHTS_ENABLE_TYPST=${TT_INSIGHTS_ENABLE_TYPST}")
 message(STATUS "TT_ENABLE_HEAVY_DIAGNOSTICS=${TT_ENABLE_HEAVY_DIAGNOSTICS}")
 message(STATUS "TT_ENABLE_AI_JSON=${TT_ENABLE_AI_JSON}")
 message(STATUS "TT_ENABLE_AI_JSON_EFFECTIVE=${TT_ENABLE_AI_JSON_EFFECTIVE}")

@@ -8,26 +8,26 @@ import tracer.core.application.use_cases.interface;
 #include <utility>
 
 #include "application/dto/pipeline_responses.hpp"
-#include "application/dto/reporting_responses.hpp"
+#include "application/dto/insights_responses.hpp"
 #include "application/dto/query_responses.hpp"
 #include "application/dto/shared_envelopes.hpp"
 #include "api/c_api/runtime/c_api_parse_bridge.hpp"
 #include "tracer/transport/runtime_codec_capabilities.hpp"
 #include "tracer/transport/runtime_codec_ingest.hpp"
 #include "tracer/transport/runtime_codec_query.hpp"
-#include "tracer/transport/runtime_codec_report.hpp"
+#include "tracer/transport/runtime_codec_insights.hpp"
 #include "tracer/transport/runtime_codec_tree.hpp"
 
 #ifndef TT_ENABLE_PROCESSED_JSON_IO
 #define TT_ENABLE_PROCESSED_JSON_IO 1
 #endif
 
-#ifndef TT_REPORT_ENABLE_LATEX
-#define TT_REPORT_ENABLE_LATEX 1
+#ifndef TT_INSIGHTS_ENABLE_LATEX
+#define TT_INSIGHTS_ENABLE_LATEX 1
 #endif
 
-#ifndef TT_REPORT_ENABLE_TYPST
-#define TT_REPORT_ENABLE_TYPST 1
+#ifndef TT_INSIGHTS_ENABLE_TYPST
+#define TT_INSIGHTS_ENABLE_TYPST 1
 #endif
 
 namespace tracer_core::core::c_api::internal {

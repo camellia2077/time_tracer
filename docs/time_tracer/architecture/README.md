@@ -15,7 +15,7 @@ before opening code.
 4. [Library Refactoring Architecture Guidance](libraries/libs_refactoring_guidance.md)
    - Library-specific rules that extend the common refactoring workflow.
 5. [tracer_core](libraries/tracer_core.md)
-   - Core business logic, module boundaries, config/query/report families.
+   - Core business logic, module boundaries, config/query/insights families.
 6. [tracer_core_bridge_common](libraries/tracer_core_bridge_common.md)
    - Shared C API / JNI bridge helpers.
 7. [tracer_transport](libraries/tracer_transport.md)
@@ -38,7 +38,7 @@ before opening code.
 2. [`../presentation/android/runtime-protocol.md`](../presentation/android/runtime-protocol.md)
    - Read before changing JNI/runtime bridge payload behavior.
 3. [`../core/contracts/stats/README.md`](../core/contracts/stats/README.md)
-   - Read before changing query/report output semantics.
+   - Read before changing query/insights output semantics.
 4. [`../core/architecture/core_json_boundary_design.md`](../core/architecture/core_json_boundary_design.md)
    - Read before moving JSON handling across core boundaries.
 

@@ -69,7 +69,7 @@ fn is_unknown_top_level_command(raw_args: &[String]) -> bool {
     };
     !matches!(
         command,
-        "query" | "pipeline" | "report" | "exchange" | "txt" | "system" | "about" | "alias"
+        "query" | "pipeline" | "insights" | "exchange" | "txt" | "system" | "about" | "alias"
     )
 }
 

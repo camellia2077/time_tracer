@@ -19,7 +19,7 @@ class ScopedErrorReportWriterOverride final {
   std::shared_ptr<modports::IErrorReportWriter> previous_writer_;
 };
 
-void PersistBufferedDiagnosticsReportIfEnabled() {
+void PersistBufferedDiagnosticsInsightsIfEnabled() {
   const std::string report_destination =
       modports::GetErrorReportDestinationLabel();
   if (report_destination.empty() || report_destination == "disabled") {
@@ -107,7 +107,7 @@ auto RunPipelineOrThrow(PipelineOrchestrator& pipeline,
                         const AppOptions& options,
                         std::string_view failure_message) -> void {
   if (!pipeline.Run(options)) {
-    PersistBufferedDiagnosticsReportIfEnabled();
+    PersistBufferedDiagnosticsInsightsIfEnabled();
     throw std::runtime_error(BuildPipelineFailureMessage(failure_message));
   }
 }
@@ -115,7 +115,7 @@ auto RunPipelineOrThrow(PipelineOrchestrator& pipeline,
 auto PrintImportStats(const ImportStats& stats, std::string_view title)
     -> void {
   std::ostringstream stream;
-  stream << "\n--- " << title << " Report ---";
+  stream << "\n--- " << title << " Insights ---";
   runtime_bridge::LogInfo(stream.str());
 
   if (!stats.db_open_success) {

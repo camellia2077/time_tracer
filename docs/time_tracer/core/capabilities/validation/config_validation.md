@@ -42,7 +42,7 @@ config/user/activity_hierarchy/*.toml
 ```
 
 The validator does not require `config/program/**`. That directory contains
-program-owned report, chart, and other presentation resources used by the
+program-owned insights, chart, and other presentation resources used by the
 complete application Runtime. Hosts must not make those resources a hidden
 dependency of TXT validation or data import.
 

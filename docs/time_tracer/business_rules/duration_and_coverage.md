@@ -42,7 +42,7 @@ Recorded duration is the right total for:
 1. Activity statistics.
 2. Project/category aggregation.
 3. Query totals.
-4. Report totals that claim to show recorded activity time.
+4. Insights totals that claim to show recorded activity time.
 
 Prefer implementation names like:
 

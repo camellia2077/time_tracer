@@ -1,4 +1,4 @@
-﻿// utils/performance_reporter.hpp
+// utils/performance_reporter.hpp
 #ifndef UTILS_PERFORMANCE_REPORTER_H_
 #define UTILS_PERFORMANCE_REPORTER_H_
 

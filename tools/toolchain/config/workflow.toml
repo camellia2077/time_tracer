@@ -1,5 +1,5 @@
 [quality.gate_audit]
-# Extensions that use text-normalized compare in report_consistency_audit.py
+# Extensions that use text-normalized compare in insights_consistency_audit.py
 # (BOM removal + CRLF/CR -> LF) to avoid platform newline noise.
 normalize_ext = [".md"]
 
@@ -84,7 +84,7 @@ prebuild_targets = [
   "tc_domain_lib",
   "tc_app_lib",
   "tc_infra_lite_lib",
-  "tc_infra_reporting_lib",
+  "tc_infra_insights_lib",
   "tc_infra_query_lib",
   "tc_infra_config_lib",
   "tc_infra_exchange_lib",

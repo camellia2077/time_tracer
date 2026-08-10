@@ -111,7 +111,7 @@ auto ReadToml(const fs::path& path) -> toml::table {
 }
 
 void ParseStatisticsItems(const toml::array* arr,
-                          std::vector<ReportStatisticsItem>& out_items) {
+                          std::vector<InsightsStatisticsItem>& out_items) {
   if (arr == nullptr) {
     return;
   }
@@ -122,7 +122,7 @@ void ParseStatisticsItems(const toml::array* arr,
     }
     const auto& tbl = *node.as_table();
 
-    ReportStatisticsItem item;
+    InsightsStatisticsItem item;
     item.label = GetRequired<std::string>(tbl, "label");
     item.show = tbl["show"].value_or(true);
     item.db_column = tbl["db_column"].value_or<std::string>("");
@@ -140,8 +140,8 @@ void FillTexStyle(const toml::table& tbl, FontConfig& fonts,
   fonts.cjk_main_font = tbl["cjk_main_font"].value_or(fonts.main_font);
 
   fonts.base_font_size = GetRequired<int>(tbl, "base_font_size");
-  fonts.report_title_font_size =
-      GetRequired<int>(tbl, "report_title_font_size");
+  fonts.insights_title_font_size =
+      GetRequired<int>(tbl, "insights_title_font_size");
   fonts.category_title_font_size =
       GetRequired<int>(tbl, "category_title_font_size");
 
@@ -158,8 +158,8 @@ void FillTypStyle(const toml::table& tbl, FontConfig& fonts,
       tbl["category_title_font"].value_or(fonts.base_font);
 
   fonts.base_font_size = GetRequired<int>(tbl, "base_font_size");
-  fonts.report_title_font_size =
-      GetRequired<int>(tbl, "report_title_font_size");
+  fonts.insights_title_font_size =
+      GetRequired<int>(tbl, "insights_title_font_size");
   fonts.category_title_font_size =
       GetRequired<int>(tbl, "category_title_font_size");
 
@@ -172,13 +172,13 @@ void FillTypStyle(const toml::table& tbl, FontConfig& fonts,
       tbl["margin_right_cm"].value_or(kTypMarginLeftRightCm);
 }
 
-void FillDailyLabels(const toml::table& tbl, DailyReportLabels& labels) {
-  labels.report_title = tbl["report_title"].value_or("Daily Report for");
+void FillDailyLabels(const toml::table& tbl, DailyInsightsLabels& labels) {
+  labels.insights_title = tbl["insights_title"].value_or("Daily Insights for");
 
   if (auto val = tbl["title_prefix"].value<std::string>()) {
-    labels.report_title_prefix = *val;
+    labels.insights_title_prefix = *val;
   } else {
-    labels.report_title_prefix = labels.report_title;
+    labels.insights_title_prefix = labels.insights_title;
   }
 
   labels.date_label = GetRequired<std::string>(tbl, "date_label");
@@ -200,8 +200,8 @@ void FillDailyLabels(const toml::table& tbl, DailyReportLabels& labels) {
   labels.activity_connector = tbl["activity_connector"].value_or("->");
 }
 
-void FillRangeLabels(const toml::table& tbl, RangeReportLabels& labels) {
-  labels.report_title = tbl["report_title"].value_or("Monthly Report");
+void FillRangeLabels(const toml::table& tbl, RangeInsightsLabels& labels) {
+  labels.insights_title = tbl["insights_title"].value_or("Monthly Insights");
   labels.title_template = GetRequired<std::string>(tbl, "title_template");
   labels.total_time_label = GetRequired<std::string>(tbl, "total_time_label");
   labels.activity_count_label =
@@ -222,19 +222,19 @@ void FillRangeLabels(const toml::table& tbl, RangeReportLabels& labels) {
       tbl["project_breakdown_label"].value_or("Project Breakdown");
 }
 
-void FillMonthlyLabels(const toml::table& tbl, MonthlyReportLabels& labels) {
+void FillMonthlyLabels(const toml::table& tbl, MonthlyInsightsLabels& labels) {
   FillRangeLabels(tbl, labels);
 }
 
-void FillPeriodLabels(const toml::table& tbl, PeriodReportLabels& labels) {
+void FillPeriodLabels(const toml::table& tbl, PeriodInsightsLabels& labels) {
   FillRangeLabels(tbl, labels);
 }
 
-void FillWeeklyLabels(const toml::table& tbl, WeeklyReportLabels& labels) {
+void FillWeeklyLabels(const toml::table& tbl, WeeklyInsightsLabels& labels) {
   FillRangeLabels(tbl, labels);
 }
 
-void FillYearlyLabels(const toml::table& tbl, YearlyReportLabels& labels) {
+void FillYearlyLabels(const toml::table& tbl, YearlyInsightsLabels& labels) {
   FillRangeLabels(tbl, labels);
 }
 

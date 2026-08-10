@@ -76,7 +76,7 @@ layered ownership for runtime diagnostics.
 1. `libs/tracer_core/src/domain/ports/diagnostics.hpp`
 2. `libs/tracer_core/src/domain/ports/diagnostics.cpp`
 3. `libs/tracer_core/src/infra/logging/file_error_report_writer.hpp`
-4. `libs/tracer_core/src/infra/logging/file_error_report_writer.cpp`
+4. `libs/tracer_core/src/infra/logging/file_error_report_writer.module.cpp`
 5. `libs/tracer_core/src/infra/logging/validation_issue_reporter.module.cpp`
 6. `apps/tracer_core_shell/host/bootstrap/android_runtime_factory.cpp`
 7. `apps/tracer_core_shell/api/c_api/tracer_core_c_api.cpp`

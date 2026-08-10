@@ -7,7 +7,7 @@ add_library(ttr_lib STATIC
     src/runtime_codec_capabilities.cpp
     src/runtime_codec_workflow.cpp
     src/runtime_codec_query.cpp
-    src/runtime_codec_report.cpp
+    src/runtime_codec_insights.cpp
     src/runtime_codec_export.cpp
     src/runtime_codec_tree.cpp
 )

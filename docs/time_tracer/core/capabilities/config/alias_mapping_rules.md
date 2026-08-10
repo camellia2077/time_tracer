@@ -344,7 +344,7 @@ After that:
 1. conversion logic derives time ranges and durations from neighboring event
    timestamps
 2. persistence logic inserts canonical paths into project and record storage
-3. query/reporting logic traverses canonical paths that are already resolved
+3. query/insights logic traverses canonical paths that are already resolved
 
 So alias mapping must be deterministic, but it does not itself define timing
 or record multiplicity semantics.

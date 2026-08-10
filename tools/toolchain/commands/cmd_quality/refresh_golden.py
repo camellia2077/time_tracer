@@ -22,7 +22,7 @@ class SyncStats:
 
 
 class RefreshGoldenCommand:
-    REPORTING_GOLDEN_DB_SNAPSHOT_NAME = "reporting_golden_db.sqlite3"
+    INSIGHTS_GOLDEN_DB_SNAPSHOT_NAME = "insights_golden_db.sqlite3"
 
     def __init__(self, ctx: Context):
         self.ctx = ctx
@@ -79,16 +79,16 @@ class RefreshGoldenCommand:
 
         result_layout = resolve_test_result_layout(repo_root, output_name)
         quality_gates_root = result_layout.quality_gates_dir
-        markdown_export_root = result_layout.artifacts_dir / "reports" / "markdown"
-        markdown_current = quality_gates_root / "report_markdown_cases" / "current_v1"
-        markdown_golden = repo_root / "test" / "golden" / "report_markdown" / "v1"
+        markdown_export_root = result_layout.artifacts_dir / "insights" / "markdown"
+        markdown_current = quality_gates_root / "insights_markdown_cases" / "current_v1"
+        markdown_golden = repo_root / "test" / "golden" / "insights_markdown" / "v1"
         markdown_render_output = (
-            quality_gates_root / "audits" / "report-md-golden-render-check.json"
+            quality_gates_root / "audits" / "insights-md-golden-render-check.json"
         )
 
         collect_markdown_cmd = [
             os.sys.executable,
-            "tools/toolchain/quality_gates/reporting/collect_report_markdown_cases.py",
+            "tools/toolchain/quality_gates/insights/collect_insights_markdown_cases.py",
             "--export-root",
             str(markdown_export_root),
             "--output-dir",
@@ -106,12 +106,12 @@ class RefreshGoldenCommand:
 
         changes: list[tuple[str, SyncStats]] = []
         changes.append(
-            ("report_markdown/v1", self._sync_snapshot_dir(markdown_current, markdown_golden, "*.md"))
+            ("insights_markdown/v1", self._sync_snapshot_dir(markdown_current, markdown_golden, "*.md"))
         )
 
         render_markdown_cmd = [
             os.sys.executable,
-            "tools/toolchain/quality_gates/reporting/report_markdown_render_snapshot_check.py",
+            "tools/toolchain/quality_gates/insights/insights_markdown_render_snapshot_check.py",
             "--left-dir",
             str(markdown_golden),
             "--right-dir",
@@ -130,14 +130,14 @@ class RefreshGoldenCommand:
             ("typ", "typ", "*.typ"),
         )
         for fmt, export_dir_name, pattern in triplet_specs:
-            current_dir = quality_gates_root / "report_triplet_cases" / fmt / "current_v1"
-            golden_dir = repo_root / "test" / "golden" / "report_triplet" / fmt / "v1"
-            export_root = result_layout.artifacts_dir / "reports" / export_dir_name
-            audit_output = quality_gates_root / "audits" / f"report-triplet-{fmt}-byte-audit.md"
+            current_dir = quality_gates_root / "insights_triplet_cases" / fmt / "current_v1"
+            golden_dir = repo_root / "test" / "golden" / "insights_triplet" / fmt / "v1"
+            export_root = result_layout.artifacts_dir / "insights" / export_dir_name
+            audit_output = quality_gates_root / "audits" / f"insights-triplet-{fmt}-byte-audit.md"
 
             collect_cmd = [
                 os.sys.executable,
-                "tools/toolchain/quality_gates/reporting/collect_report_triplet_cases.py",
+                "tools/toolchain/quality_gates/insights/collect_insights_triplet_cases.py",
                 "--format",
                 fmt,
                 "--export-root",
@@ -157,14 +157,14 @@ class RefreshGoldenCommand:
 
             changes.append(
                 (
-                    f"report_triplet/{fmt}/v1",
+                    f"insights_triplet/{fmt}/v1",
                     self._sync_snapshot_dir(current_dir, golden_dir, pattern),
                 )
             )
 
             audit_cmd = [
                 os.sys.executable,
-                "tools/toolchain/quality_gates/reporting/report_consistency_audit.py",
+                "tools/toolchain/quality_gates/insights/insights_consistency_audit.py",
                 "--left-dir",
                 str(golden_dir),
                 "--right-dir",
@@ -187,7 +187,7 @@ class RefreshGoldenCommand:
     ) -> Path:
         summary_path = (
             resolve_test_result_layout(self.ctx.repo_root, output_name).quality_gates_dir
-            / "report-golden-refresh-summary.md"
+            / "insights-golden-refresh-summary.md"
         )
         lines: list[str] = ["# Golden Refresh Summary", ""]
         for scope, stats in changes:
@@ -322,9 +322,9 @@ class RefreshGoldenCommand:
             resolve_test_result_layout(repo_root, output_name).workspace_dir
             / "output"
             / "db_snapshots"
-            / self.REPORTING_GOLDEN_DB_SNAPSHOT_NAME
+            / self.INSIGHTS_GOLDEN_DB_SNAPSHOT_NAME
         )
-        # Refresh should use the same stable reporting snapshot as verify/gates.
+        # Refresh should use the same stable insights snapshot as verify/gates.
         # Otherwise exchange-stage replace-all imports (for example config-refresh.zip)
         # can overwrite DB content and produce non-deterministic golden inputs.
         db_path = snapshot_db_path if snapshot_db_path.is_file() else workspace_db_path

@@ -40,7 +40,7 @@ struct Config {
   std::optional<int> seed;
   bool enable_nosleep = false;
   bool enable_sleep_intervals = false;
-  bool enable_monthly_average_report = false;
+  bool enable_monthly_average_insights = false;
   double nosleep_probability = 1.0;
   std::string output_directory = "dates";
 };

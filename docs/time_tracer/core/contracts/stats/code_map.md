@@ -9,7 +9,7 @@
 4. `query_runtime_service_*`、CLI、Android 路径仅承担入口适配职责，不新增业务统计实现。
 
 ## 契约与守卫文档（Phase 7/8）
-1. `docs/time_tracer/core/contracts/stats/report_chart_contract_v1.md`
+1. `docs/time_tracer/core/contracts/stats/insights_chart_contract_v1.md`
 2. `docs/time_tracer/core/contracts/stats/capability_matrix_v1.md`
 3. `docs/time_tracer/core/contracts/stats/semantic_json_versioning_policy.md`
 4. `docs/time_tracer/core/contracts/stats/adapter_code_map.md`
@@ -28,8 +28,8 @@
    - 统计数据结构（`DayDurationRow`、`DayDurationStats`）。
 2. `libs/tracer_core/src/infra/query/data/stats/day_duration_stats_calculator.cpp`
    - `days-stats` 的均值、方差、标准差、百分位、MAD 等计算。
-3. `libs/tracer_core/src/infra/query/data/stats/report_chart_stats_calculator.cpp`
-   - `report-chart` 的日序列聚合与总时长/平均值/活跃天数计算。
+3. `libs/tracer_core/src/infra/query/data/stats/insights_chart_stats_calculator.cpp`
+   - `insights-chart` 的日序列聚合与总时长/平均值/活跃天数计算。
 4. `libs/tracer_core/src/infra/query/data/renderers/data_query_renderer.cpp`
 5. `libs/tracer_core/src/infra/query/data/renderers/text_renderer.cpp`
 6. `libs/tracer_core/src/infra/query/data/renderers/semantic_json_renderer.cpp`
@@ -43,15 +43,15 @@
 4. `libs/tracer_core/src/infra/query/data/orchestrators/date_range_resolver.cpp`
 5. `libs/tracer_core/src/infra/query/data/orchestrators/list_query_orchestrator.cpp`
 6. `libs/tracer_core/src/infra/query/data/orchestrators/days_stats_orchestrator.cpp`
-7. `libs/tracer_core/src/infra/query/data/orchestrators/report_chart_orchestrator.cpp`
+7. `libs/tracer_core/src/infra/query/data/orchestrators/insights_chart_orchestrator.cpp`
 8. `libs/tracer_core/src/infra/query/data/orchestrators/tree_orchestrator.cpp`
    - data query action 编排与 period/range 解析。
 9. `libs/tracer_core/src/infra/query/data/repository/query_runtime_service_request.cpp`
    - 请求参数归一化、过滤参数解析与校验。
 10. `libs/tracer_core/src/infra/query/data/repository/query_runtime_service_dispatch.cpp`
    - 轻量 action 路由（调用 orchestrators）。
-11. `libs/tracer_core/src/infra/query/data/repository/query_runtime_service_report_mapping.cpp`
-   - `report-chart` 统计字段组装（平均值、总时长、活跃天数、范围天数）。
+11. `libs/tracer_core/src/infra/query/data/repository/query_runtime_service_insights_mapping.cpp`
+   - `insights-chart` 统计字段组装（平均值、总时长、活跃天数、范围天数）。
 
 ## Transport 层
 1. `libs/tracer_transport/include/tracer/transport/runtime_requests.hpp`
@@ -88,5 +88,5 @@
 5. `libs/tracer_core/src/infra/tests/data_query/data_query_refactor_period_tests.cpp`
 6. `libs/tracer_core/src/infra/tests/data_query/data_query_refactor_tree_tests.cpp`
 7. `libs/tracer_core/src/infra/tests/data_query/data_query_refactor_stats_tests.cpp`
-8. `apps/android/feature-report/src/test/java/com/example/tracer/QueryReportViewModelChartTest.kt`
+8. `apps/android/feature-insights/src/test/java/com/example/tracer/QueryInsightsViewModelChartTest.kt`
 

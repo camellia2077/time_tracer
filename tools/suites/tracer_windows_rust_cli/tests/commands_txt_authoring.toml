@@ -168,10 +168,10 @@ expect_exit = 0
 expect_stdout_contains = ["2025-01-02", "Total: 1"]
 
 [[commands]]
-name = "TXT Append Report Render Day"
+name = "TXT Append Insights Render Day"
 stage = "txt-authoring"
 args = [
-  "report",
+  "insights",
   "render",
   "day",
   "2025-01-02",

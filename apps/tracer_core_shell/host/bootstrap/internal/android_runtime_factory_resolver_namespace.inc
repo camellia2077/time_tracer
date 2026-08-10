@@ -30,7 +30,7 @@ constexpr std::string_view kDatabaseFilename = "time_data.sqlite3";
   return resolved;
 }
 
-[[nodiscard]] auto ResolveRequiredReportTomlPath(const fs::path& path,
+[[nodiscard]] auto ResolveRequiredInsightsTomlPath(const fs::path& path,
                                                  std::string_view field_name)
     -> fs::path {
   if (path.empty()) {
@@ -40,13 +40,13 @@ constexpr std::string_view kDatabaseFilename = "time_data.sqlite3";
 
   const fs::path resolved = fs::absolute(path);
   if (!fs::exists(resolved)) {
-    throw std::runtime_error("Android runtime report TOML not found: " +
+    throw std::runtime_error("Android runtime insights TOML not found: " +
                              resolved.string());
   }
   return resolved;
 }
 
-[[nodiscard]] auto ResolveReportConfigRoot(
+[[nodiscard]] auto ResolveInsightsConfigRoot(
     const fs::path& converter_config_toml_path) -> fs::path {
   const fs::path user_config_dir = converter_config_toml_path.parent_path();
   if (user_config_dir.filename() != "user" ||
@@ -64,20 +64,20 @@ constexpr std::string_view kDatabaseFilename = "time_data.sqlite3";
   return config_root;
 }
 
-[[nodiscard]] auto ToAndroidReportConfigPathSet(
-    const infra_config_internal::AndroidBundleReportConfigPathSet& config)
-    -> AndroidReportConfigPathSet {
+[[nodiscard]] auto ToAndroidInsightsConfigPathSet(
+    const infra_config_internal::AndroidBundleInsightsConfigPathSet& config)
+    -> AndroidInsightsConfigPathSet {
   return {
-      .day = ResolveRequiredReportTomlPath(config.day,
-                                           "reports.markdown.root"),
-      .month = ResolveRequiredReportTomlPath(config.month,
-                                             "reports.markdown.root"),
-      .period = ResolveRequiredReportTomlPath(config.period,
-                                              "reports.markdown.root"),
-      .week = ResolveRequiredReportTomlPath(config.week,
-                                            "reports.markdown.root"),
-      .year = ResolveRequiredReportTomlPath(config.year,
-                                            "reports.markdown.root"),
+      .day = ResolveRequiredInsightsTomlPath(config.day,
+                                           "insights.markdown.root"),
+      .month = ResolveRequiredInsightsTomlPath(config.month,
+                                             "insights.markdown.root"),
+      .period = ResolveRequiredInsightsTomlPath(config.period,
+                                              "insights.markdown.root"),
+      .week = ResolveRequiredInsightsTomlPath(config.week,
+                                            "insights.markdown.root"),
+      .year = ResolveRequiredInsightsTomlPath(config.year,
+                                            "insights.markdown.root"),
   };
 }
 

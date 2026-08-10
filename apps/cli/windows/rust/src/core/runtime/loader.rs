@@ -87,11 +87,11 @@ pub(crate) fn load_runtime_symbols(lib: &Library) -> Result<RuntimeSymbols, AppE
         let runtime_query: RuntimeJsonFn = *lib
             .get(b"tracer_core_runtime_query_json")
             .map_err(symbol_error)?;
-        let runtime_report: RuntimeJsonFn = *lib
-            .get(b"tracer_core_runtime_temporal_report_json")
+        let runtime_insights: RuntimeJsonFn = *lib
+            .get(b"tracer_core_runtime_temporal_insights_json")
             .map_err(symbol_error)?;
-        let runtime_report_batch: RuntimeJsonFn = *lib
-            .get(b"tracer_core_runtime_report_batch_json")
+        let runtime_insights_batch: RuntimeJsonFn = *lib
+            .get(b"tracer_core_runtime_insights_batch_json")
             .map_err(symbol_error)?;
         let runtime_crypto_encrypt: RuntimeJsonFn = *lib
             .get(b"tracer_core_runtime_crypto_encrypt_json")
@@ -119,8 +119,8 @@ pub(crate) fn load_runtime_symbols(lib: &Library) -> Result<RuntimeSymbols, AppE
             runtime_validate_logic,
             runtime_config,
             runtime_query,
-            runtime_report,
-            runtime_report_batch,
+            runtime_insights,
+            runtime_insights_batch,
             runtime_crypto_encrypt,
             runtime_crypto_decrypt,
             runtime_crypto_inspect,

@@ -208,43 +208,43 @@ void TestEncodeRequestRoundTrip(int& failures) {
   }
 
   {
-    TemporalReportRequestPayload request{};
+    TemporalInsightsRequestPayload request{};
     request.operation_kind = "query";
     request.display_mode = "recent";
     request.selection_kind = "recent_days";
     request.days = 7;
     request.anchor_date = "2026-03-07";
     request.format = "markdown";
-    const auto encoded = EncodeTemporalReportRequest(request);
-    const auto decoded = DecodeTemporalReportRequest(encoded);
+    const auto encoded = EncodeTemporalInsightsRequest(request);
+    const auto decoded = DecodeTemporalInsightsRequest(encoded);
     Expect(decoded.operation_kind == request.operation_kind,
-           "EncodeTemporalReportRequest round-trip operation_kind mismatch.",
+           "EncodeTemporalInsightsRequest round-trip operation_kind mismatch.",
            failures);
     Expect(decoded.display_mode == request.display_mode,
-           "EncodeTemporalReportRequest round-trip display_mode mismatch.",
+           "EncodeTemporalInsightsRequest round-trip display_mode mismatch.",
            failures);
     Expect(decoded.selection_kind == request.selection_kind,
-           "EncodeTemporalReportRequest round-trip selection_kind mismatch.",
+           "EncodeTemporalInsightsRequest round-trip selection_kind mismatch.",
            failures);
     Expect(decoded.days == request.days,
-           "EncodeTemporalReportRequest round-trip days mismatch.", failures);
+           "EncodeTemporalInsightsRequest round-trip days mismatch.", failures);
     Expect(decoded.anchor_date == request.anchor_date,
-           "EncodeTemporalReportRequest round-trip anchor_date mismatch.",
+           "EncodeTemporalInsightsRequest round-trip anchor_date mismatch.",
            failures);
     Expect(decoded.format == request.format,
-           "EncodeTemporalReportRequest round-trip format mismatch.", failures);
+           "EncodeTemporalInsightsRequest round-trip format mismatch.", failures);
   }
 
   {
-    ReportBatchRequestPayload request{};
+    InsightsBatchRequestPayload request{};
     request.days_list = {7, 14, 30};
     request.format = "md";
-    const auto encoded = EncodeReportBatchRequest(request);
-    const auto decoded = DecodeReportBatchRequest(encoded);
+    const auto encoded = EncodeInsightsBatchRequest(request);
+    const auto decoded = DecodeInsightsBatchRequest(encoded);
     Expect(decoded.days_list == request.days_list,
-           "EncodeReportBatchRequest round-trip days_list mismatch.", failures);
+           "EncodeInsightsBatchRequest round-trip days_list mismatch.", failures);
     Expect(decoded.format == request.format,
-           "EncodeReportBatchRequest round-trip format mismatch.", failures);
+           "EncodeInsightsBatchRequest round-trip format mismatch.", failures);
   }
 
   {
@@ -301,47 +301,47 @@ void TestEncodeResponses(int& failures) {
              query["hints"].size() == 2U,
          "EncodeQueryResponse hints mismatch.", failures);
 
-  const std::string report_json = EncodeReportResponse(ReportResponsePayload{
+  const std::string insights_json = EncodeInsightsResponse(InsightsResponsePayload{
       .ok = true,
       .error_message = "",
       .content = "## Monthly Summary",
-      .error_contract = ErrorContractPayload{.error_code = "report.none",
+      .error_contract = ErrorContractPayload{.error_code = "insights.none",
                                              .error_category = "logic",
-                                             .hints = {"hint-report"}}});
-  const json report = json::parse(report_json);
-  Expect(report.value("content", std::string{}) == "## Monthly Summary",
-         "EncodeReportResponse content mismatch.", failures);
-  Expect(report.value("error_code", std::string{}) == "report.none",
-         "EncodeReportResponse error_code mismatch.", failures);
-  Expect(report.value("error_category", std::string{}) == "logic",
-         "EncodeReportResponse error_category mismatch.", failures);
-  Expect(report.contains("hints") && report["hints"].is_array() &&
-             report["hints"].size() == 1U,
-         "EncodeReportResponse hints mismatch.", failures);
+                                             .hints = {"hint-insights"}}});
+  const json insights = json::parse(insights_json);
+  Expect(insights.value("content", std::string{}) == "## Monthly Summary",
+         "EncodeInsightsResponse content mismatch.", failures);
+  Expect(insights.value("error_code", std::string{}) == "insights.none",
+         "EncodeInsightsResponse error_code mismatch.", failures);
+  Expect(insights.value("error_category", std::string{}) == "logic",
+         "EncodeInsightsResponse error_category mismatch.", failures);
+  Expect(insights.contains("hints") && insights["hints"].is_array() &&
+             insights["hints"].size() == 1U,
+         "EncodeInsightsResponse hints mismatch.", failures);
 
   const std::string batch_json =
-      EncodeReportBatchResponse(ReportBatchResponsePayload{
+      EncodeInsightsBatchResponse(InsightsBatchResponsePayload{
           .ok = false, .error_message = "failed", .content = ""});
   const json batch = json::parse(batch_json);
-  Expect(!batch.value("ok", true), "EncodeReportBatchResponse ok mismatch.",
+  Expect(!batch.value("ok", true), "EncodeInsightsBatchResponse ok mismatch.",
          failures);
   Expect(batch.value("error_message", std::string{}) == "failed",
-         "EncodeReportBatchResponse error mismatch.", failures);
+         "EncodeInsightsBatchResponse error mismatch.", failures);
 
-  const std::string report_targets_json =
-      EncodeReportTargetsResponse(ReportTargetsResponsePayload{
+  const std::string insights_targets_json =
+      EncodeInsightsTargetsResponse(InsightsTargetsResponsePayload{
           .ok = true,
           .error_message = "",
           .type = "month",
           .items = {"2026-01", "2026-02"},
       });
-  const json report_targets = json::parse(report_targets_json);
-  Expect(report_targets.value("type", std::string{}) == "month",
-         "EncodeReportTargetsResponse type mismatch.", failures);
-  Expect(report_targets.contains("items") &&
-             report_targets["items"].is_array() &&
-             report_targets["items"].size() == 2U,
-         "EncodeReportTargetsResponse items mismatch.", failures);
+  const json insights_targets = json::parse(insights_targets_json);
+  Expect(insights_targets.value("type", std::string{}) == "month",
+         "EncodeInsightsTargetsResponse type mismatch.", failures);
+  Expect(insights_targets.contains("items") &&
+             insights_targets["items"].is_array() &&
+             insights_targets["items"].size() == 2U,
+         "EncodeInsightsTargetsResponse items mismatch.", failures);
 
   const std::string export_json = EncodeExportResponse(
       ExportResponsePayload{.ok = false, .error_message = "export failed"});
@@ -366,12 +366,12 @@ void TestEncodeResponses(int& failures) {
   capabilities.features.runtime_validate_logic_json = true;
   capabilities.features.runtime_config_json = true;
   capabilities.features.runtime_query_json = true;
-  capabilities.features.runtime_temporal_report_json = true;
-  capabilities.features.runtime_report_batch_json = true;
+  capabilities.features.runtime_temporal_insights_json = true;
+  capabilities.features.runtime_insights_batch_json = true;
   capabilities.features.processed_json_io = true;
-  capabilities.features.report_markdown = true;
-  capabilities.features.report_latex = false;
-  capabilities.features.report_typst = false;
+  capabilities.features.insights_markdown = true;
+  capabilities.features.insights_latex = false;
+  capabilities.features.insights_typst = false;
   const json capabilities_json =
       json::parse(EncodeCapabilitiesResponse(capabilities));
   Expect(
@@ -390,10 +390,10 @@ void TestEncodeResponses(int& failures) {
   Expect(capabilities_json["features"].value("runtime_log_callback", false),
          "EncodeCapabilitiesResponse features.runtime_log_callback mismatch.",
          failures);
-  Expect(capabilities_json["features"].value("runtime_temporal_report_json",
+  Expect(capabilities_json["features"].value("runtime_temporal_insights_json",
                                              false),
          "EncodeCapabilitiesResponse "
-         "features.runtime_temporal_report_json mismatch.",
+         "features.runtime_temporal_insights_json mismatch.",
          failures);
   Expect(capabilities_json["features"].value("runtime_diagnostics_callback",
                                              false),
@@ -408,8 +408,8 @@ void TestEncodeResponses(int& failures) {
          "EncodeCapabilitiesResponse "
          "features.runtime_crypto_progress_callback mismatch.",
          failures);
-  Expect(!capabilities_json["features"].value("report_latex", true),
-         "EncodeCapabilitiesResponse features.report_latex mismatch.",
+  Expect(!capabilities_json["features"].value("insights_latex", true),
+         "EncodeCapabilitiesResponse features.insights_latex mismatch.",
          failures);
 
   const std::string ingest_sync_status_json =

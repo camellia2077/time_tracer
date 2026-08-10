@@ -12,21 +12,21 @@
 namespace tracer::core::application::query::tree {
 namespace {
 
-struct NamedReportNodeRef {
+struct NamedInsightsNodeRef {
   std::string_view name;
-  const ::reporting::ProjectNode* node = nullptr;
+  const ::insights::ProjectNode* node = nullptr;
 };
 
-[[nodiscard]] auto CollectSortedReportChildren(
-    const ::reporting::ProjectNode& node) -> std::vector<NamedReportNodeRef> {
-  std::vector<NamedReportNodeRef> children;
+[[nodiscard]] auto CollectSortedInsightsChildren(
+    const ::insights::ProjectNode& node) -> std::vector<NamedInsightsNodeRef> {
+  std::vector<NamedInsightsNodeRef> children;
   children.reserve(node.children.size());
   for (const auto& [name, child] : node.children) {
     children.push_back({.name = name, .node = &child});
   }
   std::ranges::sort(
       children,
-      [](const NamedReportNodeRef& lhs, const NamedReportNodeRef& rhs) -> bool {
+      [](const NamedInsightsNodeRef& lhs, const NamedInsightsNodeRef& rhs) -> bool {
         return lhs.name < rhs.name;
       });
   return children;
@@ -45,8 +45,8 @@ struct NamedReportNodeRef {
   return out;
 }
 
-[[nodiscard]] auto BuildNodeFromReportNode(
-    std::string_view name, const ::reporting::ProjectNode& node,
+[[nodiscard]] auto BuildNodeFromInsightsNode(
+    std::string_view name, const ::insights::ProjectNode& node,
     std::string_view parent_path, std::optional<std::int64_t> parent_duration)
     -> ProjectTreeNode {
   ProjectTreeNode out{};
@@ -58,10 +58,10 @@ struct NamedReportNodeRef {
                                   static_cast<double>(*parent_duration);
   }
 
-  const auto kChildren = CollectSortedReportChildren(node);
+  const auto kChildren = CollectSortedInsightsChildren(node);
   out.children.reserve(kChildren.size());
   for (const auto& child : kChildren) {
-    out.children.push_back(BuildNodeFromReportNode(child.name, *child.node,
+    out.children.push_back(BuildNodeFromInsightsNode(child.name, *child.node,
                                                    out.path, node.duration));
   }
   return out;
@@ -107,16 +107,16 @@ auto CollectTreeMatchesByPath(const ProjectTreeNode& node,
 
 }  // namespace
 
-auto BuildProjectTreeNodesFromReportTree(const ::reporting::ProjectTree& tree)
+auto BuildProjectTreeNodesFromInsightsTree(const ::insights::ProjectTree& tree)
     -> std::vector<ProjectTreeNode> {
-  std::vector<NamedReportNodeRef> roots;
+  std::vector<NamedInsightsNodeRef> roots;
   roots.reserve(tree.size());
   for (const auto& [name, node] : tree) {
     roots.push_back({.name = name, .node = &node});
   }
   std::ranges::sort(
       roots,
-      [](const NamedReportNodeRef& lhs, const NamedReportNodeRef& rhs) -> bool {
+      [](const NamedInsightsNodeRef& lhs, const NamedInsightsNodeRef& rhs) -> bool {
         return lhs.name < rhs.name;
       });
 
@@ -124,7 +124,7 @@ auto BuildProjectTreeNodesFromReportTree(const ::reporting::ProjectTree& tree)
   out.reserve(roots.size());
   for (const auto& root : roots) {
     out.push_back(
-        BuildNodeFromReportNode(root.name, *root.node, "", std::nullopt));
+        BuildNodeFromInsightsNode(root.name, *root.node, "", std::nullopt));
   }
   return out;
 }

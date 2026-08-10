@@ -3,7 +3,7 @@
   "generated_by": "cmake",
   "libraries": {
     "core": "tracer_core.dll",
-    "reports_shared": "reports_shared.dll"
+    "insights_shared": "insights_shared.dll"
   },
   "runtime": {
     "required_files": [

@@ -29,7 +29,7 @@ pub const THIRD_PARTY_LICENSES: [ThirdPartyLicenseEntry; 10] = [
         license: "Apache-2.0",
         homepage: "https://echarts.apache.org/",
         license_url: "https://www.apache.org/licenses/LICENSE-2.0",
-        notes: "Bundled chart rendering JS asset for report-chart export.",
+        notes: "Bundled chart rendering JS asset for insights-chart export.",
     },
     ThirdPartyLicenseEntry {
         name: "clap",

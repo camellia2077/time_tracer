@@ -180,7 +180,7 @@ void StructureRules::Reset() {
   has_seen_event_in_day_ = false;
   has_seen_any_date_ = false;
   has_seen_month_ = false;
-  has_reported_missing_month_header_ = false;
+  has_insightsed_missing_month_header_ = false;
   month_header_.clear();
   last_seen_year_ = 0;
 }
@@ -208,7 +208,7 @@ void StructureRules::ProcessYearLine(int line_number, const std::string& line,
   has_seen_year_ = true;
   last_seen_year_ = current_year;
   has_seen_month_ = false;
-  has_reported_missing_month_header_ = false;
+  has_insightsed_missing_month_header_ = false;
   month_header_.clear();
   has_seen_any_date_ = false;
   has_seen_date_in_block_ = false;
@@ -266,11 +266,11 @@ void StructureRules::ProcessDateLine(int line_number, const std::string& line,
                    ErrorType::kStructural, span});
   }
 
-  if (!has_seen_month_ && !has_reported_missing_month_header_) {
+  if (!has_seen_month_ && !has_insightsed_missing_month_header_) {
     errors.insert({line_number,
                    "Month header (mMM) is required before date lines.",
                    ErrorType::kStructural, span});
-    has_reported_missing_month_header_ = true;
+    has_insightsed_missing_month_header_ = true;
   }
 
   if (has_seen_month_) {

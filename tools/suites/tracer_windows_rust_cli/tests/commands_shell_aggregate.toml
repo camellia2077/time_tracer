@@ -18,7 +18,7 @@ expect_stdout_contains = [
   "Commands:",
   "query",
   "pipeline",
-  "report",
+  "insights",
   "exchange",
   "system",
   "about",
@@ -146,11 +146,11 @@ expect_stderr_contains = [
 ]
 
 [[commands]]
-name = "Report Export Missing Day Argument Returns InvalidArguments"
+name = "Insights Export Missing Day Argument Returns InvalidArguments"
 stage = "failure"
-args = ["report", "export", "day", "--db", "{db_path}"]
+args = ["insights", "export", "day", "--db", "{db_path}"]
 expect_exit = 3
 expect_error_code = "cli.invalid_arguments"
 expect_error_category = "cli"
 expect_hints_contains = ["Run command --help to inspect required arguments."]
-expect_stderr_contains = ["`report export day` requires <argument>."]
+expect_stderr_contains = ["`insights export day` requires <argument>."]

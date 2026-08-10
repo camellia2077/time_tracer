@@ -75,9 +75,9 @@ auto ConfigLoader::LoadConfiguration() -> AppConfig {
   }
 
   try {
-    infra_config_internal::LoadDetailedReports(app_config);
+    infra_config_internal::LoadDetailedInsights(app_config);
   } catch (const std::exception& error) {
-    throw std::runtime_error("Failed to load report configuration details: " +
+    throw std::runtime_error("Failed to load insights configuration details: " +
                              std::string(error.what()));
   }
 

@@ -9,7 +9,7 @@ set(SOURCES
     src/application/config/config_handler.cpp
     src/application/workflow/workflow_handler.cpp
     src/application/workflow/workflow_monthly_average_stats.cpp
-    src/application/reporting/report_handler.cpp
+    src/application/insights/insights_handler.cpp
     
     # CLI
     src/cli/framework/command_line_parser.cpp

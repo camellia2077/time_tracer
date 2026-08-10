@@ -203,7 +203,7 @@ docs/time_tracer/
 * **[nlohmann/json](https://github.com/nlohmann/json)**: JSON 解析 (MIT)。
 * **[tomlplusplus](https://github.com/marzer/tomlplusplus)**: TOML 配置处理 (MIT)。
 * **[libsodium](https://github.com/jedisct1/libsodium)**: 加密基础库（计划用于 `tracer_core` 导出/分享文件加密能力）(ISC License)。
-* **[Apache ECharts](https://echarts.apache.org/)**: Windows CLI `report-chart` 单文件 HTML 图表渲染（Line/Bar/Pie/Heatmap-Year/Heatmap-Month）(Apache License 2.0)。
+* **[Apache ECharts](https://echarts.apache.org/)**: Windows CLI `insights-chart` 单文件 HTML 图表渲染（Line/Bar/Pie/Heatmap-Year/Heatmap-Month）(Apache License 2.0)。
 * **[Matplotlib](https://matplotlib.org/)**: 绘图引擎 (BSD 风格许可证)。
 
 ### Windows Rust CLI (`apps/cli/windows/rust`)

@@ -10,9 +10,9 @@ module;
 
 module tracer.core.infrastructure.config.internal.config_detail_loader;
 
-import tracer.core.infrastructure.config.loader.report_config_loader;
+import tracer.core.infrastructure.config.loader.insights_config_loader;
 
-using tracer::core::infrastructure::config::ReportConfigLoader;
+using tracer::core::infrastructure::config::InsightsConfigLoader;
 
 namespace tracer::core::infrastructure::config::internal {
 
@@ -41,24 +41,24 @@ auto ResolveMarkdownLocaleRoot(const std::filesystem::path& day_config_path)
   return parent;
 }
 
-auto LoadLocalizedMarkdownReports(const std::filesystem::path& markdown_dir,
-                                  LoadedReportConfigs& reports) -> void {
-  constexpr std::array<std::string_view, 5> kReportNames = {
+auto LoadLocalizedMarkdownInsights(const std::filesystem::path& markdown_dir,
+                                  LoadedInsightsConfigs& insights) -> void {
+  constexpr std::array<std::string_view, 5> kInsightsNames = {
       "day", "month", "period", "week", "year"};
   for (const auto& entry : std::filesystem::directory_iterator(markdown_dir)) {
     if (!entry.is_directory()) {
       continue;
     }
     const std::string locale = entry.path().filename().string();
-    MarkdownReportConfigs localized{};
+    MarkdownInsightsConfigs localized{};
     const auto path = [&entry](std::string_view name) {
       return entry.path() / (std::string(name) + ".toml");
     };
-    const auto day_path = path(kReportNames[0]);
-    const auto month_path = path(kReportNames[1]);
-    const auto period_path = path(kReportNames[2]);
-    const auto week_path = path(kReportNames[3]);
-    const auto year_path = path(kReportNames[4]);
+    const auto day_path = path(kInsightsNames[0]);
+    const auto month_path = path(kInsightsNames[1]);
+    const auto period_path = path(kInsightsNames[2]);
+    const auto week_path = path(kInsightsNames[3]);
+    const auto year_path = path(kInsightsNames[4]);
     if (!std::filesystem::exists(day_path) ||
         !std::filesystem::exists(month_path) ||
         !std::filesystem::exists(period_path) ||
@@ -66,92 +66,92 @@ auto LoadLocalizedMarkdownReports(const std::filesystem::path& markdown_dir,
         !std::filesystem::exists(year_path)) {
       continue;
     }
-    localized.day = ReportConfigLoader::LoadDailyMdConfig(day_path);
-    localized.month = ReportConfigLoader::LoadMonthlyMdConfig(month_path);
-    localized.period = ReportConfigLoader::LoadPeriodMdConfig(period_path);
-    localized.week = ReportConfigLoader::LoadWeeklyMdConfig(week_path);
-    localized.year = ReportConfigLoader::LoadYearlyMdConfig(year_path);
-    reports.markdown_locales.emplace(locale, std::move(localized));
+    localized.day = InsightsConfigLoader::LoadDailyMdConfig(day_path);
+    localized.month = InsightsConfigLoader::LoadMonthlyMdConfig(month_path);
+    localized.period = InsightsConfigLoader::LoadPeriodMdConfig(period_path);
+    localized.week = InsightsConfigLoader::LoadWeeklyMdConfig(week_path);
+    localized.year = InsightsConfigLoader::LoadYearlyMdConfig(year_path);
+    insights.markdown_locales.emplace(locale, std::move(localized));
   }
 }
 
 }  // namespace
 
-void LoadDetailedReports(AppConfig& config) {
-  if (!config.reports.day_typ_config_path.empty()) {
-    config.loaded_reports.typst.day = ReportConfigLoader::LoadDailyTypConfig(
-        config.reports.day_typ_config_path);
+void LoadDetailedInsights(AppConfig& config) {
+  if (!config.insights.day_typ_config_path.empty()) {
+    config.loaded_insights.typst.day = InsightsConfigLoader::LoadDailyTypConfig(
+        config.insights.day_typ_config_path);
   }
-  if (!config.reports.month_typ_config_path.empty()) {
-    config.loaded_reports.typst.month =
-        ReportConfigLoader::LoadMonthlyTypConfig(
-            config.reports.month_typ_config_path);
+  if (!config.insights.month_typ_config_path.empty()) {
+    config.loaded_insights.typst.month =
+        InsightsConfigLoader::LoadMonthlyTypConfig(
+            config.insights.month_typ_config_path);
   }
-  if (!config.reports.period_typ_config_path.empty()) {
-    config.loaded_reports.typst.period =
-        ReportConfigLoader::LoadPeriodTypConfig(
-            config.reports.period_typ_config_path);
+  if (!config.insights.period_typ_config_path.empty()) {
+    config.loaded_insights.typst.period =
+        InsightsConfigLoader::LoadPeriodTypConfig(
+            config.insights.period_typ_config_path);
   }
-  if (!config.reports.week_typ_config_path.empty()) {
-    config.loaded_reports.typst.week = ReportConfigLoader::LoadWeeklyTypConfig(
-        config.reports.week_typ_config_path);
+  if (!config.insights.week_typ_config_path.empty()) {
+    config.loaded_insights.typst.week = InsightsConfigLoader::LoadWeeklyTypConfig(
+        config.insights.week_typ_config_path);
   }
-  if (!config.reports.year_typ_config_path.empty()) {
-    config.loaded_reports.typst.year = ReportConfigLoader::LoadYearlyTypConfig(
-        config.reports.year_typ_config_path);
-  }
-
-  if (!config.reports.day_tex_config_path.empty()) {
-    config.loaded_reports.latex.day = ReportConfigLoader::LoadDailyTexConfig(
-        config.reports.day_tex_config_path);
-  }
-  if (!config.reports.month_tex_config_path.empty()) {
-    config.loaded_reports.latex.month =
-        ReportConfigLoader::LoadMonthlyTexConfig(
-            config.reports.month_tex_config_path);
-  }
-  if (!config.reports.period_tex_config_path.empty()) {
-    config.loaded_reports.latex.period =
-        ReportConfigLoader::LoadPeriodTexConfig(
-            config.reports.period_tex_config_path);
-  }
-  if (!config.reports.week_tex_config_path.empty()) {
-    config.loaded_reports.latex.week = ReportConfigLoader::LoadWeeklyTexConfig(
-        config.reports.week_tex_config_path);
-  }
-  if (!config.reports.year_tex_config_path.empty()) {
-    config.loaded_reports.latex.year = ReportConfigLoader::LoadYearlyTexConfig(
-        config.reports.year_tex_config_path);
+  if (!config.insights.year_typ_config_path.empty()) {
+    config.loaded_insights.typst.year = InsightsConfigLoader::LoadYearlyTypConfig(
+        config.insights.year_typ_config_path);
   }
 
-  if (!config.reports.day_md_config_path.empty()) {
-    config.loaded_reports.markdown.day = ReportConfigLoader::LoadDailyMdConfig(
-        config.reports.day_md_config_path);
+  if (!config.insights.day_tex_config_path.empty()) {
+    config.loaded_insights.latex.day = InsightsConfigLoader::LoadDailyTexConfig(
+        config.insights.day_tex_config_path);
   }
-  if (!config.reports.month_md_config_path.empty()) {
-    config.loaded_reports.markdown.month =
-        ReportConfigLoader::LoadMonthlyMdConfig(
-            config.reports.month_md_config_path);
+  if (!config.insights.month_tex_config_path.empty()) {
+    config.loaded_insights.latex.month =
+        InsightsConfigLoader::LoadMonthlyTexConfig(
+            config.insights.month_tex_config_path);
   }
-  if (!config.reports.period_md_config_path.empty()) {
-    config.loaded_reports.markdown.period =
-        ReportConfigLoader::LoadPeriodMdConfig(
-            config.reports.period_md_config_path);
+  if (!config.insights.period_tex_config_path.empty()) {
+    config.loaded_insights.latex.period =
+        InsightsConfigLoader::LoadPeriodTexConfig(
+            config.insights.period_tex_config_path);
   }
-  if (!config.reports.week_md_config_path.empty()) {
-    config.loaded_reports.markdown.week =
-        ReportConfigLoader::LoadWeeklyMdConfig(
-            config.reports.week_md_config_path);
+  if (!config.insights.week_tex_config_path.empty()) {
+    config.loaded_insights.latex.week = InsightsConfigLoader::LoadWeeklyTexConfig(
+        config.insights.week_tex_config_path);
   }
-  if (!config.reports.year_md_config_path.empty()) {
-    config.loaded_reports.markdown.year =
-        ReportConfigLoader::LoadYearlyMdConfig(
-            config.reports.year_md_config_path);
+  if (!config.insights.year_tex_config_path.empty()) {
+    config.loaded_insights.latex.year = InsightsConfigLoader::LoadYearlyTexConfig(
+        config.insights.year_tex_config_path);
   }
-  if (!config.reports.day_md_config_path.empty()) {
-    LoadLocalizedMarkdownReports(
-        ResolveMarkdownLocaleRoot(config.reports.day_md_config_path),
-        config.loaded_reports);
+
+  if (!config.insights.day_md_config_path.empty()) {
+    config.loaded_insights.markdown.day = InsightsConfigLoader::LoadDailyMdConfig(
+        config.insights.day_md_config_path);
+  }
+  if (!config.insights.month_md_config_path.empty()) {
+    config.loaded_insights.markdown.month =
+        InsightsConfigLoader::LoadMonthlyMdConfig(
+            config.insights.month_md_config_path);
+  }
+  if (!config.insights.period_md_config_path.empty()) {
+    config.loaded_insights.markdown.period =
+        InsightsConfigLoader::LoadPeriodMdConfig(
+            config.insights.period_md_config_path);
+  }
+  if (!config.insights.week_md_config_path.empty()) {
+    config.loaded_insights.markdown.week =
+        InsightsConfigLoader::LoadWeeklyMdConfig(
+            config.insights.week_md_config_path);
+  }
+  if (!config.insights.year_md_config_path.empty()) {
+    config.loaded_insights.markdown.year =
+        InsightsConfigLoader::LoadYearlyMdConfig(
+            config.insights.year_md_config_path);
+  }
+  if (!config.insights.day_md_config_path.empty()) {
+    LoadLocalizedMarkdownInsights(
+        ResolveMarkdownLocaleRoot(config.insights.day_md_config_path),
+        config.loaded_insights);
   }
 }
 

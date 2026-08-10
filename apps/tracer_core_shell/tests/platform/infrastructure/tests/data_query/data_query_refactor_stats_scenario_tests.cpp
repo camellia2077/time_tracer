@@ -11,7 +11,7 @@ import tracer.core.infrastructure.query.data.stats;
 #include <vector>
 
 #include "application/dto/query_requests.hpp"
-#include "infra/query/data/orchestrators/report_chart_orchestrator.hpp"
+#include "infra/query/data/orchestrators/insights_chart_orchestrator.hpp"
 #include "infrastructure/tests/android_runtime/android_runtime_test_common.hpp"
 #include "infrastructure/tests/data_query/data_query_refactor_test_internal.hpp"
 
@@ -41,7 +41,7 @@ auto BuildStatsSampleRows() -> std::vector<DayDurationRow> {
   };
 }
 
-auto BuildSparseReportChartRows() -> std::vector<DayDurationRow> {
+auto BuildSparseInsightsChartRows() -> std::vector<DayDurationRow> {
   // Sparse interval recording: the missing middle date and any unrecorded gaps
   // inside recorded days must remain zero time, not inferred activity.
   return {
@@ -84,35 +84,35 @@ auto TestDayDurationStatsCalculator(int& failures) -> void {
              "stats calculator MAD should match expected value.", failures);
 }
 
-auto TestReportChartSeriesCalculator(int& failures) -> void {
-  const auto kSparseRows = BuildSparseReportChartRows();
-  const auto kResult = data_query_stats::BuildReportChartSeries(
+auto TestInsightsChartSeriesCalculator(int& failures) -> void {
+  const auto kSparseRows = BuildSparseInsightsChartRows();
+  const auto kResult = data_query_stats::BuildInsightsChartSeries(
       {.start_date = "2026-02-01", .end_date = "2026-02-03"}, kSparseRows,
-      tracer_core::core::dto::ReportAverageDayBasis::kCalendarDays);
+      tracer_core::core::dto::InsightsAverageDayBasis::kCalendarDays);
 
   Expect(kResult.series.size() == 3,
-         "report chart series should fill missing dates with zero.", failures);
+         "insights chart series should fill missing dates with zero.", failures);
   if (kResult.series.size() == 3) {
     Expect(kResult.series[0].duration_seconds == kDuration3600,
-           "report chart first day should keep known duration.", failures);
+           "insights chart first day should keep known duration.", failures);
     Expect(kResult.series[1].duration_seconds == 0,
-           "report chart middle day should be zero-filled.", failures);
+           "insights chart middle day should be zero-filled.", failures);
     Expect(kResult.series[2].duration_seconds == kDuration1800,
-           "report chart last day should keep known duration.", failures);
+           "insights chart last day should keep known duration.", failures);
     Expect(kResult.series[1].epoch_day == kResult.series[0].epoch_day + 1,
-           "report chart epoch_day should increment daily.", failures);
+           "insights chart epoch_day should increment daily.", failures);
     Expect(kResult.series[2].epoch_day == kResult.series[1].epoch_day + 1,
-           "report chart epoch_day should remain contiguous.", failures);
+           "insights chart epoch_day should remain contiguous.", failures);
   }
   Expect(kResult.stats.total_duration_seconds == kDuration5400,
-         "report chart total duration should sum recorded interval durations only.",
+         "insights chart total duration should sum recorded interval durations only.",
          failures);
   Expect(kResult.stats.active_days == 2,
-         "report chart active days should count non-zero days.", failures);
+         "insights chart active days should count non-zero days.", failures);
   Expect(kResult.stats.range_days == 3,
-         "report chart range_days should cover inclusive interval.", failures);
+         "insights chart range_days should cover inclusive interval.", failures);
   Expect(kResult.stats.average_duration_seconds == kDuration1800,
-         "report chart average should use calendar range_days denominator.",
+         "insights chart average should use calendar range_days denominator.",
          failures);
   Expect(kResult.stats.total_duration_seconds < (3LL * 24LL * 60LL * 60LL),
          "sparse interval recorded duration may be less than calendar span.",
@@ -254,144 +254,144 @@ auto CheckDaysStatsOrchestratorSemanticSnapshot(sqlite3* database,
   return true;
 }
 
-auto CheckReportChartOrchestratorSemanticSnapshot(sqlite3* database,
+auto CheckInsightsChartOrchestratorSemanticSnapshot(sqlite3* database,
                                                   int& failures) -> bool {
   using tracer_core::core::dto::DataQueryAction;
   using tracer_core::core::dto::DataQueryRequest;
   constexpr long long kExpectedTotalDurationSeconds = 5400LL;
   constexpr long long kExpectedAverageDurationSeconds = 2700LL;
 
-  DataQueryRequest report_chart_request;
-  report_chart_request.action = DataQueryAction::kReportChart;
-  report_chart_request.from_date = "2026-02-01";
-  report_chart_request.to_date = "2026-02-03";
-  report_chart_request.root = "study";
-  const auto kChartOutput = data_query_orchestrators::HandleReportChartQuery(
-      database, report_chart_request, DataQueryOutputMode::kSemanticJson);
-  Expect(kChartOutput.ok, "report-chart orchestrator should succeed.",
+  DataQueryRequest insights_chart_request;
+  insights_chart_request.action = DataQueryAction::kInsightsChart;
+  insights_chart_request.from_date = "2026-02-01";
+  insights_chart_request.to_date = "2026-02-03";
+  insights_chart_request.root = "study";
+  const auto kChartOutput = data_query_orchestrators::HandleInsightsChartQuery(
+      database, insights_chart_request, DataQueryOutputMode::kSemanticJson);
+  Expect(kChartOutput.ok, "insights-chart orchestrator should succeed.",
          failures);
   if (!kChartOutput.ok) {
     return false;
   }
   const auto kChartPayload = json::parse(kChartOutput.content);
-  Expect(kChartPayload.value("action", std::string{}) == "report_chart",
-         "report-chart orchestrator semantic snapshot should keep action.",
+  Expect(kChartPayload.value("action", std::string{}) == "insights_chart",
+         "insights-chart orchestrator semantic snapshot should keep action.",
          failures);
   Expect(kChartPayload.value("selected_root", std::string{}) == "study",
-         "report-chart orchestrator semantic snapshot should keep selected "
+         "insights-chart orchestrator semantic snapshot should keep selected "
          "root.",
          failures);
   Expect(kChartPayload.value("total_duration_seconds", -1LL) ==
              kExpectedTotalDurationSeconds,
-         "report-chart orchestrator semantic snapshot should keep total "
+         "insights-chart orchestrator semantic snapshot should keep total "
          "duration.",
          failures);
   Expect(kChartPayload.value("average_duration_seconds", -1LL) ==
              kExpectedAverageDurationSeconds,
-         "report-chart orchestrator semantic snapshot should keep average.",
+         "insights-chart orchestrator semantic snapshot should keep average.",
          failures);
   Expect(kChartPayload.value("range_days", -1) == 3,
-         "report-chart orchestrator semantic snapshot should keep range_days.",
+         "insights-chart orchestrator semantic snapshot should keep range_days.",
          failures);
   Expect(!kChartPayload.contains("recorded_coverage_ratio"),
-         "report-chart semantic snapshot should not expose recorded_coverage_ratio yet.",
+         "insights-chart semantic snapshot should not expose recorded_coverage_ratio yet.",
          failures);
   Expect(!kChartPayload.contains("calendar_span_seconds"),
-         "report-chart semantic snapshot should not expose calendar span output yet.",
+         "insights-chart semantic snapshot should not expose calendar span output yet.",
          failures);
   const auto kChartSeriesIt = kChartPayload.find("series");
   const bool kHasChartSeries =
       kChartSeriesIt != kChartPayload.end() && kChartSeriesIt->is_array();
   Expect(kHasChartSeries,
-         "report-chart orchestrator semantic snapshot should include series "
+         "insights-chart orchestrator semantic snapshot should include series "
          "array.",
          failures);
   if (kHasChartSeries) {
     Expect(kChartSeriesIt->size() == 3U,
-           "report-chart orchestrator semantic snapshot should include three "
+           "insights-chart orchestrator semantic snapshot should include three "
            "points for requested range.",
            failures);
     ExpectContiguousEpochDaySeries(
         *kChartSeriesIt,
-        "report-chart semantic snapshot series rows should include integer "
+        "insights-chart semantic snapshot series rows should include integer "
         "epoch_day.",
-        "report-chart semantic snapshot epoch_day should be contiguous.",
+        "insights-chart semantic snapshot epoch_day should be contiguous.",
         failures);
   }
 
-  DataQueryRequest missing_root_request = report_chart_request;
+  DataQueryRequest missing_root_request = insights_chart_request;
   missing_root_request.root = "nosuchroot";
   const auto kMissingRootOutput =
-      data_query_orchestrators::HandleReportChartQuery(
+      data_query_orchestrators::HandleInsightsChartQuery(
           database, missing_root_request, DataQueryOutputMode::kSemanticJson);
   Expect(kMissingRootOutput.ok,
-         "report-chart missing-root fallback should succeed.", failures);
+         "insights-chart missing-root fallback should succeed.", failures);
   if (!kMissingRootOutput.ok) {
     return false;
   }
   const auto kMissingRootPayload = json::parse(kMissingRootOutput.content);
   Expect(
       kMissingRootPayload.value("selected_root", std::string{}) == "nosuchroot",
-      "report-chart missing-root fallback should echo selected_root.",
+      "insights-chart missing-root fallback should echo selected_root.",
       failures);
   Expect(kMissingRootPayload.value("total_duration_seconds", -1LL) == 0LL,
-         "report-chart missing-root fallback should return zero total.",
+         "insights-chart missing-root fallback should return zero total.",
          failures);
   Expect(kMissingRootPayload.value("active_days", -1) == 0,
-         "report-chart missing-root fallback should return zero active days.",
+         "insights-chart missing-root fallback should return zero active days.",
          failures);
   const auto kMissingRootSeriesIt = kMissingRootPayload.find("series");
   const bool kHasMissingRootSeries =
       kMissingRootSeriesIt != kMissingRootPayload.end() &&
       kMissingRootSeriesIt->is_array();
   Expect(kHasMissingRootSeries,
-         "report-chart missing-root fallback should keep series array.",
+         "insights-chart missing-root fallback should keep series array.",
          failures);
   if (kHasMissingRootSeries) {
     ExpectContiguousEpochDaySeries(
         *kMissingRootSeriesIt,
-        "report-chart missing-root fallback should keep epoch_day for series "
+        "insights-chart missing-root fallback should keep epoch_day for series "
         "rows.",
-        "report-chart missing-root fallback epoch_day should be contiguous.",
+        "insights-chart missing-root fallback epoch_day should be contiguous.",
         failures);
   }
   return true;
 }
 
-auto CheckReportCompositionOrchestratorSemanticSnapshot(sqlite3* database,
+auto CheckInsightsCompositionOrchestratorSemanticSnapshot(sqlite3* database,
                                                         int& failures)
     -> bool {
   using tracer_core::core::dto::DataQueryAction;
   using tracer_core::core::dto::DataQueryRequest;
 
-  DataQueryRequest report_composition_request;
-  report_composition_request.action = DataQueryAction::kReportComposition;
-  report_composition_request.from_date = "2026-02-01";
-  report_composition_request.to_date = "2026-02-03";
+  DataQueryRequest insights_composition_request;
+  insights_composition_request.action = DataQueryAction::kInsightsComposition;
+  insights_composition_request.from_date = "2026-02-01";
+  insights_composition_request.to_date = "2026-02-03";
   const auto kCompositionOutput =
-      data_query_orchestrators::HandleReportCompositionQuery(
-          database, report_composition_request, DataQueryOutputMode::kSemanticJson);
+      data_query_orchestrators::HandleInsightsCompositionQuery(
+          database, insights_composition_request, DataQueryOutputMode::kSemanticJson);
   Expect(kCompositionOutput.ok,
-         "report-composition orchestrator should succeed.", failures);
+         "insights-composition orchestrator should succeed.", failures);
   if (!kCompositionOutput.ok) {
     return false;
   }
 
   const auto kCompositionPayload = json::parse(kCompositionOutput.content);
   Expect(kCompositionPayload.value("action", std::string{}) ==
-             "report_composition",
-         "report-composition orchestrator semantic snapshot should keep action.",
+             "insights_composition",
+         "insights-composition orchestrator semantic snapshot should keep action.",
          failures);
   Expect(kCompositionPayload.value("active_root_count", -1) == 1,
-         "report-composition orchestrator should count active roots.",
+         "insights-composition orchestrator should count active roots.",
          failures);
   Expect(kCompositionPayload.value("total_duration_seconds", -1LL) == 5400LL,
-         "report-composition orchestrator should keep total duration.",
+         "insights-composition orchestrator should keep total duration.",
          failures);
   Expect(kCompositionPayload.value("active_days", -1) == 2,
-         "report-composition should count days containing records.", failures);
+         "insights-composition should count days containing records.", failures);
   Expect(kCompositionPayload.value("range_days", -1) == 3,
-         "report-composition orchestrator should keep range_days.", failures);
+         "insights-composition orchestrator should keep range_days.", failures);
   Expect(kCompositionPayload.value("display_level", -1) == 1,
          "single active root should request one-level chart drill-down.",
          failures);
@@ -405,39 +405,39 @@ auto CheckReportCompositionOrchestratorSemanticSnapshot(sqlite3* database,
   const bool kHasTree =
       kTreeIt != kCompositionPayload.end() && kTreeIt->is_array();
   Expect(kHasTree,
-         "report-composition orchestrator semantic snapshot should include tree array.",
+         "insights-composition orchestrator semantic snapshot should include tree array.",
          failures);
   if (kHasTree) {
     Expect(kTreeIt->size() == 1U,
-           "report-composition orchestrator should emit one tree root per active root.",
+           "insights-composition orchestrator should emit one tree root per active root.",
            failures);
     if (kTreeIt->size() >= 1U) {
       Expect((*kTreeIt)[0].value("name", std::string{}) == "study",
-             "report-composition should preserve the root name in the tree.",
+             "insights-composition should preserve the root name in the tree.",
              failures);
       Expect((*kTreeIt)[0].value("duration_seconds", -1LL) == 5400LL,
-             "report-composition tree root should keep study duration.",
+             "insights-composition tree root should keep study duration.",
              failures);
       Expect((*kTreeIt)[0].value("average_duration_seconds", -1LL) == 2700LL,
-             "report-composition tree root should expose active-day average duration.",
+             "insights-composition tree root should expose active-day average duration.",
              failures);
       Expect((*kTreeIt)[0].value("average_occurrence_count", -1.0) == 1.0,
-             "report-composition tree root should expose active-day average occurrences.",
+             "insights-composition tree root should expose active-day average occurrences.",
              failures);
       Expect((*kTreeIt)[0].value("average_occurrence_ratio", -1.0) == 1.0,
-             "report-composition tree root should expose current-level occurrence ratio.",
+             "insights-composition tree root should expose current-level occurrence ratio.",
              failures);
       Expect((*kTreeIt)[0].contains("occurrence_count") &&
                  (*kTreeIt)[0]["occurrence_count"].is_number_integer(),
-             "report-composition tree root should include occurrence count.",
+             "insights-composition tree root should include occurrence count.",
              failures);
       const auto kChildren = (*kTreeIt)[0].value("children", json::array());
       if (kChildren.is_array() && !kChildren.empty()) {
         Expect(kChildren[0].value("average_duration_seconds", -1LL) == 2700LL,
-               "report-composition child should expose active-day average duration.",
+               "insights-composition child should expose active-day average duration.",
                failures);
         Expect(kChildren[0].value("average_occurrence_ratio", -1.0) == 1.0,
-               "report-composition child should expose current-level occurrence ratio.",
+               "insights-composition child should expose current-level occurrence ratio.",
                failures);
       }
     }
@@ -448,14 +448,14 @@ auto CheckReportCompositionOrchestratorSemanticSnapshot(sqlite3* database,
              "INSERT INTO time_records(date, start, end, duration, "
              "project_path_snapshot, activity_remark) VALUES "
              "('2026-02-02', '09:00', '10:00', 3600, 'sleep_nap', '');"),
-         "report-composition guard fixture should add a second active root.",
+         "insights-composition guard fixture should add a second active root.",
          failures);
   const auto kMultipleRootOutput =
-      data_query_orchestrators::HandleReportCompositionQuery(
-          database, report_composition_request,
+      data_query_orchestrators::HandleInsightsCompositionQuery(
+          database, insights_composition_request,
           DataQueryOutputMode::kSemanticJson);
   Expect(kMultipleRootOutput.ok,
-         "report-composition multiple-root guard query should succeed.",
+         "insights-composition multiple-root guard query should succeed.",
          failures);
   if (kMultipleRootOutput.ok) {
     const auto kMultipleRootPayload = json::parse(kMultipleRootOutput.content);
@@ -665,12 +665,12 @@ auto TestSingleDayCompositionKeepsAllRoots(int& failures) -> void {
   }
 
   DataQueryRequest request;
-  request.action = DataQueryAction::kReportComposition;
+  request.action = DataQueryAction::kInsightsComposition;
   request.from_date = "2026-02-01";
   request.to_date = "2026-02-01";
 
   const auto kCompositionOutput =
-      data_query_orchestrators::HandleReportCompositionQuery(
+      data_query_orchestrators::HandleInsightsCompositionQuery(
           kDatabase.get(), request, DataQueryOutputMode::kSemanticJson);
   Expect(kCompositionOutput.ok,
          "single-day composition query should succeed.", failures);
@@ -738,11 +738,11 @@ auto TestOrchestratorRendererSemanticSnapshot(int& failures) -> void {
   if (!CheckDaysStatsOrchestratorSemanticSnapshot(kDatabase.get(), failures)) {
     return;
   }
-  if (!CheckReportChartOrchestratorSemanticSnapshot(kDatabase.get(),
+  if (!CheckInsightsChartOrchestratorSemanticSnapshot(kDatabase.get(),
                                                     failures)) {
     return;
   }
-  if (!CheckReportCompositionOrchestratorSemanticSnapshot(kDatabase.get(),
+  if (!CheckInsightsCompositionOrchestratorSemanticSnapshot(kDatabase.get(),
                                                           failures)) {
     return;
   }
@@ -752,7 +752,7 @@ auto TestOrchestratorRendererSemanticSnapshot(int& failures) -> void {
 
 auto RunDataQueryRefactorStatsScenarioTests(int& failures) -> void {
   TestDayDurationStatsCalculator(failures);
-  TestReportChartSeriesCalculator(failures);
+  TestInsightsChartSeriesCalculator(failures);
   TestSemanticDayStatsSnapshot(failures);
   TestDerivedStatusExerciseFilters(failures);
   TestCrossMidnightActivityFilterUsesTimeline(failures);

@@ -38,8 +38,8 @@ Navigation hub for active Android documentation.
   - `docs/time_tracer/presentation/android/ui/README.md`
 - Shared UI color system:
   - `docs/time_tracer/presentation/android/ui/color-system.md`
-- Report semantic colors:
-  - `docs/time_tracer/presentation/android/ui/report/README.md`
+- Insights semantic colors:
+  - `docs/time_tracer/presentation/android/ui/insights/README.md`
 
 ## Runtime / Contract Reference
 

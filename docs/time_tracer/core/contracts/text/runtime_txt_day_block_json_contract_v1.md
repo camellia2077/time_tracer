@@ -298,7 +298,7 @@ The resulting canonical paths are `recreation_online`,
 
 ### Android ALL-mode activity-name conversion
 
-1. The TXT tab shows mutually exclusive Alias/Canonical controls only in ALL
+1. The TXT editor shows mutually exclusive Alias/Canonical controls only in ALL
    mode.
 2. Android sends the current selected month draft through
    `convert_activity_names`.

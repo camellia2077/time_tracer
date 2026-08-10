@@ -33,7 +33,7 @@
 说明：
 1. `error_message` 可因实现和语言风格不同而差异。
 2. `error_code` 与 `error_category` 必须稳定，供测试和上层自动化判定。
-3. 例如 `reporting.target.not_found` 可由 CLI 映射到专用退出码，只要该映射保持稳定。
+3. 例如 `insights.target.not_found` 可由 CLI 映射到专用退出码，只要该映射保持稳定。
 
 ### 3.3 能力描述契约（当前执行）
 1. Core 对外提供“能力描述”字段，避免 CLI 自行推断特性。

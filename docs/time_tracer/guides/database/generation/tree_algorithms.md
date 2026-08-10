@@ -6,8 +6,8 @@
 - `libs/tracer_core/src/infra/query/data/internal/project_tree_projection.hpp`
 - `libs/tracer_core/src/infra/query/data/renderers/data_query_renderer.cpp`
 - `libs/tracer_core/src/infra/query/data/renderers/text_renderer.cpp`
-- `libs/tracer_core/src/infra/reporting/data/cache/project_name_cache.hpp`
-- `libs/tracer_core/src/infra/reporting/services/batch_export_helpers.hpp`
+- `libs/tracer_core/src/infra/insights/data/cache/project_name_cache.hpp`
+- `libs/tracer_core/src/infra/insights/services/batch_export_helpers.hpp`
 
 ## 1. 输入与输出
 
@@ -20,7 +20,7 @@
 
 输出：
 
-1. `reporting::ProjectTree`（内存树）
+1. `insights::ProjectTree`（内存树）
 2. 树形文本（CLI）
 
 ## 2. 路径记录构树算法
@@ -73,9 +73,9 @@ for (path, duration) in records:
   2. 通过 `parent_id` 向上回溯并反转，恢复路径片段。
 
 源码定位：
-- `libs/tracer_core/src/infra/reporting/data/utils/project_tree_builder.cpp`：`BuildProjectTreeFromIds(...)`
-- `libs/tracer_core/src/infra/reporting/data/cache/project_name_cache.hpp`：`ProjectNameCache`
-- `libs/tracer_core/src/domain/reports/interfaces/i_project_info_provider.hpp`：`IProjectInfoProvider`
+- `libs/tracer_core/src/infra/insights/data/utils/project_tree_builder.cpp`：`BuildProjectTreeFromIds(...)`
+- `libs/tracer_core/src/infra/insights/data/cache/project_name_cache.hpp`：`ProjectNameCache`
+- `libs/tracer_core/src/domain/insights/interfaces/i_project_info_provider.hpp`：`IProjectInfoProvider`
 
 ## 4. 树渲染算法（CLI）
 

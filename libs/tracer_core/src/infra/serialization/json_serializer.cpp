@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include "infra/reporting/data/utils/time_derived_stats.hpp"
+#include "infra/insights/data/utils/time_derived_stats.hpp"
 #include "infra/schema/day_schema.hpp"
 
 import tracer.core.domain.ports.diagnostics;
@@ -18,7 +18,7 @@ namespace modports = tracer::core::domain::ports;
 namespace serializer {
 namespace {
 
-using tracer::core::infrastructure::reports::data::stats::
+using tracer::core::infrastructure::insights::data::stats::
     DerivedTimeStatsAggregator;
 
 auto RebuildDerivedFlags(DailyLog& day) -> void {

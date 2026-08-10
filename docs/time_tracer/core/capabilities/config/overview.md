@@ -3,7 +3,7 @@
 ## Purpose
 
 Config owns runtime config loading, snapshotting, validators, and
-report/converter config assembly in `tracer_core`.
+insights/converter config assembly in `tracer_core`.
 
 ## Responsibility Boundary
 
@@ -14,7 +14,7 @@ Config owns:
 4. internal parse helpers that belong to config itself
 
 Config does not own:
-1. ingest/query/reporting/exchange orchestration
+1. ingest/query/insights/exchange orchestration
 2. host-side path resolution UX
 3. SQLite write or read repositories
 
@@ -26,7 +26,7 @@ Config does not own:
 2. config-owned internal parse helpers
 
 ## Forbidden Direct Dependencies
-1. pipeline/query/reporting/exchange orchestration
+1. pipeline/query/insights/exchange orchestration
 2. capability-specific business flows
 
 ## Read Next

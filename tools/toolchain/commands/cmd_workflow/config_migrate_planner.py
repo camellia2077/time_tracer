@@ -82,67 +82,66 @@ def extract_converter_main_config_path(config_toml: dict[str, Any], source_path:
     return normalize_path_value(main_config_path)
 
 
-def extract_report_paths(
+def extract_insights_paths(
     config_toml: dict[str, Any], source_path: Path
 ) -> dict[str, dict[str, Any]]:
-    reports_tbl = require_table(config_toml, "reports", source_path, "")
-    alias_map: list[tuple[str, tuple[str, ...]]] = [
-        ("markdown", ("markdown", "md")),
-        ("latex", ("latex", "tex")),
-        ("typst", ("typst", "typ")),
-    ]
+    if "reports" in config_toml:
+        raise RuntimeError(
+            f"Unknown config table [{source_path}]: 'reports'."
+        )
 
-    result: dict[str, dict[str, str]] = {}
-    for canonical_name, aliases in alias_map:
-        selected_alias: str | None = None
-        selected_tbl: dict[str, Any] | None = None
-        for alias in aliases:
-            if alias not in reports_tbl:
-                continue
-            candidate = reports_tbl[alias]
-            field_path = f"reports.{alias}"
-            if not isinstance(candidate, dict):
-                raise RuntimeError(
-                    f"Invalid config [{source_path}] field '{field_path}': must be a table."
-                )
-            selected_alias = alias
-            selected_tbl = candidate
-            break
+    insights_tbl = require_table(config_toml, "insights", source_path, "")
+    formats = ("markdown", "latex", "typst")
 
-        if selected_tbl is None or selected_alias is None:
+    result: dict[str, dict[str, Any]] = {}
+    for format_name in formats:
+        if format_name not in insights_tbl:
             continue
+        selected_tbl = insights_tbl[format_name]
+        field_path = f"insights.{format_name}"
+        if not isinstance(selected_tbl, dict):
+            raise RuntimeError(
+                f"Invalid config [{source_path}] field '{field_path}': must be a table."
+            )
 
-        section_prefix = f"reports.{selected_alias}"
-        _, root = find_non_empty_string_alias(selected_tbl, ("root",), source_path, section_prefix)
-        section: dict[str, Any] = {"root": normalize_path_value(root)}
-        if canonical_name == "markdown":
+        section: dict[str, Any] = {
+            "root": normalize_path_value(
+                find_non_empty_string_alias(
+                    selected_tbl,
+                    ("root",),
+                    source_path,
+                    field_path,
+                )[1]
+            )
+        }
+        if format_name == "markdown":
             _, default_locale = find_non_empty_string_alias(
-                selected_tbl, ("default_locale",), source_path, section_prefix
+                selected_tbl, ("default_locale",), source_path, field_path
             )
             supported = selected_tbl.get("supported_locales")
             if not isinstance(supported, list) or not all(
                 isinstance(locale, str) and locale for locale in supported
             ):
                 raise RuntimeError(
-                    f"Invalid config [{source_path}] field '{section_prefix}.supported_locales': "
+                    f"Invalid config [{source_path}] field '{field_path}.supported_locales': "
                     "must be a non-empty string array."
                 )
             section["default_locale"] = default_locale
             section["supported_locales"] = list(supported)
-        result[canonical_name] = section
+        result[format_name] = section
 
     if not result:
         raise RuntimeError(
-            f"Invalid config [{source_path}] field 'reports': "
-            "must contain at least one format table (markdown/md, latex/tex, typst/typ)."
+            f"Invalid config [{source_path}] field 'insights': "
+            "must contain at least one format table (markdown, latex, typst)."
         )
     return result
 
 
 def collect_optional_files(config_root: Path) -> list[str]:
     candidates = [
-        config_root / "reports" / "latex" / "common_style.toml",
-        config_root / "reports" / "typst" / "common_style.toml",
+        config_root / "insights" / "latex" / "common_style.toml",
+        config_root / "insights" / "typst" / "common_style.toml",
     ]
     result: list[str] = []
     for path in candidates:
@@ -158,13 +157,13 @@ def build_bundle_model(
 ) -> dict[str, Any]:
     config_toml = parse_toml_file(source_config_path)
     main_config_rel_path = extract_converter_main_config_path(config_toml, source_config_path)
-    report_paths = extract_report_paths(config_toml, source_config_path)
+    insights_paths = extract_insights_paths(config_toml, source_config_path)
 
     required: set[str] = {"config.toml", main_config_rel_path}
-    for format_name, report in report_paths.items():
-        root = config_root / str(report["root"])
+    for format_name, insights in insights_paths.items():
+        root = config_root / str(insights["root"])
         if format_name == "markdown":
-            locales = [str(locale) for locale in report["supported_locales"]]
+            locales = [str(locale) for locale in insights["supported_locales"]]
             for locale in locales:
                 required.update(
                     str(path.relative_to(config_root)).replace("\\", "/")

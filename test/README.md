@@ -8,20 +8,20 @@
 1. `apps/tools/log_generator` 生成符合 canonical contract 的 TXT 测试数据
 2. `test/data/**` 保存跨 CLI / shell / Android 复用的 TXT 输入资产
 3. core / shell / Android 基于这些 TXT 执行 validate / convert / ingest
-4. query / report / export 的稳定对账结果进入 `test/golden/**`
+4. query / insights / export 的稳定对账结果进入 `test/golden/**`
 5. 每次运行的临时输出统一进入 `out/test/**`
 
 ## 目录职责
 
 1. `test/data/`
    - canonical 原始输入数据
-   - 例如供 `tracer_core_shell` pipeline / query / reporting 复用的 TXT 月日志
+   - 例如供 `tracer_core_shell` pipeline / query / insights 复用的 TXT 月日志
 2. `test/fixtures/`
    - 小型专项 fixture
    - 适合精准测试某一个规则、异常路径或兼容场景
 3. `test/golden/`
    - 最终输出基线
-   - 例如 report/export/query artifact 的 golden / snapshot
+   - 例如 insights/export/query artifact 的 golden / snapshot
 
 ## `test/fixtures` 结构
 

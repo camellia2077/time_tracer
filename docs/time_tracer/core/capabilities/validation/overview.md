@@ -22,7 +22,7 @@ Validation owns:
 
 Validation does not own:
 1. write-side persistence
-2. query/report data access
+2. query/insights data access
 3. UI copy and interaction details
 4. host-specific staging directories
 

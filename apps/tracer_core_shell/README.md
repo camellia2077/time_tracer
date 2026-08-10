@@ -29,9 +29,9 @@ CLI black-box coverage:
 - `cap_query`
   - `tt_query_api_tests`
   - `tc_c_api_query_tests`
-- `cap_reporting`
-  - `tt_reporting_api_tests`
-  - `tc_c_api_reporting_tests`
+- `cap_insights`
+  - `tt_insights_api_tests`
+  - `tc_c_api_insights_tests`
 - `cap_pipeline`
   - `tt_pipeline_api_tests`
   - `tc_c_api_pipeline_tests`

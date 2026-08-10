@@ -41,12 +41,12 @@ candidate import. Its required configuration is the user-owned tree:
 - `config/user/activity_hierarchy/**`
 
 `config/program/**` is not a validation dependency. It belongs to the complete
-application Runtime and contains presentation resources such as report and
+application Runtime and contains presentation resources such as insights and
 chart TOML. A candidate TXT/config import must not require or copy that tree.
 
 ## Not Owned Here
 1. SQLite write-side repository construction
-2. Query/report rendering behavior
+2. Query/insights rendering behavior
 3. Host-side UI or CLI argument parsing
 
 ## Legacy Pointers

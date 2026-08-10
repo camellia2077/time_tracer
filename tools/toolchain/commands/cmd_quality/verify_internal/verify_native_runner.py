@@ -56,14 +56,14 @@ _PROFILE_NATIVE_PHASES = {
             ),
         ),
     ),
-    "cap_reporting": (
-        ("core_semantics", ("tt_reporting_api_tests",)),
-        ("c_abi_contract", ("tc_c_api_reporting_tests",)),
+    "cap_insights": (
+        ("core_semantics", ("tt_insights_api_tests",)),
+        ("c_abi_contract", ("tc_c_api_insights_tests",)),
         (
             "runtime_smoke_and_bridge",
             (
-                "tc_reporting_infra_smoke_tests",
-                "tt_android_runtime_reporting_tests",
+                "tc_insights_infra_smoke_tests",
+                "tt_android_runtime_insights_tests",
             ),
         ),
         ("golden_or_parity", ("tt_fmt_parity_tests",)),

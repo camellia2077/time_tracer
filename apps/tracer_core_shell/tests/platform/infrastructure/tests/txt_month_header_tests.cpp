@@ -246,7 +246,7 @@ auto TestValidatorRequiresMonthHeader(int& failures) -> void {
          "TextValidator should fail when mMM month header is missing.",
          failures);
   Expect(Contains(kMissingMonthText, "Month header (mMM) is required"),
-         "Missing month header should report explicit mMM requirement.",
+         "Missing month header should insights explicit mMM requirement.",
          failures);
 
   std::set<Error> bare_mmdd_errors;
@@ -256,7 +256,7 @@ auto TestValidatorRequiresMonthHeader(int& failures) -> void {
   Expect(!kBareMmddOk, "Bare MMDD should no longer validate as a date marker.",
          failures);
   Expect(Contains(kBareMmddText, "Unrecognized line format: 0201"),
-         "Bare MMDD should be reported as an unrecognized line.", failures);
+         "Bare MMDD should be insightsed as an unrecognized line.", failures);
 
   std::set<Error> year_only_errors;
   const bool kYearOnlyOk =
@@ -265,7 +265,7 @@ auto TestValidatorRequiresMonthHeader(int& failures) -> void {
   Expect(!kYearOnlyOk, "TextValidator should reject year-only files.",
          failures);
   Expect(Contains(kYearOnlyText, "Month header (mMM) is required"),
-         "Year-only files should report missing mMM requirement.", failures);
+         "Year-only files should insights missing mMM requirement.", failures);
 }
 
 auto TestValidatorRequiresMonthHeaderFixture(int& failures) -> void {
@@ -288,7 +288,7 @@ auto TestValidatorRequiresMonthHeaderFixture(int& failures) -> void {
   Expect(!ok,
          "TextValidator should reject the missing-month fixture.", failures);
   Expect(Contains(error_text, "Month header (mMM) is required"),
-         "missing-month fixture should report explicit missing header wording.",
+         "missing-month fixture should insights explicit missing header wording.",
          failures);
 }
 
@@ -312,7 +312,7 @@ auto TestValidatorRejectsMonthConflicts(int& failures) -> void {
   Expect(!kDuplicateOk, "Duplicate mMM headers should fail validation.",
          failures);
   Expect(Contains(kDuplicateText, "Multiple month headers found"),
-         "Duplicate month header should report dedicated error.", failures);
+         "Duplicate month header should insights dedicated error.", failures);
 
   std::set<Error> late_month_errors;
   const bool kLateMonthOk = text_validator.Validate(

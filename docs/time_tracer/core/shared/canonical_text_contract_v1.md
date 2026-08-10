@@ -39,7 +39,7 @@ compatibility path.
 Validation operates on canonical text only.
 
 1. validator/parser inputs are already normalized
-2. validation failures should report the normalized-text error cause
+2. validation failures should insights the normalized-text error cause
 3. top-level error messages should keep the concrete text failure visible
 
 ## Exchange Contract

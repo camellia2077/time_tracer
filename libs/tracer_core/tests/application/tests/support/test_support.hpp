@@ -15,17 +15,17 @@ struct TestState {
 };
 
 auto BuildRuntimeApiForTest(FakePipelineWorkflow& pipeline_workflow,
-                            FakeReportHandler& report_handler)
+                            FakeInsightsHandler& insights_handler)
     -> TracerCoreRuntime;
 
 auto BuildRuntimeApiForTest(
-    FakePipelineWorkflow& pipeline_workflow, FakeReportHandler& report_handler,
+    FakePipelineWorkflow& pipeline_workflow, FakeInsightsHandler& insights_handler,
     const std::shared_ptr<FakeDataQueryService>& data_query)
     -> TracerCoreRuntime;
 
 auto BuildRuntimeApiForTest(
-    FakePipelineWorkflow& pipeline_workflow, FakeReportHandler& report_handler,
-    const std::shared_ptr<FakeReportDataQueryService>& report_data_query)
+    FakePipelineWorkflow& pipeline_workflow, FakeInsightsHandler& insights_handler,
+    const std::shared_ptr<FakeInsightsDataQueryService>& insights_data_query)
     -> TracerCoreRuntime;
 
 inline auto Expect(TestState& state, bool condition, const std::string& message)

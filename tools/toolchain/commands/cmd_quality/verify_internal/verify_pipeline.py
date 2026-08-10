@@ -10,7 +10,7 @@ def run_artifact_pipeline(
     repo_root,
     setup_env_fn,
     run_command_fn,
-    run_report_markdown_gates_fn,
+    run_insights_markdown_gates_fn,
     run_native_core_runtime_tests_fn,
     record_phase_fn=None,
 ) -> int:
@@ -78,7 +78,7 @@ def run_artifact_pipeline(
             )
 
     print("--- verify: artifact phase [golden_or_quality_gates]")
-    markdown_gate_ret = run_report_markdown_gates_fn(
+    markdown_gate_ret = run_insights_markdown_gates_fn(
         repo_root=repo_root,
         setup_env_fn=setup_env_fn,
         run_command_fn=run_command_fn,

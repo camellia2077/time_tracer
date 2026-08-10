@@ -42,8 +42,11 @@ Boundary rules:
 1. `NativeRuntimeController.initializeRuntime()` delegates to `RuntimeInitService`.
 2. `RuntimeInitService` calls `RuntimeCoreAdapter.initializeRuntimeInternal()`.
 3. `RuntimeEnvironment.prepareRuntimePaths()` copies assets into app-private files:
-   - `<filesDir>/tracer_core/config`
-   - `<filesDir>/tracer_core/config/activity_hierarchy` is seeded from
+   - `<filesDir>/config/program` is overwritten on every process
+     start. It is an APK-owned read-only bundle, so an APK update refreshes it.
+   - `<filesDir>/config/user` is seeded without overwriting existing
+     files, preserving user-managed configuration.
+   - `<filesDir>/config/user/activity_hierarchy` is seeded from
      `tracer_core/defaults/activity_hierarchy` when the private files are absent.
 4. `RuntimeEnvironment` validates `meta/bundle.toml`.
 5. Successful validation proceeds to `nativeInit(...)`.
@@ -56,12 +59,15 @@ Boundary rules:
   - `<filesDir>/tracer_core/config`
 - Only `<filesDir>/tracer_core/config/user/*.toml` and
   `<filesDir>/tracer_core/config/user/activity_hierarchy/*.toml` are user-editable.
-  `config.toml`, `charts/**`, `meta/**`, and `reports/**` are program resources
+  Android-managed preferences are the exception: `charts.toml`, `heatmap.toml`,
+  and `insights.toml` are neither packaged nor read from this directory.
+  `config.toml`, `charts/**`, `meta/**`, and `insights/**` are program resources
   and are read-only in the Android UI.
 - The Config tab exposes structured editing plus an advanced raw TOML mode for
-  the user-facing categories: `alias`, `charts`, and `reports`. Alias
-  files use the structured canonical-to-alias-list editor; the advanced mode
-  still serializes and validates the same strict TOML shape.
+  the `alias` category. Alias files use the structured canonical-to-alias-list
+  editor; the advanced mode still serializes and validates the same strict TOML
+  shape. Chart and insights preferences live in Android `DataStore`, not under
+  the runtime config snapshot.
 
 ## Diagnostics and Support
 

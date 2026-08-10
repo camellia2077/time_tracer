@@ -2,7 +2,7 @@ use serde::Deserialize;
 
 use super::super::errors::ErrorContract;
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub(crate) struct ReportWindowMetadata {
+pub(crate) struct InsightsWindowMetadata {
     pub(crate) has_records: bool,
     pub(crate) matched_day_count: i32,
     pub(crate) matched_record_count: i32,
@@ -12,9 +12,9 @@ pub(crate) struct ReportWindowMetadata {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub(crate) struct ReportTextOutput {
+pub(crate) struct InsightsTextOutput {
     pub(crate) content: String,
-    pub(crate) report_window_metadata: Option<ReportWindowMetadata>,
+    pub(crate) insights_window_metadata: Option<InsightsWindowMetadata>,
 }
 
 #[derive(Deserialize)]
@@ -50,7 +50,7 @@ pub(crate) struct TextResponse {
 }
 
 #[derive(Deserialize)]
-pub(crate) struct ReportTargetsResponse {
+pub(crate) struct InsightsTargetsResponse {
     pub(crate) ok: bool,
     #[serde(default)]
     pub(crate) error_message: String,
@@ -153,15 +153,15 @@ pub(crate) struct AliasKeyReplacementResponse {
 }
 
 impl TextResponse {
-    pub(crate) fn into_report_text_output(self) -> ReportTextOutput {
-        let report_window_metadata = self.report_window_metadata();
-        ReportTextOutput {
+    pub(crate) fn into_insights_text_output(self) -> InsightsTextOutput {
+        let insights_window_metadata = self.insights_window_metadata();
+        InsightsTextOutput {
             content: self.content,
-            report_window_metadata,
+            insights_window_metadata,
         }
     }
 
-    fn report_window_metadata(&self) -> Option<ReportWindowMetadata> {
+    fn insights_window_metadata(&self) -> Option<InsightsWindowMetadata> {
         let has_any = self.has_records.is_some()
             || self.matched_day_count.is_some()
             || self.matched_record_count.is_some()
@@ -172,7 +172,7 @@ impl TextResponse {
             return None;
         }
 
-        Some(ReportWindowMetadata {
+        Some(InsightsWindowMetadata {
             has_records: self.has_records.unwrap_or(false),
             matched_day_count: self.matched_day_count.unwrap_or(0),
             matched_record_count: self.matched_record_count.unwrap_or(0),

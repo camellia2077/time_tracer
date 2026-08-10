@@ -5,7 +5,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde_json::Value;
 
-use crate::commands::handlers::report::{RenderedReport, ReportWindowMetadata};
+use crate::commands::handlers::insights::{RenderedInsights, InsightsWindowMetadata};
 use crate::core::runtime::{
     CliCommandDefaults, CliConfig, CliDefaults, TreeResponse, TxtReplaceOutput, TxtResolveOutput,
 };
@@ -146,17 +146,17 @@ impl RecordedPipelineSession {
     }
 }
 
-pub(crate) struct RecordedReportSession {
+pub(crate) struct RecordedInsightsSession {
     command_names: RefCell<Vec<String>>,
     requests: RefCell<Vec<Value>>,
     cli_config: CliConfig,
     render_response: String,
     runtime_output_root: String,
     target_lists: RefCell<HashMap<String, Vec<String>>>,
-    report_window_metadata: Option<ReportWindowMetadata>,
+    insights_window_metadata: Option<InsightsWindowMetadata>,
 }
 
-impl RecordedReportSession {
+impl RecordedInsightsSession {
     pub(crate) fn new(cli_config: CliConfig, render_response: impl Into<String>) -> Self {
         Self {
             command_names: RefCell::new(Vec::new()),
@@ -164,11 +164,11 @@ impl RecordedReportSession {
             cli_config,
             render_response: render_response.into(),
             runtime_output_root: std::env::temp_dir()
-                .join("time_tracer_report_test_output")
+                .join("time_tracer_insights_test_output")
                 .to_string_lossy()
                 .to_string(),
             target_lists: RefCell::new(HashMap::new()),
-            report_window_metadata: None,
+            insights_window_metadata: None,
         }
     }
 
@@ -188,8 +188,8 @@ impl RecordedReportSession {
         self
     }
 
-    pub(crate) fn with_window_metadata(mut self, metadata: ReportWindowMetadata) -> Self {
-        self.report_window_metadata = Some(metadata);
+    pub(crate) fn with_window_metadata(mut self, metadata: InsightsWindowMetadata) -> Self {
+        self.insights_window_metadata = Some(metadata);
         self
     }
 
@@ -205,14 +205,14 @@ impl RecordedReportSession {
         &self,
         command_name: &str,
         request: &Value,
-    ) -> Result<RenderedReport, AppError> {
+    ) -> Result<RenderedInsights, AppError> {
         self.command_names
             .borrow_mut()
             .push(command_name.to_string());
         self.requests.borrow_mut().push(request.clone());
-        Ok(RenderedReport {
+        Ok(RenderedInsights {
             content: self.render_response.clone(),
-            report_window_metadata: self.report_window_metadata.clone(),
+            insights_window_metadata: self.insights_window_metadata.clone(),
         })
     }
 

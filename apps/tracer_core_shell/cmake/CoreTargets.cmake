@@ -54,7 +54,7 @@ set(TT_FORBIDDEN_LEGACY_BOUNDARY_INCLUDE_PATTERNS
     "^[ \t]*#[ \t]*include[ \t]*[<\"]application/dto/core_requests\\.hpp"
     "^[ \t]*#[ \t]*include[ \t]*[<\"]application/dto/core_responses\\.hpp"
     "^[ \t]*#[ \t]*include[ \t]*[<\"]application/dto/tree_query_response\\.hpp"
-    "^[ \t]*#[ \t]*include[ \t]*[<\"]application/interfaces/i_report_"
+    "^[ \t]*#[ \t]*include[ \t]*[<\"]application/interfaces/i_insights_"
     "^[ \t]*#[ \t]*include[ \t]*[<\"]application/use_cases/i_tracer_core_runtime\\.hpp"
     "^[ \t]*#[ \t]*include[ \t]*[<\"]application/use_cases/tracer_core_runtime\\.hpp"
 )
@@ -118,14 +118,14 @@ enforce_source_content_boundary(
     FORBIDDEN_PATTERNS
         ${TT_FORBIDDEN_NON_OWNER_INCLUDE_PATTERNS}
         "^[ \t]*import[ \t]+tracer\\.core\\.application\\.query\\."
-        "^[ \t]*import[ \t]+tracer\\.core\\.application\\.reporting\\."
+        "^[ \t]*import[ \t]+tracer\\.core\\.application\\.insights\\."
         "^[ \t]*import[ \t]+tracer\\.core\\.infrastructure\\.query\\."
-        "^[ \t]*import[ \t]+tracer\\.core\\.infrastructure\\.reporting\\."
+        "^[ \t]*import[ \t]+tracer\\.core\\.infrastructure\\.insights\\."
         "^[ \t]*import[ \t]+tracer\\.core\\.infrastructure\\.exchange\\."
         "^[ \t]*#[ \t]*include[ \t]*[<\"]application/query/"
-        "^[ \t]*#[ \t]*include[ \t]*[<\"]application/reporting/"
+        "^[ \t]*#[ \t]*include[ \t]*[<\"]application/insights/"
         "^[ \t]*#[ \t]*include[ \t]*[<\"]infra/query/"
-        "^[ \t]*#[ \t]*include[ \t]*[<\"]infra/reporting/"
+        "^[ \t]*#[ \t]*include[ \t]*[<\"]infra/insights/"
         "^[ \t]*#[ \t]*include[ \t]*[<\"]infra/exchange/"
 )
 enforce_source_content_boundary(
@@ -137,25 +137,25 @@ enforce_source_content_boundary(
         "infra/query"
         "infra/query/data/repository/query_runtime_service.cpp"
         "infra/query/data/repository/query_runtime_service_request.cpp"
-        "infra/query/data/repository/query_runtime_service_report_mapping.cpp"
+        "infra/query/data/repository/query_runtime_service_insights_mapping.cpp"
         "infra/query/data/repository/query_runtime_service_dispatch.cpp"
         "infra/query/data/repository/query_runtime_service_period.cpp"
         "infra/query/data/repository/query_runtime_service_internal.hpp"
     FORBIDDEN_PATTERNS
         ${TT_FORBIDDEN_NON_OWNER_INCLUDE_PATTERNS}
-        "^[ \t]*import[ \t]+tracer\\.core\\.application\\.reporting\\."
-        "^[ \t]*import[ \t]+tracer\\.core\\.infrastructure\\.reporting\\."
-        "^[ \t]*#[ \t]*include[ \t]*[<\"]application/reporting/"
-        "^[ \t]*#[ \t]*include[ \t]*[<\"]infra/reporting/"
+        "^[ \t]*import[ \t]+tracer\\.core\\.application\\.insights\\."
+        "^[ \t]*import[ \t]+tracer\\.core\\.infrastructure\\.insights\\."
+        "^[ \t]*#[ \t]*include[ \t]*[<\"]application/insights/"
+        "^[ \t]*#[ \t]*include[ \t]*[<\"]infra/insights/"
 )
 enforce_source_content_boundary(
     ROOT "${TRACER_CORE_LIB_SOURCE_ROOT}"
     TARGET_DIRS
-        "application/reporting"
-        "application/use_cases/report_api.cpp"
-        "application/use_cases/report_api_support.cpp"
-        "application/use_cases/tracer_core_api_report.module.cpp"
-        "infra/reporting"
+        "application/insights"
+        "application/use_cases/insights_api.cpp"
+        "application/use_cases/insights_api_support.cpp"
+        "application/use_cases/tracer_core_api_insights.module.cpp"
+        "infra/insights"
     FORBIDDEN_PATTERNS
         ${TT_FORBIDDEN_AGGREGATE_INCLUDE_PATTERNS}
         "^[ \t]*import[ \t]+tracer\\.core\\.application\\.query\\."
@@ -171,15 +171,15 @@ enforce_source_content_boundary(
         ${TT_FORBIDDEN_NON_OWNER_INCLUDE_PATTERNS}
         "^[ \t]*import[ \t]+tracer\\.core\\.application\\.pipeline\\."
         "^[ \t]*import[ \t]+tracer\\.core\\.application\\.query\\."
-        "^[ \t]*import[ \t]+tracer\\.core\\.application\\.reporting\\."
+        "^[ \t]*import[ \t]+tracer\\.core\\.application\\.insights\\."
         "^[ \t]*import[ \t]+tracer\\.core\\.infrastructure\\.query\\."
-        "^[ \t]*import[ \t]+tracer\\.core\\.infrastructure\\.reporting\\."
+        "^[ \t]*import[ \t]+tracer\\.core\\.infrastructure\\.insights\\."
         "^[ \t]*import[ \t]+tracer\\.core\\.infrastructure\\.exchange\\."
         "^[ \t]*#[ \t]*include[ \t]*[<\"]application/pipeline/"
         "^[ \t]*#[ \t]*include[ \t]*[<\"]application/query/"
-        "^[ \t]*#[ \t]*include[ \t]*[<\"]application/reporting/"
+        "^[ \t]*#[ \t]*include[ \t]*[<\"]application/insights/"
         "^[ \t]*#[ \t]*include[ \t]*[<\"]infra/query/"
-        "^[ \t]*#[ \t]*include[ \t]*[<\"]infra/reporting/"
+        "^[ \t]*#[ \t]*include[ \t]*[<\"]infra/insights/"
         "^[ \t]*#[ \t]*include[ \t]*[<\"]infra/exchange/"
 )
 enforce_source_content_boundary(
@@ -196,14 +196,14 @@ enforce_source_content_boundary(
     FORBIDDEN_PATTERNS
         ${TT_FORBIDDEN_NON_OWNER_INCLUDE_PATTERNS}
         "^[ \t]*import[ \t]+tracer\\.core\\.application\\.query\\."
-        "^[ \t]*import[ \t]+tracer\\.core\\.application\\.reporting\\."
+        "^[ \t]*import[ \t]+tracer\\.core\\.application\\.insights\\."
         "^[ \t]*import[ \t]+tracer\\.core\\.infrastructure\\.query\\."
-        "^[ \t]*import[ \t]+tracer\\.core\\.infrastructure\\.reporting\\."
+        "^[ \t]*import[ \t]+tracer\\.core\\.infrastructure\\.insights\\."
         "^[ \t]*import[ \t]+tracer\\.core\\.infrastructure\\.exchange\\."
         "^[ \t]*#[ \t]*include[ \t]*[<\"]application/query/"
-        "^[ \t]*#[ \t]*include[ \t]*[<\"]application/reporting/"
+        "^[ \t]*#[ \t]*include[ \t]*[<\"]application/insights/"
         "^[ \t]*#[ \t]*include[ \t]*[<\"]infra/query/"
-        "^[ \t]*#[ \t]*include[ \t]*[<\"]infra/reporting/"
+        "^[ \t]*#[ \t]*include[ \t]*[<\"]infra/insights/"
         "^[ \t]*#[ \t]*include[ \t]*[<\"]infra/exchange/"
 )
 enforce_source_content_boundary(
@@ -215,14 +215,14 @@ enforce_source_content_boundary(
         ${TT_FORBIDDEN_NON_OWNER_INCLUDE_PATTERNS}
         "^[ \t]*import[ \t]+tracer\\.core\\.application\\.pipeline\\."
         "^[ \t]*import[ \t]+tracer\\.core\\.application\\.query\\."
-        "^[ \t]*import[ \t]+tracer\\.core\\.application\\.reporting\\."
+        "^[ \t]*import[ \t]+tracer\\.core\\.application\\.insights\\."
         "^[ \t]*import[ \t]+tracer\\.core\\.infrastructure\\.query\\."
-        "^[ \t]*import[ \t]+tracer\\.core\\.infrastructure\\.reporting\\."
+        "^[ \t]*import[ \t]+tracer\\.core\\.infrastructure\\.insights\\."
         "^[ \t]*#[ \t]*include[ \t]*[<\"]application/pipeline/"
         "^[ \t]*#[ \t]*include[ \t]*[<\"]application/query/"
-        "^[ \t]*#[ \t]*include[ \t]*[<\"]application/reporting/"
+        "^[ \t]*#[ \t]*include[ \t]*[<\"]application/insights/"
         "^[ \t]*#[ \t]*include[ \t]*[<\"]infra/query/"
-        "^[ \t]*#[ \t]*include[ \t]*[<\"]infra/reporting/"
+        "^[ \t]*#[ \t]*include[ \t]*[<\"]infra/insights/"
 )
 
 if(EXISTS "${TT_TRACER_CORE_AI_SOURCE_DIR}/src")
@@ -299,8 +299,8 @@ endif()
 if(NOT TARGET tc_cap_query_lib)
     message(FATAL_ERROR "Required target missing: tc_cap_query_lib")
 endif()
-if(NOT TARGET tc_cap_reporting_lib)
-    message(FATAL_ERROR "Required target missing: tc_cap_reporting_lib")
+if(NOT TARGET tc_cap_insights_lib)
+    message(FATAL_ERROR "Required target missing: tc_cap_insights_lib")
 endif()
 if(NOT TARGET tc_cap_config_lib)
     message(FATAL_ERROR "Required target missing: tc_cap_config_lib")
@@ -318,8 +318,7 @@ enforce_core_target_link_boundary(
         taio_lib
         tc_adapters_iface
         tc_infra_full_lib
-        tc_infra_reports_lib
-        tc_infra_reporting_lib
+        tc_infra_insights_lib
         tc_infra_query_lib
         tc_infra_config_lib
         tc_infra_exchange_lib
@@ -327,11 +326,11 @@ enforce_core_target_link_boundary(
         tc_infra_persistence_runtime_lib
         tc_cap_pipeline_lib
         tc_cap_query_lib
-        tc_cap_reporting_lib
+        tc_cap_insights_lib
         tc_cap_config_lib
         tc_cap_exchange_lib
-        tc_rpt_shared_lib
-        tc_rpt_data_lib
+        tc_insights_shared_lib
+        tc_insights_data_lib
 )
 
 # 4. API Layer (Interface)
@@ -450,20 +449,20 @@ if(BUILD_TESTING)
             COMMAND tc_query_infra_smoke_tests
         )
 
-        add_executable(tc_reporting_infra_smoke_tests
-            "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/infrastructure_modules_smoke_reporting_main.cpp"
-            "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/modules_smoke/reports.cpp"
+        add_executable(tc_insights_infra_smoke_tests
+            "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/infrastructure_modules_smoke_insights_main.cpp"
+            "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/modules_smoke/insights.cpp"
         )
-        setup_app_target(tc_reporting_infra_smoke_tests NO_PCH)
-        target_include_directories(tc_reporting_infra_smoke_tests PRIVATE
+        setup_app_target(tc_insights_infra_smoke_tests NO_PCH)
+        target_include_directories(tc_insights_infra_smoke_tests PRIVATE
             "${TRACER_CORE_LIB_TESTS_ROOT}"
         )
-        target_link_libraries(tc_reporting_infra_smoke_tests PRIVATE
+        target_link_libraries(tc_insights_infra_smoke_tests PRIVATE
             tc_infra_full_lib
         )
         add_test(
-            NAME tc_reporting_infra_smoke_tests
-            COMMAND tc_reporting_infra_smoke_tests
+            NAME tc_insights_infra_smoke_tests
+            COMMAND tc_insights_infra_smoke_tests
         )
 
         add_executable(tc_exchange_infra_smoke_tests
@@ -588,23 +587,23 @@ if(BUILD_TESTING)
         COMMAND tt_query_api_tests
     )
 
-    add_executable(tt_reporting_api_tests
+    add_executable(tt_insights_api_tests
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/support/fakes.cpp"
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/support/test_support.cpp"
-        "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/modules/report_tests.cpp"
-        "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/modules/report_semantics_tests.cpp"
-        "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/test_main_reporting.cpp"
+        "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/modules/insights_tests.cpp"
+        "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/modules/insights_semantics_tests.cpp"
+        "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/test_main_insights.cpp"
     )
-    setup_app_target(tt_reporting_api_tests)
-    target_include_directories(tt_reporting_api_tests PRIVATE
+    setup_app_target(tt_insights_api_tests)
+    target_include_directories(tt_insights_api_tests PRIVATE
         "${TRACER_CORE_LIB_TESTS_ROOT}"
     )
-    target_link_libraries(tt_reporting_api_tests PRIVATE
+    target_link_libraries(tt_insights_api_tests PRIVATE
         time_tracker_application
     )
     add_test(
-        NAME tt_reporting_api_tests
-        COMMAND tt_reporting_api_tests
+        NAME tt_insights_api_tests
+        COMMAND tt_insights_api_tests
     )
 
     add_executable(tt_exchange_api_tests
@@ -649,7 +648,7 @@ if(BUILD_TESTING)
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_smoke_bootstrap_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_smoke_config_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_smoke_io_chart_tests.cpp"
-        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_smoke_io_report_tests.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_smoke_io_insights_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_smoke_io_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_shell_smoke_test_main.cpp"
     )
@@ -659,15 +658,15 @@ if(BUILD_TESTING)
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_bundle_policy_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_config_test_main.cpp"
     )
-    add_executable(tt_android_runtime_reporting_tests
+    add_executable(tt_android_runtime_insights_tests
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_test_common.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_smoke_fixture_support.cpp"
-        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_reporting_error_report_tests.cpp"
-        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_report_consistency_support.cpp"
-        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_report_consistency_data_layer_tests.cpp"
-        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_report_consistency_structure_tests.cpp"
-        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_report_consistency_tests.cpp"
-        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_reporting_test_main.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_insights_error_report_tests.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_insights_consistency_support.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_insights_consistency_data_layer_tests.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_insights_consistency_structure_tests.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_insights_consistency_tests.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_insights_test_main.cpp"
     )
     add_executable(tt_android_runtime_query_tests
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_test_common.cpp"
@@ -693,7 +692,7 @@ if(BUILD_TESTING)
         foreach(tt_android_runtime_target
             tt_android_runtime_shell_smoke_tests
             tt_android_runtime_config_tests
-            tt_android_runtime_reporting_tests
+            tt_android_runtime_insights_tests
             tt_android_runtime_query_tests
             tt_android_runtime_pipeline_regression_tests
         )
@@ -708,7 +707,7 @@ if(BUILD_TESTING)
     foreach(tt_android_runtime_target
         tt_android_runtime_shell_smoke_tests
         tt_android_runtime_config_tests
-        tt_android_runtime_reporting_tests
+        tt_android_runtime_insights_tests
         tt_android_runtime_query_tests
         tt_android_runtime_pipeline_regression_tests
     )
@@ -727,11 +726,11 @@ if(BUILD_TESTING)
     endforeach()
 
     add_executable(tt_fmt_parity_tests
-        "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/report_formatter/report_formatter_parity_fixture_tests.cpp"
-        "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/report_formatter/report_formatter_parity_md_tests.cpp"
-        "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/report_formatter/report_formatter_parity_snapshot_support.cpp"
-        "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/report_formatter/report_formatter_parity_tex_tests.cpp"
-        "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/report_formatter/report_formatter_parity_typ_tests.cpp"
+        "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/insights_formatter/insights_formatter_parity_fixture_tests.cpp"
+        "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/insights_formatter/insights_formatter_parity_md_tests.cpp"
+        "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/insights_formatter/insights_formatter_parity_snapshot_support.cpp"
+        "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/insights_formatter/insights_formatter_parity_tex_tests.cpp"
+        "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/insights_formatter/insights_formatter_parity_typ_tests.cpp"
     )
     setup_app_target(tt_fmt_parity_tests)
     target_include_directories(tt_fmt_parity_tests PRIVATE

@@ -28,16 +28,16 @@ Describe the stable responsibility split for the Windows Rust CLI.
   - convert / import / ingest / validate orchestration
 - `src/commands/handlers/query/*`
   - semantic data query + tree presentation
-- `src/commands/handlers/report/*`
-  - report render/export/chart orchestration and shared report request helpers
+- `src/commands/handlers/insights/*`
+  - insights render/export/chart orchestration and shared insights request helpers
 - `src/commands/handlers/exchange/*`
   - passphrase/input/output handling for tracer exchange flows
 - `src/commands/handlers/alias.rs`
   - activity hierarchy TOML edits and Core-backed canonical migration orchestration
 - `src/commands/handlers/activity.rs`
   - leaf activity merge orchestration using Core's canonical replacement plan
-- `src/commands/handlers/report/chart*.rs`
-  - `report chart` presenter logic
+- `src/commands/handlers/insights/chart*.rs`
+  - `insights chart` presenter logic
 - `src/core/runtime.rs`
   - public Rust-side runtime session boundary
 - `src/core/runtime/invoke.rs`
@@ -62,7 +62,7 @@ Describe the stable responsibility split for the Windows Rust CLI.
 - Change command names, subcommands, help, or flag shape:
   - start in `src/cli/*`
   - then inspect `src/main.rs`
-- Change pipeline/query/report/exchange behavior:
+- Change pipeline/query/insights/exchange behavior:
   - start in the matching `src/commands/handlers/<family>/*`
 - Change runtime bootstrap, session construction, or capability boundaries:
   - start in `src/core/runtime.rs` and `src/core/runtime/bootstrap.rs`

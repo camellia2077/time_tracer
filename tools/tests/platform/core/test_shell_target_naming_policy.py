@@ -16,7 +16,7 @@ class TestShellTargetNamingPolicy(TestCase):
     _REQUIRED_TOKENS = (
         "pipeline",
         "query",
-        "reporting",
+        "insights",
         "exchange",
         "config",
         "persistence_runtime",

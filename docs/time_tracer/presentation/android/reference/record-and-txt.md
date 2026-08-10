@@ -22,7 +22,7 @@ Describe the user-visible behavior of record creation and TXT editing flows.
   - supports two authored shapes in the `Record` tab:
     - point event: `HHMMtoken`
     - interval event: `HHMM-HHMMtoken`
-- TXT editing
+- Raw TXT editing (available from Config > Data Management)
   - supports month-wide editing (`ALL`) and day-focused editing (`DAY`)
   - uses Android native `EditText`-backed multiline editing instead of the older Compose `OutlinedTextField` path
   - exposes editor actions through the top toolbar (`Undo`, `Redo`, `Close`, `Ingest`)
@@ -33,7 +33,7 @@ Describe the user-visible behavior of record creation and TXT editing flows.
 - Unsaved draft handling
   - `TXT` editor changes do not write files until explicit `Ingest`
   - closing the TXT editor sheet discards the current editing session if `Ingest` has not happened
-  - leaving the `TXT` tab also discards the unsaved month draft that backs file persistence
+- leaving the Config page also discards the unsaved month draft that backs file persistence
   - `Config` keeps its own in-memory per-file drafts and is documented separately
 
 ## Core Flow

@@ -15,7 +15,7 @@
 | `alias` | 编辑 canonical TOML、查看层级、迁移 canonical | [alias.md](commands/alias.md) |
 | `pipeline` | TXT/config 校验、转换、导入、入库 | [pipeline.md](commands/pipeline.md) |
 | `query` | 查询数据库数据和树 | [query.md](commands/query.md) |
-| `report` | 生成报告、导出结果、生成图表 | [report.md](commands/report.md) |
+| `insights` | 生成报告、导出结果、生成图表 | [insights.md](commands/insights.md) |
 | `exchange` | tracer 数据包导入、导出、检查 | [exchange.md](commands/exchange.md) |
 | `txt` | 查看和编辑 TXT 日块 | [txt.md](commands/txt.md) |
 | `system` | 检查 CLI/Core 运行环境 | [system.md](commands/system.md) |

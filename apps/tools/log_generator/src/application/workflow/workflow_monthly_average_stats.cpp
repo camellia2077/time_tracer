@@ -244,7 +244,7 @@ auto BuildMonthlyAverageStat(
           CalculateMonthAverageFromDays(days, wake_keywords)};
 }
 
-void PrintMonthlyAverageReport(std::vector<MonthlyAverageStat> stats) {
+void PrintMonthlyAverageInsights(std::vector<MonthlyAverageStat> stats) {
   if (stats.empty()) {
     return;
   }

@@ -20,7 +20,7 @@ from .internal.files import (
 )
 from .internal.state import compute_input_hash, is_cache_hit, state_path, write_state
 from .internal.sync_gate import validate_sync_output
-from .internal.sync_report import print_bundle_diff, print_sync_header, print_sync_report
+from .internal.sync_insights import print_bundle_diff, print_sync_header, print_sync_insights
 
 
 def collect_activity_hierarchy_files(root: Path) -> list[str]:
@@ -101,7 +101,7 @@ def sync_target(
             removed=0,
         )
         print("--- apply: cache hit, synchronized platform config is up to date.")
-        print_sync_report(
+        print_sync_insights(
             target=target,
             source_root=source_root,
             output_root=output_root,
@@ -147,7 +147,7 @@ def sync_target(
             print("--- check: drift detected, synchronized platform config is stale.")
         else:
             print("--- check: synchronized platform config is up to date.")
-        print_sync_report(
+        print_sync_insights(
             target=target,
             source_root=source_root,
             output_root=output_root,
@@ -164,7 +164,7 @@ def sync_target(
     if not apply:
         print("--- dry-run: no files were written.")
         duration_ms = int((time.monotonic() - started) * 1000)
-        print_sync_report(
+        print_sync_insights(
             target=target,
             source_root=source_root,
             output_root=output_root,
@@ -195,7 +195,7 @@ def sync_target(
     )
     print("--- apply: synchronized platform config.")
     duration_ms = int((time.monotonic() - started) * 1000)
-    print_sync_report(
+    print_sync_insights(
         target=target,
         source_root=source_root,
         output_root=output_root,
