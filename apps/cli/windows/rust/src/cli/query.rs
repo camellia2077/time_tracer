@@ -7,7 +7,7 @@ pub enum DataOutputMode {
 }
 
 #[derive(Debug, Clone, ValueEnum)]
-pub enum SuggestScoreMode {
+pub enum FrequentScoreMode {
     Frequency,
     Duration,
 }
@@ -57,7 +57,7 @@ pub struct QueryDataArgs {
     #[arg(long = "activity-prefix")]
     pub activity_prefix: Option<String>,
     #[arg(long = "score-mode", value_enum)]
-    pub score_mode: Option<SuggestScoreMode>,
+    pub score_mode: Option<FrequentScoreMode>,
     #[arg(long, value_enum)]
     pub period: Option<QueryPeriod>,
     #[arg(long = "period-arg")]

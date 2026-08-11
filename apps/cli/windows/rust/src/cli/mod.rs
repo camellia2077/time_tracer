@@ -32,7 +32,7 @@ pub use pipeline::{
 };
 pub use query::{
     DataOutputMode, QueryArgs, QueryCommand, QueryDataArgs, QueryPeriod, QueryTreeArgs,
-    SuggestScoreMode,
+    FrequentScoreMode,
 };
 pub use insights::{
     InsightsArgs, InsightsCommand, InsightsExportArgs, InsightsExportPeriod, InsightsFormat,

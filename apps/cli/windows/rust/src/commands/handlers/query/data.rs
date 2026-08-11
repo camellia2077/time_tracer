@@ -1,6 +1,6 @@
 use serde_json::json;
 
-use crate::cli::{QueryDataArgs, QueryPeriod, SuggestScoreMode};
+use crate::cli::{QueryDataArgs, QueryPeriod, FrequentScoreMode};
 use crate::commands::handler::{CommandContext, CommandHandler};
 use crate::error::AppError;
 
@@ -70,7 +70,7 @@ pub(crate) fn run_data_with_port(
         request["activity_prefix"] = json!(v);
     }
     if let Some(v) = args.score_mode {
-        request["activity_score_by_duration"] = json!(matches!(v, SuggestScoreMode::Duration));
+        request["activity_score_by_duration"] = json!(matches!(v, FrequentScoreMode::Duration));
     }
     if let Some(v) = args.period {
         request["tree_period"] = json!(query_period_token(v));

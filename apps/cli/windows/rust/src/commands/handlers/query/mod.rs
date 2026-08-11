@@ -67,7 +67,7 @@ impl CommandHandler<QueryArgs> for QueryHandler {
 mod tests {
     use serde_json::Value;
 
-    use crate::cli::{QueryDataArgs, QueryPeriod, QueryTreeArgs, SuggestScoreMode};
+    use crate::cli::{QueryDataArgs, QueryPeriod, QueryTreeArgs, FrequentScoreMode};
     use crate::commands::testing::{RecordedQuerySession, default_context};
     use crate::core::runtime::TreeResponse;
 
@@ -108,7 +108,7 @@ mod tests {
 
         run_data_with_port(
             QueryDataArgs {
-                action: "activity-suggest".to_string(),
+                action: "activity-frequent".to_string(),
                 data_output: Some(crate::cli::DataOutputMode::Json),
                 year: None,
                 month: None,
@@ -124,7 +124,7 @@ mod tests {
                 top: Some(5),
                 lookback_days: Some(10),
                 activity_prefix: Some("stu".to_string()),
-                score_mode: Some(SuggestScoreMode::Duration),
+                score_mode: Some(FrequentScoreMode::Duration),
                 period: Some(QueryPeriod::Day),
                 period_arg: Some("20260103".to_string()),
                 level: Some(2),
@@ -137,7 +137,7 @@ mod tests {
 
         assert_eq!(recorded.command_names(), vec!["query".to_string()]);
         let request = recorded.requests().remove(0);
-        assert_eq!(request["action"], "activity-suggest");
+        assert_eq!(request["action"], "activity-frequent");
         assert_eq!(request["output_mode"], "json");
         assert_eq!(request["root"], "study");
         assert_eq!(request["top_n"], 5);
