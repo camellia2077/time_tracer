@@ -14,7 +14,7 @@ internal fun rememberTracerTomlFolderImportAction(
     coroutineScope: kotlinx.coroutines.CoroutineScope,
     dataViewModel: DataViewModel,
     configGateway: ConfigGateway,
-    configViewModel: ConfigViewModel
+    activityHierarchyEditorViewModel: ActivityHierarchyEditorViewModel
 ): () -> Unit {
     val transferCoordinator = rememberTracerScreenTransferCoordinator(
         context = context,
@@ -85,7 +85,7 @@ internal fun rememberTracerTomlFolderImportAction(
                     }
 
                     val aliasError = if (isAliasConfigFilePath(document.relativePath)) {
-                        configViewModel.applyImportedAliasToml(document.relativePath, content)
+                        activityHierarchyEditorViewModel.applyImportedAliasToml(document.relativePath, content)
                     } else {
                         null
                     }
@@ -121,7 +121,7 @@ internal fun rememberTracerTomlFolderImportAction(
                 )
             },
             afterTransfer = { _, _ ->
-                configViewModel.refreshConfigFiles()
+                activityHierarchyEditorViewModel.openActivityCategories()
             }
         )
     }

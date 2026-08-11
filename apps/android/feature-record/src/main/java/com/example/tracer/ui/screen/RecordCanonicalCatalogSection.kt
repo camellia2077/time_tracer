@@ -71,7 +71,7 @@ internal fun RecordCanonicalCatalogSection(
     isLoading: Boolean,
     roots: List<CanonicalPathNode>,
     statusText: String,
-    displayMode: RecordSuggestionOutputMode,
+    displayMode: RecordFrequentOutputMode,
     target: CanonicalBrowserTarget? = null,
     collapsedRootPaths: Set<String>,
     orderedRootPaths: List<String>,

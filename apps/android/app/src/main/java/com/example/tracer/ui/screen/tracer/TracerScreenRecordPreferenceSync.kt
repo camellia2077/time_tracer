@@ -3,46 +3,46 @@ package com.example.tracer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import com.example.tracer.PersistedRecordInputSnapshot
-import com.example.tracer.data.RecordSuggestionPreferences
+import com.example.tracer.data.RecordFrequentPreferences
 
 @Composable
 internal fun SyncTracerScreenRecordPreferences(
-    recordSuggestionPreferences: RecordSuggestionPreferences,
+    recordFrequentPreferences: RecordFrequentPreferences,
     quickActivities: List<String>,
     persistedRecordInput: PersistedRecordInputSnapshot?,
     recordViewModel: RecordViewModel
 ) {
     LaunchedEffect(
-        recordSuggestionPreferences.lookbackDays,
-        recordSuggestionPreferences.topN,
-        recordSuggestionPreferences.outputMode,
-        recordSuggestionPreferences.canonicalCatalogDisplayMode,
+        recordFrequentPreferences.lookbackDays,
+        recordFrequentPreferences.topN,
+        recordFrequentPreferences.outputMode,
+        recordFrequentPreferences.canonicalCatalogDisplayMode,
         quickActivities,
-        recordSuggestionPreferences.quickAccessCardExpanded,
-        recordSuggestionPreferences.assistSettingsExpanded,
-        recordSuggestionPreferences.collapsedCanonicalRootPaths,
-        recordSuggestionPreferences.orderedCanonicalRootPaths
+        recordFrequentPreferences.quickAccessCardExpanded,
+        recordFrequentPreferences.assistSettingsExpanded,
+        recordFrequentPreferences.collapsedCanonicalRootPaths,
+        recordFrequentPreferences.orderedCanonicalRootPaths
     ) {
-        recordViewModel.updateSuggestionPreferences(
-            lookbackDays = recordSuggestionPreferences.lookbackDays,
-            topN = recordSuggestionPreferences.topN
+        recordViewModel.updateFrequentPreferences(
+            lookbackDays = recordFrequentPreferences.lookbackDays,
+            topN = recordFrequentPreferences.topN
         )
-        recordViewModel.updateSuggestionOutputMode(recordSuggestionPreferences.outputMode)
+        recordViewModel.updateFrequentOutputMode(recordFrequentPreferences.outputMode)
         recordViewModel.updateCanonicalCatalogDisplayMode(
-            recordSuggestionPreferences.canonicalCatalogDisplayMode
+            recordFrequentPreferences.canonicalCatalogDisplayMode
         )
         recordViewModel.updateQuickActivities(quickActivities)
         recordViewModel.updateQuickAccessCardExpanded(
-            recordSuggestionPreferences.quickAccessCardExpanded
+            recordFrequentPreferences.quickAccessCardExpanded
         )
         recordViewModel.updateAssistUiState(
-            assistSettingsExpanded = recordSuggestionPreferences.assistSettingsExpanded
+            assistSettingsExpanded = recordFrequentPreferences.assistSettingsExpanded
         )
         recordViewModel.updateCollapsedCanonicalRootPaths(
-            recordSuggestionPreferences.collapsedCanonicalRootPaths
+            recordFrequentPreferences.collapsedCanonicalRootPaths
         )
         recordViewModel.updateOrderedCanonicalRootPaths(
-            recordSuggestionPreferences.orderedCanonicalRootPaths
+            recordFrequentPreferences.orderedCanonicalRootPaths
         )
     }
 

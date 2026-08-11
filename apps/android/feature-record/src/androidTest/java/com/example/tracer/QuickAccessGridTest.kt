@@ -43,8 +43,8 @@ class QuickAccessGridTest {
                     assistSettingsExpanded = true,
                     onToggleAssistSettings = {},
                     onOpenQuickAccessCanonicalCatalog = { openCount += 1 },
-                    suggestionsVisible = false,
-                    onToggleSuggestions = {},
+                    frequentActivitiesVisible = false,
+                    onToggleFrequentActivities = {},
                     quickActivitySearch = "",
                     onQuickActivitySearchChange = {},
                     maxQuickActivityCount = 12

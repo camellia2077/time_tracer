@@ -44,20 +44,20 @@ internal class RecordIntentHandler(
     fun updateEditableHistoryContent(state: RecordUiState, value: String): RecordUiState =
         RecordStateReducer.updateEditableHistoryContent(state, value)
 
-    fun updateSuggestionPreferences(
+    fun updateFrequentPreferences(
         state: RecordUiState,
         lookbackDays: Int,
         topN: Int
-    ): RecordUiState = RecordStateReducer.updateSuggestionPreferences(state, lookbackDays, topN)
+    ): RecordUiState = RecordStateReducer.updateFrequentPreferences(state, lookbackDays, topN)
 
-    fun updateSuggestionOutputMode(
+    fun updateFrequentOutputMode(
         state: RecordUiState,
-        value: RecordSuggestionOutputMode
-    ): RecordUiState = RecordStateReducer.updateSuggestionOutputMode(state, value)
+        value: RecordFrequentOutputMode
+    ): RecordUiState = RecordStateReducer.updateFrequentOutputMode(state, value)
 
     fun updateCanonicalCatalogDisplayMode(
         state: RecordUiState,
-        value: RecordSuggestionOutputMode
+        value: RecordFrequentOutputMode
     ): RecordUiState = RecordStateReducer.updateCanonicalCatalogDisplayMode(state, value)
 
     fun updateQuickActivities(state: RecordUiState, values: List<String>): RecordUiState =
@@ -91,11 +91,11 @@ internal class RecordIntentHandler(
         paths: List<String>
     ): RecordUiState = RecordStateReducer.updateOrderedCanonicalRootPaths(state, paths)
 
-    fun hideSuggestions(state: RecordUiState): RecordUiState =
-        RecordStateReducer.hideSuggestions(state)
+    fun hideFrequentActivities(state: RecordUiState): RecordUiState =
+        RecordStateReducer.hideFrequentActivities(state)
 
-    fun showSuggestionsLoading(state: RecordUiState): RecordUiState =
-        RecordStateReducer.showSuggestionsLoading(state)
+    fun showFrequentActivitiesLoading(state: RecordUiState): RecordUiState =
+        RecordStateReducer.showFrequentActivitiesLoading(state)
 
     fun hideCanonicalCatalog(state: RecordUiState): RecordUiState =
         RecordStateReducer.hideCanonicalCatalog(state)
@@ -105,22 +105,22 @@ internal class RecordIntentHandler(
         target: CanonicalBrowserTarget
     ): RecordUiState = RecordStateReducer.showCanonicalCatalogLoading(state, target)
 
-    suspend fun loadActivitySuggestions(state: RecordUiState): RecordUiState =
-        useCaseCaller.loadActivitySuggestions(
+    suspend fun loadFrequentActivities(state: RecordUiState): RecordUiState =
+        useCaseCaller.loadFrequentActivities(
             state = state,
-            lookbackDays = state.suggestionLookbackDays,
-            topN = state.suggestionTopN
+            lookbackDays = state.frequentLookbackDays,
+            topN = state.frequentTopN
         )
 
     suspend fun loadCanonicalCatalog(state: RecordUiState): RecordUiState =
         useCaseCaller.loadCanonicalCatalog(state)
 
-    suspend fun applySuggestedActivity(
+    suspend fun applyFrequentActivity(
         state: RecordUiState,
-        suggestedActivityToken: String
-    ): RecordUiState = useCaseCaller.applySuggestedActivity(
+        frequentActivityToken: String
+    ): RecordUiState = useCaseCaller.applyFrequentActivity(
         state = state,
-        suggestedActivityToken = suggestedActivityToken
+        frequentActivityToken = frequentActivityToken
     )
 
     fun applyCanonicalCatalogEntry(

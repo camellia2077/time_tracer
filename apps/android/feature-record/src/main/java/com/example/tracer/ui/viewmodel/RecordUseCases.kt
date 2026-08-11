@@ -241,24 +241,24 @@ class RecordUseCases(
         return historyNavigator.refreshAndOpen(state, currentMonth, result.message)
     }
 
-    suspend fun loadActivitySuggestions(
+    suspend fun loadFrequentActivities(
         state: RecordUiState,
         lookbackDays: Int = 7,
         topN: Int = 5
     ): RecordUiState {
         val anchorDateIso = datePolicy.resolveTargetDateIso(state.logicalDayTarget)
-        logActivitySuggestionsRequestStart(
+        logFrequentActivitiesRequestStart(
             logicalDayTarget = state.logicalDayTarget,
             lookbackDays = lookbackDays,
             topN = topN,
             anchorDateIso = anchorDateIso
         )
-        val result = queryGateway.queryActivitySuggestions(
+        val result = queryGateway.queryFrequentActivities(
             lookbackDays = lookbackDays,
             topN = topN,
             anchorDateIso = anchorDateIso
         )
-        logActivitySuggestionsRequestResult(
+        logFrequentActivitiesRequestResult(
             logicalDayTarget = state.logicalDayTarget,
             lookbackDays = lookbackDays,
             topN = topN,
@@ -267,8 +267,8 @@ class RecordUseCases(
         )
         if (!result.ok) {
             return state.copy(
-                suggestedActivities = emptyList(),
-                isSuggestionsLoading = false,
+                frequentActivities = emptyList(),
+                isFrequentActivitiesLoading = false,
                 statusText = result.message
             )
         }
@@ -280,18 +280,18 @@ class RecordUseCases(
         }
 
         return state.copy(
-            suggestedActivities = result.suggestions.mapNotNull { canonicalToken ->
+            frequentActivities = result.frequentActivities.mapNotNull { canonicalToken ->
                 val trimmedCanonical = canonicalToken.trim()
                 if (trimmedCanonical.isEmpty()) {
                     null
                 } else {
-                    RecordSuggestedActivity(
+                    RecordFrequentActivity(
                         canonicalToken = trimmedCanonical,
                         aliasToken = aliasByCanonical[trimmedCanonical].orEmpty()
                     )
                 }
             },
-            isSuggestionsLoading = false,
+            isFrequentActivitiesLoading = false,
             statusText = result.message
         )
     }
@@ -315,64 +315,64 @@ class RecordUseCases(
         }
     }
 
-    suspend fun applySuggestedActivity(
+    suspend fun applyFrequentActivity(
         state: RecordUiState,
-        suggestedActivityToken: String
+        frequentActivityToken: String
     ): RecordUiState {
-        val trimmedToken = suggestedActivityToken.trim()
-        val matchedSuggestion = state.suggestedActivities.firstOrNull { suggestion ->
-            suggestion.canonicalToken == trimmedToken || suggestion.aliasToken == trimmedToken
+        val trimmedToken = frequentActivityToken.trim()
+        val matchedFrequent = state.frequentActivities.firstOrNull { frequent ->
+            frequent.canonicalToken == trimmedToken || frequent.aliasToken == trimmedToken
         }
-        val trimmedCanonical = matchedSuggestion?.canonicalToken ?: trimmedToken
+        val trimmedCanonical = matchedFrequent?.canonicalToken ?: trimmedToken
         if (trimmedCanonical.isEmpty()) {
-            logSuggestedActivityApply(
-                canonicalActivityName = suggestedActivityToken,
-                outputMode = state.suggestionOutputMode,
+            logFrequentActivityApply(
+                canonicalActivityName = frequentActivityToken,
+                outputMode = state.frequentOutputMode,
                 appliedToken = null,
-                status = "ignored blank canonical suggestion."
+                status = "ignored blank canonical frequent."
             )
-            return state.copy(suggestionsVisible = false)
+            return state.copy(frequentActivitiesVisible = false)
         }
 
-        if (state.suggestionOutputMode == RecordSuggestionOutputMode.CANONICAL) {
-            logSuggestedActivityApply(
+        if (state.frequentOutputMode == RecordFrequentOutputMode.CANONICAL) {
+            logFrequentActivityApply(
                 canonicalActivityName = trimmedCanonical,
-                outputMode = state.suggestionOutputMode,
+                outputMode = state.frequentOutputMode,
                 appliedToken = trimmedCanonical,
-                status = "applied canonical suggested activity."
+                status = "applied canonical frequent activity."
             )
             return state.copy(
                 recordContent = trimmedCanonical,
-                suggestionsVisible = false,
+                frequentActivitiesVisible = false,
                 statusText = ""
             )
         }
 
-        val cachedAlias = matchedSuggestion?.aliasToken?.trim().orEmpty()
+        val cachedAlias = matchedFrequent?.aliasToken?.trim().orEmpty()
         if (cachedAlias.isNotEmpty()) {
-            logSuggestedActivityApply(
+            logFrequentActivityApply(
                 canonicalActivityName = trimmedCanonical,
-                outputMode = state.suggestionOutputMode,
+                outputMode = state.frequentOutputMode,
                 appliedToken = cachedAlias,
-                status = "applied suggested activity alias."
+                status = "applied frequent activity alias."
             )
             return state.copy(
                 recordContent = cachedAlias,
-                suggestionsVisible = false,
+                frequentActivitiesVisible = false,
                 statusText = ""
             )
         }
 
         val mappingResult = queryGateway.listActivityHierarchyLeafMappings()
         if (!mappingResult.ok) {
-            logSuggestedActivityApply(
+            logFrequentActivityApply(
                 canonicalActivityName = trimmedCanonical,
-                outputMode = state.suggestionOutputMode,
+                outputMode = state.frequentOutputMode,
                 appliedToken = null,
                 status = mappingResult.message
             )
             return state.copy(
-                suggestionsVisible = false,
+                frequentActivitiesVisible = false,
                 statusText = mappingResult.message
             )
         }
@@ -384,28 +384,28 @@ class RecordUseCases(
             .orEmpty()
         if (resolvedAlias.isEmpty()) {
             val message =
-                "Suggested activity unavailable for authoring: no alias mapped for $trimmedCanonical."
-            logSuggestedActivityApply(
+                "Frequent activity unavailable for authoring: no alias mapped for $trimmedCanonical."
+            logFrequentActivityApply(
                 canonicalActivityName = trimmedCanonical,
-                outputMode = state.suggestionOutputMode,
+                outputMode = state.frequentOutputMode,
                 appliedToken = null,
                 status = message
             )
             return state.copy(
-                suggestionsVisible = false,
+                frequentActivitiesVisible = false,
                 statusText = message
             )
         }
 
-        logSuggestedActivityApply(
+        logFrequentActivityApply(
             canonicalActivityName = trimmedCanonical,
-            outputMode = state.suggestionOutputMode,
+            outputMode = state.frequentOutputMode,
             appliedToken = resolvedAlias,
-            status = "applied suggested activity alias."
+            status = "applied frequent activity alias."
         )
         return state.copy(
             recordContent = resolvedAlias,
-            suggestionsVisible = false,
+            frequentActivitiesVisible = false,
             statusText = ""
         )
     }
@@ -429,16 +429,16 @@ class RecordUseCases(
             selectedHistoryContent = "",
             editableHistoryContent = "",
             historyDraftsByFile = emptyMap(),
-            suggestedActivities = emptyList(),
+            frequentActivities = emptyList(),
             canonicalCatalogRoots = emptyList(),
             canonicalCatalogStatusText = "",
             lastRecordedActivityHierarchyLeaf = "",
             lastRecordedDuration = "",
-            suggestionsVisible = false,
+            frequentActivitiesVisible = false,
             isCanonicalCatalogVisible = false,
             canonicalBrowserTarget = null,
             isCanonicalCatalogLoading = false,
-            isSuggestionsLoading = false,
+            isFrequentActivitiesLoading = false,
             statusText = "TXT editor state reset."
         )
     }
@@ -623,7 +623,7 @@ class RecordUseCases(
 
     private companion object {
         private val MONTH_KEY_REGEX = Regex("""\d{4}-\d{2}""")
-        private const val SUGGESTION_LOG_TAG = "TimeTracerSuggestions"
+        private const val FREQUENT_LOG_TAG = "TimeTracerFrequentActivities"
         private const val SECONDS_PER_MINUTE = 60
         private const val SECONDS_PER_HOUR = 60 * SECONDS_PER_MINUTE
     }

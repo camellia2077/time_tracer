@@ -45,56 +45,8 @@ private data class LibrariesLoadState(
 
 @Composable
 internal fun ConfigSection(
-    selectedCategory: ConfigCategory,
-    aliasFiles: List<ConfigTomlFileEntry>,
-    chartFiles: List<ConfigTomlFileEntry>,
-    metaFiles: List<ConfigTomlFileEntry>,
-    insightsFiles: List<ConfigTomlFileEntry>,
-    selectedFilePath: String,
-    selectedFileDisplayName: String,
-    selectedFileContent: String,
-    editableContent: String,
-    aliasEditorMode: AliasEditorMode,
-    aliasDocumentDraft: ActivityHierarchyDocument?,
-    aliasEntryMovePlan: AliasEntryMovePlan?,
-    aliasEntryMoveDestinations: List<AliasEntryMoveDestinationDocument>,
-    aliasEntryMoveDestinationsLoading: Boolean,
-    aliasAdvancedTomlDraft: String,
-    aliasEditorErrorMessage: String,
-    autoSaveStatus: ConfigAutoSaveStatus,
     themeConfig: com.example.tracer.data.ThemeConfig,
-    onSelectAlias: () -> Unit,
-    onSelectCharts: () -> Unit,
-    onSelectMeta: () -> Unit,
-    onSelectInsights: () -> Unit,
-    onRefreshFiles: () -> Unit,
-    onOpenFile: (String) -> Unit,
-    onCreateAliasTomlFile: (String) -> Unit,
-    onDeleteAliasTomlFile: () -> Unit,
-    onRenameAliasCategory: (String) -> Unit,
     onCopyDiagnosticsPayload: () -> Unit,
-    onEditableContentChange: (String) -> Unit,
-    onSelectAliasStructuredMode: () -> Unit,
-    onSelectAliasAdvancedMode: () -> Unit,
-    onAliasAdvancedTomlChange: (String) -> Unit,
-    onAddAliasGroup: (String?, String) -> Unit,
-    onDeleteAliasGroup: (String) -> Unit,
-    onRenameAliasGroup: (String, String) -> Unit,
-    onAddAliasEntry: (String?, String, List<String>) -> Unit,
-    onUpdateAliasEntry: (String, String, List<String>) -> Unit,
-    onMergeAliasEntry: (String, String) -> Unit,
-    onPromoteAliasEntry: (String) -> Unit,
-    onRenameGroupAlias: (String, String, String) -> Unit,
-    onAddGroupAlias: (String, String) -> Unit,
-    onUpdateGroupAliases: (String, List<String>) -> Unit,
-    onDeleteAliasEntry: (String) -> Unit,
-    onPrepareAliasEntryMove: (String) -> Unit,
-    onPrepareAliasGroupMove: (String) -> Unit,
-    onPreviewAliasEntryMove: (String, AliasEntryMoveTarget) -> Unit,
-    onPreviewAliasGroupMove: (String, AliasEntryMoveTarget) -> Unit,
-    onConfirmAliasEntryMovePlan: () -> Unit,
-    onDiscardAliasEntryMovePlan: () -> Unit,
-    onSaveCurrentFile: () -> Unit,
     onThemeEvent: (com.example.tracer.ui.viewmodel.ThemeEvent) -> Unit,
     insightsPiePalettePreset: InsightsPiePalettePreset,
     onInsightsPiePalettePresetChange: (InsightsPiePalettePreset) -> Unit,
@@ -105,18 +57,6 @@ internal fun ConfigSection(
     extraContent: @Composable () -> Unit = {}
 ) {
     var showAboutPage by rememberSaveable { mutableStateOf(false) }
-    val visibleFiles = when (selectedCategory) {
-        ConfigCategory.ALIAS -> aliasFiles.filter { isAliasConfigFilePath(it.relativePath) }
-        ConfigCategory.CHARTS -> chartFiles
-        ConfigCategory.META -> metaFiles
-        ConfigCategory.INSIGHTS -> insightsFiles
-    }.map { entry ->
-        entry.copy(displayName = displayNameForCurrentScope(entry, selectedCategory))
-    }
-    val scopedSelectedFileDisplayName = selectedFileDisplayName.removeCurrentScopePrefix(
-        selectedCategory = selectedCategory
-    )
-    val usesAliasStructuredEditor = selectedFilePath.isAliasFilePathForConfigScreen()
 
     if (showAboutPage) {
         ConfigAboutPage(
@@ -145,79 +85,6 @@ internal fun ConfigSection(
             onSelected = onInsightsAverageDayBasisChange
         )
 
-        ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                ConfigCategorySwitchCard(
-                    selectedCategory = selectedCategory,
-                    onSelectAlias = onSelectAlias,
-                    onSelectCharts = onSelectCharts,
-                    onSelectMeta = onSelectMeta,
-                    onSelectInsights = onSelectInsights,
-                    onRefreshFiles = onRefreshFiles
-                )
-
-                if (visibleFiles.isNotEmpty() || selectedCategory == ConfigCategory.ALIAS) {
-                    HorizontalDivider()
-                }
-
-                if (visibleFiles.isNotEmpty()) {
-                    if (usesAliasStructuredEditor) {
-                        ConfigAliasEditorCard(
-                    aliasFiles = visibleFiles,
-                    selectedFileDisplayName = scopedSelectedFileDisplayName,
-                    selectedFileContent = selectedFileContent,
-                    mode = aliasEditorMode,
-                    document = aliasDocumentDraft,
-                    movePlan = aliasEntryMovePlan,
-                    moveDestinations = aliasEntryMoveDestinations,
-                    moveDestinationsLoading = aliasEntryMoveDestinationsLoading,
-                    advancedTomlDraft = aliasAdvancedTomlDraft,
-                    errorMessage = aliasEditorErrorMessage,
-                    onCreateAliasTomlFile = onCreateAliasTomlFile,
-                    onSelectAliasFile = onOpenFile,
-                    onDeleteAliasTomlFile = onDeleteAliasTomlFile,
-                    onRenameCategory = onRenameAliasCategory,
-                    onSelectStructuredMode = onSelectAliasStructuredMode,
-                    onSelectAdvancedMode = onSelectAliasAdvancedMode,
-                    onAdvancedTomlChange = onAliasAdvancedTomlChange,
-                    onAddGroup = onAddAliasGroup,
-                    onDeleteGroup = onDeleteAliasGroup,
-                    onRenameGroup = onRenameAliasGroup,
-                    onAddEntry = onAddAliasEntry,
-                    onUpdateEntry = onUpdateAliasEntry,
-                    onMergeEntry = onMergeAliasEntry,
-                    onPromoteEntry = onPromoteAliasEntry,
-                    onRenameGroupAlias = onRenameGroupAlias,
-                    onAddGroupAlias = onAddGroupAlias,
-                    onUpdateGroupAliases = onUpdateGroupAliases,
-                    onDeleteEntry = onDeleteAliasEntry,
-                    onPrepareEntryMove = onPrepareAliasEntryMove,
-                    onPrepareGroupMove = onPrepareAliasGroupMove,
-                    onPreviewEntryMove = onPreviewAliasEntryMove,
-                    onPreviewGroupMove = onPreviewAliasGroupMove,
-                    onConfirmMovePlan = onConfirmAliasEntryMovePlan,
-                    onDiscardMovePlan = onDiscardAliasEntryMovePlan,
-                    onSave = onSaveCurrentFile
-                        )
-                    } else {
-                        ConfigEditorCard(
-                    selectedFileDisplayName = scopedSelectedFileDisplayName,
-                    selectedFileContent = selectedFileContent,
-                    editableContent = editableContent,
-                    autoSaveStatus = autoSaveStatus,
-                    onEditableContentChange = onEditableContentChange,
-                    onSaveCurrentFile = onSaveCurrentFile,
-                    readOnly = selectedCategory != ConfigCategory.ALIAS
-                        )
-                    }
-                } else if (selectedCategory == ConfigCategory.ALIAS) {
-                    ConfigAliasEmptyFileCard(
-                        onCreateAliasTomlFile = onCreateAliasTomlFile
-                    )
-                }
-            }
-        }
-
         extraContent()
 
         ConfigAboutCard(
@@ -226,57 +93,6 @@ internal fun ConfigSection(
         )
     }
 }
-
-@Composable
-private fun ConfigAliasEmptyFileCard(
-    onCreateAliasTomlFile: (String) -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-            Text(
-                text = stringResource(R.string.config_alias_empty_title),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Text(
-                text = stringResource(R.string.config_alias_empty_message),
-                style = MaterialTheme.typography.bodyMedium
-            )
-            ConfigEditorFileControls(
-                onCreateAliasTomlFile = onCreateAliasTomlFile
-            )
-    }
-}
-
-private fun displayNameForCurrentScope(
-    entry: ConfigTomlFileEntry,
-    selectedCategory: ConfigCategory
-): String {
-    // Keep canonical path and stable displayName untouched in state/runtime.
-    // Only trim the in-scope subcategory prefix at render time when the user
-    // has already opened the Alias category.
-    return entry.displayName.removeCurrentScopePrefix(
-        selectedCategory = selectedCategory
-    )
-}
-
-private fun String.removeCurrentScopePrefix(
-    selectedCategory: ConfigCategory
-): String {
-    return if (selectedCategory == ConfigCategory.ALIAS) {
-        removePrefix("user/activity_hierarchy/")
-    } else {
-        this
-    }
-}
-
-private fun String.isAliasFilePathForConfigScreen(): Boolean =
-        startsWith("user/activity_hierarchy/") &&
-        endsWith(".toml", ignoreCase = true)
 
 @Composable
 private fun ConfigAboutCard(

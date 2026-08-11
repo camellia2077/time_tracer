@@ -44,13 +44,13 @@ class QueryInsightsCompositionPipelineTest {
 private class FakeCompositionPipelineQueryGateway : QueryGateway {
     var compositionQueryCount: Int = 0
 
-    override suspend fun queryActivitySuggestions(
+    override suspend fun queryFrequentActivities(
         lookbackDays: Int,
         topN: Int,
         anchorDateIso: String?
-    ): ActivitySuggestionResult = ActivitySuggestionResult(
+    ): ActivityFrequentResult = ActivityFrequentResult(
         ok = true,
-        suggestions = emptyList(),
+        frequentActivities = emptyList(),
         message = "ok"
     )
 

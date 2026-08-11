@@ -41,7 +41,7 @@ import kotlinx.coroutines.delay
 
 
 @Composable
-internal fun ConfigAliasEditorCard(
+internal fun ActivityHierarchyEditorCard(
     aliasFiles: List<ConfigTomlFileEntry>,
     selectedFileDisplayName: String,
     selectedFileContent: String,
@@ -148,7 +148,7 @@ internal fun ConfigAliasEditorCard(
 }
             }
 
-            ConfigEditorFileControls(
+            ActivityHierarchyFileControls(
                 onCreateAliasTomlFile = onCreateAliasTomlFile
             )
 
@@ -495,7 +495,7 @@ internal fun ConfigAliasEditorCard(
     }
 
     if (showDeleteAliasTomlDialog) {
-        ConfigAliasTomlDeleteDialog(
+        ActivityHierarchyTomlDeleteDialog(
             fileName = selectedFileDisplayName,
             onDismiss = { showDeleteAliasTomlDialog = false },
             onConfirm = {

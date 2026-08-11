@@ -18,33 +18,33 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
 @Composable
-internal fun ConfigAutoSaveStatusText(
-    autoSaveStatus: ConfigAutoSaveStatus,
+internal fun ActivityHierarchySaveStatusText(
+    autoSaveStatus: ActivityHierarchySaveStatus,
     modifier: Modifier = Modifier
 ) {
     val (text, icon, color) = when (autoSaveStatus) {
-        ConfigAutoSaveStatus.IDLE -> {
+        ActivityHierarchySaveStatus.IDLE -> {
             Triple(
                 stringResource(R.string.config_auto_save_status_idle),
                 Icons.Filled.Info,
                 MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        ConfigAutoSaveStatus.SAVING -> {
+        ActivityHierarchySaveStatus.SAVING -> {
             Triple(
                 stringResource(R.string.config_auto_save_status_saving),
                 Icons.Filled.Sync,
                 MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        ConfigAutoSaveStatus.SAVED -> {
+        ActivityHierarchySaveStatus.SAVED -> {
             Triple(
                 stringResource(R.string.config_auto_save_status_saved),
                 Icons.Filled.CheckCircle,
                 MaterialTheme.colorScheme.primary
             )
         }
-        ConfigAutoSaveStatus.FAILED -> {
+        ActivityHierarchySaveStatus.FAILED -> {
             Triple(
                 stringResource(R.string.config_auto_save_status_failed),
                 Icons.Filled.Error,

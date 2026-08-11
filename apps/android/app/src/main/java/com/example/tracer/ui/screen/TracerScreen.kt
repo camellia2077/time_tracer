@@ -106,19 +106,17 @@ fun TracerScreen(
             )
         }
     )
-    val configViewModel: ConfigViewModel = viewModel(
+    val activityHierarchyEditorViewModel: ActivityHierarchyEditorViewModel = viewModel(
         factory = remember(
             configGateway,
             activityHierarchyGateway,
             activityHierarchyMigrationGateway,
-            txtStorageGateway,
             quickActivitiesPreferenceGateway
         ) {
-            ConfigViewModelFactory(
+            ActivityHierarchyEditorViewModelFactory(
                 configGateway = configGateway,
                 activityHierarchyGateway = activityHierarchyGateway,
                 activityHierarchyMigrationGateway = activityHierarchyMigrationGateway,
-                txtStorageGateway = txtStorageGateway,
                 quickActivitiesPreferenceGateway = quickActivitiesPreferenceGateway
             )
         }
@@ -127,12 +125,12 @@ fun TracerScreen(
     val dataUiState = dataViewModel.uiState
     val queryUiState = queryInsightsViewModel.uiState
     val recordUiState = recordViewModel.uiState
-    val configUiState = configViewModel.uiState
-    val recordSuggestionPreferences by userPreferencesRepository.recordSuggestionPreferences.collectAsState(
-        initial = com.example.tracer.data.RecordSuggestionPreferences(
-            lookbackDays = com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_SUGGEST_LOOKBACK_DAYS,
-            topN = com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_SUGGEST_TOP_N,
-            outputMode = com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_SUGGEST_OUTPUT_MODE,
+    val activityHierarchyEditorState = activityHierarchyEditorViewModel.uiState
+    val recordFrequentPreferences by userPreferencesRepository.recordFrequentPreferences.collectAsState(
+        initial = com.example.tracer.data.RecordFrequentPreferences(
+            lookbackDays = com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_FREQUENT_LOOKBACK_DAYS,
+            topN = com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_FREQUENT_TOP_N,
+            outputMode = com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_FREQUENT_OUTPUT_MODE,
             canonicalCatalogDisplayMode =
                 com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_CANONICAL_CATALOG_DISPLAY_MODE,
             quickActivities = emptyList(),
@@ -222,14 +220,14 @@ fun TracerScreen(
     }
 
     SyncTracerScreenRecordPreferences(
-        recordSuggestionPreferences = recordSuggestionPreferences,
+        recordFrequentPreferences = recordFrequentPreferences,
         quickActivities = quickActivities,
         persistedRecordInput = persistedRecordInput,
         recordViewModel = recordViewModel
     )
 
-    LaunchedEffect(configUiState.txtReloadRequestVersion) {
-        if (configUiState.txtReloadRequestVersion == 0L) {
+    LaunchedEffect(activityHierarchyEditorState.txtReloadRequestVersion) {
+        if (activityHierarchyEditorState.txtReloadRequestVersion == 0L) {
             return@LaunchedEffect
         }
         val selectedHistoryFile = recordViewModel.uiState.selectedHistoryFile
@@ -247,8 +245,7 @@ fun TracerScreen(
         args = TracerTabStatusArgs(
             dataStatusText = dataUiState.statusText,
             queryStatusText = queryUiState.statusText,
-            recordStatusText = recordUiState.statusText,
-            configStatusText = configUiState.statusText
+            recordStatusText = recordUiState.statusText
         )
     )
     val snackbarHostState = remember { SnackbarHostState() }
@@ -268,7 +265,7 @@ fun TracerScreen(
         recordViewModel = recordViewModel,
         dataViewModel = dataViewModel,
         configGateway = configGateway,
-        configViewModel = configViewModel,
+        activityHierarchyEditorViewModel = activityHierarchyEditorViewModel,
         onQuickAccessReload = {
             val importedQuickActivities = runCatching {
                 quickActivitiesPreferenceGateway.getQuickActivities()
@@ -291,7 +288,6 @@ fun TracerScreen(
             queryGateway = queryGateway,
             queryInsightsViewModel = queryInsightsViewModel,
             recordViewModel = recordViewModel,
-            configViewModel = configViewModel,
             recordStatusText = { recordViewModel.uiState.statusText },
             onValidAuthorableEventTokensChanged = { names -> validAuthorableEventTokens = names }
         )
@@ -302,7 +298,7 @@ fun TracerScreen(
         onTabChanged = { nextTab -> selectedTab = nextTab },
         coroutineScope = coroutineScope,
         configGateway = configGateway,
-        configViewModel = configViewModel,
+        dataViewModel = dataViewModel,
         userPreferencesRepository = userPreferencesRepository,
         quickActivitiesPreferenceGateway = quickActivitiesPreferenceGateway
     )
@@ -340,8 +336,6 @@ fun TracerScreen(
         txtStorageGateway = txtStorageGateway,
         recordUiState = displayedRecordUiState,
         recordViewModel = recordViewModel,
-        configUiState = configUiState,
-        configViewModel = configViewModel,
         themeConfig = themeConfig,
         onThemeEvent = onThemeEvent,
         insightsPiePalettePreset = loadedInsightsPiePalettePreset,
@@ -422,9 +416,15 @@ fun TracerScreen(
             actions.onPersistRecordCollapsedCanonicalRootPaths,
         onPersistRecordOrderedCanonicalRootPaths =
             actions.onPersistRecordOrderedCanonicalRootPaths,
-        onPersistRecordSuggestLookbackDays = actions.onPersistRecordSuggestLookbackDays,
-        onPersistRecordSuggestOutputMode = actions.onPersistRecordSuggestOutputMode,
-        onPersistRecordSuggestTopN = actions.onPersistRecordSuggestTopN,
+        onPersistRecordFrequentLookbackDays = actions.onPersistRecordFrequentLookbackDays,
+        onPersistRecordFrequentOutputMode = actions.onPersistRecordFrequentOutputMode,
+        onPersistRecordFrequentTopN = actions.onPersistRecordFrequentTopN,
+        activityCategoriesContent = {
+            ActivityHierarchyEditorContent(
+                state = activityHierarchyEditorState,
+                viewModel = activityHierarchyEditorViewModel
+            )
+        },
         onImportDataFolder = importDataFolderAction,
         onImportSingleTracer = importSingleTracerAction,
         onExportAllMonthsTracer = exportActions.onExportAllMonthsTracer,

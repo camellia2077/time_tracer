@@ -1,30 +1,17 @@
 package com.example.tracer
 
-internal enum class ConfigCategory {
-    ALIAS,
-    CHARTS,
-    META,
-    INSIGHTS
-}
-
-internal enum class ConfigAutoSaveStatus {
+internal enum class ActivityHierarchySaveStatus {
     IDLE,
     SAVING,
     SAVED,
     FAILED
 }
 
-internal data class ConfigUiState(
-    val selectedCategory: ConfigCategory = ConfigCategory.ALIAS,
+internal data class ActivityHierarchyEditorState(
     val aliasFiles: List<ConfigTomlFileEntry> = emptyList(),
-    val chartFiles: List<ConfigTomlFileEntry> = emptyList(),
-    val metaFiles: List<ConfigTomlFileEntry> = emptyList(),
-    val insightsFiles: List<ConfigTomlFileEntry> = emptyList(),
     val selectedFilePath: String = "",
     val selectedFileDisplayName: String = "",
     val selectedFileContent: String = "",
-    val editableContent: String = "",
-    val plainTomlDraftsByFile: Map<String, String> = emptyMap(),
     val aliasEditorMode: AliasEditorMode = AliasEditorMode.STRUCTURED,
     val aliasDocumentDraft: ActivityHierarchyDocument? = null,
     val aliasBaselineDocument: ActivityHierarchyDocument? = null,
@@ -38,8 +25,8 @@ internal data class ConfigUiState(
     val aliasEntryMoveDestinationsLoading: Boolean = false,
     val aliasEditorErrorMessage: String = "",
     val txtReloadRequestVersion: Long = 0L,
-    val autoSaveStatus: ConfigAutoSaveStatus = ConfigAutoSaveStatus.IDLE,
-    val statusText: String = "Preparing config..."
+    val autoSaveStatus: ActivityHierarchySaveStatus = ActivityHierarchySaveStatus.IDLE,
+    val statusText: String = "Preparing activity hierarchy..."
 )
 
 internal object UnavailableActivityHierarchyGateway : ActivityHierarchyGateway {

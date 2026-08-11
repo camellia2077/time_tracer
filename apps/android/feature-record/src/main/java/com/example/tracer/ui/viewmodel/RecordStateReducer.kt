@@ -90,33 +90,33 @@ internal object RecordStateReducer {
         )
     }
 
-    fun updateSuggestionPreferences(
+    fun updateFrequentPreferences(
         state: RecordUiState,
         lookbackDays: Int,
         topN: Int
     ): RecordUiState {
-        if (state.suggestionLookbackDays == lookbackDays && state.suggestionTopN == topN) {
+        if (state.frequentLookbackDays == lookbackDays && state.frequentTopN == topN) {
             return state
         }
         return state.copy(
-            suggestionLookbackDays = lookbackDays,
-            suggestionTopN = topN
+            frequentLookbackDays = lookbackDays,
+            frequentTopN = topN
         )
     }
 
-    fun updateSuggestionOutputMode(
+    fun updateFrequentOutputMode(
         state: RecordUiState,
-        value: RecordSuggestionOutputMode
+        value: RecordFrequentOutputMode
     ): RecordUiState {
-        if (state.suggestionOutputMode == value) {
+        if (state.frequentOutputMode == value) {
             return state
         }
-        return state.copy(suggestionOutputMode = value)
+        return state.copy(frequentOutputMode = value)
     }
 
     fun updateCanonicalCatalogDisplayMode(
         state: RecordUiState,
-        value: RecordSuggestionOutputMode
+        value: RecordFrequentOutputMode
     ): RecordUiState {
         if (state.canonicalCatalogDisplayMode == value) {
             return state
@@ -197,15 +197,15 @@ internal object RecordStateReducer {
         return state.copy(orderedCanonicalRootPaths = normalized)
     }
 
-    fun hideSuggestions(state: RecordUiState): RecordUiState =
-        state.copy(suggestionsVisible = false)
+    fun hideFrequentActivities(state: RecordUiState): RecordUiState =
+        state.copy(frequentActivitiesVisible = false)
 
-    fun showSuggestionsLoading(state: RecordUiState): RecordUiState =
+    fun showFrequentActivitiesLoading(state: RecordUiState): RecordUiState =
         state.copy(
-            suggestionsVisible = true,
-            isSuggestionsLoading = true,
+            frequentActivitiesVisible = true,
+            isFrequentActivitiesLoading = true,
             canonicalCatalogStatusText = "",
-            statusText = "Loading activity suggestions..."
+            statusText = "Loading frequent activities..."
         )
 
     fun hideCanonicalCatalog(state: RecordUiState): RecordUiState =
@@ -227,13 +227,13 @@ internal object RecordStateReducer {
             statusText = "Loading canonical catalog..."
         )
 
-    fun applySuggestedActivity(state: RecordUiState, activityName: String): RecordUiState =
+    fun applyFrequentActivity(state: RecordUiState, activityName: String): RecordUiState =
         state.copy(recordContent = activityName)
 
     fun applyCanonicalCatalogEntry(state: RecordUiState, token: String): RecordUiState =
         state.copy(
             recordContent = token.trim(),
-            suggestionsVisible = false,
+            frequentActivitiesVisible = false,
             isCanonicalCatalogVisible = false,
             canonicalBrowserTarget = null,
             isCanonicalCatalogLoading = false,

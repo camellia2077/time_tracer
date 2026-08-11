@@ -18,7 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
 @Composable
-internal fun ConfigEditorFileControls(
+internal fun ActivityHierarchyFileControls(
     onCreateAliasTomlFile: (String) -> Unit
 ) {
     var showCreateTomlDialog by remember { mutableStateOf(false) }

@@ -1,42 +1,13 @@
 package com.example.tracer
 
-internal fun configFilesForCategory(
-    state: ConfigUiState,
-    category: ConfigCategory
-): List<ConfigTomlFileEntry> {
-    return when (category) {
-        ConfigCategory.ALIAS -> state.aliasFiles.filter { isAliasConfigFilePath(it.relativePath) }
-
-        ConfigCategory.CHARTS -> state.chartFiles
-        ConfigCategory.META -> state.metaFiles
-        ConfigCategory.INSIGHTS -> state.insightsFiles
-    }
-}
-
-internal fun preferredConfigFilePath(
-    state: ConfigUiState,
-    files: List<ConfigTomlFileEntry>
-): String {
-    return when {
-        files.any { it.relativePath == state.selectedFilePath } -> state.selectedFilePath
-        state.selectedCategory == ConfigCategory.ALIAS ->
-            files.firstOrNull { isAliasConfigFilePath(it.relativePath) }
-                ?.relativePath
-                ?: files.firstOrNull()?.relativePath.orEmpty()
-        files.isNotEmpty() -> files.first().relativePath
-        else -> ""
-    }
-}
-
 internal fun clearSelectedConfigFile(
-    state: ConfigUiState,
+    state: ActivityHierarchyEditorState,
     statusText: String
-): ConfigUiState {
+): ActivityHierarchyEditorState {
     return state.copy(
         selectedFilePath = "",
         selectedFileDisplayName = "",
         selectedFileContent = "",
-        editableContent = "",
         aliasDocumentDraft = null,
         aliasBaselineDocument = null,
         aliasParentOptions = emptyList(),
@@ -48,14 +19,14 @@ internal fun clearSelectedConfigFile(
 }
 
 internal fun applyLoadedConfigFile(
-    state: ConfigUiState,
+    state: ActivityHierarchyEditorState,
     filePath: String,
     content: String,
     aliasParentOptions: List<String>,
     statusText: String,
     coreDocument: ActivityHierarchyDocument? = null,
     coreErrorMessage: String = ""
-): ConfigUiState {
+): ActivityHierarchyEditorState {
     val selectedEntry = findConfigFileEntry(state, filePath)
     val base = state.copy(
         selectedFilePath = filePath,
@@ -64,19 +35,6 @@ internal fun applyLoadedConfigFile(
         aliasEntryMovePlan = null,
         statusText = statusText
     )
-    if (!isAliasConfigFilePath(filePath)) {
-        val restoredDraft = state.plainTomlDraftsByFile[filePath] ?: content
-        return base.copy(
-            editableContent = restoredDraft,
-            aliasEditorMode = AliasEditorMode.STRUCTURED,
-            aliasDocumentDraft = null,
-            aliasBaselineDocument = null,
-            aliasParentOptions = emptyList(),
-            aliasAdvancedTomlDraft = "",
-            aliasEditorErrorMessage = ""
-        )
-    }
-
     val document = coreDocument
     val documentError = coreErrorMessage.ifBlank {
         "Activity hierarchy runtime did not return a structured snapshot."
@@ -90,7 +48,6 @@ internal fun applyLoadedConfigFile(
     return when {
         restoredMode == AliasEditorMode.ADVANCED -> {
             base.copy(
-                editableContent = "",
                 aliasEditorMode = AliasEditorMode.ADVANCED,
                 aliasDocumentDraft = restoredStructuredDraft ?: document,
                 aliasBaselineDocument = document,
@@ -101,7 +58,6 @@ internal fun applyLoadedConfigFile(
         }
         restoredStructuredDraft != null -> {
             base.copy(
-                editableContent = "",
                 aliasEditorMode = AliasEditorMode.STRUCTURED,
                 aliasDocumentDraft = restoredStructuredDraft,
                 aliasBaselineDocument = document,
@@ -112,7 +68,6 @@ internal fun applyLoadedConfigFile(
         }
         document != null -> {
             base.copy(
-                editableContent = "",
                 aliasEditorMode = AliasEditorMode.STRUCTURED,
                 aliasDocumentDraft = document,
                 aliasBaselineDocument = document,
@@ -125,7 +80,6 @@ internal fun applyLoadedConfigFile(
             // Fail open to raw TOML mode so users can recover malformed alias
             // files instead of getting blocked by structured editor parsing.
             base.copy(
-                editableContent = "",
                 aliasEditorMode = AliasEditorMode.ADVANCED,
                 aliasDocumentDraft = null,
                 aliasBaselineDocument = null,
@@ -139,15 +93,10 @@ internal fun applyLoadedConfigFile(
 }
 
 internal fun findConfigFileEntry(
-    state: ConfigUiState,
+    state: ActivityHierarchyEditorState,
     filePath: String
 ): ConfigTomlFileEntry? {
-    return sequenceOf(
-        state.aliasFiles,
-        state.chartFiles,
-        state.metaFiles,
-        state.insightsFiles
-    ).flatten().firstOrNull { entry -> entry.relativePath == filePath }
+    return state.aliasFiles.firstOrNull { entry -> entry.relativePath == filePath }
 }
 
 internal fun isAliasConfigFilePath(path: String): Boolean =

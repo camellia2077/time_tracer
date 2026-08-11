@@ -23,7 +23,7 @@ enum class RecordAuthoringMode {
     INTERVAL
 }
 
-enum class RecordSuggestionOutputMode {
+enum class RecordFrequentOutputMode {
     CANONICAL,
     ALIAS
 }
@@ -38,12 +38,12 @@ enum class CanonicalBrowserTarget {
     INSIGHTS_STATUS_PARENT
 }
 
-data class RecordSuggestedActivity(
+data class RecordFrequentActivity(
     val canonicalToken: String,
     val aliasToken: String = ""
 ) {
-    fun displayToken(outputMode: RecordSuggestionOutputMode): String =
-        if (outputMode == RecordSuggestionOutputMode.ALIAS && aliasToken.isNotBlank()) {
+    fun displayToken(outputMode: RecordFrequentOutputMode): String =
+        if (outputMode == RecordFrequentOutputMode.ALIAS && aliasToken.isNotBlank()) {
             aliasToken
         } else {
             canonicalToken
@@ -96,23 +96,23 @@ data class RecordUiState(
     // The card visibility and the activity-management controls are independent UI states.
     val quickAccessCardExpanded: Boolean = true,
     val assistSettingsExpanded: Boolean = false,
-    val suggestionLookbackDays: Int = 7,
-    val suggestionTopN: Int = 5,
-    val suggestionOutputMode: RecordSuggestionOutputMode = RecordSuggestionOutputMode.CANONICAL,
-    val canonicalCatalogDisplayMode: RecordSuggestionOutputMode =
-        RecordSuggestionOutputMode.CANONICAL,
-    val suggestedActivities: List<RecordSuggestedActivity> = emptyList(),
+    val frequentLookbackDays: Int = 7,
+    val frequentTopN: Int = 5,
+    val frequentOutputMode: RecordFrequentOutputMode = RecordFrequentOutputMode.CANONICAL,
+    val canonicalCatalogDisplayMode: RecordFrequentOutputMode =
+        RecordFrequentOutputMode.CANONICAL,
+    val frequentActivities: List<RecordFrequentActivity> = emptyList(),
     val canonicalCatalogRoots: List<CanonicalPathNode> = emptyList(),
     val canonicalCatalogStatusText: String = "",
     val lastRecordedActivityHierarchyLeaf: String = "",
     val lastRecordedDuration: String = "",
     val collapsedCanonicalRootPaths: Set<String> = emptySet(),
     val orderedCanonicalRootPaths: List<String> = emptyList(),
-    val suggestionsVisible: Boolean = false,
+    val frequentActivitiesVisible: Boolean = false,
     val isCanonicalCatalogVisible: Boolean = false,
     val canonicalBrowserTarget: CanonicalBrowserTarget? = null,
     val isCanonicalCatalogLoading: Boolean = false,
-    val isSuggestionsLoading: Boolean = false,
+    val isFrequentActivitiesLoading: Boolean = false,
     val isTxtPreviewVisible: Boolean = false,
     val isTxtPreviewLoading: Boolean = false,
     val txtPreviewStatusText: String = "",
@@ -279,40 +279,40 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
         return outcome.result
     }
 
-    fun updateSuggestionPreferences(lookbackDays: Int, topN: Int) {
-        uiState = intentHandler.updateSuggestionPreferences(
+    fun updateFrequentPreferences(lookbackDays: Int, topN: Int) {
+        uiState = intentHandler.updateFrequentPreferences(
             state = uiState,
             lookbackDays = lookbackDays,
             topN = topN
         )
     }
 
-    fun updateSuggestionPreferencesAndReloadIfVisible(lookbackDays: Int, topN: Int) {
-        uiState = intentHandler.updateSuggestionPreferences(
+    fun updateFrequentPreferencesAndReloadIfVisible(lookbackDays: Int, topN: Int) {
+        uiState = intentHandler.updateFrequentPreferences(
             state = uiState,
             lookbackDays = lookbackDays,
             topN = topN
         )
-        if (!uiState.suggestionsVisible) {
+        if (!uiState.frequentActivitiesVisible) {
             return
         }
 
-        uiState = intentHandler.showSuggestionsLoading(uiState)
+        uiState = intentHandler.showFrequentActivitiesLoading(uiState)
         viewModelScope.launch {
-            val resultState = intentHandler.loadActivitySuggestions(uiState)
+            val resultState = intentHandler.loadFrequentActivities(uiState)
             uiState = uiState.copy(
-                suggestedActivities = resultState.suggestedActivities,
-                isSuggestionsLoading = resultState.isSuggestionsLoading,
+                frequentActivities = resultState.frequentActivities,
+                isFrequentActivitiesLoading = resultState.isFrequentActivitiesLoading,
                 statusText = resultState.statusText
             )
         }
     }
 
-    fun updateSuggestionOutputMode(value: RecordSuggestionOutputMode) {
-        uiState = intentHandler.updateSuggestionOutputMode(uiState, value)
+    fun updateFrequentOutputMode(value: RecordFrequentOutputMode) {
+        uiState = intentHandler.updateFrequentOutputMode(uiState, value)
     }
 
-    fun updateCanonicalCatalogDisplayMode(value: RecordSuggestionOutputMode) {
+    fun updateCanonicalCatalogDisplayMode(value: RecordFrequentOutputMode) {
         uiState = intentHandler.updateCanonicalCatalogDisplayMode(uiState, value)
     }
 
@@ -343,31 +343,31 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
         uiState = intentHandler.updateOrderedCanonicalRootPaths(uiState, paths)
     }
 
-    fun toggleSuggestions() {
-        if (uiState.suggestionsVisible) {
-            uiState = intentHandler.hideSuggestions(uiState)
+    fun toggleFrequentActivities() {
+        if (uiState.frequentActivitiesVisible) {
+            uiState = intentHandler.hideFrequentActivities(uiState)
             return
         }
 
-        uiState = intentHandler.showSuggestionsLoading(uiState)
+        uiState = intentHandler.showFrequentActivitiesLoading(uiState)
         viewModelScope.launch {
-            val resultState = intentHandler.loadActivitySuggestions(uiState)
+            val resultState = intentHandler.loadFrequentActivities(uiState)
             uiState = uiState.copy(
-                suggestedActivities = resultState.suggestedActivities,
-                isSuggestionsLoading = resultState.isSuggestionsLoading,
+                frequentActivities = resultState.frequentActivities,
+                isFrequentActivitiesLoading = resultState.isFrequentActivitiesLoading,
                 statusText = resultState.statusText
             )
         }
     }
 
-    fun dismissSuggestions() {
-        uiState = intentHandler.hideSuggestions(uiState)
+    fun dismissFrequentActivities() {
+        uiState = intentHandler.hideFrequentActivities(uiState)
     }
 
-    fun applySuggestedActivity(activityName: String) {
-        uiState = intentHandler.hideSuggestions(uiState)
+    fun applyFrequentActivity(activityName: String) {
+        uiState = intentHandler.hideFrequentActivities(uiState)
         viewModelScope.launch {
-            uiState = intentHandler.applySuggestedActivity(uiState, activityName)
+            uiState = intentHandler.applyFrequentActivity(uiState, activityName)
             persistRecordInputState()
         }
     }
@@ -378,6 +378,18 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
 
     fun openQuickAccessCanonicalCatalog() {
         openCanonicalCatalog(CanonicalBrowserTarget.QUICK_ACCESS)
+    }
+
+    fun loadFrequentActivities() {
+        uiState = intentHandler.showFrequentActivitiesLoading(uiState).copy(frequentActivitiesVisible = false)
+        viewModelScope.launch {
+            val resultState = intentHandler.loadFrequentActivities(uiState)
+            uiState = uiState.copy(
+                frequentActivities = resultState.frequentActivities,
+                isFrequentActivitiesLoading = resultState.isFrequentActivitiesLoading,
+                statusText = resultState.statusText
+            )
+        }
     }
 
     fun openDailyStatusParentCatalog() {

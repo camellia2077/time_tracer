@@ -69,7 +69,7 @@ import kotlin.math.abs
 @Composable
 internal fun CanonicalPathNodeCard(
     node: CanonicalPathNode,
-    displayMode: RecordSuggestionOutputMode,
+    displayMode: RecordFrequentOutputMode,
     collapsedRootPaths: Set<String>,
     onCollapsedRootPathsChange: (Set<String>) -> Unit,
     onCanonicalEntryClick: (CanonicalCatalogEntry) -> Unit,
@@ -195,16 +195,16 @@ internal fun CanonicalPathNode.displayTitle(depth: Int): String =
         name.displayCanonicalPathForUi()
     }
 
-internal fun CanonicalCatalogEntry.displayToken(displayMode: RecordSuggestionOutputMode): String {
+internal fun CanonicalCatalogEntry.displayToken(displayMode: RecordFrequentOutputMode): String {
     val canonical = canonicalPath.trim()
-    if (displayMode != RecordSuggestionOutputMode.ALIAS) {
+    if (displayMode != RecordFrequentOutputMode.ALIAS) {
         return canonical
     }
     return aliases.firstOrNull { alias -> alias.isNotBlank() }?.trim().orEmpty().ifEmpty { canonical }
 }
 
-internal fun CanonicalCatalogEntry.displayLabel(displayMode: RecordSuggestionOutputMode): String {
-    if (displayMode == RecordSuggestionOutputMode.ALIAS) {
+internal fun CanonicalCatalogEntry.displayLabel(displayMode: RecordFrequentOutputMode): String {
+    if (displayMode == RecordFrequentOutputMode.ALIAS) {
         return displayToken(displayMode).displayCanonicalPathForUi()
     }
     return canonicalLeaf.trim().ifEmpty { canonicalPath.trim() }.displayCanonicalPathForUi()

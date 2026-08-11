@@ -5,6 +5,7 @@
 
     <string name="tracer_tab_insights">分析</string>
     <string name="tracer_tab_record">記録</string>
+    <string name="tracer_tab_files">ファイル</string>
     <string name="tracer_tab_config">設定</string>
 
 
@@ -85,7 +86,6 @@
     <string name="config_title_app_preferences">アプリ設定</string>
     <string name="config_title_appearance">外観</string>
     <string name="config_title_insights_settings">分析の表示</string>
-    <string name="config_title_advanced_files">高度なファイル</string>
     <string name="config_title_theme_mode">テーマモード</string>
     <string name="config_title_theme_palette">テーマ配色</string>
     <string name="config_theme_palette_indigo">インディゴ</string>

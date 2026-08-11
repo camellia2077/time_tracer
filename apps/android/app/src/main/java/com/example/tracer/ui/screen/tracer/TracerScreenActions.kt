@@ -15,12 +15,12 @@ internal data class TracerScreenActions(
     val onPersistRecordQuickActivities: (List<String>) -> Unit,
     val onPersistRecordQuickAccessCardExpanded: (Boolean) -> Unit,
     val onPersistRecordAssistSettingsExpanded: (Boolean) -> Unit,
-    val onPersistRecordCanonicalCatalogDisplayMode: (RecordSuggestionOutputMode) -> Unit,
+    val onPersistRecordCanonicalCatalogDisplayMode: (RecordFrequentOutputMode) -> Unit,
     val onPersistRecordCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
     val onPersistRecordOrderedCanonicalRootPaths: (List<String>) -> Unit,
-    val onPersistRecordSuggestLookbackDays: (Int) -> Unit,
-    val onPersistRecordSuggestOutputMode: (RecordSuggestionOutputMode) -> Unit,
-    val onPersistRecordSuggestTopN: (Int) -> Unit
+    val onPersistRecordFrequentLookbackDays: (Int) -> Unit,
+    val onPersistRecordFrequentOutputMode: (RecordFrequentOutputMode) -> Unit,
+    val onPersistRecordFrequentTopN: (Int) -> Unit
 )
 
 private data class TracerScreenDiagnosticsActions(
@@ -31,12 +31,12 @@ private data class TracerScreenPreferenceActions(
     val onPersistRecordQuickActivities: (List<String>) -> Unit,
     val onPersistRecordQuickAccessCardExpanded: (Boolean) -> Unit,
     val onPersistRecordAssistSettingsExpanded: (Boolean) -> Unit,
-    val onPersistRecordCanonicalCatalogDisplayMode: (RecordSuggestionOutputMode) -> Unit,
+    val onPersistRecordCanonicalCatalogDisplayMode: (RecordFrequentOutputMode) -> Unit,
     val onPersistRecordCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
     val onPersistRecordOrderedCanonicalRootPaths: (List<String>) -> Unit,
-    val onPersistRecordSuggestLookbackDays: (Int) -> Unit,
-    val onPersistRecordSuggestOutputMode: (RecordSuggestionOutputMode) -> Unit,
-    val onPersistRecordSuggestTopN: (Int) -> Unit
+    val onPersistRecordFrequentLookbackDays: (Int) -> Unit,
+    val onPersistRecordFrequentOutputMode: (RecordFrequentOutputMode) -> Unit,
+    val onPersistRecordFrequentTopN: (Int) -> Unit
 )
 
 @Composable
@@ -46,14 +46,14 @@ internal fun rememberTracerScreenActions(
     onTabChanged: (TracerTab) -> Unit,
     coroutineScope: kotlinx.coroutines.CoroutineScope,
     configGateway: ConfigGateway,
-    configViewModel: ConfigViewModel,
+    dataViewModel: DataViewModel,
     userPreferencesRepository: com.example.tracer.data.UserPreferencesRepository,
     quickActivitiesPreferenceGateway: QuickActivitiesPreferenceGateway
 ): TracerScreenActions {
     val diagnosticsActions = rememberTracerScreenDiagnosticsActions(
         coroutineScope = coroutineScope,
         configGateway = configGateway,
-        configViewModel = configViewModel
+        dataViewModel = dataViewModel
     )
     val preferenceActions = rememberTracerScreenPreferenceActions(
         coroutineScope = coroutineScope,
@@ -84,9 +84,9 @@ internal fun rememberTracerScreenActions(
             preferenceActions.onPersistRecordCollapsedCanonicalRootPaths,
         onPersistRecordOrderedCanonicalRootPaths =
             preferenceActions.onPersistRecordOrderedCanonicalRootPaths,
-        onPersistRecordSuggestLookbackDays = preferenceActions.onPersistRecordSuggestLookbackDays,
-        onPersistRecordSuggestOutputMode = preferenceActions.onPersistRecordSuggestOutputMode,
-        onPersistRecordSuggestTopN = preferenceActions.onPersistRecordSuggestTopN
+        onPersistRecordFrequentLookbackDays = preferenceActions.onPersistRecordFrequentLookbackDays,
+        onPersistRecordFrequentOutputMode = preferenceActions.onPersistRecordFrequentOutputMode,
+        onPersistRecordFrequentTopN = preferenceActions.onPersistRecordFrequentTopN
     )
 }
 
@@ -94,19 +94,19 @@ internal fun rememberTracerScreenActions(
 private fun rememberTracerScreenDiagnosticsActions(
     coroutineScope: kotlinx.coroutines.CoroutineScope,
     configGateway: ConfigGateway,
-    configViewModel: ConfigViewModel
+    dataViewModel: DataViewModel
 ): TracerScreenDiagnosticsActions {
     val clipboard = LocalClipboard.current
     val diagnosticsPrepareText = stringResource(R.string.tracer_diagnostics_prepare)
     return TracerScreenDiagnosticsActions(
         onCopyDiagnosticsPayload = {
             coroutineScope.launch {
-                configViewModel.setStatusText(diagnosticsPrepareText)
+                dataViewModel.setStatusText(diagnosticsPrepareText)
                 val payloadResult = withContext(Dispatchers.IO) {
                     configGateway.buildDiagnosticsPayload(maxEntries = 50)
                 }
                 if (!payloadResult.ok || payloadResult.payload.isBlank()) {
-                    configViewModel.setStatusText(payloadResult.message)
+                    dataViewModel.setStatusText(payloadResult.message)
                     return@launch
                 }
 
@@ -118,7 +118,7 @@ private fun rememberTracerScreenDiagnosticsActions(
                         )
                     )
                 )
-                configViewModel.setStatusText(payloadResult.message)
+                dataViewModel.setStatusText(payloadResult.message)
             }
         }
     )
@@ -161,19 +161,19 @@ private fun rememberTracerScreenPreferenceActions(
                 userPreferencesRepository.setRecordOrderedCanonicalRootPaths(values)
             }
         },
-        onPersistRecordSuggestLookbackDays = { value ->
+        onPersistRecordFrequentLookbackDays = { value ->
             coroutineScope.launch {
-                userPreferencesRepository.setRecordSuggestLookbackDays(value)
+                userPreferencesRepository.setRecordFrequentLookbackDays(value)
             }
         },
-        onPersistRecordSuggestOutputMode = { value ->
+        onPersistRecordFrequentOutputMode = { value ->
             coroutineScope.launch {
-                userPreferencesRepository.setRecordSuggestOutputMode(value)
+                userPreferencesRepository.setRecordFrequentOutputMode(value)
             }
         },
-        onPersistRecordSuggestTopN = { value ->
+        onPersistRecordFrequentTopN = { value ->
             coroutineScope.launch {
-                userPreferencesRepository.setRecordSuggestTopN(value)
+                userPreferencesRepository.setRecordFrequentTopN(value)
             }
         }
     )

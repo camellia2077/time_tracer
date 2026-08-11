@@ -3,7 +3,7 @@ package com.example.tracer
 import android.util.Log
 import java.time.Clock
 
-private const val SUGGESTION_LOG_TAG = "TimeTracerSuggestions"
+private const val FREQUENT_LOG_TAG = "TimeTracerFrequentActivities"
 private const val SECONDS_PER_MINUTE = 60
 private const val SECONDS_PER_HOUR = 60 * SECONDS_PER_MINUTE
 internal fun formatClockDuration(value: String): String? {
@@ -49,15 +49,15 @@ internal fun formatDurationUnits(totalSeconds: Int): String {
     }.joinToString(" ")
 }
 
-internal fun logActivitySuggestionsRequestStart(
+internal fun logFrequentActivitiesRequestStart(
     logicalDayTarget: RecordLogicalDayTarget,
     lookbackDays: Int,
     topN: Int,
     anchorDateIso: String?
 ) {
-    logSuggestions(
+    logFrequentActivities(
         message = buildString {
-            append("stage=record.activity_suggestions.request")
+            append("stage=record.activity_frequent.request")
             append(" action=start")
             append(" target=")
             append(logicalDayTarget.name.lowercase())
@@ -71,16 +71,16 @@ internal fun logActivitySuggestionsRequestStart(
     )
 }
 
-internal fun logActivitySuggestionsRequestResult(
+internal fun logFrequentActivitiesRequestResult(
     logicalDayTarget: RecordLogicalDayTarget,
     lookbackDays: Int,
     topN: Int,
     anchorDateIso: String?,
-    result: ActivitySuggestionResult
+    result: ActivityFrequentResult
 ) {
-    logSuggestions(
+    logFrequentActivities(
         message = buildString {
-            append("stage=record.activity_suggestions.request")
+            append("stage=record.activity_frequent.request")
             append(" action=finish")
             append(" target=")
             append(logicalDayTarget.name.lowercase())
@@ -94,33 +94,33 @@ internal fun logActivitySuggestionsRequestResult(
             append(result.ok)
             append(" op=")
             append(result.operationId.ifBlank { "-" })
-            append(" suggestionCount=")
-            append(result.suggestions.size)
-            append(" suggestions=")
-            append(result.suggestions.toDiagnosticSample())
+            append(" frequentCount=")
+            append(result.frequentActivities.size)
+            append(" frequent_activity_sample=")
+            append(result.frequentActivities.toDiagnosticSample())
             append(" status=")
             append(result.message.replaceLineBreaks())
         }
     )
 }
 
-internal fun logSuggestions(message: String) {
+internal fun logFrequentActivities(message: String) {
     try {
-        Log.i(SUGGESTION_LOG_TAG, message)
+        Log.i(FREQUENT_LOG_TAG, message)
     } catch (_: Throwable) {
         // Local JVM tests may use the Android stub jar where Log methods are unavailable.
     }
 }
 
-internal fun logSuggestedActivityApply(
+internal fun logFrequentActivityApply(
     canonicalActivityName: String,
-    outputMode: RecordSuggestionOutputMode,
+    outputMode: RecordFrequentOutputMode,
     appliedToken: String?,
     status: String
 ) {
-    logSuggestions(
+    logFrequentActivities(
         message = buildString {
-            append("stage=record.activity_suggestions.apply")
+            append("stage=record.activity_frequent.apply")
             append(" canonical=")
             append(canonicalActivityName.ifBlank { "-" })
             append(" outputMode=")

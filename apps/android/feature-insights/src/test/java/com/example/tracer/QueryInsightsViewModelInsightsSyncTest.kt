@@ -462,13 +462,13 @@ private class FakeStructuredInsightsGateway : InsightsGateway {
 }
 
 private class FakeInsightsSyncQueryGateway : QueryGateway {
-    override suspend fun queryActivitySuggestions(
+    override suspend fun queryFrequentActivities(
         lookbackDays: Int,
         topN: Int,
         anchorDateIso: String?
-    ): ActivitySuggestionResult = ActivitySuggestionResult(
+    ): ActivityFrequentResult = ActivityFrequentResult(
         ok = true,
-        suggestions = emptyList(),
+        frequentActivities = emptyList(),
         message = "ok"
     )
 

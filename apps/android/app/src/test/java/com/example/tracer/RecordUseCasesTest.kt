@@ -383,7 +383,7 @@ class RecordUseCasesTest {
     }
 
     @Test
-    fun loadActivitySuggestions_anchorsToLogicalTargetDate() = runTest {
+    fun loadFrequentActivities_anchorsToLogicalTargetDate() = runTest {
         val queryGateway = FakeQueryGateway()
         val useCases = RecordUseCases(
             recordGateway = FakeRecordGateway(),
@@ -395,7 +395,7 @@ class RecordUseCasesTest {
             clock = fixedClock("2026-03-31T16:30:00Z", "Asia/Shanghai")
         )
 
-        useCases.loadActivitySuggestions(
+        useCases.loadFrequentActivities(
             state = RecordUiState(logicalDayTarget = RecordLogicalDayTarget.YESTERDAY),
             lookbackDays = 7,
             topN = 5
@@ -405,7 +405,7 @@ class RecordUseCasesTest {
     }
 
     @Test
-    fun loadActivitySuggestions_keepsCanonicalAndAliasDisplayTokens() = runTest {
+    fun loadFrequentActivities_keepsCanonicalAndAliasDisplayTokens() = runTest {
         val useCases = RecordUseCases(
             recordGateway = FakeRecordGateway(),
             txtStorageGateway = FakeTxtStorageGateway(
@@ -413,9 +413,9 @@ class RecordUseCasesTest {
                 readResults = emptyMap()
             ),
             queryGateway = FakeQueryGateway(
-                activitySuggestionResult = ActivitySuggestionResult(
+                activityFrequentResult = ActivityFrequentResult(
                     ok = true,
-                    suggestions = listOf("recreation_game_clash-royale", "meal"),
+                    frequentActivities = listOf("recreation_game_clash-royale", "meal"),
                     message = "ok"
                 ),
                 aliasMappingsResult = ActivityHierarchyLeafMappingListResult(
@@ -428,7 +428,7 @@ class RecordUseCasesTest {
             )
         )
 
-        val result = useCases.loadActivitySuggestions(
+        val result = useCases.loadFrequentActivities(
             state = RecordUiState(),
             lookbackDays = 7,
             topN = 5
@@ -436,18 +436,18 @@ class RecordUseCasesTest {
 
         assertEquals(
             listOf(
-                RecordSuggestedActivity(
+                RecordFrequentActivity(
                     canonicalToken = "recreation_game_clash-royale",
                     aliasToken = "皇室战争"
                 ),
-                RecordSuggestedActivity(canonicalToken = "meal")
+                RecordFrequentActivity(canonicalToken = "meal")
             ),
-            result.suggestedActivities
+            result.frequentActivities
         )
     }
 
     @Test
-    fun loadCanonicalCatalog_keepsFailureSeparateFromSuggestionState() = runTest {
+    fun loadCanonicalCatalog_keepsFailureSeparateFromFrequentState() = runTest {
         val useCases = RecordUseCases(
             recordGateway = FakeRecordGateway(),
             txtStorageGateway = FakeTxtStorageGateway(
@@ -455,9 +455,9 @@ class RecordUseCasesTest {
                 readResults = emptyMap()
             ),
             queryGateway = FakeQueryGateway(
-                activitySuggestionResult = ActivitySuggestionResult(
+                activityFrequentResult = ActivityFrequentResult(
                     ok = true,
-                    suggestions = listOf("meal"),
+                    frequentActivities = listOf("meal"),
                     message = "suggest ok"
                 ),
                 canonicalCatalogResult = CanonicalCatalogResult(
@@ -504,7 +504,7 @@ class RecordUseCasesTest {
     }
 
     @Test
-    fun applySuggestedActivity_defaultsToCanonicalInsertMode() = runTest {
+    fun applyFrequentActivity_defaultsToCanonicalInsertMode() = runTest {
         val useCases = RecordUseCases(
             recordGateway = FakeRecordGateway(),
             txtStorageGateway = FakeTxtStorageGateway(
@@ -514,18 +514,18 @@ class RecordUseCasesTest {
             queryGateway = FakeQueryGateway()
         )
 
-        val result = useCases.applySuggestedActivity(
-            state = RecordUiState(suggestionsVisible = true),
-            suggestedActivityToken = "recreation_game_clash-royale"
+        val result = useCases.applyFrequentActivity(
+            state = RecordUiState(frequentActivitiesVisible = true),
+            frequentActivityToken = "recreation_game_clash-royale"
         )
 
         assertEquals("recreation_game_clash-royale", result.recordContent)
-        assertEquals(false, result.suggestionsVisible)
+        assertEquals(false, result.frequentActivitiesVisible)
         assertEquals("", result.statusText)
     }
 
     @Test
-    fun applySuggestedActivity_resolvesClickedAliasTokenToCachedCanonicalSuggestion() = runTest {
+    fun applyFrequentActivity_resolvesClickedAliasTokenToCachedCanonicalFrequent() = runTest {
         val useCases = RecordUseCases(
             recordGateway = FakeRecordGateway(),
             txtStorageGateway = FakeTxtStorageGateway(
@@ -535,27 +535,27 @@ class RecordUseCasesTest {
             queryGateway = FakeQueryGateway()
         )
 
-        val result = useCases.applySuggestedActivity(
+        val result = useCases.applyFrequentActivity(
             state = RecordUiState(
-                suggestionsVisible = true,
-                suggestionOutputMode = RecordSuggestionOutputMode.ALIAS,
-                suggestedActivities = listOf(
-                    RecordSuggestedActivity(
+                frequentActivitiesVisible = true,
+                frequentOutputMode = RecordFrequentOutputMode.ALIAS,
+                frequentActivities = listOf(
+                    RecordFrequentActivity(
                         canonicalToken = "recreation_game_clash-royale",
                         aliasToken = "皇室战争"
                     )
                 )
             ),
-            suggestedActivityToken = "皇室战争"
+            frequentActivityToken = "皇室战争"
         )
 
         assertEquals("皇室战争", result.recordContent)
-        assertEquals(false, result.suggestionsVisible)
+        assertEquals(false, result.frequentActivitiesVisible)
         assertEquals("", result.statusText)
     }
 
     @Test
-    fun applySuggestedActivity_resolvesCanonicalToFirstDeclaredAliasWhenAliasModeEnabled() = runTest {
+    fun applyFrequentActivity_resolvesCanonicalToFirstDeclaredAliasWhenAliasModeEnabled() = runTest {
         val useCases = RecordUseCases(
             recordGateway = FakeRecordGateway(),
             txtStorageGateway = FakeTxtStorageGateway(
@@ -575,21 +575,21 @@ class RecordUseCasesTest {
             )
         )
 
-        val result = useCases.applySuggestedActivity(
+        val result = useCases.applyFrequentActivity(
             state = RecordUiState(
-                suggestionsVisible = true,
-                suggestionOutputMode = RecordSuggestionOutputMode.ALIAS
+                frequentActivitiesVisible = true,
+                frequentOutputMode = RecordFrequentOutputMode.ALIAS
             ),
-            suggestedActivityToken = "recreation_game_clash-royale"
+            frequentActivityToken = "recreation_game_clash-royale"
         )
 
         assertEquals("皇室战争", result.recordContent)
-        assertEquals(false, result.suggestionsVisible)
+        assertEquals(false, result.frequentActivitiesVisible)
         assertEquals("", result.statusText)
     }
 
     @Test
-    fun applySuggestedActivity_keepsStateWhenCanonicalHasNoAliasMapping() = runTest {
+    fun applyFrequentActivity_keepsStateWhenCanonicalHasNoAliasMapping() = runTest {
         val useCases = RecordUseCases(
             recordGateway = FakeRecordGateway(),
             txtStorageGateway = FakeTxtStorageGateway(
@@ -605,19 +605,19 @@ class RecordUseCasesTest {
             )
         )
 
-        val result = useCases.applySuggestedActivity(
+        val result = useCases.applyFrequentActivity(
             state = RecordUiState(
                 recordContent = "existing",
-                suggestionsVisible = true,
-                suggestionOutputMode = RecordSuggestionOutputMode.ALIAS
+                frequentActivitiesVisible = true,
+                frequentOutputMode = RecordFrequentOutputMode.ALIAS
             ),
-            suggestedActivityToken = "recreation_game_clash-royale"
+            frequentActivityToken = "recreation_game_clash-royale"
         )
 
         assertEquals("existing", result.recordContent)
-        assertEquals(false, result.suggestionsVisible)
+        assertEquals(false, result.frequentActivitiesVisible)
         assertEquals(
-            "Suggested activity unavailable for authoring: no alias mapped for recreation_game_clash-royale.",
+            "Frequent activity unavailable for authoring: no alias mapped for recreation_game_clash-royale.",
             result.statusText
         )
     }
@@ -1341,9 +1341,9 @@ private class FakeRecordGateway(
 }
 
 private class FakeQueryGateway(
-    private val activitySuggestionResult: ActivitySuggestionResult = ActivitySuggestionResult(
+    private val activityFrequentResult: ActivityFrequentResult = ActivityFrequentResult(
         ok = true,
-        suggestions = emptyList(),
+        frequentActivities = emptyList(),
         message = "ok"
     ),
     private val aliasMappingsResult: ActivityHierarchyLeafMappingListResult = ActivityHierarchyLeafMappingListResult(
@@ -1376,11 +1376,11 @@ private class FakeQueryGateway(
 ) : QueryGateway {
     var lastAnchorDateIso: String? = null
 
-    override suspend fun queryActivitySuggestions(
+    override suspend fun queryFrequentActivities(
         lookbackDays: Int,
         topN: Int,
         anchorDateIso: String?
-    ): ActivitySuggestionResult = activitySuggestionResult.also {
+    ): ActivityFrequentResult = activityFrequentResult.also {
         lastAnchorDateIso = anchorDateIso
     }
 

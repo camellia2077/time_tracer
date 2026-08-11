@@ -25,17 +25,17 @@ internal class RuntimeQueryDelegate(
         ensureConfigTomlStorage = ensureConfigTomlStorage
     )
 
-    suspend fun queryActivitySuggestions(
+    suspend fun queryFrequentActivities(
         lookbackDays: Int,
         topN: Int,
         anchorDateIso: String? = null
-    ): ActivitySuggestionResult = withContext(Dispatchers.IO) {
-        val validationFailure = validateSuggestionQueryParams(
+    ): ActivityFrequentResult = withContext(Dispatchers.IO) {
+        val validationFailure = validateFrequentQueryParams(
             lookbackDays = lookbackDays,
             topN = topN
         )
         if (validationFailure != null) {
-            recordActivitySuggestionDiagnostics(
+            recordActivityFrequentDiagnostics(
                 operationId = nextDiagnosticOperationId(),
                 ok = false,
                 lookbackDays = lookbackDays,
@@ -46,27 +46,27 @@ internal class RuntimeQueryDelegate(
             return@withContext validationFailure
         }
         if (lookbackDays == 0 || topN == 0) {
-            // `0` is a valid business configuration for suggestions: it means
-            // "do not query any suggestion data" and also keeps the UI friendly
+            // `0` is a valid business configuration for frequent activities: it means
+            // "do not query any frequent data" and also keeps the UI friendly
             // when users clear the numeric fields before typing replacement values.
             val message = if (lookbackDays == 0) {
-                buildSuggestionResultMessage(emptyList(), lookbackDays)
+                buildFrequentActivitiesResultMessage(emptyList(), lookbackDays)
             } else {
-                "Suggestion query skipped because topN=0."
+                "Frequent query skipped because topN=0."
             }
-            recordActivitySuggestionDiagnostics(
+            recordActivityFrequentDiagnostics(
                 operationId = nextDiagnosticOperationId(),
                 ok = true,
                 lookbackDays = lookbackDays,
                 topN = topN,
                 anchorDateIso = anchorDateIso,
                 nativeOk = true,
-                suggestions = emptyList(),
+                frequentActivities = emptyList(),
                 message = message
             )
-            return@withContext ActivitySuggestionResult(
+            return@withContext ActivityFrequentResult(
                 ok = true,
-                suggestions = emptyList(),
+                frequentActivities = emptyList(),
                 message = message
             )
         }
@@ -74,7 +74,7 @@ internal class RuntimeQueryDelegate(
         try {
             val queryResult = executeNativeDataQuery(
                 DataQueryRequest(
-                    action = NativeBridge.QUERY_ACTION_ACTIVITY_SUGGEST,
+                    action = NativeBridge.QUERY_ACTION_ACTIVITY_FREQUENT,
                     topN = topN,
                     lookbackDays = lookbackDays,
                     anchorDateIso = anchorDateIso
@@ -83,12 +83,12 @@ internal class RuntimeQueryDelegate(
             )
             val contentResult = queryTranslator.toContentResult(
                 queryResult = queryResult,
-                defaultFailureMessage = "query activity suggestions failed."
+                defaultFailureMessage = "query frequent activities failed."
             )
             val rawActivities = when (contentResult) {
-                is DomainResult.Success -> parseSuggestedActivities(contentResult.value)
+                is DomainResult.Success -> parseFrequentActivities(contentResult.value)
                 is DomainResult.Failure -> {
-                    recordActivitySuggestionDiagnostics(
+                    recordActivityFrequentDiagnostics(
                         operationId = contentResult.error.operationId.ifBlank {
                             queryResult.operationId
                         },
@@ -99,21 +99,21 @@ internal class RuntimeQueryDelegate(
                         nativeOk = false,
                         message = contentResult.error.legacyMessage()
                     )
-                    return@withContext ActivitySuggestionResult(
+                    return@withContext ActivityFrequentResult(
                         ok = false,
-                        suggestions = emptyList(),
+                        frequentActivities = emptyList(),
                         message = contentResult.error.legacyMessage(),
                         operationId = contentResult.error.operationId
                     )
                 }
             }
-            val suggestions = normalizeSuggestedActivities(
+            val frequentActivities = normalizeFrequentActivities(
                 activities = rawActivities,
                 validActivityNames = emptySet(),
                 maxItems = topN
             )
             val authorableTokensResult = mappingDelegate.queryAuthorableEventTokensFromCore()
-            recordActivitySuggestionDiagnostics(
+            recordActivityFrequentDiagnostics(
                 operationId = queryResult.operationId,
                 ok = true,
                 lookbackDays = lookbackDays,
@@ -123,23 +123,23 @@ internal class RuntimeQueryDelegate(
                 rawActivities = rawActivities,
                 authorableOk = authorableTokensResult.ok,
                 authorableNames = authorableTokensResult.names,
-                suggestions = suggestions,
-                message = buildSuggestionResultMessage(suggestions, lookbackDays)
+                frequentActivities = frequentActivities,
+                message = buildFrequentActivitiesResultMessage(frequentActivities, lookbackDays)
             )
 
-            ActivitySuggestionResult(
+            ActivityFrequentResult(
                 ok = true,
-                suggestions = suggestions,
-                message = buildSuggestionResultMessage(suggestions, lookbackDays),
+                frequentActivities = frequentActivities,
+                message = buildFrequentActivitiesResultMessage(frequentActivities, lookbackDays),
                 operationId = queryResult.operationId
             )
         } catch (error: Exception) {
-            ActivitySuggestionResult(
+            ActivityFrequentResult(
                 ok = false,
-                suggestions = emptyList(),
-                message = formatNativeFailure("query activity suggestions failed", error)
+                frequentActivities = emptyList(),
+                message = formatNativeFailure("query frequent activities failed", error)
             ).also {
-                recordActivitySuggestionDiagnostics(
+                recordActivityFrequentDiagnostics(
                     operationId = nextDiagnosticOperationId(),
                     ok = false,
                     lookbackDays = lookbackDays,
@@ -190,9 +190,9 @@ internal class RuntimeQueryDelegate(
         mappingDelegate.listAuthorableEventTokens()
 
     private fun nextDiagnosticOperationId(): String =
-        nextOperationId?.invoke("query_activity_suggestions") ?: ""
+        nextOperationId?.invoke("query_activity_frequent") ?: ""
 
-    private fun recordActivitySuggestionDiagnostics(
+    private fun recordActivityFrequentDiagnostics(
         operationId: String,
         ok: Boolean,
         lookbackDays: Int,
@@ -203,9 +203,9 @@ internal class RuntimeQueryDelegate(
         rawActivities: List<String> = emptyList(),
         authorableOk: Boolean? = null,
         authorableNames: List<String> = emptyList(),
-        suggestions: List<String> = emptyList()
+        frequentActivities: List<String> = emptyList()
     ) {
-        val diagnosticMessage = buildActivitySuggestionDiagnosticMessage(
+        val diagnosticMessage = buildActivityFrequentDiagnosticMessage(
             lookbackDays = lookbackDays,
             topN = topN,
             anchorDateIso = anchorDateIso,
@@ -213,10 +213,10 @@ internal class RuntimeQueryDelegate(
             rawActivities = rawActivities,
             authorableOk = authorableOk,
             authorableNames = authorableNames,
-            suggestions = suggestions,
+            frequentActivities = frequentActivities,
             statusMessage = message
         )
-        logActivitySuggestionDiagnostics(
+        logActivityFrequentDiagnostics(
             operationId = operationId,
             ok = ok,
             message = diagnosticMessage
@@ -224,8 +224,8 @@ internal class RuntimeQueryDelegate(
         diagnosticsRecorder?.record(
             RuntimeDiagnosticRecord(
                 timestampEpochMs = System.currentTimeMillis(),
-                operationId = operationId.ifBlank { "query_activity_suggestions" },
-                stage = "query.activity_suggestions",
+                operationId = operationId.ifBlank { "query_activity_frequent" },
+                stage = "query.activity_frequent",
                 ok = ok,
                 initialized = null,
                 message = diagnosticMessage
@@ -233,7 +233,7 @@ internal class RuntimeQueryDelegate(
         )
     }
 
-    private fun logActivitySuggestionDiagnostics(
+    private fun logActivityFrequentDiagnostics(
         operationId: String,
         ok: Boolean,
         message: String
@@ -241,14 +241,14 @@ internal class RuntimeQueryDelegate(
         try {
             Log.i(
                 DIAGNOSTIC_LOG_TAG,
-                "stage=query.activity_suggestions op=${operationId.ifBlank { "-" }} ok=$ok $message"
+                "stage=query.activity_frequent op=${operationId.ifBlank { "-" }} ok=$ok $message"
             )
         } catch (_: Throwable) {
             // Local JVM tests use the Android stub jar, where Log methods may be unimplemented.
         }
     }
 
-    private fun buildActivitySuggestionDiagnosticMessage(
+    private fun buildActivityFrequentDiagnosticMessage(
         lookbackDays: Int,
         topN: Int,
         anchorDateIso: String?,
@@ -256,7 +256,7 @@ internal class RuntimeQueryDelegate(
         rawActivities: List<String>,
         authorableOk: Boolean?,
         authorableNames: List<String>,
-        suggestions: List<String>,
+        frequentActivities: List<String>,
         statusMessage: String
     ): String {
         val parts = mutableListOf(
@@ -268,10 +268,10 @@ internal class RuntimeQueryDelegate(
         parts += "rawCount=${rawActivities.size}"
         authorableOk?.let { parts += "authorableOk=$it" }
         parts += "authorableCount=${authorableNames.size}"
-        parts += "finalCount=${suggestions.size}"
+        parts += "finalCount=${frequentActivities.size}"
         parts += "rawSample=${rawActivities.toDiagnosticSample()}"
         parts += "authorableSample=${authorableNames.toDiagnosticSample()}"
-        parts += "finalSample=${suggestions.toDiagnosticSample()}"
+        parts += "finalSample=${frequentActivities.toDiagnosticSample()}"
         parts += "status=${statusMessage.replaceLineBreaks()}"
         return parts.joinToString(" ")
     }

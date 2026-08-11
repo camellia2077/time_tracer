@@ -4,7 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class ConfigAliasEditorCardNavigationTest {
+class ActivityHierarchyEditorCardNavigationTest {
     @Test
     fun resolve_layer_shows_only_target_level_nodes_for_deep_path() {
         // Contract: deep hierarchy should project to one current layer view.

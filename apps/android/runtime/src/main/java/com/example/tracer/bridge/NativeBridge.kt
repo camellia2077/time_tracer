@@ -26,7 +26,7 @@ object NativeBridge {
     const val QUERY_ACTION_DAYS_DURATION = 3
     const val QUERY_ACTION_DAYS_STATS = 4
     const val QUERY_ACTION_SEARCH = 5
-    const val QUERY_ACTION_ACTIVITY_SUGGEST = 6
+    const val QUERY_ACTION_ACTIVITY_FREQUENT = 6
     const val QUERY_ACTION_TREE = 7
     const val QUERY_ACTION_MAPPING_NAMES = 8
     const val QUERY_ACTION_ACTIVITY_ALIAS_MAPPINGS = 9

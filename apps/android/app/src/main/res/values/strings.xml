@@ -5,6 +5,7 @@
 
     <string name="tracer_tab_insights">Insights</string>
     <string name="tracer_tab_record">Record</string>
+    <string name="tracer_tab_files">Files</string>
     <string name="tracer_tab_config">Config</string>
 
 
@@ -88,7 +89,6 @@
     <string name="config_title_app_preferences">App preferences</string>
     <string name="config_title_appearance">Appearance</string>
     <string name="config_title_insights_settings">Insights display</string>
-    <string name="config_title_advanced_files">Advanced files</string>
     <string name="config_title_theme_mode">Theme Mode</string>
     <string name="config_title_theme_palette">Theme Palette</string>
     <string name="config_theme_palette_indigo">Indigo</string>

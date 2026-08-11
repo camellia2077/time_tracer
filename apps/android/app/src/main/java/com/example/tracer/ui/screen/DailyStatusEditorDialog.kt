@@ -241,7 +241,7 @@ internal fun DailyStatusEditorDialog(
             isLoading = recordUiState.isCanonicalCatalogLoading,
             roots = recordUiState.canonicalCatalogRoots,
             statusText = recordUiState.canonicalCatalogStatusText,
-            displayMode = RecordSuggestionOutputMode.CANONICAL,
+            displayMode = RecordFrequentOutputMode.CANONICAL,
             target = CanonicalBrowserTarget.INSIGHTS_STATUS_PARENT,
             collapsedRootPaths = recordUiState.collapsedCanonicalRootPaths,
             orderedRootPaths = recordUiState.orderedCanonicalRootPaths,

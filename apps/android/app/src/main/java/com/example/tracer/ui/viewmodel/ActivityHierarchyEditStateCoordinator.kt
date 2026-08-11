@@ -1,7 +1,7 @@
 package com.example.tracer
 
 internal sealed interface ActivityHierarchyEditStateOutcome {
-    data class Applied(val state: ConfigUiState) : ActivityHierarchyEditStateOutcome
+    data class Applied(val state: ActivityHierarchyEditorState) : ActivityHierarchyEditStateOutcome
     data class Failed(val message: String) : ActivityHierarchyEditStateOutcome
 }
 
@@ -12,7 +12,7 @@ internal class ActivityHierarchyEditStateCoordinator(
     private val activityHierarchyGateway: ActivityHierarchyGateway
 ) {
     suspend fun apply(
-        state: ConfigUiState,
+        state: ActivityHierarchyEditorState,
         operation: ActivityHierarchyOperation
     ): ActivityHierarchyEditStateOutcome {
         val selectedFile = state.selectedFilePath
@@ -57,13 +57,13 @@ internal class ActivityHierarchyEditStateCoordinator(
                 aliasParentOptions = parentOptions,
                 aliasEditorErrorMessage = "",
                 txtReloadRequestVersion = state.txtReloadRequestVersion + 1,
-                autoSaveStatus = ConfigAutoSaveStatus.SAVED
+                autoSaveStatus = ActivityHierarchySaveStatus.SAVED
             )
         )
     }
 
     private fun cacheStructuredDraft(
-        state: ConfigUiState,
+        state: ActivityHierarchyEditorState,
         filePath: String,
         document: ActivityHierarchyDocument,
         tomlContent: String
@@ -79,7 +79,7 @@ internal class ActivityHierarchyEditStateCoordinator(
     }
 
     private fun cacheAliasMode(
-        state: ConfigUiState,
+        state: ActivityHierarchyEditorState,
         filePath: String,
         mode: AliasEditorMode
     ): Map<String, AliasEditorMode> {

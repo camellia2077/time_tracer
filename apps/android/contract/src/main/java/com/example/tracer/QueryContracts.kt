@@ -1,8 +1,8 @@
 package com.example.tracer
 
-data class ActivitySuggestionResult(
+data class ActivityFrequentResult(
     val ok: Boolean,
-    val suggestions: List<String>,
+    val frequentActivities: List<String>,
     val message: String,
     val operationId: String = ""
 )

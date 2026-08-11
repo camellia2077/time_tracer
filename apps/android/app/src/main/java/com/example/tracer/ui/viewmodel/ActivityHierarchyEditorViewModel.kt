@@ -7,18 +7,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 
-internal class ConfigViewModel(
+internal class ActivityHierarchyEditorViewModel(
     private val configGateway: ConfigGateway,
-    private val txtStorageGateway: TxtStorageGateway,
     private val quickActivitiesPreferenceGateway: QuickActivitiesPreferenceGateway,
     private val activityHierarchyGateway: ActivityHierarchyGateway,
     private val activityHierarchyMigrationGateway: ActivityHierarchyMigrationGateway
 ) : ViewModel() {
-    private val configFileEditor = ConfigFileEditor(
+    private val configFileEditor = ActivityHierarchyFileEditor(
         configGateway = configGateway,
         activityHierarchyGateway = activityHierarchyGateway
     )
-    private val aliasEditor = ConfigAliasEditor(
+    private val aliasEditor = ActivityHierarchyEditor(
         configGateway = configGateway,
         activityHierarchyGateway = activityHierarchyGateway,
         activityHierarchyMigrationGateway = activityHierarchyMigrationGateway,
@@ -28,7 +27,7 @@ internal class ConfigViewModel(
         readState = { uiState },
         writeState = { uiState = it }
     )
-    private val aliasMoveEditor = ConfigAliasMoveEditor(
+    private val aliasMoveEditor = ActivityHierarchyMoveEditor(
         configGateway = configGateway,
         activityHierarchyGateway = activityHierarchyGateway,
         activityHierarchyMigrationGateway = activityHierarchyMigrationGateway,
@@ -38,7 +37,7 @@ internal class ConfigViewModel(
         readState = { uiState },
         writeState = { uiState = it }
     )
-    private val saveCoordinator = ConfigSaveCoordinator(
+    private val saveCoordinator = ActivityHierarchySaveCoordinator(
         configGateway = configGateway,
         activityHierarchyGateway = activityHierarchyGateway,
         activityHierarchyMigrationGateway = activityHierarchyMigrationGateway,
@@ -47,43 +46,15 @@ internal class ConfigViewModel(
         scope = viewModelScope,
         readState = { uiState },
         writeState = { uiState = it },
-        refreshConfigFiles = ::refreshConfigFiles
+        refreshActivityCategories = ::openActivityCategories
     )
 
-    /** Compatibility constructor for local tests that use one runtime fake. */
-    constructor(
-        configGateway: ConfigGateway,
-        txtStorageGateway: TxtStorageGateway,
-        quickActivitiesPreferenceGateway: QuickActivitiesPreferenceGateway
-    ) : this(
-        configGateway = configGateway,
-        txtStorageGateway = txtStorageGateway,
-        quickActivitiesPreferenceGateway = quickActivitiesPreferenceGateway,
-        activityHierarchyGateway = configGateway as? ActivityHierarchyGateway
-            ?: UnavailableActivityHierarchyGateway,
-        activityHierarchyMigrationGateway = configGateway as? ActivityHierarchyMigrationGateway
-            ?: UnavailableActivityHierarchyMigrationGateway
-    )
-    companion object {
-        private const val ALIAS_RENAME_LOG_TAG = "AliasRename"
-    }
-
-    var uiState by mutableStateOf(ConfigUiState())
+    var uiState by mutableStateOf(ActivityHierarchyEditorState())
         private set
 
-    init {
-        refreshConfigFiles()
-    }
-
-    fun refreshConfigFiles(showStatus: Boolean = true) {
+    fun openActivityCategories() {
         viewModelScope.launch {
-            uiState = configFileEditor.refresh(uiState, showStatus)
-        }
-    }
-
-    fun selectCategory(category: ConfigCategory) {
-        viewModelScope.launch {
-            uiState = configFileEditor.selectCategory(uiState, category)
+            uiState = configFileEditor.openActivityCategories(uiState)
         }
     }
 
@@ -95,10 +66,6 @@ internal class ConfigViewModel(
         viewModelScope.launch {
             uiState = configFileEditor.open(uiState, trimmedPath)
         }
-    }
-
-    fun onEditableContentChange(value: String) {
-        uiState = configFileEditor.updateEditableContent(uiState, value)
     }
 
     fun onAliasAdvancedTomlChange(value: String) = aliasEditor.onAliasAdvancedTomlChange(value)

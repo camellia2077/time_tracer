@@ -14,7 +14,7 @@ import com.example.tracer.PersistedRecordInputSnapshot
 import com.example.tracer.RecordAuthoringMode
 import com.example.tracer.TxtOutputMode
 import com.example.tracer.RecordLogicalDayTarget
-import com.example.tracer.RecordSuggestionOutputMode
+import com.example.tracer.RecordFrequentOutputMode
 import com.example.tracer.InsightsChartSemanticMode
 import com.example.tracer.InsightsChartVisualMode
 import com.example.tracer.InsightsAverageDayBasis
@@ -56,11 +56,11 @@ data class ThemeConfig(
     val palette: ThemePalette = ThemePalette.Indigo
 )
 
-data class RecordSuggestionPreferences(
+data class RecordFrequentPreferences(
     val lookbackDays: Int,
     val topN: Int,
-    val outputMode: RecordSuggestionOutputMode,
-    val canonicalCatalogDisplayMode: RecordSuggestionOutputMode,
+    val outputMode: RecordFrequentOutputMode,
+    val canonicalCatalogDisplayMode: RecordFrequentOutputMode,
     val quickActivities: List<String>,
     val quickAccessCardExpanded: Boolean,
     val assistSettingsExpanded: Boolean,
@@ -70,12 +70,12 @@ data class RecordSuggestionPreferences(
 
 class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
     companion object {
-        const val DEFAULT_RECORD_SUGGEST_LOOKBACK_DAYS: Int = 7
-        const val DEFAULT_RECORD_SUGGEST_TOP_N: Int = 5
-        val DEFAULT_RECORD_SUGGEST_OUTPUT_MODE: RecordSuggestionOutputMode =
-            RecordSuggestionOutputMode.CANONICAL
-        val DEFAULT_RECORD_CANONICAL_CATALOG_DISPLAY_MODE: RecordSuggestionOutputMode =
-            RecordSuggestionOutputMode.CANONICAL
+        const val DEFAULT_RECORD_FREQUENT_LOOKBACK_DAYS: Int = 7
+        const val DEFAULT_RECORD_FREQUENT_TOP_N: Int = 5
+        val DEFAULT_RECORD_FREQUENT_OUTPUT_MODE: RecordFrequentOutputMode =
+            RecordFrequentOutputMode.CANONICAL
+        val DEFAULT_RECORD_CANONICAL_CATALOG_DISPLAY_MODE: RecordFrequentOutputMode =
+            RecordFrequentOutputMode.CANONICAL
         val DEFAULT_RECORD_QUICK_ACTIVITIES: List<String> = emptyList()
         const val DEFAULT_INSIGHTS_CHART_SHOW_AVERAGE_LINE: Boolean = false
         val DEFAULT_INSIGHTS_CHART_SEMANTIC_MODE: InsightsChartSemanticMode =
@@ -93,10 +93,10 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         val DEFAULT_INSIGHTS_AVERAGE_DAY_BASIS: InsightsAverageDayBasis =
             InsightsAverageDayBasis.ACTIVE_DAYS
         const val DEFAULT_INSIGHTS_CHART_TREND_ROOT: String = ""
-        private const val MIN_RECORD_SUGGEST_LOOKBACK_DAYS: Int = 0
-        private const val MAX_RECORD_SUGGEST_LOOKBACK_DAYS: Int = 60
-        private const val MIN_RECORD_SUGGEST_TOP_N: Int = 0
-        private const val MAX_RECORD_SUGGEST_TOP_N: Int = 20
+        private const val MIN_RECORD_FREQUENT_LOOKBACK_DAYS: Int = 0
+        private const val MAX_RECORD_FREQUENT_LOOKBACK_DAYS: Int = 60
+        private const val MIN_RECORD_FREQUENT_TOP_N: Int = 0
+        private const val MAX_RECORD_FREQUENT_TOP_N: Int = 20
         private const val MAX_RECORD_QUICK_ACTIVITY_COUNT: Int = 12
         private const val MAX_RECORD_QUICK_ACTIVITY_LENGTH: Int = 40
         const val DEFAULT_RECORD_ASSIST_SETTINGS_EXPANDED: Boolean = false
@@ -114,9 +114,9 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         val DARK_THEME_STYLE = stringPreferencesKey("dark_theme_style")
         val THEME_PALETTE = stringPreferencesKey("theme_palette")
         val APP_LANGUAGE = stringPreferencesKey("app_language")
-        val RECORD_SUGGEST_LOOKBACK_DAYS = intPreferencesKey("record_suggest_lookback_days")
-        val RECORD_SUGGEST_TOP_N = intPreferencesKey("record_suggest_top_n")
-        val RECORD_SUGGEST_OUTPUT_MODE = stringPreferencesKey("record_suggest_output_mode")
+        val RECORD_FREQUENT_LOOKBACK_DAYS = intPreferencesKey("record_frequent_lookback_days")
+        val RECORD_FREQUENT_TOP_N = intPreferencesKey("record_frequent_top_n")
+        val RECORD_FREQUENT_OUTPUT_MODE = stringPreferencesKey("record_frequent_output_mode")
         val RECORD_CANONICAL_CATALOG_DISPLAY_MODE =
             stringPreferencesKey("record_canonical_catalog_display_mode")
         val RECORD_QUICK_ACTIVITIES = stringPreferencesKey("record_quick_activities")
@@ -180,13 +180,13 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         runCatching { AppLanguage.valueOf(languageName) }.getOrDefault(AppLanguage.System)
     }
 
-    val recordSuggestionPreferences: Flow<RecordSuggestionPreferences> = dataStore.data.map { preferences ->
-        val storedLookbackDays = preferences[PreferencesKeys.RECORD_SUGGEST_LOOKBACK_DAYS]
-            ?: DEFAULT_RECORD_SUGGEST_LOOKBACK_DAYS
-        val storedTopN = preferences[PreferencesKeys.RECORD_SUGGEST_TOP_N]
-            ?: DEFAULT_RECORD_SUGGEST_TOP_N
-        val storedOutputMode = preferences[PreferencesKeys.RECORD_SUGGEST_OUTPUT_MODE]
-            ?: DEFAULT_RECORD_SUGGEST_OUTPUT_MODE.name
+    val recordFrequentPreferences: Flow<RecordFrequentPreferences> = dataStore.data.map { preferences ->
+        val storedLookbackDays = preferences[PreferencesKeys.RECORD_FREQUENT_LOOKBACK_DAYS]
+            ?: DEFAULT_RECORD_FREQUENT_LOOKBACK_DAYS
+        val storedTopN = preferences[PreferencesKeys.RECORD_FREQUENT_TOP_N]
+            ?: DEFAULT_RECORD_FREQUENT_TOP_N
+        val storedOutputMode = preferences[PreferencesKeys.RECORD_FREQUENT_OUTPUT_MODE]
+            ?: DEFAULT_RECORD_FREQUENT_OUTPUT_MODE.name
         val storedCanonicalCatalogDisplayMode =
             preferences[PreferencesKeys.RECORD_CANONICAL_CATALOG_DISPLAY_MODE]
                 ?: DEFAULT_RECORD_CANONICAL_CATALOG_DISPLAY_MODE.name
@@ -206,13 +206,13 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             preferences[PreferencesKeys.RECORD_ORDERED_CANONICAL_ROOT_PATHS]
         )
 
-        RecordSuggestionPreferences(
+        RecordFrequentPreferences(
             lookbackDays = normalizeLookbackDays(storedLookbackDays),
             topN = normalizeTopN(storedTopN),
-            outputMode = runCatching { RecordSuggestionOutputMode.valueOf(storedOutputMode) }
-                .getOrDefault(DEFAULT_RECORD_SUGGEST_OUTPUT_MODE),
+            outputMode = runCatching { RecordFrequentOutputMode.valueOf(storedOutputMode) }
+                .getOrDefault(DEFAULT_RECORD_FREQUENT_OUTPUT_MODE),
             canonicalCatalogDisplayMode = runCatching {
-                RecordSuggestionOutputMode.valueOf(storedCanonicalCatalogDisplayMode)
+                RecordFrequentOutputMode.valueOf(storedCanonicalCatalogDisplayMode)
             }.getOrDefault(DEFAULT_RECORD_CANONICAL_CATALOG_DISPLAY_MODE),
             quickActivities = quickActivities,
             quickAccessCardExpanded = quickAccessCardExpanded,
@@ -316,21 +316,21 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         }
     }
 
-    suspend fun setRecordSuggestLookbackDays(value: Int) {
+    suspend fun setRecordFrequentLookbackDays(value: Int) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.RECORD_SUGGEST_LOOKBACK_DAYS] = normalizeLookbackDays(value)
+            preferences[PreferencesKeys.RECORD_FREQUENT_LOOKBACK_DAYS] = normalizeLookbackDays(value)
         }
     }
 
-    suspend fun setRecordSuggestTopN(value: Int) {
+    suspend fun setRecordFrequentTopN(value: Int) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.RECORD_SUGGEST_TOP_N] = normalizeTopN(value)
+            preferences[PreferencesKeys.RECORD_FREQUENT_TOP_N] = normalizeTopN(value)
         }
     }
 
-    suspend fun setRecordSuggestOutputMode(value: RecordSuggestionOutputMode) {
+    suspend fun setRecordFrequentOutputMode(value: RecordFrequentOutputMode) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.RECORD_SUGGEST_OUTPUT_MODE] = value.name
+            preferences[PreferencesKeys.RECORD_FREQUENT_OUTPUT_MODE] = value.name
         }
     }
 
@@ -355,7 +355,7 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             .getOrDefault(DEFAULT_INSIGHTS_PARAMETER_SECTION)
     }
 
-    suspend fun setRecordCanonicalCatalogDisplayMode(value: RecordSuggestionOutputMode) {
+    suspend fun setRecordCanonicalCatalogDisplayMode(value: RecordFrequentOutputMode) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.RECORD_CANONICAL_CATALOG_DISPLAY_MODE] = value.name
         }
@@ -495,11 +495,11 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
     }
 
     private fun normalizeLookbackDays(value: Int): Int {
-        return value.coerceIn(MIN_RECORD_SUGGEST_LOOKBACK_DAYS, MAX_RECORD_SUGGEST_LOOKBACK_DAYS)
+        return value.coerceIn(MIN_RECORD_FREQUENT_LOOKBACK_DAYS, MAX_RECORD_FREQUENT_LOOKBACK_DAYS)
     }
 
     private fun normalizeTopN(value: Int): Int {
-        return value.coerceIn(MIN_RECORD_SUGGEST_TOP_N, MAX_RECORD_SUGGEST_TOP_N)
+        return value.coerceIn(MIN_RECORD_FREQUENT_TOP_N, MAX_RECORD_FREQUENT_TOP_N)
     }
 
     private fun serializeDailyStatusDefinitions(values: List<DailyStatusDefinition>): String {

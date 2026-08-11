@@ -3,11 +3,11 @@ package com.example.tracer
 internal class RecordUseCaseCaller(
     private val recordUseCases: RecordUseCases
 ) {
-    suspend fun loadActivitySuggestions(
+    suspend fun loadFrequentActivities(
         state: RecordUiState,
         lookbackDays: Int,
         topN: Int
-    ): RecordUiState = recordUseCases.loadActivitySuggestions(
+    ): RecordUiState = recordUseCases.loadFrequentActivities(
         state = state,
         lookbackDays = lookbackDays,
         topN = topN
@@ -16,12 +16,12 @@ internal class RecordUseCaseCaller(
     suspend fun loadCanonicalCatalog(state: RecordUiState): RecordUiState =
         recordUseCases.loadCanonicalCatalog(state)
 
-    suspend fun applySuggestedActivity(
+    suspend fun applyFrequentActivity(
         state: RecordUiState,
-        suggestedActivityToken: String
-    ): RecordUiState = recordUseCases.applySuggestedActivity(
+        frequentActivityToken: String
+    ): RecordUiState = recordUseCases.applyFrequentActivity(
         state = state,
-        suggestedActivityToken = suggestedActivityToken
+        frequentActivityToken = frequentActivityToken
     )
 
     suspend fun recordNow(state: RecordUiState): RecordUiState =

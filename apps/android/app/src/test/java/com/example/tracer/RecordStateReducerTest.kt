@@ -122,22 +122,22 @@ class RecordStateReducerTest {
     }
 
     @Test
-    fun suggestionOutputMode_updatesState() {
+    fun frequentOutputMode_updatesState() {
         val viewModel = buildRecordViewModel()
 
-        viewModel.updateSuggestionOutputMode(RecordSuggestionOutputMode.ALIAS)
+        viewModel.updateFrequentOutputMode(RecordFrequentOutputMode.ALIAS)
 
-        assertEquals(RecordSuggestionOutputMode.ALIAS, viewModel.uiState.suggestionOutputMode)
+        assertEquals(RecordFrequentOutputMode.ALIAS, viewModel.uiState.frequentOutputMode)
     }
 
     @Test
     fun canonicalCatalogDisplayMode_updatesState() {
         val viewModel = buildRecordViewModel()
 
-        viewModel.updateCanonicalCatalogDisplayMode(RecordSuggestionOutputMode.ALIAS)
+        viewModel.updateCanonicalCatalogDisplayMode(RecordFrequentOutputMode.ALIAS)
 
         assertEquals(
-            RecordSuggestionOutputMode.ALIAS,
+            RecordFrequentOutputMode.ALIAS,
             viewModel.uiState.canonicalCatalogDisplayMode
         )
     }
@@ -145,26 +145,26 @@ class RecordStateReducerTest {
     @Test
     fun applyCanonicalCatalogEntry_insertsCanonicalPathAndDismissesOverlays() {
         val viewModel = buildRecordViewModel()
-        viewModel.toggleSuggestions()
+        viewModel.toggleFrequentActivities()
         viewModel.openCanonicalCatalog()
 
         viewModel.applyCanonicalCatalogEntry("study/math/calculus")
 
         assertEquals("study/math/calculus", viewModel.uiState.recordContent)
-        assertFalse(viewModel.uiState.suggestionsVisible)
+        assertFalse(viewModel.uiState.frequentActivitiesVisible)
         assertFalse(viewModel.uiState.isCanonicalCatalogVisible)
     }
 
     @Test
     fun applyCanonicalCatalogEntry_insertsAliasTokenAndDismissesOverlays() {
         val viewModel = buildRecordViewModel()
-        viewModel.toggleSuggestions()
+        viewModel.toggleFrequentActivities()
         viewModel.openCanonicalCatalog()
 
         viewModel.applyCanonicalCatalogEntry("高数")
 
         assertEquals("高数", viewModel.uiState.recordContent)
-        assertFalse(viewModel.uiState.suggestionsVisible)
+        assertFalse(viewModel.uiState.frequentActivitiesVisible)
         assertFalse(viewModel.uiState.isCanonicalCatalogVisible)
     }
 
@@ -243,11 +243,11 @@ private class ReducerTestTxtStorageGateway : TxtStorageGateway {
 }
 
 private class ReducerTestQueryGateway : QueryGateway {
-    override suspend fun queryActivitySuggestions(
+    override suspend fun queryFrequentActivities(
         lookbackDays: Int,
         topN: Int,
         anchorDateIso: String?
-    ): ActivitySuggestionResult = ActivitySuggestionResult(ok = true, suggestions = emptyList(), message = "ok")
+    ): ActivityFrequentResult = ActivityFrequentResult(ok = true, frequentActivities = emptyList(), message = "ok")
 
     override suspend fun queryDayDurations(params: DataDurationQueryParams): DataQueryTextResult =
         DataQueryTextResult(ok = true, outputText = "", message = "ok")

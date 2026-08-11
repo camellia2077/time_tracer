@@ -3,12 +3,12 @@ package com.example.tracer
 internal class RuntimeQueryService(
     private val queryDelegate: RuntimeQueryDelegate
 ) {
-    suspend fun queryActivitySuggestions(
+    suspend fun queryFrequentActivities(
         lookbackDays: Int,
         topN: Int,
         anchorDateIso: String? = null
-    ): ActivitySuggestionResult =
-        queryDelegate.queryActivitySuggestions(lookbackDays, topN, anchorDateIso)
+    ): ActivityFrequentResult =
+        queryDelegate.queryFrequentActivities(lookbackDays, topN, anchorDateIso)
 
     suspend fun queryDayDurations(params: DataDurationQueryParams): DataQueryTextResult =
         queryDelegate.queryDayDurations(params)

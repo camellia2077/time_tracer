@@ -17,7 +17,7 @@ import org.junit.Before
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class ConfigViewModelTest {
+class ActivityHierarchyEditorViewModelTest {
     private val dispatcher = StandardTestDispatcher()
 
     @Before
@@ -30,15 +30,25 @@ class ConfigViewModelTest {
         Dispatchers.resetMain()
     }
 
+    private fun activityHierarchyEditor(
+        runtime: FakeConfigRuntime,
+        quickActivitiesGateway: FakeQuickActivitiesPreferenceGateway =
+            FakeQuickActivitiesPreferenceGateway()
+    ): ActivityHierarchyEditorViewModel = ActivityHierarchyEditorViewModel(
+        configGateway = runtime,
+        quickActivitiesPreferenceGateway = quickActivitiesGateway,
+        activityHierarchyGateway = runtime,
+        activityHierarchyMigrationGateway = runtime
+    ).also { it.openActivityCategories() }
+
     @Test
-    fun alias_category_is_selected_by_default() = runTest(dispatcher) {
+    fun opening_activity_categories_selects_the_first_hierarchy_file() = runTest(dispatcher) {
         val gateway = FakeConfigRuntime()
         val quickActivitiesGateway = FakeQuickActivitiesPreferenceGateway()
 
-        val viewModel = ConfigViewModel(gateway, gateway, quickActivitiesGateway)
+        val viewModel = activityHierarchyEditor(gateway, quickActivitiesGateway)
         advanceUntilIdle()
 
-        assertEquals(ConfigCategory.ALIAS, viewModel.uiState.selectedCategory)
         assertEquals("meal.toml", viewModel.uiState.selectedFileDisplayName)
         assertEquals("user/activity_hierarchy/meal.toml", viewModel.uiState.selectedFilePath)
         assertEquals(AliasEditorMode.STRUCTURED, viewModel.uiState.aliasEditorMode)
@@ -49,7 +59,7 @@ class ConfigViewModelTest {
     @Test
     fun selecting_advanced_mode_uses_current_structured_draft() = runTest(dispatcher) {
         val runtime = FakeConfigRuntime()
-        val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
+        val viewModel = activityHierarchyEditor(runtime)
         advanceUntilIdle()
 
         // Parent updates are now async because selection can trigger file switch.
@@ -65,7 +75,7 @@ class ConfigViewModelTest {
     @Test
     fun selecting_parent_switches_to_matching_alias_file_content() = runTest(dispatcher) {
         val runtime = FakeConfigRuntime()
-        val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
+        val viewModel = activityHierarchyEditor(runtime)
         advanceUntilIdle()
 
         assertEquals("user/activity_hierarchy/meal.toml", viewModel.uiState.selectedFilePath)
@@ -82,7 +92,7 @@ class ConfigViewModelTest {
     @Test
     fun alias_parent_options_are_collected_from_existing_alias_files() = runTest(dispatcher) {
         val runtime = FakeConfigRuntime()
-        val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
+        val viewModel = activityHierarchyEditor(runtime)
         advanceUntilIdle()
 
         assertEquals(listOf("meal", "recreation"), viewModel.uiState.aliasParentOptions)
@@ -91,7 +101,7 @@ class ConfigViewModelTest {
     @Test
     fun invalid_advanced_toml_blocks_return_to_structured_mode() = runTest(dispatcher) {
         val runtime = FakeConfigRuntime()
-        val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
+        val viewModel = activityHierarchyEditor(runtime)
         advanceUntilIdle()
 
         viewModel.selectAliasEditorMode(AliasEditorMode.ADVANCED)
@@ -106,7 +116,7 @@ class ConfigViewModelTest {
     @Test
     fun save_rejects_duplicate_alias_key_across_other_alias_files() = runTest(dispatcher) {
         val gateway = FakeConfigRuntime()
-        val viewModel = ConfigViewModel(gateway, gateway, FakeQuickActivitiesPreferenceGateway())
+        val viewModel = activityHierarchyEditor(gateway)
         advanceUntilIdle()
 
         viewModel.addAliasEntry(parentGroupId = null, canonicalLeaf = "news", aliases = listOf("zhihu"))
@@ -119,7 +129,7 @@ class ConfigViewModelTest {
     @Test
     fun save_allows_multiple_aliases_for_one_canonical_leaf() = runTest(dispatcher) {
         val gateway = FakeConfigRuntime()
-        val viewModel = ConfigViewModel(gateway, gateway, FakeQuickActivitiesPreferenceGateway())
+        val viewModel = activityHierarchyEditor(gateway)
         advanceUntilIdle()
 
         viewModel.addAliasEntry(parentGroupId = null, canonicalLeaf = "dining", aliases = listOf("吃饭", "饭"))
@@ -131,7 +141,7 @@ class ConfigViewModelTest {
     @Test
     fun creating_alias_toml_uses_structured_editor_with_file_name_as_parent() = runTest(dispatcher) {
         val runtime = FakeConfigRuntime()
-        val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
+        val viewModel = activityHierarchyEditor(runtime)
         advanceUntilIdle()
 
         viewModel.createAliasTomlFile("study")
@@ -150,7 +160,7 @@ class ConfigViewModelTest {
     @Test
     fun creating_toml_rejects_path_like_file_name() = runTest(dispatcher) {
         val runtime = FakeConfigRuntime()
-        val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
+        val viewModel = activityHierarchyEditor(runtime)
         advanceUntilIdle()
 
         viewModel.createAliasTomlFile("../outside")
@@ -163,7 +173,7 @@ class ConfigViewModelTest {
     @Test
     fun deleting_alias_toml_removes_it_from_file_list() = runTest(dispatcher) {
         val runtime = FakeConfigRuntime()
-        val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
+        val viewModel = activityHierarchyEditor(runtime)
         advanceUntilIdle()
 
         viewModel.deleteCurrentAliasTomlFile()
@@ -176,7 +186,7 @@ class ConfigViewModelTest {
     @Test
     fun switching_alias_files_restores_unsaved_advanced_draft_and_mode_when_returning() = runTest(dispatcher) {
         val runtime = FakeConfigRuntime()
-        val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
+        val viewModel = activityHierarchyEditor(runtime)
         advanceUntilIdle()
 
         viewModel.selectAliasEditorMode(AliasEditorMode.ADVANCED)
@@ -198,7 +208,7 @@ class ConfigViewModelTest {
         val quickActivitiesGateway = FakeQuickActivitiesPreferenceGateway(
             initialQuickActivities = listOf("早餐", "晚饭", "study/math")
         )
-        val viewModel = ConfigViewModel(runtime, runtime, quickActivitiesGateway)
+        val viewModel = activityHierarchyEditor(runtime, quickActivitiesGateway)
         advanceUntilIdle()
 
         val breakfastEntryId = requireNotNull(viewModel.uiState.aliasDocumentDraft)
@@ -230,7 +240,7 @@ class ConfigViewModelTest {
     @Test
     fun renaming_activity_category_sends_core_result_with_file_rename() = runTest(dispatcher) {
         val runtime = FakeConfigRuntime()
-        val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
+        val viewModel = activityHierarchyEditor(runtime)
         advanceUntilIdle()
 
         viewModel.renameAliasCategory("daily")
@@ -255,7 +265,7 @@ class ConfigViewModelTest {
     @Test
     fun renaming_default_activity_category_updates_the_new_toml_name_and_content() = runTest(dispatcher) {
         val runtime = FakeConfigRuntime()
-        val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
+        val viewModel = activityHierarchyEditor(runtime)
         advanceUntilIdle()
 
         assertEquals("user/activity_hierarchy/meal.toml", viewModel.uiState.selectedFilePath)
@@ -281,7 +291,7 @@ class ConfigViewModelTest {
                 message = "candidate database rebuild failed"
             )
         )
-        val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
+        val viewModel = activityHierarchyEditor(runtime)
         advanceUntilIdle()
 
         viewModel.renameAliasCategory("daily")
@@ -290,14 +300,14 @@ class ConfigViewModelTest {
         assertEquals("user/activity_hierarchy/meal.toml", viewModel.uiState.selectedFilePath)
         assertEquals("meal", viewModel.uiState.aliasDocumentDraft?.parent)
         assertFalse(runtime.hasConfigFile("user/activity_hierarchy/daily.toml"))
-        assertEquals(ConfigAutoSaveStatus.FAILED, viewModel.uiState.autoSaveStatus)
+        assertEquals(ActivityHierarchySaveStatus.FAILED, viewModel.uiState.autoSaveStatus)
         assertEquals("candidate database rebuild failed", viewModel.uiState.aliasEditorErrorMessage)
     }
 
     @Test
     fun previewing_alias_move_keeps_toml_draft_and_storage_unchanged() = runTest(dispatcher) {
         val runtime = FakeConfigRuntime()
-        val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
+        val viewModel = activityHierarchyEditor(runtime)
         advanceUntilIdle()
 
         val document = requireNotNull(viewModel.uiState.aliasDocumentDraft)
@@ -324,7 +334,7 @@ class ConfigViewModelTest {
     @Test
     fun confirming_alias_move_delegates_atomic_migration_and_updates_editor_state() = runTest(dispatcher) {
         val runtime = FakeConfigRuntime()
-        val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
+        val viewModel = activityHierarchyEditor(runtime)
         advanceUntilIdle()
 
         val document = requireNotNull(viewModel.uiState.aliasDocumentDraft)
@@ -344,14 +354,14 @@ class ConfigViewModelTest {
         assertEquals("meal_dinner_breakfast", request.replacementPlan.canonical.single().newCanonical)
         assertTrue(request.updatedTomlContent.contains("[canonical.dinner]"))
         assertNull(viewModel.uiState.aliasEntryMovePlan)
-        assertEquals(ConfigAutoSaveStatus.SAVED, viewModel.uiState.autoSaveStatus)
+        assertEquals(ActivityHierarchySaveStatus.SAVED, viewModel.uiState.autoSaveStatus)
         assertEquals(1L, viewModel.uiState.txtReloadRequestVersion)
     }
 
     @Test
     fun preparing_alias_group_move_includes_other_toml_hierarchies() = runTest(dispatcher) {
         val runtime = FakeConfigRuntime()
-        val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
+        val viewModel = activityHierarchyEditor(runtime)
         advanceUntilIdle()
 
         val breakfast = requireNotNull(viewModel.uiState.aliasDocumentDraft).nodes
@@ -381,7 +391,7 @@ class ConfigViewModelTest {
     @Test
     fun promoting_alias_to_category_preserves_its_record_name_and_canonical_leaf() = runTest(dispatcher) {
         val runtime = FakeConfigRuntime()
-        val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
+        val viewModel = activityHierarchyEditor(runtime)
         advanceUntilIdle()
         val breakfast = requireNotNull(viewModel.uiState.aliasDocumentDraft).nodes
             .filterIsInstance<ActivityHierarchyGroup>().first { it.name == "breakfast" }
@@ -401,7 +411,7 @@ class ConfigViewModelTest {
     @Test
     fun renaming_category_record_name_uses_atomic_txt_and_database_migration() = runTest(dispatcher) {
         val runtime = FakeConfigRuntime()
-        val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
+        val viewModel = activityHierarchyEditor(runtime)
         advanceUntilIdle()
         val entry = requireNotNull(viewModel.uiState.aliasDocumentDraft).nodes
             .filterIsInstance<ActivityHierarchyGroup>().first { it.name == "breakfast" }
@@ -425,7 +435,7 @@ class ConfigViewModelTest {
     @Test
     fun changing_group_alias_list_migrates_the_renamed_alias_token() = runTest(dispatcher) {
         val runtime = FakeConfigRuntime()
-        val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
+        val viewModel = activityHierarchyEditor(runtime)
         advanceUntilIdle()
         val entry = requireNotNull(viewModel.uiState.aliasDocumentDraft).nodes
             .filterIsInstance<ActivityHierarchyGroup>().first { it.name == "dinner" }
@@ -446,7 +456,7 @@ class ConfigViewModelTest {
     @Test
     fun adding_category_record_name_only_updates_the_toml_draft() = runTest(dispatcher) {
         val runtime = FakeConfigRuntime()
-        val viewModel = ConfigViewModel(runtime, runtime, FakeQuickActivitiesPreferenceGateway())
+        val viewModel = activityHierarchyEditor(runtime)
         advanceUntilIdle()
         val category = requireNotNull(viewModel.uiState.aliasDocumentDraft).nodes
             .filterIsInstance<ActivityHierarchyGroup>().first { it.name == "breakfast" }

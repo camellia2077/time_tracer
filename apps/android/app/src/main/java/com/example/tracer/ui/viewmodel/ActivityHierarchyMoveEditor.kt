@@ -3,17 +3,17 @@ package com.example.tracer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-internal class ConfigAliasMoveEditor(
+internal class ActivityHierarchyMoveEditor(
     private val configGateway: ConfigGateway,
     private val activityHierarchyGateway: ActivityHierarchyGateway,
     activityHierarchyMigrationGateway: ActivityHierarchyMigrationGateway,
     quickActivitiesPreferenceGateway: QuickActivitiesPreferenceGateway,
-    private val configFileEditor: ConfigFileEditor,
+    private val configFileEditor: ActivityHierarchyFileEditor,
     private val scope: CoroutineScope,
-    private val readState: () -> ConfigUiState,
-    private val writeState: (ConfigUiState) -> Unit
+    private val readState: () -> ActivityHierarchyEditorState,
+    private val writeState: (ActivityHierarchyEditorState) -> Unit
 ) {
-    private var uiState: ConfigUiState
+    private var uiState: ActivityHierarchyEditorState
         get() = readState()
         set(value) = writeState(value)
 
@@ -150,9 +150,9 @@ internal class ConfigAliasMoveEditor(
     }
 
     private fun applyMovePreviewOutcome(
-        state: ConfigUiState,
+        state: ActivityHierarchyEditorState,
         outcome: ActivityHierarchyMovePreviewOutcome
-    ): ConfigUiState = when (outcome) {
+    ): ActivityHierarchyEditorState = when (outcome) {
         is ActivityHierarchyMovePreviewOutcome.Ready -> state.copy(
             aliasEntryMovePlan = outcome.plan,
             aliasEditorErrorMessage = ""
@@ -207,7 +207,7 @@ internal class ConfigAliasMoveEditor(
         val sourceDocument = plan.updatedDocuments.firstOrNull { it.sourceName == plan.sourceFilePath }
             ?: return
         viewModelScope.launch {
-            uiState = uiState.copy(autoSaveStatus = ConfigAutoSaveStatus.SAVING)
+            uiState = uiState.copy(autoSaveStatus = ActivityHierarchySaveStatus.SAVING)
             val outcome = activityHierarchyEditCoordinator.persistMigration(
                 ActivityHierarchyMigrationRequest(
                     configRelativePath = plan.sourceFilePath,
@@ -221,7 +221,7 @@ internal class ConfigAliasMoveEditor(
             if (outcome is ActivityHierarchyMigrationOutcome.Invalid) {
                 uiState = uiState.copy(
                     aliasEditorErrorMessage = outcome.message,
-                    autoSaveStatus = ConfigAutoSaveStatus.FAILED
+                    autoSaveStatus = ActivityHierarchySaveStatus.FAILED
                 )
                 return@launch
             }
@@ -229,13 +229,10 @@ internal class ConfigAliasMoveEditor(
             val refreshedState = if (refreshed.ok) {
                 uiState.copy(
                     aliasFiles = refreshed.aliasFiles,
-                    chartFiles = refreshed.chartFiles,
-                    metaFiles = refreshed.metaFiles,
-                    insightsFiles = refreshed.insightsFiles,
                     aliasEntryMovePlan = null,
                     aliasEntryMoveDestinations = emptyList(),
                     aliasEntryMoveDestinationsLoading = false,
-                    autoSaveStatus = ConfigAutoSaveStatus.SAVED,
+                    autoSaveStatus = ActivityHierarchySaveStatus.SAVED,
                     txtReloadRequestVersion = uiState.txtReloadRequestVersion + 1,
                     statusText = moveCompletionStatus(plan)
                 )
@@ -244,7 +241,7 @@ internal class ConfigAliasMoveEditor(
                     aliasEntryMovePlan = null,
                     aliasEntryMoveDestinations = emptyList(),
                     aliasEntryMoveDestinationsLoading = false,
-                    autoSaveStatus = ConfigAutoSaveStatus.SAVED,
+                    autoSaveStatus = ActivityHierarchySaveStatus.SAVED,
                     txtReloadRequestVersion = uiState.txtReloadRequestVersion + 1,
                     statusText = moveCompletionStatus(plan)
                 )
@@ -266,7 +263,7 @@ internal class ConfigAliasMoveEditor(
 
     private fun applyCoreActivityHierarchyOperation(operation: ActivityHierarchyOperation) {
         viewModelScope.launch {
-            uiState = uiState.copy(autoSaveStatus = ConfigAutoSaveStatus.SAVING)
+            uiState = uiState.copy(autoSaveStatus = ActivityHierarchySaveStatus.SAVING)
             val outcome = activityHierarchyEditStateCoordinator.apply(
                 state = uiState,
                 operation = operation
@@ -274,7 +271,7 @@ internal class ConfigAliasMoveEditor(
             uiState = when (outcome) {
                 is ActivityHierarchyEditStateOutcome.Failed -> uiState.copy(
                     aliasEditorErrorMessage = outcome.message,
-                    autoSaveStatus = ConfigAutoSaveStatus.FAILED
+                    autoSaveStatus = ActivityHierarchySaveStatus.FAILED
                 )
                 is ActivityHierarchyEditStateOutcome.Applied -> outcome.state
             }

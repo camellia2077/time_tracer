@@ -17,7 +17,7 @@ internal fun rememberTracerDataFolderImportAction(
     coroutineScope: CoroutineScope,
     dataViewModel: DataViewModel,
     configGateway: ConfigGateway,
-    configViewModel: ConfigViewModel,
+    activityHierarchyEditorViewModel: ActivityHierarchyEditorViewModel,
     recordViewModel: RecordViewModel,
     onQuickAccessReload: suspend () -> Unit
 ): () -> Unit {
@@ -81,7 +81,7 @@ internal fun rememberTracerDataFolderImportAction(
                 // Quick Access is updated, its stale pre-import snapshot can overwrite the
                 // newly imported aliases. Keeping this order makes the final state consistent.
                 recordViewModel.refreshHistory().join()
-                configViewModel.refreshConfigFiles()
+                activityHierarchyEditorViewModel.openActivityCategories()
                 if (result.succeeded) {
                     onQuickAccessReload()
                 }

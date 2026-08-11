@@ -39,6 +39,7 @@ class TracerTabRegistryTest {
             listOf(
                 TracerTab.INSIGHTS,
                 TracerTab.RECORD,
+                TracerTab.FILES,
                 TracerTab.CONFIG
             ),
             ids
@@ -46,14 +47,13 @@ class TracerTabRegistryTest {
     }
 
     @Test
-    fun config_status_uses_data_status_when_config_status_is_empty() {
+    fun config_status_uses_data_status() {
         val status = TracerTabRegistry.statusText(
             tab = TracerTab.CONFIG,
             args = TracerTabStatusArgs(
                 dataStatusText = "Database rebuilt from TXT.",
                 queryStatusText = "",
-                recordStatusText = "",
-                configStatusText = ""
+                recordStatusText = ""
             )
         )
 
@@ -76,11 +76,6 @@ class TracerTabRegistryTest {
                 queryGateway = runtime
             )
         )
-        val configViewModel = ConfigViewModel(
-            runtime,
-            runtime,
-            FakeQuickActivitiesPreferenceGateway()
-        )
         advanceUntilIdle()
 
         recordViewModel.setStatusText("Activity authorable token validation unavailable: stale")
@@ -95,7 +90,6 @@ class TracerTabRegistryTest {
                     queryGateway = runtime
                 ),
                 recordViewModel = recordViewModel,
-                configViewModel = configViewModel,
                 recordStatusText = { recordViewModel.uiState.statusText },
                 onValidAuthorableEventTokensChanged = { capturedNames = it }
             )
@@ -127,11 +121,6 @@ class TracerTabRegistryTest {
                 queryGateway = runtime
             )
         )
-        val configViewModel = ConfigViewModel(
-            runtime,
-            runtime,
-            FakeQuickActivitiesPreferenceGateway()
-        )
         advanceUntilIdle()
 
         recordViewModel.openHistoryFile("draft.txt")
@@ -140,7 +129,7 @@ class TracerTabRegistryTest {
         assertEquals("draft-content", recordViewModel.uiState.editableHistoryContent)
 
         TracerTabRegistry.onLeave(
-            tab = TracerTab.CONFIG,
+            tab = TracerTab.FILES,
             args = TracerTabLifecycleArgs(
                 queryGateway = runtime,
                 queryInsightsViewModel = QueryInsightsViewModel(
@@ -148,51 +137,12 @@ class TracerTabRegistryTest {
                     queryGateway = runtime
                 ),
                 recordViewModel = recordViewModel,
-                configViewModel = configViewModel,
                 recordStatusText = { recordViewModel.uiState.statusText },
                 onValidAuthorableEventTokensChanged = {}
             )
         )
 
         assertEquals(recordViewModel.uiState.selectedHistoryContent, recordViewModel.uiState.editableHistoryContent)
-    }
-
-    @Test
-    fun onLeave_config_keeps_unsaved_toml_draft() = runTest(dispatcher) {
-        val runtime = FakeRuntimeServices()
-        val recordViewModel = RecordViewModel(
-            RecordUseCases(
-                recordGateway = runtime,
-                txtStorageGateway = runtime,
-                queryGateway = runtime
-            )
-        )
-        val configViewModel = ConfigViewModel(
-            runtime,
-            runtime,
-            FakeQuickActivitiesPreferenceGateway()
-        )
-        advanceUntilIdle()
-
-        configViewModel.onEditableContentChange("unsaved")
-        assertEquals("unsaved", configViewModel.uiState.editableContent)
-
-        TracerTabRegistry.onLeave(
-            tab = TracerTab.CONFIG,
-            args = TracerTabLifecycleArgs(
-                queryGateway = runtime,
-                queryInsightsViewModel = QueryInsightsViewModel(
-                    insightsGateway = runtime,
-                    queryGateway = runtime
-                ),
-                recordViewModel = recordViewModel,
-                configViewModel = configViewModel,
-                recordStatusText = { recordViewModel.uiState.statusText },
-                onValidAuthorableEventTokensChanged = {}
-            )
-        )
-
-        assertEquals("unsaved", configViewModel.uiState.editableContent)
     }
 
     @Test
@@ -258,11 +208,6 @@ class TracerTabRegistryTest {
                 queryGateway = runtime
             )
         )
-        val configViewModel = ConfigViewModel(
-            runtime,
-            runtime,
-            FakeQuickActivitiesPreferenceGateway()
-        )
         queryInsightsViewModel.onInsightsDateChange("20260330")
 
         TracerTabRegistry.onEnter(
@@ -271,7 +216,6 @@ class TracerTabRegistryTest {
                 queryGateway = runtime,
                 queryInsightsViewModel = queryInsightsViewModel,
                 recordViewModel = recordViewModel,
-                configViewModel = configViewModel,
                 recordStatusText = { recordViewModel.uiState.statusText },
                 onValidAuthorableEventTokensChanged = {}
             )
@@ -458,13 +402,13 @@ private class FakeRuntimeServices(
 
     override suspend fun clearTxt(): ClearTxtResult = clearTxtResult
 
-    override suspend fun queryActivitySuggestions(
+    override suspend fun queryFrequentActivities(
         lookbackDays: Int,
         topN: Int,
         anchorDateIso: String?
-    ): ActivitySuggestionResult = ActivitySuggestionResult(
+    ): ActivityFrequentResult = ActivityFrequentResult(
         ok = true,
-        suggestions = listOf("meal"),
+        frequentActivities = listOf("meal"),
         message = "ok"
     )
 

@@ -32,8 +32,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -65,23 +67,36 @@ import com.example.tracer.feature.record.R
 import java.time.Clock
 import kotlin.math.abs
 
+private enum class CanonicalCatalogSource {
+    TREE,
+    FREQUENT,
+    CATEGORIES
+}
 
 @Composable
 fun RecordCanonicalCatalogScreen(
     isLoading: Boolean,
     roots: List<CanonicalPathNode>,
     statusText: String,
-    displayMode: RecordSuggestionOutputMode,
+    displayMode: RecordFrequentOutputMode,
     target: CanonicalBrowserTarget? = null,
+    isFrequentActivitiesLoading: Boolean = false,
+    frequentActivities: List<RecordFrequentActivity> = emptyList(),
+    onFrequentActivitiesRequested: () -> Unit = {},
+    onFrequentActivityClick: (String) -> Boolean = { false },
+    onTreeRequested: () -> Unit = {},
+    categoriesContent: @Composable () -> Unit = {},
     collapsedRootPaths: Set<String>,
     orderedRootPaths: List<String>,
     onDismissRequest: () -> Unit,
-    onDisplayModeChange: (RecordSuggestionOutputMode) -> Unit,
+    onDisplayModeChange: (RecordFrequentOutputMode) -> Unit,
     onCollapsedRootPathsChange: (Set<String>) -> Unit,
     onOrderedRootPathsChange: (List<String>) -> Unit,
     onCanonicalEntryClick: (CanonicalCatalogEntry) -> Unit,
     onCanonicalParentClick: (String) -> Unit = {}
 ) {
+    var source by remember { mutableStateOf(CanonicalCatalogSource.TREE) }
+    val isRecordInputTarget = target == CanonicalBrowserTarget.RECORD_INPUT
     Dialog(
         onDismissRequest = onDismissRequest,
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -122,11 +137,38 @@ fun RecordCanonicalCatalogScreen(
                             )
                         }
                     }
-                    Row(
+                        if (isRecordInputTarget) {
+                        PrimaryTabRow(selectedTabIndex = source.ordinal) {
+                            Tab(
+                                selected = source == CanonicalCatalogSource.TREE,
+                                onClick = {
+                                    source = CanonicalCatalogSource.TREE
+                                    onTreeRequested()
+                                },
+                                text = { Text(stringResource(R.string.record_canonical_catalog_source_tree)) }
+                            )
+                            Tab(
+                                selected = source == CanonicalCatalogSource.FREQUENT,
+                                onClick = {
+                                    source = CanonicalCatalogSource.FREQUENT
+                                    onFrequentActivitiesRequested()
+                                },
+                                text = { Text(stringResource(R.string.record_canonical_catalog_source_frequent)) }
+                            )
+                            Tab(
+                                selected = source == CanonicalCatalogSource.CATEGORIES,
+                                onClick = {
+                                    source = CanonicalCatalogSource.CATEGORIES
+                                },
+                                text = { Text(stringResource(R.string.record_canonical_catalog_source_categories)) }
+                            )
+                        }
+                    }
+                    if (source != CanonicalCatalogSource.CATEGORIES) Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        if (displayMode == RecordSuggestionOutputMode.CANONICAL) {
+                        if (displayMode == RecordFrequentOutputMode.CANONICAL) {
                             FilledIconButton(onClick = {}) {
                                 Icon(
                                     imageVector = Icons.Default.Code,
@@ -138,7 +180,7 @@ fun RecordCanonicalCatalogScreen(
                         } else {
                             OutlinedIconButton(
                                 onClick = {
-                                    onDisplayModeChange(RecordSuggestionOutputMode.CANONICAL)
+                                    onDisplayModeChange(RecordFrequentOutputMode.CANONICAL)
                                 }
                             ) {
                                 Icon(
@@ -149,7 +191,7 @@ fun RecordCanonicalCatalogScreen(
                                 )
                             }
                         }
-                        if (displayMode == RecordSuggestionOutputMode.ALIAS) {
+                        if (displayMode == RecordFrequentOutputMode.ALIAS) {
                             FilledIconButton(onClick = {}) {
                                 Icon(
                                     imageVector = Icons.Default.Translate,
@@ -161,7 +203,7 @@ fun RecordCanonicalCatalogScreen(
                         } else {
                             OutlinedIconButton(
                                 onClick = {
-                                    onDisplayModeChange(RecordSuggestionOutputMode.ALIAS)
+                                    onDisplayModeChange(RecordFrequentOutputMode.ALIAS)
                                 }
                             ) {
                                 Icon(
@@ -173,17 +215,25 @@ fun RecordCanonicalCatalogScreen(
                             }
                         }
                     }
-                    Text(
-                        text = stringResource(
-                            if (displayMode == RecordSuggestionOutputMode.CANONICAL) {
-                                R.string.record_canonical_catalog_display_mode_canonical
-                            } else {
-                                R.string.record_canonical_catalog_display_mode_alias
-                            }
-                        ),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    if (source == CanonicalCatalogSource.TREE) {
+                        Text(
+                            text = stringResource(
+                                if (displayMode == RecordFrequentOutputMode.CANONICAL) {
+                                    R.string.record_canonical_catalog_display_mode_canonical
+                                } else {
+                                    R.string.record_canonical_catalog_display_mode_alias
+                                }
+                            ),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else if (source == CanonicalCatalogSource.FREQUENT) {
+                        Text(
+                            text = stringResource(R.string.record_canonical_catalog_frequent_description),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
                 HorizontalDivider()
                 Box(
@@ -192,7 +242,7 @@ fun RecordCanonicalCatalogScreen(
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState())
                 ) {
-                    RecordCanonicalCatalogSection(
+                    if (source == CanonicalCatalogSource.TREE) RecordCanonicalCatalogSection(
                         isLoading = isLoading,
                         roots = roots,
                         statusText = statusText,
@@ -207,10 +257,19 @@ fun RecordCanonicalCatalogScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 24.dp)
-                    )
+                    ) else if (source == CanonicalCatalogSource.FREQUENT) FrequentActivitiesList(
+                        isLoading = isFrequentActivitiesLoading,
+                        activities = frequentActivities,
+                        displayMode = displayMode,
+                        loadingText = stringResource(R.string.record_hint_loading),
+                        emptyText = stringResource(R.string.record_hint_no_frequent_activities),
+                        onActivityClick = { onFrequentActivityClick(it) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 24.dp)
+                    ) else categoriesContent()
                 }
             }
         }
     }
 }
-

@@ -17,12 +17,13 @@ fun RecordTabContent(
     onPersistQuickActivities: (List<String>) -> Unit,
     onPersistQuickAccessCardExpanded: (Boolean) -> Unit,
     onPersistAssistSettingsExpanded: (Boolean) -> Unit,
-    onPersistCanonicalCatalogDisplayMode: (RecordSuggestionOutputMode) -> Unit,
+    onPersistCanonicalCatalogDisplayMode: (RecordFrequentOutputMode) -> Unit,
     onPersistCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
     onPersistOrderedCanonicalRootPaths: (List<String>) -> Unit,
-    onPersistSuggestionLookbackDays: (Int) -> Unit,
-    onPersistSuggestionOutputMode: (RecordSuggestionOutputMode) -> Unit,
-    onPersistSuggestionTopN: (Int) -> Unit
+    onPersistFrequentLookbackDays: (Int) -> Unit,
+    onPersistFrequentOutputMode: (RecordFrequentOutputMode) -> Unit,
+    onPersistFrequentTopN: (Int) -> Unit,
+    categoriesContent: @Composable () -> Unit
 ) {
     val configuration = LocalConfiguration.current
     val locale = remember(configuration) {
@@ -130,36 +131,36 @@ fun RecordTabContent(
             }
             onPersistAssistSettingsExpanded(nextValue)
         },
-        suggestionLookbackDays = recordUiState.suggestionLookbackDays,
-        suggestionTopN = recordUiState.suggestionTopN,
-        onSuggestionLookbackDaysChange = { rawValue ->
+        frequentLookbackDays = recordUiState.frequentLookbackDays,
+        frequentTopN = recordUiState.frequentTopN,
+        onFrequentLookbackDaysChange = { rawValue ->
             val parsed = rawValue.trim().toIntOrNull()
             if (parsed == null || parsed < 0) {
                 return@RecordSection
             }
-            recordViewModel.updateSuggestionPreferencesAndReloadIfVisible(
+            recordViewModel.updateFrequentPreferencesAndReloadIfVisible(
                 lookbackDays = parsed,
-                topN = recordUiState.suggestionTopN
+                topN = recordUiState.frequentTopN
             )
-            onPersistSuggestionLookbackDays(parsed)
+            onPersistFrequentLookbackDays(parsed)
         },
-        onSuggestionTopNChange = { rawValue ->
+        onFrequentTopNChange = { rawValue ->
             val parsed = rawValue.trim().toIntOrNull()
             if (parsed == null || parsed < 0) {
                 return@RecordSection
             }
-            recordViewModel.updateSuggestionPreferencesAndReloadIfVisible(
-                lookbackDays = recordUiState.suggestionLookbackDays,
+            recordViewModel.updateFrequentPreferencesAndReloadIfVisible(
+                lookbackDays = recordUiState.frequentLookbackDays,
                 topN = parsed
             )
-            onPersistSuggestionTopN(parsed)
+            onPersistFrequentTopN(parsed)
         },
-        suggestionOutputMode = recordUiState.suggestionOutputMode,
-        onSuggestionOutputModeChange = { mode ->
-            recordViewModel.updateSuggestionOutputMode(mode)
-            onPersistSuggestionOutputMode(mode)
+        frequentOutputMode = recordUiState.frequentOutputMode,
+        onFrequentOutputModeChange = { mode ->
+            recordViewModel.updateFrequentOutputMode(mode)
+            onPersistFrequentOutputMode(mode)
         },
-        suggestedActivities = recordUiState.suggestedActivities,
+        frequentActivities = recordUiState.frequentActivities,
         canonicalCatalogRoots = recordUiState.canonicalCatalogRoots,
         canonicalCatalogStatusText = recordUiState.canonicalCatalogStatusText,
         canonicalCatalogDisplayMode = recordUiState.canonicalCatalogDisplayMode,
@@ -167,11 +168,11 @@ fun RecordTabContent(
         lastRecordedDuration = recordUiState.lastRecordedDuration,
         collapsedCanonicalRootPaths = recordUiState.collapsedCanonicalRootPaths,
         orderedCanonicalRootPaths = recordUiState.orderedCanonicalRootPaths,
-        suggestionsVisible = recordUiState.suggestionsVisible,
+        frequentActivitiesVisible = recordUiState.frequentActivitiesVisible,
         isCanonicalCatalogVisible = recordUiState.isCanonicalCatalogVisible,
         canonicalBrowserTarget = recordUiState.canonicalBrowserTarget,
         isCanonicalCatalogLoading = recordUiState.isCanonicalCatalogLoading,
-        isSuggestionsLoading = recordUiState.isSuggestionsLoading,
+        isFrequentActivitiesLoading = recordUiState.isFrequentActivitiesLoading,
         isTxtPreviewVisible = recordUiState.isTxtPreviewVisible,
         isTxtPreviewLoading = recordUiState.isTxtPreviewLoading,
         txtPreviewStatusText = recordUiState.txtPreviewStatusText,
@@ -187,21 +188,28 @@ fun RecordTabContent(
         onSelectLogicalDayYesterday = recordViewModel::selectLogicalDayYesterday,
         onSelectLogicalDayToday = recordViewModel::selectLogicalDayToday,
         onRefreshLogicalDayDefault = recordViewModel::refreshLogicalDayDefault,
-        onToggleSuggestions = recordViewModel::toggleSuggestions,
-        onDismissSuggestions = recordViewModel::dismissSuggestions,
-        onSuggestedActivityClick = { activity ->
-            val alias = recordUiState.suggestedActivities
-                .firstOrNull { suggestion ->
-                    suggestion.canonicalToken == activity || suggestion.aliasToken == activity
+        onToggleFrequentActivities = recordViewModel::toggleFrequentActivities,
+        onDismissFrequentActivities = recordViewModel::dismissFrequentActivities,
+        onQuickAccessFrequentActivityClick = { activity ->
+            val alias = recordUiState.frequentActivities
+                .firstOrNull { frequent ->
+                    frequent.canonicalToken == activity || frequent.aliasToken == activity
                 }
                 ?.aliasToken
                 ?.trim()
                 ?.takeIf { it.isNotEmpty() }
             if (alias != null && updateQuickActivities(recordUiState.quickActivities + alias)) {
-                recordViewModel.dismissSuggestions()
+                recordViewModel.dismissFrequentActivities()
             }
         },
+        onFrequentActivitiesRequested = recordViewModel::loadFrequentActivities,
+        onTreeRequested = recordViewModel::openCanonicalCatalog,
+        onFrequentActivityClick = { activity ->
+            recordViewModel.applyFrequentActivity(activity)
+            true
+        },
         onOpenCanonicalCatalog = recordViewModel::openCanonicalCatalog,
+        categoriesContent = categoriesContent,
         onOpenQuickAccessCanonicalCatalog = recordViewModel::openQuickAccessCanonicalCatalog,
         onDismissCanonicalCatalog = recordViewModel::dismissCanonicalCatalog,
         onCanonicalCatalogDisplayModeChange = { mode ->
@@ -220,7 +228,7 @@ fun RecordTabContent(
             when (target) {
                 CanonicalBrowserTarget.RECORD_INPUT -> {
                     val displayToken = if (
-                        recordUiState.canonicalCatalogDisplayMode == RecordSuggestionOutputMode.ALIAS
+                        recordUiState.canonicalCatalogDisplayMode == RecordFrequentOutputMode.ALIAS
                     ) {
                         entry.aliases.firstOrNull { it.isNotBlank() }?.trim()
                             ?: entry.canonicalPath.trim()

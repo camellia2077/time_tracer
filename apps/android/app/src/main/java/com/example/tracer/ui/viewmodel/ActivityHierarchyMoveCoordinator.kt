@@ -31,7 +31,7 @@ internal class ActivityHierarchyMoveCoordinator(
     private val activityHierarchyGateway: ActivityHierarchyGateway
 ) {
     suspend fun prepareDestinations(
-        state: ConfigUiState,
+        state: ActivityHierarchyEditorState,
         sourcePath: String,
         excludedGroupPath: List<String>,
         excludeDescendants: Boolean,
@@ -74,7 +74,7 @@ internal class ActivityHierarchyMoveCoordinator(
     }
 
     suspend fun previewEntryMove(
-        state: ConfigUiState,
+        state: ActivityHierarchyEditorState,
         entryId: String,
         targetGroupId: String
     ): ActivityHierarchyMovePreviewOutcome {
@@ -116,7 +116,7 @@ internal class ActivityHierarchyMoveCoordinator(
     }
 
     suspend fun previewEntryMove(
-        state: ConfigUiState,
+        state: ActivityHierarchyEditorState,
         entryId: String,
         target: AliasEntryMoveTarget
     ): ActivityHierarchyMovePreviewOutcome {
@@ -164,7 +164,7 @@ internal class ActivityHierarchyMoveCoordinator(
     }
 
     suspend fun previewGroupMove(
-        state: ConfigUiState,
+        state: ActivityHierarchyEditorState,
         groupId: String,
         target: AliasEntryMoveTarget
     ): ActivityHierarchyMovePreviewOutcome {
@@ -232,11 +232,11 @@ internal class ActivityHierarchyMoveCoordinator(
         )
     }
 
-    private fun currentContent(state: ConfigUiState): String =
+    private fun currentContent(state: ActivityHierarchyEditorState): String =
         state.aliasAdvancedTomlDraft.ifBlank { state.selectedFileContent }
 
     private suspend fun readDocuments(
-        state: ConfigUiState,
+        state: ActivityHierarchyEditorState,
         currentPath: String
     ): MoveDocumentsReadOutcome {
         val documents = mutableListOf<ActivityHierarchyDocumentInput>()
@@ -253,7 +253,7 @@ internal class ActivityHierarchyMoveCoordinator(
     }
 
     private suspend fun readContent(
-        state: ConfigUiState,
+        state: ActivityHierarchyEditorState,
         path: String,
         currentPath: String
     ): MoveContentReadOutcome = if (path == currentPath) {

@@ -1,11 +1,11 @@
 package com.example.tracer
 
 interface QueryGateway {
-    suspend fun queryActivitySuggestions(
+    suspend fun queryFrequentActivities(
         lookbackDays: Int = 7,
         topN: Int = 5,
         anchorDateIso: String? = null
-    ): ActivitySuggestionResult
+    ): ActivityFrequentResult
     suspend fun queryDayDurations(params: DataDurationQueryParams): DataQueryTextResult
     suspend fun queryDayDurationStats(params: DataDurationQueryParams): DataQueryTextResult
     suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult

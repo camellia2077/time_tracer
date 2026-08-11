@@ -188,8 +188,7 @@ internal class RuntimeMappingQueryDelegate(
         successMessageTemplate: String,
         allowEmptyNames: Boolean = false
     ): ActivityMappingNamesResult {
-        Log.i(
-            MAPPING_QUERY_RECORD_TAG,
+        logMappingQuery(
             "mapping.query.start action=$action outputMode=${DataQueryOutputMode.SEMANTIC_JSON}"
         )
         val queryResult = runDataQuery(
@@ -201,8 +200,7 @@ internal class RuntimeMappingQueryDelegate(
                 outputMode = DataQueryOutputMode.SEMANTIC_JSON
             )
         )
-        Log.i(
-            MAPPING_QUERY_RECORD_TAG,
+        logMappingQuery(
             "mapping.query.response action=$action ok=${queryResult.ok} " +
                 "outputLength=${queryResult.outputText.length} message=${queryResult.message}"
         )
@@ -219,8 +217,7 @@ internal class RuntimeMappingQueryDelegate(
         }
 
         val names = parseMappingNamesContent(queryResult.outputText).sorted()
-        Log.i(
-            MAPPING_QUERY_RECORD_TAG,
+        logMappingQuery(
             "mapping.query.parsed action=$action count=${names.size} " +
                 "containsW=${names.contains("w")} sample=${names.take(8).joinToString(",")}"
         )
@@ -242,5 +239,13 @@ internal class RuntimeMappingQueryDelegate(
             message = successMessageTemplate.format(names.size),
             operationId = queryResult.operationId
         )
+    }
+
+    private fun logMappingQuery(message: String) {
+        try {
+            Log.i(MAPPING_QUERY_RECORD_TAG, message)
+        } catch (_: Throwable) {
+            // The local JVM test stub does not implement Android logging.
+        }
     }
 }

@@ -445,12 +445,12 @@ class NativeRuntimeController(
     ): StructuredInsightsCallResult = insightsService.insightsStructured(request)
 
     // query
-    override suspend fun queryActivitySuggestions(
+    override suspend fun queryFrequentActivities(
         lookbackDays: Int,
         topN: Int,
         anchorDateIso: String?
-    ): ActivitySuggestionResult =
-        queryService.queryActivitySuggestions(lookbackDays, topN, anchorDateIso)
+    ): ActivityFrequentResult =
+        queryService.queryFrequentActivities(lookbackDays, topN, anchorDateIso)
 
     override suspend fun queryDayDurations(params: DataDurationQueryParams): DataQueryTextResult =
         queryService.queryDayDurations(params)

@@ -5,6 +5,7 @@
 
     <string name="tracer_tab_insights">分析</string>
     <string name="tracer_tab_record">记录</string>
+    <string name="tracer_tab_files">文件</string>
     <string name="tracer_tab_config">配置</string>
 
 
@@ -85,7 +86,6 @@
     <string name="config_title_app_preferences">应用偏好</string>
     <string name="config_title_appearance">外观</string>
     <string name="config_title_insights_settings">分析展示</string>
-    <string name="config_title_advanced_files">高级文件</string>
     <string name="config_title_theme_mode">主题模式</string>
     <string name="config_title_theme_palette">主题配色</string>
     <string name="config_theme_palette_indigo">靛蓝</string>

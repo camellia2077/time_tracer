@@ -40,8 +40,8 @@ internal fun RecordQuickAccessCard(
     onToggleQuickAccessCard: () -> Unit = {},
     assistSettingsExpanded: Boolean,
     onToggleAssistSettings: () -> Unit,
-    suggestionsVisible: Boolean = false,
-    onToggleSuggestions: () -> Unit = {},
+    frequentActivitiesVisible: Boolean = false,
+    onToggleFrequentActivities: () -> Unit = {},
     onOpenQuickAccessCanonicalCatalog: () -> Unit,
     quickActivitySearch: String,
     onQuickActivitySearchChange: (String) -> Unit,
@@ -202,12 +202,12 @@ internal fun RecordQuickAccessCard(
                     }
 
                     TextButton(
-                        onClick = onToggleSuggestions,
+                        onClick = onToggleFrequentActivities,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(stringResource(R.string.record_action_suggestions))
+                        Text(stringResource(R.string.record_action_frequent))
                         Icon(
-                            imageVector = if (suggestionsVisible) {
+                            imageVector = if (frequentActivitiesVisible) {
                                 Icons.Default.ExpandLess
                             } else {
                                 Icons.Default.ExpandMore

@@ -59,7 +59,7 @@ class ActivityHierarchyMoveCoordinatorTest {
         )
     }
 
-    private fun moveState(): ConfigUiState {
+    private fun moveState(): ActivityHierarchyEditorState {
         val leaf = ActivityHierarchyNode(
             canonicalKey = "foo",
             path = "root.A.foo",
@@ -81,7 +81,7 @@ class ActivityHierarchyMoveCoordinatorTest {
             aliases = emptyList(),
             children = emptyList()
         )
-        return ConfigUiState(
+        return ActivityHierarchyEditorState(
             aliasFiles = listOf(ConfigTomlFileEntry("user/activity_hierarchy/work.toml", "work.toml")),
             selectedFilePath = "user/activity_hierarchy/work.toml",
             selectedFileContent = "toml",

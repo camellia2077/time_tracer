@@ -191,7 +191,7 @@ internal fun parseTreeQueryContent(content: String): ParsedTreeQueryPayload? {
     }
 }
 
-internal fun parseSuggestedActivities(content: String): List<String> {
+internal fun parseFrequentActivities(content: String): List<String> {
     val activities = mutableListOf<String>()
     for (rawLine in content.lineSequence()) {
         val line = rawLine.trim()
@@ -273,7 +273,7 @@ internal fun parseActivityHierarchyLeafMappingsContent(content: String): List<Ac
     }
 }
 
-internal fun normalizeSuggestedActivities(
+internal fun normalizeFrequentActivities(
     activities: List<String>,
     validActivityNames: Set<String>,
     maxItems: Int

@@ -57,7 +57,7 @@ class RecordViewModelTxtEditorLifecycleTest {
     }
 
     @Test
-    fun applySuggestedActivity_hidesSuggestionsAndDoesNotReopenAfterAsyncCanonicalInsert() =
+    fun applyFrequentActivity_hidesFrequentActivitiesAndDoesNotReopenAfterAsyncCanonicalInsert() =
         runTest(dispatcher) {
             val runtime = TxtEditorLifecycleFakeRuntime(
                 inspectionEntries = emptyList(),
@@ -74,16 +74,16 @@ class RecordViewModelTxtEditorLifecycleTest {
                 )
             )
 
-            viewModel.toggleSuggestions()
+            viewModel.toggleFrequentActivities()
             advanceUntilIdle()
-            assertEquals(true, viewModel.uiState.suggestionsVisible)
+            assertEquals(true, viewModel.uiState.frequentActivitiesVisible)
 
-            viewModel.applySuggestedActivity("routine_express")
+            viewModel.applyFrequentActivity("routine_express")
 
-            assertFalse(viewModel.uiState.suggestionsVisible)
+            assertFalse(viewModel.uiState.frequentActivitiesVisible)
             advanceUntilIdle()
 
-            assertFalse(viewModel.uiState.suggestionsVisible)
+            assertFalse(viewModel.uiState.frequentActivitiesVisible)
             assertEquals("routine_express", viewModel.uiState.recordContent)
         }
 
@@ -220,13 +220,13 @@ private class TxtEditorLifecycleFakeRuntime(
         rawResponse = """{"ok":true}"""
     )
 
-    override suspend fun queryActivitySuggestions(
+    override suspend fun queryFrequentActivities(
         lookbackDays: Int,
         topN: Int,
         anchorDateIso: String?
-    ): ActivitySuggestionResult = ActivitySuggestionResult(
+    ): ActivityFrequentResult = ActivityFrequentResult(
         ok = true,
-        suggestions = listOf("routine_express"),
+        frequentActivities = listOf("routine_express"),
         message = "ok"
     )
 

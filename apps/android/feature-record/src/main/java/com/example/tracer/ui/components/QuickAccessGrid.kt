@@ -154,7 +154,7 @@ internal fun QuickAccessActivityGrid(
                                 }
                                 .testTag(quickAccessItemTestTag(activity))
                         ) {
-                            QuickAccessSuggestionChip(
+                            QuickAccessActivityChip(
                                 activity = activity,
                                 recordContent = recordContent,
                                 onRecordContentChange = onRecordContentChange,
@@ -288,7 +288,7 @@ internal fun QuickAccessActivityGrid(
                                 .testTag(quickAccessItemTestTag(activity))
                                 .then(dragModifier)
                         ) {
-                            QuickAccessSuggestionChip(
+                            QuickAccessActivityChip(
                                 activity = activity,
                                 recordContent = recordContent,
                                 onRecordContentChange = onRecordContentChange,
@@ -303,7 +303,7 @@ internal fun QuickAccessActivityGrid(
 }
 
 @Composable
-private fun QuickAccessSuggestionChip(
+private fun QuickAccessActivityChip(
     activity: String,
     recordContent: String,
     onRecordContentChange: (String) -> Unit,

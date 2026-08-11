@@ -89,21 +89,21 @@ internal fun validateAndNormalizePeriodArgument(
     )
 }
 
-internal fun validateSuggestionQueryParams(
+internal fun validateFrequentQueryParams(
     lookbackDays: Int,
     topN: Int
-): ActivitySuggestionResult? {
+): ActivityFrequentResult? {
     if (lookbackDays < 0) {
-        return ActivitySuggestionResult(
+        return ActivityFrequentResult(
             ok = false,
-            suggestions = emptyList(),
+            frequentActivities = emptyList(),
             message = "lookbackDays must be greater than or equal to 0."
         )
     }
     if (topN < 0) {
-        return ActivitySuggestionResult(
+        return ActivityFrequentResult(
             ok = false,
-            suggestions = emptyList(),
+            frequentActivities = emptyList(),
             message = "topN must be greater than or equal to 0."
         )
     }

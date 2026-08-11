@@ -66,15 +66,15 @@ import java.time.Clock
 import kotlin.math.abs
 
 @Composable
-internal fun RecordSuggestionsSection(
-    suggestionsVisible: Boolean,
-    isSuggestionsLoading: Boolean,
-    suggestedActivities: List<RecordSuggestedActivity>,
-    suggestionOutputMode: RecordSuggestionOutputMode,
+internal fun RecordFrequentActivitiesSection(
+    frequentActivitiesVisible: Boolean,
+    isFrequentActivitiesLoading: Boolean,
+    frequentActivities: List<RecordFrequentActivity>,
+    frequentOutputMode: RecordFrequentOutputMode,
     loadingStateText: String,
     emptyStateText: String,
-    onToggleSuggestions: () -> Unit,
-    onSuggestedActivityClick: (String) -> Unit,
+    onToggleFrequentActivities: () -> Unit,
+    onFrequentActivityClick: (String) -> Unit,
     showToggleButton: Boolean = true,
     contentPadding: PaddingValues = PaddingValues()
 ) {
@@ -85,13 +85,13 @@ internal fun RecordSuggestionsSection(
     ) {
         if (showToggleButton) {
             TextButton(
-                onClick = onToggleSuggestions,
+                onClick = onToggleFrequentActivities,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(stringResource(R.string.record_action_suggestions))
+                Text(stringResource(R.string.record_action_frequent))
                 Spacer(Modifier.width(8.dp))
                 Icon(
-                    if (suggestionsVisible) {
+                    if (frequentActivitiesVisible) {
                         Icons.Default.KeyboardArrowUp
                     } else {
                         Icons.Default.KeyboardArrowDown
@@ -101,57 +101,72 @@ internal fun RecordSuggestionsSection(
             }
         }
 
-        AnimatedVisibility(visible = suggestionsVisible) {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (isSuggestionsLoading) {
-                    Text(
-                        loadingStateText,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                } else if (suggestedActivities.isEmpty()) {
-                    Text(
-                        emptyStateText,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                } else {
-                    com.example.tracer.ui.components.SimpleFlowRow(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalGap = 8.dp,
-                        verticalGap = 8.dp
-                    ) {
-                        suggestedActivities.forEach { activity ->
-                            val displayToken = activity.displayToken(suggestionOutputMode)
-                            SuggestionChip(
-                                onClick = { onSuggestedActivityClick(displayToken) },
-                                label = {
-                                    Text(
-                                        text = displayToken,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                }
+        AnimatedVisibility(visible = frequentActivitiesVisible) {
+            FrequentActivitiesList(
+                isLoading = isFrequentActivitiesLoading,
+                activities = frequentActivities,
+                displayMode = frequentOutputMode,
+                loadingText = loadingStateText,
+                emptyText = emptyStateText,
+                onActivityClick = onFrequentActivityClick
+            )
+        }
+    }
+}
+
+@Composable
+internal fun FrequentActivitiesList(
+    isLoading: Boolean,
+    activities: List<RecordFrequentActivity>,
+    displayMode: RecordFrequentOutputMode,
+    loadingText: String,
+    emptyText: String,
+    onActivityClick: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        when {
+            isLoading -> Text(loadingText, style = MaterialTheme.typography.bodySmall)
+            activities.isEmpty() -> Text(emptyText, style = MaterialTheme.typography.bodySmall)
+            else -> com.example.tracer.ui.components.SimpleFlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalGap = 8.dp,
+                verticalGap = 8.dp
+            ) {
+                activities.forEach { activity ->
+                    val displayToken = activity.displayToken(displayMode)
+                    SuggestionChip(
+                        onClick = { onActivityClick(displayToken) },
+                        label = {
+                            Text(
+                                text = displayToken,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
-                    }
+                    )
                 }
             }
         }
     }
 }
 @Composable
-internal fun RecordSuggestionsSheet(
+internal fun RecordFrequentActivitiesSheet(
     logicalDayTarget: RecordLogicalDayTarget,
     logicalDayClock: Clock,
-    suggestionLookbackDays: Int,
-    suggestionTopN: Int,
-    suggestionOutputMode: RecordSuggestionOutputMode,
-    isSuggestionsLoading: Boolean,
-    suggestedActivities: List<RecordSuggestedActivity>,
+    frequentLookbackDays: Int,
+    frequentTopN: Int,
+    frequentOutputMode: RecordFrequentOutputMode,
+    isFrequentActivitiesLoading: Boolean,
+    frequentActivities: List<RecordFrequentActivity>,
     onDismissRequest: () -> Unit,
-    onSuggestionLookbackDaysChange: (String) -> Unit,
-    onSuggestionTopNChange: (String) -> Unit,
-    onSuggestionOutputModeChange: (RecordSuggestionOutputMode) -> Unit,
-    onSuggestedActivityClick: (String) -> Unit
+    onFrequentLookbackDaysChange: (String) -> Unit,
+    onFrequentTopNChange: (String) -> Unit,
+    onFrequentOutputModeChange: (RecordFrequentOutputMode) -> Unit,
+    onFrequentActivityClick: (String) -> Unit
 ) {
     val targetDateIso = resolveLogicalDayTargetDate(
         logicalDayTarget = logicalDayTarget,
@@ -165,16 +180,16 @@ internal fun RecordSuggestionsSheet(
         }
     )
     val emptyStateText = stringResource(
-        R.string.record_hint_no_suggestions_lookback,
-        suggestionLookbackDays
+        R.string.record_hint_no_frequent_activities_lookback,
+        frequentLookbackDays
     )
     val loadingStateText = stringResource(
-        R.string.record_hint_loading_suggestions_for_logical_day,
+        R.string.record_hint_loading_frequent_activities_for_logical_day,
         logicalDayLabel
     )
     var settingsExpanded by remember { mutableStateOf(false) }
-    var lookbackDaysInput by remember { mutableStateOf(suggestionLookbackDays.toString()) }
-    var topNInput by remember { mutableStateOf(suggestionTopN.toString()) }
+    var lookbackDaysInput by remember { mutableStateOf(frequentLookbackDays.toString()) }
+    var topNInput by remember { mutableStateOf(frequentTopN.toString()) }
     Dialog(
         onDismissRequest = onDismissRequest,
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -196,7 +211,7 @@ internal fun RecordSuggestionsSheet(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = stringResource(R.string.record_suggestions_sheet_title),
+                            text = stringResource(R.string.record_frequent_sheet_title),
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -211,52 +226,52 @@ internal fun RecordSuggestionsSheet(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        if (suggestionOutputMode == RecordSuggestionOutputMode.CANONICAL) {
+                        if (frequentOutputMode == RecordFrequentOutputMode.CANONICAL) {
                             FilledIconButton(onClick = {}) {
                                 Icon(
                                     imageVector = Icons.Default.Code,
                                     contentDescription = stringResource(
-                                        R.string.record_cd_suggestion_output_canonical_selected
+                                        R.string.record_cd_frequent_output_canonical_selected
                                     )
                                 )
                             }
                         } else {
                             OutlinedIconButton(
                                 onClick = {
-                                    onSuggestionOutputModeChange(
-                                        RecordSuggestionOutputMode.CANONICAL
+                                    onFrequentOutputModeChange(
+                                        RecordFrequentOutputMode.CANONICAL
                                     )
                                 }
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Code,
                                     contentDescription = stringResource(
-                                        R.string.record_cd_suggestion_output_switch_to_canonical
+                                        R.string.record_cd_frequent_output_switch_to_canonical
                                     )
                                 )
                             }
                         }
-                        if (suggestionOutputMode == RecordSuggestionOutputMode.ALIAS) {
+                        if (frequentOutputMode == RecordFrequentOutputMode.ALIAS) {
                             FilledIconButton(onClick = {}) {
                                 Icon(
                                     imageVector = Icons.Default.Translate,
                                     contentDescription = stringResource(
-                                        R.string.record_cd_suggestion_output_alias_selected
+                                        R.string.record_cd_frequent_output_alias_selected
                                     )
                                 )
                             }
                         } else {
                             OutlinedIconButton(
                                 onClick = {
-                                    onSuggestionOutputModeChange(
-                                        RecordSuggestionOutputMode.ALIAS
+                                    onFrequentOutputModeChange(
+                                        RecordFrequentOutputMode.ALIAS
                                     )
                                 }
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Translate,
                                     contentDescription = stringResource(
-                                        R.string.record_cd_suggestion_output_switch_to_alias
+                                        R.string.record_cd_frequent_output_switch_to_alias
                                     )
                                 )
                             }
@@ -264,10 +279,10 @@ internal fun RecordSuggestionsSheet(
                     }
                     Text(
                         text = stringResource(
-                            if (suggestionOutputMode == RecordSuggestionOutputMode.CANONICAL) {
-                                R.string.record_suggestions_output_mode_canonical
+                            if (frequentOutputMode == RecordFrequentOutputMode.CANONICAL) {
+                                R.string.record_frequent_output_mode_canonical
                             } else {
-                                R.string.record_suggestions_output_mode_alias
+                                R.string.record_frequent_output_mode_alias
                             }
                         ),
                         style = MaterialTheme.typography.bodyMedium,
@@ -279,7 +294,7 @@ internal fun RecordSuggestionsSheet(
                     ) {
                         Text(
                             text = stringResource(
-                                R.string.record_suggestions_target_logical_day,
+                                R.string.record_frequent_target_logical_day,
                                 logicalDayLabel
                             ),
                             modifier = Modifier.weight(1f),
@@ -290,7 +305,7 @@ internal fun RecordSuggestionsSheet(
                         )
                         Text(
                             text = stringResource(
-                                R.string.record_suggestions_target_date,
+                                R.string.record_frequent_target_date,
                                 targetDateIso
                             ),
                             modifier = Modifier.weight(1f),
@@ -304,7 +319,7 @@ internal fun RecordSuggestionsSheet(
                         onClick = { settingsExpanded = !settingsExpanded },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(stringResource(R.string.record_suggestions_settings_title))
+                        Text(stringResource(R.string.record_frequent_settings_title))
                         Spacer(Modifier.width(8.dp))
                         Icon(
                             imageVector = if (settingsExpanded) {
@@ -331,10 +346,10 @@ internal fun RecordSuggestionsSheet(
                                     lookbackDaysInput = digitsOnly
                                     val parsed = digitsOnly.toIntOrNull()
                                     // `0` is a valid business input here: it means "do not query
-                                    // any suggestion history yet", which also lets users clear the
+                                    // any frequent history yet", which also lets users clear the
                                     // field first and then type a replacement value naturally.
                                     if (parsed != null) {
-                                        onSuggestionLookbackDaysChange(digitsOnly)
+                                        onFrequentLookbackDaysChange(digitsOnly)
                                     }
                                 },
                                 label = { Text(stringResource(R.string.record_label_days)) },
@@ -350,10 +365,10 @@ internal fun RecordSuggestionsSheet(
                                     topNInput = digitsOnly
                                     val parsed = digitsOnly.toIntOrNull()
                                     // `0` is a valid business input here: it means "return zero
-                                    // suggestions", which keeps the query semantics aligned with
+                                    // frequent activities", which keeps the query semantics aligned with
                                     // the user's ability to clear and re-enter the field.
                                     if (parsed != null) {
-                                        onSuggestionTopNChange(digitsOnly)
+                                        onFrequentTopNChange(digitsOnly)
                                     }
                                 },
                                 label = { Text(stringResource(R.string.record_label_top_n)) },
@@ -372,16 +387,16 @@ internal fun RecordSuggestionsSheet(
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState())
                 ) {
-                    RecordSuggestionsSection(
-                        suggestionsVisible = true,
-                        isSuggestionsLoading = isSuggestionsLoading,
-                        suggestedActivities = suggestedActivities,
-                        suggestionOutputMode = suggestionOutputMode,
+                    RecordFrequentActivitiesSection(
+                        frequentActivitiesVisible = true,
+                        isFrequentActivitiesLoading = isFrequentActivitiesLoading,
+                        frequentActivities = frequentActivities,
+                        frequentOutputMode = frequentOutputMode,
                         loadingStateText = loadingStateText,
                         emptyStateText = emptyStateText,
-                        onToggleSuggestions = onDismissRequest,
-                        onSuggestedActivityClick = {
-                            onSuggestedActivityClick(it)
+                        onToggleFrequentActivities = onDismissRequest,
+                        onFrequentActivityClick = {
+                            onFrequentActivityClick(it)
                             onDismissRequest()
                         },
                         showToggleButton = false,

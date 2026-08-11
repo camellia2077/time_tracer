@@ -3,18 +3,18 @@ package com.example.tracer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-internal class ConfigSaveCoordinator(
+internal class ActivityHierarchySaveCoordinator(
     private val configGateway: ConfigGateway,
     private val activityHierarchyGateway: ActivityHierarchyGateway,
     activityHierarchyMigrationGateway: ActivityHierarchyMigrationGateway,
     quickActivitiesPreferenceGateway: QuickActivitiesPreferenceGateway,
-    private val configFileEditor: ConfigFileEditor,
+    private val configFileEditor: ActivityHierarchyFileEditor,
     private val scope: CoroutineScope,
-    private val readState: () -> ConfigUiState,
-    private val writeState: (ConfigUiState) -> Unit,
-    private val refreshConfigFiles: (Boolean) -> Unit
+    private val readState: () -> ActivityHierarchyEditorState,
+    private val writeState: (ActivityHierarchyEditorState) -> Unit,
+    private val refreshActivityCategories: () -> Unit
 ) {
-    private var uiState: ConfigUiState
+    private var uiState: ActivityHierarchyEditorState
         get() = readState()
         set(value) = writeState(value)
 
@@ -52,7 +52,7 @@ internal class ConfigSaveCoordinator(
                 uiState = uiState.copy(statusText = message)
                 return@launch
             }
-            refreshConfigFiles(false)
+            refreshActivityCategories()
             uiState = uiState.copy(statusText = "deleted canonical toml -> $targetFilePath")
         }
     }
@@ -71,40 +71,32 @@ internal class ConfigSaveCoordinator(
         if (selectedFile.isEmpty()) {
             uiState = uiState.copy(
                 statusText = "No TOML file selected.",
-                autoSaveStatus = ConfigAutoSaveStatus.FAILED
+                autoSaveStatus = ActivityHierarchySaveStatus.FAILED
             )
             return
         }
-        uiState = uiState.copy(autoSaveStatus = ConfigAutoSaveStatus.SAVING)
+        uiState = uiState.copy(autoSaveStatus = ActivityHierarchySaveStatus.SAVING)
         viewModelScope.launch {
-            if (isAliasConfigFilePath(selectedFile)) {
-                saveAliasFile(selectedFile)
-            } else {
-                uiState = configFileEditor.savePlainTomlFile(uiState, selectedFile)
-            }
+            saveAliasFile(selectedFile)
         }
     }
 
     fun discardUnsavedDraft() {
-        if (isAliasConfigFilePath(uiState.selectedFilePath)) {
-            val selectedFile = uiState.selectedFilePath
-            val baseline = uiState.aliasBaselineDocument
-            uiState = uiState.copy(
-                aliasEditorMode = AliasEditorMode.STRUCTURED,
-                aliasDocumentDraft = baseline,
-                aliasAdvancedTomlDraft = uiState.selectedFileContent,
-                aliasStructuredDraftsByFile = uiState.aliasStructuredDraftsByFile - selectedFile,
-                aliasAdvancedDraftsByFile = uiState.aliasAdvancedDraftsByFile - selectedFile,
-                aliasEditorModeByFile = uiState.aliasEditorModeByFile - selectedFile,
-                aliasEditorErrorMessage = if (baseline == null) {
-                    "Activity hierarchy is unavailable for this file."
-                } else {
-                    ""
-                }
-            )
-            return
-        }
-        uiState = configFileEditor.discardPlainTomlDraft(uiState)
+        val selectedFile = uiState.selectedFilePath
+        val baseline = uiState.aliasBaselineDocument
+        uiState = uiState.copy(
+            aliasEditorMode = AliasEditorMode.STRUCTURED,
+            aliasDocumentDraft = baseline,
+            aliasAdvancedTomlDraft = uiState.selectedFileContent,
+            aliasStructuredDraftsByFile = uiState.aliasStructuredDraftsByFile - selectedFile,
+            aliasAdvancedDraftsByFile = uiState.aliasAdvancedDraftsByFile - selectedFile,
+            aliasEditorModeByFile = uiState.aliasEditorModeByFile - selectedFile,
+            aliasEditorErrorMessage = if (baseline == null) {
+                "Activity hierarchy is unavailable for this file."
+            } else {
+                ""
+            }
+        )
     }
 
     private suspend fun saveAliasFile(selectedFile: String) {
@@ -114,11 +106,11 @@ internal class ConfigSaveCoordinator(
         }
     }
 
-    private suspend fun saveStructuredAliasFile(selectedFile: String): ConfigUiState {
+    private suspend fun saveStructuredAliasFile(selectedFile: String): ActivityHierarchyEditorState {
         val document = uiState.aliasDocumentDraft
             ?: return uiState.copy(
                 statusText = "Alias editor is unavailable for this file.",
-                autoSaveStatus = ConfigAutoSaveStatus.FAILED
+                autoSaveStatus = ActivityHierarchySaveStatus.FAILED
             )
         // Structured operations are already persisted by
         // applyCoreActivityHierarchyOperation through the migration service.
@@ -130,7 +122,7 @@ internal class ConfigSaveCoordinator(
             aliasAdvancedDraftsByFile = uiState.aliasAdvancedDraftsByFile - selectedFile,
             aliasEditorModeByFile = uiState.aliasEditorModeByFile + (selectedFile to AliasEditorMode.STRUCTURED),
             aliasEditorErrorMessage = "",
-            autoSaveStatus = ConfigAutoSaveStatus.SAVED,
+            autoSaveStatus = ActivityHierarchySaveStatus.SAVED,
             statusText = "canonical TOML already persisted by core"
         )
     }
@@ -166,7 +158,7 @@ internal class ConfigSaveCoordinator(
         }
     }
 
-    private suspend fun saveAdvancedAliasFile(selectedFile: String): ConfigUiState {
+    private suspend fun saveAdvancedAliasFile(selectedFile: String): ActivityHierarchyEditorState {
         val rewritten = activityHierarchyGateway.rewriteActivityHierarchyDocument(
             originalTomlContent = uiState.selectedFileContent,
             updatedTomlContent = uiState.aliasAdvancedTomlDraft
@@ -174,13 +166,13 @@ internal class ConfigSaveCoordinator(
         val document = rewritten.hierarchy?.toActivityHierarchyDocument()
             ?: return uiState.copy(
                 aliasEditorErrorMessage = rewritten.message,
-                autoSaveStatus = ConfigAutoSaveStatus.FAILED,
+                autoSaveStatus = ActivityHierarchySaveStatus.FAILED,
                 statusText = rewritten.message
             )
         if (!rewritten.ok) {
             return uiState.copy(
                 aliasEditorErrorMessage = rewritten.message,
-                autoSaveStatus = ConfigAutoSaveStatus.FAILED,
+                autoSaveStatus = ActivityHierarchySaveStatus.FAILED,
                 statusText = rewritten.message
             )
         }
@@ -194,11 +186,11 @@ internal class ConfigSaveCoordinator(
         if (duplicateMessage != null) {
             return uiState.copy(
                 aliasEditorErrorMessage = duplicateMessage,
-                autoSaveStatus = ConfigAutoSaveStatus.FAILED,
+                autoSaveStatus = ActivityHierarchySaveStatus.FAILED,
                 statusText = duplicateMessage
             )
         }
-        uiState = uiState.copy(autoSaveStatus = ConfigAutoSaveStatus.SAVING)
+        uiState = uiState.copy(autoSaveStatus = ActivityHierarchySaveStatus.SAVING)
         val outcome = activityHierarchyEditCoordinator.persistCoreResult(
             configRelativePath = selectedFile,
             updatedTomlContent = rewritten.updatedTomlContent,
@@ -209,7 +201,7 @@ internal class ConfigSaveCoordinator(
             return uiState.copy(
                 statusText = outcome.message,
                 aliasEditorErrorMessage = outcome.message,
-                autoSaveStatus = ConfigAutoSaveStatus.FAILED
+                autoSaveStatus = ActivityHierarchySaveStatus.FAILED
             )
         }
         val applied = outcome as ActivityHierarchyEditOutcome.Applied
@@ -230,7 +222,7 @@ internal class ConfigSaveCoordinator(
             aliasAdvancedDraftsByFile = uiState.aliasAdvancedDraftsByFile - selectedFile,
             aliasEditorModeByFile = uiState.aliasEditorModeByFile + (selectedFile to AliasEditorMode.ADVANCED),
             aliasEditorErrorMessage = "",
-            autoSaveStatus = ConfigAutoSaveStatus.SAVED,
+            autoSaveStatus = ActivityHierarchySaveStatus.SAVED,
             txtReloadRequestVersion = uiState.txtReloadRequestVersion + 1,
             statusText = "save canonical TOML through core migration"
         )

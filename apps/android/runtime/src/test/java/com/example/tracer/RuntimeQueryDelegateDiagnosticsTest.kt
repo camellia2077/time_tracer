@@ -8,13 +8,13 @@ import org.junit.Test
 
 class RuntimeQueryDelegateDiagnosticsTest {
     @Test
-    fun queryActivitySuggestions_recordsDiagnosticSummary() = runBlocking {
+    fun queryFrequentActivities_recordsDiagnosticSummary() = runBlocking {
         val recorder = RuntimeDiagnosticsRecorder(runtimePathsProvider = { null })
         val delegate = RuntimeQueryDelegate(
             queryTranslator = NativeQueryTranslator(NativeResponseCodec()),
             executeNativeDataQuery = { request, _ ->
                 when (request.action) {
-                    NativeBridge.QUERY_ACTION_ACTIVITY_SUGGEST -> NativeCallResult(
+                    NativeBridge.QUERY_ACTION_ACTIVITY_FREQUENT -> NativeCallResult(
                         initialized = true,
                         operationOk = true,
                         rawResponse = nativeContentResponse("study_cpp | count=2\nmeal | count=1\n"),
@@ -44,17 +44,17 @@ class RuntimeQueryDelegateDiagnosticsTest {
             nextOperationId = { "generated-$it" }
         )
 
-        val result = delegate.queryActivitySuggestions(
+        val result = delegate.queryFrequentActivities(
             lookbackDays = 7,
             topN = 5,
             anchorDateIso = "2026-03-31"
         )
 
-        assertEquals(listOf("study_cpp", "meal"), result.suggestions)
+        assertEquals(listOf("study_cpp", "meal"), result.frequentActivities)
         assertEquals("op-suggest", result.operationId)
         val diagnostic = recorder.recent(limit = 1).single()
         assertEquals("op-suggest", diagnostic.operationId)
-        assertEquals("query.activity_suggestions", diagnostic.stage)
+        assertEquals("query.activity_frequent", diagnostic.stage)
         assertTrue(diagnostic.ok)
         assertTrue(diagnostic.message.contains("lookbackDays=7"))
         assertTrue(diagnostic.message.contains("topN=5"))

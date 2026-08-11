@@ -40,16 +40,16 @@ internal fun buildTreeResultMessage(
     }
 }
 
-internal fun buildSuggestionResultMessage(
-    suggestions: List<String>,
+internal fun buildFrequentActivitiesResultMessage(
+    frequentActivities: List<String>,
     lookbackDays: Int
 ): String {
     if (lookbackDays == 0) {
-        return "Suggestion query skipped because lookbackDays=0."
+        return "Frequent query skipped because lookbackDays=0."
     }
-    return if (suggestions.isEmpty()) {
-        "No activity suggestions in recent $lookbackDays days."
+    return if (frequentActivities.isEmpty()) {
+        "No frequent activities in the last $lookbackDays days."
     } else {
-        "Loaded ${suggestions.size} activity suggestion(s)."
+        "Loaded ${frequentActivities.size} frequent activities."
     }
 }

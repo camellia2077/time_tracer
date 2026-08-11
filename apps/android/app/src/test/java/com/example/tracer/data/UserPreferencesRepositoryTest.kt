@@ -4,7 +4,7 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.example.tracer.PersistedRecordInputDraft
 import com.example.tracer.RecordAuthoringMode
 import com.example.tracer.RecordLogicalDayTarget
-import com.example.tracer.RecordSuggestionOutputMode
+import com.example.tracer.RecordFrequentOutputMode
 import com.example.tracer.TxtOutputMode
 import com.example.tracer.InsightsChartSemanticMode
 import com.example.tracer.InsightsParameterSection
@@ -35,20 +35,20 @@ class UserPreferencesRepositoryTest {
     }
 
     @Test
-    fun recordSuggestionPreferences_usesEmptyQuickActivities_whenQuickActivitiesNotConfigured() = runTest {
+    fun recordFrequentPreferences_usesEmptyQuickActivities_whenQuickActivitiesNotConfigured() = runTest {
         val repository = buildRepository(
             testName = "missing_quick_activities",
             scope = backgroundScope
         )
 
-        val preferences = repository.recordSuggestionPreferences.first()
+        val preferences = repository.recordFrequentPreferences.first()
 
         assertEquals(
             emptyList<String>(),
             preferences.quickActivities
         )
         assertEquals(
-            UserPreferencesRepository.DEFAULT_RECORD_SUGGEST_OUTPUT_MODE,
+            UserPreferencesRepository.DEFAULT_RECORD_FREQUENT_OUTPUT_MODE,
             preferences.outputMode
         )
         assertEquals(
@@ -65,7 +65,7 @@ class UserPreferencesRepositoryTest {
         )
 
         repository.setRecordQuickActivities(emptyList())
-        val preferences = repository.recordSuggestionPreferences.first()
+        val preferences = repository.recordFrequentPreferences.first()
 
         assertEquals(emptyList<String>(), preferences.quickActivities)
     }
@@ -78,7 +78,7 @@ class UserPreferencesRepositoryTest {
         )
 
         repository.setRecordQuickActivities(listOf(" ", ""))
-        val preferences = repository.recordSuggestionPreferences.first()
+        val preferences = repository.recordFrequentPreferences.first()
 
         assertEquals(emptyList<String>(), preferences.quickActivities)
     }
@@ -159,17 +159,17 @@ class UserPreferencesRepositoryTest {
     }
 
     @Test
-    fun setRecordSuggestOutputMode_persistsSelection() = runTest {
+    fun setRecordFrequentOutputMode_persistsSelection() = runTest {
         val repository = buildRepository(
-            testName = "persist_record_suggest_output_mode",
+            testName = "persist_record_frequent_output_mode",
             scope = backgroundScope
         )
 
-        repository.setRecordSuggestOutputMode(RecordSuggestionOutputMode.ALIAS)
+        repository.setRecordFrequentOutputMode(RecordFrequentOutputMode.ALIAS)
 
         assertEquals(
-            RecordSuggestionOutputMode.ALIAS,
-            repository.recordSuggestionPreferences.first().outputMode
+            RecordFrequentOutputMode.ALIAS,
+            repository.recordFrequentPreferences.first().outputMode
         )
     }
 
@@ -302,14 +302,14 @@ class UserPreferencesRepositoryTest {
 
         assertEquals(
             true,
-            repository.recordSuggestionPreferences.first().quickAccessCardExpanded
+            repository.recordFrequentPreferences.first().quickAccessCardExpanded
         )
 
         repository.setRecordQuickAccessCardExpanded(false)
 
         assertEquals(
             false,
-            repository.recordSuggestionPreferences.first().quickAccessCardExpanded
+            repository.recordFrequentPreferences.first().quickAccessCardExpanded
         )
     }
 
@@ -320,16 +320,16 @@ class UserPreferencesRepositoryTest {
             scope = backgroundScope
         )
 
-        repository.setRecordCanonicalCatalogDisplayMode(RecordSuggestionOutputMode.ALIAS)
+        repository.setRecordCanonicalCatalogDisplayMode(RecordFrequentOutputMode.ALIAS)
 
         assertEquals(
-            RecordSuggestionOutputMode.ALIAS,
-            repository.recordSuggestionPreferences.first().canonicalCatalogDisplayMode
+            RecordFrequentOutputMode.ALIAS,
+            repository.recordFrequentPreferences.first().canonicalCatalogDisplayMode
         )
     }
 
     @Test
-    fun recordSuggestionPreferences_defaultsCollapsedCanonicalRootPathsToEmpty() = runTest {
+    fun recordFrequentPreferences_defaultsCollapsedCanonicalRootPathsToEmpty() = runTest {
         val repository = buildRepository(
             testName = "default_collapsed_canonical_roots",
             scope = backgroundScope
@@ -337,7 +337,7 @@ class UserPreferencesRepositoryTest {
 
         assertEquals(
             emptySet<String>(),
-            repository.recordSuggestionPreferences.first().collapsedCanonicalRootPaths
+            repository.recordFrequentPreferences.first().collapsedCanonicalRootPaths
         )
     }
 
@@ -354,12 +354,12 @@ class UserPreferencesRepositoryTest {
 
         assertEquals(
             linkedSetOf("study", "study/math"),
-            repository.recordSuggestionPreferences.first().collapsedCanonicalRootPaths
+            repository.recordFrequentPreferences.first().collapsedCanonicalRootPaths
         )
     }
 
     @Test
-    fun recordSuggestionPreferences_defaultsOrderedCanonicalRootPathsToEmpty() = runTest {
+    fun recordFrequentPreferences_defaultsOrderedCanonicalRootPathsToEmpty() = runTest {
         val repository = buildRepository(
             testName = "default_ordered_canonical_roots",
             scope = backgroundScope
@@ -367,7 +367,7 @@ class UserPreferencesRepositoryTest {
 
         assertEquals(
             emptyList<String>(),
-            repository.recordSuggestionPreferences.first().orderedCanonicalRootPaths
+            repository.recordFrequentPreferences.first().orderedCanonicalRootPaths
         )
     }
 
@@ -384,7 +384,7 @@ class UserPreferencesRepositoryTest {
 
         assertEquals(
             listOf("study", "study/math"),
-            repository.recordSuggestionPreferences.first().orderedCanonicalRootPaths
+            repository.recordFrequentPreferences.first().orderedCanonicalRootPaths
         )
     }
 

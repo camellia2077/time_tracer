@@ -6,16 +6,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.padding
 import com.example.tracer.feature.data.R as DataFeatureR
 import com.example.tracer.data.AppLanguage
 import com.example.tracer.data.ThemeConfig
@@ -24,6 +23,7 @@ import com.example.tracer.ui.viewmodel.ThemeEvent
 internal enum class TracerTab {
     INSIGHTS,
     RECORD,
+    FILES,
     CONFIG
 }
 
@@ -48,8 +48,6 @@ internal data class TracerTabRouteArgs(
     val txtStorageGateway: TxtStorageGateway,
     val recordUiState: RecordUiState,
     val recordViewModel: RecordViewModel,
-    val configUiState: ConfigUiState,
-    val configViewModel: ConfigViewModel,
     val themeConfig: ThemeConfig,
     val onThemeEvent: (ThemeEvent) -> Unit,
     val insightsPiePalettePreset: InsightsPiePalettePreset,
@@ -85,12 +83,13 @@ internal data class TracerTabRouteArgs(
     val onClearQuickAccessCache: () -> Unit,
     val onPersistRecordQuickAccessCardExpanded: (Boolean) -> Unit,
     val onPersistRecordAssistSettingsExpanded: (Boolean) -> Unit,
-    val onPersistRecordCanonicalCatalogDisplayMode: (RecordSuggestionOutputMode) -> Unit,
+    val onPersistRecordCanonicalCatalogDisplayMode: (RecordFrequentOutputMode) -> Unit,
     val onPersistRecordCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
     val onPersistRecordOrderedCanonicalRootPaths: (List<String>) -> Unit,
-    val onPersistRecordSuggestLookbackDays: (Int) -> Unit,
-    val onPersistRecordSuggestOutputMode: (RecordSuggestionOutputMode) -> Unit,
-    val onPersistRecordSuggestTopN: (Int) -> Unit,
+    val onPersistRecordFrequentLookbackDays: (Int) -> Unit,
+    val onPersistRecordFrequentOutputMode: (RecordFrequentOutputMode) -> Unit,
+    val onPersistRecordFrequentTopN: (Int) -> Unit,
+    val activityCategoriesContent: @Composable () -> Unit,
     val onImportDataFolder: () -> Unit,
     val onImportSingleTracer: () -> Unit,
     val onExportAllMonthsTracer: () -> Unit,
@@ -106,7 +105,6 @@ internal data class TracerTabLifecycleArgs(
     val queryGateway: QueryGateway,
     val queryInsightsViewModel: QueryInsightsViewModel,
     val recordViewModel: RecordViewModel,
-    val configViewModel: ConfigViewModel,
     val recordStatusText: () -> String,
     val onValidAuthorableEventTokensChanged: (Set<String>) -> Unit
 )
@@ -114,8 +112,7 @@ internal data class TracerTabLifecycleArgs(
 internal data class TracerTabStatusArgs(
     val dataStatusText: String,
     val queryStatusText: String,
-    val recordStatusText: String,
-    val configStatusText: String
+    val recordStatusText: String
 )
 
 internal data class TracerTabEntry(
@@ -221,10 +218,31 @@ internal object TracerTabRegistry {
                         args.onPersistRecordCollapsedCanonicalRootPaths,
                     onPersistOrderedCanonicalRootPaths =
                         args.onPersistRecordOrderedCanonicalRootPaths,
-                    onPersistSuggestionLookbackDays = args.onPersistRecordSuggestLookbackDays,
-                    onPersistSuggestionOutputMode = args.onPersistRecordSuggestOutputMode,
-                    onPersistSuggestionTopN = args.onPersistRecordSuggestTopN
+                    onPersistFrequentLookbackDays = args.onPersistRecordFrequentLookbackDays,
+                    onPersistFrequentOutputMode = args.onPersistRecordFrequentOutputMode,
+                    onPersistFrequentTopN = args.onPersistRecordFrequentTopN,
+                    categoriesContent = args.activityCategoriesContent
                 )
+            }
+        ),
+        TracerTabEntry(
+            meta = TabMeta(
+                id = TracerTab.FILES,
+                titleRes = R.string.tracer_tab_files,
+                icon = Icons.Default.FolderOpen,
+                testTag = "tab_files"
+            ),
+            scrollBehavior = TracerTabScrollBehavior.VERTICAL,
+            onLeave = { args -> args.recordViewModel.discardUnsavedHistoryDraft() },
+            statusText = { args -> args.recordStatusText },
+            statusEvent = { args -> defaultStatusUiEvent(args) },
+            content = { modifier, args ->
+                Column(
+                    modifier = modifier,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    TxtEditorRouteContent(args)
+                }
             }
         ),
         TracerTabEntry(
@@ -236,11 +254,9 @@ internal object TracerTabRegistry {
             ),
             scrollBehavior = TracerTabScrollBehavior.VERTICAL,
             onEnter = { args ->
-                args.configViewModel.refreshConfigFiles(showStatus = false)
                 refreshRecordMappingValidation(args)
             },
-            onLeave = { args -> args.recordViewModel.discardUnsavedHistoryDraft() },
-            statusText = { args -> args.configStatusText.ifBlank { args.dataStatusText } },
+            statusText = { args -> args.dataStatusText },
             statusEvent = { args -> defaultStatusUiEvent(args) },
             content = { modifier, args ->
                 Column(
@@ -248,60 +264,8 @@ internal object TracerTabRegistry {
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     ConfigSection(
-                        selectedCategory = args.configUiState.selectedCategory,
-                        aliasFiles = args.configUiState.aliasFiles,
-                        chartFiles = args.configUiState.chartFiles,
-                        metaFiles = args.configUiState.metaFiles,
-                        insightsFiles = args.configUiState.insightsFiles,
-                        selectedFilePath = args.configUiState.selectedFilePath,
-                        selectedFileDisplayName = args.configUiState.selectedFileDisplayName,
-                        selectedFileContent = args.configUiState.selectedFileContent,
-                        editableContent = args.configUiState.editableContent,
-                        aliasEditorMode = args.configUiState.aliasEditorMode,
-                        aliasDocumentDraft = args.configUiState.aliasDocumentDraft,
-                        aliasEntryMovePlan = args.configUiState.aliasEntryMovePlan,
-                        aliasEntryMoveDestinations = args.configUiState.aliasEntryMoveDestinations,
-                        aliasEntryMoveDestinationsLoading = args.configUiState.aliasEntryMoveDestinationsLoading,
-                        aliasAdvancedTomlDraft = args.configUiState.aliasAdvancedTomlDraft,
-                        aliasEditorErrorMessage = args.configUiState.aliasEditorErrorMessage,
-                        autoSaveStatus = args.configUiState.autoSaveStatus,
                         themeConfig = args.themeConfig,
-                        onSelectAlias = { args.configViewModel.selectCategory(ConfigCategory.ALIAS) },
-                        onSelectCharts = { args.configViewModel.selectCategory(ConfigCategory.CHARTS) },
-                        onSelectMeta = { args.configViewModel.selectCategory(ConfigCategory.META) },
-                        onSelectInsights = { args.configViewModel.selectCategory(ConfigCategory.INSIGHTS) },
-                        onRefreshFiles = args.configViewModel::refreshConfigFiles,
-                        onOpenFile = args.configViewModel::openFile,
-                        onCreateAliasTomlFile = args.configViewModel::createAliasTomlFile,
-                        onDeleteAliasTomlFile = args.configViewModel::deleteCurrentAliasTomlFile,
-                        onRenameAliasCategory = args.configViewModel::renameAliasCategory,
                         onCopyDiagnosticsPayload = args.onCopyDiagnosticsPayload,
-                        onEditableContentChange = args.configViewModel::onEditableContentChange,
-                        onSelectAliasStructuredMode = {
-                            args.configViewModel.selectAliasEditorMode(AliasEditorMode.STRUCTURED)
-                        },
-                        onSelectAliasAdvancedMode = {
-                            args.configViewModel.selectAliasEditorMode(AliasEditorMode.ADVANCED)
-                        },
-                        onAliasAdvancedTomlChange = args.configViewModel::onAliasAdvancedTomlChange,
-                        onAddAliasGroup = args.configViewModel::addAliasGroup,
-                        onDeleteAliasGroup = args.configViewModel::deleteAliasGroup,
-                        onRenameAliasGroup = args.configViewModel::renameAliasGroup,
-                        onAddAliasEntry = args.configViewModel::addAliasEntry,
-                        onUpdateAliasEntry = args.configViewModel::updateAliasEntry,
-                        onMergeAliasEntry = args.configViewModel::mergeAliasEntry,
-                        onPromoteAliasEntry = args.configViewModel::promoteAliasEntryToGroup,
-                        onRenameGroupAlias = args.configViewModel::renameGroupAlias,
-                        onAddGroupAlias = args.configViewModel::addGroupAlias,
-                        onUpdateGroupAliases = args.configViewModel::updateGroupAliases,
-                        onDeleteAliasEntry = args.configViewModel::deleteAliasEntry,
-                        onPrepareAliasEntryMove = args.configViewModel::prepareAliasEntryMove,
-                        onPrepareAliasGroupMove = args.configViewModel::prepareAliasGroupMove,
-                        onPreviewAliasEntryMove = args.configViewModel::previewAliasEntryMove,
-                        onPreviewAliasGroupMove = args.configViewModel::previewAliasGroupMove,
-                        onConfirmAliasEntryMovePlan = args.configViewModel::confirmAliasEntryMovePlan,
-                        onDiscardAliasEntryMovePlan = args.configViewModel::discardAliasEntryMovePlan,
-                        onSaveCurrentFile = args.configViewModel::saveCurrentFile,
                         onThemeEvent = args.onThemeEvent,
                         insightsPiePalettePreset = args.insightsPiePalettePreset,
                         onInsightsPiePalettePresetChange = args.onInsightsPiePalettePresetChange,
@@ -311,13 +275,6 @@ internal object TracerTabRegistry {
                         onSetAppLanguage = args.onSetAppLanguage,
                         extraContent = {
                             DataManagementRouteContent(args)
-                            Text(
-                                text = stringResource(R.string.config_title_advanced_files),
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(top = 4.dp)
-                            )
-                            TxtEditorRouteContent(args)
                         }
                     )
                 }

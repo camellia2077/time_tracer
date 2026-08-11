@@ -15,7 +15,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountTree
+import androidx.compose.material.icons.filled.PlaylistAdd
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Description
@@ -116,7 +116,7 @@ internal fun RecordInputCard(
                 ) {
                     IconButton(onClick = onOpenCanonicalCatalog) {
                         Icon(
-                            imageVector = Icons.Default.AccountTree,
+                            imageVector = Icons.Default.PlaylistAdd,
                             contentDescription = stringResource(
                                 R.string.record_cd_open_canonical_catalog
                             )

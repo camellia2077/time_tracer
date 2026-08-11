@@ -101,10 +101,10 @@
     <string name="record_chip_add_activity">+ %1$s</string>
     <string name="record_chip_remove_activity">%1$s X</string>
     <string name="record_hint_no_quick_activities">No quick activities. Use search and Add to create one.</string>
-    <string name="record_action_suggestions">Suggest Quick Access Activities</string>
-    <string name="record_suggestions_sheet_title">Suggested Quick Access Activities</string>
-    <string name="record_suggestions_settings_title">Suggestion Settings</string>
-    <string name="record_canonical_catalog_title">Canonical Browser</string>
+    <string name="record_action_frequent">Frequent</string>
+    <string name="record_frequent_sheet_title">Frequent</string>
+    <string name="record_frequent_settings_title">Frequent Settings</string>
+    <string name="record_canonical_catalog_title">Activities</string>
     <string name="record_cd_open_canonical_catalog">Browse activities for Record Input</string>
     <string name="record_action_browse_quick_access_catalog">Browse activities to add</string>
     <string name="record_cd_open_quick_access_catalog">Browse activities to add to Quick Access</string>
@@ -117,16 +117,20 @@
     <string name="record_action_select_parent">Use as parent</string>
     <string name="record_canonical_catalog_loading">Loading canonical catalog...</string>
     <string name="record_canonical_catalog_empty">No canonical paths are available.</string>
+    <string name="record_canonical_catalog_source_tree">Activity tree</string>
+    <string name="record_canonical_catalog_source_frequent">Frequent</string>
+    <string name="record_canonical_catalog_source_categories">Categories</string>
+    <string name="record_canonical_catalog_frequent_description">Your most frequent activities from recent records.</string>
+    <string name="record_hint_no_frequent_activities">No frequent activities are available yet.</string>
     <string name="record_canonical_catalog_display_mode_canonical">Browser display: canonical token</string>
     <string name="record_canonical_catalog_display_mode_alias">Browser display: alias token</string>
-    <string name="record_suggestions_output_mode_canonical">Suggestion output: canonical token</string>
-    <string name="record_suggestions_output_mode_alias">Suggestion output: alias token</string>
-    <string name="record_suggestions_target_logical_day">Logical Day: %1$s</string>
-    <string name="record_suggestions_target_date">Target Date: %1$s</string>
+    <string name="record_frequent_output_mode_canonical">Frequent output: canonical token</string>
+    <string name="record_frequent_output_mode_alias">Frequent output: alias token</string>
+    <string name="record_frequent_target_logical_day">Logical Day: %1$s</string>
+    <string name="record_frequent_target_date">Target Date: %1$s</string>
     <string name="record_hint_loading">Loading...</string>
-    <string name="record_hint_loading_suggestions_for_logical_day">Loading suggestions for logical day %1$s...</string>
-    <string name="record_hint_no_suggestions">No suggestions.</string>
-    <string name="record_hint_no_suggestions_lookback">No suggestions are available in the %1$d-day window ending at the current logical day.</string>
+    <string name="record_hint_loading_frequent_activities_for_logical_day">Loading frequent activities for logical day %1$s...</string>
+    <string name="record_hint_no_frequent_activities_lookback">No frequent activities are available in the %1$d-day window ending at the current logical day.</string>
     <string name="record_txt_preview_title">Current TXT Preview</string>
     <string name="record_txt_preview_target_date">Target Date: %1$s</string>
     <string name="record_txt_preview_target_month">Target Month: %1$s</string>
@@ -137,10 +141,10 @@
     <string name="record_txt_preview_day_block_missing">No day block exists for the current logical day yet.</string>
     <string name="record_txt_preview_day_block_empty">This day block is currently empty.</string>
     <string name="record_txt_preview_day_marker">Day Marker: %1$s</string>
-    <string name="record_cd_suggestion_output_canonical_selected">Suggestion output mode is canonical token</string>
-    <string name="record_cd_suggestion_output_alias_selected">Suggestion output mode is alias token</string>
-    <string name="record_cd_suggestion_output_switch_to_canonical">Switch suggestion output mode to canonical token</string>
-    <string name="record_cd_suggestion_output_switch_to_alias">Switch suggestion output mode to alias token</string>
+    <string name="record_cd_frequent_output_canonical_selected">Frequent output mode is canonical token</string>
+    <string name="record_cd_frequent_output_alias_selected">Frequent output mode is alias token</string>
+    <string name="record_cd_frequent_output_switch_to_canonical">Switch frequent output mode to canonical token</string>
+    <string name="record_cd_frequent_output_switch_to_alias">Switch frequent output mode to alias token</string>
     <string name="record_cd_canonical_catalog_display_canonical_selected">Canonical browser display mode is canonical token</string>
     <string name="record_cd_canonical_catalog_display_alias_selected">Canonical browser display mode is alias token</string>
     <string name="record_cd_canonical_catalog_display_switch_to_canonical">Switch canonical browser display mode to canonical token</string>
@@ -154,6 +158,6 @@
     </plurals>
     <string name="record_status_invalid_quick_activities">Invalid quick activities: %1$s. Must match a configured alias key.</string>
     <string name="record_status_quick_activities_saved">Quick activities saved (%1$d).</string>
-    <string name="record_status_invalid_suggested_activity">Invalid suggested activity: %1$s. Must match a configured authorable event token (alias key, canonical token, or wake keyword).</string>
+    <string name="record_status_invalid_frequent_activity">Invalid frequent activity: %1$s. Must match a configured authorable event token (alias key, canonical token, or wake keyword).</string>
     <string name="record_duration_unavailable">n/a</string>
 </resources>

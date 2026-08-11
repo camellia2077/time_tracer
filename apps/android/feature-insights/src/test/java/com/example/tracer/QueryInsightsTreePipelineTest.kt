@@ -205,13 +205,13 @@ private class FakeTreeQueryGateway : QueryGateway {
         message = "Loaded 2 tree node(s)."
     )
 
-    override suspend fun queryActivitySuggestions(
+    override suspend fun queryFrequentActivities(
         lookbackDays: Int,
         topN: Int,
         anchorDateIso: String?
-    ): ActivitySuggestionResult = ActivitySuggestionResult(
+    ): ActivityFrequentResult = ActivityFrequentResult(
         ok = true,
-        suggestions = emptyList(),
+        frequentActivities = emptyList(),
         message = "ok"
     )
 

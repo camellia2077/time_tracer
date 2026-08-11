@@ -3,17 +3,17 @@ package com.example.tracer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-internal class ConfigAliasEditor(
+internal class ActivityHierarchyEditor(
     private val configGateway: ConfigGateway,
     private val activityHierarchyGateway: ActivityHierarchyGateway,
     activityHierarchyMigrationGateway: ActivityHierarchyMigrationGateway,
     quickActivitiesPreferenceGateway: QuickActivitiesPreferenceGateway,
-    private val configFileEditor: ConfigFileEditor,
+    private val configFileEditor: ActivityHierarchyFileEditor,
     private val scope: CoroutineScope,
-    private val readState: () -> ConfigUiState,
-    private val writeState: (ConfigUiState) -> Unit
+    private val readState: () -> ActivityHierarchyEditorState,
+    private val writeState: (ActivityHierarchyEditorState) -> Unit
 ) {
-    private var uiState: ConfigUiState
+    private var uiState: ActivityHierarchyEditorState
         get() = readState()
         set(value) = writeState(value)
 
@@ -135,7 +135,7 @@ internal class ConfigAliasEditor(
         }
         val content = uiState.aliasAdvancedTomlDraft.ifBlank { uiState.selectedFileContent }
         viewModelScope.launch {
-            uiState = uiState.copy(autoSaveStatus = ConfigAutoSaveStatus.SAVING)
+            uiState = uiState.copy(autoSaveStatus = ActivityHierarchySaveStatus.SAVING)
             val outcome = activityHierarchyEditCoordinator.apply(
                 ActivityHierarchyEditRequest(
                     configRelativePath = selectedFile,
@@ -154,7 +154,7 @@ internal class ConfigAliasEditor(
             if (outcome is ActivityHierarchyEditOutcome.Failed) {
                 uiState = uiState.copy(
                     aliasEditorErrorMessage = outcome.message,
-                    autoSaveStatus = ConfigAutoSaveStatus.FAILED
+                    autoSaveStatus = ActivityHierarchySaveStatus.FAILED
                 )
                 return@launch
             }
@@ -187,7 +187,7 @@ internal class ConfigAliasEditor(
                 aliasEditorErrorMessage = "",
                 statusText = "Activity category renamed successfully.",
                 txtReloadRequestVersion = uiState.txtReloadRequestVersion + 1,
-                autoSaveStatus = ConfigAutoSaveStatus.SAVED
+                autoSaveStatus = ActivityHierarchySaveStatus.SAVED
             )
             uiState = configFileEditor.open(
                 state = nextState,
@@ -270,7 +270,7 @@ internal class ConfigAliasEditor(
 
     private fun applyCoreActivityHierarchyOperation(operation: ActivityHierarchyOperation) {
         viewModelScope.launch {
-            uiState = uiState.copy(autoSaveStatus = ConfigAutoSaveStatus.SAVING)
+            uiState = uiState.copy(autoSaveStatus = ActivityHierarchySaveStatus.SAVING)
             val outcome = activityHierarchyEditStateCoordinator.apply(
                 state = uiState,
                 operation = operation
@@ -278,7 +278,7 @@ internal class ConfigAliasEditor(
             uiState = when (outcome) {
                 is ActivityHierarchyEditStateOutcome.Failed -> uiState.copy(
                     aliasEditorErrorMessage = outcome.message,
-                    autoSaveStatus = ConfigAutoSaveStatus.FAILED
+                    autoSaveStatus = ActivityHierarchySaveStatus.FAILED
                 )
                 is ActivityHierarchyEditStateOutcome.Applied -> outcome.state
             }
@@ -399,7 +399,7 @@ internal class ConfigAliasEditor(
     }
 
 
-    private fun cacheAliasAdvancedMode(state: ConfigUiState): ConfigUiState {
+    private fun cacheAliasAdvancedMode(state: ActivityHierarchyEditorState): ActivityHierarchyEditorState {
         val selectedFile = state.selectedFilePath
         if (selectedFile.isBlank()) {
             return state
@@ -416,7 +416,7 @@ internal class ConfigAliasEditor(
         )
     }
 
-    private fun cacheAliasStructuredMode(state: ConfigUiState): ConfigUiState {
+    private fun cacheAliasStructuredMode(state: ActivityHierarchyEditorState): ActivityHierarchyEditorState {
         val selectedFile = state.selectedFilePath
         val document = state.aliasDocumentDraft
         if (selectedFile.isBlank() || document == null) {
