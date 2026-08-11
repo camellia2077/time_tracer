@@ -21,8 +21,6 @@ namespace tracer::core::infrastructure::query::data {
 namespace {
 
 constexpr int kFirstDayOfMonth = 1;
-constexpr int kDefaultLookbackDays = 10;
-constexpr int kDefaultSuggestLimit = 5;
 constexpr int kYearMonthLength = 7;
 
 }  // namespace
@@ -98,25 +96,25 @@ auto QueryDayDurationsByRootInDateRange(sqlite3* db_conn,
   return query_data_detail::QueryRowsWithTotalDuration(db_conn, kSql, params);
 }
 
-auto QueryActivitySuggestions(sqlite3* db_conn,
-                              const ActivitySuggestionQueryOptions& options)
-    -> std::vector<ActivitySuggestionRow> {
-  // `0` is a valid business input for suggestions. It means "skip querying any
-  // suggestion data", which both keeps the runtime semantics explicit and lets
+auto QueryFrequentActivities(sqlite3* db_conn,
+                              const ActivityFrequentQueryOptions& options)
+    -> std::vector<ActivityFrequentRow> {
+  // `0` is a valid business input for frequent activities. It means "skip querying any
+  // frequent activity data", which both keeps the runtime semantics explicit and lets
   // UI callers clear the numeric fields before typing replacement values.
   if (options.lookback_days <= 0 || options.limit <= 0) {
     return {};
   }
   const int kLookbackDays = query_data_internal::ClampPositiveOrDefault(
-      options.lookback_days, kDefaultLookbackDays);
+      options.lookback_days, kDefaultActivityFrequentLookbackDays);
   const int kLimit = query_data_internal::ClampPositiveOrDefault(
-      options.limit, kDefaultSuggestLimit);
+      options.limit, kDefaultActivityFrequentLimit);
 
   query_data_internal::EnsureProjectPathSnapshotColumnOrThrow(
-      db_conn, "QueryActivitySuggestions");
+      db_conn, "QueryFrequentActivities");
   const std::string kSql =
-      query_data_internal::BuildActivitySuggestionsSql(options);
-  return query_data_internal::ExecuteActivitySuggestions(db_conn, kSql, options,
+      query_data_internal::BuildFrequentActivitiesSql(options);
+  return query_data_internal::ExecuteFrequentActivities(db_conn, kSql, options,
                                                          kLookbackDays, kLimit);
 }
 

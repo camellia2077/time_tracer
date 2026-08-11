@@ -82,8 +82,8 @@ auto AppendOptionalLimitClause(std::string& sql,
     const DateRangeBounds& date_range, std::vector<detail::SqlParam>& params)
     -> std::string;
 
-[[nodiscard]] auto BuildActivitySuggestionsSql(
-    const ActivitySuggestionQueryOptions& options) -> std::string;
+[[nodiscard]] auto BuildFrequentActivitiesSql(
+    const ActivityFrequentQueryOptions& options) -> std::string;
 
 [[nodiscard]] auto BuildLatestTrackedDateSql() -> std::string;
 
@@ -92,10 +92,10 @@ auto AppendOptionalLimitClause(std::string& sql,
                                        std::vector<detail::SqlParam>& params)
     -> std::string;
 
-[[nodiscard]] auto ExecuteActivitySuggestions(
+[[nodiscard]] auto ExecuteFrequentActivities(
     sqlite3* db_conn, const std::string& sql,
-    const ActivitySuggestionQueryOptions& options, int lookback_days, int limit)
-    -> std::vector<ActivitySuggestionRow>;
+    const ActivityFrequentQueryOptions& options, int lookback_days, int limit)
+    -> std::vector<ActivityFrequentRow>;
 
 [[nodiscard]] auto ExecuteProjectTreeRecords(
     sqlite3* db_conn, const std::string& sql,

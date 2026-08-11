@@ -18,13 +18,14 @@ Describe stable Android module boundaries and dependency direction.
 ## Stable Module Roles
 
 - `app`
-  - composition root, screen-level orchestration, cross-feature wiring
+  - composition root, screen-level orchestration, cross-feature wiring, and the
+    activity-hierarchy editor host used by Record's Categories source
 - `feature-data`
   - Data management presentation rendered from the Config route
 - `feature-record`
   - Record/TXT presentation, shared record-side UI state, and TXT editor session orchestration
 - `feature-ui-common`
-  - shared reusable presentation primitives, including the native multiline text editor used by TXT and Config raw editing
+  - shared reusable presentation primitives, including the native multiline text editor used by TXT and activity-hierarchy raw editing
 - `feature-insights`
   - insights/query/chart presentation
 - `runtime`

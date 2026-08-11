@@ -41,7 +41,7 @@ If the change is flow-shell related, then open:
 
 - `apps/android/app/src/main/java/com/example/tracer/ui/screen/tracer/TracerScreenTransferCoordinator.kt`
 
-### Record or TXT editor behavior
+### Record, activity browser, or TXT editor behavior
 
 Start here:
 
@@ -50,6 +50,13 @@ Start here:
 - `apps/android/feature-record/src/main/java/com/example/tracer/ui/screen/TxtEditorScreen.kt`
 - `apps/android/feature-record/src/main/java/com/example/tracer/ui/screen/TxtEditorSession.kt`
 - `apps/android/feature-record/src/main/java/com/example/tracer/ui/screen/TxtEditorRuntimeCoordinator.kt`
+
+For the Add activity `Tree | Frequent | Categories` browser, also open:
+
+- `apps/android/feature-record/src/main/java/com/example/tracer/ui/screen/RecordCanonicalCatalogScreen.kt`
+- `apps/android/feature-record/src/main/java/com/example/tracer/ui/screen/RecordFrequentActivitiesSection.kt`
+- `apps/android/app/src/main/java/com/example/tracer/ui/screen/ActivityHierarchyEditorContent.kt`
+- `apps/android/app/src/main/java/com/example/tracer/ui/viewmodel/ActivityHierarchyEditorViewModel.kt`
 
 If the task is specifically about multiline TXT input behavior, then also open:
 
@@ -69,14 +76,13 @@ Start here:
 
 Start here:
 
-- `apps/android/app/src/main/java/com/example/tracer/ui/viewmodel/ConfigViewModel.kt`
 - `apps/android/app/src/main/java/com/example/tracer/data/InsightsHeatmapTomlLoader.kt`
 - `apps/android/app/src/main/java/com/example/tracer/ui/screen/ConfigScreen.kt`
 
-If the task is specifically about raw TOML editing behavior, then also open:
+If the task is specifically about activity-hierarchy TOML editing behavior, then also open:
 
-- `apps/android/app/src/main/java/com/example/tracer/ui/screen/ConfigEditorCard.kt`
-- `apps/android/app/src/main/java/com/example/tracer/ui/screen/ConfigAliasEditorCard.kt`
+- `apps/android/app/src/main/java/com/example/tracer/ui/screen/ActivityHierarchyEditorCard.kt`
+- `apps/android/app/src/main/java/com/example/tracer/ui/viewmodel/ActivityHierarchyEditor.kt`
 - `apps/android/feature-ui-common/src/main/java/com/example/tracer/ui/components/NativeMultilineTextEditor.kt`
 
 ### Runtime init, query, diagnostics, or JNI-backed execution

@@ -7,14 +7,14 @@
 namespace tracer_core::infrastructure::query::data::internal {
 namespace {
 
-constexpr size_t kActivitySuggestionsSqlReserve = 1300;
+constexpr size_t kFrequentActivitiesSqlReserve = 1300;
 
 }  // namespace
 
-auto BuildActivitySuggestionsSql(const ActivitySuggestionQueryOptions& options)
+auto BuildFrequentActivitiesSql(const ActivityFrequentQueryOptions& options)
     -> std::string {
   std::string sql;
-  sql.reserve(kActivitySuggestionsSqlReserve);
+  sql.reserve(kFrequentActivitiesSqlReserve);
   sql += "WITH latest_record AS (";
   if (options.anchor_date.has_value() && !options.anchor_date->empty()) {
     sql += "  SELECT MIN(?, MAX(tr.";

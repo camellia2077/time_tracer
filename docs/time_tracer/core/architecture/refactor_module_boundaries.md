@@ -14,7 +14,7 @@
   - `QueryDayDurations`
   - `QueryProjectRootNames`
   - `QueryDayDurationsByRootInDateRange`
-  - `QueryActivitySuggestions`
+  - `QueryFrequentActivities`
   - `QueryLatestTrackedDate`
   - `QueryProjectTree`
 - 责任：仅保留请求编排与结果汇总，不再承载大段 SQL 拼装和手写 row decode。
@@ -30,7 +30,7 @@
 - 文件：`libs/tracer_core/src/infra/query/data/data_query_row_mappers.cpp`
 - 责任：
   - sqlite 参数绑定。
-  - `ActivitySuggestionRow` / project tree records 的取行解码。
+  - `ActivityFrequentRow` / project tree records 的取行解码。
   - 统一 prepare/step/finalize 执行路径。
 
 ### 共享契约

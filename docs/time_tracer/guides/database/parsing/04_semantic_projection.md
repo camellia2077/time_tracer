@@ -8,7 +8,7 @@
 
 1. `(path, duration)` 记录
 2. `DayDurationRow`
-3. `ActivitySuggestionRow`
+3. `ActivityFrequentRow`
 
 ## 2. 核心语义规则
 

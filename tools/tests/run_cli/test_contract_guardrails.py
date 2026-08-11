@@ -36,7 +36,7 @@ LEGACY_MINIMAL_CONTRACT_COMMAND_KEYS = {
     "export recent",
     "export week",
     "export year",
-    "query data activity-suggest",
+    "query data activity-frequent",
     "query data days",
     "query data months",
     "query data search",

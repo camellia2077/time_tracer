@@ -1,5 +1,5 @@
-inline constexpr int kDefaultActivitySuggestionLookbackDays = 10;
-inline constexpr int kDefaultActivitySuggestionLimit = 5;
+inline constexpr int kDefaultActivityFrequentLookbackDays = 10;
+inline constexpr int kDefaultActivityFrequentLimit = 5;
 
 enum class DataQueryAction {
   kYears,
@@ -8,7 +8,7 @@ enum class DataQueryAction {
   kDaysDuration,
   kDaysStats,
   kSearch,
-  kActivitySuggest,
+  kActivityFrequent,
   kInsightsChart,
   kInsightsComposition,
   kTree
@@ -16,7 +16,7 @@ enum class DataQueryAction {
 
 inline constexpr std::string_view kSupportedDataQueryActions =
     "years, months, days, days-duration, days-stats, search, "
-    "activity-suggest, insights-chart, insights-composition, tree";
+    "activity-frequent, insights-chart, insights-composition, tree";
 
 struct DayDurationRow {
   std::string date;
@@ -40,15 +40,15 @@ struct DayDurationStats {
   double mad_seconds = 0.0;
 };
 
-struct ActivitySuggestionQueryOptions {
-  int lookback_days = kDefaultActivitySuggestionLookbackDays;
-  int limit = kDefaultActivitySuggestionLimit;
+struct ActivityFrequentQueryOptions {
+  int lookback_days = kDefaultActivityFrequentLookbackDays;
+  int limit = kDefaultActivityFrequentLimit;
   std::optional<std::string> anchor_date;
   std::optional<std::string> prefix;
   bool score_by_duration = false;
 };
 
-struct ActivitySuggestionRow {
+struct ActivityFrequentRow {
   std::string activity_name;
   int usage_count = 0;
   long long total_duration_seconds = 0;

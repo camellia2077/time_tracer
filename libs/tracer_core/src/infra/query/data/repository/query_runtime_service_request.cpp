@@ -239,8 +239,8 @@ auto ToCliDataQueryAction(tracer_core::core::dto::DataQueryAction action)
       return infra_data_query::DataQueryAction::kDaysStats;
     case CoreAction::kSearch:
       return infra_data_query::DataQueryAction::kSearch;
-    case CoreAction::kActivitySuggest:
-      return infra_data_query::DataQueryAction::kActivitySuggest;
+    case CoreAction::kActivityFrequent:
+      return infra_data_query::DataQueryAction::kActivityFrequent;
     case CoreAction::kMappingNames:
       throw std::runtime_error(
           "Mapping names action must be handled before SQL query conversion.");

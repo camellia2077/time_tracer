@@ -10,8 +10,8 @@
     const std::vector<DayDurationRow>& rows, const DayDurationStats& stats,
     const std::optional<int>& top_n) -> std::string;
 
-[[nodiscard]] auto BuildSemanticActivitySuggestionsPayload(
-    const std::vector<ActivitySuggestionRow>& rows) -> std::string;
+[[nodiscard]] auto BuildSemanticFrequentActivitiesPayload(
+    const std::vector<ActivityFrequentRow>& rows) -> std::string;
 
 [[nodiscard]] auto BuildSemanticTreePayload(
     const std::vector<ProjectTreeNode>& nodes, int max_depth,

@@ -50,8 +50,8 @@ auto BindSqlParams(sqlite3_stmt* statement,
   }
 }
 
-auto BindActivitySuggestions(sqlite3_stmt* statement,
-                             const ActivitySuggestionQueryOptions& options,
+auto BindFrequentActivities(sqlite3_stmt* statement,
+                             const ActivityFrequentQueryOptions& options,
                              int lookback_days, int limit) -> void {
   int bind_index = 1;
   if (options.anchor_date.has_value() && !options.anchor_date->empty()) {
@@ -71,14 +71,14 @@ auto BindActivitySuggestions(sqlite3_stmt* statement,
   sqlite3_bind_int(statement, bind_index, limit);
 }
 
-[[nodiscard]] auto ReadActivitySuggestionRows(sqlite3* db_conn,
+[[nodiscard]] auto ReadActivityFrequentRows(sqlite3* db_conn,
                                               sqlite3_stmt* statement)
-    -> std::vector<ActivitySuggestionRow> {
-  std::vector<ActivitySuggestionRow> rows;
+    -> std::vector<ActivityFrequentRow> {
+  std::vector<ActivityFrequentRow> rows;
 
   int step_result = SQLITE_OK;
   while ((step_result = sqlite3_step(statement)) == SQLITE_ROW) {
-    ActivitySuggestionRow row;
+    ActivityFrequentRow row;
     if (const unsigned char* text = sqlite3_column_text(statement, 0);
         text != nullptr) {
       row.activity_name = reinterpret_cast<const char*>(text);
@@ -129,15 +129,15 @@ auto BindActivitySuggestions(sqlite3_stmt* statement,
 
 }  // namespace
 
-auto ExecuteActivitySuggestions(sqlite3* db_conn, const std::string& sql,
-                                const ActivitySuggestionQueryOptions& options,
+auto ExecuteFrequentActivities(sqlite3* db_conn, const std::string& sql,
+                                const ActivityFrequentQueryOptions& options,
                                 int lookback_days, int limit)
-    -> std::vector<ActivitySuggestionRow> {
+    -> std::vector<ActivityFrequentRow> {
   sqlite3_stmt* statement = PrepareStatementOrThrow(db_conn, sql);
   try {
-    BindActivitySuggestions(statement, options, lookback_days, limit);
-    std::vector<ActivitySuggestionRow> rows =
-        ReadActivitySuggestionRows(db_conn, statement);
+    BindFrequentActivities(statement, options, lookback_days, limit);
+    std::vector<ActivityFrequentRow> rows =
+        ReadActivityFrequentRows(db_conn, statement);
     sqlite3_finalize(statement);
     return rows;
   } catch (...) {

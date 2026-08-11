@@ -107,17 +107,22 @@
    - `hints`
    - `contract_version`
    - `commands`
-6. `tracer_core_runtime_query_json` supports action `mapping_names`:
+6. `tracer_core_runtime_query_json` supports action `activity_frequent` for
+   recently frequent activities:
+   - request: `{ "action": "activity_frequent", "lookback_days": 10, "top_n": 5 }`
+   - semantic-json response `content`: an `activity_frequent` payload with
+     ranked `items` and `total_count`
+7. `tracer_core_runtime_query_json` supports action `mapping_names`:
    - request: `{ "action": "mapping_names" }`
    - response `content`: `{ "names": ["alias_or_full_name", "..."] }`
-7. `tracer_core_runtime_check_environment_json` returns:
+8. `tracer_core_runtime_check_environment_json` returns:
    - `ok`
    - `error_message`
    - `error_code`
    - `error_category`
    - `hints`
    - optional `messages`
-8. `tracer_core_runtime_resolve_cli_context_json` returns:
+9. `tracer_core_runtime_resolve_cli_context_json` returns:
    - `ok`
    - `error_message`
    - `error_code`
@@ -125,7 +130,7 @@
    - `hints`
    - `paths`
    - `cli_config`
-9. `tracer_core_runtime_ingest_sync_status_json` request/response contract:
+10. `tracer_core_runtime_ingest_sync_status_json` request/response contract:
    - request fields:
      - optional `months` (`string[]`)
    - response fields:
@@ -140,7 +145,7 @@
      - `txt_relative_path`
      - `txt_content_hash_sha256`
      - `ingested_at_unix_ms`
-10. `tracer_core_runtime_clear_ingest_sync_status_json` response contract:
+11. `tracer_core_runtime_clear_ingest_sync_status_json` response contract:
    - no request body
    - response follows the standard ack-style envelope:
      - `ok`
@@ -148,7 +153,7 @@
      - `error_code`
      - `error_category`
      - `hints`
-11. `tracer_core_runtime_temporal_insights_json` is the single canonical
+12. `tracer_core_runtime_temporal_insights_json` is the single canonical
     insights ABI surface:
    - request fields:
      - `operation_kind` (`query|structured_query|targets|export`)
@@ -190,7 +195,7 @@
      - `error_category`
      - `hints`
    - `export` response follows the standard ack-style envelope
-12. `tracer_core_runtime_insights_batch_json` remains a separate helper for
+13. `tracer_core_runtime_insights_batch_json` remains a separate helper for
     multi-days recent text rendering:
    - request fields:
      - `days_list`
@@ -198,7 +203,7 @@
    - response fields:
      - standard text envelope fields
      - optional `insights_hash_sha256`
-13. `tracer_core_runtime_crypto_*_json` contracts:
+14. `tracer_core_runtime_crypto_*_json` contracts:
    - request/response payloads are UTF-8 JSON objects
    - encrypt request fields:
      - `input_path`
@@ -220,7 +225,7 @@
      - `error_code`
      - `error_category`
      - `hints`
-14. `tracer_core_runtime_config_json` contract:
+15. `tracer_core_runtime_config_json` contract:
    - request/response payloads are UTF-8 JSON objects
    - `action` currently supports:
      - `default_day_marker`

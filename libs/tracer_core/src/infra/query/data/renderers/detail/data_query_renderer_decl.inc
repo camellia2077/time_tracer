@@ -11,8 +11,8 @@
     const std::optional<int>& top_n,
     tracer_core::core::dto::DataQueryOutputMode output_mode) -> std::string;
 
-[[nodiscard]] auto RenderActivitySuggestionsOutput(
-    const std::vector<ActivitySuggestionRow>& rows,
+[[nodiscard]] auto RenderFrequentActivitiesOutput(
+    const std::vector<ActivityFrequentRow>& rows,
     tracer_core::core::dto::DataQueryOutputMode output_mode) -> std::string;
 
 [[nodiscard]] auto RenderProjectTreeOutput(

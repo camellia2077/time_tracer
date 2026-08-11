@@ -34,8 +34,8 @@ Do not store UI preferences in the runtime SQLite database.
   - the selected UI and Insights color systems are defined in `../ui/color-system.md` and `../ui/insights/README.md`; the selected palette is user-persisted
 - App language
 - Record assistance preferences:
-  - suggestion lookback days
-  - suggestion top-N
+  - frequent activity lookback days
+  - frequent activity top-N
   - quick activities
   - assist panel expansion flags
 - Insights chart preference:

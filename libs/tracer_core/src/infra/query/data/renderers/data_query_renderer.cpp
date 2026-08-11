@@ -48,13 +48,13 @@ auto RenderDayDurationStatsOutput(const std::vector<DayDurationRow>& rows,
   return RenderDayDurationStatsOutputText(rows, stats, top_n);
 }
 
-auto RenderActivitySuggestionsOutput(
-    const std::vector<ActivitySuggestionRow>& rows,
+auto RenderFrequentActivitiesOutput(
+    const std::vector<ActivityFrequentRow>& rows,
     DataQueryOutputMode output_mode) -> std::string {
   if (ShouldRenderSemanticJson(output_mode)) {
-    return BuildSemanticActivitySuggestionsPayload(rows);
+    return BuildSemanticFrequentActivitiesPayload(rows);
   }
-  return RenderActivitySuggestionsText(rows);
+  return RenderFrequentActivitiesText(rows);
 }
 
 auto RenderProjectTreeOutput(const std::vector<ProjectTreeNode>& nodes,

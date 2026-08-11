@@ -87,7 +87,7 @@ Android uses that set for lightweight authoring-side checks in:
 
 1. Quick Access search candidates
 2. Quick Access save validation
-3. suggested-activity click validation
+3. frequent-activity click validation
 
 See:
 
@@ -104,6 +104,20 @@ Current Android `Record` interactions provide haptic feedback in:
 
 1. `Quick Access`: long press to enter drag-reorder triggers one haptic feedback
 2. `Record Activity`: triggering the record action provides one haptic feedback
+
+### 1.4 Add Activity Browser
+
+`Add activity` has three sources:
+
+1. `Tree`: select a canonical activity path
+2. `Frequent`: select a recently frequent activity
+3. `Categories`: maintain canonical paths and aliases in the Add activity
+   browser itself
+
+Tree and Frequent selections fill the Record Input activity field. Categories
+does not select an activity; it hosts the sole activity-hierarchy editor. A
+successful save refreshes the Tree source so the user can select the changed
+activity without leaving Record Input.
 
 ## 2. ViewModel And Use Case Layer
 
@@ -305,7 +319,7 @@ Android is responsible for:
 
 1. collecting author input
 2. loading authorable token sets from core/runtime
-3. lightweight authoring-side validation for Quick Access and suggestions
+3. lightweight authoring-side validation for Quick Access and frequent activities
 4. resolving and pinning the interval attribution date at start time
 5. persisting that absolute date with an unfinished interval draft
 6. resolving target logical day and time-order mode for point events and

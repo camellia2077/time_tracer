@@ -15,7 +15,7 @@
 
 1. `QueryDatesByFilters(...)`
 2. `QueryDayDurations(...)`
-3. `QueryActivitySuggestions(...)`
+3. `QueryFrequentActivities(...)`
 4. `QueryProjectTree(...)`
 
 ## 3. 快照列约束
@@ -49,7 +49,7 @@ return rows
 
 - `libs/tracer_core/src/infra/query/data/data_query_repository.cpp`：`QueryDatesByFilters(...)`
 - `libs/tracer_core/src/infra/query/data/data_query_repository.cpp`：`QueryDayDurations(...)`
-- `libs/tracer_core/src/infra/query/data/data_query_repository.cpp`：`QueryActivitySuggestions(...)`
+- `libs/tracer_core/src/infra/query/data/data_query_repository.cpp`：`QueryFrequentActivities(...)`
 - `libs/tracer_core/src/infra/query/data/data_query_repository.cpp`：`QueryProjectTree(...)`
 - `libs/tracer_core/src/infra/query/data/data_query_repository.cpp`：`EnsureProjectPathSnapshotColumnOrThrow(...)`
 - `libs/tracer_core/src/infra/query/data/data_query_repository_sql.cpp`：`BindAll(...)`

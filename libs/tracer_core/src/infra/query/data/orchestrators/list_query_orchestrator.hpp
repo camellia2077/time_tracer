@@ -16,7 +16,7 @@ namespace tracer::core::infrastructure::query::data::orchestrators {
 namespace tracer_core::infrastructure::query::data::orchestrators {
 
 using tracer::core::infrastructure::query::data::orchestrators::
-    HandleActivitySuggestQuery;
+    HandleActivityFrequentQuery;
 using tracer::core::infrastructure::query::data::orchestrators::
     HandleDaysDurationQuery;
 using tracer::core::infrastructure::query::data::orchestrators::HandleDaysQuery;

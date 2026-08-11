@@ -88,7 +88,7 @@ constexpr int kInsightsFormatTypst = 2;
     return "search";
   }
   if (value == kQueryActionActivitySuggest) {
-    return "activity_suggest";
+    return "activity_frequent";
   }
   if (value == kQueryActionTree) {
     return "tree";

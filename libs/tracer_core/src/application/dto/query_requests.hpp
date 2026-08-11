@@ -13,7 +13,7 @@ enum class DataQueryAction {
   kDaysDuration,
   kDaysStats,
   kSearch,
-  kActivitySuggest,
+  kActivityFrequent,
   kMappingNames,
   kActivityHierarchyLeafMappings,
   kMappingAliasKeys,

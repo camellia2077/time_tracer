@@ -17,7 +17,7 @@ namespace tracer::core::infrastructure::query::data::renderers {
 namespace tracer_core::infrastructure::query::data::renderers {
 
 using tracer::core::infrastructure::query::data::renderers::
-    RenderActivitySuggestionsText;
+    RenderFrequentActivitiesText;
 using tracer::core::infrastructure::query::data::renderers::
     RenderDayDurationStatsOutputText;
 using tracer::core::infrastructure::query::data::renderers::

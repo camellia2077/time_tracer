@@ -18,7 +18,7 @@
 | `insights-composition` | `lookback_days` 或 `from/to` | 项目树聚合与层级平均统计 | `total_duration_seconds`, `active_root_count`, `active_days`, `range_days`, `tree[].average_duration_seconds`, `tree[].average_occurrence_count`, `tree[].average_occurrence_ratio` | `tree=[]` 且统计值为 0 |
 | `tree` | `period/period_arg/level/root/...` | 树聚合与节点父级占比计算 | `roots[].duration_seconds`, `roots[].children[].parent_duration_percent`, `root_count`, `max_depth`, `max_available_depth` | `roots=[]`, `root_count=0`, `max_available_depth=0` |
 | `search` | `remark/day_remark/project/root/...` | 无统计计算 | `items`, `total_count` | `items=[]`, `total_count=0` |
-| `activity-suggest` | `lookback_days/top/prefix/score_mode` | 评分聚合（核心查询层） | `items[].score`, `total_count` | `items=[]`, `total_count=0` |
+| `activity-frequent` | `lookback_days/top/prefix/score_mode` | 评分聚合（核心查询层） | `items[].score`, `total_count` | `items=[]`, `total_count=0` |
 
 ## 边界说明
 1. 统计公式只允许存在于 `libs/tracer_core/src/infra/query/data/stats/`。

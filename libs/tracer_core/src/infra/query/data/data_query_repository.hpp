@@ -20,7 +20,7 @@ namespace tracer::core::infrastructure::query::data {
 
 namespace tracer_core::infrastructure::query::data {
 
-using tracer::core::infrastructure::query::data::QueryActivitySuggestions;
+using tracer::core::infrastructure::query::data::QueryFrequentActivities;
 using tracer::core::infrastructure::query::data::QueryDatesByFilters;
 using tracer::core::infrastructure::query::data::QueryDayDurations;
 using tracer::core::infrastructure::query::data::

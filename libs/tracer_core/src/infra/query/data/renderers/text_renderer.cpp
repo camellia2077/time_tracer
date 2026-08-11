@@ -204,8 +204,8 @@ auto RenderDayDurationStatsOutputText(const std::vector<DayDurationRow>& rows,
   return content;
 }
 
-auto RenderActivitySuggestionsText(
-    const std::vector<ActivitySuggestionRow>& rows) -> std::string {
+auto RenderFrequentActivitiesText(
+    const std::vector<ActivityFrequentRow>& rows) -> std::string {
   std::ostringstream output_stream;
   output_stream << std::fixed << std::setprecision(2);
   for (const auto& row : rows) {

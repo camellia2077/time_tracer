@@ -7,7 +7,7 @@ export module tracer.core.infrastructure.query.data.renderers.text_renderer;
 export namespace tracer::core::infrastructure::query::data::renderers {
 
 using ::tracer::core::infrastructure::query::data::renderers::
-    RenderActivitySuggestionsText;
+    RenderFrequentActivitiesText;
 using ::tracer::core::infrastructure::query::data::renderers::
     RenderDayDurationStatsOutputText;
 using ::tracer::core::infrastructure::query::data::renderers::

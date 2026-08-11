@@ -13,9 +13,6 @@ namespace data_query_renderers =
 namespace tracer::core::infrastructure::query::data::orchestrators {
 namespace {
 
-constexpr int kDefaultSuggestLookbackDays = 10;
-constexpr int kDefaultSuggestLimit = 5;
-
 auto BuildSuccessOutput(std::string content)
     -> tracer_core::core::dto::TextOutput {
   return {.ok = true, .content = std::move(content), .error_message = ""};
@@ -69,22 +66,24 @@ auto HandleSearchQuery(sqlite3* db_conn, const QueryFilters& base_filters,
       data_query_renderers::RenderListOutput("search", kItems, output_mode));
 }
 
-auto HandleActivitySuggestQuery(
+auto HandleActivityFrequentQuery(
     sqlite3* db_conn, const tracer_core::core::dto::DataQueryRequest& request,
     tracer_core::core::dto::DataQueryOutputMode output_mode)
     -> tracer_core::core::dto::TextOutput {
-  query_data_repository::ActivitySuggestionQueryOptions options;
+  query_data_repository::ActivityFrequentQueryOptions options;
   options.lookback_days =
-      request.lookback_days.value_or(kDefaultSuggestLookbackDays);
+      request.lookback_days.value_or(
+          query_data_repository::kDefaultActivityFrequentLookbackDays);
   options.limit =
-      request.top_n.value_or(request.limit.value_or(kDefaultSuggestLimit));
+      request.top_n.value_or(request.limit.value_or(
+          query_data_repository::kDefaultActivityFrequentLimit));
   options.anchor_date = request.anchor_date;
   options.prefix = request.activity_prefix;
   options.score_by_duration = request.activity_score_by_duration;
   const auto kRows =
-      query_data_repository::QueryActivitySuggestions(db_conn, options);
+      query_data_repository::QueryFrequentActivities(db_conn, options);
   return BuildSuccessOutput(
-      data_query_renderers::RenderActivitySuggestionsOutput(kRows,
+      data_query_renderers::RenderFrequentActivitiesOutput(kRows,
                                                             output_mode));
 }
 

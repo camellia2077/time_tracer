@@ -36,8 +36,8 @@ auto DispatchDataQueryAction(
     case infra_data_query::DataQueryAction::kSearch:
       return infra_data_query_orchestrators::HandleSearchQuery(
           db_conn, base_filters, request.output_mode);
-    case infra_data_query::DataQueryAction::kActivitySuggest:
-      return infra_data_query_orchestrators::HandleActivitySuggestQuery(
+    case infra_data_query::DataQueryAction::kActivityFrequent:
+      return infra_data_query_orchestrators::HandleActivityFrequentQuery(
           db_conn, request, request.output_mode);
     case infra_data_query::DataQueryAction::kInsightsChart:
       return infra_data_query_orchestrators::HandleInsightsChartQuery(

@@ -8,7 +8,7 @@ export module tracer.core.infrastructure.query.data.renderers
 export namespace tracer::core::infrastructure::query::data::renderers {
 
 using ::tracer::core::infrastructure::query::data::renderers::
-    BuildSemanticActivitySuggestionsPayload;
+    BuildSemanticFrequentActivitiesPayload;
 using ::tracer::core::infrastructure::query::data::renderers::
     BuildSemanticDayDurationsPayload;
 using ::tracer::core::infrastructure::query::data::renderers::

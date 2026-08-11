@@ -163,9 +163,9 @@ auto BuildSemanticDayStatsPayload(const std::vector<DayDurationRow>& rows,
   return payload.dump();
 }
 
-auto BuildSemanticActivitySuggestionsPayload(
-    const std::vector<ActivitySuggestionRow>& rows) -> std::string {
-  json payload = BuildSemanticBase("activity_suggest");
+auto BuildSemanticFrequentActivitiesPayload(
+    const std::vector<ActivityFrequentRow>& rows) -> std::string {
+  json payload = BuildSemanticBase("activity_frequent");
   payload["items"] = json::array();
   for (const auto& row : rows) {
     payload["items"].push_back(json{

@@ -85,8 +85,8 @@ namespace tracer_core::shell::c_api_bridge {
   if (normalized == "search") {
     return DataQueryAction::kSearch;
   }
-  if (normalized == "activity_suggest" || normalized == "activity-suggest") {
-    return DataQueryAction::kActivitySuggest;
+  if (normalized == "activity_frequent" || normalized == "activity-frequent") {
+    return DataQueryAction::kActivityFrequent;
   }
   if (normalized == "mapping_names" || normalized == "mapping-names") {
     return DataQueryAction::kMappingNames;
@@ -123,7 +123,7 @@ namespace tracer_core::shell::c_api_bridge {
   }
   throw std::invalid_argument(
       "field `action` must be one of: years|months|days|days_duration|"
-      "days_stats|search|activity_suggest|mapping_names|activity_alias_mappings|mapping_alias_keys|"
+      "days_stats|search|activity_frequent|mapping_names|activity_alias_mappings|mapping_alias_keys|"
       "wake_keywords|authorable_event_tokens|insights_chart|"
       "insights_composition|tree.");
 }

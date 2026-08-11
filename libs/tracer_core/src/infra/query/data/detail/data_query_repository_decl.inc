@@ -26,9 +26,9 @@
     std::string_view from_date, std::string_view to_date)
     -> std::vector<DayDurationRow>;
 
-[[nodiscard]] auto QueryActivitySuggestions(
-    sqlite3* db_conn, const ActivitySuggestionQueryOptions& options)
-    -> std::vector<ActivitySuggestionRow>;
+[[nodiscard]] auto QueryFrequentActivities(
+    sqlite3* db_conn, const ActivityFrequentQueryOptions& options)
+    -> std::vector<ActivityFrequentRow>;
 
 [[nodiscard]] auto QueryLatestTrackedDate(sqlite3* db_conn)
     -> std::optional<std::string>;

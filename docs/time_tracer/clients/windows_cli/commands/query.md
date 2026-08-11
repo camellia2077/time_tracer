@@ -12,4 +12,10 @@ time_tracer_cli --db <db_path> query data [options]
 time_tracer_cli --db <db_path> query tree [options]
 ```
 
+常用活动使用 `activity-frequent` action，例如：
+
+```powershell
+time_tracer_cli --db <db_path> query data activity-frequent --lookback-days 10 --top 5
+```
+
 该主命令只读数据库，不修改 TXT、TOML 或数据库。

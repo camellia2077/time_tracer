@@ -14,8 +14,8 @@
     const std::vector<DayDurationRow>& rows, const DayDurationStats& stats,
     const std::optional<int>& top_n) -> std::string;
 
-[[nodiscard]] auto RenderActivitySuggestionsText(
-    const std::vector<ActivitySuggestionRow>& rows) -> std::string;
+[[nodiscard]] auto RenderFrequentActivitiesText(
+    const std::vector<ActivityFrequentRow>& rows) -> std::string;
 
 [[nodiscard]] auto RenderProjectTreeText(
     const std::vector<ProjectTreeNode>& nodes, int max_depth) -> std::string;

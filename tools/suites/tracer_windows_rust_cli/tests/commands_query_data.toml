@@ -241,9 +241,9 @@ expect_file_contains = [
 ]
 
 [[commands]]
-name = "Query Data Activity Suggest"
+name = "Query Data Frequent Activities"
 stage = "query-data"
-args = ["query", "data", "activity-suggest", "--lookback-days", "10", "--top", "5", "--db", "{db_path}"]
+args = ["query", "data", "activity-frequent", "--lookback-days", "10", "--top", "5", "--db", "{db_path}"]
 expect_exit = 0
 
 [[commands]]
