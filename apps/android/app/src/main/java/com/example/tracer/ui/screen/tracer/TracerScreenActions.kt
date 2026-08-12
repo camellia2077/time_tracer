@@ -14,13 +14,14 @@ internal data class TracerScreenActions(
     val onCopyDiagnosticsPayload: () -> Unit,
     val onPersistRecordQuickActivities: (List<String>) -> Unit,
     val onPersistRecordQuickAccessCardExpanded: (Boolean) -> Unit,
-    val onPersistRecordAssistSettingsExpanded: (Boolean) -> Unit,
+    val onPersistRecordQuickAccessEditorVisibility: (Boolean) -> Unit,
     val onPersistRecordCanonicalCatalogDisplayMode: (RecordFrequentOutputMode) -> Unit,
     val onPersistRecordCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
     val onPersistRecordOrderedCanonicalRootPaths: (List<String>) -> Unit,
     val onPersistRecordFrequentLookbackDays: (Int) -> Unit,
     val onPersistRecordFrequentOutputMode: (RecordFrequentOutputMode) -> Unit,
-    val onPersistRecordFrequentTopN: (Int) -> Unit
+    val onPersistRecordFrequentTopN: (Int) -> Unit,
+    val onPersistConfigCardExpanded: (com.example.tracer.data.ConfigCard, Boolean) -> Unit
 )
 
 private data class TracerScreenDiagnosticsActions(
@@ -30,13 +31,14 @@ private data class TracerScreenDiagnosticsActions(
 private data class TracerScreenPreferenceActions(
     val onPersistRecordQuickActivities: (List<String>) -> Unit,
     val onPersistRecordQuickAccessCardExpanded: (Boolean) -> Unit,
-    val onPersistRecordAssistSettingsExpanded: (Boolean) -> Unit,
+    val onPersistRecordQuickAccessEditorVisibility: (Boolean) -> Unit,
     val onPersistRecordCanonicalCatalogDisplayMode: (RecordFrequentOutputMode) -> Unit,
     val onPersistRecordCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
     val onPersistRecordOrderedCanonicalRootPaths: (List<String>) -> Unit,
     val onPersistRecordFrequentLookbackDays: (Int) -> Unit,
     val onPersistRecordFrequentOutputMode: (RecordFrequentOutputMode) -> Unit,
-    val onPersistRecordFrequentTopN: (Int) -> Unit
+    val onPersistRecordFrequentTopN: (Int) -> Unit,
+    val onPersistConfigCardExpanded: (com.example.tracer.data.ConfigCard, Boolean) -> Unit
 )
 
 @Composable
@@ -77,7 +79,7 @@ internal fun rememberTracerScreenActions(
         onPersistRecordQuickActivities = preferenceActions.onPersistRecordQuickActivities,
         onPersistRecordQuickAccessCardExpanded =
             preferenceActions.onPersistRecordQuickAccessCardExpanded,
-        onPersistRecordAssistSettingsExpanded = preferenceActions.onPersistRecordAssistSettingsExpanded,
+        onPersistRecordQuickAccessEditorVisibility = preferenceActions.onPersistRecordQuickAccessEditorVisibility,
         onPersistRecordCanonicalCatalogDisplayMode =
             preferenceActions.onPersistRecordCanonicalCatalogDisplayMode,
         onPersistRecordCollapsedCanonicalRootPaths =
@@ -86,7 +88,8 @@ internal fun rememberTracerScreenActions(
             preferenceActions.onPersistRecordOrderedCanonicalRootPaths,
         onPersistRecordFrequentLookbackDays = preferenceActions.onPersistRecordFrequentLookbackDays,
         onPersistRecordFrequentOutputMode = preferenceActions.onPersistRecordFrequentOutputMode,
-        onPersistRecordFrequentTopN = preferenceActions.onPersistRecordFrequentTopN
+        onPersistRecordFrequentTopN = preferenceActions.onPersistRecordFrequentTopN,
+        onPersistConfigCardExpanded = preferenceActions.onPersistConfigCardExpanded
     )
 }
 
@@ -141,9 +144,9 @@ private fun rememberTracerScreenPreferenceActions(
                 userPreferencesRepository.setRecordQuickAccessCardExpanded(value)
             }
         },
-        onPersistRecordAssistSettingsExpanded = { value ->
+        onPersistRecordQuickAccessEditorVisibility = { value ->
             coroutineScope.launch {
-                userPreferencesRepository.setRecordAssistSettingsExpanded(value)
+                userPreferencesRepository.setRecordQuickAccessEditorVisible(value)
             }
         },
         onPersistRecordCanonicalCatalogDisplayMode = { value ->
@@ -174,6 +177,11 @@ private fun rememberTracerScreenPreferenceActions(
         onPersistRecordFrequentTopN = { value ->
             coroutineScope.launch {
                 userPreferencesRepository.setRecordFrequentTopN(value)
+            }
+        },
+        onPersistConfigCardExpanded = { card, value ->
+            coroutineScope.launch {
+                userPreferencesRepository.setConfigCardExpanded(card, value)
             }
         }
     )

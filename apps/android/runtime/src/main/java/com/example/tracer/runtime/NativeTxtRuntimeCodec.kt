@@ -160,6 +160,83 @@ internal class NativeTxtRuntimeCodec {
         }
     }
 
+    fun parseDayEditResolve(response: String): TxtDayEditResolveResult =
+        try {
+            val json = JSONObject(response)
+            val events = buildList {
+                val values = json.optJSONArray("events")
+                for (index in 0 until (values?.length() ?: 0)) {
+                    val event = values?.optJSONObject(index) ?: continue
+                    add(
+                        TxtDayEditEvent(
+                            isInterval = event.optBoolean("is_interval", false),
+                            startTime = event.optString("start_time", ""),
+                            endTime = event.optString("end_time", ""),
+                            activityToken = event.optString("activity_token", ""),
+                            remark = event.optString("remark", ""),
+                            startTimelineSeconds = event.optIntOrNull(
+                                "start_timeline_seconds"
+                            ),
+                            endTimelineSeconds = event.optIntOrNull(
+                                "end_timeline_seconds"
+                            ),
+                            previousEndTimelineSeconds = event.optIntOrNull(
+                                "previous_end_timeline_seconds"
+                            ),
+                            nextStartTimelineSeconds = event.optIntOrNull(
+                                "next_start_timeline_seconds"
+                            )
+                        )
+                    )
+                }
+            }
+            TxtDayEditResolveResult(
+                ok = json.optBoolean("ok", false),
+                normalizedDayMarker = json.optString("normalized_day_marker", ""),
+                found = json.optBoolean("found", false),
+                isMarkerValid = json.optBoolean("is_marker_valid", false),
+                canSave = json.optBoolean("can_save", false),
+                dayRemark = json.optString("day_remark", ""),
+                events = events,
+                dayContentIsoDate = json.optString("day_content_iso_date", "")
+                    .takeIf { it.isNotBlank() },
+                message = json.optString("error_message", "")
+            )
+        } catch (_: Exception) {
+            TxtDayEditResolveResult(
+                ok = false,
+                normalizedDayMarker = "",
+                found = false,
+                isMarkerValid = false,
+                canSave = false,
+                dayRemark = "",
+                events = emptyList(),
+                dayContentIsoDate = null,
+                message = "Invalid native TXT structured day-edit response."
+            )
+        }
+
+    fun parseDayEditApply(response: String): TxtDayEditApplyResult =
+        try {
+            val json = JSONObject(response)
+            TxtDayEditApplyResult(
+                ok = json.optBoolean("ok", false),
+                normalizedDayMarker = json.optString("normalized_day_marker", ""),
+                found = json.optBoolean("found", false),
+                isMarkerValid = json.optBoolean("is_marker_valid", false),
+                updatedContent = json.optString("updated_content", ""),
+                message = json.optString("error_message", "")
+            )
+        } catch (_: Exception) {
+            TxtDayEditApplyResult(
+                ok = false,
+                normalizedDayMarker = "",
+                found = false,
+                isMarkerValid = false,
+                updatedContent = "",
+                message = "Invalid native TXT structured day-edit response."
+            )
+        }
     fun parseActivityHierarchyCrossDocumentOperation(
         response: String
     ): ActivityHierarchyCrossDocumentOperationResult = try {
@@ -211,6 +288,11 @@ internal class NativeTxtRuntimeCodec {
         )
     } catch (_: Exception) {
         ActivityHierarchyValidationResult(false, "Invalid native activity hierarchy response.")
+    }
+
+    private fun JSONObject.optIntOrNull(name: String): Int? = when (val value = opt(name)) {
+        is Number -> value.toInt()
+        else -> null
     }
 
     private fun parseReplacements(values: JSONArray?): List<CanonicalActivityNameReplacement> = buildList {

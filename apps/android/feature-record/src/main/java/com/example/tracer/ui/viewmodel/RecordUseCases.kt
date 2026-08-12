@@ -160,10 +160,10 @@ class RecordUseCases(
             openOrCreateMonth(
                 state = state,
                 month = targetMonth,
-                statusPrefix = "TXT history refreshed."
+                statusPrefix = ""
             )
         } else {
-            historyNavigator.refreshAndOpen(state, targetMonth, "TXT history refreshed.")
+            historyNavigator.refreshAndOpen(state, targetMonth, "")
         }
     }
 

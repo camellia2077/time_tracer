@@ -157,15 +157,15 @@ internal object RecordStateReducer {
         return state.copy(quickAccessCardExpanded = expanded)
     }
 
-    fun updateAssistUiState(
+    fun updateQuickAccessEditorVisibility(
         state: RecordUiState,
-        assistSettingsExpanded: Boolean
+        quickAccessEditorVisible: Boolean
     ): RecordUiState {
-        if (state.assistSettingsExpanded == assistSettingsExpanded) {
+        if (state.quickAccessEditorVisible == quickAccessEditorVisible) {
             return state
         }
         return state.copy(
-            assistSettingsExpanded = assistSettingsExpanded
+            quickAccessEditorVisible = quickAccessEditorVisible
         )
     }
 

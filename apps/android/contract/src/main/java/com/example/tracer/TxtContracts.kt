@@ -64,6 +64,39 @@ data class TxtDayBlockReplaceResult(
     val message: String
 )
 
+data class TxtDayEditEvent(
+    val isInterval: Boolean,
+    val startTime: String,
+    val endTime: String,
+    val activityToken: String,
+    val remark: String,
+    val startTimelineSeconds: Int? = null,
+    val endTimelineSeconds: Int? = null,
+    val previousEndTimelineSeconds: Int? = null,
+    val nextStartTimelineSeconds: Int? = null
+)
+
+data class TxtDayEditResolveResult(
+    val ok: Boolean,
+    val normalizedDayMarker: String,
+    val found: Boolean,
+    val isMarkerValid: Boolean,
+    val canSave: Boolean,
+    val dayRemark: String,
+    val events: List<TxtDayEditEvent>,
+    val dayContentIsoDate: String?,
+    val message: String
+)
+
+data class TxtDayEditApplyResult(
+    val ok: Boolean,
+    val normalizedDayMarker: String,
+    val found: Boolean,
+    val isMarkerValid: Boolean,
+    val updatedContent: String,
+    val message: String
+)
+
 enum class TxtActivityNameMappingDirection(val wireValue: String) {
     ALIAS_TO_CANONICAL("alias_to_canonical"),
     CANONICAL_TO_ALIAS("canonical_to_alias")

@@ -28,7 +28,7 @@ class QuickAccessGridTest {
     val composeRule = createAndroidComposeRule<ComponentActivity>()
 
     @Test
-    fun quickAccessEdit_browseCatalogEntryIsShownOnlyInEditMode() {
+    fun quickAccessEdit_browseCatalogEntryIsShownInBottomSheet() {
         var openCount = 0
 
         composeRule.setContent {
@@ -40,8 +40,8 @@ class QuickAccessGridTest {
                     availableActivityNames = emptyList(),
                     onQuickActivitiesUpdate = { true },
                     quickAccessCardExpanded = true,
-                    assistSettingsExpanded = true,
-                    onToggleAssistSettings = {},
+                    quickAccessEditorVisible = true,
+                    onToggleQuickAccessEditor = {},
                     onOpenQuickAccessCanonicalCatalog = { openCount += 1 },
                     frequentActivitiesVisible = false,
                     onToggleFrequentActivities = {},
@@ -74,8 +74,8 @@ class QuickAccessGridTest {
                         reorderCalls += 1
                         true
                     },
-                    assistSettingsExpanded = false,
-                    onToggleAssistSettings = {},
+                    quickAccessEditorVisible = false,
+                    onToggleQuickAccessEditor = {},
                     onOpenQuickAccessCanonicalCatalog = {},
                     quickActivitySearch = "",
                     onQuickActivitySearchChange = {},
@@ -110,8 +110,8 @@ class QuickAccessGridTest {
                         quickActivities = updated
                         true
                     },
-                    assistSettingsExpanded = false,
-                    onToggleAssistSettings = {},
+                    quickAccessEditorVisible = false,
+                    onToggleQuickAccessEditor = {},
                     onOpenQuickAccessCanonicalCatalog = {},
                     quickActivitySearch = "",
                     onQuickActivitySearchChange = {},
@@ -135,51 +135,6 @@ class QuickAccessGridTest {
 
         assertEquals(1, reorderCalls.size)
         assertEquals(listOf("zhihu", "weibo", "bilibili"), reorderCalls.single())
-    }
-
-    @Test
-    fun quickAccessGrid_deleteModeDoesNotStartDragSorting() {
-        val reorderCalls = mutableListOf<List<String>>()
-
-        composeRule.setContent {
-            var quickActivities by remember {
-                mutableStateOf(listOf("meal", "wash", "sleep"))
-            }
-            MaterialTheme {
-                RecordQuickAccessCard(
-                    recordContent = "",
-                    onRecordContentChange = {},
-                    quickActivities = quickActivities,
-                    availableActivityNames = emptyList(),
-                    onQuickActivitiesUpdate = { updated ->
-                        reorderCalls += updated
-                        quickActivities = updated
-                        true
-                    },
-                    assistSettingsExpanded = true,
-                    onToggleAssistSettings = {},
-                    onOpenQuickAccessCanonicalCatalog = {},
-                    quickActivitySearch = "",
-                    onQuickActivitySearchChange = {},
-                    maxQuickActivityCount = 12
-                )
-            }
-        }
-
-        val draggedNode = composeRule.onNodeWithTag(quickAccessItemTestTag("meal"))
-        val targetBounds = composeRule.onNodeWithTag(quickAccessItemTestTag("sleep"))
-            .fetchSemanticsNode()
-            .boundsInRoot
-
-        draggedNode.performTouchInput {
-            down(center)
-            advanceEventTime(900L)
-            moveTo(targetBounds.center)
-            up()
-        }
-        composeRule.waitForIdle()
-
-        assertTrue(reorderCalls.isEmpty())
     }
 
     @Test

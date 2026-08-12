@@ -63,10 +63,34 @@ data class RecordFrequentPreferences(
     val canonicalCatalogDisplayMode: RecordFrequentOutputMode,
     val quickActivities: List<String>,
     val quickAccessCardExpanded: Boolean,
-    val assistSettingsExpanded: Boolean,
+    val quickAccessEditorVisible: Boolean,
     val collapsedCanonicalRootPaths: Set<String>,
     val orderedCanonicalRootPaths: List<String>
 )
+
+enum class ConfigCard {
+    APPLICATION_PREFERENCES,
+    APPEARANCE,
+    INSIGHTS_SETTINGS,
+    DATA_MANAGEMENT,
+    ABOUT
+}
+
+data class ConfigCardExpansionPreferences(
+    val applicationPreferencesExpanded: Boolean,
+    val appearanceExpanded: Boolean,
+    val insightsSettingsExpanded: Boolean,
+    val dataManagementExpanded: Boolean,
+    val aboutExpanded: Boolean
+) {
+    fun isExpanded(card: ConfigCard): Boolean = when (card) {
+        ConfigCard.APPLICATION_PREFERENCES -> applicationPreferencesExpanded
+        ConfigCard.APPEARANCE -> appearanceExpanded
+        ConfigCard.INSIGHTS_SETTINGS -> insightsSettingsExpanded
+        ConfigCard.DATA_MANAGEMENT -> dataManagementExpanded
+        ConfigCard.ABOUT -> aboutExpanded
+    }
+}
 
 class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
     companion object {
@@ -99,8 +123,9 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         private const val MAX_RECORD_FREQUENT_TOP_N: Int = 20
         private const val MAX_RECORD_QUICK_ACTIVITY_COUNT: Int = 12
         private const val MAX_RECORD_QUICK_ACTIVITY_LENGTH: Int = 40
-        const val DEFAULT_RECORD_ASSIST_SETTINGS_EXPANDED: Boolean = false
+        const val DEFAULT_RECORD_QUICK_ACCESS_EDITOR_VISIBLE: Boolean = false
         const val DEFAULT_RECORD_QUICK_ACCESS_CARD_EXPANDED: Boolean = true
+        const val DEFAULT_CONFIG_CARD_EXPANDED: Boolean = true
         val DEFAULT_COLLAPSED_CANONICAL_ROOT_PATHS: Set<String> = emptySet()
         val DEFAULT_ORDERED_CANONICAL_ROOT_PATHS: List<String> = emptyList()
         private const val MAX_COLLAPSED_CANONICAL_ROOT_COUNT: Int = 64
@@ -122,7 +147,15 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         val RECORD_QUICK_ACTIVITIES = stringPreferencesKey("record_quick_activities")
         val RECORD_QUICK_ACCESS_CARD_EXPANDED =
             booleanPreferencesKey("record_quick_access_card_expanded")
-        val RECORD_ASSIST_SETTINGS_EXPANDED = booleanPreferencesKey("record_assist_settings_expanded")
+        val RECORD_QUICK_ACCESS_EDITOR_VISIBLE =
+            booleanPreferencesKey("record_quick_access_editor_visible")
+        val CONFIG_APPLICATION_PREFERENCES_EXPANDED =
+            booleanPreferencesKey("config_application_preferences_expanded")
+        val CONFIG_APPEARANCE_EXPANDED = booleanPreferencesKey("config_appearance_expanded")
+        val CONFIG_INSIGHTS_SETTINGS_EXPANDED =
+            booleanPreferencesKey("config_insights_settings_expanded")
+        val CONFIG_DATA_MANAGEMENT_EXPANDED = booleanPreferencesKey("config_data_management_expanded")
+        val CONFIG_ABOUT_EXPANDED = booleanPreferencesKey("config_about_expanded")
         val RECORD_COLLAPSED_CANONICAL_ROOT_PATHS =
             stringPreferencesKey("record_collapsed_canonical_root_paths")
         val RECORD_ORDERED_CANONICAL_ROOT_PATHS =
@@ -195,8 +228,8 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             raw = preferences[PreferencesKeys.RECORD_QUICK_ACTIVITIES],
             hasStoredValue = hasStoredQuickActivities
         )
-        val assistSettingsExpanded = preferences[PreferencesKeys.RECORD_ASSIST_SETTINGS_EXPANDED]
-            ?: DEFAULT_RECORD_ASSIST_SETTINGS_EXPANDED
+        val quickAccessEditorVisible = preferences[PreferencesKeys.RECORD_QUICK_ACCESS_EDITOR_VISIBLE]
+            ?: DEFAULT_RECORD_QUICK_ACCESS_EDITOR_VISIBLE
         val quickAccessCardExpanded = preferences[PreferencesKeys.RECORD_QUICK_ACCESS_CARD_EXPANDED]
             ?: DEFAULT_RECORD_QUICK_ACCESS_CARD_EXPANDED
         val collapsedCanonicalRootPaths = parseCollapsedCanonicalRootPaths(
@@ -216,7 +249,7 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             }.getOrDefault(DEFAULT_RECORD_CANONICAL_CATALOG_DISPLAY_MODE),
             quickActivities = quickActivities,
             quickAccessCardExpanded = quickAccessCardExpanded,
-            assistSettingsExpanded = assistSettingsExpanded,
+            quickAccessEditorVisible = quickAccessEditorVisible,
             collapsedCanonicalRootPaths = collapsedCanonicalRootPaths,
             orderedCanonicalRootPaths = orderedCanonicalRootPaths
         )
@@ -260,6 +293,36 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
                 null
             }
         )
+    }
+
+    val configCardExpansionPreferences: Flow<ConfigCardExpansionPreferences> = dataStore.data.map {
+            preferences ->
+        ConfigCardExpansionPreferences(
+            applicationPreferencesExpanded = preferences[
+                PreferencesKeys.CONFIG_APPLICATION_PREFERENCES_EXPANDED
+            ] ?: DEFAULT_CONFIG_CARD_EXPANDED,
+            appearanceExpanded = preferences[PreferencesKeys.CONFIG_APPEARANCE_EXPANDED]
+                ?: DEFAULT_CONFIG_CARD_EXPANDED,
+            insightsSettingsExpanded = preferences[PreferencesKeys.CONFIG_INSIGHTS_SETTINGS_EXPANDED]
+                ?: DEFAULT_CONFIG_CARD_EXPANDED,
+            dataManagementExpanded = preferences[PreferencesKeys.CONFIG_DATA_MANAGEMENT_EXPANDED]
+                ?: DEFAULT_CONFIG_CARD_EXPANDED,
+            aboutExpanded = preferences[PreferencesKeys.CONFIG_ABOUT_EXPANDED]
+                ?: DEFAULT_CONFIG_CARD_EXPANDED
+        )
+    }
+
+    suspend fun setConfigCardExpanded(card: ConfigCard, value: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[when (card) {
+                ConfigCard.APPLICATION_PREFERENCES ->
+                    PreferencesKeys.CONFIG_APPLICATION_PREFERENCES_EXPANDED
+                ConfigCard.APPEARANCE -> PreferencesKeys.CONFIG_APPEARANCE_EXPANDED
+                ConfigCard.INSIGHTS_SETTINGS -> PreferencesKeys.CONFIG_INSIGHTS_SETTINGS_EXPANDED
+                ConfigCard.DATA_MANAGEMENT -> PreferencesKeys.CONFIG_DATA_MANAGEMENT_EXPANDED
+                ConfigCard.ABOUT -> PreferencesKeys.CONFIG_ABOUT_EXPANDED
+            }] = value
+        }
     }
 
     suspend fun setThemeMode(mode: ThemeMode) {
@@ -369,9 +432,9 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         }
     }
 
-    suspend fun setRecordAssistSettingsExpanded(value: Boolean) {
+    suspend fun setRecordQuickAccessEditorVisible(value: Boolean) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.RECORD_ASSIST_SETTINGS_EXPANDED] = value
+            preferences[PreferencesKeys.RECORD_QUICK_ACCESS_EDITOR_VISIBLE] = value
         }
     }
 

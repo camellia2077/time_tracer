@@ -84,14 +84,14 @@ class UserPreferencesRepositoryTest {
     }
 
     @Test
-    fun insightsPiePalettePreset_defaultsToSoft() = runTest {
+    fun insightsPiePalettePreset_defaultsToVivid() = runTest {
         val repository = buildRepository(
             testName = "default_pie_palette",
             scope = backgroundScope
         )
 
         assertEquals(
-            UserPreferencesRepository.DEFAULT_INSIGHTS_PIE_PALETTE_PRESET,
+            InsightsPiePalettePreset.VIVID,
             repository.insightsPiePalettePreset.first()
         )
     }
@@ -311,6 +311,29 @@ class UserPreferencesRepositoryTest {
             false,
             repository.recordFrequentPreferences.first().quickAccessCardExpanded
         )
+    }
+
+    @Test
+    fun configCardExpansionPreferences_defaultExpanded_andPersistEachCardIndependently() = runTest {
+        val repository = buildRepository(
+            testName = "persist_config_card_expansion",
+            scope = backgroundScope
+        )
+
+        assertEquals(
+            true,
+            repository.configCardExpansionPreferences.first().isExpanded(ConfigCard.APPEARANCE)
+        )
+
+        repository.setConfigCardExpanded(ConfigCard.APPEARANCE, false)
+        repository.setConfigCardExpanded(ConfigCard.DATA_MANAGEMENT, false)
+
+        val preferences = repository.configCardExpansionPreferences.first()
+        assertEquals(false, preferences.appearanceExpanded)
+        assertEquals(false, preferences.dataManagementExpanded)
+        assertEquals(true, preferences.applicationPreferencesExpanded)
+        assertEquals(true, preferences.insightsSettingsExpanded)
+        assertEquals(true, preferences.aboutExpanded)
     }
 
     @Test

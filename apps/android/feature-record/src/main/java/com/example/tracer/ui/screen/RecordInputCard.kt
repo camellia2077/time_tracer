@@ -13,9 +13,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlaylistAdd
+import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Description
@@ -30,13 +32,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,10 +46,9 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -90,12 +91,23 @@ internal fun RecordInputCard(
     onDiscardIntervalDraft: () -> Unit,
     onRecordNow: () -> Unit
 ) {
+    var activityNameInputValue by remember {
+        mutableStateOf(TextFieldValue(recordContent))
+    }
+    LaunchedEffect(recordContent) {
+        activityNameInputValue = syncActivityNameInputValue(
+            currentValue = activityNameInputValue,
+            recordContent = recordContent
+        )
+    }
+
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge
     ) {
         var isIntervalTimeEditorVisible by remember { mutableStateOf(false) }
         var isDiscardConfirmationVisible by remember { mutableStateOf(false) }
+        var isRemarkEditorVisible by remember { mutableStateOf(false) }
 
         Column(
             modifier = Modifier.padding(16.dp),
@@ -116,7 +128,7 @@ internal fun RecordInputCard(
                 ) {
                     IconButton(onClick = onOpenCanonicalCatalog) {
                         Icon(
-                            imageVector = Icons.Default.PlaylistAdd,
+                            imageVector = Icons.AutoMirrored.Filled.PlaylistAdd,
                             contentDescription = stringResource(
                                 R.string.record_cd_open_canonical_catalog
                             )
@@ -176,8 +188,11 @@ internal fun RecordInputCard(
             }
 
             OutlinedTextField(
-                value = recordContent,
-                onValueChange = onRecordContentChange,
+                value = activityNameInputValue,
+                onValueChange = { updatedValue ->
+                    activityNameInputValue = updatedValue
+                    onRecordContentChange(updatedValue.text)
+                },
                 label = { Text(stringResource(R.string.record_label_activity_name)) },
                 leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
                 singleLine = true,
@@ -290,23 +305,64 @@ internal fun RecordInputCard(
                 )
             }
 
-            val remarkHasLineBreak = recordRemark.contains('\n')
-            OutlinedTextField(
-                value = recordRemark,
-                onValueChange = onRecordRemarkChange,
-                label = { Text(stringResource(R.string.record_label_remark_optional)) },
-                leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
-                singleLine = false,
-                minLines = if (remarkHasLineBreak) 2 else 1,
-                maxLines = 4,
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    imeAction = ImeAction.Default
-                ),
-                shape = MaterialTheme.shapes.large,
+            val remarkPreview = recordRemark.replace('\n', ' ').trim()
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .testTag(recordRemarkInputTestTag())
-            )
+                    .height(56.dp)
+                    .clickable { isRemarkEditorVisible = true }
+                    .padding(horizontal = 4.dp)
+                    .testTag(recordRemarkInputTestTag()),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.record_label_remark_optional),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = remarkPreview.ifBlank {
+                        stringResource(R.string.record_remark_add_hint)
+                    },
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (remarkPreview.isBlank()) {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    },
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                IconButton(onClick = { isRemarkEditorVisible = true }) {
+                    Icon(
+                        imageVector = if (remarkPreview.isBlank()) {
+                            Icons.Default.Add
+                        } else {
+                            Icons.Default.Edit
+                        },
+                        contentDescription = stringResource(
+                            if (remarkPreview.isBlank()) {
+                                R.string.record_remark_add_hint
+                            } else {
+                                R.string.record_remark_edit_title
+                            }
+                        )
+                    )
+                }
+            }
+
+            if (isRemarkEditorVisible) {
+                RecordRemarkEditSheet(
+                    initialRemark = recordRemark,
+                    onDismiss = { isRemarkEditorVisible = false },
+                    onApply = { editedRemark ->
+                        onRecordRemarkChange(editedRemark)
+                        isRemarkEditorVisible = false
+                    }
+                )
+            }
 
             if (authoringMode == RecordAuthoringMode.INTERVAL) {
                 when {
@@ -408,6 +464,61 @@ internal fun RecordInputCard(
             }
         }
     }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun RecordRemarkEditSheet(
+    initialRemark: String,
+    onDismiss: () -> Unit,
+    onApply: (String) -> Unit
+) {
+    var remark by remember(initialRemark) { mutableStateOf(initialRemark) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState
+    ) {
+        Column(
+            modifier = Modifier.padding(start = 24.dp, top = 8.dp, end = 24.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.record_remark_edit_title),
+                style = MaterialTheme.typography.headlineSmall
+            )
+            OutlinedTextField(
+                value = remark,
+                onValueChange = { remark = it },
+                label = { Text(stringResource(R.string.record_label_remark_optional)) },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 4
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.record_action_cancel))
+                }
+                Button(onClick = { onApply(remark) }) {
+                    Text(stringResource(R.string.record_action_save_remark))
+                }
+            }
+        }
+    }
+}
+
+internal fun syncActivityNameInputValue(
+    currentValue: TextFieldValue,
+    recordContent: String
+): TextFieldValue = if (currentValue.text == recordContent) {
+    currentValue
+} else {
+    TextFieldValue(
+        text = recordContent,
+        selection = TextRange(recordContent.length)
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

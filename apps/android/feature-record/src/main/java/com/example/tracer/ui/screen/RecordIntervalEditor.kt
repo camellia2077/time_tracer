@@ -304,3 +304,46 @@ private fun IntervalTimeEditor(
     }
 }
 
+@Composable
+internal fun TimeOfDayEditor(
+    value: String,
+    onValueChange: (String) -> Unit
+) {
+    val parts = splitIntervalTime(value)
+    val hour = parts[0].toIntOrNull()?.coerceIn(0, 23) ?: 0
+    val minute = parts[1].toIntOrNull()?.coerceIn(0, 59) ?: 0
+    val second = parts[2].toIntOrNull()?.coerceIn(0, 59) ?: 0
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        WheelNumberPicker(
+            label = stringResource(R.string.record_time_hour),
+            value = hour,
+            values = 0..23,
+            modifier = Modifier.weight(1f),
+            onValueChange = { nextHour ->
+                onValueChange("%02d%02d%02d".format(nextHour, minute, second))
+            }
+        )
+        WheelNumberPicker(
+            label = stringResource(R.string.record_time_minute),
+            value = minute,
+            values = 0..59,
+            modifier = Modifier.weight(1f),
+            onValueChange = { nextMinute ->
+                onValueChange("%02d%02d%02d".format(hour, nextMinute, second))
+            }
+        )
+        WheelNumberPicker(
+            label = stringResource(R.string.record_time_second),
+            value = second,
+            values = 0..59,
+            modifier = Modifier.weight(1f),
+            onValueChange = { nextSecond ->
+                onValueChange("%02d%02d%02d".format(hour, minute, nextSecond))
+            }
+        )
+    }
+}
+

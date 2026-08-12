@@ -30,11 +30,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.tracer.data.ConfigCard
+import com.example.tracer.data.ConfigCardExpansionPreferences
 import com.mikepenz.aboutlibraries.Libs
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 
 private const val ABOUT_AUTHOR = "camellia2077"
-private const val ABOUT_REPOSITORY = "https://github.com/camellia2077/time_tracer_cpp"
+private const val ABOUT_REPOSITORY = "https://github.com/camellia2077/time_tracer"
 private const val ABOUT_LOG_TAG = "ConfigAboutPage"
 
 private data class LibrariesLoadState(
@@ -54,6 +56,8 @@ internal fun ConfigSection(
     onInsightsAverageDayBasisChange: (InsightsAverageDayBasis) -> Unit,
     appLanguage: com.example.tracer.data.AppLanguage,
     onSetAppLanguage: (com.example.tracer.data.AppLanguage) -> Unit,
+    cardExpansionPreferences: ConfigCardExpansionPreferences,
+    onConfigCardExpandedChange: (ConfigCard, Boolean) -> Unit,
     extraContent: @Composable () -> Unit = {}
 ) {
     var showAboutPage by rememberSaveable { mutableStateOf(false) }
@@ -72,24 +76,46 @@ internal fun ConfigSection(
     ) {
         ConfigApplicationPreferencesCard(
             appLanguage = appLanguage,
-            onSetAppLanguage = onSetAppLanguage
+            onSetAppLanguage = onSetAppLanguage,
+            expanded = cardExpansionPreferences.applicationPreferencesExpanded,
+            onToggleExpanded = {
+                onConfigCardExpandedChange(
+                    ConfigCard.APPLICATION_PREFERENCES,
+                    !cardExpansionPreferences.applicationPreferencesExpanded
+                )
+            }
         )
         AppearanceSettingsCard(
             themeConfig = themeConfig,
-            onThemeEvent = onThemeEvent
+            onThemeEvent = onThemeEvent,
+            expanded = cardExpansionPreferences.appearanceExpanded,
+            onToggleExpanded = {
+                onConfigCardExpandedChange(ConfigCard.APPEARANCE, !cardExpansionPreferences.appearanceExpanded)
+            }
         )
         ConfigInsightsAverageDayBasisCard(
             insightsPiePalettePreset = insightsPiePalettePreset,
             onInsightsPiePalettePresetChange = onInsightsPiePalettePresetChange,
             selected = insightsAverageDayBasis,
-            onSelected = onInsightsAverageDayBasisChange
+            onSelected = onInsightsAverageDayBasisChange,
+            expanded = cardExpansionPreferences.insightsSettingsExpanded,
+            onToggleExpanded = {
+                onConfigCardExpandedChange(
+                    ConfigCard.INSIGHTS_SETTINGS,
+                    !cardExpansionPreferences.insightsSettingsExpanded
+                )
+            }
         )
 
         extraContent()
 
         ConfigAboutCard(
             onOpenAbout = { showAboutPage = true },
-            onCopyDiagnosticsPayload = onCopyDiagnosticsPayload
+            onCopyDiagnosticsPayload = onCopyDiagnosticsPayload,
+            expanded = cardExpansionPreferences.aboutExpanded,
+            onToggleExpanded = {
+                onConfigCardExpandedChange(ConfigCard.ABOUT, !cardExpansionPreferences.aboutExpanded)
+            }
         )
     }
 }
@@ -97,36 +123,39 @@ internal fun ConfigSection(
 @Composable
 private fun ConfigAboutCard(
     onOpenAbout: () -> Unit,
-    onCopyDiagnosticsPayload: () -> Unit
+    onCopyDiagnosticsPayload: () -> Unit,
+    expanded: Boolean,
+    onToggleExpanded: () -> Unit
 ) {
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = stringResource(R.string.config_title_about),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
+            ConfigCardHeader(
+                title = stringResource(R.string.config_title_about),
+                expanded = expanded,
+                onToggleExpanded = onToggleExpanded
             )
+            if (expanded) {
+                Text(
+                    text = stringResource(R.string.config_about_entry_description),
+                    style = MaterialTheme.typography.bodyMedium
+                )
 
-            Text(
-                text = stringResource(R.string.config_about_entry_description),
-                style = MaterialTheme.typography.bodyMedium
-            )
+                OutlinedButton(
+                    onClick = onOpenAbout,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.config_action_open_about))
+                }
 
-            OutlinedButton(
-                onClick = onOpenAbout,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.config_action_open_about))
-            }
-
-            OutlinedButton(
-                onClick = onCopyDiagnosticsPayload,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.config_action_copy_diagnostics))
+                OutlinedButton(
+                    onClick = onCopyDiagnosticsPayload,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.config_action_copy_diagnostics))
+                }
             }
         }
     }

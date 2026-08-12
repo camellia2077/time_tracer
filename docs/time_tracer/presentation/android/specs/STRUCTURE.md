@@ -49,6 +49,11 @@ App-side tests should follow the same rule and avoid implementing `RuntimeGatewa
 
 - `TracerScreen` is the Android composition root for the tab host.
 - `TracerTabs` is the tab registry and shell contract owner.
+- The floating bottom navigation is ordered left to right as:
+  - `Files` — browse and edit parsed TXT record files.
+  - `Insights` — query and visualize recorded activity data.
+  - `Record` — create activity records and manage record-side authoring flows.
+  - `Config` — edit app configuration and access data-management actions.
 - App-local route helpers under `ui/screen/tracer` may own:
   - action wiring
   - route-local state

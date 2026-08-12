@@ -14,7 +14,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -169,7 +168,7 @@ class RecordTxtPreviewTest {
     }
 
     @Test
-    fun recordInputCard_remarkMatchesActivityHeightUntilExplicitLineBreak() {
+    fun recordInputCard_remarkPreviewKeepsFixedHeightAndOpensEditorSheet() {
         var remark by mutableStateOf("")
 
         composeRule.setContent {
@@ -198,24 +197,10 @@ class RecordTxtPreviewTest {
             }
         }
 
-        val activityBounds = composeRule
-            .onNodeWithTag(recordActivityNameInputTestTag())
-            .getUnclippedBoundsInRoot()
-        val activityHeight = (activityBounds.bottom - activityBounds.top).value
         val emptyRemarkBounds = composeRule
             .onNodeWithTag(recordRemarkInputTestTag())
             .getUnclippedBoundsInRoot()
         val emptyRemarkHeight = (emptyRemarkBounds.bottom - emptyRemarkBounds.top).value
-        assertEquals(activityHeight, emptyRemarkHeight, 0.5f)
-
-        remark = "single line"
-        composeRule.waitForIdle()
-        val singleLineRemarkBounds = composeRule
-            .onNodeWithTag(recordRemarkInputTestTag())
-            .getUnclippedBoundsInRoot()
-        val singleLineRemarkHeight =
-            (singleLineRemarkBounds.bottom - singleLineRemarkBounds.top).value
-        assertEquals(activityHeight, singleLineRemarkHeight, 0.5f)
 
         remark = "first line\nsecond line"
         composeRule.waitForIdle()
@@ -224,7 +209,10 @@ class RecordTxtPreviewTest {
             .getUnclippedBoundsInRoot()
         val multilineRemarkHeight =
             (multilineRemarkBounds.bottom - multilineRemarkBounds.top).value
-        assertTrue(multilineRemarkHeight > singleLineRemarkHeight)
+        assertEquals(emptyRemarkHeight, multilineRemarkHeight, 0.5f)
+
+        composeRule.onNodeWithTag(recordRemarkInputTestTag()).performClick()
+        composeRule.onNodeWithText("Edit remark").assertIsDisplayed()
     }
 
     @Test

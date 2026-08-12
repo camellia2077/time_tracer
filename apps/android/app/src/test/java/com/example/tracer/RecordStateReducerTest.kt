@@ -57,10 +57,10 @@ class RecordStateReducerTest {
         val viewModel = buildRecordViewModel()
 
         viewModel.updateQuickAccessCardExpanded(false)
-        viewModel.updateAssistUiState(true)
+        viewModel.updateQuickAccessEditorVisibility(true)
 
         assertFalse(viewModel.uiState.quickAccessCardExpanded)
-        assertTrue(viewModel.uiState.assistSettingsExpanded)
+        assertTrue(viewModel.uiState.quickAccessEditorVisible)
     }
 
     @Test

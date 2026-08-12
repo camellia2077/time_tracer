@@ -5,10 +5,6 @@
     <string name="txt_mode_day">DAY</string>
     <string name="txt_mode_alias">Alias</string>
     <string name="txt_mode_canonical">Canonical</string>
-    <string name="txt_label_target_day">Target Day</string>
-    <string name="txt_label_target_day_with_year">Target Day (%1$s)</string>
-    <string name="txt_action_hide_content">Hide Content</string>
-    <string name="txt_action_show_content">Show Content</string>
     <string name="txt_label_content">Content</string>
     <string name="txt_label_day_content_with_date">DAY Content %1$s</string>
     <string name="txt_label_day_content">DAY Content</string>
@@ -70,6 +66,9 @@
     <string name="record_time_minute">Minute</string>
     <string name="record_time_second">Second</string>
     <string name="record_label_remark_optional">Remark (Optional)</string>
+    <string name="record_remark_add_hint">Add a remark</string>
+    <string name="record_remark_edit_title">Edit remark</string>
+    <string name="record_action_save_remark">Save</string>
     <string name="record_action_record_activity">Record Activity</string>
     <string name="record_action_save_interval">Save interval</string>
     <string name="record_action_start_interval">Start timer</string>
@@ -160,4 +159,18 @@
     <string name="record_status_quick_activities_saved">Quick activities saved (%1$d).</string>
     <string name="record_status_invalid_frequent_activity">Invalid frequent activity: %1$s. Must match a configured authorable event token (alias key, canonical token, or wake keyword).</string>
     <string name="record_duration_unavailable">n/a</string>
+    <string name="txt_day_edit_empty">No activities recorded for this day.</string>
+    <string name="txt_day_edit_time">Edit time</string>
+    <string name="txt_day_edit_time_title">Edit activity time</string>
+    <string name="txt_day_edit_activity">Edit activity</string>
+    <string name="txt_day_edit_delete_activity">Delete activity</string>
+    <string name="txt_day_edit_delete_activity_title">Delete activity?</string>
+    <string name="txt_day_edit_delete_activity_message">Delete %1$s? This action cannot be undone.</string>
+    <string name="txt_day_edit_remark">Edit remark</string>
+    <string name="txt_day_edit_day_remark">Day remark</string>
+    <string name="txt_day_edit_day_remark_title">Edit day remark</string>
+    <string name="txt_day_edit_activity_remark_title">Edit activity remark</string>
+    <string name="txt_day_edit_save">Save day changes</string>
+    <string name="txt_day_view_structured">Structured</string>
+    <string name="txt_day_view_raw">Raw TXT</string>
 </resources>

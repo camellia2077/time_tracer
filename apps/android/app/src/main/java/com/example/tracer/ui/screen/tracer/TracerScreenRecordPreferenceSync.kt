@@ -19,7 +19,7 @@ internal fun SyncTracerScreenRecordPreferences(
         recordFrequentPreferences.canonicalCatalogDisplayMode,
         quickActivities,
         recordFrequentPreferences.quickAccessCardExpanded,
-        recordFrequentPreferences.assistSettingsExpanded,
+        recordFrequentPreferences.quickAccessEditorVisible,
         recordFrequentPreferences.collapsedCanonicalRootPaths,
         recordFrequentPreferences.orderedCanonicalRootPaths
     ) {
@@ -35,8 +35,8 @@ internal fun SyncTracerScreenRecordPreferences(
         recordViewModel.updateQuickAccessCardExpanded(
             recordFrequentPreferences.quickAccessCardExpanded
         )
-        recordViewModel.updateAssistUiState(
-            assistSettingsExpanded = recordFrequentPreferences.assistSettingsExpanded
+        recordViewModel.updateQuickAccessEditorVisibility(
+            quickAccessEditorVisible = recordFrequentPreferences.quickAccessEditorVisible
         )
         recordViewModel.updateCollapsedCanonicalRootPaths(
             recordFrequentPreferences.collapsedCanonicalRootPaths

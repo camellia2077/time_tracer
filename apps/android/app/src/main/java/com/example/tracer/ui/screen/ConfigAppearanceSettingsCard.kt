@@ -22,38 +22,41 @@ import com.example.tracer.ui.viewmodel.ThemeEvent
 @Composable
 internal fun AppearanceSettingsCard(
     themeConfig: ThemeConfig,
-    onThemeEvent: (ThemeEvent) -> Unit
+    onThemeEvent: (ThemeEvent) -> Unit,
+    expanded: Boolean = true,
+    onToggleExpanded: () -> Unit = {}
 ) {
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(
-                text = stringResource(R.string.config_title_appearance),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
+            ConfigCardHeader(
+                title = stringResource(R.string.config_title_appearance),
+                expanded = expanded,
+                onToggleExpanded = onToggleExpanded
             )
-
-            HorizontalDivider()
-            ThemeModeSection(
-                selectedThemeMode = themeConfig.themeMode,
-                supportsLightDarkMode = themeConfig.palette.supportsLightDarkMode,
-                onSetThemeMode = { onThemeEvent(ThemeEvent.SetMode(it)) }
-            )
-
-            HorizontalDivider()
-            ThemePaletteSection(themeConfig.palette) { onThemeEvent(ThemeEvent.SetPalette(it)) }
-
-            val isSystemDark = isSystemInDarkTheme()
-            val isDarkActive = themeConfig.palette.supportsLightDarkMode && (
-                themeConfig.themeMode == ThemeMode.Dark ||
-                    (themeConfig.themeMode == ThemeMode.System && isSystemDark)
-                )
-            if (isDarkActive) {
+            if (expanded) {
                 HorizontalDivider()
-                DarkThemeStyleSection(themeConfig.darkThemeStyle) {
-                    onThemeEvent(ThemeEvent.SetDarkStyle(it))
+                ThemeModeSection(
+                    selectedThemeMode = themeConfig.themeMode,
+                    supportsLightDarkMode = themeConfig.palette.supportsLightDarkMode,
+                    onSetThemeMode = { onThemeEvent(ThemeEvent.SetMode(it)) }
+                )
+
+                HorizontalDivider()
+                ThemePaletteSection(themeConfig.palette) { onThemeEvent(ThemeEvent.SetPalette(it)) }
+
+                val isSystemDark = isSystemInDarkTheme()
+                val isDarkActive = themeConfig.palette.supportsLightDarkMode && (
+                    themeConfig.themeMode == ThemeMode.Dark ||
+                        (themeConfig.themeMode == ThemeMode.System && isSystemDark)
+                    )
+                if (isDarkActive) {
+                    HorizontalDivider()
+                    DarkThemeStyleSection(themeConfig.darkThemeStyle) {
+                        onThemeEvent(ThemeEvent.SetDarkStyle(it))
+                    }
                 }
             }
         }

@@ -5,10 +5,6 @@
     <string name="txt_mode_day">单日</string>
     <string name="txt_mode_alias">Alias</string>
     <string name="txt_mode_canonical">Canonical</string>
-    <string name="txt_label_target_day">目标日期</string>
-    <string name="txt_label_target_day_with_year">目标日期 (%1$s)</string>
-    <string name="txt_action_hide_content">隐藏内容</string>
-    <string name="txt_action_show_content">显示内容</string>
     <string name="txt_label_content">内容</string>
     <string name="txt_label_day_content_with_date">单日内容 %1$s</string>
     <string name="txt_label_day_content">单日内容</string>
@@ -70,6 +66,9 @@
     <string name="record_time_minute">分</string>
     <string name="record_time_second">秒</string>
     <string name="record_label_remark_optional">备注（可选）</string>
+    <string name="record_remark_add_hint">添加备注</string>
+    <string name="record_remark_edit_title">编辑备注</string>
+    <string name="record_action_save_remark">保存</string>
     <string name="record_action_record_activity">记录活动</string>
     <string name="record_action_save_interval">保存区间</string>
     <string name="record_action_start_interval">开始计时</string>
@@ -159,4 +158,18 @@
     <string name="record_canonical_catalog_parent_title">选择活动父级</string>
     <string name="record_canonical_catalog_parent_description">选择一个分组节点。该父级下存在活动时，Daily 状态将为 true。</string>
     <string name="record_action_select_parent">用作父级</string>
+    <string name="txt_day_edit_empty">当天没有活动。</string>
+    <string name="txt_day_edit_time">修改时间</string>
+    <string name="txt_day_edit_time_title">修改活动时间</string>
+    <string name="txt_day_edit_activity">修改活动</string>
+    <string name="txt_day_edit_delete_activity">删除活动</string>
+    <string name="txt_day_edit_delete_activity_title">删除活动？</string>
+    <string name="txt_day_edit_delete_activity_message">删除 %1$s？此操作无法撤销。</string>
+    <string name="txt_day_edit_remark">修改备注</string>
+    <string name="txt_day_edit_day_remark">日备注</string>
+    <string name="txt_day_edit_day_remark_title">修改日备注</string>
+    <string name="txt_day_edit_activity_remark_title">修改活动备注</string>
+    <string name="txt_day_edit_save">保存当天修改</string>
+    <string name="txt_day_view_structured">结构化</string>
+    <string name="txt_day_view_raw">原始 TXT</string>
 </resources>

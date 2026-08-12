@@ -37,9 +37,9 @@ class TracerTabRegistryTest {
         val ids = TracerTabRegistry.entries.map { it.meta.id }
         assertEquals(
             listOf(
+                TracerTab.FILES,
                 TracerTab.INSIGHTS,
                 TracerTab.RECORD,
-                TracerTab.FILES,
                 TracerTab.CONFIG
             ),
             ids
@@ -65,7 +65,7 @@ class TracerTabRegistryTest {
         val runtime = FakeRuntimeServices(
             mappingNamesResult = ActivityMappingNamesResult(
                 ok = true,
-                names = listOf("meal", "study"),
+                names = listOf("meal", "study", "起床"),
                 message = "ok"
             )
         )
@@ -95,7 +95,7 @@ class TracerTabRegistryTest {
             )
         )
 
-        assertEquals(setOf("meal", "study"), capturedNames)
+        assertEquals(setOf("meal", "study", "起床"), capturedNames)
         assertEquals("", recordViewModel.uiState.statusText)
     }
 

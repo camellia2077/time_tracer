@@ -844,6 +844,7 @@ class RecordUseCasesTest {
         assertEquals("2026/2026-05.txt", gateway.lastPreferredTxtPath)
         assertEquals("2026-05", result.selectedMonth)
         assertEquals("2026/2026-05.txt", result.selectedHistoryFile)
+        assertEquals("coding\nn/a", result.statusText)
     }
 
     @Test
@@ -953,6 +954,7 @@ class RecordUseCasesTest {
         assertEquals(null, gateway.lastPreferredTxtPath)
         assertEquals("2027-01", result.selectedMonth)
         assertEquals("2027/2027-01.txt", result.selectedHistoryFile)
+        assertEquals("coding\nn/a", result.statusText)
     }
 
     @Test

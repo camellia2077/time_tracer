@@ -3,6 +3,7 @@ package com.example.tracer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import org.json.JSONArray
 
 // This bridge keeps Android out of the day-block business logic by translating
 // UI-facing requests into the shared runtime txt actions.
@@ -120,6 +121,85 @@ internal class RuntimeTxtDayBlockService(
                 isMarkerValid = false,
                 updatedContent = content,
                 message = formatNativeFailure("replace txt day block failed", error)
+            )
+        }
+    }
+
+    suspend fun resolveTxtDayEdit(
+        content: String,
+        dayMarker: String,
+        selectedMonth: String
+    ): TxtDayEditResolveResult = withContext(Dispatchers.IO) {
+        if (!initializeRuntimeInternal().initialized) {
+            return@withContext TxtDayEditResolveResult(
+                ok = false, normalizedDayMarker = dayMarker, found = false,
+                isMarkerValid = false, canSave = false, dayRemark = "", events = emptyList(),
+                dayContentIsoDate = null, message = "native init failed."
+            )
+        }
+        try {
+            codec.parseDayEditResolve(
+                nativeTxt(
+                    JSONObject()
+                        .put("action", "resolve_day_edit")
+                        .put("content", content)
+                        .put("day_marker", dayMarker)
+                        .put("selected_month", selectedMonth)
+                        .toString()
+                )
+            )
+        } catch (error: Exception) {
+            TxtDayEditResolveResult(
+                ok = false, normalizedDayMarker = dayMarker, found = false,
+                isMarkerValid = false, canSave = false, dayRemark = "", events = emptyList(),
+                dayContentIsoDate = null,
+                message = formatNativeFailure("resolve txt structured day edit failed", error)
+            )
+        }
+    }
+
+    suspend fun applyTxtDayEdit(
+        content: String,
+        dayMarker: String,
+        selectedMonth: String,
+        dayRemark: String,
+        events: List<TxtDayEditEvent>
+    ): TxtDayEditApplyResult = withContext(Dispatchers.IO) {
+        if (!initializeRuntimeInternal().initialized) {
+            return@withContext TxtDayEditApplyResult(
+                ok = false, normalizedDayMarker = dayMarker, found = false,
+                isMarkerValid = false, updatedContent = content, message = "native init failed."
+            )
+        }
+        try {
+            val eventsJson = JSONArray()
+            events.forEach { event ->
+                eventsJson.put(
+                    JSONObject()
+                        .put("is_interval", event.isInterval)
+                        .put("start_time", event.startTime)
+                        .put("end_time", event.endTime)
+                        .put("activity_token", event.activityToken)
+                        .put("remark", event.remark)
+                )
+            }
+            codec.parseDayEditApply(
+                nativeTxt(
+                    JSONObject()
+                        .put("action", "apply_day_edit")
+                        .put("content", content)
+                        .put("day_marker", dayMarker)
+                        .put("selected_month", selectedMonth)
+                        .put("day_remark", dayRemark)
+                        .put("events", eventsJson)
+                        .toString()
+                )
+            )
+        } catch (error: Exception) {
+            TxtDayEditApplyResult(
+                ok = false, normalizedDayMarker = dayMarker, found = false,
+                isMarkerValid = false, updatedContent = content,
+                message = formatNativeFailure("apply txt structured day edit failed", error)
             )
         }
     }

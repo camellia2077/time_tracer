@@ -73,12 +73,12 @@ internal class RecordIntentHandler(
         expanded: Boolean
     ): RecordUiState = RecordStateReducer.updateQuickAccessCardExpanded(state, expanded)
 
-    fun updateAssistUiState(
+    fun updateQuickAccessEditorVisibility(
         state: RecordUiState,
-        assistSettingsExpanded: Boolean
-    ): RecordUiState = RecordStateReducer.updateAssistUiState(
+        quickAccessEditorVisible: Boolean
+    ): RecordUiState = RecordStateReducer.updateQuickAccessEditorVisibility(
         state = state,
-        assistSettingsExpanded = assistSettingsExpanded
+        quickAccessEditorVisible = quickAccessEditorVisible
     )
 
     fun updateCollapsedCanonicalRootPaths(

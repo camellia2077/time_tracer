@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="data_cd_expand_card">Expand section</string>
+    <string name="data_cd_collapse_card">Collapse section</string>
     <string name="data_title_data_management">Data management</string>
     <string name="data_title_ingestion">Data ingestion</string>
     <string name="data_action_import_data_folder">Import Data Folder</string>

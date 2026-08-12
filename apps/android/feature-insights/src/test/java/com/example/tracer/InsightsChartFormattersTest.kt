@@ -13,4 +13,9 @@ class InsightsChartFormattersTest {
     fun treeDuration_omitsSeconds() {
         assertEquals("1h 2m", formatTreemapDurationHoursMinutes(3_723L))
     }
+
+    @Test
+    fun treeDuration_usesDaysAfterTwentyFourHours() {
+        assertEquals("1d 1h 2m", formatTreemapDurationHoursMinutes(90_120L))
+    }
 }

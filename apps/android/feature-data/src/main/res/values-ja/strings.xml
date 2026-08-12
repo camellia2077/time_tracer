@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="data_cd_expand_card">セクションを展開</string>
+    <string name="data_cd_collapse_card">セクションを折りたたむ</string>
     <string name="data_title_data_management">データ管理</string>
     <string name="data_title_ingestion">データ取り込み</string>
     <string name="data_action_import_data_folder">データフォルダを取り込む</string>

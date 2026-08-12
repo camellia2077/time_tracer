@@ -25,6 +25,18 @@ Navigation hub for active Android documentation.
 - Stable structure:
   - `docs/time_tracer/presentation/android/specs/STRUCTURE.md`
 
+## Tab Overview
+
+The floating bottom navigation is ordered left to right as:
+
+- `Files` — browse and edit parsed TXT record files.
+- `Insights` — query and visualize recorded activity data.
+- `Record` — create activity records and manage record-side authoring flows.
+- `Config` — edit app configuration and access data-management actions.
+
+The tab registry and shell contract are owned by `TracerTabs`; tab-specific
+presentation and state remain in the corresponding feature or app-owned route.
+
 ## Change Routing
 
 - First routing pass:

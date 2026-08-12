@@ -78,11 +78,13 @@ internal data class TracerTabRouteArgs(
     val isAppDarkThemeActive: Boolean,
     val appLanguage: AppLanguage,
     val onSetAppLanguage: (AppLanguage) -> Unit,
+    val configCardExpansionPreferences: com.example.tracer.data.ConfigCardExpansionPreferences,
+    val onPersistConfigCardExpanded: (com.example.tracer.data.ConfigCard, Boolean) -> Unit,
     val validAuthorableEventTokens: Set<String>,
     val onPersistRecordQuickActivities: (List<String>) -> Unit,
     val onClearQuickAccessCache: () -> Unit,
     val onPersistRecordQuickAccessCardExpanded: (Boolean) -> Unit,
-    val onPersistRecordAssistSettingsExpanded: (Boolean) -> Unit,
+    val onPersistRecordQuickAccessEditorVisibility: (Boolean) -> Unit,
     val onPersistRecordCanonicalCatalogDisplayMode: (RecordFrequentOutputMode) -> Unit,
     val onPersistRecordCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
     val onPersistRecordOrderedCanonicalRootPaths: (List<String>) -> Unit,
@@ -126,7 +128,7 @@ internal data class TracerTabEntry(
 )
 
 internal object TracerTabRegistry {
-    val entries: List<TracerTabEntry> = listOf(
+    private val entriesInDefinitionOrder: List<TracerTabEntry> = listOf(
         TracerTabEntry(
             meta = TabMeta(
                 id = TracerTab.INSIGHTS,
@@ -211,7 +213,7 @@ internal object TracerTabRegistry {
                     onPersistQuickActivities = args.onPersistRecordQuickActivities,
                     onPersistQuickAccessCardExpanded =
                         args.onPersistRecordQuickAccessCardExpanded,
-                    onPersistAssistSettingsExpanded = args.onPersistRecordAssistSettingsExpanded,
+                    onPersistQuickAccessEditorVisibility = args.onPersistRecordQuickAccessEditorVisibility,
                     onPersistCanonicalCatalogDisplayMode =
                         args.onPersistRecordCanonicalCatalogDisplayMode,
                     onPersistCollapsedCanonicalRootPaths =
@@ -233,6 +235,9 @@ internal object TracerTabRegistry {
                 testTag = "tab_files"
             ),
             scrollBehavior = TracerTabScrollBehavior.VERTICAL,
+            onEnter = { args ->
+                args.recordViewModel.loadCanonicalCatalogForExternalSelection()
+            },
             onLeave = { args -> args.recordViewModel.discardUnsavedHistoryDraft() },
             statusText = { args -> args.recordStatusText },
             statusEvent = { args -> defaultStatusUiEvent(args) },
@@ -273,6 +278,8 @@ internal object TracerTabRegistry {
                         onInsightsAverageDayBasisChange = args.onInsightsAverageDayBasisChange,
                         appLanguage = args.appLanguage,
                         onSetAppLanguage = args.onSetAppLanguage,
+                        cardExpansionPreferences = args.configCardExpansionPreferences,
+                        onConfigCardExpandedChange = args.onPersistConfigCardExpanded,
                         extraContent = {
                             DataManagementRouteContent(args)
                         }
@@ -282,7 +289,16 @@ internal object TracerTabRegistry {
         )
     )
 
-    private val entryByTab: Map<TracerTab, TracerTabEntry> = entries.associateBy { it.meta.id }
+    private val entryByTab: Map<TracerTab, TracerTabEntry> =
+        entriesInDefinitionOrder.associateBy { it.meta.id }
+
+    // The registry order is the left-to-right order of the floating bottom navigation.
+    val entries: List<TracerTabEntry> = listOf(
+        TracerTab.FILES,
+        TracerTab.INSIGHTS,
+        TracerTab.RECORD,
+        TracerTab.CONFIG
+    ).map(entryByTab::getValue)
 
     fun entry(tab: TracerTab): TracerTabEntry = entryByTab.getValue(tab)
 
@@ -346,6 +362,13 @@ private fun DataManagementRouteContent(args: TracerTabRouteArgs) {
         cryptoOverallText = args.recordUiState.cryptoProgress.overallText,
         cryptoDetailsText = args.recordUiState.cryptoProgress.detailsText,
         cryptoAdvancedDetailsText = args.recordUiState.cryptoProgress.advancedDetailsText,
+        expanded = args.configCardExpansionPreferences.dataManagementExpanded,
+        onToggleExpanded = {
+            args.onPersistConfigCardExpanded(
+                com.example.tracer.data.ConfigCard.DATA_MANAGEMENT,
+                !args.configCardExpansionPreferences.dataManagementExpanded
+            )
+        },
         onClearTxt = {
             args.dataViewModel.clearTxt(clearTxtStatusText)
             args.recordViewModel.clearTxtEditorState()
@@ -367,6 +390,13 @@ private fun DataManagementRouteContent(args: TracerTabRouteArgs) {
 private fun TxtEditorRouteContent(args: TracerTabRouteArgs) {
     TxtEditorSection(
         txtStorageGateway = args.txtStorageGateway,
+        canonicalCatalogRoots = args.recordUiState.canonicalCatalogRoots,
+        isCanonicalCatalogLoading = args.recordUiState.isCanonicalCatalogLoading,
+        canonicalCatalogStatusText = args.recordUiState.canonicalCatalogStatusText,
+        collapsedCanonicalRootPaths = args.recordUiState.collapsedCanonicalRootPaths,
+        orderedCanonicalRootPaths = args.recordUiState.orderedCanonicalRootPaths,
+        onCollapsedCanonicalRootPathsChange = args.recordViewModel::updateCollapsedCanonicalRootPaths,
+        onOrderedCanonicalRootPathsChange = args.recordViewModel::updateOrderedCanonicalRootPaths,
         inspectionEntries = args.recordUiState.txtInspectionEntries,
         availableMonths = args.recordUiState.availableMonths,
         selectedMonth = args.recordUiState.selectedMonth,
@@ -383,7 +413,6 @@ private fun TxtEditorRouteContent(args: TracerTabRouteArgs) {
         editableHistoryContent = args.recordUiState.editableHistoryContent,
         onEditableHistoryContentChange = args.recordViewModel::updateEditableHistoryContent,
         onDayMarkerPersist = args.recordViewModel::onTxtDayMarkerChange,
-        onDiscardUnsavedHistoryDraft = args.recordViewModel::discardUnsavedHistoryDraft,
         onSaveHistoryFile = args.recordViewModel::saveHistoryFileAndSync,
         onSaveHistoryRepresentationOnly = args.recordViewModel::saveHistoryFileRepresentationOnly,
         initialOutputMode = args.recordUiState.txtOutputMode,
@@ -398,7 +427,7 @@ private const val ActivityAuthorableTokenValidationUnavailablePrefix =
     "Activity authorable token validation unavailable:"
 
 private suspend fun refreshRecordMappingValidation(args: TracerTabLifecycleArgs) {
-    val mappingResult = args.queryGateway.listActivityHierarchyLeafKeys()
+    val mappingResult = args.queryGateway.listAuthorableEventTokens()
     if (mappingResult.ok) {
         args.onValidAuthorableEventTokensChanged(mappingResult.names.toSet())
         if (args.recordStatusText().startsWith(ActivityAuthorableTokenValidationUnavailablePrefix)) {

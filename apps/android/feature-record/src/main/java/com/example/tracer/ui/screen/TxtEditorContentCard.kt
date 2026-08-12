@@ -8,47 +8,34 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.record.R
-import com.example.tracer.ui.components.NativeMultilineTextEditor
-import com.example.tracer.ui.components.NativeMultilineTextEditorController
-import com.example.tracer.ui.components.SegmentedMonthDayInput
-import com.example.tracer.ui.components.filterDigits
-import com.example.tracer.ui.components.splitYearMonthDigits
 import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
-import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.YearMonth
 
 
 @Composable
 internal fun TxtEditorContentCard(
     selectedHistoryFile: String,
-    selectedMonth: String,
     currentDay: LocalDate?,
     outputMode: TxtOutputMode,
     onOutputModeChange: (TxtOutputMode) -> Unit,
@@ -56,31 +43,36 @@ internal fun TxtEditorContentCard(
     onActivityNameTargetModeChange: (TxtActivityNameTargetMode) -> Unit,
     dayBlockEditorState: TxtDayBlockResolveResult,
     dayMarkerInput: String,
-    onDayMarkerInputChange: (String) -> Unit,
-    onOpenDay: (LocalDate) -> Unit,
     inlineStatusText: String,
-    isEditorContentVisible: Boolean,
-    onToggleEditorContentVisibility: () -> Unit,
     editorText: String,
     hasUnsavedChanges: Boolean,
     canEditDay: Boolean,
     canIngest: Boolean,
     onEditorTextChange: (String) -> Unit,
     onIngest: () -> Unit,
-    dayMarkerReady: Boolean = false
+    structuredDayEdit: TxtDayEditResolveResult? = null,
+    canonicalCatalogRoots: List<CanonicalPathNode> = emptyList(),
+    isCanonicalCatalogLoading: Boolean = false,
+    canonicalCatalogStatusText: String = "",
+    collapsedCanonicalRootPaths: Set<String> = emptySet(),
+    orderedCanonicalRootPaths: List<String> = emptyList(),
+    onCollapsedCanonicalRootPathsChange: (Set<String>) -> Unit = {},
+    onOrderedCanonicalRootPathsChange: (List<String>) -> Unit = {},
+    onStructuredDayEditApply: (String, List<TxtDayEditEvent>) -> Unit = { _, _ -> }
 ) {
-    val (selectedYear, selectedMonthDigits) = splitYearMonthDigits(selectedMonth)
-    val (markerMonthDigits, markerDayDigits) = splitDayMarkerDigits(dayBlockEditorState.normalizedDayMarker)
+    val canShowStructuredDay =
+        structuredDayEdit?.ok == true && structuredDayEdit.found && structuredDayEdit.canSave
+    var dayViewMode by remember(
+        selectedHistoryFile,
+        dayBlockEditorState.normalizedDayMarker
+    ) {
+        // The async Structured resolve is unavailable on the first frame. Keep the
+        // default selection stable so that its arrival does not animate Raw -> Structured.
+        mutableStateOf(TxtDayViewMode.STRUCTURED)
+    }
     val dayContentIsoDate = dayBlockEditorState.dayContentIsoDate
     val currentDayText = currentDay?.let { formatEditorCurrentDayText(it) }
     val dayMarkerText = dayBlockEditorState.normalizedDayMarker.ifBlank { dayMarkerInput }
-    val markerIsReady = dayMarkerReady || dayMarkerText.length == 4
-    val monthForInput = if (markerIsReady) {
-        if (markerMonthDigits.isNotBlank()) markerMonthDigits else selectedMonthDigits
-    } else {
-        ""
-    }
-    val dayForInput = if (markerIsReady) markerDayDigits else ""
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -113,32 +105,32 @@ internal fun TxtEditorContentCard(
                 }
             }
             if (outputMode == TxtOutputMode.DAY) {
-                val numericKeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                SegmentedMonthDayInput(
-                    title = if (selectedYear.isNotBlank()) {
-                        stringResource(R.string.txt_label_target_day_with_year, selectedYear)
-                    } else {
-                        stringResource(R.string.txt_label_target_day)
-                    },
-                    month = monthForInput,
-                    day = dayForInput,
-                    keyboardOptions = numericKeyboardOptions,
-                    onMonthChange = { nextMonth ->
-                        onDayMarkerInputChange(
-                            filterDigits(nextMonth, 2) + filterDigits(dayForInput, 2)
+                val dayViewModes = TxtDayViewMode.entries
+                SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                    dayViewModes.forEachIndexed { index, mode ->
+                        SegmentedButton(
+                            shape = SegmentedButtonDefaults.itemShape(
+                                index = index,
+                                count = dayViewModes.size
+                            ),
+                            onClick = { dayViewMode = mode },
+                            selected = dayViewMode == mode,
+                            enabled = mode != TxtDayViewMode.STRUCTURED || canShowStructuredDay,
+                            colors = TracerSegmentedButtonDefaults.colors(),
+                            modifier = Modifier.weight(1f),
+                            label = {
+                                Text(
+                                    when (mode) {
+                                        TxtDayViewMode.STRUCTURED ->
+                                            stringResource(R.string.txt_day_view_structured)
+                                        TxtDayViewMode.RAW ->
+                                            stringResource(R.string.txt_day_view_raw)
+                                    }
+                                )
+                            }
                         )
-                    },
-                    onDayChange = { nextDay ->
-                        onDayMarkerInputChange(
-                            filterDigits(monthForInput, 2) + filterDigits(nextDay, 2)
-                        )
-                    },
-                    dayFieldTestTag = targetDayDayFieldTestTag(),
-                    dayPickerEnabled = true,
-                    dayPickerDisplayMonth = currentDay?.let { YearMonth.from(it) },
-                    dayPickerSelectedDate = currentDay,
-                    onDayPicked = onOpenDay
-                )
+                    }
+                }
             }
 
             if (outputMode == TxtOutputMode.ALL) {
@@ -201,36 +193,41 @@ internal fun TxtEditorContentCard(
                 )
             }
 
-            Button(
-                onClick = onToggleEditorContentVisibility,
-                modifier = Modifier.fillMaxWidth()
+            if (
+                outputMode == TxtOutputMode.DAY &&
+                    dayViewMode == TxtDayViewMode.STRUCTURED &&
+                    canShowStructuredDay
             ) {
-                Text(
-                    if (isEditorContentVisible) {
-                        stringResource(R.string.txt_action_hide_content)
-                    } else {
-                        stringResource(R.string.txt_action_show_content)
-                    }
+                TxtStructuredDayEditor(
+                    result = structuredDayEdit,
+                    roots = canonicalCatalogRoots,
+                    catalogLoading = isCanonicalCatalogLoading,
+                    catalogStatusText = canonicalCatalogStatusText,
+                    collapsedRootPaths = collapsedCanonicalRootPaths,
+                    orderedRootPaths = orderedCanonicalRootPaths,
+                    onCollapsedRootPathsChange = onCollapsedCanonicalRootPathsChange,
+                    onOrderedRootPathsChange = onOrderedCanonicalRootPathsChange,
+                    onApply = onStructuredDayEditApply
+                )
+            } else {
+                TxtEditorInlineContent(
+                    value = editorText,
+                    outputMode = outputMode,
+                    currentDayText = currentDayText,
+                    dayMarkerText = dayMarkerText,
+                    dayContentIsoDate = dayContentIsoDate,
+                    hasUnsavedChanges = hasUnsavedChanges,
+                    canEditDay = canEditDay,
+                    canIngest = canIngest,
+                    onEditorTextChange = onEditorTextChange,
+                    onIngest = onIngest
                 )
             }
         }
     }
-
-    if (isEditorContentVisible) {
-        TxtEditorBottomSheet(
-            value = editorText,
-            outputMode = outputMode,
-            currentDayText = currentDayText,
-            dayMarkerText = dayMarkerText,
-            dayContentIsoDate = dayContentIsoDate,
-            hasUnsavedChanges = hasUnsavedChanges,
-            canEditDay = canEditDay,
-            canIngest = canIngest,
-            onEditorTextChange = onEditorTextChange,
-            onIngest = onIngest,
-            onDismissRequest = onToggleEditorContentVisibility
-        )
-    }
 }
 
-internal fun targetDayDayFieldTestTag(): String = "txt_target_day_dd"
+private enum class TxtDayViewMode {
+    STRUCTURED,
+    RAW
+}

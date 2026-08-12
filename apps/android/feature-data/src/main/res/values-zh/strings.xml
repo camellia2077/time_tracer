@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="data_cd_expand_card">展开此部分</string>
+    <string name="data_cd_collapse_card">折叠此部分</string>
     <string name="data_title_data_management">数据管理</string>
     <string name="data_title_ingestion">数据导入</string>
     <string name="data_action_import_data_folder">导入数据文件夹</string>

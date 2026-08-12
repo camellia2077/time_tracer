@@ -16,7 +16,7 @@ fun RecordTabContent(
     validAuthorableEventTokens: Set<String>,
     onPersistQuickActivities: (List<String>) -> Unit,
     onPersistQuickAccessCardExpanded: (Boolean) -> Unit,
-    onPersistAssistSettingsExpanded: (Boolean) -> Unit,
+    onPersistQuickAccessEditorVisibility: (Boolean) -> Unit,
     onPersistCanonicalCatalogDisplayMode: (RecordFrequentOutputMode) -> Unit,
     onPersistCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
     onPersistOrderedCanonicalRootPaths: (List<String>) -> Unit,
@@ -115,21 +115,21 @@ fun RecordTabContent(
             val nextExpanded = !recordUiState.quickAccessCardExpanded
             recordViewModel.updateQuickAccessCardExpanded(nextExpanded)
             onPersistQuickAccessCardExpanded(nextExpanded)
-            if (!nextExpanded && recordUiState.assistSettingsExpanded) {
-                recordViewModel.updateAssistUiState(assistSettingsExpanded = false)
-                onPersistAssistSettingsExpanded(false)
+            if (!nextExpanded && recordUiState.quickAccessEditorVisible) {
+                recordViewModel.updateQuickAccessEditorVisibility(quickAccessEditorVisible = false)
+                onPersistQuickAccessEditorVisibility(false)
             }
         },
-        assistSettingsExpanded = recordUiState.assistSettingsExpanded,
-        onToggleAssistSettings = {
-            val nextValue = !recordUiState.assistSettingsExpanded
-            recordViewModel.updateAssistUiState(
-                assistSettingsExpanded = nextValue
+        quickAccessEditorVisible = recordUiState.quickAccessEditorVisible,
+        onToggleQuickAccessEditor = {
+            val nextValue = !recordUiState.quickAccessEditorVisible
+            recordViewModel.updateQuickAccessEditorVisibility(
+                quickAccessEditorVisible = nextValue
             )
             if (!recordUiState.quickAccessCardExpanded) {
                 recordViewModel.updateQuickAccessCardExpanded(true)
             }
-            onPersistAssistSettingsExpanded(nextValue)
+            onPersistQuickAccessEditorVisibility(nextValue)
         },
         frequentLookbackDays = recordUiState.frequentLookbackDays,
         frequentTopN = recordUiState.frequentTopN,
@@ -240,6 +240,8 @@ fun RecordTabContent(
                     )
                     true
                 }
+
+                CanonicalBrowserTarget.TXT_DAY_EDIT -> false
 
                 CanonicalBrowserTarget.QUICK_ACCESS -> {
                     val alias = entry.aliases.firstOrNull { it.isNotBlank() }?.trim()

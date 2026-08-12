@@ -1,4 +1,7 @@
-本地快速风格/静态检查，速度更快（ktlint + lintDebug；不含 detekt）
-程序根目录运行
+## formatter task
+cd apps/android
+.\gradlew.bat ktlintFormat
 
-python tools/run.py build --app tracer_android --profile android_style
+## ktlint、lint 和 detekt
+
+python tools/run.py verify --app tracer_android --profile android_style --profile android_ci --concise

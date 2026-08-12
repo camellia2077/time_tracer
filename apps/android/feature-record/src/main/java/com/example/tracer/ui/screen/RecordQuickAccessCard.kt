@@ -1,6 +1,5 @@
 package com.example.tracer
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,10 +13,12 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -29,6 +30,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.record.R
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun RecordQuickAccessCard(
     recordContent: String,
@@ -38,8 +40,8 @@ internal fun RecordQuickAccessCard(
     onQuickActivitiesUpdate: (List<String>) -> Boolean,
     quickAccessCardExpanded: Boolean = true,
     onToggleQuickAccessCard: () -> Unit = {},
-    assistSettingsExpanded: Boolean,
-    onToggleAssistSettings: () -> Unit,
+    quickAccessEditorVisible: Boolean,
+    onToggleQuickAccessEditor: () -> Unit,
     frequentActivitiesVisible: Boolean = false,
     onToggleFrequentActivities: () -> Unit = {},
     onOpenQuickAccessCanonicalCatalog: () -> Unit,
@@ -92,13 +94,13 @@ internal fun RecordQuickAccessCard(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                     ) {
-                        IconButton(onClick = onToggleAssistSettings) {
+                        IconButton(onClick = onToggleQuickAccessEditor) {
                             Icon(
                                 imageVector = Icons.Default.Edit,
                                 contentDescription = stringResource(
                                     R.string.record_cd_edit_quick_access
                                 ),
-                                tint = if (assistSettingsExpanded) {
+                                tint = if (quickAccessEditorVisible) {
                                     MaterialTheme.colorScheme.primary
                                 } else {
                                     MaterialTheme.colorScheme.onSurfaceVariant
@@ -125,127 +127,17 @@ internal fun RecordQuickAccessCard(
             }
 
             if (quickAccessCardExpanded) {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                AnimatedVisibility(visible = assistSettingsExpanded) {
-                    Column(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                            .padding(top = 12.dp, bottom = 12.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                    OutlinedTextField(
-                        value = quickActivitySearch,
-                        onValueChange = onQuickActivitySearchChange,
-                        label = {
-                            Text(stringResource(R.string.record_label_search_add_quick_activity))
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(
-                            onDone = {
-                                if (tryAddSearchToken()) {
-                                    onQuickActivitySearchChange("")
-                                    keyboardController?.hide()
-                                }
-                            }
-                        ),
-                        trailingIcon = {
-                            TextButton(
-                                onClick = {
-                                    if (tryAddSearchToken()) {
-                                        onQuickActivitySearchChange("")
-                                        keyboardController?.hide()
-                                    }
-                                },
-                                enabled = searchToken.isNotEmpty()
-                            ) {
-                                Text(stringResource(R.string.record_action_add_quick_activity))
-                            }
-                        }
-                    )
-
-                    if (searchToken.isNotEmpty()) {
-                        com.example.tracer.ui.components.SimpleFlowRow(
-                            horizontalGap = 8.dp,
-                            verticalGap = 8.dp
-                        ) {
-                            candidates.forEach { candidate ->
-                                InputChip(
-                                    selected = false,
-                                    onClick = {
-                                        val updated = (quickActivities + candidate)
-                                            .distinct()
-                                            .take(maxQuickActivityCount)
-                                        if (onQuickActivitiesUpdate(updated)) {
-                                            onQuickActivitySearchChange("")
-                                            keyboardController?.hide()
-                                        }
-                                    },
-                                    label = {
-                                        Text(
-                                            stringResource(
-                                                R.string.record_chip_add_activity,
-                                                candidate
-                                            )
-                                        )
-                                    }
-                                )
-                            }
-                        }
-                        if (candidates.isEmpty()) {
-                            Text(
-                                text = stringResource(R.string.record_hint_no_matching_alias_key),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-
-                    TextButton(
-                        onClick = onToggleFrequentActivities,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(stringResource(R.string.record_action_frequent))
-                        Icon(
-                            imageVector = if (frequentActivitiesVisible) {
-                                Icons.Default.ExpandLess
-                            } else {
-                                Icons.Default.ExpandMore
-                            },
-                            contentDescription = null
-                        )
-                    }
-
-                    TextButton(
-                        onClick = onOpenQuickAccessCanonicalCatalog,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.AccountTree,
-                            contentDescription = stringResource(
-                                R.string.record_cd_open_quick_access_catalog
-                            )
-                        )
-                        Text(
-                            text = stringResource(
-                                R.string.record_action_browse_quick_access_catalog
-                            )
-                        )
-                    }
-                }
-            }
-
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .padding(bottom = 16.dp)
-            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = 16.dp)
+                ) {
                 if (quickActivities.isNotEmpty()) {
                     QuickAccessActivityGrid(
                         modifier = Modifier.fillMaxWidth(),
                         quickActivities = quickActivities,
                         recordContent = recordContent,
-                        isDeleteMode = assistSettingsExpanded,
+                        isDeleteMode = false,
                         onRecordContentChange = onRecordContentChange,
                         onQuickActivitiesUpdate = onQuickActivitiesUpdate
                     )
@@ -258,6 +150,122 @@ internal fun RecordQuickAccessCard(
             }
         }
     }
-}
+
+    if (quickAccessEditorVisible) {
+        ModalBottomSheet(onDismissRequest = onToggleQuickAccessEditor) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.record_cd_edit_quick_access),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                OutlinedTextField(
+                    value = quickActivitySearch,
+                    onValueChange = onQuickActivitySearchChange,
+                    label = {
+                        Text(stringResource(R.string.record_label_search_add_quick_activity))
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            if (tryAddSearchToken()) {
+                                onQuickActivitySearchChange("")
+                                keyboardController?.hide()
+                            }
+                        }
+                    ),
+                    trailingIcon = {
+                        TextButton(
+                            onClick = {
+                                if (tryAddSearchToken()) {
+                                    onQuickActivitySearchChange("")
+                                    keyboardController?.hide()
+                                }
+                            },
+                            enabled = searchToken.isNotEmpty()
+                        ) {
+                            Text(stringResource(R.string.record_action_add_quick_activity))
+                        }
+                    }
+                )
+
+                if (searchToken.isNotEmpty()) {
+                    com.example.tracer.ui.components.SimpleFlowRow(
+                        horizontalGap = 8.dp,
+                        verticalGap = 8.dp
+                    ) {
+                        candidates.forEach { candidate ->
+                            InputChip(
+                                selected = false,
+                                onClick = {
+                                    val updated = (quickActivities + candidate)
+                                        .distinct()
+                                        .take(maxQuickActivityCount)
+                                    if (onQuickActivitiesUpdate(updated)) {
+                                        onQuickActivitySearchChange("")
+                                        keyboardController?.hide()
+                                    }
+                                },
+                                label = {
+                                    Text(
+                                        stringResource(
+                                            R.string.record_chip_add_activity,
+                                            candidate
+                                        )
+                                    )
+                                }
+                            )
+                        }
+                    }
+                    if (candidates.isEmpty()) {
+                        Text(
+                            text = stringResource(R.string.record_hint_no_matching_alias_key),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                TextButton(
+                    onClick = onToggleFrequentActivities,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.record_action_frequent))
+                    Icon(
+                        imageVector = if (frequentActivitiesVisible) {
+                            Icons.Default.ExpandLess
+                        } else {
+                            Icons.Default.ExpandMore
+                        },
+                        contentDescription = null
+                    )
+                }
+
+                TextButton(
+                    onClick = onOpenQuickAccessCanonicalCatalog,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AccountTree,
+                        contentDescription = stringResource(
+                            R.string.record_cd_open_quick_access_catalog
+                        )
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.record_action_browse_quick_access_catalog
+                        )
+                    )
+                }
+            }
+        }
+    }
 }
 }

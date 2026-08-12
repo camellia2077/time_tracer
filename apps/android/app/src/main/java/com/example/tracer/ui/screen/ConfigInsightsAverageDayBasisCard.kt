@@ -17,47 +17,51 @@ internal fun ConfigInsightsAverageDayBasisCard(
     onInsightsPiePalettePresetChange: (InsightsPiePalettePreset) -> Unit,
     initialInsightsPaletteExpanded: Boolean = false,
     selected: InsightsAverageDayBasis,
-    onSelected: (InsightsAverageDayBasis) -> Unit
+    onSelected: (InsightsAverageDayBasis) -> Unit,
+    expanded: Boolean = true,
+    onToggleExpanded: () -> Unit = {}
 ) {
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)
         ) {
-            Text(
-                text = stringResource(R.string.config_title_insights_settings),
-                style = androidx.compose.material3.MaterialTheme.typography.titleMedium,
-                color = androidx.compose.material3.MaterialTheme.colorScheme.primary
+            ConfigCardHeader(
+                title = stringResource(R.string.config_title_insights_settings),
+                expanded = expanded,
+                onToggleExpanded = onToggleExpanded
             )
-            InsightsChartStyleSection(
-                insightsPiePalettePreset = insightsPiePalettePreset,
-                onInsightsPiePalettePresetChange = onInsightsPiePalettePresetChange,
-                initialExpanded = initialInsightsPaletteExpanded
-            )
-            androidx.compose.material3.HorizontalDivider()
-            Text(
-                text = stringResource(R.string.config_title_insights_average_day_basis),
-                style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
-                color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = stringResource(R.string.config_insights_average_day_basis_description),
-                style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
-                color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            InsightsAverageDayBasis.entries.forEach { basis ->
-                androidx.compose.foundation.layout.Row {
-                    RadioButton(selected = selected == basis, onClick = { onSelected(basis) })
-                    Text(
-                        text = stringResource(
-                            if (basis == InsightsAverageDayBasis.ACTIVE_DAYS) {
-                                R.string.config_insights_average_day_basis_active
-                            } else {
-                                R.string.config_insights_average_day_basis_calendar
-                            }
-                        ),
-                        modifier = Modifier.padding(top = 12.dp)
-                    )
+            if (expanded) {
+                InsightsChartStyleSection(
+                    insightsPiePalettePreset = insightsPiePalettePreset,
+                    onInsightsPiePalettePresetChange = onInsightsPiePalettePresetChange,
+                    initialExpanded = initialInsightsPaletteExpanded
+                )
+                androidx.compose.material3.HorizontalDivider()
+                Text(
+                    text = stringResource(R.string.config_title_insights_average_day_basis),
+                    style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = stringResource(R.string.config_insights_average_day_basis_description),
+                    style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                InsightsAverageDayBasis.entries.forEach { basis ->
+                    androidx.compose.foundation.layout.Row {
+                        RadioButton(selected = selected == basis, onClick = { onSelected(basis) })
+                        Text(
+                            text = stringResource(
+                                if (basis == InsightsAverageDayBasis.ACTIVE_DAYS) {
+                                    R.string.config_insights_average_day_basis_active
+                                } else {
+                                    R.string.config_insights_average_day_basis_calendar
+                                }
+                            ),
+                            modifier = Modifier.padding(top = 12.dp)
+                        )
+                    }
                 }
             }
         }

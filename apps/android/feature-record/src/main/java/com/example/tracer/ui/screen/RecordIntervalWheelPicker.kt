@@ -49,9 +49,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.draw.alpha
@@ -72,63 +74,74 @@ internal fun WheelNumberPicker(
     value: Int,
     values: IntRange,
     modifier: Modifier = Modifier,
+    valueText: (Int) -> String = { "%02d".format(it) },
     onValueChange: (Int) -> Unit
 ) {
     val itemHeight = 48.dp
-    val listState = rememberLazyListState(initialFirstVisibleItemIndex = value)
-    val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
+    val initialIndex = (value - values.first).coerceIn(0, values.count() - 1)
     val hapticFeedback = LocalHapticFeedback.current
+    val currentValues by rememberUpdatedState(values)
+    val currentOnValueChange by rememberUpdatedState(onValueChange)
+    val currentHapticFeedback by rememberUpdatedState(hapticFeedback)
 
-    LaunchedEffect(value) {
-        val target = value.coerceIn(values.first, values.last)
-        if (listState.firstVisibleItemIndex != target) {
-            listState.animateScrollToItem(target)
-        }
-    }
-    LaunchedEffect(listState) {
-        snapshotFlow { listState.firstVisibleItemIndex }
-            .drop(1)
-            .collect { index ->
-                if (index in 0 until values.count()) {
-                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onValueChange(values.elementAt(index))
-                }
+    // A time-bound change can alter the numeric range without changing this picker value
+    // (for example, editing an interval start changes the end picker lower bound). Recreate
+    // the list state for that new range so its old index never maps to a different value.
+    key(values.first, values.last) {
+        val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialIndex)
+        val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
+
+        LaunchedEffect(value) {
+            val target = value.coerceIn(values.first, values.last) - values.first
+            if (listState.firstVisibleItemIndex != target) {
+                listState.animateScrollToItem(target)
             }
-    }
+        }
+        LaunchedEffect(listState) {
+            snapshotFlow { listState.firstVisibleItemIndex }
+                .drop(1)
+                .collect { index ->
+                    if (index in 0 until currentValues.count()) {
+                        currentHapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                        currentOnValueChange(currentValues.elementAt(index))
+                    }
+                }
+        }
 
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        LazyColumn(
-            state = listState,
-            flingBehavior = flingBehavior,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(itemHeight * 3),
-            contentPadding = PaddingValues(vertical = itemHeight),
-            horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+        Column(
+            modifier = modifier,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            items(values.toList()) { number ->
-                Text(
-                    text = "%02d".format(number),
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier
-                        .alpha(
-                            if (number == listState.firstVisibleItemIndex + values.first) {
-                                1f
-                            } else {
-                                0.38f
-                            }
-                        )
-                        .height(itemHeight)
-                        .wrapContentHeight()
-                )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            LazyColumn(
+                state = listState,
+                flingBehavior = flingBehavior,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(itemHeight * 3),
+                contentPadding = PaddingValues(vertical = itemHeight),
+                horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+            ) {
+                items(values.toList()) { number ->
+                    Text(
+                        text = valueText(number),
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier
+                            .alpha(
+                                if (number == listState.firstVisibleItemIndex + values.first) {
+                                    1f
+                                } else {
+                                    0.38f
+                                }
+                            )
+                            .height(itemHeight)
+                            .wrapContentHeight()
+                    )
+                }
             }
         }
     }

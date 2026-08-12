@@ -22,17 +22,24 @@ Describe the user-visible behavior of record creation and TXT editing flows.
   - supports two authored shapes in the `Record` tab:
     - point event: `HHMMtoken`
     - interval event: `HHMM-HHMMtoken`
-- Raw TXT editing (available from Config > Data Management)
+- Raw TXT editing (available from the Files tab)
   - supports month-wide editing (`ALL`) and day-focused editing (`DAY`)
   - uses Android native `EditText`-backed multiline editing instead of the older Compose `OutlinedTextField` path
-  - exposes editor actions through the top toolbar (`Undo`, `Redo`, `Close`, `Ingest`)
+  - displays the selected TXT content inline in the Files tab, with `Undo`, `Redo`, and `Ingest` actions
 - `DAY` editing
-  - resolves the current day block from the month TXT through shared runtime day-block APIs
-  - edits a local day draft inside the editor session
-  - merges the edited day body back into the month TXT only when users tap `Ingest`
+  - resolves the current day through shared Core structured-day APIs
+  - shows point and interval events as editable cards; structured cards support
+    time changes, selecting a canonical activity from the Record tree, and editing
+    the day or activity remarks
+  - offers a mutually exclusive `Structured` / `Raw TXT` capsule so the same
+    selected day can be inspected or edited in its original text form
+  - Core renders the normalized day body and merges it into the month TXT when
+    users save a structured change; Android then replaces/syncs only that month
+    in the database
+  - falls back to the raw inline day editor for missing/unresolvable day blocks
 - Unsaved draft handling
   - `TXT` editor changes do not write files until explicit `Ingest`
-  - closing the TXT editor sheet discards the current editing session if `Ingest` has not happened
+- leaving the Files tab discards the current editing session if `Ingest` has not happened
 - leaving the Config page also discards the unsaved month draft that backs file persistence
   - `Config` keeps its own in-memory per-file drafts and is documented separately
 

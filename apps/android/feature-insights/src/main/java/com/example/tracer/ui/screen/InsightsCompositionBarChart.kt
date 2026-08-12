@@ -35,7 +35,7 @@ internal fun InsightsCompositionBarChart(
     showFrequency: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    val sliceColors = rememberCompositionSliceColors(
+    val sliceColors = rememberPieSliceColors(
         slices = slices,
         palettePreset = palettePreset
     )
@@ -98,7 +98,7 @@ internal fun InsightsCompositionBarChart(
                             .clip(RoundedCornerShape(999.dp))
                             .background(
                                 sliceColors.getOrElse(index) {
-                                    resolveCompositionSliceColor(
+                                    resolvePieSliceColor(
                                         slice = slice,
                                         palettePreset = palettePreset
                                     )

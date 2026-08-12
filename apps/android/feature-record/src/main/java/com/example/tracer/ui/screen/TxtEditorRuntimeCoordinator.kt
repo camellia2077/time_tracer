@@ -67,6 +67,40 @@ internal class TxtEditorRuntimeCoordinator(
         selectedMonth = selectedMonth
     )
 
+    suspend fun resolveDayEdit(
+        monthContent: String,
+        dayMarker: String,
+        selectedMonth: String
+    ): TxtDayEditResolveResult = txtStorageGateway.resolveTxtDayEdit(
+        content = monthContent,
+        dayMarker = dayMarker,
+        selectedMonth = selectedMonth
+    )
+
+    suspend fun applyDayEdit(
+        monthContent: String,
+        dayMarker: String,
+        selectedMonth: String,
+        dayRemark: String,
+        events: List<TxtDayEditEvent>,
+        onMergedMonthContent: (String) -> Unit,
+        onSaveHistoryFile: () -> Unit
+    ): Boolean {
+        val applied = txtStorageGateway.applyTxtDayEdit(
+            content = monthContent,
+            dayMarker = dayMarker,
+            selectedMonth = selectedMonth,
+            dayRemark = dayRemark,
+            events = events
+        )
+        if (!applied.ok) {
+            return false
+        }
+        onMergedMonthContent(applied.updatedContent)
+        onSaveHistoryFile()
+        return true
+    }
+
     suspend fun convertActivityNames(
         content: String,
         targetMode: TxtActivityNameTargetMode

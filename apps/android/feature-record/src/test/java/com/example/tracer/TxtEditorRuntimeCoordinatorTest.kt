@@ -137,6 +137,49 @@ class TxtEditorRuntimeCoordinatorTest {
     }
 
     @Test
+    fun applyDayEdit_savesCurrentMonthWithDayAndActivityRemarks() = runBlocking {
+        val event = TxtDayEditEvent(
+            isInterval = false,
+            startTime = "",
+            endTime = "090000",
+            activityToken = "study",
+            remark = "updated activity remark"
+        )
+        val gateway = FakeTxtEditorRuntimeGateway(
+            applyResult = TxtDayEditApplyResult(
+                ok = true,
+                normalizedDayMarker = "0417",
+                found = true,
+                isMarkerValid = true,
+                updatedContent = "updated-month",
+                message = "ok"
+            )
+        )
+        val coordinator = TxtEditorRuntimeCoordinator(gateway, testClock())
+        var mergedMonthContent = ""
+        var saveCalled = false
+
+        val applied = coordinator.applyDayEdit(
+            monthContent = "current-month",
+            dayMarker = "0417",
+            selectedMonth = "2026-04",
+            dayRemark = "updated day remark",
+            events = listOf(event),
+            onMergedMonthContent = { mergedMonthContent = it },
+            onSaveHistoryFile = { saveCalled = true }
+        )
+
+        assertTrue(applied)
+        assertEquals("current-month", gateway.lastApplyContent)
+        assertEquals("0417", gateway.lastApplyDayMarker)
+        assertEquals("2026-04", gateway.lastApplySelectedMonth)
+        assertEquals("updated day remark", gateway.lastApplyDayRemark)
+        assertEquals(listOf(event), gateway.lastApplyEvents)
+        assertEquals("updated-month", mergedMonthContent)
+        assertTrue(saveCalled)
+    }
+
+    @Test
     fun prepareEditableDayBlock_whenDayIsMissing_seedsEmptyDayBlock() = runBlocking {
         val gateway = FakeTxtEditorRuntimeGateway(
             resolveResult = TxtDayBlockResolveResult(
@@ -418,6 +461,14 @@ private class FakeTxtEditorRuntimeGateway(
         message = "ok"
     ),
     private val resolveTxtDayBlockOverride: (suspend (String, String, String) -> TxtDayBlockResolveResult)? = null,
+    private val applyResult: TxtDayEditApplyResult = TxtDayEditApplyResult(
+        ok = false,
+        normalizedDayMarker = "",
+        found = false,
+        isMarkerValid = false,
+        updatedContent = "",
+        message = "not configured"
+    ),
     private val conversionResult: TxtActivityNameConversionResult = TxtActivityNameConversionResult(
         ok = true,
         convertedContent = "",
@@ -437,6 +488,16 @@ private class FakeTxtEditorRuntimeGateway(
     var lastConversionContent: String = ""
         private set
     var lastConversionDirection: TxtActivityNameMappingDirection? = null
+        private set
+    var lastApplyContent: String = ""
+        private set
+    var lastApplyDayMarker: String = ""
+        private set
+    var lastApplySelectedMonth: String = ""
+        private set
+    var lastApplyDayRemark: String = ""
+        private set
+    var lastApplyEvents: List<TxtDayEditEvent> = emptyList()
         private set
 
     override suspend fun inspectTxtFiles(): TxtInspectionResult = TxtInspectionResult(
@@ -488,6 +549,21 @@ private class FakeTxtEditorRuntimeGateway(
         lastReplaceDayMarker = dayMarker
         lastReplaceDayBody = editedDayBody
         return replaceResult
+    }
+
+    override suspend fun applyTxtDayEdit(
+        content: String,
+        dayMarker: String,
+        selectedMonth: String,
+        dayRemark: String,
+        events: List<TxtDayEditEvent>
+    ): TxtDayEditApplyResult {
+        lastApplyContent = content
+        lastApplyDayMarker = dayMarker
+        lastApplySelectedMonth = selectedMonth
+        lastApplyDayRemark = dayRemark
+        lastApplyEvents = events
+        return applyResult
     }
 
     override suspend fun convertTxtActivityNames(

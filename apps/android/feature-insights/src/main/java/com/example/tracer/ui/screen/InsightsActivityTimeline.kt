@@ -2,16 +2,20 @@ package com.example.tracer
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -105,102 +109,117 @@ internal fun InsightsActivityTimeline(
     }
 
     editingActivity?.let { activity ->
-        AlertDialog(
-            onDismissRequest = { if (!saving) editingActivity = null },
-            title = { Text(stringResource(R.string.insights_edit_activity_remark)) },
-            text = {
-                Column {
-                    Text(
-                        text = activity.activityName,
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = draftRemark,
-                        onValueChange = { draftRemark = it },
-                        enabled = !saving,
-                        label = { Text(stringResource(R.string.insights_activity_remark_label)) },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    if (editError.isNotBlank()) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = editError,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    enabled = !saving,
-                    onClick = {
-                        saving = true
-                        editError = ""
-                        scope.launch {
-                            val result = onUpdateActivityRemark(activity, draftRemark)
-                            saving = false
-                            if (result.ok) {
-                                editingActivity = null
-                            } else {
-                                editError = result.message.ifBlank {
-                                    "Activity remark update failed."
-                                }
-                            }
+        InsightsRemarkEditSheet(
+            title = stringResource(R.string.insights_edit_activity_remark),
+            subject = activity.activityName,
+            remark = draftRemark,
+            label = stringResource(R.string.insights_activity_remark_label),
+            saveLabel = stringResource(R.string.insights_save_activity_remark),
+            cancelLabel = stringResource(R.string.insights_cancel_activity_remark),
+            error = editError,
+            saving = saving,
+            onRemarkChange = { draftRemark = it },
+            onDismiss = { editingActivity = null },
+            onSave = {
+                saving = true
+                editError = ""
+                scope.launch {
+                    val result = onUpdateActivityRemark(activity, draftRemark)
+                    saving = false
+                    if (result.ok) {
+                        editingActivity = null
+                    } else {
+                        editError = result.message.ifBlank {
+                            "Activity remark update failed."
                         }
                     }
-                ) {
-                    Text(stringResource(R.string.insights_save_activity_remark))
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    enabled = !saving,
-                    onClick = { editingActivity = null }
-                ) {
-                    Text(stringResource(R.string.insights_cancel_activity_remark))
                 }
             }
         )
     }
 
     if (editingDayRemark) {
-        AlertDialog(
-            onDismissRequest = { if (!saving) editingDayRemark = false },
-            title = { Text(stringResource(R.string.insights_edit_day_remark)) },
-            text = {
-                Column {
-                    OutlinedTextField(
-                        value = dayRemarkDraft,
-                        onValueChange = { dayRemarkDraft = it },
-                        enabled = !saving,
-                        label = { Text(stringResource(R.string.insights_day_remark_label)) },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    if (editError.isNotBlank()) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(editError, color = MaterialTheme.colorScheme.error)
+        InsightsRemarkEditSheet(
+            title = stringResource(R.string.insights_edit_day_remark),
+            remark = dayRemarkDraft,
+            label = stringResource(R.string.insights_day_remark_label),
+            saveLabel = stringResource(R.string.insights_save_day_remark),
+            cancelLabel = stringResource(R.string.insights_cancel_day_remark),
+            error = editError,
+            saving = saving,
+            onRemarkChange = { dayRemarkDraft = it },
+            onDismiss = { editingDayRemark = false },
+            onSave = {
+                saving = true
+                editError = ""
+                scope.launch {
+                    val result = onUpdateDayRemark(dayRemarkDraft)
+                    saving = false
+                    if (result.ok) {
+                        editingDayRemark = false
+                    } else {
+                        editError = result.message.ifBlank { "Day remark update failed." }
                     }
-                }
-            },
-            confirmButton = {
-                TextButton(enabled = !saving, onClick = {
-                    saving = true
-                    editError = ""
-                    scope.launch {
-                        val result = onUpdateDayRemark(dayRemarkDraft)
-                        saving = false
-                        if (result.ok) editingDayRemark = false
-                        else editError = result.message.ifBlank { "Day remark update failed." }
-                    }
-                }) { Text(stringResource(R.string.insights_save_day_remark)) }
-            },
-            dismissButton = {
-                TextButton(enabled = !saving, onClick = { editingDayRemark = false }) {
-                    Text(stringResource(R.string.insights_cancel_day_remark))
                 }
             }
         )
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun InsightsRemarkEditSheet(
+    title: String,
+    remark: String,
+    label: String,
+    saveLabel: String,
+    cancelLabel: String,
+    error: String,
+    saving: Boolean,
+    onRemarkChange: (String) -> Unit,
+    onDismiss: () -> Unit,
+    onSave: () -> Unit,
+    subject: String? = null
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ModalBottomSheet(
+        onDismissRequest = { if (!saving) onDismiss() },
+        sheetState = sheetState
+    ) {
+        Column(
+            modifier = Modifier.padding(start = 24.dp, top = 8.dp, end = 24.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(text = title, style = MaterialTheme.typography.headlineSmall)
+            subject?.let {
+                Text(text = it, style = MaterialTheme.typography.labelMedium)
+            }
+            OutlinedTextField(
+                value = remark,
+                onValueChange = onRemarkChange,
+                enabled = !saving,
+                label = { Text(label) },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 3
+            )
+            if (error.isNotBlank()) {
+                Text(
+                    text = error,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextButton(enabled = !saving, onClick = onDismiss) {
+                    Text(cancelLabel)
+                }
+                Button(enabled = !saving, onClick = onSave) {
+                    Text(saveLabel)
+                }
+            }
+        }
     }
 }

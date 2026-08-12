@@ -34,6 +34,7 @@ private fun logDebug(tag: String, message: String) {
 
 enum class CanonicalBrowserTarget {
     RECORD_INPUT,
+    TXT_DAY_EDIT,
     QUICK_ACCESS,
     INSIGHTS_STATUS_PARENT
 }
@@ -95,7 +96,7 @@ data class RecordUiState(
     val actualTimeExpanded: Boolean = false,
     // The card visibility and the activity-management controls are independent UI states.
     val quickAccessCardExpanded: Boolean = true,
-    val assistSettingsExpanded: Boolean = false,
+    val quickAccessEditorVisible: Boolean = false,
     val frequentLookbackDays: Int = 7,
     val frequentTopN: Int = 5,
     val frequentOutputMode: RecordFrequentOutputMode = RecordFrequentOutputMode.CANONICAL,
@@ -328,10 +329,10 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
         uiState = intentHandler.updateQuickAccessCardExpanded(uiState, expanded)
     }
 
-    fun updateAssistUiState(assistSettingsExpanded: Boolean) {
-        uiState = intentHandler.updateAssistUiState(
+    fun updateQuickAccessEditorVisibility(quickAccessEditorVisible: Boolean) {
+        uiState = intentHandler.updateQuickAccessEditorVisibility(
             state = uiState,
-            assistSettingsExpanded = assistSettingsExpanded
+            quickAccessEditorVisible = quickAccessEditorVisible
         )
     }
 
@@ -374,6 +375,23 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
 
     fun openCanonicalCatalog() {
         openCanonicalCatalog(CanonicalBrowserTarget.RECORD_INPUT)
+    }
+
+    fun loadCanonicalCatalogForExternalSelection() {
+        if (uiState.canonicalCatalogRoots.isNotEmpty() || uiState.isCanonicalCatalogLoading) {
+            return
+        }
+        canonicalCatalogLoadJob?.cancel()
+        uiState = intentHandler.showCanonicalCatalogLoading(
+            uiState,
+            CanonicalBrowserTarget.RECORD_INPUT
+        ).copy(isCanonicalCatalogVisible = false)
+        canonicalCatalogLoadJob = viewModelScope.launch {
+            uiState = intentHandler.loadCanonicalCatalog(uiState).copy(
+                isCanonicalCatalogVisible = false,
+                canonicalBrowserTarget = null
+            )
+        }
     }
 
     fun openQuickAccessCanonicalCatalog() {

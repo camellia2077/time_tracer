@@ -1,9 +1,9 @@
 package com.example.tracer
 
 enum class InsightsPiePalettePreset {
+    VIVID,
     SOFT,
     EDITORIAL,
-    VIVID,
     MONO_ACCENT
 }
 
@@ -12,7 +12,7 @@ data class InsightsPiePaletteConfig(
     val othersHexColor: String
 )
 
-fun defaultInsightsPiePalettePreset(): InsightsPiePalettePreset = InsightsPiePalettePreset.SOFT
+fun defaultInsightsPiePalettePreset(): InsightsPiePalettePreset = InsightsPiePalettePreset.VIVID
 
 fun defaultInsightsPiePaletteConfig(): InsightsPiePaletteConfig = InsightsPiePaletteConfig(
     palettes = mapOf(

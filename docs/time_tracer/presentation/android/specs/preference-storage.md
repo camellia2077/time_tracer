@@ -33,6 +33,7 @@ Do not store UI preferences in the runtime SQLite database.
   - theme palette
   - the selected UI and Insights color systems are defined in `../ui/color-system.md` and `../ui/insights/README.md`; the selected palette is user-persisted
 - App language
+- Config-page card expansion state
 - Record assistance preferences:
   - frequent activity lookback days
   - frequent activity top-N

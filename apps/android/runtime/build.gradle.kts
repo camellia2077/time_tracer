@@ -18,62 +18,66 @@ plugins {
     alias(libs.plugins.android.library)
 }
 
-abstract class SyncPlatformConfigSnapshotTask @Inject constructor(
-    private val execOperations: ExecOperations,
-) : DefaultTask() {
-    @get:Input
-    abstract val pythonExecutable: Property<String>
+abstract class SyncPlatformConfigSnapshotTask
+    @Inject
+    constructor(
+        private val execOperations: ExecOperations,
+    ) : DefaultTask() {
+        @get:Input
+        abstract val pythonExecutable: Property<String>
 
-    @get:Input
-    abstract val target: Property<String>
+        @get:Input
+        abstract val target: Property<String>
 
-    @get:InputFile
-    @get:PathSensitive(PathSensitivity.NONE)
-    abstract val syncScript: RegularFileProperty
+        @get:InputFile
+        @get:PathSensitive(PathSensitivity.NONE)
+        abstract val syncScript: RegularFileProperty
 
-    @get:InputDirectory
-    @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val sourceRoot: DirectoryProperty
+        @get:InputDirectory
+        @get:PathSensitive(PathSensitivity.RELATIVE)
+        abstract val sourceRoot: DirectoryProperty
 
-    @get:OutputDirectory
-    abstract val outputDirectory: DirectoryProperty
+        @get:OutputDirectory
+        abstract val outputDirectory: DirectoryProperty
 
-    @TaskAction
-    fun sync() {
-        val scriptFile = syncScript.get().asFile
-        val sourceDir = sourceRoot.get().asFile
-        val outputDir = outputDirectory.get().asFile
-        require(scriptFile.exists()) {
-            "Missing platform config generator: ${scriptFile.absolutePath}"
+        @TaskAction
+        fun sync() {
+            val scriptFile = syncScript.get().asFile
+            val sourceDir = sourceRoot.get().asFile
+            val outputDir = outputDirectory.get().asFile
+            require(scriptFile.exists()) {
+                "Missing platform config generator: ${scriptFile.absolutePath}"
+            }
+            require(sourceDir.exists()) {
+                "Missing source config root: ${sourceDir.absolutePath}"
+            }
+
+            execOperations
+                .exec {
+                    commandLine(
+                        pythonExecutable.get(),
+                        scriptFile.absolutePath,
+                        "--target",
+                        target.get(),
+                        "--source-root",
+                        sourceDir.absolutePath,
+                        "--android-output-root",
+                        outputDir.absolutePath,
+                        "--apply",
+                    )
+                }.assertNormalExitValue()
         }
-        require(sourceDir.exists()) {
-            "Missing source config root: ${sourceDir.absolutePath}"
-        }
-
-        execOperations.exec {
-            commandLine(
-                pythonExecutable.get(),
-                scriptFile.absolutePath,
-                "--target",
-                target.get(),
-                "--source-root",
-                sourceDir.absolutePath,
-                "--android-output-root",
-                outputDir.absolutePath,
-                "--apply",
-            )
-        }.assertNormalExitValue()
     }
-}
 
 val repoRootDir =
     rootProject.projectDir.parentFile?.parentFile
         ?: throw GradleException(
-            "Cannot resolve repository root from ${rootProject.projectDir.absolutePath}"
+            "Cannot resolve repository root from ${rootProject.projectDir.absolutePath}",
         )
 
 val timeTracerDisableNativeOptimization =
-    providers.gradleProperty("timeTracerDisableNativeOptimization")
+    providers
+        .gradleProperty("timeTracerDisableNativeOptimization")
         .orNull
         ?.trim()
         ?.equals("true", ignoreCase = true) == true
@@ -94,7 +98,7 @@ val timeTracerSourceConfigRootPath = timeTracerSourceConfigRoot.absolutePath
 val platformConfigRunnerPath = platformConfigRunner.absolutePath
 
 val generateTracerCoreConfigAssets by tasks.register<SyncPlatformConfigSnapshotTask>(
-    "generateTracerCoreConfigAssets"
+    "generateTracerCoreConfigAssets",
 ) {
     group = "tracer_core"
     description = "Generate Android config/program assets from the canonical source config."
@@ -138,11 +142,12 @@ android {
             cmake {
                 arguments.add("-DANDROID_STL=c++_static")
                 // Work around NDK 29 Clang mis-handling std::as_const in libc++.
-                cppFlags += listOf(
-                    "-std=c++23",
-                    "-Xclang",
-                    "-fno-builtin-std-as_const",
-                )
+                cppFlags +=
+                    listOf(
+                        "-std=c++23",
+                        "-Xclang",
+                        "-fno-builtin-std-as_const",
+                    )
                 targets += listOf("tt_android_bridge")
             }
         }
@@ -165,22 +170,22 @@ android {
         release {
             externalNativeBuild {
                 cmake {
-                    arguments += listOf(
-                        "-DCMAKE_BUILD_TYPE=Release",
-                        if (timeTracerDisableNativeOptimization) {
-                            "-DDISABLE_OPTIMIZATION=ON"
-                        } else {
-                            "-DDISABLE_OPTIMIZATION=OFF"
-                        },
-                        "-DENABLE_LTO=OFF"
-                    )
+                    arguments +=
+                        listOf(
+                            "-DCMAKE_BUILD_TYPE=Release",
+                            if (timeTracerDisableNativeOptimization) {
+                                "-DDISABLE_OPTIMIZATION=ON"
+                            } else {
+                                "-DDISABLE_OPTIMIZATION=OFF"
+                            },
+                            "-DENABLE_LTO=OFF",
+                        )
                     cFlags += listOf("-g0")
                     cppFlags += listOf("-g0")
                 }
             }
         }
     }
-
 }
 
 dependencies {
@@ -191,4 +196,3 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.org.json)
 }
-

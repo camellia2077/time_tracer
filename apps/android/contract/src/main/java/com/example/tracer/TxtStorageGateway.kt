@@ -50,6 +50,37 @@ interface TxtStorageGateway {
         message = "TXT day-block runtime is unavailable."
     )
 
+    suspend fun resolveTxtDayEdit(
+        content: String,
+        dayMarker: String,
+        selectedMonth: String
+    ): TxtDayEditResolveResult = TxtDayEditResolveResult(
+        ok = false,
+        normalizedDayMarker = dayMarker,
+        found = false,
+        isMarkerValid = false,
+        canSave = false,
+        dayRemark = "",
+        events = emptyList(),
+        dayContentIsoDate = null,
+        message = "TXT structured day-edit runtime is unavailable."
+    )
+
+    suspend fun applyTxtDayEdit(
+        content: String,
+        dayMarker: String,
+        selectedMonth: String,
+        dayRemark: String,
+        events: List<TxtDayEditEvent>
+    ): TxtDayEditApplyResult = TxtDayEditApplyResult(
+        ok = false,
+        normalizedDayMarker = dayMarker,
+        found = false,
+        isMarkerValid = false,
+        updatedContent = content,
+        message = "TXT structured day-edit runtime is unavailable."
+    )
+
     suspend fun convertTxtActivityNames(
         content: String,
         direction: TxtActivityNameMappingDirection

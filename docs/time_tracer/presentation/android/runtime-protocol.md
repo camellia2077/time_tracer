@@ -180,6 +180,9 @@ Current Android-facing responsibilities are:
    - `MMDD` normalization and validation
    - month-TXT day marker line format (`dMMDD`)
    - day-block extraction and replacement
+   - structured day-edit parsing and normalized rendering (`resolve_day_edit`,
+     `apply_day_edit`), including time/event-kind/remark preservation and
+     Core-owned monotonic time bounds for the editor picker
    - machine-readable fields such as `found`, `can_save`, and
      `day_content_iso_date`
    - activity-name alias/canonical conversion for the full month content

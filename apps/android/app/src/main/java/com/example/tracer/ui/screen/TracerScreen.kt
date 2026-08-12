@@ -135,7 +135,7 @@ fun TracerScreen(
                 com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_CANONICAL_CATALOG_DISPLAY_MODE,
             quickActivities = emptyList(),
             quickAccessCardExpanded = com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_QUICK_ACCESS_CARD_EXPANDED,
-            assistSettingsExpanded = com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_ASSIST_SETTINGS_EXPANDED,
+            quickAccessEditorVisible = com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_QUICK_ACCESS_EDITOR_VISIBLE,
             collapsedCanonicalRootPaths = com.example.tracer.data.UserPreferencesRepository.DEFAULT_COLLAPSED_CANONICAL_ROOT_PATHS,
             orderedCanonicalRootPaths = com.example.tracer.data.UserPreferencesRepository.DEFAULT_ORDERED_CANONICAL_ROOT_PATHS
         )
@@ -170,6 +170,8 @@ fun TracerScreen(
     val insightsPiePalettePreset by userPreferencesRepository.insightsPiePalettePreset.collectAsState(
         initial = null
     )
+    val configCardExpansionPreferences by userPreferencesRepository.configCardExpansionPreferences
+        .collectAsState(initial = null)
     val insightsHeatmapState = rememberTracerScreenInsightsHeatmapState(
         selectedTab = selectedTab,
         configGateway = configGateway,
@@ -194,7 +196,8 @@ fun TracerScreen(
         insightsResultDisplayMode == null ||
         insightsParameterSection == null ||
         insightsTimeParametersExpanded == null
-        || insightsAverageDayBasis == null || insightsPiePalettePreset == null
+        || insightsAverageDayBasis == null || insightsPiePalettePreset == null ||
+        configCardExpansionPreferences == null
     ) {
         return
     }
@@ -209,6 +212,7 @@ fun TracerScreen(
     val loadedInsightsTimeParametersExpanded = requireNotNull(insightsTimeParametersExpanded)
     val loadedInsightsAverageDayBasis = requireNotNull(insightsAverageDayBasis)
     val loadedInsightsPiePalettePreset = requireNotNull(insightsPiePalettePreset)
+    val loadedConfigCardExpansionPreferences = requireNotNull(configCardExpansionPreferences)
 
     val displayedRecordUiState = if (!recordViewModel.hasAppliedInitialPersistedRecordInputForUi) {
         recordUiState.copy(
@@ -404,12 +408,14 @@ fun TracerScreen(
         isAppDarkThemeActive = isAppDarkThemeActive,
         appLanguage = appLanguage,
         onSetAppLanguage = onSetAppLanguage,
+        configCardExpansionPreferences = loadedConfigCardExpansionPreferences,
+        onPersistConfigCardExpanded = actions.onPersistConfigCardExpanded,
         validAuthorableEventTokens = validAuthorableEventTokens,
         onPersistRecordQuickActivities = actions.onPersistRecordQuickActivities,
         onClearQuickAccessCache = quickActivitiesPreferenceGateway::clearCachedQuickActivities,
         onPersistRecordQuickAccessCardExpanded =
             actions.onPersistRecordQuickAccessCardExpanded,
-        onPersistRecordAssistSettingsExpanded = actions.onPersistRecordAssistSettingsExpanded,
+        onPersistRecordQuickAccessEditorVisibility = actions.onPersistRecordQuickAccessEditorVisibility,
         onPersistRecordCanonicalCatalogDisplayMode =
             actions.onPersistRecordCanonicalCatalogDisplayMode,
         onPersistRecordCollapsedCanonicalRootPaths =

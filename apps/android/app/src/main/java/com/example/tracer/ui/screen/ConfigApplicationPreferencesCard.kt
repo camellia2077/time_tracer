@@ -15,21 +15,25 @@ import com.example.tracer.data.AppLanguage
 @Composable
 internal fun ConfigApplicationPreferencesCard(
     appLanguage: AppLanguage,
-    onSetAppLanguage: (AppLanguage) -> Unit
+    onSetAppLanguage: (AppLanguage) -> Unit,
+    expanded: Boolean = true,
+    onToggleExpanded: () -> Unit = {}
 ) {
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            Text(
-                text = stringResource(R.string.config_title_app_preferences),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
+            ConfigCardHeader(
+                title = stringResource(R.string.config_title_app_preferences),
+                expanded = expanded,
+                onToggleExpanded = onToggleExpanded
             )
-            LanguageSection(
-                appLanguage = appLanguage,
-                onSetAppLanguage = onSetAppLanguage
-            )
+            if (expanded) {
+                LanguageSection(
+                    appLanguage = appLanguage,
+                    onSetAppLanguage = onSetAppLanguage
+                )
+            }
         }
     }
 }

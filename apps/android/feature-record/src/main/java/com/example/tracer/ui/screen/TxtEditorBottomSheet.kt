@@ -3,28 +3,17 @@ package com.example.tracer
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.Button
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -36,18 +25,14 @@ import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.record.R
 import com.example.tracer.ui.components.NativeMultilineTextEditor
 import com.example.tracer.ui.components.NativeMultilineTextEditorController
-import com.example.tracer.ui.components.SegmentedMonthDayInput
 import com.example.tracer.ui.components.filterDigits
-import com.example.tracer.ui.components.splitYearMonthDigits
-import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun TxtEditorBottomSheet(
+internal fun TxtEditorInlineContent(
     value: String,
     outputMode: TxtOutputMode,
     currentDayText: String?,
@@ -57,82 +42,57 @@ internal fun TxtEditorBottomSheet(
     canEditDay: Boolean,
     canIngest: Boolean,
     onEditorTextChange: (String) -> Unit,
-    onIngest: () -> Unit,
-    onDismissRequest: () -> Unit
+    onIngest: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    // Undo/redo history is scoped to the currently open editor sheet. Closing the sheet or
-    // ingesting successfully starts a new editing session the next time users open TXT content.
+    // Undo/redo history is scoped to the selected file and month. Moving to another file or
+    // month creates a new editor instance and therefore a new history.
     val editorController = remember { NativeMultilineTextEditorController() }
 
-    ModalBottomSheet(
-        onDismissRequest = onDismissRequest,
-        sheetState = sheetState,
-        // Treat the TXT editor as a stable editing surface instead of a draggable bottom sheet.
-        // The raw editor now embeds a native EditText, and letting the sheet drag at the same
-        // time causes gesture contention: upward swipes can bounce between moving the sheet and
-        // scrolling the editor, which shows up as repeated vertical jumping in ALL mode.
-        // Disabling sheet gestures here leaves text scrolling fully owned by the editor and keeps
-        // the layout steady, closer to a phone's built-in note editor.
-        sheetGesturesEnabled = false
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Design intent:
-        // Keep the action area fixed at the top like a phone note editor so users can always
-        // reach ingest without scrolling long content to the bottom. The text area owns the
-        // scrolling, while the header stays stable when the IME opens or the document grows.
-        Column(
+        TxtEditorInlineHeader(
+            title = if (outputMode == TxtOutputMode.DAY) {
+                if (dayContentIsoDate != null) {
+                    stringResource(R.string.txt_label_day_content_with_date, dayContentIsoDate)
+                } else {
+                    stringResource(R.string.txt_label_day_content)
+                }
+            } else {
+                stringResource(R.string.txt_label_content)
+            },
+            subtitle = if (outputMode == TxtOutputMode.DAY) currentDayText else null,
+            meta = if (outputMode == TxtOutputMode.DAY) {
+                stringResource(R.string.record_txt_preview_day_marker, dayMarkerText)
+            } else {
+                null
+            },
+            canUndo = editorController.canUndo,
+            canRedo = editorController.canRedo,
+            onUndo = editorController::requestUndo,
+            onRedo = editorController::requestRedo,
+            hasUnsavedChanges = hasUnsavedChanges,
+            canIngest = canIngest,
+            onIngest = onIngest
+        )
+
+        NativeMultilineTextEditor(
+            value = value,
+            onValueChange = onEditorTextChange,
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(if (outputMode == TxtOutputMode.DAY) 0.96f else 0.92f)
-                .navigationBarsPadding()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            TxtEditorSheetHeader(
-                title = if (outputMode == TxtOutputMode.DAY) {
-                    if (dayContentIsoDate != null) {
-                        stringResource(R.string.txt_label_day_content_with_date, dayContentIsoDate)
-                    } else {
-                        stringResource(R.string.txt_label_day_content)
-                    }
-                } else {
-                    stringResource(R.string.txt_label_content)
-                },
-                subtitle = if (outputMode == TxtOutputMode.DAY) currentDayText else null,
-                meta = if (outputMode == TxtOutputMode.DAY) {
-                    stringResource(R.string.record_txt_preview_day_marker, dayMarkerText)
-                } else {
-                    null
-                },
-                canUndo = editorController.canUndo,
-                canRedo = editorController.canRedo,
-                onUndo = editorController::requestUndo,
-                onRedo = editorController::requestRedo,
-                hasUnsavedChanges = hasUnsavedChanges,
-                canIngest = canIngest,
-                onClose = onDismissRequest,
-                onIngest = {
-                    onIngest()
-                }
-            )
-
-            NativeMultilineTextEditor(
-                value = value,
-                onValueChange = onEditorTextChange,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                minLines = if (outputMode == TxtOutputMode.DAY) 18 else 12,
-                monospace = true,
-                controller = editorController,
-                readOnly = outputMode == TxtOutputMode.DAY && !canEditDay
-            )
-        }
+                .heightIn(min = 360.dp, max = 560.dp),
+            minLines = if (outputMode == TxtOutputMode.DAY) 18 else 12,
+            monospace = true,
+            controller = editorController,
+            readOnly = outputMode == TxtOutputMode.DAY && !canEditDay
+        )
     }
 }
 
 @Composable
-private fun TxtEditorSheetHeader(
+private fun TxtEditorInlineHeader(
     title: String,
     subtitle: String?,
     meta: String?,
@@ -142,7 +102,6 @@ private fun TxtEditorSheetHeader(
     onRedo: () -> Unit,
     hasUnsavedChanges: Boolean,
     canIngest: Boolean,
-    onClose: () -> Unit,
     onIngest: () -> Unit
 ) {
     Row(
@@ -215,23 +174,12 @@ private fun TxtEditorSheetHeader(
                     MaterialTheme.colorScheme.onSurfaceVariant
                 }
             )
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+            Button(
+                onClick = onIngest,
+                enabled = canIngest,
+                modifier = Modifier.widthIn(min = 88.dp)
             ) {
-                OutlinedButton(
-                    onClick = onClose,
-                    modifier = Modifier.widthIn(min = 88.dp)
-                ) {
-                    Text(stringResource(R.string.txt_action_close))
-                }
-                Button(
-                    onClick = onIngest,
-                    enabled = canIngest,
-                    modifier = Modifier.widthIn(min = 88.dp)
-                ) {
-                    Text(stringResource(R.string.txt_cd_ingest))
-                }
+                Text(stringResource(R.string.txt_cd_ingest))
             }
         }
     }

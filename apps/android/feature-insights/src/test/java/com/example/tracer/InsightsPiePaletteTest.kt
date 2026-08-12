@@ -87,4 +87,9 @@ class InsightsPiePaletteTest {
             assertEquals(10, insightsPiePaletteHexColors(preset).size)
         }
     }
+
+    @Test
+    fun insightsPiePalettePresets_listsVividFirst() {
+        assertEquals(InsightsPiePalettePreset.VIVID, InsightsPiePalettePreset.entries.first())
+    }
 }

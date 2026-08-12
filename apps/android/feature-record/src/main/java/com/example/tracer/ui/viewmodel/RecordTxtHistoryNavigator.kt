@@ -256,7 +256,7 @@ internal class RecordTxtHistoryNavigator(
 
         val resolvedStatus = when {
             inspectionEntry.canOpen && !statusPrefix.isNullOrBlank() -> statusPrefix
-            inspectionEntry.canOpen -> "open txt -> ${readResult.filePath}"
+            inspectionEntry.canOpen -> ""
             !statusPrefix.isNullOrBlank() -> "$statusPrefix Repair needed: ${inspectionEntry.message}"
             else -> "repair txt -> ${readResult.filePath}. ${inspectionEntry.message}"
         }

@@ -119,6 +119,7 @@ internal fun InsightsCompositionTreemapChart(
                     slice = node.slice,
                     fillColor = color,
                     roundRect = roundRect,
+                    showDuration = shouldShowTreemapDuration(node.index),
                     valueLabel = valueLabel
                 )
             }
@@ -139,11 +140,10 @@ internal fun computeTreemapRects(
     if (totalDuration <= 0f) {
         return emptyList()
     }
-    return sliceDiceTreemap(
+    return rankedTreemap(
         indexedSlices = indexedSlices,
         bounds = Rect(0f, 0f, widthPx, heightPx),
-        totalDuration = totalDuration,
-        vertical = widthPx >= heightPx
+        totalDuration = totalDuration
     )
 }
 
@@ -197,6 +197,111 @@ internal fun areTreemapNodesAdjacent(
 }
 
 private const val TREEMAP_ADJACENCY_EPSILON_PX = 0.5f
+private const val TREEMAP_DURATION_LABEL_COUNT = 4
+
+internal fun shouldShowTreemapDuration(rank: Int): Boolean =
+    rank in 0 until TREEMAP_DURATION_LABEL_COUNT
+
+private fun rankedTreemap(
+    indexedSlices: List<IndexedValue<InsightsCompositionSlice>>,
+    bounds: Rect,
+    totalDuration: Float
+): List<TreemapNodeRect> {
+    if (indexedSlices.size < 3) {
+        return sliceDiceTreemap(
+            indexedSlices = indexedSlices,
+            bounds = bounds,
+            totalDuration = totalDuration,
+            vertical = bounds.width >= bounds.height
+        )
+    }
+
+    val first = indexedSlices[0]
+    val second = indexedSlices[1]
+    val third = indexedSlices[2]
+    val tail = indexedSlices.drop(3)
+    val firstRatio = (first.value.durationSeconds.toFloat() / totalDuration).coerceIn(0f, 1f)
+    val remainingTotal = (totalDuration - first.value.durationSeconds.toFloat()).coerceAtLeast(0f)
+    if (remainingTotal <= 0f) {
+        return sliceDiceTreemap(
+            indexedSlices = indexedSlices,
+            bounds = bounds,
+            totalDuration = totalDuration,
+            vertical = bounds.width >= bounds.height
+        )
+    }
+
+    return if (bounds.width >= bounds.height) {
+        layoutLandscapeRankedTreemap(first, second, third, tail, bounds, firstRatio, remainingTotal)
+    } else {
+        layoutPortraitRankedTreemap(first, second, third, tail, bounds, firstRatio, remainingTotal)
+    }
+}
+
+private fun layoutLandscapeRankedTreemap(
+    first: IndexedValue<InsightsCompositionSlice>,
+    second: IndexedValue<InsightsCompositionSlice>,
+    third: IndexedValue<InsightsCompositionSlice>,
+    tail: List<IndexedValue<InsightsCompositionSlice>>,
+    bounds: Rect,
+    firstRatio: Float,
+    remainingTotal: Float
+): List<TreemapNodeRect> {
+    val firstRight = bounds.left + bounds.width * firstRatio
+    val remainder = Rect(firstRight, bounds.top, bounds.right, bounds.bottom)
+    val secondBottom = remainder.top + remainder.height *
+        (second.value.durationSeconds.toFloat() / remainingTotal).coerceIn(0f, 1f)
+    val thirdBottom = secondBottom + remainder.height *
+        (third.value.durationSeconds.toFloat() / remainingTotal).coerceIn(0f, 1f)
+    val secondBounds = Rect(remainder.left, remainder.top, remainder.right, secondBottom)
+    val thirdBounds = Rect(remainder.left, secondBottom, remainder.right, thirdBottom)
+    val tailBounds = Rect(remainder.left, thirdBottom, remainder.right, remainder.bottom)
+    return listOf(
+        TreemapNodeRect(first.index, first.value, Rect(bounds.left, bounds.top, firstRight, bounds.bottom)),
+        TreemapNodeRect(second.index, second.value, secondBounds),
+        TreemapNodeRect(third.index, third.value, thirdBounds)
+    ) + layoutTreemapTail(tail, tailBounds)
+}
+
+private fun layoutPortraitRankedTreemap(
+    first: IndexedValue<InsightsCompositionSlice>,
+    second: IndexedValue<InsightsCompositionSlice>,
+    third: IndexedValue<InsightsCompositionSlice>,
+    tail: List<IndexedValue<InsightsCompositionSlice>>,
+    bounds: Rect,
+    firstRatio: Float,
+    remainingTotal: Float
+): List<TreemapNodeRect> {
+    val firstBottom = bounds.top + bounds.height * firstRatio
+    val remainder = Rect(bounds.left, firstBottom, bounds.right, bounds.bottom)
+    val secondRight = remainder.left + remainder.width *
+        (second.value.durationSeconds.toFloat() / remainingTotal).coerceIn(0f, 1f)
+    val thirdRight = secondRight + remainder.width *
+        (third.value.durationSeconds.toFloat() / remainingTotal).coerceIn(0f, 1f)
+    val secondBounds = Rect(remainder.left, remainder.top, secondRight, remainder.bottom)
+    val thirdBounds = Rect(secondRight, remainder.top, thirdRight, remainder.bottom)
+    val tailBounds = Rect(thirdRight, remainder.top, remainder.right, remainder.bottom)
+    return listOf(
+        TreemapNodeRect(first.index, first.value, Rect(bounds.left, bounds.top, bounds.right, firstBottom)),
+        TreemapNodeRect(second.index, second.value, secondBounds),
+        TreemapNodeRect(third.index, third.value, thirdBounds)
+    ) + layoutTreemapTail(tail, tailBounds)
+}
+
+private fun layoutTreemapTail(
+    tail: List<IndexedValue<InsightsCompositionSlice>>,
+    bounds: Rect
+): List<TreemapNodeRect> {
+    if (tail.isEmpty()) {
+        return emptyList()
+    }
+    return sliceDiceTreemap(
+        indexedSlices = tail,
+        bounds = bounds,
+        totalDuration = tail.sumOf { it.value.durationSeconds }.toFloat(),
+        vertical = bounds.width >= bounds.height
+    )
+}
 
 private fun sliceDiceTreemap(
     indexedSlices: List<IndexedValue<InsightsCompositionSlice>>,
@@ -261,6 +366,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawTreemapLabel(
     slice: InsightsCompositionSlice,
     fillColor: Color,
     roundRect: RoundRect,
+    showDuration: Boolean,
     valueLabel: (Long) -> String
 ) {
     if (bounds.width < 88f || bounds.height < 44f) {
@@ -298,8 +404,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawTreemapLabel(
                 maxWidthPx = availableTextWidth
             )
             drawText(title, bounds.left + paddingX, titleY, labelPaint)
-            val canShowSubtitle = bounds.width >= 132f && bounds.height >= 82f
-            if (canShowSubtitle) {
+            if (showDuration) {
                 val subtitle = ellipsizeForWidth(
                     text = valueLabel(slice.durationSeconds),
                     paint = detailPaint,

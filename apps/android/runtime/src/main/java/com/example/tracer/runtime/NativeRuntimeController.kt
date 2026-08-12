@@ -303,6 +303,30 @@ class NativeRuntimeController(
         editedDayBody = editedDayBody
     )
 
+    override suspend fun resolveTxtDayEdit(
+        content: String,
+        dayMarker: String,
+        selectedMonth: String
+    ): TxtDayEditResolveResult = txtDayBlockService.resolveTxtDayEdit(
+        content = content,
+        dayMarker = dayMarker,
+        selectedMonth = selectedMonth
+    )
+
+    override suspend fun applyTxtDayEdit(
+        content: String,
+        dayMarker: String,
+        selectedMonth: String,
+        dayRemark: String,
+        events: List<TxtDayEditEvent>
+    ): TxtDayEditApplyResult = txtDayBlockService.applyTxtDayEdit(
+        content = content,
+        dayMarker = dayMarker,
+        selectedMonth = selectedMonth,
+        dayRemark = dayRemark,
+        events = events
+    )
+
     override suspend fun convertTxtActivityNames(
         content: String,
         direction: TxtActivityNameMappingDirection

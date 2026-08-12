@@ -3,12 +3,15 @@ package com.example.tracer
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -19,6 +22,7 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -60,6 +64,8 @@ fun DataManagementSection(
     cryptoOverallText: String,
     cryptoDetailsText: String,
     cryptoAdvancedDetailsText: String,
+    expanded: Boolean = true,
+    onToggleExpanded: () -> Unit = {},
     onClearTxt: () -> Unit,
     onClearDatabase: () -> Unit,
     onRebuildDatabase: () -> Unit,
@@ -80,12 +86,27 @@ fun DataManagementSection(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-                    Text(
-                        text = stringResource(R.string.data_title_data_management),
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.primary
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.data_title_data_management),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                IconButton(onClick = onToggleExpanded) {
+                    Icon(
+                        imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                        contentDescription = stringResource(
+                            if (expanded) R.string.data_cd_collapse_card else R.string.data_cd_expand_card
+                        )
                     )
-                    HorizontalDivider()
+                }
+            }
+            if (expanded) {
+                HorizontalDivider()
 
                     // Data ingestion
                     Text(
@@ -286,6 +307,7 @@ fun DataManagementSection(
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(stringResource(R.string.data_action_clear_all_app_data))
                     }
+            }
         }
     }
 
