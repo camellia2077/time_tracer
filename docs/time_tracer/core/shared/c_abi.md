@@ -231,6 +231,8 @@
      - `default_day_marker`
      - `resolve_day_block`
      - `replace_day_block`
+     - `resolve_day_edit`
+     - `apply_day_edit`
    - `convert_activity_names`
    - `replace_canonical_activity_names`
      - replaces exact canonical activity tokens for a configuration migration

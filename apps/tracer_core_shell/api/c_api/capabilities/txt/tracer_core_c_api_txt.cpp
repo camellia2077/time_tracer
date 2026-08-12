@@ -90,6 +90,34 @@ auto BuildTxtSuccessResponse(Builder&& builder) -> const char* {
   return values;
 }
 
+[[nodiscard]] auto RequireTxtDayEditEvents(const json& payload)
+    -> std::vector<tracer_core::core::dto::TxtDayEditEvent> {
+  const auto it = payload.find("events");
+  if (it == payload.end() || !it->is_array()) {
+    throw std::invalid_argument("field `events` must be an array.");
+  }
+
+  std::vector<tracer_core::core::dto::TxtDayEditEvent> events;
+  events.reserve(it->size());
+  for (const auto& value : *it) {
+    if (!value.is_object()) {
+      throw std::invalid_argument("each `events` item must be an object.");
+    }
+    const auto interval_it = value.find("is_interval");
+    if (interval_it == value.end() || !interval_it->is_boolean()) {
+      throw std::invalid_argument("each `events.is_interval` must be a boolean.");
+    }
+    events.push_back({
+        .is_interval = interval_it->get<bool>(),
+        .start_time = ReadOptionalStringField(value, "start_time"),
+        .end_time = RequireStringField(value, "end_time"),
+        .activity_token = RequireStringField(value, "activity_token"),
+        .remark = ReadOptionalStringField(value, "remark"),
+    });
+  }
+  return events;
+}
+
 }  // namespace
 
 extern "C" TT_CORE_API auto tracer_core_runtime_config_json(
@@ -172,6 +200,60 @@ extern "C" TT_CORE_API auto tracer_core_runtime_config_json(
           {.content = RequireStringField(payload, "content"),
            .day_marker = RequireStringField(payload, "day_marker"),
            .edited_day_body = RequireStringField(payload, "edited_day_body")});
+      if (!response.ok) {
+        return BuildFailureResponse(response.error_message);
+      }
+      return BuildTxtSuccessResponse([&]() -> json {
+        return json{{"normalized_day_marker", response.normalized_day_marker},
+                    {"found", response.found},
+                    {"is_marker_valid", response.is_marker_valid},
+                    {"updated_content", response.updated_content}};
+      });
+    }
+
+    if (action == "resolve_day_edit") {
+      const auto response = runtime.pipeline().RunResolveTxtDayEdit(
+          {.content = RequireStringField(payload, "content"),
+           .day_marker = RequireStringField(payload, "day_marker"),
+           .selected_month = ReadOptionalStringField(payload, "selected_month")});
+      if (!response.ok) {
+        return BuildFailureResponse(response.error_message);
+      }
+      return BuildTxtSuccessResponse([&]() -> json {
+        json events = json::array();
+        for (const auto& event : response.events) {
+          events.push_back({{"is_interval", event.is_interval},
+                            {"start_time", event.start_time},
+                            {"end_time", event.end_time},
+                            {"activity_token", event.activity_token},
+                            {"remark", event.remark},
+                            {"start_timeline_seconds", event.start_timeline_seconds},
+                            {"end_timeline_seconds", event.end_timeline_seconds},
+                            {"previous_end_timeline_seconds",
+                             event.previous_end_timeline_seconds},
+                            {"next_start_timeline_seconds",
+                             event.next_start_timeline_seconds}});
+        }
+        json result = {{"normalized_day_marker", response.normalized_day_marker},
+                       {"found", response.found},
+                       {"is_marker_valid", response.is_marker_valid},
+                       {"can_save", response.can_save},
+                       {"day_remark", response.day_remark},
+                       {"events", std::move(events)}};
+        if (response.day_content_iso_date.has_value()) {
+          result["day_content_iso_date"] = *response.day_content_iso_date;
+        }
+        return result;
+      });
+    }
+
+    if (action == "apply_day_edit") {
+      const auto response = runtime.pipeline().RunApplyTxtDayEdit(
+          {.content = RequireStringField(payload, "content"),
+           .day_marker = RequireStringField(payload, "day_marker"),
+           .selected_month = ReadOptionalStringField(payload, "selected_month"),
+           .day_remark = ReadOptionalStringField(payload, "day_remark"),
+           .events = RequireTxtDayEditEvents(payload)});
       if (!response.ok) {
         return BuildFailureResponse(response.error_message);
       }
@@ -334,7 +416,7 @@ extern "C" TT_CORE_API auto tracer_core_runtime_config_json(
     return BuildFailureResponse(
         "Unsupported runtime config action: " + action,
         "runtime.invalid_request", "runtime",
-        {"Use action=read_quick_access|write_quick_access|default_day_marker|resolve_day_block|replace_day_block|convert_activity_names|replace_canonical_activity_names|replace_alias_activity_names|apply_activity_hierarchy_operation|move_activity_hierarchy_leaf_between_documents|move_activity_hierarchy_node_between_documents|rewrite_activity_hierarchy_document|describe_activity_hierarchy|validate_activity_hierarchy_documents|render_activity_hierarchy_text."});
+        {"Use action=read_quick_access|write_quick_access|default_day_marker|resolve_day_block|replace_day_block|resolve_day_edit|apply_day_edit|convert_activity_names|replace_canonical_activity_names|replace_alias_activity_names|apply_activity_hierarchy_operation|move_activity_hierarchy_leaf_between_documents|move_activity_hierarchy_node_between_documents|rewrite_activity_hierarchy_document|describe_activity_hierarchy|validate_activity_hierarchy_documents|render_activity_hierarchy_text."});
   } catch (const std::exception& error) {
     return BuildFailureResponse(error.what());
   } catch (...) {

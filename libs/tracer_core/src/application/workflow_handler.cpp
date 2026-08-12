@@ -94,6 +94,18 @@ auto WorkflowHandler::RunReplaceTxtDayBlock(
   return impl_.RunReplaceTxtDayBlock(request);
 }
 
+auto WorkflowHandler::RunResolveTxtDayEdit(
+    const tracer_core::core::dto::ResolveTxtDayEditRequest& request)
+    -> tracer_core::core::dto::ResolveTxtDayEditResponse {
+  return impl_.RunResolveTxtDayEdit(request);
+}
+
+auto WorkflowHandler::RunApplyTxtDayEdit(
+    const tracer_core::core::dto::ApplyTxtDayEditRequest& request)
+    -> tracer_core::core::dto::ApplyTxtDayEditResponse {
+  return impl_.RunApplyTxtDayEdit(request);
+}
+
 auto WorkflowHandler::RunUpdateActivityRemarkAtomically(
     const tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest&
         request)

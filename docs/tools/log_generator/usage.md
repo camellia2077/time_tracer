@@ -103,8 +103,8 @@ log_generator.exe [options]
   - `mixed` 会保持 wake 为 point event，并让非 wake 活动按固定 50/50
     概率输出为 point 或 interval
 - `--time-format <HHMM|HHMMSS>`
-  - 控制事件行的时间精度，默认是兼容旧 TXT 的 `HHMM`
-  - 选择 `HHMMSS` 时，生成器会输出六位时间；当前生成的秒固定为 `00`
+  - 控制事件行的时间精度，默认是当前 Core 与 Android 兼容格式 `HHMMSS`
+  - 选择 `HHMM` 时，生成器会输出四位时间；选择 `HHMMSS` 时，秒固定为 `00`
 - `-n, --nosleep`
   - 启用“通宵日”生成
 - `--monthly-average`
@@ -158,8 +158,8 @@ y2025
 m01
 
 d0101
-0606w
-1353睡觉 // 备注第一行
+060600w
+135300睡觉 // 备注第一行
 // 备注第二行
 ```
 
@@ -189,8 +189,8 @@ d0101
 - 非 wake 活动共享同一套时间边界
 - 每个非 wake 活动独立按 50/50 概率输出为 point 或 interval
 
-时间格式可单独选择。默认的 `HHMM` 保持上面的兼容输出；指定
-`--time-format HHMMSS` 后，同一内容会写成：
+时间格式可单独选择。默认的 `HHMMSS` 输出如下；指定
+`--time-format HHMM` 后，可以生成四位时间的兼容样本：
 
 ```text
 d0101

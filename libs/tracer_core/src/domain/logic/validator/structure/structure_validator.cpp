@@ -284,15 +284,22 @@ void ValidateWakeKeywordPosition(
   }
 }
 
-void ValidateMixedTimeline(const DailyLog& day,
-                           const std::unordered_set<std::string>& wake_keywords,
-                           std::vector<Diagnostic>& diagnostics) {
+}  // namespace
+
+auto AnalyzeMixedTimeline(
+    const DailyLog& day,
+    const std::unordered_set<std::string>& wake_keywords)
+    -> MixedTimelineAnalysis {
+  MixedTimelineAnalysis analysis;
+  analysis.event_bounds.resize(day.rawEvents.size());
   std::optional<int> last_known_boundary_minutes;
   if (ShouldSeedTimelineFromDayBoundary(day)) {
     last_known_boundary_minutes = ParseFlexibleHhmmss(day.getupTime);
   }
 
-  for (const auto& raw_event : day.rawEvents) {
+  for (std::size_t index = 0; index < day.rawEvents.size(); ++index) {
+    const auto& raw_event = day.rawEvents[index];
+    auto& bounds = analysis.event_bounds[index];
     const bool kIsWake = wake_keywords.contains(raw_event.description) &&
                          raw_event.kind == RawEventKind::Point;
     if (kIsWake) {
@@ -310,23 +317,16 @@ void ValidateMixedTimeline(const DailyLog& day,
 
     if (raw_event.kind == RawEventKind::Interval) {
       if (!raw_event.startTimeStr.has_value()) {
-        diagnostics.push_back(
-            {.severity = DiagnosticSeverity::kError,
-             .code = "timeline.interval.missing_start",
-             .message = "In file for date " + day.date +
-                        ": Interval event is missing an explicit start time.",
-             .source_span = raw_event.source_span});
+        analysis.issues.push_back(
+            {.event_index = index,
+             .code = MixedTimelineIssueCode::kMissingIntervalStart});
         continue;
       }
 
       if (wake_keywords.contains(raw_event.description)) {
-        diagnostics.push_back(
-            {.severity = DiagnosticSeverity::kError,
-             .code = "wake.keyword.interval_not_allowed",
-             .message = "In file for date " + day.date +
-                        ": Wake keyword activity '" + raw_event.description +
-                        "' cannot be authored as an interval event.",
-             .source_span = raw_event.source_span});
+        analysis.issues.push_back(
+            {.event_index = index,
+             .code = MixedTimelineIssueCode::kWakeIntervalNotAllowed});
       }
 
       const std::optional<int> kStartMinutes =
@@ -336,27 +336,20 @@ void ValidateMixedTimeline(const DailyLog& day,
       }
 
       if (*kStartMinutes == *kEndMinutes) {
-        diagnostics.push_back(
-            {.severity = DiagnosticSeverity::kError,
-             .code = "timeline.interval.invalid_range",
-             .message = "In file for date " + day.date +
-                        ": Interval event must not have zero duration.",
-             .source_span = raw_event.source_span});
+        analysis.issues.push_back(
+            {.event_index = index,
+             .code = MixedTimelineIssueCode::kInvalidIntervalRange});
         continue;
       }
 
       int expanded_start_minutes = *kStartMinutes;
+      bounds.previous_end_timeline_seconds = last_known_boundary_minutes;
       if (last_known_boundary_minutes.has_value()) {
         const std::optional<int> kExpandedStart = ExpandRelativeToBoundary(
             *kStartMinutes, *last_known_boundary_minutes, true);
         if (!kExpandedStart.has_value()) {
-          diagnostics.push_back(
-              {.severity = DiagnosticSeverity::kError,
-               .code = "timeline.event.overlap",
-               .message =
-                   "In file for date " + day.date +
-                   ": Interval event overlaps an earlier recorded boundary.",
-               .source_span = raw_event.source_span});
+          analysis.issues.push_back(
+              {.event_index = index, .code = MixedTimelineIssueCode::kOverlap});
           continue;
         }
         expanded_start_minutes = *kExpandedStart;
@@ -365,35 +358,85 @@ void ValidateMixedTimeline(const DailyLog& day,
       const std::optional<int> kExpandedEnd = ExpandIntervalEndRelativeToStart(
           *kEndMinutes, expanded_start_minutes);
       if (!kExpandedEnd.has_value()) {
-        diagnostics.push_back(
-            {.severity = DiagnosticSeverity::kError,
-             .code = "timeline.interval.invalid_range",
-             .message = "In file for date " + day.date +
-                        ": Interval event must not have zero duration.",
-             .source_span = raw_event.source_span});
+        analysis.issues.push_back(
+            {.event_index = index,
+             .code = MixedTimelineIssueCode::kInvalidIntervalRange});
         continue;
       }
+      bounds.participates_in_timeline = true;
+      bounds.start_timeline_seconds = expanded_start_minutes;
+      bounds.end_timeline_seconds = *kExpandedEnd;
       last_known_boundary_minutes = kExpandedEnd;
       continue;
     }
 
     int expanded_end_minutes = *kEndMinutes;
+    bounds.previous_end_timeline_seconds = last_known_boundary_minutes;
     if (last_known_boundary_minutes.has_value()) {
       const std::optional<int> kExpandedEnd = ExpandRelativeToBoundary(
           *kEndMinutes, *last_known_boundary_minutes, false);
       if (!kExpandedEnd.has_value()) {
-        diagnostics.push_back(
-            {.severity = DiagnosticSeverity::kError,
-             .code = "timeline.event.overlap",
-             .message = "In file for date " + day.date +
-                        ": Point event must end after the last known boundary.",
-             .source_span = raw_event.source_span});
+        analysis.issues.push_back(
+            {.event_index = index, .code = MixedTimelineIssueCode::kOverlap});
         continue;
       }
       expanded_end_minutes = *kExpandedEnd;
     }
 
+    bounds.participates_in_timeline = true;
+    bounds.start_timeline_seconds = expanded_end_minutes;
+    bounds.end_timeline_seconds = expanded_end_minutes;
     last_known_boundary_minutes = expanded_end_minutes;
+  }
+
+  std::optional<int> next_start;
+  for (std::size_t index = analysis.event_bounds.size(); index-- > 0;) {
+    auto& bounds = analysis.event_bounds[index];
+    if (!bounds.participates_in_timeline) {
+      continue;
+    }
+    bounds.next_start_timeline_seconds = next_start;
+    next_start = bounds.start_timeline_seconds;
+  }
+  return analysis;
+}
+
+namespace {
+
+void ValidateMixedTimeline(const DailyLog& day,
+                           const std::unordered_set<std::string>& wake_keywords,
+                           std::vector<Diagnostic>& diagnostics) {
+  const auto analysis = AnalyzeMixedTimeline(day, wake_keywords);
+  for (const auto& issue : analysis.issues) {
+    const auto& event = day.rawEvents[issue.event_index];
+    std::string code;
+    std::string message;
+    switch (issue.code) {
+      case MixedTimelineIssueCode::kMissingIntervalStart:
+        code = "timeline.interval.missing_start";
+        message = "Interval event is missing an explicit start time.";
+        break;
+      case MixedTimelineIssueCode::kInvalidIntervalRange:
+        code = "timeline.interval.invalid_range";
+        message = "Interval event must not have zero duration.";
+        break;
+      case MixedTimelineIssueCode::kOverlap:
+        code = "timeline.event.overlap";
+        message = event.kind == RawEventKind::Interval
+                      ? "Interval event overlaps an earlier recorded boundary."
+                      : "Point event must end after the last known boundary.";
+        break;
+      case MixedTimelineIssueCode::kWakeIntervalNotAllowed:
+        code = "wake.keyword.interval_not_allowed";
+        message = "Wake keyword activity '" + event.description +
+                  "' cannot be authored as an interval event.";
+        break;
+    }
+    diagnostics.push_back(
+        {.severity = DiagnosticSeverity::kError,
+         .code = std::move(code),
+         .message = "In file for date " + day.date + ": " + message,
+         .source_span = event.source_span});
   }
 }
 

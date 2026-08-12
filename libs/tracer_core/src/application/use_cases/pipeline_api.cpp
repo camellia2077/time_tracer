@@ -27,8 +27,12 @@ using tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest;
 using tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse;
 using tracer_core::core::dto::ReplaceTxtDayBlockRequest;
 using tracer_core::core::dto::ReplaceTxtDayBlockResponse;
+using tracer_core::core::dto::ResolveTxtDayEditRequest;
+using tracer_core::core::dto::ResolveTxtDayEditResponse;
 using tracer_core::core::dto::ResolveTxtDayBlockRequest;
 using tracer_core::core::dto::ResolveTxtDayBlockResponse;
+using tracer_core::core::dto::ApplyTxtDayEditRequest;
+using tracer_core::core::dto::ApplyTxtDayEditResponse;
 using tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest;
 using tracer_core::core::dto::UpdateActivityRemarkAtomicallyResponse;
 using tracer_core::core::dto::UpdateDayRemarkAtomicallyRequest;
@@ -228,6 +232,58 @@ auto PipelineApi::RunReplaceTxtDayBlock(
             .updated_content = request.content,
             .error_message = core_api_failure::BuildErrorMessage(
                 "RunReplaceTxtDayBlock", "Unknown error.")};
+  }
+}
+
+auto PipelineApi::RunResolveTxtDayEdit(
+    const ResolveTxtDayEditRequest& request) -> ResolveTxtDayEditResponse {
+  try {
+    return pipeline_workflow_.RunResolveTxtDayEdit(request);
+  } catch (const std::exception& exception) {
+    return {.ok = false,
+            .normalized_day_marker = "",
+            .found = false,
+            .is_marker_valid = false,
+            .can_save = false,
+            .day_remark = "",
+            .events = {},
+            .day_content_iso_date = std::nullopt,
+            .error_message = core_api_failure::BuildErrorMessage(
+                "RunResolveTxtDayEdit", exception.what())};
+  } catch (...) {
+    return {.ok = false,
+            .normalized_day_marker = "",
+            .found = false,
+            .is_marker_valid = false,
+            .can_save = false,
+            .day_remark = "",
+            .events = {},
+            .day_content_iso_date = std::nullopt,
+            .error_message = core_api_failure::BuildErrorMessage(
+                "RunResolveTxtDayEdit", "Unknown error.")};
+  }
+}
+
+auto PipelineApi::RunApplyTxtDayEdit(
+    const ApplyTxtDayEditRequest& request) -> ApplyTxtDayEditResponse {
+  try {
+    return pipeline_workflow_.RunApplyTxtDayEdit(request);
+  } catch (const std::exception& exception) {
+    return {.ok = false,
+            .normalized_day_marker = "",
+            .found = false,
+            .is_marker_valid = false,
+            .updated_content = request.content,
+            .error_message = core_api_failure::BuildErrorMessage(
+                "RunApplyTxtDayEdit", exception.what())};
+  } catch (...) {
+    return {.ok = false,
+            .normalized_day_marker = "",
+            .found = false,
+            .is_marker_valid = false,
+            .updated_content = request.content,
+            .error_message = core_api_failure::BuildErrorMessage(
+                "RunApplyTxtDayEdit", "Unknown error.")};
   }
 }
 

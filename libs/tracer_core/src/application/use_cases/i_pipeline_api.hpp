@@ -57,6 +57,12 @@ class IPipelineApi {
   virtual auto RunReplaceTxtDayBlock(
       const tracer_core::core::dto::ReplaceTxtDayBlockRequest& request)
       -> tracer_core::core::dto::ReplaceTxtDayBlockResponse = 0;
+  virtual auto RunResolveTxtDayEdit(
+      const tracer_core::core::dto::ResolveTxtDayEditRequest& request)
+      -> tracer_core::core::dto::ResolveTxtDayEditResponse = 0;
+  virtual auto RunApplyTxtDayEdit(
+      const tracer_core::core::dto::ApplyTxtDayEditRequest& request)
+      -> tracer_core::core::dto::ApplyTxtDayEditResponse = 0;
 
   virtual auto RunConvertTxtActivityNames(
       const tracer_core::core::dto::ConvertTxtActivityNamesRequest& request)

@@ -11,7 +11,9 @@
 namespace tracer_core::application::tests {
 
 using tracer::core::application::pipeline::txt_day_block::DefaultDayMarker;
+using tracer::core::application::pipeline::txt_day_block::ApplyDayEdit;
 using tracer::core::application::pipeline::txt_day_block::ReplaceDayBlock;
+using tracer::core::application::pipeline::txt_day_block::ResolveDayEdit;
 using tracer::core::application::pipeline::txt_day_block::ResolveDayBlock;
 
 namespace {
@@ -135,6 +137,92 @@ auto TestTxtDayBlockSemantics(TestState& state) -> void {
   Expect(state, fallback_marker.normalized_day_marker == "0131",
          "DefaultDayMarker should fall back to target_date_iso month/day when "
          "selected month is invalid.");
+}
+
+auto TestTxtDayEditNormalization(TestState& state) -> void {
+  const std::string source =
+      "y2025\n"
+      "m01\n"
+      "\n"
+      "d0102\n"
+      "// day note\n"
+      "0904study_math // first note\n"
+      "// second note\n"
+      "1000-1100exercise_cardio_running\n";
+  const ConverterConfig config;
+  const auto resolved = ResolveDayEdit({
+      .content = source,
+      .day_marker = "0102",
+      .selected_month = "2025-01",
+  }, config);
+  Expect(state, resolved.ok && resolved.found && resolved.can_save,
+         "ResolveDayEdit should expose an editable valid day.");
+  Expect(state, resolved.day_remark == "day note",
+         "ResolveDayEdit should keep the day remark separate from events.");
+  Expect(state, resolved.events.size() == 2,
+         "ResolveDayEdit should expose point and interval events.");
+  Expect(state, !resolved.events[0].is_interval &&
+                    resolved.events[0].end_time == "090400" &&
+                    resolved.events[0].remark == "first note\nsecond note",
+         "ResolveDayEdit should normalize point times and preserve event remarks.");
+  Expect(state, resolved.events[1].is_interval &&
+                    resolved.events[1].start_time == "100000" &&
+                    resolved.events[1].end_time == "110000",
+         "ResolveDayEdit should normalize interval endpoints.");
+  Expect(state,
+         resolved.events[0].start_timeline_seconds == std::optional<int>(
+             (9 * 60 + 4) * 60) &&
+             resolved.events[0].next_start_timeline_seconds ==
+                 std::optional<int>(10 * 60 * 60) &&
+             resolved.events[1].previous_end_timeline_seconds ==
+                 std::optional<int>((9 * 60 + 4) * 60),
+         "ResolveDayEdit should expose Core-owned adjacent event boundaries.");
+
+  auto edited_events = resolved.events;
+  edited_events[0].end_time = "093015";
+  edited_events[0].activity_token = "study_math_probability";
+  const auto applied = ApplyDayEdit({
+      .content = source,
+      .day_marker = "0102",
+      .selected_month = "2025-01",
+      .day_remark = resolved.day_remark,
+      .events = std::move(edited_events),
+  }, config);
+  Expect(state, applied.ok,
+         "ApplyDayEdit should accept Core-normalized day event edits.");
+  Expect(state,
+         Contains(applied.updated_content,
+                  "d0102\n// day note\n093015study_math_probability // first note\n// second note\n100000-110000exercise_cardio_running\n"),
+         "ApplyDayEdit should normalize the full day body while preserving remarks.");
+
+  auto invalid_events = resolved.events;
+  invalid_events[1].start_time = "090300";
+  const auto rejected = ApplyDayEdit({
+      .content = source,
+      .day_marker = "0102",
+      .selected_month = "2025-01",
+      .day_remark = resolved.day_remark,
+      .events = std::move(invalid_events),
+  }, config);
+  Expect(state, !rejected.ok && Contains(rejected.error_message, "event 2"),
+         "ApplyDayEdit should reject a timeline overlap before returning TXT.");
+
+  const auto overnight = ResolveDayEdit({
+      .content = "y2025\n"
+                 "m01\n"
+                 "\n"
+                 "d0103\n"
+                 "235500study_math\n"
+                 "000000-010000exercise_cardio_running\n",
+      .day_marker = "0103",
+      .selected_month = "2025-01",
+  }, config);
+  Expect(state, overnight.ok && overnight.events.size() == 2 &&
+                    overnight.events[1].start_timeline_seconds ==
+                        std::optional<int>(24 * 60 * 60) &&
+                    overnight.events[1].end_timeline_seconds ==
+                        std::optional<int>(25 * 60 * 60),
+         "ResolveDayEdit should expose expanded, monotonic bounds after midnight.");
 }
 
 auto TestTxtDayBlockFixtureFiles(TestState& state) -> void {
@@ -284,6 +372,7 @@ auto TestTxtDayBlockPipelineApiForwarding(TestState& state) -> void {
 
 auto RunTxtDayBlockTests(TestState& state) -> void {
   TestTxtDayBlockSemantics(state);
+  TestTxtDayEditNormalization(state);
   TestTxtDayBlockFixtureFiles(state);
   TestTxtDayBlockPipelineApiForwarding(state);
 }

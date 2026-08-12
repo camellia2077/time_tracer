@@ -113,6 +113,29 @@ class SmokePipelineWorkflow final
             .updated_content = "updated-content\n",
             .error_message = ""};
   }
+  auto RunResolveTxtDayEdit(
+      const tracer_core::core::dto::ResolveTxtDayEditRequest&)
+      -> tracer_core::core::dto::ResolveTxtDayEditResponse override {
+    return {.ok = true,
+            .normalized_day_marker = "0102",
+            .found = true,
+            .is_marker_valid = true,
+            .can_save = true,
+            .day_remark = "",
+            .events = {},
+            .day_content_iso_date = std::string("2026-03-29"),
+            .error_message = ""};
+  }
+  auto RunApplyTxtDayEdit(
+      const tracer_core::core::dto::ApplyTxtDayEditRequest& request)
+      -> tracer_core::core::dto::ApplyTxtDayEditResponse override {
+    return {.ok = true,
+            .normalized_day_marker = "0102",
+            .found = true,
+            .is_marker_valid = true,
+            .updated_content = request.content,
+            .error_message = ""};
+  }
   auto RunConvertTxtActivityNames(
       const tracer_core::core::dto::ConvertTxtActivityNamesRequest& request)
       -> tracer_core::core::dto::ConvertTxtActivityNamesResponse override {

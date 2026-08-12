@@ -141,6 +141,28 @@ auto FakePipelineWorkflow::RunReplaceTxtDayBlock(
   return replace_txt_day_block_response;
 }
 
+auto FakePipelineWorkflow::RunResolveTxtDayEdit(
+    const tracer_core::core::dto::ResolveTxtDayEditRequest& request)
+    -> tracer_core::core::dto::ResolveTxtDayEditResponse {
+  ++resolve_txt_day_edit_call_count;
+  last_resolve_txt_day_edit_request = request;
+  if (fail_resolve_txt_day_edit) {
+    throw std::runtime_error("resolve txt day edit failed");
+  }
+  return resolve_txt_day_edit_response;
+}
+
+auto FakePipelineWorkflow::RunApplyTxtDayEdit(
+    const tracer_core::core::dto::ApplyTxtDayEditRequest& request)
+    -> tracer_core::core::dto::ApplyTxtDayEditResponse {
+  ++apply_txt_day_edit_call_count;
+  last_apply_txt_day_edit_request = request;
+  if (fail_apply_txt_day_edit) {
+    throw std::runtime_error("apply txt day edit failed");
+  }
+  return apply_txt_day_edit_response;
+}
+
 auto FakePipelineWorkflow::RunUpdateActivityRemarkAtomically(
     const tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest&
         request)

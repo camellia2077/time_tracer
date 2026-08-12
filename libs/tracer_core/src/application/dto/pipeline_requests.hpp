@@ -1,6 +1,7 @@
 #ifndef APPLICATION_DTO_PIPELINE_REQUESTS_HPP_
 #define APPLICATION_DTO_PIPELINE_REQUESTS_HPP_
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -62,6 +63,32 @@ struct ReplaceTxtDayBlockRequest {
   std::string content;
   std::string day_marker;
   std::string edited_day_body;
+};
+
+struct TxtDayEditEvent {
+  bool is_interval = false;
+  std::string start_time;
+  std::string end_time;
+  std::string activity_token;
+  std::string remark;
+  std::optional<int> start_timeline_seconds;
+  std::optional<int> end_timeline_seconds;
+  std::optional<int> previous_end_timeline_seconds;
+  std::optional<int> next_start_timeline_seconds;
+};
+
+struct ResolveTxtDayEditRequest {
+  std::string content;
+  std::string day_marker;
+  std::string selected_month;
+};
+
+struct ApplyTxtDayEditRequest {
+  std::string content;
+  std::string day_marker;
+  std::string selected_month;
+  std::string day_remark;
+  std::vector<TxtDayEditEvent> events;
 };
 
 // Identifies one persisted activity record. Only its remark is mutable; the

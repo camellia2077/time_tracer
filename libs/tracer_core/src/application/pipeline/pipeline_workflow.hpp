@@ -90,6 +90,12 @@ class PipelineWorkflow final : public IPipelineWorkflow {
   auto RunReplaceTxtDayBlock(
       const tracer_core::core::dto::ReplaceTxtDayBlockRequest& request)
       -> tracer_core::core::dto::ReplaceTxtDayBlockResponse override;
+  auto RunResolveTxtDayEdit(
+      const tracer_core::core::dto::ResolveTxtDayEditRequest& request)
+      -> tracer_core::core::dto::ResolveTxtDayEditResponse override;
+  auto RunApplyTxtDayEdit(
+      const tracer_core::core::dto::ApplyTxtDayEditRequest& request)
+      -> tracer_core::core::dto::ApplyTxtDayEditResponse override;
   auto RunConvertTxtActivityNames(
       const tracer_core::core::dto::ConvertTxtActivityNamesRequest& request)
       -> tracer_core::core::dto::ConvertTxtActivityNamesResponse override;

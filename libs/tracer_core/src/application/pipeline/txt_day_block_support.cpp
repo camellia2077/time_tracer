@@ -5,11 +5,16 @@
 #include <format>
 #include <optional>
 #include <ranges>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <unordered_set>
 #include <vector>
 
+#include "application/parser/text_parser.hpp"
+#include "domain/logic/validator/structure/structure_validator.hpp"
+#include "domain/model/daily_log.hpp"
 #include "shared/utils/canonical_text.hpp"
 #include "shared/utils/string_utils.hpp"
 
@@ -23,8 +28,13 @@ using tracer_core::core::dto::DefaultTxtDayMarkerRequest;
 using tracer_core::core::dto::DefaultTxtDayMarkerResponse;
 using tracer_core::core::dto::ReplaceTxtDayBlockRequest;
 using tracer_core::core::dto::ReplaceTxtDayBlockResponse;
+using tracer_core::core::dto::ResolveTxtDayEditRequest;
+using tracer_core::core::dto::ResolveTxtDayEditResponse;
 using tracer_core::core::dto::ResolveTxtDayBlockRequest;
 using tracer_core::core::dto::ResolveTxtDayBlockResponse;
+using tracer_core::core::dto::ApplyTxtDayEditRequest;
+using tracer_core::core::dto::ApplyTxtDayEditResponse;
+using tracer_core::core::dto::TxtDayEditEvent;
 
 struct ParsedIsoDate {
   int year = 0;
@@ -254,6 +264,134 @@ struct ParsedYearMonth {
   return std::format("{:04d}-{:02d}-{:02d}", kParsedMonth->year, kMarkerMonth,
                      kMarkerDay);
 }
+
+[[nodiscard]] auto ParseDayForEdit(std::string_view day_body,
+                                   std::string_view normalized_day_marker,
+                                   std::string_view selected_month,
+                                   const ConverterConfig& config) -> DailyLog {
+  const auto parsed_month = TryParseSelectedMonth(selected_month);
+  const auto iso_date =
+      BuildDayContentIsoDate(selected_month, normalized_day_marker);
+  if (!parsed_month.has_value() || !iso_date.has_value()) {
+    throw std::invalid_argument(
+        "selected_month and day_marker must identify a valid calendar day.");
+  }
+
+  std::ostringstream source;
+  source << "y" << std::format("{:04d}", parsed_month->year) << "\n";
+  source << "m" << std::format("{:02d}", parsed_month->month) << "\n\n";
+  source << BuildDayMarkerLine(normalized_day_marker) << "\n";
+  source << day_body;
+  if (!day_body.empty() && day_body.back() != '\n') {
+    source << "\n";
+  }
+
+  DailyLog parsed_day;
+  bool parsed = false;
+  std::istringstream input(source.str());
+  TextParser parser(config);
+  parser.Parse(
+      input,
+      [&](DailyLog& day) {
+        parsed_day = day;
+        parsed = true;
+      },
+      "txt_day_edit");
+  if (!parsed) {
+    throw std::invalid_argument("day editor content did not produce a day.");
+  }
+  return parsed_day;
+}
+
+[[nodiscard]] auto ToDayEditEvents(
+    const DailyLog& day,
+    const validator::structure::MixedTimelineAnalysis& timeline)
+    -> std::vector<TxtDayEditEvent> {
+  std::vector<TxtDayEditEvent> events;
+  events.reserve(day.rawEvents.size());
+  for (std::size_t index = 0; index < day.rawEvents.size(); ++index) {
+    const auto& event = day.rawEvents[index];
+    const auto& bounds = timeline.event_bounds[index];
+    events.push_back({
+        .is_interval = event.kind == RawEventKind::Interval,
+        .start_time = event.startTimeStr.value_or(""),
+        .end_time = event.endTimeStr,
+        .activity_token = event.description,
+        .remark = event.remark,
+        .start_timeline_seconds = bounds.start_timeline_seconds,
+        .end_timeline_seconds = bounds.end_timeline_seconds,
+        .previous_end_timeline_seconds = bounds.previous_end_timeline_seconds,
+        .next_start_timeline_seconds = bounds.next_start_timeline_seconds,
+    });
+  }
+  return events;
+}
+
+[[nodiscard]] auto BuildTimelineEditError(
+    const validator::structure::MixedTimelineAnalysis& analysis) -> std::string {
+  if (analysis.issues.empty()) {
+    return "";
+  }
+  const auto& issue = analysis.issues.front();
+  std::string reason;
+  switch (issue.code) {
+    case validator::structure::MixedTimelineIssueCode::kMissingIntervalStart:
+      reason = "interval start time is missing";
+      break;
+    case validator::structure::MixedTimelineIssueCode::kInvalidIntervalRange:
+      reason = "interval duration must be positive";
+      break;
+    case validator::structure::MixedTimelineIssueCode::kOverlap:
+      reason = "time overlaps an adjacent activity";
+      break;
+    case validator::structure::MixedTimelineIssueCode::kWakeIntervalNotAllowed:
+      reason = "wake activity cannot be an interval";
+      break;
+  }
+  return "Day edit event " + std::to_string(issue.event_index + 1U) +
+         " is invalid: " + reason + ".";
+}
+
+auto AppendRemarkLines(std::string& output, std::string_view remark,
+                       const bool first_inline) -> void {
+  const auto lines = SplitLines(remark);
+  bool first = true;
+  for (const auto& line : lines) {
+    const std::string trimmed = Trim(line);
+    if (trimmed.empty()) {
+      continue;
+    }
+    if (first && first_inline) {
+      output += " // ";
+      output += trimmed;
+      output.push_back('\n');
+    } else {
+      output += "// ";
+      output += trimmed;
+      output.push_back('\n');
+    }
+    first = false;
+  }
+  if (first_inline && first) {
+    output.push_back('\n');
+  }
+}
+
+[[nodiscard]] auto RenderEditedDayBody(const ApplyTxtDayEditRequest& request)
+    -> std::string {
+  std::string body;
+  AppendRemarkLines(body, request.day_remark, false);
+  for (const auto& event : request.events) {
+    if (event.is_interval) {
+      body += event.start_time;
+      body.push_back('-');
+    }
+    body += event.end_time;
+    body += event.activity_token;
+    AppendRemarkLines(body, event.remark, true);
+  }
+  return body;
+}
 // NOLINTEND(bugprone-easily-swappable-parameters)
 
 }  // namespace
@@ -364,6 +502,108 @@ auto ReplaceDayBlock(const ReplaceTxtDayBlockRequest& request)
           .is_marker_valid = true,
           .updated_content = JoinLinesCanonical(lines),
           .error_message = ""};
+}
+
+auto ResolveDayEdit(const ResolveTxtDayEditRequest& request,
+                    const ConverterConfig& config) -> ResolveTxtDayEditResponse {
+  const auto resolved = ResolveDayBlock({
+      .content = request.content,
+      .day_marker = request.day_marker,
+      .selected_month = request.selected_month,
+  });
+  if (!resolved.ok || !resolved.found || !resolved.is_marker_valid) {
+    return {.ok = resolved.ok,
+            .normalized_day_marker = resolved.normalized_day_marker,
+            .found = resolved.found,
+            .is_marker_valid = resolved.is_marker_valid,
+            .can_save = resolved.can_save,
+            .day_content_iso_date = resolved.day_content_iso_date,
+            .error_message = resolved.error_message};
+  }
+  try {
+    const DailyLog day = ParseDayForEdit(
+        resolved.day_body, resolved.normalized_day_marker, request.selected_month,
+        config);
+    const auto timeline = validator::structure::AnalyzeMixedTimeline(
+        day, std::unordered_set<std::string>(config.sleep_inference.wake_keywords.begin(),
+                                             config.sleep_inference.wake_keywords.end()));
+    if (!timeline.ok()) {
+      throw std::invalid_argument(BuildTimelineEditError(timeline));
+    }
+    std::string day_remark;
+    for (const auto& remark : day.generalRemarks) {
+      if (!day_remark.empty()) {
+        day_remark.push_back('\n');
+      }
+      day_remark += remark;
+    }
+    return {.ok = true,
+            .normalized_day_marker = resolved.normalized_day_marker,
+            .found = true,
+            .is_marker_valid = true,
+            .can_save = true,
+            .day_remark = std::move(day_remark),
+            .events = ToDayEditEvents(day, timeline),
+            .day_content_iso_date = resolved.day_content_iso_date,
+            .error_message = ""};
+  } catch (const std::exception& error) {
+    return {.ok = false,
+            .normalized_day_marker = resolved.normalized_day_marker,
+            .found = true,
+            .is_marker_valid = true,
+            .can_save = false,
+            .day_content_iso_date = resolved.day_content_iso_date,
+            .error_message = error.what()};
+  }
+}
+
+auto ApplyDayEdit(const ApplyTxtDayEditRequest& request,
+                  const ConverterConfig& config) -> ApplyTxtDayEditResponse {
+  const auto resolved = ResolveDayBlock({
+      .content = request.content,
+      .day_marker = request.day_marker,
+      .selected_month = request.selected_month,
+  });
+  if (!resolved.ok || !resolved.found || !resolved.is_marker_valid) {
+    return {.ok = resolved.ok,
+            .normalized_day_marker = resolved.normalized_day_marker,
+            .found = resolved.found,
+            .is_marker_valid = resolved.is_marker_valid,
+            .updated_content = request.content,
+            .error_message = resolved.error_message};
+  }
+  try {
+    const std::string edited_body = RenderEditedDayBody(request);
+    // Parse the normalized result through the canonical parser before exposing
+    // it to the host. Full-month ingest remains the final persistence gate.
+    const DailyLog edited_day = ParseDayForEdit(
+        edited_body, resolved.normalized_day_marker, request.selected_month, config);
+    const auto timeline = validator::structure::AnalyzeMixedTimeline(
+        edited_day, std::unordered_set<std::string>(
+                        config.sleep_inference.wake_keywords.begin(),
+                        config.sleep_inference.wake_keywords.end()));
+    if (!timeline.ok()) {
+      throw std::invalid_argument(BuildTimelineEditError(timeline));
+    }
+    const auto replaced = ReplaceDayBlock({
+        .content = request.content,
+        .day_marker = resolved.normalized_day_marker,
+        .edited_day_body = edited_body,
+    });
+    return {.ok = replaced.ok,
+            .normalized_day_marker = replaced.normalized_day_marker,
+            .found = replaced.found,
+            .is_marker_valid = replaced.is_marker_valid,
+            .updated_content = replaced.updated_content,
+            .error_message = replaced.error_message};
+  } catch (const std::exception& error) {
+    return {.ok = false,
+            .normalized_day_marker = resolved.normalized_day_marker,
+            .found = true,
+            .is_marker_valid = true,
+            .updated_content = request.content,
+            .error_message = error.what()};
+  }
 }
 
 }  // namespace tracer::core::application::pipeline::txt_day_block

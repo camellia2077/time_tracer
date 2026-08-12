@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include "application/dto/pipeline_requests.hpp"
+
 namespace tracer_core::core::dto {
 
 struct IngestSyncStatusRequest {
@@ -52,6 +54,27 @@ struct ResolveTxtDayBlockResponse {
 };
 
 struct ReplaceTxtDayBlockResponse {
+  bool ok = false;
+  std::string normalized_day_marker;
+  bool found = false;
+  bool is_marker_valid = false;
+  std::string updated_content;
+  std::string error_message;
+};
+
+struct ResolveTxtDayEditResponse {
+  bool ok = false;
+  std::string normalized_day_marker;
+  bool found = false;
+  bool is_marker_valid = false;
+  bool can_save = false;
+  std::string day_remark;
+  std::vector<TxtDayEditEvent> events;
+  std::optional<std::string> day_content_iso_date;
+  std::string error_message;
+};
+
+struct ApplyTxtDayEditResponse {
   bool ok = false;
   std::string normalized_day_marker;
   bool found = false;

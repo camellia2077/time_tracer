@@ -38,6 +38,8 @@ class FakePipelineWorkflow final
   bool fail_default_txt_day_marker = false;
   bool fail_resolve_txt_day_block = false;
   bool fail_replace_txt_day_block = false;
+  bool fail_resolve_txt_day_edit = false;
+  bool fail_apply_txt_day_edit = false;
   bool fail_convert_txt_activity_names = false;
 
   std::string last_converter_input;
@@ -65,6 +67,8 @@ class FakePipelineWorkflow final
       last_resolve_txt_day_block_request;
   tracer_core::core::dto::ReplaceTxtDayBlockRequest
       last_replace_txt_day_block_request;
+  tracer_core::core::dto::ResolveTxtDayEditRequest last_resolve_txt_day_edit_request;
+  tracer_core::core::dto::ApplyTxtDayEditRequest last_apply_txt_day_edit_request;
   tracer_core::core::dto::ConvertTxtActivityNamesRequest
       last_convert_txt_activity_names_request;
   tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest
@@ -84,6 +88,8 @@ class FakePipelineWorkflow final
   int default_txt_day_marker_call_count = 0;
   int resolve_txt_day_block_call_count = 0;
   int replace_txt_day_block_call_count = 0;
+  int resolve_txt_day_edit_call_count = 0;
+  int apply_txt_day_edit_call_count = 0;
   int convert_txt_activity_names_call_count = 0;
   int replace_txt_canonical_activity_names_call_count = 0;
   tracer_core::core::dto::IngestSyncStatusRequest
@@ -137,6 +143,27 @@ class FakePipelineWorkflow final
           .updated_content = "updated-content\n",
           .error_message = "",
       };
+  tracer_core::core::dto::ResolveTxtDayEditResponse
+      resolve_txt_day_edit_response = {
+          .ok = true,
+          .normalized_day_marker = "0102",
+          .found = true,
+          .is_marker_valid = true,
+          .can_save = true,
+          .day_remark = "",
+          .events = {},
+          .day_content_iso_date = std::string("2025-01-02"),
+          .error_message = "",
+      };
+  tracer_core::core::dto::ApplyTxtDayEditResponse
+      apply_txt_day_edit_response = {
+          .ok = true,
+          .normalized_day_marker = "0102",
+          .found = true,
+          .is_marker_valid = true,
+          .updated_content = "updated-content\n",
+          .error_message = "",
+      };
 
   auto RunConverter(const std::string& input_path, const AppOptions& options)
       -> void override;
@@ -177,6 +204,12 @@ class FakePipelineWorkflow final
   auto RunReplaceTxtDayBlock(
       const tracer_core::core::dto::ReplaceTxtDayBlockRequest& request)
       -> tracer_core::core::dto::ReplaceTxtDayBlockResponse override;
+  auto RunResolveTxtDayEdit(
+      const tracer_core::core::dto::ResolveTxtDayEditRequest& request)
+      -> tracer_core::core::dto::ResolveTxtDayEditResponse override;
+  auto RunApplyTxtDayEdit(
+      const tracer_core::core::dto::ApplyTxtDayEditRequest& request)
+      -> tracer_core::core::dto::ApplyTxtDayEditResponse override;
   auto RunConvertTxtActivityNames(
       const tracer_core::core::dto::ConvertTxtActivityNamesRequest& request)
       -> tracer_core::core::dto::ConvertTxtActivityNamesResponse override;

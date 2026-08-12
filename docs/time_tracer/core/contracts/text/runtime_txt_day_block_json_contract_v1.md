@@ -152,6 +152,84 @@ Rules:
 3. `updated_content` is omitted when `found=false` or `is_marker_valid=false`.
 4. The runtime does not create a new block when the requested block is missing.
 
+### `resolve_day_edit`
+
+Returns the parsed, structured form of one existing day block for an editor.
+The Core parser, rather than a host parser, assigns remarks and event kinds.
+
+Request:
+
+```json
+{
+  "action": "resolve_day_edit",
+  "content": "y2025\nm01\n\nd0102\n// day note\n0904study // first\n// second\n",
+  "day_marker": "0102",
+  "selected_month": "2025-01"
+}
+```
+
+Response fields extend `resolve_day_block` with:
+
+```json
+{
+  "day_remark": "day note",
+  "events": [
+    {
+      "is_interval": false,
+      "start_time": "",
+      "end_time": "090400",
+      "activity_token": "study",
+      "remark": "first\nsecond",
+      "start_timeline_seconds": 32640,
+      "end_timeline_seconds": 32640,
+      "previous_end_timeline_seconds": null,
+      "next_start_timeline_seconds": 36000
+    }
+  ]
+}
+```
+
+Rules:
+
+1. Point events have `is_interval=false`, empty `start_time`, and use
+   `end_time` as their timestamp.
+2. Interval events have `is_interval=true` and both endpoints populated.
+3. Parser-normalized six-digit times are returned for every event.
+4. The result carries day and event remarks even when the current host UI does
+   not expose every remark field for editing.
+5. The four `*_timeline_seconds` fields are Core-produced editor bounds. They
+   are elapsed seconds on the monotonic authored timeline, so they may exceed
+   `86400` after midnight. `previous_end_timeline_seconds` and
+   `next_start_timeline_seconds` are nullable when an adjacent timeline event
+   does not exist. Hosts use these response-only fields to constrain time
+   pickers; they need not return them in `apply_day_edit`.
+
+### `apply_day_edit`
+
+Applies a complete structured model for one existing day block. Core renders a
+normalized day body, parses that candidate through the canonical parser, then
+merges it into the supplied month text.
+
+The request adds `day_remark` and `events` (with the same event shape as
+`resolve_day_edit`) to the `content`, `day_marker`, and `selected_month`
+fields.
+
+Rules:
+
+1. This action does not create a missing day block.
+2. A successful action normalizes the full edited day body: six-digit event
+   times, `// ` day-comment lines, and an inline first event-comment line
+   followed by `// ` continuation lines.
+3. Hosts must send back every event and remark received from `resolve_day_edit`
+   unless the user intentionally edits that field; Core does not infer omitted
+   remarks.
+4. The host remains responsible for persisting `updated_content` and invoking
+   the normal full-month ingest/sync flow.
+5. Core parses and validates the candidate against the same mixed
+   point/interval, cross-midnight timeline rules used by structural
+   validation. Host-side picker limits are an early usability guard, not the
+   authority.
+
 ### `convert_activity_names`
 
 This action converts activity names in the supplied full month TXT content. It
