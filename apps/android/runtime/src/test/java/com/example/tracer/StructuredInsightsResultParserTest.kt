@@ -63,6 +63,43 @@ class StructuredInsightsResultParserTest {
         )
     }
 
+    @Test
+    fun parse_mapsPeriodActivityDaysAndPreservesEndOnlyRecords() {
+        val result = parser.parse(
+            InsightsCallResult(
+                initialized = true,
+                operationOk = true,
+                outputText = "",
+                rawResponse = """{"ok":true,"insights_kind":"period","insights":{"activity_days":[{"date":"2026-03-20","total_duration":3600,"detailed_records":[{"logical_id":7,"record_kind":"interval","start_time":"09:00","end_time":"10:00","project_path":"study_math","duration_seconds":3600,"activity_remark":""}]},{"date":"2026-03-19","total_duration":0,"detailed_records":[{"logical_id":8,"record_kind":"end_only","start_time":"","end_time":"17:40","project_path":"study_checkpoint","duration_seconds":0,"activity_remark":""}]}]}}"""
+            )
+        )
+
+        assertTrue(result.operationOk)
+        assertEquals(listOf("2026-03-20", "2026-03-19"), result.activityDays.map { it.date })
+        assertEquals("study_math", result.activityDays.first().activities.single().activityName)
+        assertEquals(
+            ActivityTimelineRecordKind.END_ONLY,
+            result.activityDays.last().activities.single().kind
+        )
+    }
+
+    @Test
+    fun parse_mapsPeriodProjectTree() {
+        val result = parser.parse(
+            InsightsCallResult(
+                initialized = true,
+                operationOk = true,
+                outputText = "",
+                rawResponse = """{"ok":true,"insights_kind":"period","insights":{"project_tree":{"study":{"duration":7200,"children":{"math":{"duration":5400,"children":{}}}}}}}"""
+            )
+        )
+
+        assertTrue(result.operationOk)
+        assertEquals("study", result.projectTree.single().name)
+        assertEquals(7200L, result.projectTree.single().durationSeconds)
+        assertEquals("math", result.projectTree.single().children.single().name)
+    }
+
     private fun structuredResponse(recordKind: String?): String {
         val recordFields = buildString {
             append("\"logical_id\":1,")

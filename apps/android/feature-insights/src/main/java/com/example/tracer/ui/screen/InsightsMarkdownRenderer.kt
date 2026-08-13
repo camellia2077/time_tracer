@@ -13,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -170,33 +171,89 @@ private fun InsightsMarkdownBlock(
         }
 
         is MarkdownBlock.ListBlock -> {
-            Column {
-                block.items.forEachIndexed { index, item ->
-                    Row(
-                        modifier = Modifier.padding(
-                            start = (item.level * 16).dp,
-                            // Indented rows are formatter-generated remark continuations.
-                            // Keep them directly attached to the activity row; only separate
-                            // sibling top-level activities with vertical spacing.
-                            top = if (index > 0 && item.level == 0) 4.dp else 0.dp
-                        )
-                    ) {
-                        Text(
-                            text = "• ",
-                            style = style,
-                            color = color,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = buildAnnotatedString {
-                                parseInlineMarkdown(item.text, this)
-                            },
-                            style = style,
-                            color = color
-                        )
-                    }
-                }
+            InsightsMarkdownListBlock(block = block, style = style, color = color)
+        }
+    }
+}
+
+@Composable
+private fun InsightsMarkdownListBlock(
+    block: MarkdownBlock.ListBlock,
+    style: TextStyle,
+    color: Color
+) {
+    // Markdown reports use nested lists for activity hierarchy. Turn just that
+    // list structure into an expandable text tree; the surrounding summary,
+    // remarks, and other Markdown blocks retain their document-like rendering.
+    val roots = remember(block.items) { buildMarkdownListTree(block.items) }
+    val expandedStates = remember(block.items) { mutableStateMapOf<String, Boolean>() }
+
+    Column {
+        roots.forEachIndexed { index, node ->
+            InsightsMarkdownListNode(
+                node = node,
+                nodeKey = "root_$index",
+                siblingIndex = index,
+                style = style,
+                color = color,
+                expandedStates = expandedStates
+            )
+        }
+    }
+}
+
+@Composable
+private fun InsightsMarkdownListNode(
+    node: MarkdownListTreeNode,
+    nodeKey: String,
+    siblingIndex: Int,
+    style: TextStyle,
+    color: Color,
+    expandedStates: MutableMap<String, Boolean>
+) {
+    val hasChildren = node.children.isNotEmpty()
+    val expanded = expandedStates[nodeKey] ?: true
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                start = (node.item.level * 16).dp,
+                // Indented rows can also be formatter-generated activity remarks.
+                // Keep them attached to their parent; separate top-level siblings.
+                top = if (siblingIndex > 0 && node.item.level == 0) 4.dp else 0.dp
+            )
+            .clickable(enabled = hasChildren) {
+                expandedStates[nodeKey] = !expanded
             }
+    ) {
+        Text(
+            text = if (hasChildren) {
+                if (expanded) "▼ " else "▶ "
+            } else {
+                "• "
+            },
+            style = style,
+            color = color,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = buildAnnotatedString {
+                parseInlineMarkdown(node.item.text, this)
+            },
+            style = style,
+            color = color
+        )
+    }
+    if (hasChildren && expanded) {
+        node.children.forEachIndexed { index, child ->
+            InsightsMarkdownListNode(
+                node = child,
+                nodeKey = "$nodeKey/$index",
+                siblingIndex = index,
+                style = style,
+                color = color,
+                expandedStates = expandedStates
+            )
         }
     }
 }

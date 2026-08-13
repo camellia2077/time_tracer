@@ -62,11 +62,19 @@ data class InsightsStatusValue(
     val totalDurationSeconds: Long
 )
 
+data class StructuredInsightsProjectNode(
+    val name: String,
+    val durationSeconds: Long,
+    val children: List<StructuredInsightsProjectNode> = emptyList()
+)
+
 data class StructuredInsightsCallResult(
     val initialized: Boolean,
     val operationOk: Boolean,
     val insights: StructuredDailyInsights?,
     val rawResponse: String,
+    val activityDays: List<StructuredDailyInsights> = emptyList(),
+    val projectTree: List<StructuredInsightsProjectNode> = emptyList(),
     val statuses: List<InsightsStatusValue> = emptyList(),
     val errorMessage: String = "",
     val operationId: String = ""

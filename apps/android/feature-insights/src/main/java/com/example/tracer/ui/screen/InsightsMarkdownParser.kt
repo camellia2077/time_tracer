@@ -19,6 +19,11 @@ internal data class MarkdownListItem(
     val level: Int
 )
 
+internal data class MarkdownListTreeNode(
+    val item: MarkdownListItem,
+    val children: MutableList<MarkdownListTreeNode> = mutableListOf()
+)
+
 internal data class MarkdownSection(
     val header: MarkdownBlock.Header?,
     val content: List<MarkdownBlock>
@@ -157,6 +162,33 @@ internal fun parseInlineMarkdown(
         .replace(Regex("(?i)<br\\s*/?>[ \\t]*\\n"), "\n")
         .replace(Regex("(?i)<br\\s*/?>"), "\n")
     appendInlineMarkdown(normalizedText, builder)
+}
+
+/**
+ * Converts one formatter-generated Markdown list block into its indentation tree.
+ *
+ * The Markdown parser intentionally keeps a flat list so remark continuations can
+ * preserve their original text. The renderer uses this tree only to let people
+ * collapse activity subprojects while retaining the report's textual presentation.
+ */
+internal fun buildMarkdownListTree(items: List<MarkdownListItem>): List<MarkdownListTreeNode> {
+    val roots = mutableListOf<MarkdownListTreeNode>()
+    val ancestors = mutableListOf<MarkdownListTreeNode>()
+
+    items.forEach { item ->
+        while (ancestors.isNotEmpty() && ancestors.last().item.level >= item.level) {
+            ancestors.removeAt(ancestors.lastIndex)
+        }
+        val node = MarkdownListTreeNode(item)
+        val parent = ancestors.lastOrNull()
+        if (parent == null) {
+            roots.add(node)
+        } else {
+            parent.children.add(node)
+        }
+        ancestors.add(node)
+    }
+    return roots
 }
 
 private fun appendInlineMarkdown(

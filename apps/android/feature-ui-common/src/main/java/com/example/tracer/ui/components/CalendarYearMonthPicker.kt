@@ -77,7 +77,7 @@ fun CalendarYearMonthPickerSheet(
     yearPlaceholder: String,
     noYearsLabel: String
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     val selectedYear = selectedYearMonth.takeIf { it.length >= 4 }?.take(4).orEmpty()
     val selectedMonth = selectedYearMonth.takeIf { it.length >= 7 }?.takeLast(2).orEmpty()
     var pickerYear by remember(selectedYear) { mutableStateOf(selectedYear) }

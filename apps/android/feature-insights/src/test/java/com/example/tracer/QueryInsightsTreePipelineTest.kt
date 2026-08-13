@@ -143,7 +143,7 @@ class QueryInsightsTreePipelineTest {
     }
 
     @Test
-    fun switchingAwayFromTree_resolvesMarkdownOrTimelineInsteadOfTree() {
+    fun switchingAwayFromTree_resolvesMarkdownOrActivitiesInsteadOfTree() {
         val markdown = QueryResult.Insights(text = "markdown")
         val tree = QueryResult.Tree(
             period = DataTreePeriod.DAY,
@@ -161,7 +161,7 @@ class QueryInsightsTreePipelineTest {
         )
         assertEquals(
             markdown,
-            resolveDisplayResult(state, DataTreePeriod.DAY, InsightsParameterSection.TIMELINE)
+            resolveDisplayResult(state, DataTreePeriod.DAY, InsightsParameterSection.ACTIVITIES)
         )
         assertEquals(
             tree,

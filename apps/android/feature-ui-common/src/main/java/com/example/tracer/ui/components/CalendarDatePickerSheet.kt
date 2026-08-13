@@ -95,7 +95,7 @@ fun CalendarDatePickerSheet(
     allowAdjacentMonthSelection: Boolean = true,
     firstDayOfWeek: DayOfWeek = DayOfWeek.MONDAY
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     val calendarGrid = remember(
         displayMonth,
         selectedDate,

@@ -162,6 +162,12 @@ fun TracerScreen(
     val insightsParameterSection by userPreferencesRepository.insightsParameterSection.collectAsState(
         initial = null
     )
+    val insightsDayActivitiesView by userPreferencesRepository.insightsDayActivitiesView.collectAsState(
+        initial = null
+    )
+    val insightsPeriodActivitiesView by userPreferencesRepository.insightsPeriodActivitiesView.collectAsState(
+        initial = null
+    )
     val insightsTimeParametersExpanded by userPreferencesRepository.insightsTimeParametersExpanded
         .collectAsState(initial = null)
     val persistedRecordInput by userPreferencesRepository.recordPersistedInput.collectAsState(
@@ -195,6 +201,8 @@ fun TracerScreen(
         insightsMode == null ||
         insightsResultDisplayMode == null ||
         insightsParameterSection == null ||
+        insightsDayActivitiesView == null ||
+        insightsPeriodActivitiesView == null ||
         insightsTimeParametersExpanded == null
         || insightsAverageDayBasis == null || insightsPiePalettePreset == null ||
         configCardExpansionPreferences == null
@@ -209,6 +217,8 @@ fun TracerScreen(
     val loadedInsightsMode = requireNotNull(insightsMode)
     val loadedInsightsResultDisplayMode = requireNotNull(insightsResultDisplayMode)
     val loadedInsightsParameterSection = requireNotNull(insightsParameterSection)
+    val loadedInsightsDayActivitiesView = requireNotNull(insightsDayActivitiesView)
+    val loadedInsightsPeriodActivitiesView = requireNotNull(insightsPeriodActivitiesView)
     val loadedInsightsTimeParametersExpanded = requireNotNull(insightsTimeParametersExpanded)
     val loadedInsightsAverageDayBasis = requireNotNull(insightsAverageDayBasis)
     val loadedInsightsPiePalettePreset = requireNotNull(insightsPiePalettePreset)
@@ -393,6 +403,14 @@ fun TracerScreen(
             coroutineScope.launch {
                 userPreferencesRepository.setInsightsParameterSection(value)
             }
+        },
+        insightsDayActivitiesView = loadedInsightsDayActivitiesView,
+        insightsPeriodActivitiesView = loadedInsightsPeriodActivitiesView,
+        onInsightsDayActivitiesViewChange = { value ->
+            coroutineScope.launch { userPreferencesRepository.setInsightsDayActivitiesView(value) }
+        },
+        onInsightsPeriodActivitiesViewChange = { value ->
+            coroutineScope.launch { userPreferencesRepository.setInsightsPeriodActivitiesView(value) }
         },
         insightsTimeParametersExpanded = loadedInsightsTimeParametersExpanded,
         onInsightsTimeParametersExpandedChange = { value ->

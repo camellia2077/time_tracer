@@ -13,6 +13,7 @@
     <string name="insights_parameter_section_day">日期</string>
     <string name="insights_parameter_section_tree">时间明细</string>
     <string name="insights_parameter_section_timeline">时间线</string>
+    <string name="insights_parameter_section_activity">活动</string>
     <string name="insights_parameter_section_markdown">文本</string>
     <string name="insights_title_insights_date">分析日期</string>
     <string name="insights_title_insights_day">分析日</string>
@@ -23,6 +24,10 @@
     <string name="insights_title_start_date">开始日期</string>
     <string name="insights_title_end_date">结束日期</string>
     <string name="insights_label_recent_days">最近天数 (N)</string>
+    <string name="insights_activities_period_selector_title">活动周期</string>
+    <string name="insights_activities_period_selector_sheet_title">选择%1$s</string>
+    <string name="insights_action_cancel">取消</string>
+    <string name="insights_action_done">完成</string>
 
     <string name="insights_action_loading">加载中...</string>
 
@@ -125,6 +130,28 @@
     <string name="insights_cd_expand">展开</string>
     <string name="insights_cd_copy_markdown">复制 Markdown</string>
     <string name="insights_result_title_activity_timeline">活动时间线</string>
+    <string name="insights_result_title_period_activities">活动</string>
+    <string name="insights_period_activities_empty">这个时间范围没有记录活动。</string>
+    <string name="insights_period_activities_overview">概览</string>
+    <string name="insights_period_activities_records">记录</string>
+    <string name="insights_period_activities_total">总时长</string>
+    <string name="insights_period_activities_active_days">有记录的天数</string>
+    <string name="insights_period_activities_record_count">已记录活动数</string>
+    <string name="insights_period_activities_daily_average">活动日均值</string>
+    <string name="insights_period_activities_parent_breakdown">父项目占比</string>
+    <string name="insights_period_activities_month_summary">%1$d 天 · %2$d 条记录</string>
+    <string name="insights_period_activities_day_summary">%1$d 条记录</string>
+    <string name="insights_period_activities_compare_previous">与上一周期对比</string>
+    <string name="insights_period_activities_select_comparison_period">对比周期</string>
+    <string name="insights_period_activities_comparison_period_picker_title">选择对比周期</string>
+    <string name="insights_cd_select_comparison_period">选择对比周期</string>
+    <string name="insights_period_activities_hide_comparison">隐藏对比</string>
+    <string name="insights_period_activities_comparison_loading">正在加载对比周期…</string>
+    <string name="insights_period_activities_comparison_period">与 %1$s 对比</string>
+    <string name="insights_period_activities_comparison_increase">增加 %1$s（%2$s）</string>
+    <string name="insights_period_activities_comparison_decrease">减少 %1$s（%2$s）</string>
+    <string name="insights_period_activities_comparison_new_value">新增 %1$s</string>
+    <string name="insights_period_activities_comparison_neutral">无变化（%1$s）</string>
     <string name="insights_day_remark_label">日备注</string>
     <string name="insights_edit_day_remark">编辑日备注</string>
     <string name="insights_save_day_remark">保存</string>

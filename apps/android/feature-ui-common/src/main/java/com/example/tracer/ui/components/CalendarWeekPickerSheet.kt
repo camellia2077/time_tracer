@@ -104,7 +104,7 @@ fun CalendarWeekPickerSheet(
     onDismissRequest: () -> Unit,
     firstDayOfWeek: DayOfWeek = DayOfWeek.MONDAY
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     val weekRows = remember(displayMonth, selectedWeekDigits, firstDayOfWeek) {
         buildMonthWeekRows(
             displayMonth = displayMonth,

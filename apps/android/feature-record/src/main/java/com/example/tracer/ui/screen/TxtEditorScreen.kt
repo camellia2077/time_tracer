@@ -31,6 +31,7 @@ import java.time.Clock
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
+import java.security.MessageDigest
 import kotlinx.coroutines.launch
 
 
@@ -84,7 +85,10 @@ fun TxtEditorSection(
         )
     }
     val sessionController = remember(selectedHistoryFile, selectedMonth) {
-        val normalizedInitialDayMarker = initialDayMarker.filter { it.isDigit() }.take(4)
+        val normalizedInitialDayMarker = initialDayMarkerForSelectedMonth(
+            initialDayMarker = initialDayMarker,
+            selectedMonth = selectedMonth
+        )
         TxtEditorSessionController(
             initialState = TxtEditorSessionState(
                 outputMode = initialOutputMode,
@@ -146,18 +150,41 @@ fun TxtEditorSection(
         ?: availableMonthValues.lastOrNull().orEmpty()
 
     LaunchedEffect(selectedHistoryFile, selectedMonth, initialOutputMode) {
+        Log.d(
+            TXT_TAB_LOG_TAG,
+            "selection sync start file=$selectedHistoryFile month=$selectedMonth " +
+                "mode=$initialOutputMode source=${selectedHistoryContent.txtDebugSignature()} " +
+                "editable=${editableHistoryContent.txtDebugSignature()}"
+        )
         sessionController.syncSelectionContext(
             selectedHistoryFile = selectedHistoryFile,
             selectedMonth = selectedMonth
         )
         sessionController.updateOutputMode(initialOutputMode)
+        Log.d(
+            TXT_TAB_LOG_TAG,
+            "selection sync complete key=${sessionController.state.selectionContextKey} " +
+                "allDraft=${sessionController.state.allDraftState.draftText.txtDebugSignature()} " +
+                "dayDraft=${sessionController.state.dayDraftState.draftText.txtDebugSignature()}"
+        )
     }
 
     LaunchedEffect(selectedHistoryFile, selectedHistoryContent, editableHistoryContent) {
         if (selectedHistoryFile.isNotBlank()) {
+            Log.d(
+                TXT_TAB_LOG_TAG,
+                "external draft sync start file=$selectedHistoryFile source=${selectedHistoryContent.txtDebugSignature()} " +
+                    "editable=${editableHistoryContent.txtDebugSignature()}"
+            )
             sessionController.syncExternalMonthDraft(
                 selectedHistoryContent = selectedHistoryContent,
                 editableHistoryContent = editableHistoryContent
+            )
+            Log.d(
+                TXT_TAB_LOG_TAG,
+                "external draft sync complete file=$selectedHistoryFile " +
+                    "allBaseline=${sessionController.state.allDraftState.baselineText.txtDebugSignature()} " +
+                    "allDraft=${sessionController.state.allDraftState.draftText.txtDebugSignature()}"
             )
         }
     }
@@ -297,13 +324,33 @@ fun TxtEditorSection(
     // flight. Otherwise the first frame briefly renders "No TXT files yet" before the editor
     // appears for an existing file.
     val showEmptyState = txtHistoryLoaded && inspectionEntries.isEmpty()
-    LaunchedEffect(txtHistoryLoaded, inspectionEntries.size, selectedHistoryFile, sessionState.outputMode, sessionState.dayMarkerInput) {
+    LaunchedEffect(
+        txtHistoryLoaded,
+        inspectionEntries.size,
+        selectedHistoryFile,
+        selectedMonth,
+        sessionState.outputMode,
+        sessionState.dayMarkerInput,
+        dayBlockEditorState.monthContent,
+        resolvedDayBlockState.dayBody,
+        editorUiState.editorText,
+        structuredDayEdit
+    ) {
         Log.d(
             TXT_TAB_LOG_TAG,
             "render state historyLoaded=$txtHistoryLoaded inspectionCount=${inspectionEntries.size} " +
                 "selectedFile=$selectedHistoryFile selectedMonth=$selectedMonth showEmpty=$showEmptyState " +
                 "outputMode=${sessionState.outputMode} marker=${sessionState.dayMarkerInput} " +
-                "markerReady=${sessionState.autoDayMarkerLoadedKey.isNotBlank()}"
+                "markerReady=${sessionState.autoDayMarkerLoadedKey.isNotBlank()} " +
+                "month=${dayBlockEditorState.monthContent.txtDebugSignature()} " +
+                "dayResolve=(ok=${resolvedDayBlockState.ok},found=${resolvedDayBlockState.found}," +
+                "canSave=${resolvedDayBlockState.canSave},body=${resolvedDayBlockState.dayBody.txtDebugSignature()}," +
+                "message=${resolvedDayBlockState.message.take(120)}) " +
+                "editor=${editorUiState.editorText.txtDebugSignature()} " +
+                "structured=(ok=${structuredDayEdit?.ok},found=${structuredDayEdit?.found}," +
+                "events=${structuredDayEdit?.events?.size}," +
+                "remark=${structuredDayEdit?.dayRemark?.txtDebugSignature().orEmpty()}," +
+                "message=${structuredDayEdit?.message?.take(120).orEmpty()})"
         )
     }
 
@@ -500,4 +547,29 @@ fun TxtEditorSection(
             }
         }
     }
+}
+
+/** Diagnostic-only content identifier: enough to trace state propagation without logging TXT. */
+private fun String.txtDebugSignature(): String {
+    val digest = MessageDigest.getInstance("SHA-256")
+        .digest(toByteArray())
+        .take(6)
+        .joinToString(separator = "") { byte -> "%02x".format(byte.toInt() and 0xff) }
+    return "len=$length,sha256=$digest"
+}
+
+/**
+ * The persisted marker is only a MMDD value. Do not reuse it for another
+ * month: doing so marks a stale day as already loaded and prevents the
+ * runtime from selecting the selected month's default day.
+ */
+internal fun initialDayMarkerForSelectedMonth(
+    initialDayMarker: String,
+    selectedMonth: String
+): String {
+    val normalizedMarker = initialDayMarker.filter { it.isDigit() }.take(4)
+    val selectedMonthDigits = selectedMonth.takeLast(2)
+    return normalizedMarker.takeIf {
+        it.length == 4 && selectedMonthDigits.length == 2 && it.take(2) == selectedMonthDigits
+    }.orEmpty()
 }

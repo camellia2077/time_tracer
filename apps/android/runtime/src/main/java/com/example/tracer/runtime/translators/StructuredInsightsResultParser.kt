@@ -22,6 +22,8 @@ internal class StructuredInsightsResultParser(
                 operationOk = true,
                 insights = if (payload.isDaily) translator.translate(payload) else null,
                 rawResponse = result.rawResponse,
+                activityDays = payload.activityDays.map(translator::translateActivityDay),
+                projectTree = payload.projectTree.map(translator::translateProjectNode),
                 statuses = payload.statuses,
                 operationId = result.operationId
             )

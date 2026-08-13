@@ -11,7 +11,10 @@ internal data class InsightsSemanticColors(
     val treeProgressAccent: Color,
     val track: Color,
     val progress: Color,
-    val gap: Color
+    val gap: Color,
+    val comparisonIncrease: Color,
+    val comparisonDecrease: Color,
+    val comparisonNeutral: Color
 )
 
 @Composable
@@ -24,6 +27,9 @@ internal fun insightsSemanticColors(): InsightsSemanticColors {
         treeProgressAccent = tokens.treeProgress,
         track = tokens.track,
         progress = tokens.timelineDuration,
-        gap = tokens.gap
+        gap = tokens.gap,
+        comparisonIncrease = tokens.comparisonIncrease,
+        comparisonDecrease = tokens.comparisonDecrease,
+        comparisonNeutral = tokens.comparisonNeutral
     )
 }

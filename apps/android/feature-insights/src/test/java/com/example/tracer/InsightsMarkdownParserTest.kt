@@ -56,4 +56,21 @@ class InsightsMarkdownParserTest {
         val list = blocks.single() as MarkdownBlock.ListBlock
         assertEquals("Item", list.items.single().text)
     }
+
+    @Test
+    fun buildMarkdownListTree_nestsActivitiesByListIndentation() {
+        val tree = buildMarkdownListTree(
+            listOf(
+                MarkdownListItem(text = "study", level = 0),
+                MarkdownListItem(text = "math", level = 1),
+                MarkdownListItem(text = "algebra", level = 2),
+                MarkdownListItem(text = "english", level = 1),
+                MarkdownListItem(text = "sleep", level = 0)
+            )
+        )
+
+        assertEquals(listOf("study", "sleep"), tree.map { it.item.text })
+        assertEquals(listOf("math", "english"), tree.first().children.map { it.item.text })
+        assertEquals("algebra", tree.first().children.first().children.single().item.text)
+    }
 }

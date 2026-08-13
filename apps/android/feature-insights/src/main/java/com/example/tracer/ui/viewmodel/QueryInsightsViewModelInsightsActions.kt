@@ -49,6 +49,8 @@ internal suspend fun runDayInsightsAction(
         result = result,
         textProvider = textProvider,
         dayTimeline = structuredResult?.insights,
+        activityDays = structuredResult.activityDaysFor(DataTreePeriod.DAY),
+        projectTree = structuredResult.projectTreeFor(),
         statusValues = structuredResult?.takeIf { it.operationOk }?.statuses.orEmpty()
     )
     return nextState
@@ -83,11 +85,14 @@ internal suspend fun runMonthInsightsAction(
             locale = locale
         )
     val result = insightsGateway.insightsMarkdown(request)
+    val structuredResult = insightsGateway.loadStructuredInsights(request, result)
     return runningState.copyWithInsightsOutcome(
         period = DataTreePeriod.MONTH,
         result = result,
         textProvider = textProvider,
-        statusValues = insightsGateway.loadStructuredInsights(request, result)?.statuses.orEmpty()
+        activityDays = structuredResult.activityDaysFor(DataTreePeriod.MONTH),
+        projectTree = structuredResult.projectTreeFor(),
+        statusValues = structuredResult?.statuses.orEmpty()
     )
 }
 internal suspend fun runYearInsightsAction(
@@ -119,11 +124,14 @@ internal suspend fun runYearInsightsAction(
             locale = locale
         )
     val result = insightsGateway.insightsMarkdown(request)
+    val structuredResult = insightsGateway.loadStructuredInsights(request, result)
     return runningState.copyWithInsightsOutcome(
         period = DataTreePeriod.YEAR,
         result = result,
         textProvider = textProvider,
-        statusValues = insightsGateway.loadStructuredInsights(request, result)?.statuses.orEmpty()
+        activityDays = structuredResult.activityDaysFor(DataTreePeriod.YEAR),
+        projectTree = structuredResult.projectTreeFor(),
+        statusValues = structuredResult?.statuses.orEmpty()
     )
 }
 
@@ -158,11 +166,14 @@ internal suspend fun runWeekInsightsAction(
             locale = locale
         )
     val result = insightsGateway.insightsMarkdown(request)
+    val structuredResult = insightsGateway.loadStructuredInsights(request, result)
     return runningState.copyWithInsightsOutcome(
         period = DataTreePeriod.WEEK,
         result = result,
         textProvider = textProvider,
-        statusValues = insightsGateway.loadStructuredInsights(request, result)?.statuses.orEmpty()
+        activityDays = structuredResult.activityDaysFor(DataTreePeriod.WEEK),
+        projectTree = structuredResult.projectTreeFor(),
+        statusValues = structuredResult?.statuses.orEmpty()
     )
 }
 
@@ -194,11 +205,14 @@ internal suspend fun runRecentInsightsAction(
             locale = locale
         )
     val result = insightsGateway.insightsMarkdown(request)
+    val structuredResult = insightsGateway.loadStructuredInsights(request, result)
     return runningState.copyWithInsightsOutcome(
         period = DataTreePeriod.RECENT,
         result = result,
         textProvider = textProvider,
-        statusValues = insightsGateway.loadStructuredInsights(request, result)?.statuses.orEmpty()
+        activityDays = structuredResult.activityDaysFor(DataTreePeriod.RECENT),
+        projectTree = structuredResult.projectTreeFor(),
+        statusValues = structuredResult?.statuses.orEmpty()
     )
 }
 
@@ -251,10 +265,24 @@ internal suspend fun runRangeInsightsAction(
             locale = locale
         )
     val result = insightsGateway.insightsMarkdown(request)
+    val structuredResult = insightsGateway.loadStructuredInsights(request, result)
     return runningState.copyWithInsightsOutcome(
         period = DataTreePeriod.RANGE,
         result = result,
         textProvider = textProvider,
-        statusValues = insightsGateway.loadStructuredInsights(request, result)?.statuses.orEmpty()
+        activityDays = structuredResult.activityDaysFor(DataTreePeriod.RANGE),
+        projectTree = structuredResult.projectTreeFor(),
+        statusValues = structuredResult?.statuses.orEmpty()
     )
 }
+
+private fun StructuredInsightsCallResult?.activityDaysFor(
+    period: DataTreePeriod
+): List<StructuredDailyInsights> = when {
+    this == null -> emptyList()
+    period == DataTreePeriod.DAY -> listOfNotNull(insights)
+    else -> activityDays
+}
+
+private fun StructuredInsightsCallResult?.projectTreeFor(): List<StructuredInsightsProjectNode> =
+    this?.projectTree.orEmpty()

@@ -234,7 +234,7 @@ class QueryInsightsViewModelInsightsSyncTest {
     }
 
     @Test
-    fun selectingMarkdownOrTimeline_onDayAutomaticallyGeneratesTheInsights() = runTest {
+    fun selectingMarkdownOrActivities_onDayAutomaticallyGeneratesTheInsights() = runTest {
         val fakeInsightsGateway = FakeStructuredInsightsGateway().apply {
             dayResult = InsightsCallResult(
                 initialized = true,
@@ -248,7 +248,7 @@ class QueryInsightsViewModelInsightsSyncTest {
             queryGateway = FakeInsightsSyncQueryGateway()
         )
 
-        viewModel.onParameterSectionChange(InsightsParameterSection.TIMELINE)
+        viewModel.onParameterSectionChange(InsightsParameterSection.ACTIVITIES)
         advanceUntilIdle()
         assertEquals("# Day Insights", (viewModel.uiState.activeResult as QueryResult.Insights).text)
 
@@ -396,18 +396,18 @@ class QueryInsightsViewModelInsightsSyncTest {
     }
 
     @Test
-    fun timelineSection_isAvailableForDay_andResetsForOtherPeriods() {
+    fun activitySection_isAvailableForAllInsightsPeriods() {
         val viewModel = QueryInsightsViewModel(
             insightsGateway = FakeStructuredInsightsGateway(),
             queryGateway = FakeInsightsSyncQueryGateway()
         )
 
-        viewModel.onParameterSectionChange(InsightsParameterSection.TIMELINE)
-        assertEquals(InsightsParameterSection.TIMELINE, viewModel.uiState.parameterSection)
+        viewModel.onParameterSectionChange(InsightsParameterSection.ACTIVITIES)
+        assertEquals(InsightsParameterSection.ACTIVITIES, viewModel.uiState.parameterSection)
 
         viewModel.onInsightsModeChange(InsightsMode.WEEK)
 
-        assertEquals(InsightsParameterSection.DAY, viewModel.uiState.parameterSection)
+        assertEquals(InsightsParameterSection.ACTIVITIES, viewModel.uiState.parameterSection)
     }
 }
 

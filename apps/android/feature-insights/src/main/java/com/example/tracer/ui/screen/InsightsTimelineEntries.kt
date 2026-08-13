@@ -2,6 +2,7 @@ package com.example.tracer
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,6 +35,12 @@ internal sealed interface InsightsTimelineEntry {
     data class EndOnly(override val activity: ActivityTimelineItem) : InsightsTimelineEntry
 }
 
+/** A day uses duration-scaled rails; period browsing uses a fixed reading rhythm. */
+internal enum class InsightsTimelineLayout {
+    DURATION_SCALED,
+    FIXED
+}
+
 internal fun ActivityTimelineItem.toInsightsTimelineEntry(): InsightsTimelineEntry =
     when (kind) {
         ActivityTimelineRecordKind.INTERVAL -> InsightsTimelineEntry.Interval(this)
@@ -43,14 +50,14 @@ internal fun ActivityTimelineItem.toInsightsTimelineEntry(): InsightsTimelineEnt
 @Composable
 internal fun InsightsTimelineEntryRow(
     entry: InsightsTimelineEntry,
-    colors: InsightsSemanticColors,
-    onEditRemark: (ActivityTimelineItem) -> Unit
+    onEditRemark: ((ActivityTimelineItem) -> Unit)? = null,
+    layout: InsightsTimelineLayout = InsightsTimelineLayout.DURATION_SCALED
 ) {
     val activity = entry.activity
-    val height = when (entry) {
-        is InsightsTimelineEntry.Interval -> timelineIntervalHeight(activity.durationSeconds)
-        is InsightsTimelineEntry.EndOnly -> 72.dp
-    }
+    val height = timelineEntryHeight(entry, layout)
+    // Read the same theme token source in every context (Day and period
+    // browsing) so a caller cannot accidentally inject a divergent palette.
+    val colors = insightsSemanticColors()
 
     Row(
         modifier = Modifier
@@ -65,10 +72,96 @@ internal fun InsightsTimelineEntryRow(
             showDuration = entry is InsightsTimelineEntry.Interval,
             colors = colors,
             modifier = Modifier.weight(1f),
-            onEditRemark = onEditRemark
+            onEditRemark = onEditRemark,
+            height = height
         )
     }
 }
+
+@Composable
+internal fun InsightsTimelineRecordList(
+    activities: List<ActivityTimelineItem>,
+    layout: InsightsTimelineLayout,
+    onEditRemark: ((ActivityTimelineItem) -> Unit)? = null,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        activities.forEach { activity ->
+            InsightsTimelineEntryRow(
+                entry = activity.toInsightsTimelineEntry(),
+                onEditRemark = onEditRemark,
+                layout = layout
+            )
+        }
+    }
+}
+
+/** Shared period grouping plane: theme surface outside, timeline cards inside. */
+@Composable
+internal fun InsightsTimelineExpandableGroup(
+    expanded: Boolean,
+    onToggle: () -> Unit,
+    title: String,
+    trailing: String,
+    summary: String,
+    content: @Composable () -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surface
+    ) {
+        Column {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onToggle)
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = if (expanded) "▼" else "▶",
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.labelMedium
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(text = title, style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        text = summary,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Text(
+                    text = trailing,
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.labelMedium
+                )
+            }
+            if (expanded) {
+                Column(
+                    modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    content()
+                }
+            }
+        }
+    }
+}
+
+private fun timelineEntryHeight(entry: InsightsTimelineEntry, layout: InsightsTimelineLayout): Dp =
+    when (layout) {
+        InsightsTimelineLayout.FIXED -> 112.dp
+        InsightsTimelineLayout.DURATION_SCALED -> when (entry) {
+            is InsightsTimelineEntry.Interval -> timelineIntervalHeight(entry.activity.durationSeconds)
+            is InsightsTimelineEntry.EndOnly -> 72.dp
+        }
+    }
 
 @Composable
 private fun TimelineEntryTimes(entry: InsightsTimelineEntry, height: Dp) {
@@ -164,11 +257,12 @@ private fun ActivityTimelineCard(
     showDuration: Boolean,
     colors: InsightsSemanticColors,
     modifier: Modifier,
-    onEditRemark: (ActivityTimelineItem) -> Unit
+    onEditRemark: ((ActivityTimelineItem) -> Unit)?,
+    height: Dp
 ) {
     Surface(
         modifier = modifier
-            .heightIn(min = if (showDuration) timelineIntervalHeight(activity.durationSeconds) else 72.dp),
+            .heightIn(min = height),
         tonalElevation = 1.dp,
         shape = MaterialTheme.shapes.medium
     ) {
@@ -193,11 +287,13 @@ private fun ActivityTimelineCard(
                     color = colors.progress
                 )
             }
-            TextButton(
-                onClick = { onEditRemark(activity) },
-                modifier = Modifier.padding(top = 2.dp)
-            ) {
-                Text(stringResource(R.string.insights_edit_activity_remark))
+            onEditRemark?.let { editRemark ->
+                TextButton(
+                    onClick = { editRemark(activity) },
+                    modifier = Modifier.padding(top = 2.dp)
+                ) {
+                    Text(stringResource(R.string.insights_edit_activity_remark))
+                }
             }
             activity.remark?.takeIf { it.isNotBlank() }?.let { remark ->
                 Spacer(modifier = Modifier.height(6.dp))
@@ -234,13 +330,5 @@ private fun timelineIntervalHeight(durationSeconds: Long): Dp {
 }
 
 private fun formatTimelineDuration(durationSeconds: Long): String {
-    val totalSeconds = durationSeconds.coerceAtLeast(0L)
-    val hours = totalSeconds / 3600
-    val minutes = (totalSeconds % 3600) / 60
-    val seconds = totalSeconds % 60
-    return when {
-        hours > 0 -> "${hours}h ${minutes}m"
-        minutes > 0 -> "${minutes}m ${seconds}s"
-        else -> "${seconds}s"
-    }
+    return formatInsightsDuration(durationSeconds, InsightsDurationFormat.COMPACT)
 }

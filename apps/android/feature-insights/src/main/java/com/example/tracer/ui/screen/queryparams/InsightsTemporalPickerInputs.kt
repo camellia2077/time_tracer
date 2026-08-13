@@ -1,9 +1,12 @@
 
 package com.example.tracer
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
@@ -19,6 +22,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import com.example.tracer.feature.insights.R
 import com.example.tracer.ui.components.CalendarDatePickerSheet
@@ -95,12 +100,14 @@ internal fun InsightsMonthTemporalInput(
     title: String,
     insightsMonth: String,
     calendarAvailability: CalendarAvailability,
+    yearMonthValueFormat: InsightsYearMonthValueFormat = InsightsYearMonthValueFormat.COMPACT,
     onInsightsMonthChange: (String) -> Unit
 ) {
     InsightsYearMonthPickerInput(
         title = title,
         insightsMonth = insightsMonth,
         availability = calendarAvailability,
+        valueFormat = yearMonthValueFormat,
         onInsightsMonthChange = onInsightsMonthChange
     )
 }
@@ -196,34 +203,49 @@ internal fun InsightsWeekPickerInput(
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant
     )
-    OutlinedTextField(
-        value = selectedWeekLabel.orEmpty(),
-        onValueChange = {},
-        readOnly = true,
-        placeholder = {
-            Text(
-                text = stringResource(R.string.insights_label_select_week),
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Start,
-                style = MaterialTheme.typography.bodySmall
-            )
-        },
-        trailingIcon = {
-            IconButton(
-                onClick = { weekPickerVisible = true },
-                enabled = displayMonth != null
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.DateRange,
-                    contentDescription = stringResource(R.string.insights_label_select_week)
+    val weekPickerLabel = stringResource(R.string.insights_label_select_week)
+    val openWeekPicker = { weekPickerVisible = true }
+    Box(modifier = Modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = selectedWeekLabel.orEmpty(),
+            onValueChange = {},
+            readOnly = true,
+            placeholder = {
+                Text(
+                    text = weekPickerLabel,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Start,
+                    style = MaterialTheme.typography.bodySmall
                 )
-            }
-        },
-        singleLine = true,
-        textStyle = MaterialTheme.typography.titleMedium,
-        shape = TracerOutlinedTextFieldDefaults.shape,
-        modifier = Modifier.fillMaxWidth()
-    )
+            },
+            trailingIcon = {
+                IconButton(
+                    onClick = openWeekPicker,
+                    enabled = displayMonth != null
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.DateRange,
+                        contentDescription = weekPickerLabel
+                    )
+                }
+            },
+            singleLine = true,
+            textStyle = MaterialTheme.typography.titleMedium,
+            shape = TracerOutlinedTextFieldDefaults.shape,
+            modifier = Modifier.fillMaxWidth()
+        )
+        // A read-only TextField does not expose a click callback. The transparent overlay keeps
+        // the whole date field, including its calendar icon, as one tappable picker trigger.
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable(
+                    enabled = displayMonth != null,
+                    onClick = openWeekPicker
+                )
+                .semantics { contentDescription = weekPickerLabel }
+        )
+    }
 
     if (weekPickerVisible && displayMonth != null) {
         CalendarWeekPickerSheet(

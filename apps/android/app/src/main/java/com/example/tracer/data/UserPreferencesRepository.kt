@@ -22,6 +22,7 @@ import com.example.tracer.InsightsParameterSection
 import com.example.tracer.InsightsPiePalettePreset
 import com.example.tracer.InsightsResultDisplayMode
 import com.example.tracer.InsightsMode
+import com.example.tracer.InsightsActivityView
 import com.example.tracer.defaultInsightsPiePalettePreset
 import java.nio.charset.StandardCharsets
 import java.util.Base64
@@ -111,6 +112,8 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             InsightsResultDisplayMode.TEXT
         val DEFAULT_INSIGHTS_PARAMETER_SECTION: InsightsParameterSection =
             InsightsParameterSection.DAY
+        val DEFAULT_INSIGHTS_DAY_ACTIVITIES_VIEW: InsightsActivityView = InsightsActivityView.RECORDS
+        val DEFAULT_INSIGHTS_PERIOD_ACTIVITIES_VIEW: InsightsActivityView = InsightsActivityView.OVERVIEW
         const val DEFAULT_INSIGHTS_TIME_PARAMETERS_EXPANDED: Boolean = true
         val DEFAULT_INSIGHTS_PIE_PALETTE_PRESET: InsightsPiePalettePreset =
             defaultInsightsPiePalettePreset()
@@ -181,6 +184,8 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         val INSIGHTS_RESULT_DISPLAY_MODE_RECENT = stringPreferencesKey("insights_result_display_mode_recent")
         val INSIGHTS_RESULT_DISPLAY_MODE_RANGE = stringPreferencesKey("insights_result_display_mode_range")
         val INSIGHTS_PARAMETER_SECTION = stringPreferencesKey("insights_parameter_section")
+        val INSIGHTS_DAY_ACTIVITIES_VIEW = stringPreferencesKey("insights_day_activities_view")
+        val INSIGHTS_PERIOD_ACTIVITIES_VIEW = stringPreferencesKey("insights_period_activities_view")
         val INSIGHTS_TIME_PARAMETERS_EXPANDED = booleanPreferencesKey("insights_time_parameters_expanded")
         val INSIGHTS_PIE_PALETTE_PRESET = stringPreferencesKey("insights_pie_palette_preset")
         val INSIGHTS_AVERAGE_DAY_BASIS = stringPreferencesKey("insights_average_day_basis")
@@ -416,6 +421,20 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             ?: DEFAULT_INSIGHTS_PARAMETER_SECTION.name
         runCatching { InsightsParameterSection.valueOf(rawValue) }
             .getOrDefault(DEFAULT_INSIGHTS_PARAMETER_SECTION)
+    }
+
+    val insightsDayActivitiesView: Flow<InsightsActivityView> = dataStore.data.map { preferences ->
+        preferences.insightsActivitiesView(
+            key = PreferencesKeys.INSIGHTS_DAY_ACTIVITIES_VIEW,
+            defaultValue = DEFAULT_INSIGHTS_DAY_ACTIVITIES_VIEW
+        )
+    }
+
+    val insightsPeriodActivitiesView: Flow<InsightsActivityView> = dataStore.data.map { preferences ->
+        preferences.insightsActivitiesView(
+            key = PreferencesKeys.INSIGHTS_PERIOD_ACTIVITIES_VIEW,
+            defaultValue = DEFAULT_INSIGHTS_PERIOD_ACTIVITIES_VIEW
+        )
     }
 
     suspend fun setRecordCanonicalCatalogDisplayMode(value: RecordFrequentOutputMode) {
@@ -689,6 +708,25 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             preferences[PreferencesKeys.INSIGHTS_PARAMETER_SECTION] = value.name
         }
     }
+
+    suspend fun setInsightsDayActivitiesView(value: InsightsActivityView) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.INSIGHTS_DAY_ACTIVITIES_VIEW] = value.name
+        }
+    }
+
+    suspend fun setInsightsPeriodActivitiesView(value: InsightsActivityView) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.INSIGHTS_PERIOD_ACTIVITIES_VIEW] = value.name
+        }
+    }
+
+    private fun Preferences.insightsActivitiesView(
+        key: Preferences.Key<String>,
+        defaultValue: InsightsActivityView
+    ): InsightsActivityView = runCatching {
+        InsightsActivityView.valueOf(this[key] ?: defaultValue.name)
+    }.getOrDefault(defaultValue)
 
     suspend fun setInsightsTimeParametersExpanded(value: Boolean) {
         dataStore.edit { preferences ->

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import android.util.Log
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -26,6 +27,10 @@ fun QueryInsightsTabContent(
     onPreferredResultDisplayModeChange: (InsightsResultDisplayMode) -> Unit,
     preferredParameterSection: InsightsParameterSection,
     onPreferredParameterSectionChange: (InsightsParameterSection) -> Unit,
+    dayActivitiesView: InsightsActivityView,
+    periodActivitiesView: InsightsActivityView,
+    onDayActivitiesViewChange: (InsightsActivityView) -> Unit,
+    onPeriodActivitiesViewChange: (InsightsActivityView) -> Unit,
     timeParametersExpanded: Boolean,
     onTimeParametersExpandedChange: (Boolean) -> Unit,
     preferredChartSemanticMode: InsightsChartSemanticMode,
@@ -75,14 +80,7 @@ fun QueryInsightsTabContent(
     // for every visible insights control and result.
     val displayedInsightsMode = queryUiState.insightsMode
     val displayedResultDisplayMode = queryUiState.resultDisplayMode
-    val displayedParameterSection = if (
-        displayedInsightsMode != InsightsMode.DAY &&
-        queryUiState.parameterSection == InsightsParameterSection.TIMELINE
-    ) {
-        InsightsParameterSection.DAY
-    } else {
-        queryUiState.parameterSection
-    }
+    val displayedParameterSection = queryUiState.parameterSection
     val displayedChartSemanticMode = queryUiState.chartSemanticMode
 
     // Insights period selectors are backed by Core's database calendar query. TXT storage is
@@ -90,6 +88,21 @@ fun QueryInsightsTabContent(
     val calendarAvailability = CalendarAvailability.fromMonthKeys(
         queryUiState.availableInsightsMonths
     )
+    LaunchedEffect(
+        queryUiState.availableInsightsMonths,
+        queryUiState.insightsDate,
+        queryUiState.insightsMonth,
+        queryUiState.insightsYear
+    ) {
+        Log.d(
+            "InsightsCalendar",
+            "selector render rawMonths=${queryUiState.availableInsightsMonths} " +
+                "years=${calendarAvailability.years} " +
+                "monthsByYear=${calendarAvailability.monthsByYear} " +
+                "selected=(date=${queryUiState.insightsDate},month=${queryUiState.insightsMonth}," +
+                "year=${queryUiState.insightsYear})"
+        )
+    }
     val selectedPeriod = displayedInsightsMode.toPeriod()
     val treeMaxAvailableDepth = (queryUiState.activeResult as? QueryResult.Tree)
         ?.maxAvailableDepth
@@ -153,6 +166,7 @@ fun QueryInsightsTabContent(
                 onInsightsRangeEndDateChange = queryInsightsViewModel::onInsightsRangeEndDateChange,
                 insightsRecentDays = queryUiState.insightsRecentDays,
                 onInsightsRecentDaysChange = queryInsightsViewModel::onInsightsRecentDaysChange,
+                onInsightsActivityPeriodConfirmed = queryInsightsViewModel::onInsightsActivityPeriodConfirmed,
                 resultDisplayMode = displayedResultDisplayMode,
                 onResultDisplayModeChange = { mode ->
                     queryInsightsViewModel.onResultDisplayModeChange(mode)
@@ -186,6 +200,18 @@ fun QueryInsightsTabContent(
                 } else {
                     null
                 },
+                periodActivityDays = queryUiState.periodActivityDays[selectedPeriod].orEmpty(),
+                periodActivityProjectTree = queryUiState.periodActivityProjectTrees[selectedPeriod].orEmpty(),
+                periodComparison = queryUiState.periodComparison,
+                canComparePreviousPeriod = queryInsightsViewModel.canComparePreviousPeriod(),
+                calendarAvailability = calendarAvailability,
+                dayActivitiesView = dayActivitiesView,
+                periodActivitiesView = periodActivitiesView,
+                onDayActivitiesViewChange = onDayActivitiesViewChange,
+                onPeriodActivitiesViewChange = onPeriodActivitiesViewChange,
+                onPeriodComparisonToggle = queryInsightsViewModel::onPeriodComparisonToggle,
+                onComparisonPeriodSelected =
+                    queryInsightsViewModel::onComparisonPeriodSelected,
                 parameterSection = displayedParameterSection,
                 insightsError = displayInsightsError,
                 analysisError = queryUiState.analysisError,
@@ -234,7 +260,7 @@ internal fun resolveDisplayResult(
     return when (selectedSection) {
         InsightsParameterSection.ACTIVITY_HIERARCHY -> uiState.activeResult as? QueryResult.Tree
         InsightsParameterSection.DAY,
-        InsightsParameterSection.TIMELINE -> uiState.insightsResultsByPeriod[selectedPeriod]
+        InsightsParameterSection.ACTIVITIES -> uiState.insightsResultsByPeriod[selectedPeriod]
     }
 }
 

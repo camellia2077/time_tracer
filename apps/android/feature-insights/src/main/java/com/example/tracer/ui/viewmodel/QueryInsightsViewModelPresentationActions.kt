@@ -1,6 +1,5 @@
 package com.example.tracer
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -28,19 +27,13 @@ fun QueryInsightsViewModel.onInsightsModeChange(mode: InsightsMode) {
         )
         copy(
             insightsMode = mode,
-            parameterSection = if (
-                mode != InsightsMode.DAY && parameterSection == InsightsParameterSection.TIMELINE
-            ) {
-                InsightsParameterSection.DAY
-            } else {
-                parameterSection
-            },
+            parameterSection = parameterSection,
             // Project Tree cards are scoped to the period used to query them.
             // Do not retain an analysis card after changing to a different insights window.
             activeResult = if (hidesStaleAnalysis) null else activeResult,
             analysisError = if (hidesStaleAnalysis) "" else analysisError,
             chartSemanticMode = preferredChartSemanticMode.normalizeForInsightsMode(mode)
-        )
+        ).clearPeriodComparison()
     })
     // Chart and Tree are independent pipelines, but both write the shared UiState. Starting
     // Tree here while Chart is loading lets a slower Tree result restore an older chart
@@ -78,6 +71,17 @@ fun QueryInsightsViewModel.onInsightsWeekChange(value: String) {
     }, autoInsights = true)
 }
 
+internal fun QueryInsightsViewModel.onInsightsActivityPeriodConfirmed(selection: InsightsPeriodSelection) {
+    updateInsightsParams({
+        copy(
+            insightsDate = digitsOnly(selection.date, 8),
+            insightsMonth = digitsOnly(selection.month, 6),
+            insightsYear = digitsOnly(selection.year, 4),
+            insightsWeek = digitsOnly(selection.week, 6)
+        )
+    }, autoInsights = true)
+}
+
 fun QueryInsightsViewModel.onInsightsRecentDaysChange(value: String) {
     updateInsightsParams({
         copy(insightsRecentDays = value.filter { it.isDigit() })
@@ -100,9 +104,14 @@ fun QueryInsightsViewModel.onInsightsTabEntered() {
 
 private fun QueryInsightsViewModel.refreshInsightsCalendarAvailability() {
     viewModelScope.launch {
+        logChart("calendar availability query start")
         val result = queryGateway.queryInsightsCalendarAvailability()
         if (result.ok) {
-            uiState = uiState.copy(availableInsightsMonths = result.months.distinct().sorted())
+            val months = result.months.distinct().sorted()
+            logChart("calendar availability query success count=${months.size} months=$months")
+            uiState = uiState.copy(availableInsightsMonths = months)
+        } else {
+            logChart("calendar availability query failed message=${result.message.take(240)}")
         }
     }
 }
@@ -137,13 +146,7 @@ fun QueryInsightsViewModel.applyPersistedInsightsPresentation(
     // Treat the persisted display, period, semantic mode, and parameter section as one
     // selection. Applying them in separate Compose effects briefly leaves the ViewModel in
     // its default TEXT state, which starts a query whose delayed result can replace CHART.
-    val normalizedParameterSection = if (
-        insightsMode != InsightsMode.DAY && parameterSection == InsightsParameterSection.TIMELINE
-    ) {
-        InsightsParameterSection.DAY
-    } else {
-        parameterSection
-    }
+    val normalizedParameterSection = parameterSection
     val normalizedChartSemanticMode = chartSemanticMode.normalizeForInsightsMode(insightsMode)
     val firstPreferenceApplication = !insightsPresentationPreferencesApplied
     val changed = uiState.insightsMode != insightsMode ||
@@ -174,7 +177,11 @@ fun QueryInsightsViewModel.applyPersistedInsightsPresentation(
     // A request that was already loading belongs to the pre-restoration selection. Clear
     // its loading flag along with its data so the fully restored chart can start its own
     // request instead of being suppressed by that stale in-flight request.
-    uiState = if (changed) restoredState.invalidateChartState() else restoredState
+    uiState = if (changed) {
+        restoredState.clearPeriodComparison().invalidateChartState()
+    } else {
+        restoredState
+    }
     logChart(
         "persisted presentation applied; first=$firstPreferenceApplication changed=$changed " +
             chartSelection()
@@ -256,11 +263,8 @@ fun QueryInsightsViewModel.onChartSemanticModeChange(mode: InsightsChartSemantic
 }
 
 fun QueryInsightsViewModel.onParameterSectionChange(section: InsightsParameterSection) {
-    if (uiState.insightsMode != InsightsMode.DAY && section == InsightsParameterSection.TIMELINE) {
-        return
-    }
     val sectionChanged = uiState.parameterSection != section
-    uiState = uiState.copy(parameterSection = section)
+    uiState = uiState.copy(parameterSection = section).clearPeriodComparison()
     if (section == InsightsParameterSection.ACTIVITY_HIERARCHY) {
         val selectedPeriod = uiState.insightsMode.toDataTreePeriod()
         val currentTree = uiState.activeResult as? QueryResult.Tree
@@ -273,13 +277,10 @@ fun QueryInsightsViewModel.onParameterSectionChange(section: InsightsParameterSe
             loadTree(selectedPeriod, uiState.treeLevel)
         }
     } else {
-        // DAY, Markdown, and Timeline all consume the same cached day insights. Two flicker
-        // bugs were caused by treating a presentation-only section change as a new query:
-        // returning to Timeline recreated the tab and re-ran the persisted-section effect,
-        // while Timeline -> Markdown changed the section value from TIMELINE to DAY. Both
-        // paths cleared dayTimeline before reloading the unchanged insights. Re-query only
-        // when the current period has no insights yet, so switching or recreating these views
-        // preserves the existing data and avoids the empty-state frame.
+        // Activities and Text reuse the current period's cached Markdown and structured
+        // insights. Treating a presentation-only section change as a new query caused an
+        // empty-state frame while that cache was rebuilt. Re-query only when the current
+        // period has no insights yet or the current day explicitly needs a refresh.
         val currentPeriod = uiState.insightsMode.toDataTreePeriod()
         val hasCurrentInsights = uiState.insightsResultsByPeriod[currentPeriod] != null
         val needsInsightsRefresh = uiState.dayInsightsNeedsRefresh &&

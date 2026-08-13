@@ -11,6 +11,7 @@ import com.example.tracer.InsightsParameterSection
 import com.example.tracer.InsightsPiePalettePreset
 import com.example.tracer.InsightsResultDisplayMode
 import com.example.tracer.InsightsMode
+import com.example.tracer.InsightsActivityView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -274,9 +275,26 @@ class UserPreferencesRepositoryTest {
 
         assertEquals(InsightsParameterSection.DAY, repository.insightsParameterSection.first())
 
-        repository.setInsightsParameterSection(InsightsParameterSection.TIMELINE)
+        repository.setInsightsParameterSection(InsightsParameterSection.ACTIVITIES)
 
-        assertEquals(InsightsParameterSection.TIMELINE, repository.insightsParameterSection.first())
+        assertEquals(InsightsParameterSection.ACTIVITIES, repository.insightsParameterSection.first())
+    }
+
+    @Test
+    fun insightsActivitiesView_defaultsAndPersistsDayAndPeriodSelectionsIndependently() = runTest {
+        val repository = buildRepository(
+            testName = "persist_insights_activities_view",
+            scope = backgroundScope
+        )
+
+        assertEquals(InsightsActivityView.RECORDS, repository.insightsDayActivitiesView.first())
+        assertEquals(InsightsActivityView.OVERVIEW, repository.insightsPeriodActivitiesView.first())
+
+        repository.setInsightsDayActivitiesView(InsightsActivityView.OVERVIEW)
+        repository.setInsightsPeriodActivitiesView(InsightsActivityView.RECORDS)
+
+        assertEquals(InsightsActivityView.OVERVIEW, repository.insightsDayActivitiesView.first())
+        assertEquals(InsightsActivityView.RECORDS, repository.insightsPeriodActivitiesView.first())
     }
 
     @Test

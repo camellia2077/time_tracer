@@ -13,6 +13,7 @@
     <string name="insights_parameter_section_day">Date</string>
     <string name="insights_parameter_section_tree">Breakdown</string>
     <string name="insights_parameter_section_timeline">Timeline</string>
+    <string name="insights_parameter_section_activity">Activities</string>
     <string name="insights_parameter_section_markdown">Text</string>
     <string name="insights_title_insights_date">Insights Date</string>
     <string name="insights_title_insights_day">Insights Day</string>
@@ -23,6 +24,10 @@
     <string name="insights_title_start_date">Start Date</string>
     <string name="insights_title_end_date">End Date</string>
     <string name="insights_label_recent_days">Recent Days (N)</string>
+    <string name="insights_activities_period_selector_title">Activity period</string>
+    <string name="insights_activities_period_selector_sheet_title">Select %1$s</string>
+    <string name="insights_action_cancel">Cancel</string>
+    <string name="insights_action_done">Done</string>
 
     <string name="insights_action_loading">Loading...</string>
 
@@ -126,6 +131,28 @@
     <string name="insights_cd_copy_markdown">Copy Markdown</string>
     <string name="insights_cd_edit_statuses">Edit %1$s statuses</string>
     <string name="insights_result_title_activity_timeline">Activity Timeline</string>
+    <string name="insights_result_title_period_activities">Activities</string>
+    <string name="insights_period_activities_empty">No activities recorded for this period.</string>
+    <string name="insights_period_activities_overview">Overview</string>
+    <string name="insights_period_activities_records">Records</string>
+    <string name="insights_period_activities_total">Total time</string>
+    <string name="insights_period_activities_active_days">Recorded days</string>
+    <string name="insights_period_activities_record_count">Recorded activities</string>
+    <string name="insights_period_activities_daily_average">Avg. active day</string>
+    <string name="insights_period_activities_parent_breakdown">Parent activities</string>
+    <string name="insights_period_activities_month_summary">%1$d days · %2$d records</string>
+    <string name="insights_period_activities_day_summary">%1$d records</string>
+    <string name="insights_period_activities_compare_previous">Compare with previous period</string>
+    <string name="insights_period_activities_select_comparison_period">Comparison period</string>
+    <string name="insights_period_activities_comparison_period_picker_title">Select comparison period</string>
+    <string name="insights_cd_select_comparison_period">Select comparison period</string>
+    <string name="insights_period_activities_hide_comparison">Hide comparison</string>
+    <string name="insights_period_activities_comparison_loading">Loading comparison period…</string>
+    <string name="insights_period_activities_comparison_period">Compared with %1$s</string>
+    <string name="insights_period_activities_comparison_increase">Increased %1$s (%2$s)</string>
+    <string name="insights_period_activities_comparison_decrease">Decreased %1$s (%2$s)</string>
+    <string name="insights_period_activities_comparison_new_value">New %1$s</string>
+    <string name="insights_period_activities_comparison_neutral">No change (%1$s)</string>
     <string name="insights_day_remark_label">Day remark</string>
     <string name="insights_edit_day_remark">Edit day remark</string>
     <string name="insights_save_day_remark">Save</string>

@@ -51,6 +51,7 @@ internal fun InsightsTemporalInputFields(
     onInsightsDateChange: (String) -> Unit,
     insightsMonth: String,
     onInsightsMonthChange: (String) -> Unit,
+    yearMonthValueFormat: InsightsYearMonthValueFormat = InsightsYearMonthValueFormat.COMPACT,
     calendarAvailability: CalendarAvailability,
     insightsYear: String,
     onInsightsYearChange: (String) -> Unit,
@@ -85,6 +86,7 @@ internal fun InsightsTemporalInputFields(
             title = labels.monthTitle,
             insightsMonth = insightsMonth,
             calendarAvailability = calendarAvailability,
+            yearMonthValueFormat = yearMonthValueFormat,
             onInsightsMonthChange = onInsightsMonthChange
         )
 

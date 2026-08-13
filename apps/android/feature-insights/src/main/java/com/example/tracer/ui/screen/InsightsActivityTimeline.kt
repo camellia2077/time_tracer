@@ -26,12 +26,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.insights.R
+import com.example.tracer.ui.components.CalendarAvailability
 import kotlinx.coroutines.launch
 
 
 @Composable
 internal fun InsightsActivityTimeline(
     insights: StructuredDailyInsights,
+    projectTree: List<StructuredInsightsProjectNode>,
+    calendarAvailability: CalendarAvailability,
+    periodComparison: InsightsPeriodComparisonState = InsightsPeriodComparisonState.Hidden,
+    canComparePreviousPeriod: Boolean = false,
+    selectedView: InsightsActivityView,
+    onSelectedViewChange: (InsightsActivityView) -> Unit,
+    onPeriodComparisonToggle: () -> Unit = {},
+    onComparisonPeriodSelected: (InsightsPeriodSelection) -> Unit = {},
     modifier: Modifier = Modifier,
     onUpdateActivityRemark: suspend (ActivityTimelineItem, String) -> RecordActionResult,
     onUpdateDayRemark: suspend (String) -> RecordActionResult
@@ -53,58 +62,70 @@ internal fun InsightsActivityTimeline(
             color = colors.root
         )
         Spacer(modifier = Modifier.height(8.dp))
-        insights.dayRemark.let { dayRemark ->
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                tonalElevation = 1.dp,
-                shape = MaterialTheme.shapes.medium
-            ) {
-                Column(modifier = Modifier.padding(12.dp)) {
-                    Text(
-                        text = stringResource(R.string.insights_day_remark_label),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = colors.child
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = dayRemark,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    TextButton(onClick = {
-                        dayRemarkDraft = dayRemark
-                        editError = ""
-                        editingDayRemark = true
-                    }) {
-                        Text(stringResource(R.string.insights_edit_day_remark))
+        InsightsActivityViewSwitcher(
+            selectedView = selectedView,
+            views = listOf(InsightsActivityView.RECORDS, InsightsActivityView.OVERVIEW),
+            onSelect = onSelectedViewChange
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        if (selectedView == InsightsActivityView.OVERVIEW) {
+            InsightsActivityOverview(
+                activityDays = listOf(insights),
+                projectTree = projectTree,
+                insightsMode = InsightsMode.DAY,
+                periodComparison = periodComparison,
+                canComparePreviousPeriod = canComparePreviousPeriod,
+                calendarAvailability = calendarAvailability,
+                onPeriodComparisonToggle = onPeriodComparisonToggle,
+                onComparisonPeriodSelected = onComparisonPeriodSelected
+            )
+        } else {
+            insights.dayRemark.let { dayRemark ->
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    tonalElevation = 1.dp,
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            text = stringResource(R.string.insights_day_remark_label),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = colors.child
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = dayRemark,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        TextButton(onClick = {
+                            dayRemarkDraft = dayRemark
+                            editError = ""
+                            editingDayRemark = true
+                        }) {
+                            Text(stringResource(R.string.insights_edit_day_remark))
+                        }
                     }
                 }
+                Spacer(modifier = Modifier.height(8.dp))
             }
-            Spacer(modifier = Modifier.height(8.dp))
-        }
-        if (insights.activities.isEmpty()) {
-            Text(
-                text = stringResource(R.string.insights_activity_timeline_empty),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            return
-        }
-
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            insights.activities
-                .map(ActivityTimelineItem::toInsightsTimelineEntry)
-                .forEach { entry ->
-                    InsightsTimelineEntryRow(
-                        entry = entry,
-                        colors = colors,
-                        onEditRemark = { activity ->
-                            editingActivity = activity
-                            draftRemark = activity.remark.orEmpty()
-                            editError = ""
-                        }
-                    )
-                }
+            if (insights.activities.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.insights_activity_timeline_empty),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                InsightsTimelineRecordList(
+                    activities = insights.activities,
+                    layout = InsightsTimelineLayout.DURATION_SCALED,
+                    onEditRemark = { activity ->
+                        editingActivity = activity
+                        draftRemark = activity.remark.orEmpty()
+                        editError = ""
+                    }
+                )
+            }
         }
     }
 

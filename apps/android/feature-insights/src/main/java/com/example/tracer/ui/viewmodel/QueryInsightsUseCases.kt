@@ -32,6 +32,10 @@ internal class QueryInsightsUseCases(
         compositionUseCase.invalidateCache()
     }
 
+    suspend fun loadComparisonPeriodInsights(
+        request: TemporalInsightsQueryRequest
+    ): StructuredInsightsCallResult = insightsGateway.insightsStructured(request)
+
     suspend fun insightsDay(
         currentState: QueryInsightsUiState,
         emit: (QueryInsightsUiState) -> Unit

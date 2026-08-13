@@ -13,6 +13,7 @@
     <string name="insights_parameter_section_day">日付</string>
     <string name="insights_parameter_section_tree">時間内訳</string>
     <string name="insights_parameter_section_timeline">タイムライン</string>
+    <string name="insights_parameter_section_activity">アクティビティ</string>
     <string name="insights_parameter_section_markdown">テキスト</string>
     <string name="insights_title_insights_date">分析日付</string>
     <string name="insights_title_insights_day">分析日</string>
@@ -23,6 +24,10 @@
     <string name="insights_title_start_date">開始日</string>
     <string name="insights_title_end_date">終了日</string>
     <string name="insights_label_recent_days">最近日数 (N)</string>
+    <string name="insights_activities_period_selector_title">アクティビティ期間</string>
+    <string name="insights_activities_period_selector_sheet_title">%1$sを選択</string>
+    <string name="insights_action_cancel">キャンセル</string>
+    <string name="insights_action_done">完了</string>
 
     <string name="insights_action_loading">読み込み中...</string>
 
@@ -125,6 +130,28 @@
     <string name="insights_cd_expand">展開</string>
     <string name="insights_cd_copy_markdown">Markdown をコピー</string>
     <string name="insights_result_title_activity_timeline">アクティビティタイムライン</string>
+    <string name="insights_result_title_period_activities">アクティビティ</string>
+    <string name="insights_period_activities_empty">この期間にはアクティビティの記録がありません。</string>
+    <string name="insights_period_activities_overview">概要</string>
+    <string name="insights_period_activities_records">記録</string>
+    <string name="insights_period_activities_total">合計時間</string>
+    <string name="insights_period_activities_active_days">記録のある日数</string>
+    <string name="insights_period_activities_record_count">記録済みアクティビティ数</string>
+    <string name="insights_period_activities_daily_average">活動日平均</string>
+    <string name="insights_period_activities_parent_breakdown">親アクティビティの内訳</string>
+    <string name="insights_period_activities_month_summary">%1$d 日・%2$d 件</string>
+    <string name="insights_period_activities_day_summary">%1$d 件</string>
+    <string name="insights_period_activities_compare_previous">前の期間と比較</string>
+    <string name="insights_period_activities_select_comparison_period">比較期間</string>
+    <string name="insights_period_activities_comparison_period_picker_title">比較期間を選択</string>
+    <string name="insights_cd_select_comparison_period">比較期間を選択</string>
+    <string name="insights_period_activities_hide_comparison">比較を隠す</string>
+    <string name="insights_period_activities_comparison_loading">比較期間を読み込み中…</string>
+    <string name="insights_period_activities_comparison_period">%1$s と比較</string>
+    <string name="insights_period_activities_comparison_increase">%1$s 増加（%2$s）</string>
+    <string name="insights_period_activities_comparison_decrease">%1$s 減少（%2$s）</string>
+    <string name="insights_period_activities_comparison_new_value">新規 %1$s</string>
+    <string name="insights_period_activities_comparison_neutral">変化なし（%1$s）</string>
     <string name="insights_day_remark_label">日次メモ</string>
     <string name="insights_edit_day_remark">日次メモを編集</string>
     <string name="insights_save_day_remark">保存</string>

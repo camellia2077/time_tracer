@@ -13,7 +13,7 @@ import com.example.tracer.feature.insights.R
 import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
 
 enum class InsightsParameterSection {
-    TIMELINE,
+    ACTIVITIES,
     DAY,
     ACTIVITY_HIERARCHY
 }
@@ -42,23 +42,17 @@ internal fun QueryInsightsParameterCards(
     onInsightsRangeEndDateChange: (String) -> Unit,
     insightsRecentDays: String,
     onInsightsRecentDaysChange: (String) -> Unit,
+    onInsightsActivityPeriodConfirmed: (InsightsPeriodSelection) -> Unit = {},
     timeParametersExpanded: Boolean,
     onTimeParametersExpandedChange: (Boolean) -> Unit,
     onSelectedSectionChange: (InsightsParameterSection) -> Unit,
     onTreeLevelChange: (String) -> Unit
 ) {
-    val availableSections = if (insightsMode == InsightsMode.DAY) {
-        listOf(
-            InsightsParameterSection.TIMELINE,
-            InsightsParameterSection.ACTIVITY_HIERARCHY,
-            InsightsParameterSection.DAY
-        )
-    } else {
-        listOf(
-            InsightsParameterSection.ACTIVITY_HIERARCHY,
-            InsightsParameterSection.DAY
-        )
-    }
+    val availableSections = listOf(
+        InsightsParameterSection.ACTIVITIES,
+        InsightsParameterSection.ACTIVITY_HIERARCHY,
+        InsightsParameterSection.DAY
+    )
     val effectiveSelectedSection = if (selectedSection in availableSections) {
         selectedSection
     } else {
@@ -100,7 +94,20 @@ internal fun QueryInsightsParameterCards(
             onExpandedChange = onTimeParametersExpandedChange
         )
 
-        InsightsParameterSection.TIMELINE -> InsightsParametersCard(
+        InsightsParameterSection.ACTIVITIES -> if (
+            insightsMode in setOf(InsightsMode.DAY, InsightsMode.WEEK, InsightsMode.MONTH, InsightsMode.YEAR)
+        ) {
+            InsightsActivitiesPeriodSelector(
+                insightsMode = insightsMode,
+                keyboardOptions = keyboardOptions,
+                insightsDate = insightsDate,
+                insightsMonth = insightsMonth,
+                calendarAvailability = calendarAvailability,
+                insightsYear = insightsYear,
+                insightsWeek = insightsWeek,
+                onPeriodConfirmed = onInsightsActivityPeriodConfirmed
+            )
+        } else InsightsParametersCard(
             insightsMode = insightsMode,
             keyboardOptions = keyboardOptions,
             insightsDate = insightsDate,
@@ -182,5 +189,5 @@ private fun InsightsParameterSectionSelector(
 private fun InsightsParameterSection.labelRes(): Int = when (this) {
     InsightsParameterSection.DAY -> R.string.insights_parameter_section_markdown
     InsightsParameterSection.ACTIVITY_HIERARCHY -> R.string.insights_parameter_section_tree
-    InsightsParameterSection.TIMELINE -> R.string.insights_parameter_section_timeline
+    InsightsParameterSection.ACTIVITIES -> R.string.insights_parameter_section_activity
 }

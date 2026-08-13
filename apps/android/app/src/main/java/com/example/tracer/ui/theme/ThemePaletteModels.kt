@@ -50,6 +50,9 @@ internal fun ThemeColorTokens.toInsightsColorTokens(): InsightsColorTokens =
         treeProgress = secondary,
         timelineDuration = tertiary,
         track = outlineVariant,
-        gap = surfaceVariant
+        gap = surfaceVariant,
+        comparisonIncrease = InsightsComparisonColorTokens.lightIncrease,
+        comparisonDecrease = InsightsComparisonColorTokens.lightDecrease,
+        comparisonNeutral = InsightsComparisonColorTokens.lightNeutral
     )
 

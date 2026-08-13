@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.example.tracer.feature.insights.R
+import com.example.tracer.ui.components.CalendarAvailability
 import kotlinx.coroutines.launch
 
 
@@ -32,6 +33,17 @@ internal fun QueryInsightsResultDisplay(
     activeResult: QueryResult?,
     insightsSummary: InsightsSummary?,
     dayTimeline: StructuredDailyInsights?,
+    periodActivityDays: List<StructuredDailyInsights>,
+    periodActivityProjectTree: List<StructuredInsightsProjectNode>,
+    periodComparison: InsightsPeriodComparisonState = InsightsPeriodComparisonState.Hidden,
+    canComparePreviousPeriod: Boolean = false,
+    calendarAvailability: CalendarAvailability = CalendarAvailability(emptyMap()),
+    dayActivitiesView: InsightsActivityView,
+    periodActivitiesView: InsightsActivityView,
+    onDayActivitiesViewChange: (InsightsActivityView) -> Unit,
+    onPeriodActivitiesViewChange: (InsightsActivityView) -> Unit,
+    onPeriodComparisonToggle: () -> Unit = {},
+    onComparisonPeriodSelected: (InsightsPeriodSelection) -> Unit = {},
     parameterSection: InsightsParameterSection,
     insightsError: String,
     analysisError: String,
@@ -145,17 +157,39 @@ internal fun QueryInsightsResultDisplay(
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 val insights = activeResult as QueryResult.Insights
-                if (parameterSection == InsightsParameterSection.TIMELINE &&
-                    insightsMode == InsightsMode.DAY
-                ) {
-                    InsightsActivityTimeline(
-                        insights = dayTimeline ?: StructuredDailyInsights(
-                            date = "",
-                            totalDurationSeconds = 0L
-                        ),
-                        onUpdateActivityRemark = onUpdateActivityRemark,
-                        onUpdateDayRemark = onUpdateDayRemark
-                    )
+                if (parameterSection == InsightsParameterSection.ACTIVITIES) {
+                    if (insightsMode == InsightsMode.DAY) {
+                        InsightsActivityTimeline(
+                            insights = dayTimeline ?: StructuredDailyInsights(
+                                date = "",
+                                totalDurationSeconds = 0L
+                            ),
+                            projectTree = periodActivityProjectTree,
+                            calendarAvailability = calendarAvailability,
+                            periodComparison = periodComparison,
+                            canComparePreviousPeriod = canComparePreviousPeriod,
+                            selectedView = dayActivitiesView,
+                            onSelectedViewChange = onDayActivitiesViewChange,
+                            onPeriodComparisonToggle = onPeriodComparisonToggle,
+                            onComparisonPeriodSelected = onComparisonPeriodSelected,
+                            onUpdateActivityRemark = onUpdateActivityRemark,
+                            onUpdateDayRemark = onUpdateDayRemark
+                        )
+                    } else {
+                        InsightsPeriodActivityBrowser(
+                            activityDays = periodActivityDays,
+                            projectTree = periodActivityProjectTree,
+                            insightsMode = insightsMode,
+                            periodComparison = periodComparison,
+                            canComparePreviousPeriod = canComparePreviousPeriod,
+                            calendarAvailability = calendarAvailability,
+                            selectedView = periodActivitiesView,
+                            onSelectedViewChange = onPeriodActivitiesViewChange,
+                            onPeriodComparisonToggle = onPeriodComparisonToggle,
+                            onComparisonPeriodSelected = onComparisonPeriodSelected,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                 } else {
                     MarkdownResultHeader(
                         title = stringResource(R.string.insights_result_title_insights),

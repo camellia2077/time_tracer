@@ -25,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import android.util.Log
 import com.example.tracer.feature.insights.R
 import com.example.tracer.ui.components.CalendarAvailability
 
@@ -45,7 +46,10 @@ internal fun InsightsYearPickerInput(
         color = MaterialTheme.colorScheme.onSurfaceVariant
     )
     OutlinedButton(
-        onClick = { visible = true },
+        onClick = {
+            Log.d("InsightsCalendar", "year picker open selected=$insightsYear years=$years")
+            visible = true
+        },
         enabled = years.isNotEmpty(),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -60,7 +64,7 @@ internal fun InsightsYearPickerInput(
     }
 
     if (visible) {
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
         ModalBottomSheet(
             onDismissRequest = { visible = false },
             sheetState = sheetState
@@ -81,6 +85,7 @@ internal fun InsightsYearPickerInput(
                         ListItem(
                             headlineContent = { Text(year) },
                             modifier = Modifier.clickable {
+                                Log.d("InsightsCalendar", "year picker selected=$year")
                                 onInsightsYearChange(year)
                                 visible = false
                             }

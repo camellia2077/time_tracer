@@ -41,6 +41,30 @@ sealed interface InsightsSummary {
     ) : InsightsSummary
 }
 
+sealed interface InsightsPeriodComparisonState {
+    data object Hidden : InsightsPeriodComparisonState
+    data class Loading(
+        val selection: InsightsPeriodSelection
+    ) : InsightsPeriodComparisonState
+    data class Ready(
+        val label: String,
+        val selection: InsightsPeriodSelection,
+        val activityDays: List<StructuredDailyInsights>,
+        val projectTree: List<StructuredInsightsProjectNode>
+    ) : InsightsPeriodComparisonState
+    data class Failed(
+        val selection: InsightsPeriodSelection,
+        val message: String
+    ) : InsightsPeriodComparisonState
+}
+
+internal fun InsightsPeriodComparisonState.selectionOrNull(): InsightsPeriodSelection? = when (this) {
+    is InsightsPeriodComparisonState.Loading -> selection
+    is InsightsPeriodComparisonState.Ready -> selection
+    is InsightsPeriodComparisonState.Failed -> selection
+    InsightsPeriodComparisonState.Hidden -> null
+}
+
 enum class InsightsResultDisplayMode {
     TEXT,
     CHART
@@ -61,6 +85,13 @@ data class QueryInsightsUiState(
     val insightsSummariesByPeriod: Map<DataTreePeriod, InsightsSummary> = emptyMap(),
     val insightsErrorsByPeriod: Map<DataTreePeriod, String> = emptyMap(),
     val dayTimeline: StructuredDailyInsights? = null,
+    val periodActivityDays: Map<DataTreePeriod, List<StructuredDailyInsights>> = emptyMap(),
+    val periodActivityProjectTrees: Map<DataTreePeriod, List<StructuredInsightsProjectNode>> = emptyMap(),
+    val periodComparison: InsightsPeriodComparisonState = InsightsPeriodComparisonState.Hidden,
+    // Incremented whenever comparison is disabled or its selected period changes, so a delayed
+    // response cannot replace a newer comparison selection. Current-window changes intentionally
+    // do not increment it because the comparison period is selected independently.
+    val periodComparisonVersion: Long = 0L,
     val statusValues: List<InsightsStatusValue> = emptyList(),
     // Timeline remark edits are applied locally first to preserve scroll position. The next
     // Markdown/insights load clears this flag after Core has supplied a fresh projection.

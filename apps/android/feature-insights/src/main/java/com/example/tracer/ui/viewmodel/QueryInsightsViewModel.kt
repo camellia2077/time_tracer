@@ -138,6 +138,87 @@ class QueryInsightsViewModel(
         dispatchIntent(QueryInsightsIntent.InsightsRange)
     }
 
+    fun onPeriodComparisonToggle() {
+        if (uiState.periodComparison !is InsightsPeriodComparisonState.Hidden) {
+            uiState = uiState.clearPeriodComparison()
+            return
+        }
+        val draft = defaultComparisonPeriodDraft(uiState)
+        if (draft != null) {
+            val comparison = resolveComparisonPeriodRequest(
+                state = uiState,
+                selection = draft,
+                locale = useCases.currentInsightsLocale()
+            ) ?: return
+            // Enabling comparison immediately shows the adjacent period. The picker is only
+            // for replacing that default with another period afterwards.
+            loadPeriodComparison(comparison, draft)
+            return
+        }
+        val previous = resolveDefaultComparisonPeriodRequest(
+            state = uiState,
+            locale = useCases.currentInsightsLocale()
+        ) ?: return
+        loadPeriodComparison(previous, selection = null)
+    }
+
+    internal fun onComparisonPeriodSelected(selection: InsightsPeriodSelection) {
+        val comparison = resolveComparisonPeriodRequest(
+            state = uiState,
+            selection = selection,
+            locale = useCases.currentInsightsLocale()
+        ) ?: return
+        loadPeriodComparison(comparison, selection)
+    }
+
+    private fun loadPeriodComparison(
+        comparison: ComparisonPeriodRequest,
+        selection: InsightsPeriodSelection?
+    ) {
+        val version = uiState.periodComparisonVersion + 1
+        val activeSelection = selection ?: uiState.periodComparison.selectionOrNull()
+            ?: uiState.toPeriodSelection()
+        uiState = uiState.copy(
+            periodComparison = InsightsPeriodComparisonState.Loading(activeSelection),
+            periodComparisonVersion = version
+        )
+        viewModelScope.launch {
+            val result = useCases.loadComparisonPeriodInsights(comparison.request)
+            // Turning comparison off or selecting a different comparison window supersedes this
+            // response. Current-window parameter edits intentionally do not: that selection is
+            // independent from the comparison period.
+            if (uiState.periodComparisonVersion != version ||
+                uiState.periodComparison !is InsightsPeriodComparisonState.Loading
+            ) {
+                return@launch
+            }
+            uiState = if (result.operationOk) {
+                uiState.copy(
+                    periodComparison = InsightsPeriodComparisonState.Ready(
+                        label = comparison.label,
+                        selection = activeSelection,
+                        activityDays = result.activityDaysForComparison(),
+                        projectTree = result.projectTree
+                    )
+                )
+            } else {
+                uiState.copy(
+                    periodComparison = InsightsPeriodComparisonState.Failed(
+                        selection = activeSelection,
+                        message = result.errorMessage.ifBlank {
+                            "Unable to load the comparison period."
+                        }
+                    )
+                )
+            }
+        }
+    }
+
+    fun canComparePreviousPeriod(): Boolean = resolveDefaultComparisonPeriodRequest(
+        state = uiState,
+        locale = useCases.currentInsightsLocale()
+    ) != null
+
     fun insightsCurrentSelection() {
         if (uiState.resultDisplayMode != InsightsResultDisplayMode.TEXT ||
             uiState.parameterSection == InsightsParameterSection.ACTIVITY_HIERARCHY
@@ -218,7 +299,8 @@ class QueryInsightsViewModel(
         autoInsights: Boolean = false
     ) {
         invalidateInFlightChartRequests("insights parameters changed")
-        val nextState = uiState.transform().invalidateChartState()
+        val nextState = uiState.transform()
+            .invalidateChartState()
         val shouldReloadChart = nextState.resultDisplayMode == InsightsResultDisplayMode.CHART &&
             !nextState.isChartLoading()
         uiState = nextState
@@ -298,6 +380,7 @@ class QueryInsightsViewModel(
         runCatching { Log.i(INSIGHTS_CHART_LOG_TAG, message) }
     }
 
+
     private fun dispatchIntent(intent: QueryInsightsIntent) {
         // Capture the complete query selection before launching. The coroutine may start after
         // another UI event has changed uiState; using the later state would make this request
@@ -324,7 +407,7 @@ class QueryInsightsViewModel(
                                 "chart state accepted; generation=${intent.generation} " +
                                     "${chartResultSummary(state)}"
                             )
-                            uiState = state
+                            commitAsyncQueryState(state)
                         } else {
                             logChart(
                                 "chart state dropped; request=${intent.generation} " +
@@ -338,7 +421,7 @@ class QueryInsightsViewModel(
                 // evaluating; committing the terminal state explicitly afterwards makes the
                 // final chart model the last state write for this request.
                 if (intent.generation == chartRequestGeneration) {
-                    uiState = result
+                    commitAsyncQueryState(result)
                     logChart(
                         "chart result committed; generation=${intent.generation} " +
                             "${chartResultSummary(uiState)}"
@@ -351,46 +434,46 @@ class QueryInsightsViewModel(
                 }
                 return@launch
             }
-            uiState = when (intent) {
+            commitAsyncQueryState(when (intent) {
                 QueryInsightsIntent.InsightsDay -> {
                     useCases.insightsDay(
                         currentState = uiState,
-                        emit = { state -> uiState = state }
+                        emit = ::commitAsyncQueryState
                     )
                 }
 
                 QueryInsightsIntent.InsightsMonth -> {
                     useCases.insightsMonth(
                         currentState = uiState,
-                        emit = { state -> uiState = state }
+                        emit = ::commitAsyncQueryState
                     )
                 }
 
                 QueryInsightsIntent.InsightsYear -> {
                     useCases.insightsYear(
                         currentState = uiState,
-                        emit = { state -> uiState = state }
+                        emit = ::commitAsyncQueryState
                     )
                 }
 
                 QueryInsightsIntent.InsightsWeek -> {
                     useCases.insightsWeek(
                         currentState = uiState,
-                        emit = { state -> uiState = state }
+                        emit = ::commitAsyncQueryState
                     )
                 }
 
                 QueryInsightsIntent.InsightsRecent -> {
                     useCases.insightsRecent(
                         currentState = uiState,
-                        emit = { state -> uiState = state }
+                        emit = ::commitAsyncQueryState
                     )
                 }
 
                 QueryInsightsIntent.InsightsRange -> {
                     useCases.insightsRange(
                         currentState = uiState,
-                        emit = { state -> uiState = state }
+                        emit = ::commitAsyncQueryState
                     )
                 }
 
@@ -404,13 +487,25 @@ class QueryInsightsViewModel(
                 }
 
                 is QueryInsightsIntent.LoadChart -> error("Chart intents are handled before dispatch")
-            }
+            })
             logChart(
                 "insights request committed; kind=${intent.logName()} " +
                     "generation=$chartRequestGeneration ${chartSelection()} " +
                     "status=${uiState.statusText.take(120)}"
             )
         }
+    }
+
+    /**
+     * Calendar availability is a separate DB-backed projection. An in-flight
+     * Insights/Tree/Chart request starts from an older UI snapshot and must not
+     * erase it when its loading or result state arrives later.
+     */
+    private fun commitAsyncQueryState(nextState: QueryInsightsUiState) {
+        val latestState = uiState
+        uiState = nextState
+            .preserveCalendarAvailability(latestState.availableInsightsMonths)
+            .preserveLatestPeriodComparison(latestState)
     }
 
     private fun QueryInsightsIntent.logName(): String = when (this) {
@@ -433,4 +528,19 @@ class QueryInsightsViewModel(
         rangeEndDigits = uiState.insightsRangeEndDate,
         recentDays = uiState.insightsRecentDays
     )
+}
+
+internal fun QueryInsightsUiState.preserveCalendarAvailability(
+    latestCalendarMonths: List<String>
+): QueryInsightsUiState = copy(availableInsightsMonths = latestCalendarMonths)
+
+internal fun QueryInsightsUiState.preserveLatestPeriodComparison(
+    latestState: QueryInsightsUiState
+): QueryInsightsUiState = if (periodComparisonVersion < latestState.periodComparisonVersion) {
+    copy(
+        periodComparison = latestState.periodComparison,
+        periodComparisonVersion = latestState.periodComparisonVersion
+    )
+} else {
+    this
 }

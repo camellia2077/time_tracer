@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import android.util.Log
 import com.example.tracer.feature.insights.R
 import com.example.tracer.ui.components.CalendarAvailability
 import com.example.tracer.ui.components.CalendarYearMonthPickerSheet
@@ -26,6 +27,7 @@ internal fun InsightsYearMonthPickerInput(
     title: String,
     insightsMonth: String,
     availability: CalendarAvailability,
+    valueFormat: InsightsYearMonthValueFormat = InsightsYearMonthValueFormat.COMPACT,
     onInsightsMonthChange: (String) -> Unit
 ) {
     var visible by remember { mutableStateOf(false) }
@@ -42,7 +44,14 @@ internal fun InsightsYearMonthPickerInput(
         color = MaterialTheme.colorScheme.onSurfaceVariant
     )
     OutlinedButton(
-        onClick = { visible = true },
+        onClick = {
+            Log.d(
+                "InsightsCalendar",
+                "month picker open selected=$displayInsightsMonth years=${availability.years} " +
+                    "monthsByYear=${availability.monthsByYear}"
+            )
+            visible = true
+        },
         enabled = availability.years.isNotEmpty(),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -58,7 +67,12 @@ internal fun InsightsYearMonthPickerInput(
         CalendarYearMonthPickerSheet(
             selectedYearMonth = displayInsightsMonth,
             availability = availability,
-            onYearMonthSelected = onInsightsMonthChange,
+            onYearMonthSelected = { selected ->
+                Log.d("InsightsCalendar", "month picker selected=$selected")
+                onInsightsMonthChange(
+                    valueFormat.normalize(selected)
+                )
+            },
             onDismissRequest = { visible = false },
             title = stringResource(R.string.insights_sheet_select_year_month),
             currentText = stringResource(R.string.insights_sheet_current_month, displayInsightsMonth),
@@ -66,5 +80,15 @@ internal fun InsightsYearMonthPickerInput(
             yearPlaceholder = stringResource(R.string.insights_picker_year_placeholder),
             noYearsLabel = stringResource(R.string.insights_picker_no_years)
         )
+    }
+}
+
+internal enum class InsightsYearMonthValueFormat {
+    COMPACT,
+    ISO;
+
+    fun normalize(value: String): String = when (this) {
+        COMPACT -> value.replace("-", "")
+        ISO -> value
     }
 }
