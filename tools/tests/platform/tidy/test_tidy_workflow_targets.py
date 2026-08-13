@@ -10,5 +10,4 @@ class TestTidyWorkflowTargets(TestCase):
         ).read_text(encoding="utf-8")
 
         self.assertIn('"tc_infra_insights_lib"', workflow_toml)
-        self.assertNotIn('"tc_infra_insights_lib"', workflow_toml)
         self.assertNotIn('"tc_infra_full_lib"', workflow_toml)

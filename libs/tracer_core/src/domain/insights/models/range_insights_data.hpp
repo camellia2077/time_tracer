@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "domain/insights/models/daily_insights_data.hpp"
 #include "domain/insights/models/project_tree.hpp"
 #include "domain/insights/models/insights_status_value.hpp"
 
@@ -28,6 +29,9 @@ struct RangeInsightsData {
 
   std::vector<std::pair<std::int64_t, std::int64_t>> project_stats;
   insights::ProjectTree project_tree;
+  // Detail rows stay grouped by their logical day so presentation clients can
+  // browse a period chronologically without reimplementing time attribution.
+  std::vector<DailyInsightsData> activity_days;
 };
 
 #endif  // DOMAIN_INSIGHTS_MODELS_RANGE_INSIGHTS_DATA_H_

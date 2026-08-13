@@ -11,6 +11,7 @@
 
 #include "infra/insights/data/cache/project_name_cache.hpp"
 #include "infra/insights/data/queriers/utils/batch_aggregation.hpp"
+#include "infra/insights/data/utils/activity_record_mapper.hpp"
 #include "infra/insights/data/utils/time_derived_stats.hpp"
 #include "infra/schema/day_schema.hpp"
 #include "infra/schema/sqlite_schema.hpp"
@@ -34,16 +35,6 @@ auto DaysInMonth(std::string_view year_month) -> int {
   return kDaysPerMonth[month - 1];
 }
 
-auto JoinPathParts(const std::vector<std::string>& parts) -> std::string {
-  if (parts.empty()) {
-    return "";
-  }
-  std::string path = parts[0];
-  for (size_t i = 1; i < parts.size(); ++i) {
-    path += "_" + parts[i];
-  }
-  return path;
-}
 }  // namespace
 
 MonthQuerier::MonthQuerier(sqlite3* sqlite_db, std::string_view year_month,
@@ -200,7 +191,8 @@ void BatchMonthDataFetcher::FetchProjectStats(
     data.matched_record_count += activity_count;
 
     const std::string project_path =
-        JoinPathParts(provider.GetPathParts(project_id));
+        tracer::core::infrastructure::insights::data::record_mapping::JoinProjectPath(
+            provider.GetPathParts(project_id));
     if (IsStudyProjectPath(project_path)) {
       status_dates[year_month].insert(date);
     }

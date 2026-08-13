@@ -26,6 +26,9 @@ Define semantic colors for Timeline, Tree, and Insights visualizations.
 | Timeline track | `#E2E8F0` | `#334155` | Unfilled activity track |
 | Insights card | `#FFFFFF` | `#0F172A` | Timeline and Tree card surfaces |
 | Insights low-emphasis surface | `#F8FAFC` | `#1E293B` | Gaps and low-emphasis regions |
+| Comparison increase | `#1A7F37` | `#3FB950` | Positive period-over-period changes; always paired with an up arrow and explicit text |
+| Comparison decrease | `#CF222E` | `#F85149` | Negative period-over-period changes; always paired with a down arrow and explicit text |
+| Comparison neutral | `#57606A` | `#8C959F` | Unchanged values; always paired with a neutral icon and explicit text |
 
 ## Tree Progress Bar
 
@@ -46,6 +49,7 @@ The Tree progress bar represents a node's share of the total Tree duration. It i
 - The percentage label must remain readable at the existing small text size and must have stronger emphasis than secondary text.
 - The empty track and Tree card must remain neutral and must not inherit the progress hue.
 - Do not use green, teal, or success-state colors for the Tree progress bar unless the product meaning changes from duration share to status.
+- Comparison increase, decrease, and neutral are separate semantic roles. Every palette reuses the shared `InsightsComparisonColorTokens` values; arrows and localized change text remain required so the meaning never depends on color alone.
 - When adding a theme, document the replacement HEX values in this table before changing the implementation.
 
 
@@ -56,6 +60,7 @@ The Tree progress bar represents a node's share of the total Tree duration. It i
 - Keep Insights cards, tracks, gaps, and large fills neutral.
 - Do not use the secondary UI color for Tree or Timeline semantics.
 - Prefer opacity and layout hierarchy before adding another hue.
+- In period comparison, show the shared comparison range once at the top of Overview. Put each metric or activity node's change on its own second line in the form: arrow, explicit direction text, signed absolute value, and percentage when applicable.
 - All formal colors in this document are recorded as HEX values.
 
 ## Theme Mapping
@@ -68,6 +73,9 @@ Insights roles follow the selected UI palette while keeping the same semantic re
 | Tree progress and percentage | `#2563EB` | `#60A5FA` | `#D97706` | `#FBBF24` | `#0D9488` | `#2DD4BF` | `#EA580C` | `#FB923C` | `#E11D48` | `#FB7185` | `#D97706` | `#FBBF24` | `#C78C25` | `#2E3440` | `#4EA5D9` | `#A33F3F` | `#B23A2B` | `#9A5B2F` |
 | Timeline duration | `#0284C7` | `#38BDF8` | `#D97706` | `#FBBF24` | `#0D9488` | `#2DD4BF` | `#F97316` | `#FDBA74` | `#F43F5E` | `#FDA4AF` | `#F59E0B` | `#FCD34D` | `#C78C25` | `#4C566A` | `#B7E3FF` | `#6A7078` | `#7B5E57` | `#526B45` |
 | Track | `#E2E8F0` | `#334155` | `#E4E4E7` | `#3F3F46` | `#CCFBF1` | `#134E4A` | `#E2E8F0` | `#334155` | `#E2E8F0` | `#334155` | `#E2E8F0` | `#334155` | `#D7B987` | `#C8D0DC` | `#2C5C78` | `#C7BFB1` | `#C9C6BC` | `#B18A59` |
+| Comparison increase | `#1A7F37` | `#3FB950` | `#1A7F37` | `#3FB950` | `#1A7F37` | `#3FB950` | `#1A7F37` | `#3FB950` | `#1A7F37` | `#3FB950` | `#1A7F37` | `#3FB950` | `#1A7F37` | `#1A7F37` | `#1A7F37` | `#1A7F37` | `#1A7F37` | `#1A7F37` |
+| Comparison decrease | `#CF222E` | `#F85149` | `#CF222E` | `#F85149` | `#CF222E` | `#F85149` | `#CF222E` | `#F85149` | `#CF222E` | `#F85149` | `#CF222E` | `#F85149` | `#CF222E` | `#CF222E` | `#CF222E` | `#CF222E` | `#CF222E` | `#CF222E` |
+| Comparison neutral | `#57606A` | `#8C959F` | `#57606A` | `#8C959F` | `#57606A` | `#8C959F` | `#57606A` | `#8C959F` | `#57606A` | `#8C959F` | `#57606A` | `#8C959F` | `#57606A` | `#57606A` | `#57606A` | `#57606A` | `#57606A` | `#57606A` |
 
 ## Breakdown Bar Layout
 

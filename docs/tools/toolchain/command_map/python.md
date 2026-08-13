@@ -42,6 +42,8 @@
    - 安装已有 APK：`python tools/run.py android --variant debug --install-only`
    - Release 编译与安装：`android --variant release`、`android --variant release --install`
    - 多设备时追加：`--serial DEVICE_SERIAL`
+   - `--with-test-data` 只注入 TXT 与层级测试文件；只有显式附加
+     `--rebuild-database` 才会解析全部 TXT 并重建数据库。
    - 参数与设备流程：`tools/toolchain/cli/handlers/android.py`
    - 测试数据注入：复用 `tools/scripts/devtools/android/push_test_data.py`
 

@@ -111,10 +111,15 @@ def _install(args: argparse.Namespace, ctx: Context) -> int:
         if injected.returncode != 0:
             return injected.returncode
 
-    if args.rebuild_database or args.with_test_data:
+    # Injecting test fixtures only copies them into the private TXT root.  Keep
+    # parsing/ingestion opt-in so --with-test-data does not silently populate
+    # the database before a caller asks for --rebuild-database.
+    if args.rebuild_database:
         rebuilt = _rebuild_database(args, ctx, adb_path)
         if rebuilt != 0:
             return rebuilt
+
+    if args.rebuild_database or args.with_test_data:
         _launch_app(args, ctx, adb_path)
 
     print(f"Android {args.variant} APK installed successfully.")

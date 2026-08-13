@@ -95,6 +95,15 @@ auto RunInfrastructureModuleInsightsSmoke() -> int {
             ActivityRecordKind::kEndOnly) {
       return 48;
     }
+    const auto kEndOnlyRange =
+        data_query_service.QueryRange("2023-11-30", "2023-11-30");
+    if (!kEndOnlyRange.has_records || kEndOnlyRange.activity_days.size() != 1U ||
+        kEndOnlyRange.activity_days.front().total_duration != 0 ||
+        kEndOnlyRange.activity_days.front().detailed_records.size() != 1U ||
+        kEndOnlyRange.activity_days.front().detailed_records.front().kind !=
+            ActivityRecordKind::kEndOnly) {
+      return 49;
+    }
 
     {
       const auto kEmptyRecent = data_query_service.QueryPeriod(7);

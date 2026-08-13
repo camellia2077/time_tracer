@@ -6,10 +6,10 @@
 #include <format>
 #include <stdexcept>
 #include <string>
-#include <string_view>
 
 #include "infra/insights/data/cache/project_name_cache.hpp"
 #include "infra/insights/data/utils/daily_status_utils.hpp"
+#include "infra/insights/data/utils/activity_record_mapper.hpp"
 #include "infra/insights/data/utils/project_tree_builder.hpp"
 #include "infra/insights/data/utils/time_derived_stats.hpp"
 #include "infra/schema/day_schema.hpp"
@@ -20,32 +20,15 @@ namespace {
 using tracer::core::infrastructure::insights::data::stats::
     DerivedTimeStatsAggregator;
 
-auto JoinPathParts(const std::vector<std::string>& parts) -> std::string {
-  if (parts.empty()) {
-    return "";
-  }
-  std::string path = parts[0];
-  for (size_t i = 1; i < parts.size(); ++i) {
-    path += "_" + parts[i];
-  }
-  return path;
-}
-
-auto ParseRecordKind(const unsigned char* value) -> ActivityRecordKind {
-  if (value != nullptr &&
-      std::string_view(reinterpret_cast<const char*>(value)) == "end_only") {
-    return ActivityRecordKind::kEndOnly;
-  }
-  return ActivityRecordKind::kInterval;
-}
-
 auto BuildDailyStats(
     const std::vector<std::pair<std::int64_t, std::int64_t>>& project_stats,
     const IProjectInfoProvider& provider)
     -> std::map<std::string, std::int64_t> {
   DerivedTimeStatsAggregator aggregator;
   for (const auto& [project_id, duration_seconds] : project_stats) {
-    aggregator.AddPathDuration(JoinPathParts(provider.GetPathParts(project_id)),
+    aggregator.AddPathDuration(
+        tracer::core::infrastructure::insights::data::record_mapping::JoinProjectPath(
+            provider.GetPathParts(project_id)),
                                duration_seconds);
   }
   return aggregator.BuildInsightsStatsMap();
@@ -139,20 +122,11 @@ void DayQuerier::FetchDetailedRecords(DailyInsightsData& data,
     sqlite3_bind_text(stmt, 1, param_.data(), static_cast<int>(param_.size()),
                       SQLITE_TRANSIENT);
     while (sqlite3_step(stmt) == SQLITE_ROW) {
-      TimeRecord record;
-      record.start_time =
-          reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
-      record.end_time =
-          reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
-      record.logical_id = sqlite3_column_int64(stmt, 5);
-      record.kind = ParseRecordKind(sqlite3_column_text(stmt, 6));
-      const std::int64_t kProjectId = sqlite3_column_int64(stmt, 2);
-      record.project_path = JoinPathParts(provider.GetPathParts(kProjectId));
-      record.duration_seconds = sqlite3_column_int64(stmt, 3);
-      const unsigned char* remark_text = sqlite3_column_text(stmt, 4);
-      if (remark_text != nullptr) {
-        record.activityRemark = reinterpret_cast<const char*>(remark_text);
-      }
+      TimeRecord record = tracer::core::infrastructure::insights::data::record_mapping::ReadTimeRecord(
+          stmt, {.start_time = 0, .end_time = 1, .project_id = 2,
+                 .duration = 3, .activity_remark = 4, .logical_id = 5,
+                 .record_kind = 6},
+          provider);
       data.detailed_records.push_back(record);
     }
   }
@@ -252,7 +226,6 @@ void BatchDayDataFetcher::FetchTimeRecords(BatchDataResult& result) {
 
     DailyInsightsData& data = data_it->second;
 
-    TimeRecord record;
     constexpr int kColStart = 1;
     constexpr int kColEnd = 2;
     constexpr int kColProjectId = 3;
@@ -261,22 +234,13 @@ void BatchDayDataFetcher::FetchTimeRecords(BatchDataResult& result) {
     constexpr int kColLogicalId = 6;
     constexpr int kColRecordKind = 7;
 
-    record.start_time =
-        reinterpret_cast<const char*>(sqlite3_column_text(stmt, kColStart));
-    record.end_time =
-        reinterpret_cast<const char*>(sqlite3_column_text(stmt, kColEnd));
-    record.kind = ParseRecordKind(sqlite3_column_text(stmt, kColRecordKind));
-    record.logical_id = sqlite3_column_int64(stmt, kColLogicalId);
-    std::int64_t project_id = sqlite3_column_int64(stmt, kColProjectId);
-    record.duration_seconds = sqlite3_column_int64(stmt, kColDuration);
-    const unsigned char* remark_ptr =
-        sqlite3_column_text(stmt, kColActivityRemark);
-    if (remark_ptr != nullptr) {
-      record.activityRemark = reinterpret_cast<const char*>(remark_ptr);
-    }
-
-    std::vector<std::string> parts = provider_.GetPathParts(project_id);
-    record.project_path = JoinPathParts(parts);
+    TimeRecord record = tracer::core::infrastructure::insights::data::record_mapping::ReadTimeRecord(
+        stmt, {.start_time = kColStart, .end_time = kColEnd,
+               .project_id = kColProjectId, .duration = kColDuration,
+               .activity_remark = kColActivityRemark,
+               .logical_id = kColLogicalId, .record_kind = kColRecordKind},
+        provider_);
+    const std::int64_t project_id = sqlite3_column_int64(stmt, kColProjectId);
 
     data.detailed_records.push_back(record);
     data.total_duration += record.duration_seconds;

@@ -154,6 +154,11 @@ Android must use this Core-produced kind instead of inferring semantics from
 empty timestamps: an `end_only` record displays a single localized
 "as-of" time point and has no duration segment.
 
+For Week, Month, Year, Range, and Recent, structured insights additionally
+return `activity_days[]` in descending date order. Each item keeps the Core
+logical day plus that day's `detailed_records`, allowing the Android Activity
+section to browse a selected window without parsing the Markdown report.
+
 Structured insights return `insights.statuses[]` with each configured status's
 `id`, `label`, `occurrence_count`, and `total_duration`. Android renders those
 statistics directly in the status editor, so the editor and Markdown report

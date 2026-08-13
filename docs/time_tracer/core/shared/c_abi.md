@@ -180,8 +180,12 @@
      - `selection_kind`
      - `insights_kind`
      - `insights`
-       - `insights.statuses[]` entries contain `id`, `label`,
+     - `insights.statuses[]` entries contain `id`, `label`,
          `occurrence_count`, and `total_duration` for each configured status
+       - period responses additionally contain `insights.activity_days[]`, in
+         descending date order. Each day contains `date`, `total_duration`,
+         and `detailed_records[]`; record fields and `record_kind` match the
+         structured Day insights contract.
      - `error_message`
      - `error_code`
      - `error_category`

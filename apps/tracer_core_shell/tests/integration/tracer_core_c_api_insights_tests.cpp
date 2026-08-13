@@ -95,6 +95,15 @@ void RunInsightsChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
   Require(kStructuredRangeStatuses.at(0).contains("occurrence_count") &&
               kStructuredRangeStatuses.at(0).contains("total_duration"),
           "structured range statuses should expose occurrence and duration totals");
+  const auto& kStructuredRangeActivityDays =
+      kStructuredRangeInsightsResponse.at("insights").at("activity_days");
+  Require(kStructuredRangeActivityDays.is_array() &&
+              kStructuredRangeActivityDays.size() == 1U,
+          "structured range insights should expose the matching activity day");
+  Require(kStructuredRangeActivityDays.at(0).value("date", std::string{}) ==
+              "2025-01-03" &&
+              kStructuredRangeActivityDays.at(0).contains("detailed_records"),
+          "structured range activity day should keep its date and detailed records");
 
   const json kRangeInsightsResponse = ParseResponse(
       api.runtime_insights(

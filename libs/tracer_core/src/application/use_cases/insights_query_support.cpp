@@ -53,6 +53,7 @@ auto CopyRangeFields(const RangeInsightsData& source, RangeInsightsData& target)
   target.is_valid = source.is_valid;
   target.project_stats = source.project_stats;
   target.project_tree = source.project_tree;
+  target.activity_days = source.activity_days;
 }
 
 auto WrapMonthlyInsights(const PeriodInsightsData& source) -> MonthlyInsightsData {

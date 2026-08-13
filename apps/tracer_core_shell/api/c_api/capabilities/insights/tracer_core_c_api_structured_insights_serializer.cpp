@@ -82,7 +82,7 @@ auto EncodeRecordKind(ActivityRecordKind kind) -> std::string {
   return "interval";
 }
 
-auto EncodeDailyInsights(const DailyInsightsData& insights) -> json {
+auto EncodeDetailedRecords(const DailyInsightsData& insights) -> json {
   json records = json::array();
   for (const auto& record : insights.detailed_records) {
     records.push_back(json{
@@ -95,6 +95,11 @@ auto EncodeDailyInsights(const DailyInsightsData& insights) -> json {
         {"activity_remark", record.activityRemark.value_or("")},
     });
   }
+  return records;
+}
+
+auto EncodeDailyInsights(const DailyInsightsData& insights) -> json {
+  json records = EncodeDetailedRecords(insights);
 
   json stats = json::object();
   for (const auto& [name, duration] : insights.stats) {
@@ -123,6 +128,16 @@ auto EncodeDailyInsights(const DailyInsightsData& insights) -> json {
   };
 }
 
+auto EncodeActivityDays(const PeriodInsightsData& insights) -> json {
+  json days = json::array();
+  for (const auto& day : insights.activity_days) {
+    days.push_back(json{{"date", day.date},
+                        {"total_duration", day.total_duration},
+                        {"detailed_records", EncodeDetailedRecords(day)}});
+  }
+  return days;
+}
+
 auto EncodePeriodInsights(const PeriodInsightsData& insights) -> json {
   json statuses = json::array();
   for (const auto& status : insights.statuses) {
@@ -145,6 +160,7 @@ auto EncodePeriodInsights(const PeriodInsightsData& insights) -> json {
       {"is_valid", insights.is_valid},
       {"project_stats", EncodeProjectStats(insights.project_stats)},
       {"project_tree", EncodeProjectTree(insights.project_tree)},
+      {"activity_days", EncodeActivityDays(insights)},
   };
 }
 
