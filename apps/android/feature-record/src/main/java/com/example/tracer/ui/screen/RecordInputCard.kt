@@ -315,15 +315,17 @@ internal fun RecordInputCard(
                     .testTag(recordRemarkInputTestTag()),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = stringResource(R.string.record_label_remark_optional),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.width(12.dp))
+                if (remarkPreview.isNotBlank()) {
+                    Text(
+                        text = stringResource(R.string.record_label_remark_optional),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                }
                 Text(
                     text = remarkPreview.ifBlank {
-                        stringResource(R.string.record_remark_add_hint)
+                        stringResource(R.string.record_label_remark_optional)
                     },
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.bodyMedium,

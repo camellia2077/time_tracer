@@ -76,6 +76,8 @@ internal class ActivityHierarchyEditorViewModel(
 
     fun renameAliasCategory(newName: String) = aliasEditor.renameAliasCategory(newName)
 
+    fun setAliasParentColor(color: String) = aliasEditor.setAliasParentColor(color)
+
     fun addAliasGroup(parentGroupId: String?, name: String) =
         aliasEditor.addAliasGroup(parentGroupId, name)
 

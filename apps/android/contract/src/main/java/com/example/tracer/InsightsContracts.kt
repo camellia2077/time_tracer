@@ -44,7 +44,9 @@ data class ActivityTimelineItem(
     val activityName: String,
     val durationSeconds: Long,
     val remark: String? = null,
-    val kind: ActivityTimelineRecordKind = ActivityTimelineRecordKind.INTERVAL
+    val kind: ActivityTimelineRecordKind = ActivityTimelineRecordKind.INTERVAL,
+    /** Optional #RRGGBB color configured for the activity path's top-level parent. */
+    val parentColor: String? = null
 )
 
 data class StructuredDailyInsights(

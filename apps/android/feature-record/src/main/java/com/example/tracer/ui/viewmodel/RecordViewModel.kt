@@ -102,6 +102,7 @@ data class RecordUiState(
     val frequentOutputMode: RecordFrequentOutputMode = RecordFrequentOutputMode.CANONICAL,
     val canonicalCatalogDisplayMode: RecordFrequentOutputMode =
         RecordFrequentOutputMode.CANONICAL,
+    val canonicalCatalogSource: CanonicalCatalogSource = CanonicalCatalogSource.TREE,
     val frequentActivities: List<RecordFrequentActivity> = emptyList(),
     val canonicalCatalogRoots: List<CanonicalPathNode> = emptyList(),
     val canonicalCatalogStatusText: String = "",
@@ -315,6 +316,10 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
 
     fun updateCanonicalCatalogDisplayMode(value: RecordFrequentOutputMode) {
         uiState = intentHandler.updateCanonicalCatalogDisplayMode(uiState, value)
+    }
+
+    fun updateCanonicalCatalogSource(value: CanonicalCatalogSource) {
+        uiState = uiState.copy(canonicalCatalogSource = value)
     }
 
     fun updateQuickActivities(values: List<String>) {

@@ -1,7 +1,13 @@
 package com.example.tracer
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -13,11 +19,13 @@ fun RecordTabContent(
     recordUiState: RecordUiState,
     recordViewModel: RecordViewModel,
     txtStorageGateway: TxtStorageGateway,
+    promptBeforeUnconfiguredActivityRecord: Boolean,
     validAuthorableEventTokens: Set<String>,
     onPersistQuickActivities: (List<String>) -> Unit,
     onPersistQuickAccessCardExpanded: (Boolean) -> Unit,
     onPersistQuickAccessEditorVisibility: (Boolean) -> Unit,
     onPersistCanonicalCatalogDisplayMode: (RecordFrequentOutputMode) -> Unit,
+    onPersistCanonicalCatalogSource: (CanonicalCatalogSource) -> Unit,
     onPersistCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
     onPersistOrderedCanonicalRootPaths: (List<String>) -> Unit,
     onPersistFrequentLookbackDays: (Int) -> Unit,
@@ -44,6 +52,32 @@ fun RecordTabContent(
         stringResource(R.string.record_status_invalid_quick_activities)
     val quickActivitiesSavedTemplate =
         stringResource(R.string.record_status_quick_activities_saved)
+    var pendingRecordConfirmation by remember { mutableStateOf<PendingRecordConfirmation?>(null) }
+
+    fun record(mode: RecordAuthoringMode) {
+        if (mode == RecordAuthoringMode.INTERVAL) {
+            recordViewModel.recordInterval()
+        } else {
+            recordViewModel.recordNow()
+        }
+    }
+
+    fun requestRecord() {
+        val activityName = recordUiState.recordContent.trim()
+        if (shouldConfirmUnconfiguredActivityRecord(
+                activityName = activityName,
+                promptEnabled = promptBeforeUnconfiguredActivityRecord,
+                validAuthorableEventTokens = validAuthorableEventTokens
+            )
+        ) {
+            pendingRecordConfirmation = PendingRecordConfirmation(
+                activityName = activityName,
+                authoringMode = recordUiState.authoringMode
+            )
+            return
+        }
+        record(recordUiState.authoringMode)
+    }
 
     fun updateQuickActivities(targetActivities: List<String>): Boolean {
         val currentNormalized = recordUiState.quickActivities
@@ -164,6 +198,7 @@ fun RecordTabContent(
         canonicalCatalogRoots = recordUiState.canonicalCatalogRoots,
         canonicalCatalogStatusText = recordUiState.canonicalCatalogStatusText,
         canonicalCatalogDisplayMode = recordUiState.canonicalCatalogDisplayMode,
+        canonicalCatalogSource = recordUiState.canonicalCatalogSource,
         lastRecordedActivityHierarchyLeaf = recordUiState.lastRecordedActivityHierarchyLeaf,
         lastRecordedDuration = recordUiState.lastRecordedDuration,
         collapsedCanonicalRootPaths = recordUiState.collapsedCanonicalRootPaths,
@@ -216,6 +251,10 @@ fun RecordTabContent(
             recordViewModel.updateCanonicalCatalogDisplayMode(mode)
             onPersistCanonicalCatalogDisplayMode(mode)
         },
+        onCanonicalCatalogSourceChange = { source ->
+            recordViewModel.updateCanonicalCatalogSource(source)
+            onPersistCanonicalCatalogSource(source)
+        },
         onCollapsedCanonicalRootPathsChange = { paths ->
             recordViewModel.updateCollapsedCanonicalRootPaths(paths)
             onPersistCollapsedCanonicalRootPaths(paths)
@@ -263,9 +302,57 @@ fun RecordTabContent(
         onStopIntervalRecording = recordViewModel::stopIntervalRecording,
         onDiscardIntervalDraft = recordViewModel::discardIntervalDraft,
         onDismissTxtPreview = recordViewModel::dismissTxtPreview,
-        onRecordNow = recordViewModel::recordNow,
-        onRecordInterval = recordViewModel::recordInterval
+        onRecordNow = ::requestRecord,
+        onRecordInterval = ::requestRecord
     )
+
+    pendingRecordConfirmation?.let { pending ->
+        AlertDialog(
+            onDismissRequest = { pendingRecordConfirmation = null },
+            title = {
+                Text(stringResource(R.string.record_unconfigured_activity_dialog_title))
+            },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.record_unconfigured_activity_dialog_message,
+                        pending.activityName
+                    )
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        pendingRecordConfirmation = null
+                        record(pending.authoringMode)
+                    }
+                ) {
+                    Text(stringResource(R.string.record_action_confirm_and_record))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingRecordConfirmation = null }) {
+                    Text(stringResource(R.string.record_action_cancel))
+                }
+            }
+        )
+    }
+}
+
+internal data class PendingRecordConfirmation(
+    val activityName: String,
+    val authoringMode: RecordAuthoringMode
+)
+
+internal fun shouldConfirmUnconfiguredActivityRecord(
+    activityName: String,
+    promptEnabled: Boolean,
+    validAuthorableEventTokens: Set<String>
+): Boolean {
+    val normalizedActivityName = activityName.trim()
+    return promptEnabled &&
+        normalizedActivityName.isNotEmpty() &&
+        normalizedActivityName !in validAuthorableEventTokens
 }
 
 private fun formatWithLocale(locale: Locale, template: String, vararg args: Any): String =

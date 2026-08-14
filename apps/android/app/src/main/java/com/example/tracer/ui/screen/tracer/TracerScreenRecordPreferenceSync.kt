@@ -17,6 +17,7 @@ internal fun SyncTracerScreenRecordPreferences(
         recordFrequentPreferences.topN,
         recordFrequentPreferences.outputMode,
         recordFrequentPreferences.canonicalCatalogDisplayMode,
+        recordFrequentPreferences.canonicalCatalogSource,
         quickActivities,
         recordFrequentPreferences.quickAccessCardExpanded,
         recordFrequentPreferences.quickAccessEditorVisible,
@@ -30,6 +31,9 @@ internal fun SyncTracerScreenRecordPreferences(
         recordViewModel.updateFrequentOutputMode(recordFrequentPreferences.outputMode)
         recordViewModel.updateCanonicalCatalogDisplayMode(
             recordFrequentPreferences.canonicalCatalogDisplayMode
+        )
+        recordViewModel.updateCanonicalCatalogSource(
+            recordFrequentPreferences.canonicalCatalogSource
         )
         recordViewModel.updateQuickActivities(quickActivities)
         recordViewModel.updateQuickAccessCardExpanded(

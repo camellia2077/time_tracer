@@ -133,6 +133,8 @@ fun TracerScreen(
             outputMode = com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_FREQUENT_OUTPUT_MODE,
             canonicalCatalogDisplayMode =
                 com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_CANONICAL_CATALOG_DISPLAY_MODE,
+            canonicalCatalogSource =
+                com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_CANONICAL_CATALOG_SOURCE,
             quickActivities = emptyList(),
             quickAccessCardExpanded = com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_QUICK_ACCESS_CARD_EXPANDED,
             quickAccessEditorVisible = com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_QUICK_ACCESS_EDITOR_VISIBLE,
@@ -178,6 +180,12 @@ fun TracerScreen(
     )
     val configCardExpansionPreferences by userPreferencesRepository.configCardExpansionPreferences
         .collectAsState(initial = null)
+    val promptBeforeUnconfiguredActivityRecord by userPreferencesRepository
+        .promptBeforeUnconfiguredActivityRecord
+        .collectAsState(
+            initial = com.example.tracer.data.UserPreferencesRepository
+                .DEFAULT_PROMPT_BEFORE_UNCONFIGURED_ACTIVITY_RECORD
+        )
     val insightsHeatmapState = rememberTracerScreenInsightsHeatmapState(
         selectedTab = selectedTab,
         configGateway = configGateway,
@@ -428,6 +436,9 @@ fun TracerScreen(
         onSetAppLanguage = onSetAppLanguage,
         configCardExpansionPreferences = loadedConfigCardExpansionPreferences,
         onPersistConfigCardExpanded = actions.onPersistConfigCardExpanded,
+        promptBeforeUnconfiguredActivityRecord = promptBeforeUnconfiguredActivityRecord,
+        onPromptBeforeUnconfiguredActivityRecordChange =
+            actions.onPersistPromptBeforeUnconfiguredActivityRecord,
         validAuthorableEventTokens = validAuthorableEventTokens,
         onPersistRecordQuickActivities = actions.onPersistRecordQuickActivities,
         onClearQuickAccessCache = quickActivitiesPreferenceGateway::clearCachedQuickActivities,
@@ -436,6 +447,7 @@ fun TracerScreen(
         onPersistRecordQuickAccessEditorVisibility = actions.onPersistRecordQuickAccessEditorVisibility,
         onPersistRecordCanonicalCatalogDisplayMode =
             actions.onPersistRecordCanonicalCatalogDisplayMode,
+        onPersistRecordCanonicalCatalogSource = actions.onPersistRecordCanonicalCatalogSource,
         onPersistRecordCollapsedCanonicalRootPaths =
             actions.onPersistRecordCollapsedCanonicalRootPaths,
         onPersistRecordOrderedCanonicalRootPaths =

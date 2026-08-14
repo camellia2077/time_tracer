@@ -65,6 +65,7 @@ internal class RuntimeActivityHierarchyService(
                 .put("canonical_key", operation.canonicalKey)
                 .put("new_name", operation.newName)
                 .put("old_parent", operation.oldParent)
+                .put("color", operation.color.ifBlank { JSONObject.NULL })
                 .put("target_alias", operation.targetAlias)
                 .put("old_alias", operation.oldAlias)
                 .put("aliases", JSONArray(operation.aliases)))

@@ -11,6 +11,7 @@ import java.util.UUID
  */
 data class ActivityHierarchyDocument(
     val parent: String,
+    val color: String? = null,
     val nodes: List<ActivityHierarchyDocumentNode>
 )
 
@@ -41,6 +42,7 @@ private fun randomActivityHierarchyNodeId(): String = UUID.randomUUID().toString
 fun ActivityHierarchySnapshot.toActivityHierarchyDocument(): ActivityHierarchyDocument =
     ActivityHierarchyDocument(
         parent = parent,
+        color = color,
         nodes = nodes.map(ActivityHierarchyNode::toPresentationNode)
     )
 

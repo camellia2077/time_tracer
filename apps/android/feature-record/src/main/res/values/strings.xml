@@ -65,11 +65,14 @@
     <string name="record_time_hour">Hour</string>
     <string name="record_time_minute">Minute</string>
     <string name="record_time_second">Second</string>
-    <string name="record_label_remark_optional">Remark (Optional)</string>
+    <string name="record_label_remark_optional">Add a remark (Optional)</string>
     <string name="record_remark_add_hint">Add a remark</string>
     <string name="record_remark_edit_title">Edit remark</string>
     <string name="record_action_save_remark">Save</string>
     <string name="record_action_record_activity">Record Activity</string>
+    <string name="record_unconfigured_activity_dialog_title">Unconfigured activity</string>
+    <string name="record_unconfigured_activity_dialog_message">“%1$s” has not been configured yet. Confirm to record it and add it to the default activity TOML.</string>
+    <string name="record_action_confirm_and_record">Confirm and record</string>
     <string name="record_action_save_interval">Save interval</string>
     <string name="record_action_start_interval">Start timer</string>
     <string name="record_action_stop_interval">Stop timer</string>

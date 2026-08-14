@@ -27,6 +27,7 @@ internal fun ActivityHierarchyEditorContent(
         onSelectAliasFile = viewModel::openFile,
         onDeleteAliasTomlFile = viewModel::deleteCurrentAliasTomlFile,
         onRenameCategory = viewModel::renameAliasCategory,
+        onSetParentColor = viewModel::setAliasParentColor,
         onSelectStructuredMode = { viewModel.selectAliasEditorMode(AliasEditorMode.STRUCTURED) },
         onSelectAdvancedMode = { viewModel.selectAliasEditorMode(AliasEditorMode.ADVANCED) },
         onAdvancedTomlChange = viewModel::onAliasAdvancedTomlChange,

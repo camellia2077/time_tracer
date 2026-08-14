@@ -197,6 +197,15 @@ internal class ActivityHierarchyEditor(
         }
     }
 
+    fun setAliasParentColor(color: String) {
+        if (!isAliasConfigFilePath(uiState.selectedFilePath) ||
+            uiState.aliasDocumentDraft == null) return
+        applyCoreActivityHierarchyOperation(ActivityHierarchyOperation(
+            kind = ActivityHierarchyOperationKind.SET_PARENT_COLOR,
+            color = color.trim()
+        ))
+    }
+
     fun addAliasGroup(parentGroupId: String?, name: String) {
         val document = uiState.aliasDocumentDraft ?: return
         val normalizedName = name.trim()

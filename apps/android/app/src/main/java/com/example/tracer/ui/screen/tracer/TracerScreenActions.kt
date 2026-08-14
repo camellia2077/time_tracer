@@ -16,11 +16,13 @@ internal data class TracerScreenActions(
     val onPersistRecordQuickAccessCardExpanded: (Boolean) -> Unit,
     val onPersistRecordQuickAccessEditorVisibility: (Boolean) -> Unit,
     val onPersistRecordCanonicalCatalogDisplayMode: (RecordFrequentOutputMode) -> Unit,
+    val onPersistRecordCanonicalCatalogSource: (CanonicalCatalogSource) -> Unit,
     val onPersistRecordCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
     val onPersistRecordOrderedCanonicalRootPaths: (List<String>) -> Unit,
     val onPersistRecordFrequentLookbackDays: (Int) -> Unit,
     val onPersistRecordFrequentOutputMode: (RecordFrequentOutputMode) -> Unit,
     val onPersistRecordFrequentTopN: (Int) -> Unit,
+    val onPersistPromptBeforeUnconfiguredActivityRecord: (Boolean) -> Unit,
     val onPersistConfigCardExpanded: (com.example.tracer.data.ConfigCard, Boolean) -> Unit
 )
 
@@ -33,11 +35,13 @@ private data class TracerScreenPreferenceActions(
     val onPersistRecordQuickAccessCardExpanded: (Boolean) -> Unit,
     val onPersistRecordQuickAccessEditorVisibility: (Boolean) -> Unit,
     val onPersistRecordCanonicalCatalogDisplayMode: (RecordFrequentOutputMode) -> Unit,
+    val onPersistRecordCanonicalCatalogSource: (CanonicalCatalogSource) -> Unit,
     val onPersistRecordCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
     val onPersistRecordOrderedCanonicalRootPaths: (List<String>) -> Unit,
     val onPersistRecordFrequentLookbackDays: (Int) -> Unit,
     val onPersistRecordFrequentOutputMode: (RecordFrequentOutputMode) -> Unit,
     val onPersistRecordFrequentTopN: (Int) -> Unit,
+    val onPersistPromptBeforeUnconfiguredActivityRecord: (Boolean) -> Unit,
     val onPersistConfigCardExpanded: (com.example.tracer.data.ConfigCard, Boolean) -> Unit
 )
 
@@ -82,6 +86,7 @@ internal fun rememberTracerScreenActions(
         onPersistRecordQuickAccessEditorVisibility = preferenceActions.onPersistRecordQuickAccessEditorVisibility,
         onPersistRecordCanonicalCatalogDisplayMode =
             preferenceActions.onPersistRecordCanonicalCatalogDisplayMode,
+        onPersistRecordCanonicalCatalogSource = preferenceActions.onPersistRecordCanonicalCatalogSource,
         onPersistRecordCollapsedCanonicalRootPaths =
             preferenceActions.onPersistRecordCollapsedCanonicalRootPaths,
         onPersistRecordOrderedCanonicalRootPaths =
@@ -89,6 +94,8 @@ internal fun rememberTracerScreenActions(
         onPersistRecordFrequentLookbackDays = preferenceActions.onPersistRecordFrequentLookbackDays,
         onPersistRecordFrequentOutputMode = preferenceActions.onPersistRecordFrequentOutputMode,
         onPersistRecordFrequentTopN = preferenceActions.onPersistRecordFrequentTopN,
+        onPersistPromptBeforeUnconfiguredActivityRecord =
+            preferenceActions.onPersistPromptBeforeUnconfiguredActivityRecord,
         onPersistConfigCardExpanded = preferenceActions.onPersistConfigCardExpanded
     )
 }
@@ -154,6 +161,11 @@ private fun rememberTracerScreenPreferenceActions(
                 userPreferencesRepository.setRecordCanonicalCatalogDisplayMode(value)
             }
         },
+        onPersistRecordCanonicalCatalogSource = { value ->
+            coroutineScope.launch {
+                userPreferencesRepository.setRecordCanonicalCatalogSource(value)
+            }
+        },
         onPersistRecordCollapsedCanonicalRootPaths = { values ->
             coroutineScope.launch {
                 userPreferencesRepository.setRecordCollapsedCanonicalRootPaths(values)
@@ -177,6 +189,11 @@ private fun rememberTracerScreenPreferenceActions(
         onPersistRecordFrequentTopN = { value ->
             coroutineScope.launch {
                 userPreferencesRepository.setRecordFrequentTopN(value)
+            }
+        },
+        onPersistPromptBeforeUnconfiguredActivityRecord = { value ->
+            coroutineScope.launch {
+                userPreferencesRepository.setPromptBeforeUnconfiguredActivityRecord(value)
             }
         },
         onPersistConfigCardExpanded = { card, value ->

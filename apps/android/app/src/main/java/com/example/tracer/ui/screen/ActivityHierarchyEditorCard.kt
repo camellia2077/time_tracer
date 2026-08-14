@@ -12,7 +12,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
@@ -25,7 +24,6 @@ import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -56,6 +54,7 @@ internal fun ActivityHierarchyEditorCard(
     onSelectAliasFile: (String) -> Unit,
     onDeleteAliasTomlFile: () -> Unit,
     onRenameCategory: (String) -> Unit,
+    onSetParentColor: (String) -> Unit,
     onSelectStructuredMode: () -> Unit,
     onSelectAdvancedMode: () -> Unit,
     onAdvancedTomlChange: (String) -> Unit,
@@ -82,6 +81,9 @@ internal fun ActivityHierarchyEditorCard(
     var showDeleteAliasTomlDialog by remember { mutableStateOf(false) }
     var showRenameCategoryDialog by remember { mutableStateOf(false) }
     var showAliasFileMenu by remember { mutableStateOf(false) }
+    var parentColorDraft by remember(document?.parent, document?.color) {
+        mutableStateOf(document?.color.orEmpty())
+    }
     val categoryName = document?.parent
         ?.takeIf { it.isNotBlank() }
         ?: selectedFileDisplayName.removeSuffix(".toml")
@@ -170,6 +172,13 @@ internal fun ActivityHierarchyEditorCard(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(stringResource(R.string.config_action_delete_alias_mapping))
             }
+
+            ActivityHierarchyParentColorEditor(
+                draftValue = parentColorDraft,
+                persistedValue = document?.color.orEmpty(),
+                onDraftValueChange = { parentColorDraft = it },
+                onSaveColor = onSetParentColor
+            )
 
             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                 val modes = listOf(

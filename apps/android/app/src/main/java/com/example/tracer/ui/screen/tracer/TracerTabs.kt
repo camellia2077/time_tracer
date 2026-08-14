@@ -84,12 +84,15 @@ internal data class TracerTabRouteArgs(
     val onSetAppLanguage: (AppLanguage) -> Unit,
     val configCardExpansionPreferences: com.example.tracer.data.ConfigCardExpansionPreferences,
     val onPersistConfigCardExpanded: (com.example.tracer.data.ConfigCard, Boolean) -> Unit,
+    val promptBeforeUnconfiguredActivityRecord: Boolean,
+    val onPromptBeforeUnconfiguredActivityRecordChange: (Boolean) -> Unit,
     val validAuthorableEventTokens: Set<String>,
     val onPersistRecordQuickActivities: (List<String>) -> Unit,
     val onClearQuickAccessCache: () -> Unit,
     val onPersistRecordQuickAccessCardExpanded: (Boolean) -> Unit,
     val onPersistRecordQuickAccessEditorVisibility: (Boolean) -> Unit,
     val onPersistRecordCanonicalCatalogDisplayMode: (RecordFrequentOutputMode) -> Unit,
+    val onPersistRecordCanonicalCatalogSource: (CanonicalCatalogSource) -> Unit,
     val onPersistRecordCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
     val onPersistRecordOrderedCanonicalRootPaths: (List<String>) -> Unit,
     val onPersistRecordFrequentLookbackDays: (Int) -> Unit,
@@ -217,6 +220,7 @@ internal object TracerTabRegistry {
                     recordUiState = args.recordUiState,
                     recordViewModel = args.recordViewModel,
                     txtStorageGateway = args.txtStorageGateway,
+                    promptBeforeUnconfiguredActivityRecord = args.promptBeforeUnconfiguredActivityRecord,
                     validAuthorableEventTokens = args.validAuthorableEventTokens,
                     onPersistQuickActivities = args.onPersistRecordQuickActivities,
                     onPersistQuickAccessCardExpanded =
@@ -224,6 +228,7 @@ internal object TracerTabRegistry {
                     onPersistQuickAccessEditorVisibility = args.onPersistRecordQuickAccessEditorVisibility,
                     onPersistCanonicalCatalogDisplayMode =
                         args.onPersistRecordCanonicalCatalogDisplayMode,
+                    onPersistCanonicalCatalogSource = args.onPersistRecordCanonicalCatalogSource,
                     onPersistCollapsedCanonicalRootPaths =
                         args.onPersistRecordCollapsedCanonicalRootPaths,
                     onPersistOrderedCanonicalRootPaths =
@@ -286,6 +291,10 @@ internal object TracerTabRegistry {
                         onInsightsAverageDayBasisChange = args.onInsightsAverageDayBasisChange,
                         appLanguage = args.appLanguage,
                         onSetAppLanguage = args.onSetAppLanguage,
+                        promptBeforeUnconfiguredActivityRecord =
+                            args.promptBeforeUnconfiguredActivityRecord,
+                        onPromptBeforeUnconfiguredActivityRecordChange =
+                            args.onPromptBeforeUnconfiguredActivityRecordChange,
                         cardExpansionPreferences = args.configCardExpansionPreferences,
                         onConfigCardExpandedChange = args.onPersistConfigCardExpanded,
                         extraContent = {

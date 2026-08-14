@@ -67,7 +67,7 @@ import com.example.tracer.feature.record.R
 import java.time.Clock
 import kotlin.math.abs
 
-private enum class CanonicalCatalogSource {
+enum class CanonicalCatalogSource {
     TREE,
     FREQUENT,
     CATEGORIES
@@ -80,6 +80,8 @@ fun RecordCanonicalCatalogScreen(
     statusText: String,
     displayMode: RecordFrequentOutputMode,
     target: CanonicalBrowserTarget? = null,
+    source: CanonicalCatalogSource = CanonicalCatalogSource.TREE,
+    onSourceChange: (CanonicalCatalogSource) -> Unit = {},
     isFrequentActivitiesLoading: Boolean = false,
     frequentActivities: List<RecordFrequentActivity> = emptyList(),
     onFrequentActivitiesRequested: () -> Unit = {},
@@ -95,7 +97,6 @@ fun RecordCanonicalCatalogScreen(
     onCanonicalEntryClick: (CanonicalCatalogEntry) -> Unit,
     onCanonicalParentClick: (String) -> Unit = {}
 ) {
-    var source by remember { mutableStateOf(CanonicalCatalogSource.TREE) }
     val isRecordInputTarget = target == CanonicalBrowserTarget.RECORD_INPUT
     Dialog(
         onDismissRequest = onDismissRequest,
@@ -142,7 +143,7 @@ fun RecordCanonicalCatalogScreen(
                             Tab(
                                 selected = source == CanonicalCatalogSource.TREE,
                                 onClick = {
-                                    source = CanonicalCatalogSource.TREE
+                                    onSourceChange(CanonicalCatalogSource.TREE)
                                     onTreeRequested()
                                 },
                                 text = { Text(stringResource(R.string.record_canonical_catalog_source_tree)) }
@@ -150,7 +151,7 @@ fun RecordCanonicalCatalogScreen(
                             Tab(
                                 selected = source == CanonicalCatalogSource.FREQUENT,
                                 onClick = {
-                                    source = CanonicalCatalogSource.FREQUENT
+                                    onSourceChange(CanonicalCatalogSource.FREQUENT)
                                     onFrequentActivitiesRequested()
                                 },
                                 text = { Text(stringResource(R.string.record_canonical_catalog_source_frequent)) }
@@ -158,7 +159,7 @@ fun RecordCanonicalCatalogScreen(
                             Tab(
                                 selected = source == CanonicalCatalogSource.CATEGORIES,
                                 onClick = {
-                                    source = CanonicalCatalogSource.CATEGORIES
+                                    onSourceChange(CanonicalCatalogSource.CATEGORIES)
                                 },
                                 text = { Text(stringResource(R.string.record_canonical_catalog_source_categories)) }
                             )

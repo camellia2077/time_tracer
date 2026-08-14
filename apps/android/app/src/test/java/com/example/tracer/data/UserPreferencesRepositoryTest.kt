@@ -37,6 +37,23 @@ class UserPreferencesRepositoryTest {
     }
 
     @Test
+    fun promptBeforeUnconfiguredActivityRecord_defaultsOff_andPersistsSelection() = runTest {
+        val repository = buildRepository(
+            testName = "persist_unconfigured_activity_warning",
+            scope = backgroundScope
+        )
+
+        assertEquals(
+            UserPreferencesRepository.DEFAULT_PROMPT_BEFORE_UNCONFIGURED_ACTIVITY_RECORD,
+            repository.promptBeforeUnconfiguredActivityRecord.first()
+        )
+
+        repository.setPromptBeforeUnconfiguredActivityRecord(true)
+
+        assertEquals(true, repository.promptBeforeUnconfiguredActivityRecord.first())
+    }
+
+    @Test
     fun recordFrequentPreferences_usesEmptyQuickActivities_whenQuickActivitiesNotConfigured() = runTest {
         val repository = buildRepository(
             testName = "missing_quick_activities",

@@ -23,6 +23,7 @@ data class ActivityHierarchyNode(
 
 data class ActivityHierarchySnapshot(
     val parent: String,
+    val color: String? = null,
     val nodes: List<ActivityHierarchyNode>
 )
 
@@ -58,7 +59,8 @@ enum class ActivityHierarchyOperationKind(val wireValue: String) {
     MOVE_LEAF("move_leaf"),
     MERGE_LEAF_CANONICAL("merge_leaf_canonical"),
     PROMOTE_LEAF("promote_leaf"),
-    RENAME_PARENT("rename_parent")
+    RENAME_PARENT("rename_parent"),
+    SET_PARENT_COLOR("set_parent_color")
 }
 
 data class ActivityHierarchyOperation(
@@ -68,6 +70,7 @@ data class ActivityHierarchyOperation(
     val canonicalKey: String = "",
     val newName: String = "",
     val oldParent: String = "",
+    val color: String = "",
     val targetAlias: String = "",
     val oldAlias: String = "",
     val aliases: List<String> = emptyList()

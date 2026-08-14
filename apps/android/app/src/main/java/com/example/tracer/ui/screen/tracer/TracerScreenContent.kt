@@ -54,12 +54,15 @@ internal fun TracerScreenContent(
     onSetAppLanguage: (com.example.tracer.data.AppLanguage) -> Unit,
     configCardExpansionPreferences: com.example.tracer.data.ConfigCardExpansionPreferences,
     onPersistConfigCardExpanded: (com.example.tracer.data.ConfigCard, Boolean) -> Unit,
+    promptBeforeUnconfiguredActivityRecord: Boolean,
+    onPromptBeforeUnconfiguredActivityRecordChange: (Boolean) -> Unit,
     validAuthorableEventTokens: Set<String>,
     onPersistRecordQuickActivities: (List<String>) -> Unit,
     onClearQuickAccessCache: () -> Unit,
     onPersistRecordQuickAccessCardExpanded: (Boolean) -> Unit,
     onPersistRecordQuickAccessEditorVisibility: (Boolean) -> Unit,
     onPersistRecordCanonicalCatalogDisplayMode: (RecordFrequentOutputMode) -> Unit,
+    onPersistRecordCanonicalCatalogSource: (CanonicalCatalogSource) -> Unit,
     onPersistRecordCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
     onPersistRecordOrderedCanonicalRootPaths: (List<String>) -> Unit,
     onPersistRecordFrequentLookbackDays: (Int) -> Unit,
@@ -134,6 +137,9 @@ internal fun TracerScreenContent(
                 onSetAppLanguage = onSetAppLanguage,
                 configCardExpansionPreferences = configCardExpansionPreferences,
                 onPersistConfigCardExpanded = onPersistConfigCardExpanded,
+                promptBeforeUnconfiguredActivityRecord = promptBeforeUnconfiguredActivityRecord,
+                onPromptBeforeUnconfiguredActivityRecordChange =
+                    onPromptBeforeUnconfiguredActivityRecordChange,
                 validAuthorableEventTokens = validAuthorableEventTokens,
                 onPersistRecordQuickActivities = onPersistRecordQuickActivities,
                 onClearQuickAccessCache = onClearQuickAccessCache,
@@ -142,6 +148,7 @@ internal fun TracerScreenContent(
                 onPersistRecordQuickAccessEditorVisibility = onPersistRecordQuickAccessEditorVisibility,
                 onPersistRecordCanonicalCatalogDisplayMode =
                     onPersistRecordCanonicalCatalogDisplayMode,
+                onPersistRecordCanonicalCatalogSource = onPersistRecordCanonicalCatalogSource,
                 onPersistRecordCollapsedCanonicalRootPaths =
                     onPersistRecordCollapsedCanonicalRootPaths,
                 onPersistRecordOrderedCanonicalRootPaths =

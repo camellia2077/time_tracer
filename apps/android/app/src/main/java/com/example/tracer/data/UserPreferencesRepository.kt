@@ -15,6 +15,7 @@ import com.example.tracer.RecordAuthoringMode
 import com.example.tracer.TxtOutputMode
 import com.example.tracer.RecordLogicalDayTarget
 import com.example.tracer.RecordFrequentOutputMode
+import com.example.tracer.CanonicalCatalogSource
 import com.example.tracer.InsightsChartSemanticMode
 import com.example.tracer.InsightsChartVisualMode
 import com.example.tracer.InsightsAverageDayBasis
@@ -62,6 +63,7 @@ data class RecordFrequentPreferences(
     val topN: Int,
     val outputMode: RecordFrequentOutputMode,
     val canonicalCatalogDisplayMode: RecordFrequentOutputMode,
+    val canonicalCatalogSource: CanonicalCatalogSource,
     val quickActivities: List<String>,
     val quickAccessCardExpanded: Boolean,
     val quickAccessEditorVisible: Boolean,
@@ -101,6 +103,8 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             RecordFrequentOutputMode.CANONICAL
         val DEFAULT_RECORD_CANONICAL_CATALOG_DISPLAY_MODE: RecordFrequentOutputMode =
             RecordFrequentOutputMode.CANONICAL
+        val DEFAULT_RECORD_CANONICAL_CATALOG_SOURCE: CanonicalCatalogSource =
+            CanonicalCatalogSource.TREE
         val DEFAULT_RECORD_QUICK_ACTIVITIES: List<String> = emptyList()
         const val DEFAULT_INSIGHTS_CHART_SHOW_AVERAGE_LINE: Boolean = false
         val DEFAULT_INSIGHTS_CHART_SEMANTIC_MODE: InsightsChartSemanticMode =
@@ -128,6 +132,7 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         private const val MAX_RECORD_QUICK_ACTIVITY_LENGTH: Int = 40
         const val DEFAULT_RECORD_QUICK_ACCESS_EDITOR_VISIBLE: Boolean = false
         const val DEFAULT_RECORD_QUICK_ACCESS_CARD_EXPANDED: Boolean = true
+        const val DEFAULT_PROMPT_BEFORE_UNCONFIGURED_ACTIVITY_RECORD: Boolean = false
         const val DEFAULT_CONFIG_CARD_EXPANDED: Boolean = true
         val DEFAULT_COLLAPSED_CANONICAL_ROOT_PATHS: Set<String> = emptySet()
         val DEFAULT_ORDERED_CANONICAL_ROOT_PATHS: List<String> = emptyList()
@@ -147,11 +152,15 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         val RECORD_FREQUENT_OUTPUT_MODE = stringPreferencesKey("record_frequent_output_mode")
         val RECORD_CANONICAL_CATALOG_DISPLAY_MODE =
             stringPreferencesKey("record_canonical_catalog_display_mode")
+        val RECORD_CANONICAL_CATALOG_SOURCE =
+            stringPreferencesKey("record_canonical_catalog_source")
         val RECORD_QUICK_ACTIVITIES = stringPreferencesKey("record_quick_activities")
         val RECORD_QUICK_ACCESS_CARD_EXPANDED =
             booleanPreferencesKey("record_quick_access_card_expanded")
         val RECORD_QUICK_ACCESS_EDITOR_VISIBLE =
             booleanPreferencesKey("record_quick_access_editor_visible")
+        val PROMPT_BEFORE_UNCONFIGURED_ACTIVITY_RECORD =
+            booleanPreferencesKey("prompt_before_unconfigured_activity_record")
         val CONFIG_APPLICATION_PREFERENCES_EXPANDED =
             booleanPreferencesKey("config_application_preferences_expanded")
         val CONFIG_APPEARANCE_EXPANDED = booleanPreferencesKey("config_appearance_expanded")
@@ -218,6 +227,11 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         runCatching { AppLanguage.valueOf(languageName) }.getOrDefault(AppLanguage.System)
     }
 
+    val promptBeforeUnconfiguredActivityRecord: Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.PROMPT_BEFORE_UNCONFIGURED_ACTIVITY_RECORD]
+            ?: DEFAULT_PROMPT_BEFORE_UNCONFIGURED_ACTIVITY_RECORD
+    }
+
     val recordFrequentPreferences: Flow<RecordFrequentPreferences> = dataStore.data.map { preferences ->
         val storedLookbackDays = preferences[PreferencesKeys.RECORD_FREQUENT_LOOKBACK_DAYS]
             ?: DEFAULT_RECORD_FREQUENT_LOOKBACK_DAYS
@@ -228,6 +242,9 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         val storedCanonicalCatalogDisplayMode =
             preferences[PreferencesKeys.RECORD_CANONICAL_CATALOG_DISPLAY_MODE]
                 ?: DEFAULT_RECORD_CANONICAL_CATALOG_DISPLAY_MODE.name
+        val storedCanonicalCatalogSource =
+            preferences[PreferencesKeys.RECORD_CANONICAL_CATALOG_SOURCE]
+                ?: DEFAULT_RECORD_CANONICAL_CATALOG_SOURCE.name
         val hasStoredQuickActivities = preferences.contains(PreferencesKeys.RECORD_QUICK_ACTIVITIES)
         val quickActivities = parseQuickActivities(
             raw = preferences[PreferencesKeys.RECORD_QUICK_ACTIVITIES],
@@ -252,6 +269,9 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             canonicalCatalogDisplayMode = runCatching {
                 RecordFrequentOutputMode.valueOf(storedCanonicalCatalogDisplayMode)
             }.getOrDefault(DEFAULT_RECORD_CANONICAL_CATALOG_DISPLAY_MODE),
+            canonicalCatalogSource = runCatching {
+                CanonicalCatalogSource.valueOf(storedCanonicalCatalogSource)
+            }.getOrDefault(DEFAULT_RECORD_CANONICAL_CATALOG_SOURCE),
             quickActivities = quickActivities,
             quickAccessCardExpanded = quickAccessCardExpanded,
             quickAccessEditorVisible = quickAccessEditorVisible,
@@ -381,6 +401,12 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
     suspend fun setAppLanguage(language: AppLanguage) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.APP_LANGUAGE] = language.name
+        }
+    }
+
+    suspend fun setPromptBeforeUnconfiguredActivityRecord(value: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.PROMPT_BEFORE_UNCONFIGURED_ACTIVITY_RECORD] = value
         }
     }
 
@@ -706,6 +732,12 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
     suspend fun setInsightsParameterSection(value: InsightsParameterSection) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.INSIGHTS_PARAMETER_SECTION] = value.name
+        }
+    }
+
+    suspend fun setRecordCanonicalCatalogSource(value: CanonicalCatalogSource) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.RECORD_CANONICAL_CATALOG_SOURCE] = value.name
         }
     }
 

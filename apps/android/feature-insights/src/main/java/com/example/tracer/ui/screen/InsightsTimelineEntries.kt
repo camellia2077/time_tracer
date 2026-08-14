@@ -25,7 +25,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.semantics
 import com.example.tracer.feature.insights.R
+import androidx.compose.ui.semantics.testTag
+
+private const val ParentColorIndicatorTestTag = "insights-parent-color-indicator"
 
 internal sealed interface InsightsTimelineEntry {
     val activity: ActivityTimelineItem
@@ -65,6 +71,10 @@ internal fun InsightsTimelineEntryRow(
             .heightIn(min = height),
         verticalAlignment = Alignment.Top
     ) {
+        TimelineEntryParentColorIndicator(
+            color = activity.parentColor?.toTimelineParentColor(),
+            height = height
+        )
         TimelineEntryTimes(entry, height)
         TimelineEntryRail(entry, height, colors)
         ActivityTimelineCard(
@@ -252,6 +262,30 @@ private fun TimelineEntryRail(
 }
 
 @Composable
+private fun TimelineEntryParentColorIndicator(color: Color?, height: Dp) {
+    // Keep the parent cue in the timeline's far-left breathing room. The
+    // timestamps then sit immediately beside their rail, preserving the
+    // time-axis reading order without changing the card width.
+    Box(
+        modifier = Modifier
+            .width(12.dp)
+            .height(height),
+        contentAlignment = Alignment.Center
+    ) {
+        color?.let {
+            Box(
+                modifier = Modifier
+                    .width(8.dp)
+                    .heightIn(min = height)
+                    .fillMaxHeight()
+                    .background(it)
+                    .semantics { testTag = ParentColorIndicatorTestTag }
+            )
+        }
+    }
+}
+
+@Composable
 private fun ActivityTimelineCard(
     activity: ActivityTimelineItem,
     showDuration: Boolean,
@@ -261,8 +295,7 @@ private fun ActivityTimelineCard(
     height: Dp
 ) {
     Surface(
-        modifier = modifier
-            .heightIn(min = height),
+        modifier = modifier.heightIn(min = height),
         tonalElevation = 1.dp,
         shape = MaterialTheme.shapes.medium
     ) {
@@ -305,6 +338,12 @@ private fun ActivityTimelineCard(
             }
         }
     }
+}
+
+private fun String.toTimelineParentColor(): Color? {
+    if (length != 7 || firstOrNull() != '#') return null
+    val rgb = substring(1).toLongOrNull(16) ?: return null
+    return Color(0xFF000000L or rgb)
 }
 
 private data class TimelineActivityNameParts(

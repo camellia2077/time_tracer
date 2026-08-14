@@ -56,6 +56,8 @@ internal fun ConfigSection(
     onInsightsAverageDayBasisChange: (InsightsAverageDayBasis) -> Unit,
     appLanguage: com.example.tracer.data.AppLanguage,
     onSetAppLanguage: (com.example.tracer.data.AppLanguage) -> Unit,
+    promptBeforeUnconfiguredActivityRecord: Boolean,
+    onPromptBeforeUnconfiguredActivityRecordChange: (Boolean) -> Unit,
     cardExpansionPreferences: ConfigCardExpansionPreferences,
     onConfigCardExpandedChange: (ConfigCard, Boolean) -> Unit,
     extraContent: @Composable () -> Unit = {}
@@ -77,6 +79,9 @@ internal fun ConfigSection(
         ConfigApplicationPreferencesCard(
             appLanguage = appLanguage,
             onSetAppLanguage = onSetAppLanguage,
+            promptBeforeUnconfiguredActivityRecord = promptBeforeUnconfiguredActivityRecord,
+            onPromptBeforeUnconfiguredActivityRecordChange =
+                onPromptBeforeUnconfiguredActivityRecordChange,
             expanded = cardExpansionPreferences.applicationPreferencesExpanded,
             onToggleExpanded = {
                 onConfigCardExpandedChange(

@@ -65,11 +65,14 @@
     <string name="record_time_hour">时</string>
     <string name="record_time_minute">分</string>
     <string name="record_time_second">秒</string>
-    <string name="record_label_remark_optional">备注（可选）</string>
+    <string name="record_label_remark_optional">添加备注（可选）</string>
     <string name="record_remark_add_hint">添加备注</string>
     <string name="record_remark_edit_title">编辑备注</string>
     <string name="record_action_save_remark">保存</string>
     <string name="record_action_record_activity">记录活动</string>
+    <string name="record_unconfigured_activity_dialog_title">活动尚未配置</string>
+    <string name="record_unconfigured_activity_dialog_message">“%1$s” 还没有配置。确认后将记录它，并把它加入默认活动 TOML。</string>
+    <string name="record_action_confirm_and_record">确认并记录</string>
     <string name="record_action_save_interval">保存区间</string>
     <string name="record_action_start_interval">开始计时</string>
     <string name="record_action_stop_interval">结束计时</string>

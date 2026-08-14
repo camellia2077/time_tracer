@@ -65,11 +65,14 @@
     <string name="record_time_hour">時</string>
     <string name="record_time_minute">分</string>
     <string name="record_time_second">秒</string>
-    <string name="record_label_remark_optional">備考（任意）</string>
+    <string name="record_label_remark_optional">備考を追加（任意）</string>
     <string name="record_remark_add_hint">備考を追加</string>
     <string name="record_remark_edit_title">備考を編集</string>
     <string name="record_action_save_remark">保存</string>
     <string name="record_action_record_activity">アクティビティを記録</string>
+    <string name="record_unconfigured_activity_dialog_title">未設定のアクティビティ</string>
+    <string name="record_unconfigured_activity_dialog_message">「%1$s」はまだ設定されていません。確認すると記録し、既定のアクティビティ TOML に追加します。</string>
+    <string name="record_action_confirm_and_record">確認して記録</string>
     <string name="record_action_save_interval">区間を保存</string>
     <string name="record_action_start_interval">タイマーを開始</string>
     <string name="record_action_stop_interval">タイマーを停止</string>
