@@ -1,8 +1,16 @@
 #include "api/c_api/capabilities/insights/tracer_core_c_api_structured_insights_serializer.hpp"
 
 #include <cstdint>
+#include <filesystem>
+#include <fstream>
+#include <map>
+#include <optional>
+#include <sstream>
+#include <stdexcept>
 #include <string>
 #include <utility>
+
+#include "application/ports/config/activity_hierarchy_toml_editor.hpp"
 
 namespace tracer_core::core::c_api::insights {
 namespace {
@@ -16,6 +24,8 @@ using ::DailyInsightsData;
 using ::PeriodInsightsData;
 using ::insights::ProjectNode;
 using ::insights::ProjectTree;
+namespace fs = std::filesystem;
+namespace config = tracer::core::application::config;
 
 auto ToWireValue(InsightsDisplayMode display_mode) -> std::string {
   switch (display_mode) {
@@ -82,10 +92,49 @@ auto EncodeRecordKind(ActivityRecordKind kind) -> std::string {
   return "interval";
 }
 
-auto EncodeDetailedRecords(const DailyInsightsData& insights) -> json {
+auto LoadParentColors(const fs::path& converter_config_toml_path)
+    -> std::map<std::string, std::string> {
+  const fs::path hierarchy_directory =
+      converter_config_toml_path.parent_path() / "activity_hierarchy";
+  std::map<std::string, std::string> colors;
+  if (!fs::exists(hierarchy_directory) || !fs::is_directory(hierarchy_directory)) {
+    return colors;
+  }
+
+  for (const auto& entry : fs::recursive_directory_iterator(hierarchy_directory)) {
+    if (!entry.is_regular_file() || entry.path().extension() != ".toml") {
+      continue;
+    }
+    std::ifstream input(entry.path());
+    if (!input) {
+      throw std::runtime_error("Unable to read activity hierarchy TOML: " +
+                               entry.path().string());
+    }
+    std::ostringstream toml_content;
+    toml_content << input.rdbuf();
+    const config::ActivityHierarchySnapshot hierarchy =
+        config::DescribeActivityHierarchy(toml_content.str());
+    if (hierarchy.color.has_value()) {
+      colors.insert_or_assign(hierarchy.parent, *hierarchy.color);
+    }
+  }
+  return colors;
+}
+
+auto FindParentColor(const std::string& project_path,
+                     const std::map<std::string, std::string>& parent_colors)
+    -> std::optional<std::string> {
+  const std::string parent = project_path.substr(0, project_path.find('_'));
+  const auto color = parent_colors.find(parent);
+  return color == parent_colors.end() ? std::nullopt
+                                      : std::optional<std::string>{color->second};
+}
+
+auto EncodeDetailedRecords(const DailyInsightsData& insights,
+                           const std::map<std::string, std::string>& parent_colors) -> json {
   json records = json::array();
   for (const auto& record : insights.detailed_records) {
-    records.push_back(json{
+    json output = {
         {"logical_id", record.logical_id},
         {"record_kind", EncodeRecordKind(record.kind)},
         {"start_time", record.start_time},
@@ -93,13 +142,19 @@ auto EncodeDetailedRecords(const DailyInsightsData& insights) -> json {
         {"project_path", record.project_path},
         {"duration_seconds", record.duration_seconds},
         {"activity_remark", record.activityRemark.value_or("")},
-    });
+    };
+    if (const auto parent_color = FindParentColor(record.project_path, parent_colors);
+        parent_color.has_value()) {
+      output["parent_color"] = *parent_color;
+    }
+    records.push_back(std::move(output));
   }
   return records;
 }
 
-auto EncodeDailyInsights(const DailyInsightsData& insights) -> json {
-  json records = EncodeDetailedRecords(insights);
+auto EncodeDailyInsights(const DailyInsightsData& insights,
+                         const std::map<std::string, std::string>& parent_colors) -> json {
+  json records = EncodeDetailedRecords(insights, parent_colors);
 
   json stats = json::object();
   for (const auto& [name, duration] : insights.stats) {
@@ -128,17 +183,19 @@ auto EncodeDailyInsights(const DailyInsightsData& insights) -> json {
   };
 }
 
-auto EncodeActivityDays(const PeriodInsightsData& insights) -> json {
+auto EncodeActivityDays(const PeriodInsightsData& insights,
+                        const std::map<std::string, std::string>& parent_colors) -> json {
   json days = json::array();
   for (const auto& day : insights.activity_days) {
     days.push_back(json{{"date", day.date},
                         {"total_duration", day.total_duration},
-                        {"detailed_records", EncodeDetailedRecords(day)}});
+                        {"detailed_records", EncodeDetailedRecords(day, parent_colors)}});
   }
   return days;
 }
 
-auto EncodePeriodInsights(const PeriodInsightsData& insights) -> json {
+auto EncodePeriodInsights(const PeriodInsightsData& insights,
+                          const std::map<std::string, std::string>& parent_colors) -> json {
   json statuses = json::array();
   for (const auto& status : insights.statuses) {
     statuses.push_back(json{{"id", status.id},
@@ -160,14 +217,15 @@ auto EncodePeriodInsights(const PeriodInsightsData& insights) -> json {
       {"is_valid", insights.is_valid},
       {"project_stats", EncodeProjectStats(insights.project_stats)},
       {"project_tree", EncodeProjectTree(insights.project_tree)},
-      {"activity_days", EncodeActivityDays(insights)},
+      {"activity_days", EncodeActivityDays(insights, parent_colors)},
   };
 }
 
 }  // namespace
 
 auto SerializeTemporalStructuredInsights(
-    const TemporalStructuredInsightsOutput& output) -> nlohmann::json {
+    const TemporalStructuredInsightsOutput& output,
+    const fs::path& converter_config_toml_path) -> nlohmann::json {
   json payload = {
       {"ok", output.ok},
       {"display_mode", ToWireValue(output.display_mode)},
@@ -179,15 +237,16 @@ auto SerializeTemporalStructuredInsights(
   };
 
   if (output.ok) {
+    const auto parent_colors = LoadParentColors(converter_config_toml_path);
     if (const auto* daily = std::get_if<DailyInsightsData>(&output.insights);
         daily != nullptr) {
       payload["insights_kind"] = "day";
-      payload["insights"] = EncodeDailyInsights(*daily);
+      payload["insights"] = EncodeDailyInsights(*daily, parent_colors);
     } else if (const auto* period =
                    std::get_if<PeriodInsightsData>(&output.insights);
                period != nullptr) {
       payload["insights_kind"] = "period";
-      payload["insights"] = EncodePeriodInsights(*period);
+      payload["insights"] = EncodePeriodInsights(*period, parent_colors);
     }
   }
 

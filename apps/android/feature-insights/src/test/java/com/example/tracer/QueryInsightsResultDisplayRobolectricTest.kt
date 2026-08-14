@@ -13,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.test.core.app.ApplicationProvider
 import com.example.tracer.feature.insights.R
 import org.junit.Rule
@@ -111,9 +112,10 @@ class QueryInsightsResultDisplayRobolectricTest {
                     ActivityTimelineItem(
                         startTime = "09:00",
                         endTime = "10:00",
-                        activityName = "study_math_is_this",
-                        durationSeconds = 3_600,
-                        remark = "整理错题"
+                    activityName = "study_math_is_this",
+                    durationSeconds = 3_600,
+                    remark = "整理错题",
+                    parentColor = "#22C55E"
                     ),
                     ActivityTimelineItem(
                         startTime = "",
@@ -158,6 +160,8 @@ class QueryInsightsResultDisplayRobolectricTest {
         ).assertExists()
         composeRule.onAllNodesWithText("0s").assertCountEquals(0)
         composeRule.onAllNodesWithText("整理错题").assertCountEquals(1)
+        composeRule.onAllNodesWithTag("insights-parent-color-indicator")
+            .assertCountEquals(1)
     }
 
     @Test

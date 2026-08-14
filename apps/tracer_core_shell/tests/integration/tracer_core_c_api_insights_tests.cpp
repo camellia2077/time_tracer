@@ -73,6 +73,12 @@ void RunInsightsChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
   Require(!kStructuredMetadata.contains("status") &&
               !kStructuredMetadata.contains("exercise"),
           "structured day metadata should not expose fixed status fields");
+  const auto& kStructuredRecords =
+      kStructuredInsightsResponse.at("insights").at("detailed_records");
+  Require(!kStructuredRecords.empty() &&
+              kStructuredRecords.at(0).value("parent_color", std::string{}) ==
+                  "#22C55E",
+          "structured insights should expose the configured parent color per record");
 
   const json kStructuredRangeInsightsResponse = ParseResponse(
       api.runtime_insights(

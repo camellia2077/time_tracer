@@ -1,4 +1,5 @@
 parent = "meal"
+color = "#C0C0C0"
 
 [canonical]
 "dining" = ["meal", "吃饭", "饭"]

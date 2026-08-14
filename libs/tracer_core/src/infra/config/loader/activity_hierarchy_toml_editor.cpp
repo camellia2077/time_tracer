@@ -719,6 +719,18 @@ auto ApplyActivityHierarchyOperationImpl(
       document.insert("parent", request.new_name);
       break;
     }
+    case config::ActivityHierarchyOperationKind::kSetParentColor: {
+      document.erase("color");
+      if (request.color.has_value()) {
+        if (!tracer::core::infrastructure::config::loader::detail::
+                IsActivityHierarchyParentColor(*request.color)) {
+          throw std::invalid_argument(
+              "Parent color must be an uppercase or lowercase #RRGGBB string.");
+        }
+        document.insert("color", *request.color);
+      }
+      break;
+    }
     case config::ActivityHierarchyOperationKind::kRenameGroupCanonical:
     case config::ActivityHierarchyOperationKind::kRenameLeafCanonical: {
       const bool kGroup =
@@ -1047,7 +1059,8 @@ auto DescribeActivityHierarchy(std::string_view toml_content)
       infrastructure::config::loader::detail::ParseActivityHierarchyDocument(kParsed);
   infrastructure::config::loader::detail::ValidateActivityHierarchyAliasUniqueness(
       kDocument);
-  ActivityHierarchySnapshot snapshot{.parent = kDocument.parent};
+  ActivityHierarchySnapshot snapshot{.parent = kDocument.parent,
+                                     .color = kDocument.color};
   for (const auto& node : kDocument.nodes) {
     snapshot.nodes.push_back(DescribeNode(node, {}));
   }

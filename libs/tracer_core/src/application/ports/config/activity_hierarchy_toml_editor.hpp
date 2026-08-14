@@ -2,6 +2,7 @@
 #define TRACER_CORE_APPLICATION_PORTS_CONFIG_ACTIVITY_HIERARCHY_TOML_EDITOR_HPP_
 
 #include <filesystem>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -32,6 +33,7 @@ enum class ActivityHierarchyOperationKind {
   kMergeLeafCanonical,
   kSetGroupAliases,
   kRenameParent,
+  kSetParentColor,
   kRenameGroupCanonical,
   kRenameLeafCanonical,
   kAppendLeafAlias,
@@ -44,7 +46,9 @@ enum class ActivityHierarchyOperationKind {
 // `target_path` identifies the edited group or leaf; `destination_path` is
 // used by kMoveLeaf/kMoveGroup/kMergeLeafCanonical. `canonical_key` is used by
 // add operations, `new_name` by rename operations, and `old_parent` optionally
-// guards kRenameParent against a stale TOML document.
+// guards kRenameParent against a stale TOML document. `color` is used only by
+// kSetParentColor: a value writes an opaque #RRGGBB color and nullopt removes
+// the optional parent color field.
 struct ActivityHierarchyOperationRequest {
   ActivityHierarchyOperationKind kind =
       ActivityHierarchyOperationKind::kAddGroup;
@@ -53,6 +57,7 @@ struct ActivityHierarchyOperationRequest {
   std::string canonical_key;
   std::string new_name;
   std::string old_parent;
+  std::optional<std::string> color;
   std::string target_alias;
   std::string old_alias;
   std::vector<std::string> aliases;

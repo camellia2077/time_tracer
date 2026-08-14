@@ -25,6 +25,7 @@ struct AliasMappingChildFile {
   fs::path relative_path;
   fs::path absolute_path;
   std::string parent;
+  std::optional<std::string> color;
 };
 
 struct ExpandedAliasMappingEntry {
@@ -272,6 +273,7 @@ inline auto LoadAliasMappingDefinition(const fs::path& alias_directory_path,
         .relative_path = relative_path,
         .absolute_path = absolute_path,
         .parent = document.parent,
+        .color = document.color,
     });
 
     for (const auto& canonical_node :

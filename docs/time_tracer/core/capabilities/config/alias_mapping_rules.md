@@ -139,15 +139,24 @@ The legacy alias-to-canonical scalar shape is invalid and is not supported:
 ## Child files
 
 Each child file owns one top-level parent and contains a `canonical` table.
+It may additionally declare one optional display color for that parent. The
+color is presentation metadata only: it never affects alias resolution or a
+canonical path.
 
 Example:
 
 ```toml
 parent = "recreation"
+color = "#22C55E"
 
 [canonical.online-platforms]
 "zhihu" = ["zh", "zhihu"]
 ```
+
+`color` is optional. When present, it must be an opaque six-digit HEX value in
+the form `#RRGGBB`; absent means that the parent does not supply a display
+color. The only permitted top-level fields are `parent`, optional `color`, and
+`canonical`.
 
 This expands to:
 

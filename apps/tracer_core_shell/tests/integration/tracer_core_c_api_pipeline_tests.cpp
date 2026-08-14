@@ -279,6 +279,36 @@ void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
                   }),
           "generic hierarchy operation should return the core hierarchy snapshot");
 
+  const json kSetParentColor = ParseResponse(
+      api.runtime_txt(
+          runtime,
+          json{{"action", "apply_activity_hierarchy_operation"},
+               {"toml_content", kActivityHierarchyToml},
+               {"operation", {{"kind", "set_parent_color"},
+                              {"color", "#FF0000"}}}}
+              .dump()
+              .c_str()),
+      "set activity hierarchy parent color");
+  Require(kSetParentColor.value("ok", false) &&
+              kSetParentColor.at("hierarchy").value("color", std::string{}) ==
+                  "#FF0000",
+          "set_parent_color should return the configured parent color");
+
+  const json kClearParentColor = ParseResponse(
+      api.runtime_txt(
+          runtime,
+          json{{"action", "apply_activity_hierarchy_operation"},
+               {"toml_content",
+                kSetParentColor.value("updated_toml_content", std::string{})},
+               {"operation", {{"kind", "set_parent_color"},
+                              {"color", nullptr}}}}
+              .dump()
+              .c_str()),
+      "clear activity hierarchy parent color");
+  Require(kClearParentColor.value("ok", false) &&
+              !kClearParentColor.at("hierarchy").contains("color"),
+          "null set_parent_color should remove the optional parent color");
+
   const json kRenameParent = ParseResponse(
       api.runtime_txt(
           runtime,

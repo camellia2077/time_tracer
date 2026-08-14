@@ -5,6 +5,7 @@ import com.example.tracer.PersistedRecordInputDraft
 import com.example.tracer.RecordAuthoringMode
 import com.example.tracer.RecordLogicalDayTarget
 import com.example.tracer.RecordFrequentOutputMode
+import com.example.tracer.CanonicalCatalogSource
 import com.example.tracer.TxtOutputMode
 import com.example.tracer.InsightsChartSemanticMode
 import com.example.tracer.InsightsParameterSection
@@ -55,6 +56,10 @@ class UserPreferencesRepositoryTest {
         assertEquals(
             UserPreferencesRepository.DEFAULT_RECORD_CANONICAL_CATALOG_DISPLAY_MODE,
             preferences.canonicalCatalogDisplayMode
+        )
+        assertEquals(
+            CanonicalCatalogSource.TREE,
+            preferences.canonicalCatalogSource
         )
     }
 
@@ -278,6 +283,21 @@ class UserPreferencesRepositoryTest {
         repository.setInsightsParameterSection(InsightsParameterSection.ACTIVITIES)
 
         assertEquals(InsightsParameterSection.ACTIVITIES, repository.insightsParameterSection.first())
+    }
+
+    @Test
+    fun setRecordCanonicalCatalogSource_persistsSelection() = runTest {
+        val repository = buildRepository(
+            testName = "persist_record_canonical_catalog_source",
+            scope = backgroundScope
+        )
+
+        repository.setRecordCanonicalCatalogSource(CanonicalCatalogSource.CATEGORIES)
+
+        assertEquals(
+            CanonicalCatalogSource.CATEGORIES,
+            repository.recordFrequentPreferences.first().canonicalCatalogSource
+        )
     }
 
     @Test

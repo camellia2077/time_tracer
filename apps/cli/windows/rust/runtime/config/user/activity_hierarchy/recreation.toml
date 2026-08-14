@@ -1,4 +1,5 @@
 parent = "recreation"
+color = "#000000"
 
 [canonical.online-platforms]
 "zhihu" = ["zhihu", "知乎"]

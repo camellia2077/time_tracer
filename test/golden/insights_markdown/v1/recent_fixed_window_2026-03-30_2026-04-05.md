@@ -1,116 +1,124 @@
 ## Summary
 
 - **Period**: 2026-03-30 - 2026-04-05
-- **Total Time Recorded**: 119h 59m 50s (average: 23h 59m 58s/day)
-- **Activity Count**: 50 (average: 7.14/day)
-- **Actual Days with Records**: 5
+- **Total Time Recorded**: 127h 22m 18s (average: 18h 11m 45s/day)
+- **Activity Count**: 69 (average: 9.86/day)
+- **Actual Days with Records**: 7
 
 ## Breakdown
-- **study**: 62h 33m 54s (52.1%)
-  *Average: 12h 30m 46s/day · 23 times · 4.60 times/day*
-  - math: 54h 21m 3s (86.9%)
-    *Average: 10h 52m 12s/day · 18 times · 3.60 times/day*
-    - probability-theory: 28h 18m 45s (52.1%)
-      *Average: 5h 39m 45s/day · 11 times · 2.20 times/day*
-      - random-variable: 17h 33m 5s (62.0%)
-        *Average: 3h 30m 37s/day · 5 times · 1.00 times/day*
-        - continuous-random-variable: 10h 22m 4s (59.1%)
-          *Average: 2h 4m 24s/day · 2 times · 0.40 times/day*
-        - discrete-random-variable: 6h 0m 5s (34.2%)
-          *Average: 1h 12m 1s/day · 2 times · 0.40 times/day*
-      - probability-basics: 7h 36m 30s (26.9%)
-        *Average: 1h 31m 18s/day · 3 times · 0.60 times/day*
-        - probability-operations: 2h 38m 39s (34.8%)
-          *Average: 0h 31m 43s/day · 1 times · 0.20 times/day*
-      - probability-distribution: 3h 9m 10s (11.1%)
-        *Average: 0h 37m 50s/day · 3 times · 0.60 times/day*
-        - binomial-distribution: 2h 37m 33s (83.3%)
-          *Average: 0h 31m 30s/day · 1 times · 0.20 times/day*
-        - normal-distribution: 0h 31m 31s (16.7%)
-          *Average: 0h 6m 18s/day · 1 times · 0.20 times/day*
-        - poisson-distribution: 0h 0m 6s (0.1%)
-          *Average: 0h 0m 1s/day · 1 times · 0.20 times/day*
-    - linear-algebra: 25h 22m 41s (46.7%)
-      *Average: 5h 4m 32s/day · 6 times · 1.20 times/day*
-      - matrix: 18h 51m 50s (74.3%)
-        *Average: 3h 46m 22s/day · 5 times · 1.00 times/day*
-        - matrix-operations: 5h 25m 8s (28.7%)
-          *Average: 1h 5m 1s/day · 1 times · 0.20 times/day*
-        - eigenvalue-and-eigenvector: 4h 26m 36s (23.6%)
-          *Average: 0h 53m 19s/day · 2 times · 0.40 times/day*
-    - calculus: 0h 39m 37s (1.2%)
-      *Average: 0h 7m 55s/day · 1 times · 0.20 times/day*
-      - multiple-integral: 0h 39m 37s (100.0%)
-        *Average: 0h 7m 55s/day · 1 times · 0.20 times/day*
-  - english: 7h 50m 13s (12.5%)
-    *Average: 1h 34m 2s/day · 4 times · 0.80 times/day*
-    - words: 6h 45m 30s (86.2%)
-      *Average: 1h 21m 6s/day · 2 times · 0.40 times/day*
-    - writing: 1h 4m 43s (13.8%)
-      *Average: 0h 12m 56s/day · 2 times · 0.40 times/day*
-  - computer: 0h 22m 38s (0.6%)
-    *Average: 0h 4m 31s/day · 1 times · 0.20 times/day*
-    - data-structure: 0h 22m 38s (100.0%)
-      *Average: 0h 4m 31s/day · 1 times · 0.20 times/day*
-      - trees: 0h 22m 38s (100.0%)
-        *Average: 0h 4m 31s/day · 1 times · 0.20 times/day*
-- **exercise**: 23h 7m 53s (19.3%)
-  *Average: 4h 37m 34s/day · 13 times · 2.60 times/day*
-  - strength-training: 10h 44m 44s (46.5%)
-    *Average: 2h 8m 56s/day · 7 times · 1.40 times/day*
-    - push: 6h 11m 20s (57.6%)
-      *Average: 1h 14m 16s/day · 3 times · 0.60 times/day*
-      - dips: 4h 3m 58s (65.7%)
-        *Average: 0h 48m 47s/day · 1 times · 0.20 times/day*
-      - bench-press: 1h 12m 41s (19.6%)
-        *Average: 0h 14m 32s/day · 1 times · 0.20 times/day*
-      - overhead-press: 0h 54m 41s (14.7%)
-        *Average: 0h 10m 56s/day · 1 times · 0.20 times/day*
-    - squat: 3h 3m 9s (28.4%)
-      *Average: 0h 36m 37s/day · 2 times · 0.40 times/day*
-      - deadlift: 2h 29m 16s (81.5%)
-        *Average: 0h 29m 51s/day · 1 times · 0.20 times/day*
-      - front-squat: 0h 33m 53s (18.5%)
-        *Average: 0h 6m 46s/day · 1 times · 0.20 times/day*
-    - pull: 1h 30m 15s (14.0%)
-      *Average: 0h 18m 3s/day · 2 times · 0.40 times/day*
-      - barbell-row: 1h 30m 15s (100.0%)
-        *Average: 0h 18m 3s/day · 2 times · 0.40 times/day*
-  - cardio: 9h 13m 20s (39.9%)
-    *Average: 1h 50m 40s/day · 4 times · 0.80 times/day*
-    - running: 6h 19m 39s (68.6%)
-      *Average: 1h 15m 55s/day · 3 times · 0.60 times/day*
-      - treadmill: 3h 32m 25s (56.0%)
-        *Average: 0h 42m 29s/day · 1 times · 0.20 times/day*
-      - track-running: 0h 4m 42s (1.2%)
-        *Average: 0h 0m 56s/day · 1 times · 0.20 times/day*
-  - yoga: 3h 9m 49s (13.7%)
-    *Average: 0h 37m 57s/day · 2 times · 0.40 times/day*
-- **sleep**: 21h 46m 55s (18.2%)
-  *Average: 4h 21m 23s/day · 5 times · 1.00 times/day*
-  - night: 21h 46m 55s (100.0%)
-    *Average: 4h 21m 23s/day · 5 times · 1.00 times/day*
-- **recreation**: 8h 25m 45s (7.0%)
-  *Average: 1h 41m 9s/day · 6 times · 1.20 times/day*
-  - game: 6h 53m 6s (81.7%)
-    *Average: 1h 22m 37s/day · 5 times · 1.00 times/day*
-    - clash-royale: 5h 2m 22s (73.2%)
-      *Average: 1h 0m 28s/day · 2 times · 0.40 times/day*
-    - overwatch: 1h 50m 44s (26.8%)
-      *Average: 0h 22m 8s/day · 3 times · 0.60 times/day*
-  - online-platforms: 1h 32m 39s (18.3%)
-    *Average: 0h 18m 31s/day · 1 times · 0.20 times/day*
-    - weibo: 1h 32m 39s (100.0%)
-      *Average: 0h 18m 31s/day · 1 times · 0.20 times/day*
-- **routine**: 3h 26m 35s (2.9%)
-  *Average: 0h 41m 19s/day · 2 times · 0.40 times/day*
-  - express: 1h 49m 52s (53.2%)
-    *Average: 0h 21m 58s/day · 1 times · 0.20 times/day*
-  - personal-hygiene: 1h 36m 43s (46.8%)
-    *Average: 0h 19m 20s/day · 1 times · 0.20 times/day*
-    - oral-hygiene: 1h 36m 43s (100.0%)
-      *Average: 0h 19m 20s/day · 1 times · 0.20 times/day*
-- **meal**: 0h 38m 48s (0.5%)
-  *Average: 0h 7m 45s/day · 1 times · 0.20 times/day*
-  - dining: 0h 38m 48s (100.0%)
-    *Average: 0h 7m 45s/day · 1 times · 0.20 times/day*
+- **study**: 33h 16m 10s (26.1%)
+  *Average: 4h 45m 10s/day · 24 times · 3.43 times/day*
+  - math: 20h 36m 51s (62.0%)
+    *Average: 2h 56m 41s/day · 18 times · 2.57 times/day*
+    - linear-algebra: 12h 25m 35s (60.3%)
+      *Average: 1h 46m 30s/day · 7 times · 1.00 times/day*
+      - matrix: 12h 25m 35s (100.0%)
+        *Average: 1h 46m 30s/day · 7 times · 1.00 times/day*
+        - matrix-operations: 6h 14m 29s (50.2%)
+          *Average: 0h 53m 29s/day · 3 times · 0.43 times/day*
+        - linear-equations: 3h 59m 6s (32.1%)
+          *Average: 0h 34m 9s/day · 2 times · 0.29 times/day*
+    - calculus: 6h 11m 56s (30.1%)
+      *Average: 0h 53m 8s/day · 6 times · 0.86 times/day*
+      - multiple-integral: 6h 11m 56s (100.0%)
+        *Average: 0h 53m 8s/day · 6 times · 0.86 times/day*
+        - double-integral: 3h 59m 51s (64.5%)
+          *Average: 0h 34m 15s/day · 3 times · 0.43 times/day*
+        - triple-integral: 2h 12m 4s (35.5%)
+          *Average: 0h 18m 52s/day · 2 times · 0.29 times/day*
+    - probability-theory: 1h 59m 20s (9.6%)
+      *Average: 0h 17m 2s/day · 5 times · 0.71 times/day*
+      - probability-basics: 1h 59m 19s (100.0%)
+        *Average: 0h 17m 2s/day · 4 times · 0.57 times/day*
+        - probability-operations: 0h 0m 2s (0.0%)
+          *Average: 0h 0m/day · 1 times · 0.14 times/day*
+        - conditional-probability: 0h 0m 1s (0.0%)
+          *Average: 0h 0m/day · 1 times · 0.14 times/day*
+        - random-events: 0h 0m 1s (0.0%)
+          *Average: 0h 0m/day · 1 times · 0.14 times/day*
+  - english: 8h 3m 49s (24.2%)
+    *Average: 1h 9m 7s/day · 4 times · 0.57 times/day*
+    - article: 6h 42m 11s (83.1%)
+      *Average: 0h 57m 27s/day · 1 times · 0.14 times/day*
+    - writing: 1h 21m 36s (16.9%)
+      *Average: 0h 11m 39s/day · 1 times · 0.14 times/day*
+    - words: 0h 0m 1s (0.0%)
+      *Average: 0h 0m/day · 1 times · 0.14 times/day*
+    - listening: 0h 0m 1s (0.0%)
+      *Average: 0h 0m/day · 1 times · 0.14 times/day*
+  - computer: 4h 35m 30s (13.8%)
+    *Average: 0h 39m 21s/day · 2 times · 0.29 times/day*
+    - data-structure: 2h 33m 16s (55.6%)
+      *Average: 0h 21m 53s/day · 1 times · 0.14 times/day*
+      - graphs: 2h 33m 16s (100.0%)
+        *Average: 0h 21m 53s/day · 1 times · 0.14 times/day*
+    - data: 2h 2m 14s (44.4%)
+      *Average: 0h 17m 27s/day · 1 times · 0.14 times/day*
+      - structure: 2h 2m 14s (100.0%)
+        *Average: 0h 17m 27s/day · 1 times · 0.14 times/day*
+- **sleep**: 30h 58m 31s (24.3%)
+  *Average: 4h 25m 30s/day · 12 times · 1.71 times/day*
+  - night: 23h 22m 35s (75.5%)
+    *Average: 3h 20m 22s/day · 6 times · 0.86 times/day*
+  - day: 4h 1m 59s (13.0%)
+    *Average: 0h 34m 34s/day · 4 times · 0.57 times/day*
+  - insomnia: 3h 33m 57s (11.5%)
+    *Average: 0h 30m 33s/day · 2 times · 0.29 times/day*
+- **exercise**: 22h 36m 21s (17.7%)
+  *Average: 3h 13m 45s/day · 18 times · 2.57 times/day*
+  - cardio: 14h 35m 15s (64.5%)
+    *Average: 2h 5m 2s/day · 9 times · 1.29 times/day*
+    - running: 8h 4m 43s (55.4%)
+      *Average: 1h 9m 14s/day · 6 times · 0.86 times/day*
+      - track-running: 2h 56m 17s (36.4%)
+        *Average: 0h 25m 11s/day · 1 times · 0.14 times/day*
+      - treadmill-incline: 2h 9m 35s (26.7%)
+        *Average: 0h 18m 30s/day · 1 times · 0.14 times/day*
+      - treadmill: 0h 46m 14s (9.5%)
+        *Average: 0h 6m 36s/day · 1 times · 0.14 times/day*
+    - cycling: 5h 29m 21s (37.6%)
+      *Average: 0h 47m 3s/day · 2 times · 0.29 times/day*
+    - swimming: 1h 1m 11s (7.0%)
+      *Average: 0h 8m 44s/day · 1 times · 0.14 times/day*
+  - strength-training: 8h 1m 6s (35.5%)
+    *Average: 1h 8m 43s/day · 9 times · 1.29 times/day*
+    - push: 2h 34m 47s (32.2%)
+      *Average: 0h 22m 6s/day · 3 times · 0.43 times/day*
+      - overhead-press: 1h 55m 31s (74.6%)
+        *Average: 0h 16m 30s/day · 2 times · 0.29 times/day*
+      - dips: 0h 39m 16s (25.4%)
+        *Average: 0h 5m 36s/day · 1 times · 0.14 times/day*
+    - pull: 2h 1m 38s (25.3%)
+      *Average: 0h 17m 22s/day · 1 times · 0.14 times/day*
+      - pull-up: 2h 1m 38s (100.0%)
+        *Average: 0h 17m 22s/day · 1 times · 0.14 times/day*
+    - squat: 0h 29m 50s (6.2%)
+      *Average: 0h 4m 15s/day · 2 times · 0.29 times/day*
+      - squat: 0h 29m 50s (100.0%)
+        *Average: 0h 4m 15s/day · 2 times · 0.29 times/day*
+- **recreation**: 22h 21m 4s (17.5%)
+  *Average: 3h 11m 34s/day · 10 times · 1.43 times/day*
+  - online-platforms: 17h 26m 58s (78.1%)
+    *Average: 2h 29m 34s/day · 7 times · 1.00 times/day*
+    - douyin: 8h 46m 41s (50.3%)
+      *Average: 1h 15m 14s/day · 3 times · 0.43 times/day*
+    - zhihu: 7h 9m 40s (41.0%)
+      *Average: 1h 1m 22s/day · 2 times · 0.29 times/day*
+    - bilibili: 1h 30m 37s (8.7%)
+      *Average: 0h 12m 56s/day · 2 times · 0.29 times/day*
+  - game: 4h 54m 6s (21.9%)
+    *Average: 0h 42m/day · 3 times · 0.43 times/day*
+    - clash-royale: 4h 54m 6s (100.0%)
+      *Average: 0h 42m/day · 3 times · 0.43 times/day*
+- **rest**: 15h 27m 15s (12.1%)
+  *Average: 2h 12m 27s/day · 3 times · 0.43 times/day*
+  - rest: 15h 27m 15s (100.0%)
+    *Average: 2h 12m 27s/day · 3 times · 0.43 times/day*
+- **routine**: 2h 42m 56s (2.1%)
+  *Average: 0h 23m 16s/day · 1 times · 0.14 times/day*
+  - toilet: 2h 42m 56s (100.0%)
+    *Average: 0h 23m 16s/day · 1 times · 0.14 times/day*
+- **meal**: 0h 0m 1s (0.0%)
+  *Average: 0h 0m/day · 1 times · 0.14 times/day*
+  - dining: 0h 0m 1s (100.0%)
+    *Average: 0h 0m/day · 1 times · 0.14 times/day*

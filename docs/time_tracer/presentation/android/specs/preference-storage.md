@@ -37,6 +37,7 @@ Do not store UI preferences in the runtime SQLite database.
 - Record assistance preferences:
   - frequent activity lookback days
   - frequent activity top-N
+  - last selected `Tree | Frequent | Categories` source in the activity browser
   - quick activities
   - assist panel expansion flags
 - Insights chart preference:

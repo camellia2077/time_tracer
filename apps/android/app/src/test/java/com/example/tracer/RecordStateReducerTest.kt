@@ -143,6 +143,15 @@ class RecordStateReducerTest {
     }
 
     @Test
+    fun canonicalCatalogSource_updatesState() {
+        val viewModel = buildRecordViewModel()
+
+        viewModel.updateCanonicalCatalogSource(CanonicalCatalogSource.CATEGORIES)
+
+        assertEquals(CanonicalCatalogSource.CATEGORIES, viewModel.uiState.canonicalCatalogSource)
+    }
+
+    @Test
     fun applyCanonicalCatalogEntry_insertsCanonicalPathAndDismissesOverlays() {
         val viewModel = buildRecordViewModel()
         viewModel.toggleFrequentActivities()

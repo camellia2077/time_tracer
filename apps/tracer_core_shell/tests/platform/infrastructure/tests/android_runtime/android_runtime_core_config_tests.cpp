@@ -283,7 +283,7 @@ auto TestInsightsConfigLoaderRejectsInvalidDailyMarkdown(int& failures) -> void 
     std::cerr
         << "[FAIL] LoadDailyMdConfig should fail for invalid insights config.\n";
   } else if (!Contains(message, "Invalid insights config [") ||
-             !Contains(message, "date_label")) {
+             !Contains(message, "summary_section_label")) {
     ++failures;
     std::cerr
         << "[FAIL] Invalid insights config error should include context and "

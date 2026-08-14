@@ -2,6 +2,7 @@
 
 #include <nlohmann/json.hpp>
 
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -41,7 +42,11 @@ namespace config = tracer::core::application::config;
   for (const auto& node : snapshot.nodes) {
     nodes.push_back(ToJson(node));
   }
-  return {{"parent", snapshot.parent}, {"nodes", std::move(nodes)}};
+  json result = {{"parent", snapshot.parent}, {"nodes", std::move(nodes)}};
+  if (snapshot.color.has_value()) {
+    result["color"] = *snapshot.color;
+  }
+  return result;
 }
 
 [[nodiscard]] auto RequireStringField(const json& payload,
@@ -65,6 +70,20 @@ namespace config = tracer::core::application::config;
   if (!it->is_string()) {
     throw std::invalid_argument("field `" + std::string(field_name) +
                                 "` must be a string when present.");
+  }
+  return it->get<std::string>();
+}
+
+[[nodiscard]] auto ReadNullableStringField(const json& payload,
+                                            std::string_view field_name)
+    -> std::optional<std::string> {
+  const auto it = payload.find(std::string(field_name));
+  if (it == payload.end() || it->is_null()) {
+    return std::nullopt;
+  }
+  if (!it->is_string()) {
+    throw std::invalid_argument("field `" + std::string(field_name) +
+                                "` must be a string or null.");
   }
   return it->get<std::string>();
 }
@@ -127,6 +146,9 @@ namespace config = tracer::core::application::config;
   if (kind == "rename_parent") {
     return Kind::kRenameParent;
   }
+  if (kind == "set_parent_color") {
+    return Kind::kSetParentColor;
+  }
   if (kind == "rename_group_canonical") {
     return Kind::kRenameGroupCanonical;
   }
@@ -161,6 +183,7 @@ namespace config = tracer::core::application::config;
       .canonical_key = ReadOptionalStringField(operation, "canonical_key"),
       .new_name = ReadOptionalStringField(operation, "new_name"),
       .old_parent = ReadOptionalStringField(operation, "old_parent"),
+      .color = ReadNullableStringField(operation, "color"),
       .target_alias = ReadOptionalStringField(operation, "target_alias"),
       .old_alias = ReadOptionalStringField(operation, "old_alias"),
       .aliases = ReadOptionalAliases(operation),
