@@ -56,6 +56,8 @@ fun RecordSection(
     canonicalCatalogDisplayMode: RecordFrequentOutputMode,
     lastRecordedActivityHierarchyLeaf: String,
     lastRecordedDuration: String,
+    latestActivityRecord: LatestActivityRecord? = null,
+    previousActivityTail: PreviousActivityTail? = null,
     collapsedCanonicalRootPaths: Set<String>,
     orderedCanonicalRootPaths: List<String>,
     frequentActivitiesVisible: Boolean,
@@ -96,6 +98,7 @@ fun RecordSection(
     onStartIntervalRecording: () -> Unit,
     onStopIntervalRecording: () -> Unit,
     onDiscardIntervalDraft: () -> Unit,
+    onUsePreviousActivityEndTime: () -> Unit = {},
     onDismissTxtPreview: () -> Unit,
     onRecordNow: () -> Unit,
     onRecordInterval: () -> Unit
@@ -163,6 +166,8 @@ fun RecordSection(
             currentTimeMillis = currentTimeMillis,
             lastRecordedActivityHierarchyLeaf = lastRecordedActivityHierarchyLeaf,
             lastRecordedDuration = lastRecordedDuration,
+            latestActivityRecord = latestActivityRecord,
+            previousActivityTail = previousActivityTail,
             onOpenCanonicalCatalog = onOpenCanonicalCatalog,
             onOpenTxtPreview = onOpenTxtPreview,
             onStartIntervalRecording = {
@@ -174,6 +179,7 @@ fun RecordSection(
                 onStopIntervalRecording()
             },
             onDiscardIntervalDraft = onDiscardIntervalDraft,
+            onUsePreviousActivityEndTime = onUsePreviousActivityEndTime,
             onRecordNow = {
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 if (authoringMode == RecordAuthoringMode.INTERVAL) {

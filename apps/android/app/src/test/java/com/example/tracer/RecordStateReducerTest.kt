@@ -113,12 +113,12 @@ class RecordStateReducerTest {
         val viewModel = buildRecordViewModel()
 
         viewModel.onAuthoringModeChange(RecordAuthoringMode.INTERVAL)
-        viewModel.onIntervalStartChange("0900")
-        viewModel.onIntervalEndChange("1030")
+        viewModel.onIntervalStartChange("09:00:00")
+        viewModel.onIntervalEndChange("10:30:00")
 
         assertEquals(RecordAuthoringMode.INTERVAL, viewModel.uiState.authoringMode)
-        assertEquals("0900", viewModel.uiState.intervalStart)
-        assertEquals("1030", viewModel.uiState.intervalEnd)
+        assertEquals("09:00:00", viewModel.uiState.intervalStart)
+        assertEquals("10:30:00", viewModel.uiState.intervalEnd)
     }
 
     @Test

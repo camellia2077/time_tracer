@@ -58,6 +58,8 @@
     <string name="record_last_recorded_summary">前回:
 %1$s
 %2$s</string>
+    <string name="record_latest_activity_title">前回：%1$s</string>
+    <string name="record_latest_activity_times">%1$s-%2$s · %3$s</string>
     <string name="record_label_activity_name">アクティビティ名</string>
     <string name="record_activity_hierarchy_created">%1$s を %2$s カテゴリに保存しました</string>
     <string name="record_label_interval_start">開始</string>
@@ -77,11 +79,14 @@
     <string name="record_action_start_interval">タイマーを開始</string>
     <string name="record_action_stop_interval">タイマーを停止</string>
     <string name="record_action_discard_interval">破棄</string>
-    <string name="record_interval_active_title">タイマー実行中</string>
     <string name="record_interval_draft_title">区間を確認</string>
-    <string name="record_interval_started_at">開始 %1$s</string>
     <string name="record_interval_attribution_date">記録日: %1$s</string>
+    <string name="record_previous_activity_tail">前回の記録は %1$s に終了</string>
+    <string name="record_action_use_previous_activity_end">開始時刻を %1$s に変更</string>
     <string name="record_interval_elapsed">経過 %1$s</string>
+    <string name="record_interval_elapsed_fullscreen_title">経過時間</string>
+    <string name="record_cd_open_elapsed_fullscreen">経過時間を全画面表示</string>
+    <string name="record_cd_close_elapsed_fullscreen">全画面タイマーを閉じる</string>
     <string name="record_interval_summary">%1$s – %2$s · %3$s</string>
     <string name="record_interval_edit_title">区間時間を編集</string>
     <string name="record_interval_current_time">現在時刻：%1$s</string>

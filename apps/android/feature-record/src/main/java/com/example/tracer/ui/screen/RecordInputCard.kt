@@ -1,12 +1,16 @@
 package com.example.tracer
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,6 +25,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Fullscreen
+import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Button
@@ -38,6 +44,7 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -46,15 +53,25 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -84,11 +101,14 @@ internal fun RecordInputCard(
     currentTimeMillis: Long,
     lastRecordedActivityHierarchyLeaf: String,
     lastRecordedDuration: String,
+    latestActivityRecord: LatestActivityRecord? = null,
+    previousActivityTail: PreviousActivityTail? = null,
     onOpenCanonicalCatalog: () -> Unit = {},
     onOpenTxtPreview: () -> Unit,
     onStartIntervalRecording: () -> Unit,
     onStopIntervalRecording: () -> Unit,
     onDiscardIntervalDraft: () -> Unit,
+    onUsePreviousActivityEndTime: () -> Unit = {},
     onRecordNow: () -> Unit
 ) {
     var activityNameInputValue by remember {
@@ -108,6 +128,7 @@ internal fun RecordInputCard(
         var isIntervalTimeEditorVisible by remember { mutableStateOf(false) }
         var isDiscardConfirmationVisible by remember { mutableStateOf(false) }
         var isRemarkEditorVisible by remember { mutableStateOf(false) }
+        var isElapsedFullScreenVisible by remember { mutableStateOf(false) }
 
         Column(
             modifier = Modifier.padding(16.dp),
@@ -146,7 +167,24 @@ internal fun RecordInputCard(
                 }
             }
 
-            if (lastRecordedActivityHierarchyLeaf.isNotBlank() && lastRecordedDuration.isNotBlank()) {
+            if (latestActivityRecord != null) {
+                Text(
+                    text = stringResource(R.string.record_latest_activity_title, latestActivityRecord.activity),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = stringResource(
+                        R.string.record_latest_activity_times,
+                        formatLatestRecordBoundary(latestActivityRecord.startTime),
+                        formatLatestRecordBoundary(latestActivityRecord.endTime),
+                        formatExactDuration(latestActivityRecord.durationSeconds)
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else if (lastRecordedActivityHierarchyLeaf.isNotBlank() &&
+                lastRecordedDuration.isNotBlank()) {
                 Text(
                     text = stringResource(
                         R.string.record_last_recorded_summary,
@@ -206,11 +244,6 @@ internal fun RecordInputCard(
             val hasIntervalDraft = intervalStart.isNotBlank() && intervalEnd.isNotBlank()
             if (authoringMode == RecordAuthoringMode.INTERVAL) {
                 if (isIntervalRunning) {
-                    Text(
-                        text = stringResource(R.string.record_interval_active_title),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
                     val elapsedSeconds = if (intervalStartedAtEpochMs > 0L) {
                         TimeUnit.MILLISECONDS.toSeconds(
                             (currentTimeMillis - intervalStartedAtEpochMs).coerceAtLeast(0L)
@@ -218,32 +251,37 @@ internal fun RecordInputCard(
                     } else {
                         0L
                     }
-                    Text(
-                        text = stringResource(
-                            R.string.record_interval_started_at,
-                            formatCompactClockTime(intervalStart)
-                        ),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    if (attributionDateIso.isNotBlank()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Text(
                             text = stringResource(
-                                R.string.record_interval_attribution_date,
-                                attributionDateIso
+                                R.string.record_interval_elapsed,
+                                formatDurationSummary(elapsedSeconds)
                             ),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        IconButton(
+                            onClick = { isElapsedFullScreenVisible = true }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Fullscreen,
+                                contentDescription = stringResource(
+                                    R.string.record_cd_open_elapsed_fullscreen
+                                )
+                            )
+                        }
+                    }
+                    if (isElapsedFullScreenVisible) {
+                        ElapsedFullScreenDialog(
+                            elapsedSeconds = elapsedSeconds,
+                            activityName = recordContent.trim(),
+                            onDismiss = { isElapsedFullScreenVisible = false }
                         )
                     }
-                    Text(
-                        text = stringResource(
-                            R.string.record_interval_elapsed,
-                            formatDurationSummary(elapsedSeconds)
-                        ),
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
                 } else if (hasIntervalDraft) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -258,8 +296,8 @@ internal fun RecordInputCard(
                             Text(
                                 text = stringResource(
                                     R.string.record_interval_summary,
-                                    formatCompactClockTime(intervalStart),
-                                    formatCompactClockTime(intervalEnd),
+                                    formatIsoClockTime(intervalStart),
+                                    formatIsoClockTime(intervalEnd),
                                     formatDurationSummary(intervalDurationSeconds(intervalStart, intervalEnd))
                                 ),
                                 style = MaterialTheme.typography.bodyLarge,
@@ -274,6 +312,31 @@ internal fun RecordInputCard(
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
+                            }
+                            previousActivityTail?.let { tail ->
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                                ) {
+                                    Text(
+                                        text = stringResource(
+                                            R.string.record_previous_activity_tail,
+                                            formatIsoClockTime(tail.endTime)
+                                        ),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    TextButton(
+                                        onClick = onUsePreviousActivityEndTime,
+                                        modifier = Modifier.height(40.dp)
+                                    ) {
+                                        Text(
+                                            stringResource(
+                                                R.string.record_action_use_previous_activity_end,
+                                                formatIsoClockTime(tail.endTime)
+                                            )
+                                        )
+                                    }
+                                }
                             }
                         }
                         IconButton(
@@ -466,6 +529,161 @@ internal fun RecordInputCard(
             }
         }
     }
+}
+
+private fun formatLatestRecordBoundary(value: String): String =
+    if (value.isBlank()) "—" else formatIsoClockTime(value).take(5)
+
+@Composable
+private fun ElapsedFullScreenDialog(
+    elapsedSeconds: Long,
+    activityName: String,
+    onDismiss: () -> Unit
+) {
+    val safeElapsedSeconds = elapsedSeconds.coerceAtLeast(0L)
+    // These are repeating clock faces, not progress targets: the outer arc completes hourly,
+    // and the inner arc completes every minute.
+    val hourCycleProgress = (safeElapsedSeconds % 3600L).toFloat() / 3600f
+    val minuteCyclePosition = safeElapsedSeconds.toFloat() / 60f
+    val animatedMinutePosition = remember { Animatable(minuteCyclePosition) }
+    LaunchedEffect(minuteCyclePosition) {
+        // Keep an unbounded phase so a completed minute flows directly into the next one.
+        // Only the drawing phase is wrapped; the animation itself never jumps backwards.
+        animatedMinutePosition.animateTo(
+            targetValue = minuteCyclePosition,
+            animationSpec = tween(durationMillis = 1000, easing = LinearEasing)
+        )
+    }
+    val ringTrackColor = MaterialTheme.colorScheme.surfaceVariant
+    val ringProgressColor = MaterialTheme.colorScheme.primary
+    val minuteProgressColor = MaterialTheme.colorScheme.secondary
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = false
+        )
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp)
+            ) {
+                IconButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.align(Alignment.TopEnd)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.FullscreenExit,
+                        contentDescription = stringResource(
+                            R.string.record_cd_close_elapsed_fullscreen
+                        )
+                    )
+                }
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    if (activityName.isNotBlank()) {
+                        Text(
+                            text = activityName,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp),
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                    }
+                    Box(
+                        modifier = Modifier
+                            .size(300.dp)
+                            .testTag("record_elapsed_fullscreen_timer"),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Canvas(modifier = Modifier.fillMaxSize()) {
+                            val stroke = Stroke(
+                                width = 24.dp.toPx(),
+                                cap = StrokeCap.Round
+                            )
+                            drawArc(
+                                color = ringTrackColor,
+                                startAngle = -90f,
+                                sweepAngle = 360f,
+                                useCenter = false,
+                                style = stroke
+                            )
+                            drawArc(
+                                color = ringProgressColor,
+                                startAngle = -90f,
+                                sweepAngle = 360f * hourCycleProgress,
+                                useCenter = false,
+                                style = stroke
+                            )
+                            val innerInset = 38.dp.toPx()
+                            val innerSize = Size(
+                                width = size.width - innerInset * 2f,
+                                height = size.height - innerInset * 2f
+                            )
+                            val innerStroke = Stroke(
+                                width = 12.dp.toPx(),
+                                cap = StrokeCap.Round
+                            )
+                            drawArc(
+                                color = ringTrackColor.copy(alpha = 0.55f),
+                                startAngle = -90f,
+                                sweepAngle = 360f,
+                                useCenter = false,
+                                topLeft = Offset(innerInset, innerInset),
+                                size = innerSize,
+                                style = innerStroke
+                            )
+                            drawArc(
+                                color = minuteProgressColor,
+                                startAngle = -90f,
+                                sweepAngle = 360f * (animatedMinutePosition.value % 1f),
+                                useCenter = false,
+                                topLeft = Offset(innerInset, innerInset),
+                                size = innerSize,
+                                style = innerStroke
+                            )
+                        }
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = formatExactDuration(safeElapsedSeconds.toInt()),
+                                style = MaterialTheme.typography.displaySmall,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = stringResource(
+                                    R.string.record_interval_elapsed_fullscreen_title
+                                ),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun formatExactDuration(totalSeconds: Int): String {
+    val safeSeconds = totalSeconds.coerceAtLeast(0)
+    val hours = safeSeconds / 3600
+    val minutes = (safeSeconds % 3600) / 60
+    val seconds = safeSeconds % 60
+    return listOf(hours, minutes, seconds)
+        .joinToString(":") { it.toString().padStart(2, '0') }
 }
 
 @Composable

@@ -58,6 +58,8 @@
     <string name="record_last_recorded_summary">Last:
 %1$s
 %2$s</string>
+    <string name="record_latest_activity_title">Last: %1$s</string>
+    <string name="record_latest_activity_times">%1$s-%2$s · %3$s</string>
     <string name="record_label_activity_name">Activity Name</string>
     <string name="record_activity_hierarchy_created">%1$s saved to %2$s category</string>
     <string name="record_label_interval_start">Start</string>
@@ -77,12 +79,15 @@
     <string name="record_action_start_interval">Start timer</string>
     <string name="record_action_stop_interval">Stop timer</string>
     <string name="record_action_discard_interval">Discard</string>
-    <string name="record_interval_active_title">Timer running</string>
     <string name="record_interval_draft_title">Review interval</string>
-    <string name="record_interval_started_at">Started at %1$s</string>
     <string name="record_interval_attribution_date">Record date: %1$s</string>
+    <string name="record_previous_activity_tail">Previous record ends at %1$s</string>
+    <string name="record_action_use_previous_activity_end">Use %1$s as start time</string>
     <string name="record_interval_duration">Duration: %1$s</string>
     <string name="record_interval_elapsed">Elapsed %1$s</string>
+    <string name="record_interval_elapsed_fullscreen_title">Elapsed</string>
+    <string name="record_cd_open_elapsed_fullscreen">Open elapsed timer full screen</string>
+    <string name="record_cd_close_elapsed_fullscreen">Exit elapsed timer full screen</string>
     <string name="record_interval_summary">%1$s – %2$s · %3$s</string>
     <string name="record_interval_edit_title">Edit interval time</string>
     <string name="record_interval_current_time">Current time: %1$s</string>

@@ -112,6 +112,12 @@ internal class RecordIntentHandler(
             topN = state.frequentTopN
         )
 
+    suspend fun queryPreviousActivityTail(state: RecordUiState): PreviousActivityTail? =
+        useCaseCaller.queryPreviousActivityTail(state)
+
+    suspend fun queryLatestActivityRecord(state: RecordUiState): LatestActivityRecord? =
+        useCaseCaller.queryLatestActivityRecord(state)
+
     suspend fun loadCanonicalCatalog(state: RecordUiState): RecordUiState =
         useCaseCaller.loadCanonicalCatalog(state)
 

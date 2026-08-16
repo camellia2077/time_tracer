@@ -201,6 +201,8 @@ fun RecordTabContent(
         canonicalCatalogSource = recordUiState.canonicalCatalogSource,
         lastRecordedActivityHierarchyLeaf = recordUiState.lastRecordedActivityHierarchyLeaf,
         lastRecordedDuration = recordUiState.lastRecordedDuration,
+        latestActivityRecord = recordUiState.latestActivityRecord,
+        previousActivityTail = recordUiState.previousActivityTail,
         collapsedCanonicalRootPaths = recordUiState.collapsedCanonicalRootPaths,
         orderedCanonicalRootPaths = recordUiState.orderedCanonicalRootPaths,
         frequentActivitiesVisible = recordUiState.frequentActivitiesVisible,
@@ -301,6 +303,7 @@ fun RecordTabContent(
         onStartIntervalRecording = recordViewModel::startIntervalRecording,
         onStopIntervalRecording = recordViewModel::stopIntervalRecording,
         onDiscardIntervalDraft = recordViewModel::discardIntervalDraft,
+        onUsePreviousActivityEndTime = recordViewModel::usePreviousActivityEndTime,
         onDismissTxtPreview = recordViewModel::dismissTxtPreview,
         onRecordNow = ::requestRecord,
         onRecordInterval = ::requestRecord

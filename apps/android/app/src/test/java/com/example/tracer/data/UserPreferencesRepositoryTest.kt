@@ -477,8 +477,8 @@ class UserPreferencesRepositoryTest {
             PersistedRecordInputDraft(
                 recordContent = "study",
                 recordRemark = "focused block",
-                intervalStart = "0900",
-                intervalEnd = "1030",
+                intervalStart = "09:00:00",
+                intervalEnd = "10:30:00",
                 attributionDateIso = "2026-03-28",
                 logicalDayTarget = RecordLogicalDayTarget.YESTERDAY
             )
@@ -487,8 +487,8 @@ class UserPreferencesRepositoryTest {
         val persisted = repository.recordPersistedInput.first()
         assertEquals("study", persisted.draft?.recordContent)
         assertEquals("focused block", persisted.draft?.recordRemark)
-        assertEquals("0900", persisted.draft?.intervalStart)
-        assertEquals("1030", persisted.draft?.intervalEnd)
+        assertEquals("09:00:00", persisted.draft?.intervalStart)
+        assertEquals("10:30:00", persisted.draft?.intervalEnd)
         assertEquals("2026-03-28", persisted.draft?.attributionDateIso)
         assertEquals(RecordLogicalDayTarget.YESTERDAY, persisted.draft?.logicalDayTarget)
     }

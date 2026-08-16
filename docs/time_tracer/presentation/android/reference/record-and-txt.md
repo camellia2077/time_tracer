@@ -20,8 +20,11 @@ Describe the user-visible behavior of record creation and TXT editing flows.
   - is append-oriented
   - should not be used as a historical insertion tool
   - supports two authored shapes in the `Record` tab:
-    - point event: `HHMMtoken`
-    - interval event: `HHMM-HHMMtoken`
+    - point event: compact `HHMM`/`HHMMSS` + token
+    - interval event: compact `HHMM-HHMM` or `HHMMSS-HHMMSS` + token
+
+  Android/Core record and query APIs use ISO local time `HH:mm:ss`; compact
+  formatting is limited to TXT serialization.
 - Raw TXT editing (available from the Files tab)
   - supports month-wide editing (`ALL`) and day-focused editing (`DAY`)
   - uses Android native `EditText`-backed multiline editing instead of the older Compose `OutlinedTextField` path

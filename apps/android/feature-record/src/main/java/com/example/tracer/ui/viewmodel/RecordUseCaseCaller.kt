@@ -13,6 +13,12 @@ internal class RecordUseCaseCaller(
         topN = topN
     )
 
+    suspend fun queryPreviousActivityTail(state: RecordUiState): PreviousActivityTail? =
+        recordUseCases.queryPreviousActivityTail(state)
+
+    suspend fun queryLatestActivityRecord(state: RecordUiState): LatestActivityRecord? =
+        recordUseCases.queryLatestActivityRecord(state)
+
     suspend fun loadCanonicalCatalog(state: RecordUiState): RecordUiState =
         recordUseCases.loadCanonicalCatalog(state)
 

@@ -38,7 +38,7 @@ class RecordTxtPreviewTest {
                     onRecordContentChange = {},
                     recordRemark = "",
                     onRecordRemarkChange = {},
-                    intervalStart = "102000",
+                    intervalStart = "10:20:00",
                     onIntervalStartChange = {},
                     intervalEnd = "",
                     onIntervalEndChange = {},
@@ -57,6 +57,13 @@ class RecordTxtPreviewTest {
         }
 
         composeRule.onNodeWithText("Stop timer").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Open elapsed timer full screen")
+            .performClick()
+        composeRule.onNodeWithText("study").assertIsDisplayed()
+        composeRule.onNodeWithText("Elapsed").assertIsDisplayed()
+        composeRule.onNodeWithText("00:01:00").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Exit elapsed timer full screen")
+            .performClick()
         composeRule.onNodeWithContentDescription("Browse activities for Record Input")
             .performClick()
         assertEquals(1, browserOpenCount)
@@ -75,9 +82,9 @@ class RecordTxtPreviewTest {
                     onRecordContentChange = {},
                     recordRemark = "",
                     onRecordRemarkChange = {},
-                    intervalStart = "102000",
+                    intervalStart = "10:20:00",
                     onIntervalStartChange = {},
-                    intervalEnd = "104500",
+                    intervalEnd = "10:45:00",
                     onIntervalEndChange = {},
                     intervalStartedAtEpochMs = 1_000L,
                     currentTimeMillis = 61_000L,
@@ -98,6 +105,88 @@ class RecordTxtPreviewTest {
         composeRule.onNodeWithText("Edit interval time").assertIsDisplayed()
         composeRule.onNodeWithText("Discard").performClick()
         assertEquals(1, discardCount)
+    }
+
+    @Test
+    fun recordInputCard_previousActivityTailOffersOneClickStartAdjustment() {
+        var startTime = "10:20:00"
+
+        composeRule.setContent {
+            MaterialTheme {
+                RecordInputCard(
+                    authoringMode = RecordAuthoringMode.INTERVAL,
+                    onAuthoringModeChange = {},
+                    recordContent = "study",
+                    onRecordContentChange = {},
+                    recordRemark = "",
+                    onRecordRemarkChange = {},
+                    intervalStart = startTime,
+                    onIntervalStartChange = { startTime = it },
+                    intervalEnd = "10:45:00",
+                    onIntervalEndChange = {},
+                    intervalStartedAtEpochMs = 1_000L,
+                    currentTimeMillis = 61_000L,
+                    lastRecordedActivityHierarchyLeaf = "",
+                    lastRecordedDuration = "",
+                    previousActivityTail = PreviousActivityTail(
+                        dateIso = "2026-08-15",
+                        endTime = "10:00:00"
+                    ),
+                    onOpenTxtPreview = {},
+                    onStartIntervalRecording = {},
+                    onStopIntervalRecording = {},
+                    onDiscardIntervalDraft = {},
+                    onUsePreviousActivityEndTime = { startTime = "10:00:00" },
+                    onRecordNow = {}
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Previous record ends at 10:00:00")
+            .assertIsDisplayed()
+        composeRule.onNodeWithText("Use 10:00:00 as start time")
+            .performClick()
+        assertEquals("10:00:00", startTime)
+    }
+
+    @Test
+    fun recordInputCard_showsLatestActivityWithStartAndEndTimes() {
+        composeRule.setContent {
+            MaterialTheme {
+                RecordInputCard(
+                    authoringMode = RecordAuthoringMode.POINT,
+                    onAuthoringModeChange = {},
+                    recordContent = "",
+                    onRecordContentChange = {},
+                    recordRemark = "",
+                    onRecordRemarkChange = {},
+                    intervalStart = "",
+                    onIntervalStartChange = {},
+                    intervalEnd = "",
+                    onIntervalEndChange = {},
+                    intervalStartedAtEpochMs = 0L,
+                    currentTimeMillis = 0L,
+                    lastRecordedActivityHierarchyLeaf = "",
+                    lastRecordedDuration = "",
+                    latestActivityRecord = LatestActivityRecord(
+                        dateIso = "2026-08-15",
+                        activity = "study",
+                        recordKind = "interval",
+                        startTime = "10:00:00",
+                        endTime = "12:00:00",
+                        durationSeconds = 7200
+                    ),
+                    onOpenTxtPreview = {},
+                    onStartIntervalRecording = {},
+                    onStopIntervalRecording = {},
+                    onDiscardIntervalDraft = {},
+                    onRecordNow = {}
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Last: study").assertIsDisplayed()
+        composeRule.onNodeWithText("10:00-12:00 · 02:00:00").assertIsDisplayed()
     }
 
     @Test

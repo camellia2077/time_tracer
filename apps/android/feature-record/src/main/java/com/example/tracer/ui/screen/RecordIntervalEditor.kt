@@ -194,7 +194,7 @@ private fun IntervalTimeSummaryRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
-                text = formatCompactClockTime(value).take(5),
+                text = formatIsoClockTime(value).take(5),
                 style = MaterialTheme.typography.headlineSmall,
                 color = if (selected) {
                     MaterialTheme.colorScheme.primary
@@ -271,7 +271,7 @@ private fun IntervalTimeEditor(
                     } else {
                         second
                     }
-                    onValueChange("%02d%02d%02d".format(hour, adjustedMinute, adjustedSecond))
+                    onValueChange("%02d:%02d:%02d".format(hour, adjustedMinute, adjustedSecond))
                 }
             )
             WheelNumberPicker(
@@ -288,7 +288,7 @@ private fun IntervalTimeEditor(
                     } else {
                         second
                     }
-                    onValueChange("%02d%02d%02d".format(selectedHour, minute, adjustedSecond))
+                    onValueChange("%02d:%02d:%02d".format(selectedHour, minute, adjustedSecond))
                 }
             )
             WheelNumberPicker(
@@ -297,7 +297,7 @@ private fun IntervalTimeEditor(
                 values = 0..maximumSecond,
                 modifier = Modifier.weight(1f),
                 onValueChange = { second ->
-                    onValueChange("%02d%02d%02d".format(selectedHour, selectedMinute, second))
+                    onValueChange("%02d:%02d:%02d".format(selectedHour, selectedMinute, second))
                 }
             )
         }

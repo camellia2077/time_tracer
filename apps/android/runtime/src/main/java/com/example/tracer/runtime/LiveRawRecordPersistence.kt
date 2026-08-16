@@ -6,23 +6,33 @@ import java.util.Locale
 internal class LiveRawRecordPersistence(
     private val parsing: LiveRawRecordParsing
 ) {
-    fun buildRawEventLine(hhmm: String, activity: String, remark: String): String {
+    fun buildRawEventLine(isoTime: String, activity: String, remark: String): String {
+        val txtTime = formatTxtTime(isoTime)
         if (remark.isEmpty()) {
-            return "$hhmm$activity"
+            return "$txtTime$activity"
         }
-        return "$hhmm$activity // ${encodeRemark(remark)}"
+        return "$txtTime$activity // ${encodeRemark(remark)}"
     }
 
     fun buildRawIntervalEventLine(
-        startHhmm: String,
-        endHhmm: String,
+        startIsoTime: String,
+        endIsoTime: String,
         activity: String,
         remark: String
     ): String {
+        val startTxtTime = formatTxtTime(startIsoTime)
+        val endTxtTime = formatTxtTime(endIsoTime)
         if (remark.isEmpty()) {
-            return "$startHhmm-$endHhmm$activity"
+            return "$startTxtTime-$endTxtTime$activity"
         }
-        return "$startHhmm-$endHhmm$activity // ${encodeRemark(remark)}"
+        return "$startTxtTime-$endTxtTime$activity // ${encodeRemark(remark)}"
+    }
+
+    fun formatTxtTime(isoTime: String): String {
+        require(isoTime.length == 8 && isoTime[2] == ':' && isoTime[5] == ':') {
+            "Time must use ISO HH:mm:ss."
+        }
+        return isoTime.substring(0, 2) + isoTime.substring(3, 5) + isoTime.substring(6, 8)
     }
 
     fun ensureRawMonthFile(monthFile: File, year: Int, month: Int) {

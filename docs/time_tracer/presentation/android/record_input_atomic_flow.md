@@ -193,9 +193,9 @@ It builds a candidate month TXT in memory:
 
 1. resolve target month and target day marker
 2. create the month template if the file does not exist
-3. generate current local `HHMM`
+3. generate current local ISO time `HH:mm:ss`
 4. build one raw point-event line:
-   `HHMM + activity + optional remark`
+   compact TXT line `HHMMSS + activity + optional remark`
 5. insert that line into the target day block
 6. if the day does not exist yet, create the day block
 
@@ -215,7 +215,7 @@ During candidate construction, core applies record-time checks such as:
 3. preferred TXT path must stay inside input root
 4. new event time must be strictly later than the last event time in that day,
    under the selected time-order mode
-5. same-day duplicate `HHMM + activity` yields a warning
+5. same-day duplicate `HHMMSS + activity` yields a warning
 
 If the day remains incomplete after insertion:
 
@@ -283,7 +283,7 @@ In Android `Record Input`, the user only authors:
 
 For point-event authoring, the runtime supplies:
 
-1. current `HHMM`
+1. current ISO time `HH:mm:ss` (converted to compact `HHMMSS` only for TXT)
 2. target logical day
 3. target month TXT path
 
@@ -310,6 +310,32 @@ is written to the day block identified by its fixed start logical day.
 For example, an interval started at `2026-07-22 23:00:00` and stopped at
 `2026-07-23 07:00:00` is saved as one 8-hour interval under `2026-07-22`.
 Editing its start/end time does not silently move it to another day.
+
+### 7.1 Previous Activity End-Time Suggestion
+
+When the user is authoring a completed interval draft, Android may ask
+core/runtime for the latest persisted activity end boundary at or before the
+selected logical day. The query is read-only and returns either no result or a
+semantic `{date, end_time}` boundary.
+
+If a boundary is available, Record Input shows the end time as a suggestion and
+offers a one-click action to copy that value into the interval draft's start
+time. This is an explicit user action: the query does not change the draft,
+does not save a record, and its suggestion is not shown while an active
+interval timer is being displayed. The user can still edit the start time
+manually before saving. Android only offers the action when the returned
+boundary belongs to the selected logical day; an earlier day's `HH:mm:ss` is not
+copied into the current day.
+
+### 7.2 Latest Persisted Activity Summary
+
+The `Last` activity summary in Record Input is loaded through the read-only
+core/runtime `latest_activity_record` query rather than being treated as a
+session-only UI result. Core selects the latest persisted record for the
+selected logical day and returns its activity plus start and end boundaries.
+For a point/end-only record, the missing start boundary is displayed as `—`.
+The summary refreshes when Record Input starts, when the logical day changes,
+and after a successful record operation.
 
 ## 8. Android Vs Core Responsibility Boundary
 

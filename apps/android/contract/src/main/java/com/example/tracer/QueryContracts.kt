@@ -102,3 +102,33 @@ data class DataQueryTextResult(
     val message: String,
     val operationId: String = ""
 )
+
+data class PreviousActivityTail(
+    val dateIso: String,
+    val endTime: String
+)
+
+data class PreviousActivityTailResult(
+    val ok: Boolean,
+    val found: Boolean,
+    val tail: PreviousActivityTail? = null,
+    val message: String,
+    val operationId: String = ""
+)
+
+data class LatestActivityRecord(
+    val dateIso: String,
+    val activity: String,
+    val recordKind: String,
+    val startTime: String,
+    val endTime: String,
+    val durationSeconds: Int
+)
+
+data class LatestActivityRecordResult(
+    val ok: Boolean,
+    val found: Boolean,
+    val record: LatestActivityRecord? = null,
+    val message: String,
+    val operationId: String = ""
+)

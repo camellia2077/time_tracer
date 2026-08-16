@@ -95,7 +95,7 @@ class TxtEditorContentCardTest {
                             TxtDayEditEvent(
                                 isInterval = false,
                                 startTime = "",
-                                endTime = "090000",
+                                endTime = "09:00:00",
                                 activityToken = "study",
                                 remark = "activity note"
                             )

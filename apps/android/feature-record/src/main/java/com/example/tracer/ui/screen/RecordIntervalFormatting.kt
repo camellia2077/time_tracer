@@ -67,21 +67,28 @@ import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
 
 
 internal fun splitIntervalTime(value: String): List<String> {
-    val digits = value.filter(Char::isDigit).padStart(6, '0').takeLast(6)
+    val digits = isoTimeDigits(value)
     return listOf(digits.substring(0, 2), digits.substring(2, 4), digits.substring(4, 6))
 }
 
-internal fun formatCompactClockTime(value: String): String {
-    val digits = value.filter(Char::isDigit).padStart(6, '0').takeLast(6)
+internal fun formatIsoClockTime(value: String): String {
+    val digits = isoTimeDigits(value)
     return "${digits.substring(0, 2)}:${digits.substring(2, 4)}:${digits.substring(4, 6)}"
 }
+
+private fun isoTimeDigits(value: String): String =
+    if (value.length == 8 && value[2] == ':' && value[5] == ':') {
+        value.filterIndexed { index, _ -> index != 2 && index != 5 }
+    } else {
+        "000000"
+    }
 
 internal fun formatCurrentClockTime(currentTimeMillis: Long): String =
     SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(currentTimeMillis))
 
 internal fun intervalDurationSeconds(start: String, end: String): Long {
     fun toSeconds(value: String): Long {
-        val digits = value.filter(Char::isDigit).padStart(6, '0').takeLast(6)
+        val digits = isoTimeDigits(value)
         return digits.substring(0, 2).toLong() * 3600L +
             digits.substring(2, 4).toLong() * 60L +
             digits.substring(4, 6).toLong()
@@ -92,7 +99,7 @@ internal fun intervalDurationSeconds(start: String, end: String): Long {
 }
 
 internal fun intervalTimeSeconds(value: String): Long {
-    val digits = value.filter(Char::isDigit).padStart(6, '0').takeLast(6)
+    val digits = isoTimeDigits(value)
     return digits.substring(0, 2).toLong() * 3600L +
         digits.substring(2, 4).toLong() * 60L +
         digits.substring(4, 6).toLong()

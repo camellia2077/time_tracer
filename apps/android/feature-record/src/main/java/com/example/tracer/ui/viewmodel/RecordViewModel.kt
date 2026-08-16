@@ -108,6 +108,8 @@ data class RecordUiState(
     val canonicalCatalogStatusText: String = "",
     val lastRecordedActivityHierarchyLeaf: String = "",
     val lastRecordedDuration: String = "",
+    val latestActivityRecord: LatestActivityRecord? = null,
+    val previousActivityTail: PreviousActivityTail? = null,
     val collapsedCanonicalRootPaths: Set<String> = emptySet(),
     val orderedCanonicalRootPaths: List<String> = emptyList(),
     val frequentActivitiesVisible: Boolean = false,
@@ -132,6 +134,7 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
     )
     private var txtPreviewRequestVersion: Long = 0L
     private var canonicalCatalogLoadJob: Job? = null
+    private var activityQueryJob: Job? = null
     private var hasAppliedInitialPersistedRecordInput: Boolean = false
 
     val hasAppliedInitialPersistedRecordInputForUi: Boolean
@@ -139,6 +142,10 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
 
     var uiState by mutableStateOf(recordUseCases.initialUiState())
         private set
+
+    init {
+        refreshActivityQueries()
+    }
 
     private val txtNavigationCoordinator = TxtNavigationCoordinator(
         scope = viewModelScope,
@@ -170,6 +177,9 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
 
     fun onAuthoringModeChange(value: RecordAuthoringMode) {
         uiState = intentHandler.onAuthoringModeChange(uiState, value)
+        if (value == RecordAuthoringMode.INTERVAL) {
+            refreshActivityQueries()
+        }
         persistRecordInputState()
     }
 
@@ -199,7 +209,7 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
 
     fun startIntervalRecording() {
         uiState = uiState.copy(
-            intervalStart = currentHhmmss(),
+            intervalStart = currentIsoClockTime(),
             intervalEnd = "",
             intervalStartedAtEpochMs = logicalDayClock.millis(),
             attributionDateIso = resolveLogicalDayTargetDate(
@@ -211,7 +221,7 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
     }
 
     fun stopIntervalRecording() {
-        uiState = uiState.copy(intervalEnd = currentHhmmss())
+        uiState = uiState.copy(intervalEnd = currentIsoClockTime())
         persistRecordInputState()
     }
 
@@ -256,19 +266,25 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
 
     fun selectLogicalDayYesterday() {
         uiState = intentHandler.selectLogicalDayYesterday(uiState)
+        refreshActivityQueries()
         persistRecordInputState()
     }
 
     fun selectLogicalDayToday() {
         uiState = intentHandler.selectLogicalDayToday(uiState)
+        refreshActivityQueries()
         persistRecordInputState()
     }
 
     fun refreshLogicalDayDefault(currentTimeMillis: Long = System.currentTimeMillis()) {
+        val previousTarget = uiState.logicalDayTarget
         uiState = intentHandler.refreshLogicalDayDefault(
             state = uiState,
             currentTimeMillis = currentTimeMillis
         )
+        if (uiState.logicalDayTarget != previousTarget) {
+            refreshActivityQueries()
+        }
     }
 
     fun updateEditableHistoryContent(value: String) {
@@ -514,6 +530,7 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
         )
         viewModelScope.launch {
             uiState = intentHandler.recordNow(uiState)
+            refreshActivityQueries()
             Log.i(
                 "TimeTracerRecord",
                 "ui.record_now.result status=${uiState.statusText.lineSequence().firstOrNull()}"
@@ -530,6 +547,7 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
         )
         viewModelScope.launch {
             uiState = intentHandler.recordInterval(uiState)
+            refreshActivityQueries()
             Log.i(
                 "TimeTracerRecord",
                 "ui.record_interval.result status=${uiState.statusText.lineSequence().firstOrNull()}"
@@ -538,12 +556,44 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
         }
     }
 
-    private fun currentHhmmss(): String =
-        ZonedDateTime.now(logicalDayClock).format(HHMMSS_FORMATTER)
+    fun usePreviousActivityEndTime() {
+        val endTime = uiState.previousActivityTail?.endTime ?: return
+        Log.i(
+            "TimeTracerRecord",
+            "ui.use_previous_activity_end.click tailEnd=[$endTime] " +
+                "beforeStart=[${uiState.intervalStart}] beforeEnd=[${uiState.intervalEnd}]"
+        )
+        uiState = intentHandler.onIntervalStartChange(uiState, endTime)
+        Log.i(
+            "TimeTracerRecord",
+            "ui.use_previous_activity_end.applied afterStart=[${uiState.intervalStart}] " +
+                "afterEnd=[${uiState.intervalEnd}]"
+        )
+        persistRecordInputState()
+    }
+
+    private fun refreshActivityQueries() {
+        val requestedState = uiState
+        val requestedTarget = requestedState.logicalDayTarget
+        activityQueryJob?.cancel()
+        activityQueryJob = viewModelScope.launch {
+            val previousActivityTail = intentHandler.queryPreviousActivityTail(requestedState)
+            val latestActivityRecord = intentHandler.queryLatestActivityRecord(requestedState)
+            if (uiState.logicalDayTarget == requestedTarget) {
+                uiState = uiState.copy(
+                    previousActivityTail = previousActivityTail,
+                    latestActivityRecord = latestActivityRecord
+                )
+            }
+        }
+    }
+
+    private fun currentIsoClockTime(): String =
+        ZonedDateTime.now(logicalDayClock).format(ISO_TIME_FORMATTER)
 
     private companion object {
         private const val TXT_TAB_LOG_TAG = "TxtTab"
-        private val HHMMSS_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("HHmmss")
+        private val ISO_TIME_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
     }
 
     fun refreshHistory(): Job {

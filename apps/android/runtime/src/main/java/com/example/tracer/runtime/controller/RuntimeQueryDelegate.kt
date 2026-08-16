@@ -151,6 +151,131 @@ internal class RuntimeQueryDelegate(
         }
     }
 
+    suspend fun queryPreviousActivityTail(
+        targetDateIso: String
+    ): PreviousActivityTailResult = withContext(Dispatchers.IO) {
+        val query = runActivitySemanticQuery(
+            targetDateIso = targetDateIso,
+            action = NativeBridge.QUERY_ACTION_PREVIOUS_ACTIVITY_TAIL,
+            queryName = "previous activity tail"
+        )
+        query.failureMessage?.let {
+            return@withContext PreviousActivityTailResult(
+                ok = false,
+                found = false,
+                message = it,
+                operationId = query.operationId
+            )
+        }
+        val parsed = parsePreviousActivityTailContent(query.outputText.orEmpty())
+            ?: return@withContext PreviousActivityTailResult(
+                ok = false,
+                found = false,
+                message = appendFailureContext(
+                    message = "previous activity tail query returned invalid payload.",
+                    operationId = query.operationId
+                ),
+                operationId = query.operationId
+            )
+        PreviousActivityTailResult(
+            ok = true,
+            found = parsed.found,
+            tail = parsed.tail,
+            message = if (!parsed.found) {
+                "No previous activity tail found."
+            } else {
+                "Loaded previous activity tail."
+            },
+            operationId = query.operationId
+        )
+    }
+
+    suspend fun queryLatestActivityRecord(
+        targetDateIso: String
+    ): LatestActivityRecordResult = withContext(Dispatchers.IO) {
+        val query = runActivitySemanticQuery(
+            targetDateIso = targetDateIso,
+            action = NativeBridge.QUERY_ACTION_LATEST_ACTIVITY_RECORD,
+            queryName = "latest activity record"
+        )
+        query.failureMessage?.let {
+            return@withContext LatestActivityRecordResult(
+                ok = false,
+                found = false,
+                message = it,
+                operationId = query.operationId
+            )
+        }
+        val parsed = parseLatestActivityRecordContent(query.outputText.orEmpty())
+            ?: return@withContext LatestActivityRecordResult(
+                ok = false,
+                found = false,
+                message = appendFailureContext(
+                    message = "latest activity record query returned invalid payload.",
+                    operationId = query.operationId
+                ),
+                operationId = query.operationId
+            )
+        LatestActivityRecordResult(
+            ok = true,
+            found = parsed.found,
+            record = parsed.record,
+            message = if (parsed.found) {
+                "Loaded latest activity record."
+            } else {
+                "No latest activity record found."
+            },
+            operationId = query.operationId
+        )
+    }
+
+    private data class ActivitySemanticQuery(
+        val outputText: String? = null,
+        val operationId: String = "",
+        val failureMessage: String? = null
+    )
+
+    private fun runActivitySemanticQuery(
+        targetDateIso: String,
+        action: Int,
+        queryName: String
+    ): ActivitySemanticQuery {
+        val normalizedDate = targetDateIso.trim()
+        if (normalizedDate.isEmpty()) {
+            return ActivitySemanticQuery(
+                failureMessage = "$queryName query requires a target date."
+            )
+        }
+
+        return try {
+            val queryResult = dataDelegate.runDataQuery(
+                DataQueryRequest(
+                    action = action,
+                    outputMode = DataQueryOutputMode.SEMANTIC_JSON,
+                    fromDateIso = normalizedDate
+                )
+            )
+            if (!queryResult.ok) {
+                ActivitySemanticQuery(
+                    operationId = queryResult.operationId,
+                    failureMessage = appendFailureContext(
+                        message = "$queryName query failed: ${queryResult.message}",
+                        operationId = queryResult.operationId
+                    )
+                )
+            } else {
+                ActivitySemanticQuery(
+                    outputText = queryResult.outputText,
+                    operationId = queryResult.operationId
+                )
+            }
+        } catch (error: Exception) {
+            ActivitySemanticQuery(
+                failureMessage = formatNativeFailure("query $queryName failed", error)
+            )
+        }
+    }
+
     suspend fun queryDayDurations(params: DataDurationQueryParams): DataQueryTextResult =
         dataDelegate.queryDayDurations(params)
 

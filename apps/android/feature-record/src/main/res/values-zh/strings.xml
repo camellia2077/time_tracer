@@ -58,6 +58,8 @@
     <string name="record_last_recorded_summary">上次：
 %1$s
 %2$s</string>
+    <string name="record_latest_activity_title">上次：%1$s</string>
+    <string name="record_latest_activity_times">%1$s-%2$s · %3$s</string>
     <string name="record_label_activity_name">活动名称</string>
     <string name="record_activity_hierarchy_created">%1$s 已保存到 %2$s 分类</string>
     <string name="record_label_interval_start">开始时间</string>
@@ -77,11 +79,14 @@
     <string name="record_action_start_interval">开始计时</string>
     <string name="record_action_stop_interval">结束计时</string>
     <string name="record_action_discard_interval">放弃</string>
-    <string name="record_interval_active_title">计时进行中</string>
     <string name="record_interval_draft_title">确认区间</string>
-    <string name="record_interval_started_at">开始于 %1$s</string>
     <string name="record_interval_attribution_date">记录日期：%1$s</string>
+    <string name="record_previous_activity_tail">上一条记录结束于 %1$s</string>
+    <string name="record_action_use_previous_activity_end">将开始时间改为 %1$s</string>
     <string name="record_interval_elapsed">已持续 %1$s</string>
+    <string name="record_interval_elapsed_fullscreen_title">已持续</string>
+    <string name="record_cd_open_elapsed_fullscreen">全屏显示计时</string>
+    <string name="record_cd_close_elapsed_fullscreen">退出全屏计时</string>
     <string name="record_interval_summary">%1$s – %2$s · %3$s</string>
     <string name="record_interval_edit_title">编辑区间时间</string>
     <string name="record_interval_current_time">当前时间：%1$s</string>

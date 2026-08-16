@@ -3,6 +3,12 @@ package com.example.tracer
 internal class RuntimeQueryService(
     private val queryDelegate: RuntimeQueryDelegate
 ) {
+    suspend fun queryPreviousActivityTail(targetDateIso: String): PreviousActivityTailResult =
+        queryDelegate.queryPreviousActivityTail(targetDateIso)
+
+    suspend fun queryLatestActivityRecord(targetDateIso: String): LatestActivityRecordResult =
+        queryDelegate.queryLatestActivityRecord(targetDateIso)
+
     suspend fun queryFrequentActivities(
         lookbackDays: Int,
         topN: Int,

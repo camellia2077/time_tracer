@@ -227,6 +227,72 @@ internal fun parseMappingNamesContent(content: String): List<String> {
     }
 }
 
+internal fun parsePreviousActivityTailContent(content: String): ParsedPreviousActivityTail? {
+    if (content.isBlank()) {
+        return null
+    }
+
+    return try {
+        val payload = JSONObject(content)
+        if (payload.optString("action") != "previous_activity_tail" ||
+            payload.optString("output_mode") != DataQueryOutputMode.SEMANTIC_JSON
+        ) return null
+        val found = payload.optBoolean("found", false)
+        if (!found) return ParsedPreviousActivityTail(found = false, tail = null)
+        val dateIso = payload.optString("date", "").trim()
+        val endTime = payload.optString("end_time", "").trim()
+        if (dateIso.isEmpty() || endTime.isEmpty() || normalizeIsoClockTime(endTime) == null) {
+            null
+        } else {
+            ParsedPreviousActivityTail(
+                found = true,
+                tail = PreviousActivityTail(dateIso = dateIso, endTime = endTime)
+            )
+        }
+    } catch (_: Exception) {
+        null
+    }
+}
+
+internal fun parseLatestActivityRecordContent(content: String): ParsedLatestActivityRecord? {
+    if (content.isBlank()) {
+        return null
+    }
+
+    return try {
+        val payload = JSONObject(content)
+        if (payload.optString("action") != "latest_activity_record" ||
+            payload.optString("output_mode") != DataQueryOutputMode.SEMANTIC_JSON
+        ) return null
+        val found = payload.optBoolean("found", false)
+        if (!found) return ParsedLatestActivityRecord(found = false, record = null)
+        val dateIso = payload.optString("date", "").trim()
+        val activity = payload.optString("activity", "").trim()
+        val recordKind = payload.optString("record_kind", "").trim()
+        val startTime = payload.optString("start_time", "").trim()
+        val endTime = payload.optString("end_time", "").trim()
+        if (dateIso.isEmpty() || activity.isEmpty() || recordKind.isEmpty() ||
+            endTime.isEmpty() || normalizeIsoClockTime(endTime) == null ||
+            (startTime.isNotEmpty() && normalizeIsoClockTime(startTime) == null)) {
+            null
+        } else {
+            ParsedLatestActivityRecord(
+                found = true,
+                record = LatestActivityRecord(
+                    dateIso = dateIso,
+                    activity = activity,
+                    recordKind = recordKind,
+                    startTime = startTime,
+                    endTime = endTime,
+                    durationSeconds = payload.optInt("duration_seconds", 0).coerceAtLeast(0)
+                )
+            )
+        }
+    } catch (_: Exception) {
+        null
+    }
+}
+
 internal fun parseSemanticListContent(content: String, expectedAction: String): List<String>? {
     if (content.isBlank()) {
         return null

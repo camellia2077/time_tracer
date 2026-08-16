@@ -469,6 +469,14 @@ class NativeRuntimeController(
     ): StructuredInsightsCallResult = insightsService.insightsStructured(request)
 
     // query
+    override suspend fun queryPreviousActivityTail(
+        targetDateIso: String
+    ): PreviousActivityTailResult = queryService.queryPreviousActivityTail(targetDateIso)
+
+    override suspend fun queryLatestActivityRecord(
+        targetDateIso: String
+    ): LatestActivityRecordResult = queryService.queryLatestActivityRecord(targetDateIso)
+
     override suspend fun queryFrequentActivities(
         lookbackDays: Int,
         topN: Int,

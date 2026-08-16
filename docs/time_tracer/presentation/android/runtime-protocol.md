@@ -118,6 +118,21 @@ Current status:
 - Validation requests still have JNI-local request assembly.
 - Android tracer exchange export supports an in-memory payload JSON request plus fd sink output.
 - Tree responses are normalized before returning to Kotlin.
+- The `previous_activity_tail` data query is read-only and returns the latest
+  persisted activity end boundary at or before the requested logical date. The
+  Android caller sends that date through the existing `from_date` field and
+  requests `semantic_json`; the semantic payload is
+  `{action: "previous_activity_tail", output_mode: "semantic_json", found: bool,
+  date?: "YYYY-MM-DD", end_time?: "HH:mm:ss"}`.
+- The previous-activity-tail query is a suggestion source only. Android may
+  render the returned end time and let the user copy it into an interval
+  draft's start time, but the query never changes the draft or persisted data.
+- The `latest_activity_record` data query is also read-only. Android sends the
+  selected logical date through `from_date` and requests `semantic_json`;
+  Core returns the latest persisted record for that exact date with
+  `activity`, `record_kind`, `start_time`, `end_time`, and `duration_seconds`.
+  The time fields use ISO local time `HH:mm:ss`; only the TXT persistence
+  boundary uses compact `HHMMSS`.
 - Activity hierarchy responses use Core's presentation-neutral node model:
   each node carries canonical_key, canonical path, kind, aliases, and children.
   Android consumes kind internally and keeps the existing presentation adapter;

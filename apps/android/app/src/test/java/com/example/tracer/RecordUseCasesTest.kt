@@ -223,16 +223,16 @@ class RecordUseCasesTest {
                 authoringMode = RecordAuthoringMode.INTERVAL,
                 recordContent = "study",
                 recordRemark = "focused block",
-                intervalStart = "0900",
-                intervalEnd = "1030",
+                intervalStart = "09:00:00",
+                intervalEnd = "10:30:00",
                 attributionDateIso = "2026-03-28",
                 logicalDayTarget = RecordLogicalDayTarget.TODAY,
                 selectedMonth = "2026-03"
             )
         )
 
-        assertEquals("0900", gateway.lastIntervalStart)
-        assertEquals("1030", gateway.lastIntervalEnd)
+        assertEquals("09:00:00", gateway.lastIntervalStart)
+        assertEquals("10:30:00", gateway.lastIntervalEnd)
         assertEquals("2026-03-28", gateway.lastTargetDateIso)
         assertEquals("", result.recordContent)
         assertEquals("", result.recordRemark)
@@ -276,8 +276,8 @@ class RecordUseCasesTest {
             RecordUiState(
                 authoringMode = RecordAuthoringMode.INTERVAL,
                 recordContent = "学习",
-                intervalStart = "0900",
-                intervalEnd = "1030",
+                intervalStart = "09:00:00",
+                intervalEnd = "10:30:00",
                 selectedMonth = "2026-03"
             )
         )
@@ -317,8 +317,8 @@ class RecordUseCasesTest {
             RecordUiState(
                 authoringMode = RecordAuthoringMode.INTERVAL,
                 recordContent = "study",
-                intervalStart = "090001",
-                intervalEnd = "090206"
+                intervalStart = "09:00:01",
+                intervalEnd = "09:02:06"
             )
         )
 
@@ -327,7 +327,7 @@ class RecordUseCasesTest {
     }
 
     @Test
-    fun recordInterval_invalidHhmmReturnsStableStatus() = runTest {
+    fun recordInterval_invalidIsoTimeReturnsStableStatus() = runTest {
         val useCases = RecordUseCases(
             recordGateway = FakeRecordGateway(),
             txtStorageGateway = FakeTxtStorageGateway(
@@ -341,12 +341,12 @@ class RecordUseCasesTest {
             RecordUiState(
                 authoringMode = RecordAuthoringMode.INTERVAL,
                 recordContent = "study",
-                intervalStart = "0900",
-                intervalEnd = "2460"
+                intervalStart = "09:00:00",
+                intervalEnd = "24:60:00"
             )
         )
 
-        assertEquals("Record blocked: start/end must use HH MM SS.", result.statusText)
+        assertEquals("Record blocked: start/end must use ISO HH:mm:ss.", result.statusText)
     }
 
     @Test
@@ -370,15 +370,15 @@ class RecordUseCasesTest {
                 authoringMode = RecordAuthoringMode.INTERVAL,
                 recordContent = "study",
                 recordRemark = "focused block",
-                intervalStart = "0900",
-                intervalEnd = "1030"
+                intervalStart = "09:00:00",
+                intervalEnd = "10:30:00"
             )
         )
 
         assertEquals("study", result.recordContent)
         assertEquals("focused block", result.recordRemark)
-        assertEquals("0900", result.intervalStart)
-        assertEquals("1030", result.intervalEnd)
+        assertEquals("09:00:00", result.intervalStart)
+        assertEquals("10:30:00", result.intervalEnd)
         assertEquals("record interval: failed", result.statusText)
     }
 
@@ -905,8 +905,8 @@ class RecordUseCasesTest {
             RecordUiState(
                 authoringMode = RecordAuthoringMode.INTERVAL,
                 recordContent = "study",
-                intervalStart = "0900",
-                intervalEnd = "1030",
+                intervalStart = "09:00:00",
+                intervalEnd = "10:30:00",
                 logicalDayTarget = RecordLogicalDayTarget.TODAY,
                 selectedMonth = "2026-05",
                 selectedHistoryFile = "2026/2026-05.txt"

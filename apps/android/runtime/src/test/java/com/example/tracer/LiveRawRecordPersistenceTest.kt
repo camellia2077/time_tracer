@@ -46,8 +46,8 @@ class LiveRawRecordPersistenceTest {
         val persistence = createPersistence()
 
         val line = persistence.buildRawIntervalEventLine(
-            startHhmm = "090000",
-            endHhmm = "103000",
+            startIsoTime = "09:00:00",
+            endIsoTime = "10:30:00",
             activity = "study",
             remark = ""
         )
@@ -60,8 +60,8 @@ class LiveRawRecordPersistenceTest {
         val persistence = createPersistence()
 
         val line = persistence.buildRawIntervalEventLine(
-            startHhmm = "090000",
-            endHhmm = "103000",
+            startIsoTime = "09:00:00",
+            endIsoTime = "10:30:00",
             activity = "study",
             remark = "focus"
         )
@@ -74,12 +74,12 @@ class LiveRawRecordPersistenceTest {
         val persistence = createPersistence()
 
         val line = persistence.buildRawEventLine(
-            hhmm = "0900",
+            isoTime = "09:00:00",
             activity = "study",
             remark = "first line\npath C:\\work"
         )
 
-        assertEquals("0900study // first line\\npath C:\\\\work", line)
+        assertEquals("090000study // first line\\npath C:\\\\work", line)
     }
 
     @Test

@@ -1,6 +1,20 @@
 package com.example.tracer
 
 interface QueryGateway {
+    suspend fun queryPreviousActivityTail(targetDateIso: String): PreviousActivityTailResult =
+        PreviousActivityTailResult(
+            ok = false,
+            found = false,
+            message = "previous activity tail query is unavailable."
+        )
+
+    suspend fun queryLatestActivityRecord(targetDateIso: String): LatestActivityRecordResult =
+        LatestActivityRecordResult(
+            ok = false,
+            found = false,
+            message = "latest activity record query is unavailable."
+        )
+
     suspend fun queryFrequentActivities(
         lookbackDays: Int = 7,
         topN: Int = 5,

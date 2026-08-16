@@ -254,6 +254,11 @@ internal class RuntimeRecordDelegate(
         preferredTxtPath: String?
     ): RecordActionResult = withContext(Dispatchers.IO) {
         try {
+            logInfo(
+                RECORD_LOG_TAG,
+                "runtime.record_interval.input activity=${activityName.trim()} " +
+                    "start=[$startTime] end=[$endTime] targetDate=$targetDateIso"
+            )
             val logicalDateResult = parseLogicalDate(targetDateIso)
             if (!logicalDateResult.ok) {
                 return@withContext RecordActionResult(
@@ -279,12 +284,22 @@ internal class RuntimeRecordDelegate(
             }
 
             val normalizedRemark = rawRecordStore.normalizeRemark(remark)
-            val normalizedStart = normalizeToHhmmss(startTime)
-            val normalizedEnd = normalizeToHhmmss(endTime)
+            val normalizedStart = normalizeIsoClockTime(startTime)
+            val normalizedEnd = normalizeIsoClockTime(endTime)
+            logInfo(
+                RECORD_LOG_TAG,
+                "runtime.record_interval.normalized rawStart=[$startTime] rawEnd=[$endTime] " +
+                    "normalizedStart=[$normalizedStart] normalizedEnd=[$normalizedEnd]"
+            )
             if (normalizedStart == null || normalizedEnd == null) {
+                logInfo(
+                    RECORD_LOG_TAG,
+                    "runtime.record_interval.validation_failed " +
+                        "start=[$startTime] end=[$endTime]"
+                )
                 return@withContext RecordActionResult(
                     ok = false,
-                    message = "Record blocked: start/end must use HHMM or HHMMSS."
+                    message = "Record blocked: start/end must use ISO HH:mm:ss."
                 )
             }
 
@@ -332,8 +347,8 @@ internal class RuntimeRecordDelegate(
             }
 
             val eventLine = rawRecordStore.buildRawIntervalEventLine(
-                startHhmm = normalizedStart,
-                endHhmm = normalizedEnd,
+                startIsoTime = normalizedStart,
+                endIsoTime = normalizedEnd,
                 activity = normalizedActivity,
                 remark = normalizedRemark
             )
@@ -412,19 +427,6 @@ internal class RuntimeRecordDelegate(
         activityHierarchyActivity = registration.activityName
     )
 
-    private fun normalizeToHhmmss(rawTime: String): String? {
-        val time = rawTime.trim()
-        if ((time.length != 4 && time.length != 6) || !time.all { it.isDigit() }) {
-            return null
-        }
-        val hours = time.substring(0, 2).toIntOrNull() ?: return null
-        val minutes = time.substring(2, 4).toIntOrNull() ?: return null
-        val seconds = if (time.length == 6) time.substring(4, 6).toIntOrNull() else 0
-        if (hours !in 0..23 || minutes !in 0..59 || seconds !in 0..59) {
-            return null
-        }
-        return if (time.length == 4) "$time" + "00" else time
-    }
 }
 
 private fun logInfo(tag: String, message: String) {

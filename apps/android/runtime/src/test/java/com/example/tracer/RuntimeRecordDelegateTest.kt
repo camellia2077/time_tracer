@@ -481,8 +481,8 @@ class RuntimeRecordDelegateTest {
 
             val result = delegate.recordInterval(
                 activityName = "study",
-                startTime = "0900",
-                endTime = "1030",
+                startTime = "09:00:00",
+                endTime = "10:30:00",
                 remark = "focus",
                 targetDateIso = "2026-07-31",
                 preferredTxtPath = "2026/2026-07.txt"

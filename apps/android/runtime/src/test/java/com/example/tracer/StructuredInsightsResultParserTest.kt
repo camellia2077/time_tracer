@@ -85,7 +85,7 @@ class StructuredInsightsResultParserTest {
                 initialized = true,
                 operationOk = true,
                 outputText = "",
-                rawResponse = """{"ok":true,"insights_kind":"period","insights":{"activity_days":[{"date":"2026-03-20","total_duration":3600,"detailed_records":[{"logical_id":7,"record_kind":"interval","start_time":"09:00","end_time":"10:00","project_path":"study_math","duration_seconds":3600,"activity_remark":""}]},{"date":"2026-03-19","total_duration":0,"detailed_records":[{"logical_id":8,"record_kind":"end_only","start_time":"","end_time":"17:40","project_path":"study_checkpoint","duration_seconds":0,"activity_remark":""}]}]}}"""
+                rawResponse = """{"ok":true,"insights_kind":"period","insights":{"activity_days":[{"date":"2026-03-20","total_duration":3600,"detailed_records":[{"logical_id":7,"record_kind":"interval","start_time":"09:00:00","end_time":"10:00:00","project_path":"study_math","duration_seconds":3600,"activity_remark":""}]},{"date":"2026-03-19","total_duration":0,"detailed_records":[{"logical_id":8,"record_kind":"end_only","start_time":"","end_time":"17:40:00","project_path":"study_checkpoint","duration_seconds":0,"activity_remark":""}]}]}}"""
             )
         )
 

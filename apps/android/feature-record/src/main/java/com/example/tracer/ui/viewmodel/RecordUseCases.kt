@@ -30,6 +30,23 @@ class RecordUseCases(
     internal val logicalDayClock: Clock
         get() = clock
 
+    suspend fun queryPreviousActivityTail(state: RecordUiState): PreviousActivityTail? {
+        val targetDateIso = datePolicy.resolveTargetDateIso(state.logicalDayTarget)
+        return queryGateway.queryPreviousActivityTail(targetDateIso)
+            // The suggestion copies only ISO HH:mm:ss into the selected logical day. A tail from an
+            // earlier day is useful for core cross-day calculations, but must not be offered as
+            // a one-click start-time value for the current draft.
+            .takeIf { it.ok && it.found && it.tail?.dateIso == targetDateIso }
+            ?.tail
+    }
+
+    suspend fun queryLatestActivityRecord(state: RecordUiState): LatestActivityRecord? {
+        val targetDateIso = datePolicy.resolveTargetDateIso(state.logicalDayTarget)
+        return queryGateway.queryLatestActivityRecord(targetDateIso)
+            .takeIf { it.ok && it.found && it.record?.dateIso == targetDateIso }
+            ?.record
+    }
+
     // Seed UI state from the injected logical-day clock instead of from RecordUiState defaults.
     // Keeping initialization here makes the time/zone dependency explicit and testable.
     internal fun initialUiState(): RecordUiState = RecordUiState(
@@ -83,6 +100,15 @@ class RecordUseCases(
     suspend fun recordInterval(state: RecordUiState): RecordUiState {
         val normalizedStart = state.intervalStart.trim()
         val normalizedEnd = state.intervalEnd.trim()
+        runCatching {
+            Log.i(
+                "TimeTracerRecord",
+                "usecase.record_interval.input activity=${state.recordContent.trim()} " +
+                    "rawStart=[${state.intervalStart}] rawEnd=[${state.intervalEnd}] " +
+                    "normalizedStart=[$normalizedStart] normalizedEnd=[$normalizedEnd] " +
+                    "attributionDate=${state.attributionDateIso}"
+            )
+        }
         if (state.recordContent.isBlank()) {
             return state.copy(statusText = "Record blocked: activity token is required.")
         }
@@ -90,7 +116,15 @@ class RecordUseCases(
             return state.copy(statusText = "Record blocked: start/end are required for interval mode.")
         }
         if (!isValidTime(normalizedStart) || !isValidTime(normalizedEnd)) {
-            return state.copy(statusText = "Record blocked: start/end must use HH MM SS.")
+            runCatching {
+                Log.e(
+                    "TimeTracerRecord",
+                    "usecase.record_interval.validation_failed " +
+                        "start=[$normalizedStart] startValid=${isValidTime(normalizedStart)} " +
+                        "end=[$normalizedEnd] endValid=${isValidTime(normalizedEnd)}"
+                )
+            }
+            return state.copy(statusText = "Record blocked: start/end must use ISO HH:mm:ss.")
         }
 
         val targetDateIso = state.attributionDateIso.ifBlank {
@@ -107,6 +141,13 @@ class RecordUseCases(
                 selectedHistoryFile = state.selectedHistoryFile
             )
         )
+        runCatching {
+            Log.i(
+                "TimeTracerRecord",
+                "usecase.record_interval.gateway_result ok=${result.ok} " +
+                    "message=${result.message} start=[$normalizedStart] end=[$normalizedEnd]"
+            )
+        }
         if (!result.ok) {
             return state.copy(statusText = result.message)
         }
@@ -444,16 +485,15 @@ class RecordUseCases(
     }
 
     private fun isValidTime(value: String): Boolean {
-        if ((value.length != 4 && value.length != 6) || !value.all { it.isDigit() }) {
+        if (value.length != 8 || value[2] != ':' || value[5] != ':' ||
+            value.filterIndexed { index, _ -> index != 2 && index != 5 }
+                .any { !it.isDigit() }
+        ) {
             return false
         }
         val hours = value.substring(0, 2).toIntOrNull() ?: return false
-        val minutes = value.substring(2, 4).toIntOrNull() ?: return false
-        val seconds = if (value.length == 6) {
-            value.substring(4, 6).toIntOrNull() ?: return false
-        } else {
-            0
-        }
+        val minutes = value.substring(3, 5).toIntOrNull() ?: return false
+        val seconds = value.substring(6, 8).toIntOrNull() ?: return false
         return hours in 0..23 && minutes in 0..59 && seconds in 0..59
     }
 

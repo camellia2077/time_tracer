@@ -46,3 +46,13 @@ internal data class ParsedTreeQueryPayload(
     val errorMessage: String,
     val maxAvailableDepth: Int = 0
 )
+
+internal data class ParsedPreviousActivityTail(
+    val found: Boolean,
+    val tail: PreviousActivityTail?
+)
+
+internal data class ParsedLatestActivityRecord(
+    val found: Boolean,
+    val record: LatestActivityRecord?
+)

@@ -9,7 +9,7 @@ import java.util.Locale
 internal class InputRecordStore {
     private val appMonthFileFormatter = SimpleDateFormat("yyyy-MM", Locale.US)
     private val dayMarkerFormatter = SimpleDateFormat("MMdd", Locale.US)
-    private val hhmmssFormatter = SimpleDateFormat("HHmmss", Locale.US)
+    private val isoTimeFormatter = SimpleDateFormat("HH:mm:ss", Locale.US)
     private val txtFileStore = InputTxtFileStore()
     private val normalization = LiveRawRecordNormalization()
     private val parsing = LiveRawRecordParsing(normalization)
@@ -56,7 +56,8 @@ internal class InputRecordStore {
             ?: throw IllegalArgumentException("Invalid logicalDate format: $logicalDateString")
 
         val dayMarker = dayMarkerFormatter.format(logicalDate)
-        val eventTime = hhmmssFormatter.format(now)
+        val eventTime = isoTimeFormatter.format(now)
+        val txtEventTime = persistence.formatTxtTime(eventTime)
         val monthFile = resolveTargetMonthFile(
             inputRootPath = inputRootPath,
             logicalDate = logicalDate,
@@ -74,13 +75,13 @@ internal class InputRecordStore {
             monthFile = monthFile,
             dayMarker = dayMarker,
             eventLine = eventLine,
-            eventTime = eventTime,
+            eventTime = txtEventTime,
             normalizedActivity = activityName
         )
 
         val warnings = mutableListOf<String>()
         if (insertResult.duplicateSuspected) {
-            warnings += "Possible duplicate record: same HHmmss and activity already exists in this day."
+            warnings += "Possible duplicate record: same TXT HHMMSS and activity already exists in this day."
         }
         resolveCompletenessWarningForDayContent(
             content = monthFile.readText(),
@@ -200,18 +201,18 @@ internal class InputRecordStore {
     // prefix only when matching the raw month-file day-block header.
     private fun buildDayMarkerLine(dayMarker: String): String = "d$dayMarker"
 
-    private fun buildRawEventLine(hhmm: String, activity: String, remark: String): String {
-        return persistence.buildRawEventLine(hhmm, activity, remark)
+    private fun buildRawEventLine(isoTime: String, activity: String, remark: String): String {
+        return persistence.buildRawEventLine(isoTime, activity, remark)
     }
 
     fun buildRawIntervalEventLine(
-        startHhmm: String,
-        endHhmm: String,
+        startIsoTime: String,
+        endIsoTime: String,
         activity: String,
         remark: String
     ): String = persistence.buildRawIntervalEventLine(
-        startHhmm = startHhmm,
-        endHhmm = endHhmm,
+        startIsoTime = startIsoTime,
+        endIsoTime = endIsoTime,
         activity = activity,
         remark = remark
     )
