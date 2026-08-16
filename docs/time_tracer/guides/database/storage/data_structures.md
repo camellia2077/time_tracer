@@ -60,7 +60,7 @@ ProjectNode(1) ---- (N) ProjectNode.children
    1. 所有统计与时长统一为“秒”。
 2. 日期/时间格式
    1. `date`：`YYYY-MM-DD`
-   2. `start/end/getup_time`：`HH:MM`
+   2. `start/end/getup_time`：ISO 本地时间 `HH:mm:ss`
 3. 路径协议
    1. 数据库内部层级分隔符固定为 `_`。
    2. 示例：`study_math_linear-algebra`
@@ -96,8 +96,8 @@ ProjectNode(1) ---- (N) ProjectNode.children
   "record": {
     "logical_id": 20260103000001,
     "date": "2026-01-03",
-    "start": "08:00",
-    "end": "09:00",
+    "start": "08:00:00",
+    "end": "09:00:00",
     "duration": 3600,
     "project_path_snapshot": "study_english_words"
   },

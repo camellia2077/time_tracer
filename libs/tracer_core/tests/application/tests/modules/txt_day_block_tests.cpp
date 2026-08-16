@@ -162,12 +162,12 @@ auto TestTxtDayEditNormalization(TestState& state) -> void {
   Expect(state, resolved.events.size() == 2,
          "ResolveDayEdit should expose point and interval events.");
   Expect(state, !resolved.events[0].is_interval &&
-                    resolved.events[0].end_time == "090400" &&
+                    resolved.events[0].end_time == "09:04:00" &&
                     resolved.events[0].remark == "first note\nsecond note",
          "ResolveDayEdit should normalize point times and preserve event remarks.");
   Expect(state, resolved.events[1].is_interval &&
-                    resolved.events[1].start_time == "100000" &&
-                    resolved.events[1].end_time == "110000",
+                    resolved.events[1].start_time == "10:00:00" &&
+                    resolved.events[1].end_time == "11:00:00",
          "ResolveDayEdit should normalize interval endpoints.");
   Expect(state,
          resolved.events[0].start_timeline_seconds == std::optional<int>(
@@ -179,7 +179,7 @@ auto TestTxtDayEditNormalization(TestState& state) -> void {
          "ResolveDayEdit should expose Core-owned adjacent event boundaries.");
 
   auto edited_events = resolved.events;
-  edited_events[0].end_time = "093015";
+  edited_events[0].end_time = "09:30:15";
   edited_events[0].activity_token = "study_math_probability";
   const auto applied = ApplyDayEdit({
       .content = source,
@@ -196,7 +196,7 @@ auto TestTxtDayEditNormalization(TestState& state) -> void {
          "ApplyDayEdit should normalize the full day body while preserving remarks.");
 
   auto invalid_events = resolved.events;
-  invalid_events[1].start_time = "090300";
+  invalid_events[1].start_time = "09:03:00";
   const auto rejected = ApplyDayEdit({
       .content = source,
       .day_marker = "0102",

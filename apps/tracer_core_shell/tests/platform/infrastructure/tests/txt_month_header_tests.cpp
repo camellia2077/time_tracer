@@ -107,9 +107,9 @@ auto TestParserSupportsIntervalEventLines(int& failures) -> void {
          "Parser should classify HHMM-HHMMtoken as interval event.",
          failures);
   Expect(interval_event.startTimeStr.has_value() &&
-             *interval_event.startTimeStr == "090000" &&
-             interval_event.endTimeStr == "103000",
-         "Interval parser should normalize authored start/end times to HHMMSS.",
+             *interval_event.startTimeStr == "09:00:00" &&
+             interval_event.endTimeStr == "10:30:00",
+         "Interval parser should normalize authored start/end times to ISO HH:mm:ss.",
          failures);
   Expect(interval_event.remark == "focus",
          "Interval parser should preserve inline remarks.", failures);

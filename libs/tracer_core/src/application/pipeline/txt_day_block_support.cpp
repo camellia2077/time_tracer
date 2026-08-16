@@ -55,6 +55,16 @@ struct ParsedYearMonth {
          });
 }
 
+[[nodiscard]] auto FormatIsoTimeForTxt(std::string_view iso_time)
+    -> std::string {
+  if (iso_time.length() != 8 || iso_time[2] != ':' || iso_time[5] != ':') {
+    throw std::invalid_argument("TXT event time must use ISO HH:mm:ss.");
+  }
+  return std::string(iso_time.substr(0, 2)) +
+         std::string(iso_time.substr(3, 2)) +
+         std::string(iso_time.substr(6, 2));
+}
+
 [[nodiscard]] auto IsLeapYear(const int kYear) -> bool {
   return (kYear % 400 == 0) || ((kYear % 4 == 0) && (kYear % 100 != 0));
 }
@@ -383,10 +393,10 @@ auto AppendRemarkLines(std::string& output, std::string_view remark,
   AppendRemarkLines(body, request.day_remark, false);
   for (const auto& event : request.events) {
     if (event.is_interval) {
-      body += event.start_time;
+      body += FormatIsoTimeForTxt(event.start_time);
       body.push_back('-');
     }
-    body += event.end_time;
+    body += FormatIsoTimeForTxt(event.end_time);
     body += event.activity_token;
     AppendRemarkLines(body, event.remark, true);
   }

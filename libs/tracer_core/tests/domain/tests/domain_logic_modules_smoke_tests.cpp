@@ -59,22 +59,22 @@ void TestConverterBridge(int& failures) {
   DailyLog previous_day;
   previous_day.date = "2026-03-01";
   RawEvent prev_event;
-  prev_event.endTimeStr = "23:30";
+  prev_event.endTimeStr = "23:30:00";
   previous_day.rawEvents.push_back(prev_event);
 
   DailyLog day_to_process;
   day_to_process.date = "2026-03-02";
-  day_to_process.getupTime = "07:00";
+  day_to_process.getupTime = "07:00:00";
   processor.Process(previous_day, day_to_process);
 
   std::map<std::string, std::vector<DailyLog>> data_map;
   DailyLog first_day;
   first_day.date = "2026-03-01";
-  first_day.getupTime = "06:45";
+  first_day.getupTime = "06:45:00";
   data_map["2026-03"].push_back(first_day);
 
   LogLinker::ExternalPreviousEvent external_previous_event{"2026-02-28",
-                                                           "23:45"};
+                                                           "23:45:00"};
   linker.LinkFirstDayWithExternalPreviousEvent(data_map,
                                                external_previous_event);
   const DailyLog& linked_day = data_map["2026-03"].front();
@@ -101,7 +101,7 @@ void TestValidatorBridge(int& failures) {
          failures);
   Expect(!LineRules::IsDate("0301"),
          "Bare MMDD should no longer be a date marker.", failures);
-  Expect(line_rules.IsRemark("# note"), "LineRules::IsRemark bridge mismatch.",
+  Expect(line_rules.IsRemark("// note"), "LineRules::IsRemark bridge mismatch.",
          failures);
 
   SourceSpan span;
@@ -190,14 +190,14 @@ void TestStructureValidatorBridge(int& failures) {
   day.date = "2026-03-01";
 
   BaseActivityRecord activity_one;
-  activity_one.start_time_str = "07:00";
-  activity_one.end_time_str = "07:30";
+  activity_one.start_time_str = "07:00:00";
+  activity_one.end_time_str = "07:30:00";
   activity_one.project_path = "study";
   activity_one.duration_seconds = 30 * 60;
 
   BaseActivityRecord activity_two;
-  activity_two.start_time_str = "08:00";
-  activity_two.end_time_str = "08:20";
+  activity_two.start_time_str = "08:00:00";
+  activity_two.end_time_str = "08:20:00";
   activity_two.project_path = "exercise";
   activity_two.duration_seconds = 20 * 60;
 
@@ -252,8 +252,8 @@ void TestStructureValidatorBridge(int& failures) {
   interval_gap_day.date = "2026-03-01";
   interval_gap_day.rawEvents.push_back(
       RawEvent{.kind = RawEventKindType::Interval,
-               .startTimeStr = std::string("0900"),
-               .endTimeStr = "1030",
+               .startTimeStr = std::string("09:00:00"),
+               .endTimeStr = "10:30:00",
                .description = "study",
                .source_span = SourceSpan{.file_path = "module-smoke.txt",
                                          .line_start = 10,
@@ -263,8 +263,8 @@ void TestStructureValidatorBridge(int& failures) {
                                          .raw_text = "0900-1030study"}});
   interval_gap_day.rawEvents.push_back(
       RawEvent{.kind = RawEventKindType::Interval,
-               .startTimeStr = std::string("1401"),
-               .endTimeStr = "1900",
+               .startTimeStr = std::string("14:01:00"),
+               .endTimeStr = "19:00:00",
                .description = "sleep",
                .source_span = SourceSpan{.file_path = "module-smoke.txt",
                                          .line_start = 11,
@@ -289,8 +289,8 @@ void TestStructureValidatorBridge(int& failures) {
   sparse_interval_day.date = "2026-03-05";
   sparse_interval_day.rawEvents.push_back(
       RawEvent{.kind = RawEventKindType::Interval,
-               .startTimeStr = std::string("0803"),
-               .endTimeStr = "0907",
+               .startTimeStr = std::string("08:03:00"),
+               .endTimeStr = "09:07:00",
                .description = "study",
                .source_span = SourceSpan{.file_path = "module-smoke.txt",
                                          .line_start = 12,
@@ -314,9 +314,9 @@ void TestStructureValidatorBridge(int& failures) {
   DailyLog invalid_day;
   invalid_day.date = "2026-03-02";
   invalid_day.rawEvents.push_back(
-      RawEvent{.endTimeStr = "0700", .description = "study"});
+      RawEvent{.endTimeStr = "07:00:00", .description = "study"});
   invalid_day.rawEvents.push_back(
-      RawEvent{.endTimeStr = "0800",
+      RawEvent{.endTimeStr = "08:00:00",
                .description = "wake",
                .source_span = SourceSpan{.file_path = "module-smoke.txt",
                                          .line_start = 2,
@@ -339,11 +339,11 @@ void TestStructureValidatorBridge(int& failures) {
 
   DailyLog overlap_day;
   overlap_day.date = "2026-03-03";
-  overlap_day.getupTime = "06:06";
+  overlap_day.getupTime = "06:06:00";
   overlap_day.rawEvents.push_back(
       RawEvent{.kind = RawEventKindType::Interval,
-               .startTimeStr = std::string("0900"),
-               .endTimeStr = "1030",
+               .startTimeStr = std::string("09:00:00"),
+               .endTimeStr = "10:30:00",
                .description = "study",
                .source_span = SourceSpan{.file_path = "module-smoke.txt",
                                          .line_start = 3,
@@ -352,7 +352,7 @@ void TestStructureValidatorBridge(int& failures) {
                                          .column_end = 14,
                                          .raw_text = "0900-1030study"}});
   overlap_day.rawEvents.push_back(
-      RawEvent{.endTimeStr = "1000",
+      RawEvent{.endTimeStr = "10:00:00",
                .description = "sleep",
                .source_span = SourceSpan{.file_path = "module-smoke.txt",
                                          .line_start = 4,
@@ -379,8 +379,8 @@ void TestStructureValidatorBridge(int& failures) {
   interval_overlap_day.date = "2026-03-07";
   interval_overlap_day.rawEvents.push_back(
       RawEvent{.kind = RawEventKindType::Interval,
-               .startTimeStr = std::string("0954"),
-               .endTimeStr = "1007",
+               .startTimeStr = std::string("09:54:00"),
+               .endTimeStr = "10:07:00",
                .description = "study",
                .source_span = SourceSpan{.file_path = "module-smoke.txt",
                                          .line_start = 13,
@@ -390,8 +390,8 @@ void TestStructureValidatorBridge(int& failures) {
                                          .raw_text = "0954-1007study"}});
   interval_overlap_day.rawEvents.push_back(
       RawEvent{.kind = RawEventKindType::Interval,
-               .startTimeStr = std::string("0954"),
-               .endTimeStr = "1409",
+               .startTimeStr = std::string("09:54:00"),
+               .endTimeStr = "14:09:00",
                .description = "sleep",
                .source_span = SourceSpan{.file_path = "module-smoke.txt",
                                          .line_start = 14,
@@ -419,8 +419,8 @@ void TestStructureValidatorBridge(int& failures) {
   interval_wake_day.date = "2026-03-04";
   interval_wake_day.rawEvents.push_back(
       RawEvent{.kind = RawEventKindType::Interval,
-               .startTimeStr = std::string("0600"),
-               .endTimeStr = "0700",
+               .startTimeStr = std::string("06:00:00"),
+               .endTimeStr = "07:00:00",
                .description = "wake",
                .source_span = SourceSpan{.file_path = "module-smoke.txt",
                                          .line_start = 5,
@@ -449,8 +449,8 @@ void TestStructureValidatorBridge(int& failures) {
   wrapped_interval_day.isContinuation = true;
   wrapped_interval_day.rawEvents.push_back(
       RawEvent{.kind = RawEventKindType::Interval,
-               .startTimeStr = std::string("2132"),
-               .endTimeStr = "0135",
+               .startTimeStr = std::string("21:32:00"),
+               .endTimeStr = "01:35:00",
                .description = "study",
                .source_span = SourceSpan{.file_path = "module-smoke.txt",
                                          .line_start = 6,
@@ -460,8 +460,8 @@ void TestStructureValidatorBridge(int& failures) {
                                          .raw_text = "2132-0135study"}});
   wrapped_interval_day.rawEvents.push_back(
       RawEvent{.kind = RawEventKindType::Interval,
-               .startTimeStr = std::string("0135"),
-               .endTimeStr = "0217",
+               .startTimeStr = std::string("01:35:00"),
+               .endTimeStr = "02:17:00",
                .description = "sleep",
                .source_span = SourceSpan{.file_path = "module-smoke.txt",
                                          .line_start = 7,
@@ -471,8 +471,8 @@ void TestStructureValidatorBridge(int& failures) {
                                          .raw_text = "0135-0217sleep"}});
   wrapped_interval_day.rawEvents.push_back(
       RawEvent{.kind = RawEventKindType::Interval,
-               .startTimeStr = std::string("0217"),
-               .endTimeStr = "0239",
+               .startTimeStr = std::string("02:17:00"),
+               .endTimeStr = "02:39:00",
                .description = "study",
                .source_span = SourceSpan{.file_path = "module-smoke.txt",
                                          .line_start = 8,
@@ -500,8 +500,8 @@ void TestStructureValidatorBridge(int& failures) {
   cross_midnight_point_too_long_day.isContinuation = true;
   cross_midnight_point_too_long_day.rawEvents.push_back(
       RawEvent{.kind = RawEventKindType::Interval,
-               .startTimeStr = std::string("2132"),
-               .endTimeStr = "0135",
+               .startTimeStr = std::string("21:32:00"),
+               .endTimeStr = "01:35:00",
                .description = "sleep",
                .source_span = SourceSpan{.file_path = "module-smoke.txt",
                                          .line_start = 19,
@@ -511,7 +511,7 @@ void TestStructureValidatorBridge(int& failures) {
                                          .raw_text = "2132-0135sleep"}});
   cross_midnight_point_too_long_day.rawEvents.push_back(
       RawEvent{.kind = RawEventKindType::Point,
-               .endTimeStr = "2350",
+               .endTimeStr = "23:50:00",
                .description = "study",
                .source_span = SourceSpan{.file_path = "module-smoke.txt",
                                          .line_start = 20,
@@ -531,8 +531,8 @@ void TestStructureValidatorBridge(int& failures) {
   if (cross_midnight_point_too_long_day.processedActivities.size() == 2) {
     const auto& trailing_activity =
         cross_midnight_point_too_long_day.processedActivities.back();
-    Expect(trailing_activity.start_time_str == "01:35" &&
-               trailing_activity.end_time_str == "23:50",
+    Expect(trailing_activity.start_time_str == "01:35:00" &&
+               trailing_activity.end_time_str == "23:50:00",
            "Point event after cross-midnight interval should start at the "
            "previous interval end.",
            failures);
@@ -586,8 +586,8 @@ void TestStructureValidatorBridge(int& failures) {
   cross_midnight_interval_overlap_day.date = "2026-03-12";
   cross_midnight_interval_overlap_day.rawEvents.push_back(
       RawEvent{.kind = RawEventKindType::Interval,
-               .startTimeStr = std::string("2300"),
-               .endTimeStr = "0100",
+               .startTimeStr = std::string("23:00:00"),
+               .endTimeStr = "01:00:00",
                .description = "sleep",
                .source_span = SourceSpan{.file_path = "module-smoke.txt",
                                          .line_start = 21,
@@ -597,8 +597,8 @@ void TestStructureValidatorBridge(int& failures) {
                                          .raw_text = "2300-0100sleep"}});
   cross_midnight_interval_overlap_day.rawEvents.push_back(RawEvent{
       .kind = RawEventKindType::Interval,
-      .startTimeStr = std::string("0030"),
-      .endTimeStr = "0200",
+      .startTimeStr = std::string("00:30:00"),
+      .endTimeStr = "02:00:00",
       .description = "study",
       .remark = "special case @allow-long",
       .source_span = SourceSpan{.file_path = "module-smoke.txt",
@@ -629,8 +629,8 @@ void TestStructureValidatorBridge(int& failures) {
   cross_midnight_interval_gap_day.date = "2026-03-13";
   cross_midnight_interval_gap_day.rawEvents.push_back(
       RawEvent{.kind = RawEventKindType::Interval,
-               .startTimeStr = std::string("2300"),
-               .endTimeStr = "0100",
+               .startTimeStr = std::string("23:00:00"),
+               .endTimeStr = "01:00:00",
                .description = "sleep",
                .source_span = SourceSpan{.file_path = "module-smoke.txt",
                                          .line_start = 23,
@@ -640,8 +640,8 @@ void TestStructureValidatorBridge(int& failures) {
                                          .raw_text = "2300-0100sleep"}});
   cross_midnight_interval_gap_day.rawEvents.push_back(
       RawEvent{.kind = RawEventKindType::Interval,
-               .startTimeStr = std::string("0130"),
-               .endTimeStr = "0200",
+               .startTimeStr = std::string("01:30:00"),
+               .endTimeStr = "02:00:00",
                .description = "study",
                .source_span = SourceSpan{.file_path = "module-smoke.txt",
                                          .line_start = 24,
@@ -666,8 +666,8 @@ void TestStructureValidatorBridge(int& failures) {
   zero_interval_day.date = "2026-03-06";
   zero_interval_day.rawEvents.push_back(
       RawEvent{.kind = RawEventKindType::Interval,
-               .startTimeStr = std::string("1030"),
-               .endTimeStr = "1030",
+               .startTimeStr = std::string("10:30:00"),
+               .endTimeStr = "10:30:00",
                .description = "study",
                .source_span = SourceSpan{.file_path = "module-smoke.txt",
                                          .line_start = 9,
@@ -696,8 +696,8 @@ void TestStructureValidatorBridge(int& failures) {
   too_long_interval_day.isContinuation = true;
   too_long_interval_day.rawEvents.push_back(
       RawEvent{.kind = RawEventKindType::Interval,
-               .startTimeStr = std::string("1030"),
-               .endTimeStr = "0900",
+               .startTimeStr = std::string("10:30:00"),
+               .endTimeStr = "09:00:00",
                .description = "study",
                .source_span = SourceSpan{.file_path = "module-smoke.txt",
                                          .line_start = 15,
@@ -740,8 +740,8 @@ void TestStructureValidatorBridge(int& failures) {
   boundary_overlap_interval_day.isContinuation = true;
   boundary_overlap_interval_day.rawEvents.push_back(
       RawEvent{.kind = RawEventKindType::Interval,
-               .startTimeStr = std::string("0900"),
-               .endTimeStr = "1200",
+               .startTimeStr = std::string("09:00:00"),
+               .endTimeStr = "12:00:00",
                .description = "sleep",
                .source_span = SourceSpan{.file_path = "module-smoke.txt",
                                          .line_start = 17,
@@ -751,8 +751,8 @@ void TestStructureValidatorBridge(int& failures) {
                                          .raw_text = "0900-1200sleep"}});
   boundary_overlap_interval_day.rawEvents.push_back(RawEvent{
       .kind = RawEventKindType::Interval,
-      .startTimeStr = std::string("1030"),
-      .endTimeStr = "0900",
+      .startTimeStr = std::string("10:30:00"),
+      .endTimeStr = "09:00:00",
       .description = "study",
       .remark = "special case @allow-long",
       .source_span = SourceSpan{.file_path = "module-smoke.txt",
@@ -789,8 +789,8 @@ void TestStructureValidatorBridge(int& failures) {
   allowed_long_interval_day.isContinuation = true;
   allowed_long_interval_day.rawEvents.push_back(RawEvent{
       .kind = RawEventKindType::Interval,
-      .startTimeStr = std::string("1030"),
-      .endTimeStr = "0900",
+      .startTimeStr = std::string("10:30:00"),
+      .endTimeStr = "09:00:00",
       .description = "study",
       .remark = "special case @allow-long",
       .source_span = SourceSpan{.file_path = "module-smoke.txt",

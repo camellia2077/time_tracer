@@ -103,13 +103,13 @@ class FakeTimeSheetRepository final
 auto BuildSingleDayMap() -> std::map<std::string, std::vector<DailyLog>> {
   DailyLog day;
   day.date = "2026-02-01";
-  day.getupTime = "07:00";
+  day.getupTime = "07:00:00";
   day.processedActivities.push_back(BaseActivityRecord{
       .logical_id = 1,
       .start_timestamp = kStartTimestamp,
       .end_timestamp = kEndTimestamp,
-      .start_time_str = "07:00",
-      .end_time_str = "08:00",
+      .start_time_str = "07:00:00",
+      .end_time_str = "08:00:00",
       .project_path = "study_cpp",
       .duration_seconds = kDurationSeconds,
       .remark = std::nullopt,

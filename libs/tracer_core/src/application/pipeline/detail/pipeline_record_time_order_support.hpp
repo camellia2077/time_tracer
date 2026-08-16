@@ -10,8 +10,8 @@
 namespace tracer::core::application::pipeline::record_time_order {
 
 // Logical-day mode uses 06:00 as the day-boundary pivot.
-// We do not special-case concrete pairs like 0009/2058; all HHMM and HHMMSS
-// values follow this generic axis mapping.
+// This helper reads raw TXT tokens. We do not special-case concrete pairs like
+// 0009/2058; all compact HHMM and HHMMSS values follow this generic axis mapping.
 inline constexpr int kLogicalDayCutoffMinutes = 6 * 60;
 inline constexpr int kMinutesPerDay = 24 * 60;
 inline constexpr int kSecondsPerMinute = 60;

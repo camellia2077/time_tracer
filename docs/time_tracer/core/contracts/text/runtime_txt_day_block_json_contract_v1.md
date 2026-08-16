@@ -177,7 +177,7 @@ Response fields extend `resolve_day_block` with:
     {
       "is_interval": false,
       "start_time": "",
-      "end_time": "090400",
+      "end_time": "09:04:00",
       "activity_token": "study",
       "remark": "first\nsecond",
       "start_timeline_seconds": 32640,
@@ -192,7 +192,8 @@ Response fields extend `resolve_day_block` with:
 Rules:
 
 1. Point events have `is_interval=false`, empty `start_time`, and use
-   `end_time` as their timestamp.
+   `end_time` as their timestamp. All API event time fields use ISO
+   `HH:mm:ss`; only the `content` TXT document uses compact `HHMM`/`HHMMSS`.
 2. Interval events have `is_interval=true` and both endpoints populated.
 3. Parser-normalized six-digit times are returned for every event.
 4. The result carries day and event remarks even when the current host UI does

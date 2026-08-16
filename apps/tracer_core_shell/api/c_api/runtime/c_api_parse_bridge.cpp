@@ -118,6 +118,14 @@ namespace tracer_core::shell::c_api_bridge {
       normalized == "insights-composition" || normalized == "composition") {
     return DataQueryAction::kInsightsComposition;
   }
+  if (normalized == "previous_activity_tail" ||
+      normalized == "previous-activity-tail") {
+    return DataQueryAction::kPreviousActivityTail;
+  }
+  if (normalized == "latest_activity_record" ||
+      normalized == "latest-activity-record") {
+    return DataQueryAction::kLatestActivityRecord;
+  }
   if (normalized == "tree") {
     return DataQueryAction::kTree;
   }
@@ -125,7 +133,7 @@ namespace tracer_core::shell::c_api_bridge {
       "field `action` must be one of: years|months|days|days_duration|"
       "days_stats|search|activity_frequent|mapping_names|activity_alias_mappings|mapping_alias_keys|"
       "wake_keywords|authorable_event_tokens|insights_chart|"
-      "insights_composition|tree.");
+      "insights_composition|previous_activity_tail|latest_activity_record|tree.");
 }
 
 [[nodiscard]] auto ParseDataQueryOutputMode(const std::string& value)

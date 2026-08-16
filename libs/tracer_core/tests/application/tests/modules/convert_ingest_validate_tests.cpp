@@ -265,13 +265,13 @@ auto TestContinuationDayPreservesFirstSegment(TestState& state) -> void {
 
   DailyLog previous_day;
   previous_day.date = "2026-02-01";
-  previous_day.rawEvents.push_back(RawEvent{.endTimeStr = "23:30"});
+  previous_day.rawEvents.push_back(RawEvent{.endTimeStr = "23:30:00"});
 
   DailyLog continuation_day;
   continuation_day.date = "2026-02-02";
   continuation_day.isContinuation = true;
   continuation_day.rawEvents.push_back(
-      RawEvent{.endTimeStr = "07:00", .description = "study_cpp"});
+      RawEvent{.endTimeStr = "07:00:00", .description = "study_cpp"});
 
   processor.Process(previous_day, continuation_day);
 
@@ -303,12 +303,12 @@ auto TestIntervalDayBuildsExplicitRecords(TestState& state) -> void {
   interval_day.date = "2026-02-03";
   interval_day.isContinuation = true;
   interval_day.rawEvents.push_back(RawEvent{.kind = RawEventKindType::Interval,
-                                            .startTimeStr = std::string("0900"),
-                                            .endTimeStr = "1030",
+                                            .startTimeStr = std::string("09:00:00"),
+                                            .endTimeStr = "10:30:00",
                                             .description = "study"});
   interval_day.rawEvents.push_back(RawEvent{.kind = RawEventKindType::Interval,
-                                            .startTimeStr = std::string("1401"),
-                                            .endTimeStr = "1900",
+                                            .startTimeStr = std::string("14:01:00"),
+                                            .endTimeStr = "19:00:00",
                                             .description = "sleep"});
 
   processor.Process(previous_day, interval_day);
@@ -347,16 +347,16 @@ auto TestMixedDayUsesIntervalEndAsNextPointBoundary(TestState& state) -> void {
 
   DailyLog mixed_day;
   mixed_day.date = "2026-02-04";
-  mixed_day.getupTime = "06:06";
+  mixed_day.getupTime = "06:06:00";
   mixed_day.rawEvents.push_back(RawEvent{.kind = RawEventKindType::Point,
-                                         .endTimeStr = "0606",
+                                         .endTimeStr = "06:06:00",
                                          .description = "wake"});
   mixed_day.rawEvents.push_back(RawEvent{.kind = RawEventKindType::Interval,
-                                         .startTimeStr = std::string("0900"),
-                                         .endTimeStr = "1030",
+                                         .startTimeStr = std::string("09:00:00"),
+                                         .endTimeStr = "10:30:00",
                                          .description = "study"});
   mixed_day.rawEvents.push_back(RawEvent{.kind = RawEventKindType::Point,
-                                         .endTimeStr = "1353",
+                                         .endTimeStr = "13:53:00",
                                          .description = "sleep"});
 
   processor.Process(previous_day, mixed_day);
@@ -383,15 +383,15 @@ auto TestContinuationDayAllowsGapBeforeFirstInterval(TestState& state) -> void {
 
   DailyLog previous_day;
   previous_day.date = "2026-02-04";
-  previous_day.rawEvents.push_back(RawEvent{.endTimeStr = "23:30"});
+  previous_day.rawEvents.push_back(RawEvent{.endTimeStr = "23:30:00"});
 
   DailyLog continuation_day;
   continuation_day.date = "2026-02-05";
   continuation_day.isContinuation = true;
   continuation_day.rawEvents.push_back(
       RawEvent{.kind = RawEventKindType::Interval,
-               .startTimeStr = std::string("0900"),
-               .endTimeStr = "1030",
+               .startTimeStr = std::string("09:00:00"),
+               .endTimeStr = "10:30:00",
                .description = "study"});
 
   processor.Process(previous_day, continuation_day);
@@ -424,8 +424,8 @@ auto TestWrappedIntervalPreservesCrossMidnightDuration(TestState& state)
   interval_day.date = "2026-02-06";
   interval_day.isContinuation = true;
   interval_day.rawEvents.push_back(RawEvent{.kind = RawEventKindType::Interval,
-                                            .startTimeStr = std::string("2132"),
-                                            .endTimeStr = "0135",
+                                            .startTimeStr = std::string("21:32:00"),
+                                            .endTimeStr = "01:35:00",
                                             .description = "study"});
 
   processor.Process(previous_day, interval_day);
@@ -458,8 +458,8 @@ auto TestCrossMidnightIntervalDoesNotUseWrapThreshold(TestState& state)
   interval_day.date = "2026-02-07";
   interval_day.isContinuation = true;
   interval_day.rawEvents.push_back(RawEvent{.kind = RawEventKindType::Interval,
-                                            .startTimeStr = std::string("1030"),
-                                            .endTimeStr = "0900",
+                                            .startTimeStr = std::string("10:30:00"),
+                                            .endTimeStr = "09:00:00",
                                             .description = "study",
                                             .remark = "@allow-long"});
 
@@ -716,9 +716,9 @@ auto TestPointWithoutContextProducesEndOnly(TestState& state) -> void {
   day.date = "2026-02-02";
   day.isContinuation = true;
   day.rawEvents.push_back(
-      RawEvent{.endTimeStr = "09:00", .description = "study"});
+      RawEvent{.endTimeStr = "09:00:00", .description = "study"});
   day.rawEvents.push_back(
-      RawEvent{.endTimeStr = "10:00", .description = "meal"});
+      RawEvent{.endTimeStr = "10:00:00", .description = "meal"});
 
   processor.Process(previous_day, day);
 
@@ -756,7 +756,7 @@ auto TestEndOnlyBoundaryCanBeInheritedAcrossAdjacentDay(TestState& state)
   previous_day.date = "2026-02-01";
   previous_day.isContinuation = true;
   previous_day.rawEvents.push_back(
-      RawEvent{.endTimeStr = "18:00", .description = "study"});
+      RawEvent{.endTimeStr = "18:00:00", .description = "study"});
   DailyLog no_context_day;
   processor.Process(no_context_day, previous_day);
 
@@ -771,7 +771,7 @@ auto TestEndOnlyBoundaryCanBeInheritedAcrossAdjacentDay(TestState& state)
   current_day.date = "2026-02-02";
   current_day.isContinuation = true;
   current_day.rawEvents.push_back(
-      RawEvent{.endTimeStr = "09:00", .description = "meal"});
+      RawEvent{.endTimeStr = "09:00:00", .description = "meal"});
   processor.Process(previous_day, current_day);
 
   Expect(state, current_day.processedActivities.size() == 1,

@@ -28,6 +28,8 @@ constexpr int kQueryActionMappingAliasKeys = 11;
 constexpr int kQueryActionWakeKeywords = 12;
 constexpr int kQueryActionAuthorableEventTokens = 13;
 constexpr int kQueryActionInsightsComposition = 14;
+constexpr int kQueryActionPreviousActivityTail = 15;
+constexpr int kQueryActionLatestActivityRecord = 16;
 
 constexpr int kInsightsTypeDay = 0;
 constexpr int kInsightsTypeMonth = 1;
@@ -113,6 +115,12 @@ constexpr int kInsightsFormatTypst = 2;
   }
   if (value == kQueryActionInsightsComposition) {
     return "insights_composition";
+  }
+  if (value == kQueryActionPreviousActivityTail) {
+    return "previous_activity_tail";
+  }
+  if (value == kQueryActionLatestActivityRecord) {
+    return "latest_activity_record";
   }
   throw std::invalid_argument("Unsupported query action code: " +
                               std::to_string(value));

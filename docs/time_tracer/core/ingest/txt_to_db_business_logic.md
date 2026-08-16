@@ -111,8 +111,9 @@ d0102
 1. 点事件：`HHMMSS + activity token`
 2. 区间事件：`HHMMSS-HHMMSS + activity token`
 
-为兼容既有 TXT，读取时仍接受四位 `HHMM`。Core 会在解析入口自动补上
-`00` 秒并规范化为 `HHMMSS`；后续校验、持续时间和时间戳计算均以秒精度执行。
+TXT 读取时接受四位 `HHMM` 和六位 `HHMMSS`。Core 在解析入口补齐秒数，
+并将内部事件字段规范化为 ISO 本地时间 `HH:mm:ss`；后续校验、持续时间和
+时间戳计算均以秒精度执行。写回 TXT 时才转换为紧凑的 `HHMMSS`。
 
 示例：
 

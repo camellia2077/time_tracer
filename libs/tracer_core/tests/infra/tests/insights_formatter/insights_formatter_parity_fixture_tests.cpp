@@ -199,7 +199,7 @@ auto BuildDailyFixture() -> DailyInsightsData {
       {.id = "exercise", .label = "Exercise", .occurrence_count = 1,
        .total_duration = 1800},
   };
-  insights.metadata.getup_time = "07:30";
+  insights.metadata.getup_time = "07:30:00";
   insights.metadata.remark = "Deep work\nEvening workout";
   insights.total_duration = 12600;
   insights.activity_count = 3;
@@ -214,23 +214,23 @@ auto BuildDailyFixture() -> DailyInsightsData {
   insights.stats["recreation_bilibili_time"] = 1200;
   insights.stats["recreation_douyin_time"] = 600;
   insights.detailed_records.push_back(TimeRecord{
-      .start_time = "08:00",
-      .end_time = "09:10",
+      .start_time = "08:00:00",
+      .end_time = "09:10:00",
       .project_path = "Work_Coding",
       .duration_seconds = 4200,
       .activityRemark =
           std::optional<std::string>{"Feature refactor\nFollow-up"},
   });
   insights.detailed_records.push_back(TimeRecord{
-      .start_time = "09:20",
-      .end_time = "10:20",
+      .start_time = "09:20:00",
+      .end_time = "10:20:00",
       .project_path = "Work_Review",
       .duration_seconds = 3600,
       .activityRemark = std::nullopt,
   });
   insights.detailed_records.push_back(TimeRecord{
-      .start_time = "20:00",
-      .end_time = "20:30",
+      .start_time = "20:00:00",
+      .end_time = "20:30:00",
       .project_path = "Life_Exercise",
       .duration_seconds = 1800,
       .activityRemark = std::optional<std::string>{"Cardio"},

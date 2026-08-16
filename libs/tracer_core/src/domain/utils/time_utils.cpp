@@ -7,7 +7,6 @@
 #include <stdexcept>
 
 namespace {
-constexpr int kLegacyTimeFormatLength = 5;
 constexpr int kTimeFormatLength = 8;
 constexpr int kHoursInDay = 24;
 constexpr int kMinutesInHour = 60;
@@ -20,32 +19,7 @@ constexpr int kMonthFormatLength = 6;
 }  // namespace
 
 auto TimeStrToSeconds(const std::string& time_str_in) -> int {
-  std::string time_str = time_str_in;
-  if (time_str.length() == 4U && time_str.find(':') == std::string::npos) {
-    bool all_digits = true;
-    for (char digit_char : time_str) {
-      if (std::isdigit(static_cast<unsigned char>(digit_char)) == 0) {
-        all_digits = false;
-        break;
-      }
-    }
-    if (all_digits) {
-      time_str = time_str.substr(0, 2) + ":" + time_str.substr(2, 2) + ":00";
-    }
-  }
-
-  if (time_str.length() == 6U && time_str.find(':') == std::string::npos &&
-      std::ranges::all_of(time_str, [](unsigned char value) {
-        return std::isdigit(value) != 0;
-      })) {
-    time_str = time_str.substr(0, 2) + ":" + time_str.substr(2, 2) + ":" +
-               time_str.substr(4, 2);
-  }
-
-  if (time_str.length() == static_cast<size_t>(kLegacyTimeFormatLength) &&
-      time_str[2] == ':') {
-    time_str += ":00";
-  }
+  const std::string& time_str = time_str_in;
 
   if (time_str.length() != static_cast<size_t>(kTimeFormatLength) ||
       time_str[2] != ':' || time_str[5] != ':') {

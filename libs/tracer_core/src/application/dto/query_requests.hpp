@@ -21,7 +21,9 @@ enum class DataQueryAction {
   kAuthorableEventTokens,
   kInsightsChart,
   kInsightsComposition,
+  kPreviousActivityTail,
   kTree,
+  kLatestActivityRecord,
 };
 
 enum class DataQueryOutputMode {

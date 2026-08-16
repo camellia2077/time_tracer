@@ -263,6 +263,14 @@ auto ToCliDataQueryAction(tracer_core::core::dto::DataQueryAction action)
       return infra_data_query::DataQueryAction::kInsightsChart;
     case CoreAction::kInsightsComposition:
       return infra_data_query::DataQueryAction::kInsightsComposition;
+    case CoreAction::kPreviousActivityTail:
+      throw std::runtime_error(
+          "Previous activity tail action must be handled before SQL query "
+          "conversion.");
+    case CoreAction::kLatestActivityRecord:
+      throw std::runtime_error(
+          "Latest activity record action must be handled before SQL query "
+          "conversion.");
     case CoreAction::kTree:
       return infra_data_query::DataQueryAction::kTree;
   }

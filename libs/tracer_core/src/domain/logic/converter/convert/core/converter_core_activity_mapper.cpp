@@ -28,26 +28,28 @@ constexpr size_t kTimeSecondOffset = 6;
 constexpr size_t kTimeSecondLength = 2;
 
 [[nodiscard]] auto IsValidExplicitIntervalClockRange(
-    std::string_view start_hhmm, std::string_view end_hhmm) -> bool {
-  if (start_hhmm.length() != kTimeStringLength ||
-      end_hhmm.length() != kTimeStringLength || start_hhmm[2] != ':' ||
-      start_hhmm[5] != ':' || end_hhmm[2] != ':' || end_hhmm[5] != ':') {
+    std::string_view start_iso_time, std::string_view end_iso_time) -> bool {
+  if (start_iso_time.length() != kTimeStringLength ||
+      end_iso_time.length() != kTimeStringLength || start_iso_time[2] != ':' ||
+      start_iso_time[5] != ':' || end_iso_time[2] != ':' ||
+      end_iso_time[5] != ':') {
     return false;
   }
 
   try {
     const int kStartHour = std::stoi(
-        std::string(start_hhmm.substr(kTimeHourOffset, kTimeHourLength)));
+        std::string(start_iso_time.substr(kTimeHourOffset, kTimeHourLength)));
     const int kStartMinute = std::stoi(
-        std::string(start_hhmm.substr(kTimeMinuteOffset, kTimeMinuteLength)));
+        std::string(
+            start_iso_time.substr(kTimeMinuteOffset, kTimeMinuteLength)));
     const int kEndHour = std::stoi(
-        std::string(end_hhmm.substr(kTimeHourOffset, kTimeHourLength)));
+        std::string(end_iso_time.substr(kTimeHourOffset, kTimeHourLength)));
     const int kEndMinute = std::stoi(
-        std::string(end_hhmm.substr(kTimeMinuteOffset, kTimeMinuteLength)));
+        std::string(end_iso_time.substr(kTimeMinuteOffset, kTimeMinuteLength)));
     const int kStartSecond = std::stoi(
-        std::string(start_hhmm.substr(kTimeSecondOffset, kTimeSecondLength)));
+        std::string(start_iso_time.substr(kTimeSecondOffset, kTimeSecondLength)));
     const int kEndSecond = std::stoi(
-        std::string(end_hhmm.substr(kTimeSecondOffset, kTimeSecondLength)));
+        std::string(end_iso_time.substr(kTimeSecondOffset, kTimeSecondLength)));
     const int kStartTotal =
         ((kStartHour * kMinutesPerHour) + kStartMinute) * kSecondsPerMinute +
         kStartSecond;
@@ -82,23 +84,23 @@ auto ActivityMapper::MapActivities(DailyLog& day) -> void {
     return;
   }
 
-  std::string start_time = day.getupTime;
+  std::string start_iso_time = day.getupTime;
   std::optional<SourceSpan> start_span;
 
   for (const auto& raw_event : day.rawEvents) {
     if (IsWakeEvent(raw_event)) {
-      if (start_time.empty()) {
-        start_time = NormalizeTime(raw_event.endTimeStr);
+      if (start_iso_time.empty()) {
+        start_iso_time = raw_event.endTimeStr;
         start_span = raw_event.source_span;
       }
       continue;
     }
 
-    std::string formatted_event_end_time = NormalizeTime(raw_event.endTimeStr);
+    const std::string kEventEndIsoTime = raw_event.endTimeStr;
     std::string explicit_interval_start;
     std::optional<SourceSpan> effective_start_span = start_span;
-    TimeRange range{.start_hhmm = start_time,
-                    .end_hhmm = formatted_event_end_time};
+    TimeRange range{.start_iso_time = start_iso_time,
+                    .end_iso_time = kEventEndIsoTime};
     if (raw_event.kind == RawEventKind::Interval) {
       // Point events derive [last_known_boundary, end). Interval events keep
       // their authored [start, end) range, and the explicit interval end still
@@ -106,19 +108,19 @@ auto ActivityMapper::MapActivities(DailyLog& day) -> void {
       if (!raw_event.startTimeStr.has_value()) {
         continue;
       }
-      explicit_interval_start = NormalizeTime(*raw_event.startTimeStr);
+      explicit_interval_start = *raw_event.startTimeStr;
       if (!IsValidExplicitIntervalClockRange(explicit_interval_start,
-                                             formatted_event_end_time)) {
+                                             kEventEndIsoTime)) {
         continue;
       }
-      range.start_hhmm = explicit_interval_start;
+      range.start_iso_time = explicit_interval_start;
       effective_start_span = raw_event.source_span;
     }
 
     std::string mapped_description = MapDescription(raw_event.description);
     AppendActivity(day, raw_event, range, mapped_description,
                    effective_start_span);
-    start_time = formatted_event_end_time;
+    start_iso_time = kEventEndIsoTime;
     start_span = raw_event.source_span;
   }
 }
@@ -188,12 +190,12 @@ auto ActivityMapper::AppendActivity(
   ApplyTopParentMapping(parts);
   const std::string kProjectPath = BuildProjectPath(parts);
   BaseActivityRecord activity =
-      time_range.start_hhmm.empty()
-          ? BaseActivityRecord::MakeEndOnly(std::string(time_range.end_hhmm),
-                                            kProjectPath)
-          : BaseActivityRecord::MakeInterval(std::string(time_range.start_hhmm),
-                                             std::string(time_range.end_hhmm),
-                                             kProjectPath);
+      time_range.start_iso_time.empty()
+          ? BaseActivityRecord::MakeEndOnly(
+                std::string(time_range.end_iso_time), kProjectPath)
+          : BaseActivityRecord::MakeInterval(
+                std::string(time_range.start_iso_time),
+                std::string(time_range.end_iso_time), kProjectPath);
   if (!raw_event.remark.empty()) {
     activity.remark = raw_event.remark;
   }
@@ -204,19 +206,21 @@ auto ActivityMapper::AppendActivity(
 
 [[nodiscard]] auto ActivityMapper::CalculateDurationMinutes(
     const TimeRange& range) -> int {
-  if (range.start_hhmm.length() != kTimeStringLength ||
-      range.end_hhmm.length() != kTimeStringLength) {
+  if (range.start_iso_time.length() != kTimeStringLength ||
+      range.end_iso_time.length() != kTimeStringLength) {
     return 0;
   }
   try {
     const int kStartHour = std::stoi(
-        std::string(range.start_hhmm.substr(kTimeHourOffset, kTimeHourLength)));
+        std::string(
+            range.start_iso_time.substr(kTimeHourOffset, kTimeHourLength)));
     const int kStartMinute = std::stoi(std::string(
-        range.start_hhmm.substr(kTimeMinuteOffset, kTimeMinuteLength)));
+        range.start_iso_time.substr(kTimeMinuteOffset, kTimeMinuteLength)));
     const int kEndHour = std::stoi(
-        std::string(range.end_hhmm.substr(kTimeHourOffset, kTimeHourLength)));
+        std::string(
+            range.end_iso_time.substr(kTimeHourOffset, kTimeHourLength)));
     const int kEndMinute = std::stoi(std::string(
-        range.end_hhmm.substr(kTimeMinuteOffset, kTimeMinuteLength)));
+        range.end_iso_time.substr(kTimeMinuteOffset, kTimeMinuteLength)));
 
     const int kStartTimeMinutes = (kStartHour * kMinutesPerHour) + kStartMinute;
     int end_time_minutes = (kEndHour * kMinutesPerHour) + kEndMinute;

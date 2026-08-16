@@ -147,7 +147,7 @@ auto RunInfrastructureModuleQueryStatsRepositorySmoke() -> int {
                             .start_timestamp = 0,
                             .end_timestamp = 1770000000,
                             .start_time_str = "",
-                            .end_time_str = "12:00",
+                            .end_time_str = "12:00:00",
                             .project_path = "work",
                             .duration_seconds = 0,
                             .remark = std::nullopt,

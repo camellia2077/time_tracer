@@ -119,11 +119,11 @@ txt
 1. `logical_id`
    1. `YYYYMMDD * 1_000_000 + sequence`，同一天内顺序递增。
 2. `duration_seconds`
-   1. 由 `HH:MM` 计算；若终点小于起点视为跨午夜，自动 +24h。
+   1. 由 ISO `HH:mm:ss` 计算；若终点小于起点视为跨午夜，自动 +24h。
    2. end-only 没有可计算的 duration，不得伪造成零时长活动参与统计。
    2. 这是 activity 级时长，不会因为“单日报表已经超过 `24h`”而自动视为错误。
 3. `start_timestamp/end_timestamp`
-   1. 基于 `date + HH:MM` 转时间戳；跨日结束时间自动补一天。
+   1. 基于 `date + HH:mm:ss` 转时间戳；跨日结束时间自动补一天。
 4. 日标记
    1. `project_path` 前缀命中 `study` / `exercise`，置 `hasStudyActivity` / `hasExerciseActivity`。
 5. 日级标记

@@ -17,7 +17,7 @@ events.
 Format:
 
 ```text
-HHMMtoken
+`HHMMtoken` or `HHMMSS` + token
 ```
 
 Example:
@@ -58,7 +58,7 @@ explicitly.
 Format:
 
 ```text
-HHMM-HHMMtoken
+`HHMM-HHMMtoken` or `HHMMSS-HHMMSS` + token
 ```
 
 Example:

@@ -58,7 +58,7 @@ auto SerializeLogToJsonObject(const DailyLog& day) -> nlohmann::json {
       stats_aggregator.HasAnaerobicActivity() ? 1 : 0;
   std::string getup_time = "Null";
   if (!day.isContinuation) {
-    getup_time = day.getupTime.empty() ? "00:00" : day.getupTime;
+    getup_time = day.getupTime.empty() ? "00:00:00" : day.getupTime;
   }
   headers_obj[json_keys::kGetup] = getup_time;
   headers_obj[json_keys::kActivityCount] =
@@ -113,7 +113,7 @@ auto DeserializeLogFromJsonObject(const nlohmann::json& day_json) -> DailyLog {
 
     day.date = headers.at(json_keys::kDate);
 
-    std::string getup = headers.value(json_keys::kGetup, "00:00");
+    std::string getup = headers.value(json_keys::kGetup, "00:00:00");
     if (getup == "Null") {
       day.isContinuation = true;
       day.getupTime = "";

@@ -241,16 +241,23 @@ auto ValidateChartSeriesPayload(const json& payload, std::string_view context,
                 << " payload `active_days` should be <= `range_days`.\n";
     }
 
+    // Core's insights-chart contract uses active_days by default. When the
+    // semantic payload exposes the selected denominator, validate against it
+    // so this helper also covers explicit calendar-day basis responses.
+    const long long average_denominator_days =
+        payload.contains("average_denominator_days") &&
+                payload["average_denominator_days"].is_number_integer()
+            ? payload["average_denominator_days"].get<long long>()
+            : static_cast<long long>(active_days_in_payload);
     const long long expected_average_duration =
-        range_days_in_payload > 0
-            ? (total_duration_in_payload /
-               static_cast<long long>(range_days_in_payload))
+        average_denominator_days > 0
+            ? (total_duration_in_payload / average_denominator_days)
             : 0LL;
     if (average_duration_in_payload != expected_average_duration) {
       ++failures;
       std::cerr << "[FAIL] " << context
                 << " payload `average_duration_seconds` should be "
-                   "total/range (integer division).\n";
+                   "total/average_denominator_days (integer division).\n";
     }
   }
 }

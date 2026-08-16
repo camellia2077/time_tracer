@@ -68,8 +68,7 @@ void DayProcessor::Process(DailyLog& previous_day, DailyLog& day_to_process) {
 
   if (ShouldUsePreviousBoundaryForLeadingPoint(day_to_process) &&
       !previous_day.rawEvents.empty()) {
-    day_to_process.getupTime = converter_core_internal::NormalizeTime(
-        previous_day.rawEvents.back().endTimeStr);
+    day_to_process.getupTime = previous_day.rawEvents.back().endTimeStr;
   }
 
   converter_core_internal::ActivityMapper activity_mapper(config_);
@@ -81,8 +80,7 @@ void DayProcessor::Process(DailyLog& previous_day, DailyLog& day_to_process) {
       !day_to_process.getupTime.empty() && !day_to_process.isContinuation &&
       !HasExplicitSleepInterval(previous_day, config_)) {
     BaseActivityRecord sleep_activity = BaseActivityRecord::MakeInterval(
-        converter_core_internal::NormalizeTime(
-            previous_day.rawEvents.back().endTimeStr),
+        previous_day.rawEvents.back().endTimeStr,
         day_to_process.getupTime, ResolveSleepInferenceProjectPath(config_));
 
     day_to_process.processedActivities.insert(
@@ -109,8 +107,7 @@ void LogLinker::LinkLogs(
     if (prev_month_last_day != nullptr) {
       const bool kHasValidGetup =
           !current_first_day.getupTime.empty() &&
-          converter_core_internal::NormalizeTime(current_first_day.getupTime) !=
-              "00:00:00";
+          current_first_day.getupTime != "00:00:00";
       const bool kMissingInferredSleep =
           !HasInferredOvernightSleep(current_first_day, config_);
       // Linking depends on a valid getup time and whether overnight sleep was
@@ -144,8 +141,7 @@ void LogLinker::LinkFirstDayWithExternalPreviousEvent(
 
   DailyLog& current_first_day = first_month_iter->second.front();
   const bool kHasValidGetup = !current_first_day.getupTime.empty() &&
-                              converter_core_internal::NormalizeTime(
-                                  current_first_day.getupTime) != "00:00:00";
+                              current_first_day.getupTime != "00:00:00";
   const bool kMissingInferredSleep =
       !HasInferredOvernightSleep(current_first_day, config_);
   if (!kHasValidGetup || !kMissingInferredSleep) {
@@ -196,5 +192,5 @@ void LogLinker::RecalculateStats(DailyLog& day) {
 }
 
 auto LogLinker::FormatTime(std::string_view time_str) -> std::string {
-  return converter_core_internal::NormalizeTime(time_str);
+  return std::string(time_str);
 }

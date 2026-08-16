@@ -1,20 +1,73 @@
 // infra/query/data/repository/query_runtime_service.cpp
 #include "infra/query/data/repository/query_runtime_service.hpp"
 
+#include <nlohmann/json.hpp>
+
 #include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 
+#include "application/ports/query/i_runtime_activity_query_repository.hpp"
 #include "infra/persistence/sqlite/db_manager.hpp"
 #include "infra/query/data/repository/query_runtime_service_internal.hpp"
 
 import tracer.core.infrastructure.query.data.renderers;
+import tracer.core.infrastructure.persistence.runtime;
 
 namespace tracer::core::infrastructure::query::data::repository {
 namespace infra_data_query_renderers =
     tracer::core::infrastructure::query::data::renderers;
 namespace runtime_service_internal =
     tracer::core::infrastructure::query::data::repository::internal;
+namespace infra_persistence = tracer::core::infrastructure::persistence;
+using nlohmann::json;
+using tracer_core::application::ports::IRuntimeActivityQueryRepository;
+using tracer_core::core::dto::TextOutput;
+
+auto BuildRuntimeQuerySuccess(std::string_view action, json payload,
+                              const tracer_core::core::dto::DataQueryOutputMode
+                                  output_mode) -> TextOutput {
+  std::string content = infra_data_query_renderers::RenderJsonObjectOutput(
+      action, payload.dump(), output_mode);
+  return {.ok = true, .content = std::move(content), .error_message = ""};
+}
+
+auto RunPreviousActivityTailQuery(
+    const IRuntimeActivityQueryRepository& repository, std::string_view date,
+    const tracer_core::core::dto::DataQueryOutputMode output_mode)
+    -> TextOutput {
+  const auto tail = repository.TryGetLatestActivityTailAtOrBeforeDate(date);
+  json payload = {
+      {"found", tail.has_value()},
+  };
+  if (tail.has_value()) {
+    payload["date"] = tail->date;
+    payload["end_time"] = tail->end_time;
+  }
+  return BuildRuntimeQuerySuccess("previous_activity_tail", std::move(payload),
+                                  output_mode);
+}
+
+auto RunLatestActivityRecordQuery(
+    const IRuntimeActivityQueryRepository& repository, std::string_view date,
+    const tracer_core::core::dto::DataQueryOutputMode output_mode)
+    -> TextOutput {
+  const auto record = repository.TryGetLatestActivityRecordOnDate(date);
+  json payload = {
+      {"found", record.has_value()},
+  };
+  if (record.has_value()) {
+    payload["date"] = record->date;
+    payload["activity"] = record->activity;
+    payload["record_kind"] = record->record_kind;
+    payload["start_time"] = record->start_time;
+    payload["end_time"] = record->end_time;
+    payload["duration_seconds"] = record->duration_seconds;
+  }
+  return BuildRuntimeQuerySuccess("latest_activity_record", std::move(payload),
+                                  output_mode);
+}
 
 QueryRuntimeService::QueryRuntimeService(
     std::filesystem::path db_path,
@@ -67,6 +120,36 @@ auto QueryRuntimeService::RunDataQuery(
     content = infra_data_query_renderers::RenderJsonObjectOutput(
         "authorable_event_tokens", std::move(content), request.output_mode);
     return {.ok = true, .content = std::move(content), .error_message = ""};
+  }
+
+  if (request.action ==
+      tracer_core::core::dto::DataQueryAction::kPreviousActivityTail) {
+    if (!request.from_date.has_value() || request.from_date->empty()) {
+      return {.ok = false,
+              .content = "",
+              .error_message =
+                  "previous_activity_tail query requires from_date."};
+    }
+
+    const infra_persistence::SqliteIngestRuntimeRepository repository(
+        db_path_.string());
+    return RunPreviousActivityTailQuery(repository, *request.from_date,
+                                         request.output_mode);
+  }
+
+  if (request.action ==
+      tracer_core::core::dto::DataQueryAction::kLatestActivityRecord) {
+    if (!request.from_date.has_value() || request.from_date->empty()) {
+      return {.ok = false,
+              .content = "",
+              .error_message =
+                  "latest_activity_record query requires from_date."};
+    }
+
+    const infra_persistence::SqliteIngestRuntimeRepository repository(
+        db_path_.string());
+    return RunLatestActivityRecordQuery(repository, *request.from_date,
+                                        request.output_mode);
   }
 
   if (request.action == tracer_core::core::dto::DataQueryAction::kInsightsChart) {

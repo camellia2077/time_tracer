@@ -53,6 +53,10 @@ library, client, and workflow documents before you search the repository.
    not in transport or IO layers.
 3. Current logic summary:
    - point event means "this activity ends at `HHMM`"
+
+   - TXT uses compact clock tokens. Once parsed, Core, JNI, Android APIs, and
+     database time fields use ISO local time `HH:mm:ss`; only TXT serialization
+     returns to compact `HHMMSS`.
    - interval event means "this activity explicitly happened from `start` to `end`"
    - mixed timelines advance by the last known boundary
    - gaps are allowed and remain unrecorded

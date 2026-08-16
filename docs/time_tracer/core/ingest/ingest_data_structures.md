@@ -49,7 +49,7 @@ txt 行文本
 作用：`TextParser` 逐行解析事件后得到的最原始事件结构。
 
 关键字段：
-- `endTimeStr`: 行首时间（`HHMM` 原始格式）
+- `endTimeStr`: 行首时间，解析后为 ISO `HH:mm:ss`；TXT 原文仍使用 `HHMM` 或 `HHMMSS`
 - `description`: 活动描述（尚未做 mapping）
 - `remark`: 行内备注（分隔符 `//`；多行在内存中保存为包含真实 LF 的字符串）
 - `source_span`: 对应输入行位置
@@ -77,7 +77,7 @@ txt 行文本
 
 关键字段：
 - 时间/编号：`logical_id`, `start_timestamp`, `end_timestamp`
-- 文本时间：`start_time_str`, `end_time_str`（`HH:MM`）
+- 文本时间：`start_time_str`, `end_time_str`（ISO `HH:mm:ss`）
 - 项目路径：`project_path`（数据库内部统一 `_` 分隔）
 - 时长：`duration_seconds`
 - 备注：`remark`

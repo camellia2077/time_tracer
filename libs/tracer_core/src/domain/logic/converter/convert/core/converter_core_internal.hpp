@@ -10,10 +10,8 @@
 
 namespace converter_core_internal {
 
-[[nodiscard]] auto NormalizeTime(std::string_view time_str) -> std::string;
-
-[[nodiscard]] auto CalculateWrappedDurationSeconds(std::string_view start_hhmm,
-                                                   std::string_view end_hhmm)
+[[nodiscard]] auto CalculateWrappedDurationSeconds(
+    std::string_view start_iso_time, std::string_view end_iso_time)
     -> std::optional<int>;
 
 [[nodiscard]] auto MergeSpans(const std::optional<SourceSpan>& start_span,
@@ -31,10 +29,10 @@ class ActivityMapper {
 
   auto MapActivities(DailyLog& day) -> void;
 
- private:
+  private:
   struct TimeRange {
-    std::string_view start_hhmm;
-    std::string_view end_hhmm;
+    std::string_view start_iso_time;
+    std::string_view end_iso_time;
   };
 
   const ConverterConfig& config_;

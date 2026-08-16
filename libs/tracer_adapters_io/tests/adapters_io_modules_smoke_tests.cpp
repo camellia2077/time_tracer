@@ -54,15 +54,15 @@ auto MakeWorkspaceRoot() -> fs::path {
 auto BuildRoundTripDay() -> DailyLog {
   DailyLog day;
   day.date = "2026-03-15";
-  day.getupTime = "07:00";
+  day.getupTime = "07:00:00";
   day.hasStudyActivity = true;
 
   BaseActivityRecord first;
   first.logical_id = 1;
   first.start_timestamp = 25200;
   first.end_timestamp = 28800;
-  first.start_time_str = "07:00";
-  first.end_time_str = "08:00";
+  first.start_time_str = "07:00:00";
+  first.end_time_str = "08:00:00";
   first.project_path = "study_cpp";
   first.duration_seconds = 3600;
 
@@ -70,8 +70,8 @@ auto BuildRoundTripDay() -> DailyLog {
   second.logical_id = 2;
   second.start_timestamp = 28800;
   second.end_timestamp = 32400;
-  second.start_time_str = "08:00";
-  second.end_time_str = "09:00";
+  second.start_time_str = "08:00:00";
+  second.end_time_str = "09:00:00";
   second.project_path = "study_cpp.modules";
   second.duration_seconds = 3600;
 
@@ -221,7 +221,7 @@ void TestRuntimeFactories(int& failures) {
       "date": "2026-03-16",
       "status": 0,
       "exercise": 0,
-      "getup": "07:30",
+      "getup": "07:30:00",
       "activity_count": 2,
       "remark": "legacy"
     },
@@ -230,8 +230,8 @@ void TestRuntimeFactories(int& failures) {
         "logical_id": 1,
         "start_timestamp": 25200,
         "end_timestamp": 27000,
-        "start_time": "07:00",
-        "end_time": "07:30",
+        "start_time": "07:00:00",
+        "end_time": "07:30:00",
         "duration_seconds": 1800,
         "activity_remark": null,
         "activity": { "project_path": "study_cpp" }
@@ -240,8 +240,8 @@ void TestRuntimeFactories(int& failures) {
         "logical_id": 2,
         "start_timestamp": 27000,
         "end_timestamp": 28800,
-        "start_time": "07:30",
-        "end_time": "08:00",
+        "start_time": "07:30:00",
+        "end_time": "08:00:00",
         "duration_seconds": 1800,
         "activity_remark": null,
         "activity": { "project_path": "exercise_cardio" }
@@ -283,7 +283,7 @@ void TestRuntimeFactories(int& failures) {
       "date": "2026-04-01",
       "status": 0,
       "exercise": 0,
-      "getup": "07:30",
+      "getup": "07:30:00",
       "activity_count": 1,
       "remark": ""
     },
@@ -292,8 +292,8 @@ void TestRuntimeFactories(int& failures) {
         "logical_id": 1,
         "start_timestamp": 25200,
         "end_timestamp": 27000,
-        "start_time": "07:00",
-        "end_time": "07:30",
+        "start_time": "07:00:00",
+        "end_time": "07:30:00",
         "duration_seconds": 1800,
         "activity_remark": null,
         "activity": { "project_path": "study_cpp" }

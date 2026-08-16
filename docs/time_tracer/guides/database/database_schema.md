@@ -40,7 +40,7 @@
 | `month` | INTEGER |  | 月（1~12） |
 | `wake_anchor` | INTEGER |  | 起床锚点标记（0/1） |
 | `remark` | TEXT |  | 当天备注 |
-| `getup_time` | TEXT |  | 起床时间（`HH:MM`） |
+| `getup_time` | TEXT |  | 起床时间（ISO `HH:mm:ss`） |
 | `activity_count` | INTEGER | NOT NULL DEFAULT 0 | 当天写入的活动记录数量 |
 
 说明：
@@ -75,8 +75,8 @@
 | `start_timestamp` | INTEGER | NOT NULL, CHECK `>= 0` | 开始时间戳（秒） |
 | `end_timestamp` | INTEGER | NOT NULL, CHECK `>= start_timestamp` | 结束时间戳（秒） |
 | `date` | TEXT | NOT NULL, FK -> `days.date` | 日期 |
-| `start` | TEXT | NOT NULL | 开始时间（`HH:MM`） |
-| `end` | TEXT | NOT NULL | 结束时间（`HH:MM`） |
+| `start` | TEXT | NOT NULL | 开始时间（ISO `HH:mm:ss`） |
+| `end` | TEXT | NOT NULL | 结束时间（ISO `HH:mm:ss`） |
 | `record_kind` | TEXT | NOT NULL DEFAULT `'interval'` | 记录类型：`interval` 或 `end_only` |
 | `project_id` | INTEGER | NOT NULL, FK -> `projects.id` | 项目节点 ID |
 | `duration` | INTEGER | NOT NULL, CHECK `>= 0` | 时长（秒） |

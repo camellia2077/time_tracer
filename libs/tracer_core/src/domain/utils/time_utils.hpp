@@ -5,7 +5,7 @@
 #include <string>
 
 /**
- * @brief 将 HH:MM 或 HHMM 格式的时间字符串转换为自午夜以来的秒数。
+ * @brief 将 ISO HH:mm:ss 格式的时间字符串转换为自午夜以来的秒数。
  */
 auto TimeStrToSeconds(const std::string& time_str_in) -> int;
 

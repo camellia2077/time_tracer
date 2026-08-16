@@ -15,7 +15,9 @@ A `time point` is a local clock boundary such as:
 23:30
 ```
 
-In TXT authoring, time points are written as `HHMM`.
+In TXT authoring, time points are written as compact `HHMM` or `HHMMSS`.
+After parsing, Core and all API/domain time fields use ISO local time `HH:mm:ss`.
+TXT serialization converts the canonical value back to compact `HHMMSS`.
 
 Time points are boundaries. A time point alone is not a duration.
 

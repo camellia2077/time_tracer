@@ -37,7 +37,7 @@ Example:
 
 Meaning:
 
-1. `HHMM` is the event boundary.
+1. TXT authoring uses compact `HHMM`/`HHMMSS` for the event boundary.
 2. For activity conversion, it acts as the `end_time` of the generated activity
    interval.
 3. Its `start_time` must be inferred from context.
@@ -61,9 +61,13 @@ Example:
 
 Meaning:
 
-1. The first `HHMM` is the explicit `start_time`.
-2. The second `HHMM` is the explicit `end_time`.
+1. The first compact `HHMM`/`HHMMSS` value is the explicit `start_time`.
+2. The second compact value is the explicit `end_time`.
+
 3. The event can produce an activity interval without previous-day context.
+
+After TXT parsing, the Core domain and APIs expose both boundaries as ISO
+local time `HH:mm:ss`.
 
 ## Activity Token
 
