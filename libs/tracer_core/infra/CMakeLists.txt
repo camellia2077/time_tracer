@@ -54,7 +54,7 @@ function(tc_prepend_module_root out_var)
 endfunction()
 
 set(TRACER_CORE_INSIGHTS_SHARED_SOURCES
-    "${TRACER_CORE_INSIGHTS_ROOT}/daily/common/day_base_config.cpp"
+    "${TRACER_CORE_INSIGHTS_ROOT}/daily/common/daily_formatter_base_config.cpp"
     "${TRACER_CORE_INSIGHTS_ROOT}/monthly/common/month_base_config.cpp"
     "${TRACER_CORE_INSIGHTS_ROOT}/range/common/range_base_config.cpp"
     "${TRACER_CORE_INSIGHTS_ROOT}/daily/formatters/statistics/stat_formatter.cpp"

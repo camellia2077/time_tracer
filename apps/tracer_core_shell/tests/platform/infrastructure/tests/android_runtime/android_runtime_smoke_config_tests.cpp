@@ -20,9 +20,8 @@ auto RunConfigSmokeSection(int& failures) -> void {
 
   RuntimeFixture fixture = std::move(*fixture_opt);
   try {
-    const auto runtime_config_paths =
-        tracer_core::shell::config_bridge::
-            ResolveAndroidRuntimeConfigPathsBridge(fixture.config_toml_path);
+    const auto runtime_config_paths = tracer_core::shell::config_bridge::
+        ResolveAndroidRuntimeConfigPathsBridge(fixture.config_toml_path);
     const auto insights_catalog =
         tracer_core::shell::config_bridge::BuildAndroidInsightsCatalogBridge(
             runtime_config_paths);
@@ -35,12 +34,14 @@ auto RunConfigSmokeSection(int& failures) -> void {
                   << locale << '\n';
       }
     }
-    const auto zh_it = insights_catalog.loaded_insights.markdown_locales.find("zh");
+    const auto zh_it =
+        insights_catalog.loaded_insights.markdown_locales.find("zh");
     if (zh_it == insights_catalog.loaded_insights.markdown_locales.end() ||
-        zh_it->second.day.labels.summary_section_label != "摘要") {
+        zh_it->second.daily.labels.summary_section_label != "摘要") {
       ++failures;
-      std::cerr << "[FAIL] Android insights catalog should load Chinese Markdown "
-                   "labels.\n";
+      std::cerr
+          << "[FAIL] Android insights catalog should load Chinese Markdown "
+             "labels.\n";
     }
     if (!insights_catalog.statuses.day.statuses.empty() ||
         !insights_catalog.statuses.week.statuses.empty() ||

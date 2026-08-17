@@ -60,7 +60,8 @@ auto RangeTypFormatter::ValidateData(const RangeInsightsData& data) const
   return std::string{};
 }
 
-auto RangeTypFormatter::IsEmptyData(const RangeInsightsData& data) const -> bool {
+auto RangeTypFormatter::IsEmptyData(const RangeInsightsData& data) const
+    -> bool {
   return data.actual_days == 0;
 }
 
@@ -79,8 +80,8 @@ void RangeTypFormatter::FormatPageSetup(std::string& insights_stream) const {
   insights_stream += "\n";
 }
 
-void RangeTypFormatter::FormatHeaderContent(std::string& insights_stream,
-                                            const RangeInsightsData& data) const {
+void RangeTypFormatter::FormatHeaderContent(
+    std::string& insights_stream, const RangeInsightsData& data) const {
   insights_stream += TypUtils::BuildTitleText(
       config_->GetTitleFont(), config_->GetInsightsTitleFontSize(),
       config_->GetSummarySectionLabel());
@@ -91,16 +92,18 @@ void RangeTypFormatter::FormatHeaderContent(std::string& insights_stream,
   insights_stream += "\n";
 
   if (data.actual_days > 0) {
-    insights_stream += BuildBulletLine(
-        config_->GetTotalTimeLabel(),
-        TimeFormatDuration(data.total_duration, data.actual_days));
+    insights_stream +=
+        BuildBulletLine(config_->GetTotalTimeLabel(),
+                        TimeFormatDuration(data.activity.total_duration_seconds,
+                                           data.actual_days));
     insights_stream += "\n";
-    insights_stream += BuildBulletLine(
-        config_->GetActivityCountLabel(),
-        FormatCountWithAverage(data.matched_record_count, data.requested_days));
+    insights_stream +=
+        BuildBulletLine(config_->GetActivityCountLabel(),
+                        FormatCountWithAverage(data.activity.occurrence_count,
+                                               data.requested_days));
     insights_stream += "\n";
     insights_stream += BuildBulletLine(config_->GetActualDaysLabel(),
-                                     std::to_string(data.actual_days));
+                                       std::to_string(data.actual_days));
     insights_stream += "\n";
     if (!data.statuses.empty()) {
       insights_stream += "\n";
@@ -110,9 +113,9 @@ void RangeTypFormatter::FormatHeaderContent(std::string& insights_stream,
       insights_stream += "\n\n";
       for (const auto& status : data.statuses) {
         insights_stream += BuildBulletLine(
-            status.label, FormatStatusStatistics(status.occurrence_count,
-                                                 status.total_duration,
-                                                 config_->GetStatusCountUnit()));
+            status.label, FormatStatusStatistics(
+                              status.occurrence_count, status.total_duration,
+                              config_->GetStatusCountUnit()));
         insights_stream += "\n";
       }
     }

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "domain/insights/models/daily_insights_data.hpp"
+#include "domain/insights/models/activity_aggregate.hpp"
 #include "domain/insights/models/project_tree.hpp"
 #include "domain/insights/models/insights_status_value.hpp"
 
@@ -17,8 +18,7 @@ struct RangeInsightsData {
   int requested_days = 0;
   bool has_records = false;
   int matched_day_count = 0;
-  int matched_record_count = 0;
-  std::int64_t total_duration = 0;
+  ActivityAggregate activity;
   int actual_days = 0;
   int status_true_days = 0;
   int exercise_true_days = 0;

@@ -26,7 +26,8 @@ auto TestDateRangeResolver(int& failures) -> void {
           {
               .invalid_range_error =
                   "insights-chart invalid range: from_date must be <= to_date.",
-              .invalid_date_error = "insights-chart resolved invalid date range.",
+              .invalid_date_error =
+                  "insights-chart resolved invalid date range.",
           },
   };
 

@@ -118,10 +118,10 @@ auto ParseExportTracerExchangeFromPayloadArgs(JNIEnv* env, jstring request_json,
       request_payload.value("output_display_name", std::string("data.zip"));
   const std::string passphrase_utf8 = RequireNonEmptyText(
       request_payload.value("passphrase", std::string{}), "passphrase");
-  const std::string security_level_utf8 = request_payload.value(
-      "security_level", std::string("interactive"));
-  const jint date_check_mode = static_cast<jint>(
-      request_payload.value("date_check_mode", 0));
+  const std::string security_level_utf8 =
+      request_payload.value("security_level", std::string("interactive"));
+  const jint date_check_mode =
+      static_cast<jint>(request_payload.value("date_check_mode", 0));
 
   std::vector<app_dto::TracerExchangeTextPayloadItem> payload_items;
   const auto payload_iter = request_payload.find("payload_items");

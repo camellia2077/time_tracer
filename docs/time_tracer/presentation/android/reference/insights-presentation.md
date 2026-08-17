@@ -36,7 +36,13 @@ Describe the user-visible insights, query, and chart presentation behavior.
   record presentation, but use fixed-height rails to represent order rather
   than duration; Breakdown is aggregated hierarchy analysis; Text remains the
   full Markdown report.
+  The period overview's total duration and record count come from Core's
+  `ActivityAggregate`; Android does not rebuild them by summing `activity_days`.
 - Chart behavior is driven by query/insights UI state, not by app-level route logic.
+- The Trend chart summary below the visualization shows Core-provided average,
+  mode, median, typical daily range (P25-P75), relative variability (CV), and
+  mean absolute deviation for the selected date range. Android parses and
+  formats these values only; it does not recalculate chart statistics locally.
 - Tree/insights rendering prefers structured data where available and falls back only where the product still allows it.
 - The day timeline preserves Core record kinds. An `end_only` record counts as
   a timeline detail and active day, but is rendered as one localized end-time
@@ -58,6 +64,9 @@ Describe the user-visible insights, query, and chart presentation behavior.
   duration while remaining part of the activity count.
 - Android runtime parser tests verify the `record_kind` mapping, and the
   feature-insights Compose test verifies the localized end-time presentation.
+- Core query regression tests verify the chart distribution statistics, and
+  Android runtime/feature-insights tests verify their parsing and model
+  propagation.
 
 ## Core Flow
 

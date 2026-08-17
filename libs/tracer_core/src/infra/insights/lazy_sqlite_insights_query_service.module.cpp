@@ -37,8 +37,9 @@ auto WithInsightsService(
         platform_clock,
     Callback&& callback) {
   DBManager db_manager(db_path.string());
-  InsightsService insights_service(EnsureReadableDbConnection(db_path, db_manager),
-                               *insights_catalog, platform_clock);
+  InsightsService insights_service(
+      EnsureReadableDbConnection(db_path, db_manager), *insights_catalog,
+      platform_clock);
   return std::forward<Callback>(callback)(insights_service);
 }
 
@@ -67,7 +68,7 @@ LazySqliteInsightsQueryService::LazySqliteInsightsQueryService(
 }
 
 auto LazySqliteInsightsQueryService::RunDailyQuery(std::string_view date_str,
-                                                 InsightsFormat format) const
+                                                   InsightsFormat format) const
     -> std::string {
   return WithInsightsService(
       db_path_, insights_catalog_, platform_clock_,
@@ -77,7 +78,7 @@ auto LazySqliteInsightsQueryService::RunDailyQuery(std::string_view date_str,
 }
 
 auto LazySqliteInsightsQueryService::RunPeriodQuery(int days,
-                                                  InsightsFormat format) const
+                                                    InsightsFormat format) const
     -> std::string {
   return WithInsightsService(
       db_path_, insights_catalog_, platform_clock_,
@@ -87,7 +88,8 @@ auto LazySqliteInsightsQueryService::RunPeriodQuery(int days,
 }
 
 auto LazySqliteInsightsQueryService::RunMonthlyQuery(
-    std::string_view year_month_str, InsightsFormat format) const -> std::string {
+    std::string_view year_month_str, InsightsFormat format) const
+    -> std::string {
   return WithInsightsService(
       db_path_, insights_catalog_, platform_clock_,
       [&](const InsightsService& insights_service) -> std::string {
@@ -95,9 +97,8 @@ auto LazySqliteInsightsQueryService::RunMonthlyQuery(
       });
 }
 
-auto LazySqliteInsightsQueryService::RunWeeklyQuery(std::string_view iso_week_str,
-                                                  InsightsFormat format) const
-    -> std::string {
+auto LazySqliteInsightsQueryService::RunWeeklyQuery(
+    std::string_view iso_week_str, InsightsFormat format) const -> std::string {
   return WithInsightsService(
       db_path_, insights_catalog_, platform_clock_,
       [&](const InsightsService& insights_service) -> std::string {
@@ -106,7 +107,7 @@ auto LazySqliteInsightsQueryService::RunWeeklyQuery(std::string_view iso_week_st
 }
 
 auto LazySqliteInsightsQueryService::RunYearlyQuery(std::string_view year_str,
-                                                  InsightsFormat format) const
+                                                    InsightsFormat format) const
     -> std::string {
   return WithInsightsService(
       db_path_, insights_catalog_, platform_clock_,

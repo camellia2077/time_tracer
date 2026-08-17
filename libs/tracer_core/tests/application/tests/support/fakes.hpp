@@ -67,8 +67,10 @@ class FakePipelineWorkflow final
       last_resolve_txt_day_block_request;
   tracer_core::core::dto::ReplaceTxtDayBlockRequest
       last_replace_txt_day_block_request;
-  tracer_core::core::dto::ResolveTxtDayEditRequest last_resolve_txt_day_edit_request;
-  tracer_core::core::dto::ApplyTxtDayEditRequest last_apply_txt_day_edit_request;
+  tracer_core::core::dto::ResolveTxtDayEditRequest
+      last_resolve_txt_day_edit_request;
+  tracer_core::core::dto::ApplyTxtDayEditRequest
+      last_apply_txt_day_edit_request;
   tracer_core::core::dto::ConvertTxtActivityNamesRequest
       last_convert_txt_activity_names_request;
   tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest
@@ -155,8 +157,8 @@ class FakePipelineWorkflow final
           .day_content_iso_date = std::string("2025-01-02"),
           .error_message = "",
       };
-  tracer_core::core::dto::ApplyTxtDayEditResponse
-      apply_txt_day_edit_response = {
+  tracer_core::core::dto::ApplyTxtDayEditResponse apply_txt_day_edit_response =
+      {
           .ok = true,
           .normalized_day_marker = "0102",
           .found = true,
@@ -249,8 +251,8 @@ class FakeInsightsHandler final : public IInsightsHandler {
       -> std::string override;
   auto RunYearlyQuery(std::string_view year, InsightsFormat format)
       -> std::string override;
-  auto RunPeriodQueries(const std::vector<int>& days_list, InsightsFormat format)
-      -> std::string override;
+  auto RunPeriodQueries(const std::vector<int>& days_list,
+                        InsightsFormat format) -> std::string override;
 };
 
 class FakeInsightsDataQueryService final
@@ -400,14 +402,15 @@ class FakeTracerExchangeService final
       -> tracer_core::core::dto::TracerExchangeInspectResult override;
 };
 
-auto BuildRuntimeApi(
-    FakePipelineWorkflow& pipeline_workflow, FakeInsightsHandler& insights_handler,
-    const std::shared_ptr<FakeProjectRepository>& repository,
-    const std::shared_ptr<FakeDataQueryService>& data_query,
-    const std::shared_ptr<FakeTracerExchangeService>& tracer_exchange_service =
-        nullptr,
-    const std::shared_ptr<FakeInsightsDataQueryService>&
-        insights_data_query_service = nullptr) -> TracerCoreRuntime;
+auto BuildRuntimeApi(FakePipelineWorkflow& pipeline_workflow,
+                     FakeInsightsHandler& insights_handler,
+                     const std::shared_ptr<FakeProjectRepository>& repository,
+                     const std::shared_ptr<FakeDataQueryService>& data_query,
+                     const std::shared_ptr<FakeTracerExchangeService>&
+                         tracer_exchange_service = nullptr,
+                     const std::shared_ptr<FakeInsightsDataQueryService>&
+                         insights_data_query_service = nullptr)
+    -> TracerCoreRuntime;
 
 }  // namespace tracer_core::application::tests
 

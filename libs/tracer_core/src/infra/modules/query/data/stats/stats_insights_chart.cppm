@@ -8,6 +8,11 @@ export module tracer.core.infrastructure.query.data.stats
 export namespace tracer::core::infrastructure::query::data::stats {
 
 using ::tracer::core::infrastructure::query::data::stats::
+    CalculateAverageOrZero;
+using ::tracer::core::infrastructure::query::data::stats::
+    ResolveAverageDenominator;
+
+using ::tracer::core::infrastructure::query::data::stats::
     BuildInsightsCompositionTreeView;
 using ::tracer::core::infrastructure::query::data::stats::
     CalculateInclusiveDateRangeDays;

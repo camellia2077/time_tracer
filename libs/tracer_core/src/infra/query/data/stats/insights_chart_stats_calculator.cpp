@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <iomanip>
 #include <optional>
 #include <sstream>
@@ -84,6 +85,106 @@ struct DaySummary {
   long long total_seconds = 0;
   long long record_count = 0;
 };
+
+struct ChartDistributionStats {
+  std::optional<double> mode_seconds;
+  double median_seconds = 0.0;
+  double minimum_seconds = 0.0;
+  double maximum_seconds = 0.0;
+  double standard_deviation_seconds = 0.0;
+  double lower_quartile_seconds = 0.0;
+  double upper_quartile_seconds = 0.0;
+  double coefficient_of_variation = 0.0;
+  double mean_absolute_deviation_seconds = 0.0;
+};
+
+auto InterpolatedPercentile(const std::vector<long long>& sorted_durations,
+                            double percentile) -> double {
+  if (sorted_durations.empty()) {
+    return 0.0;
+  }
+  const double position =
+      static_cast<double>(sorted_durations.size() - 1) * percentile;
+  const size_t lower_index = static_cast<size_t>(position);
+  const size_t upper_index =
+      std::min(lower_index + 1, sorted_durations.size() - 1);
+  const double fraction = position - static_cast<double>(lower_index);
+  const double lower = static_cast<double>(sorted_durations[lower_index]);
+  const double upper = static_cast<double>(sorted_durations[upper_index]);
+  return lower + ((upper - lower) * fraction);
+}
+
+auto CalculateChartDistributionStats(const std::vector<long long>& durations)
+    -> ChartDistributionStats {
+  if (durations.empty()) {
+    return {};
+  }
+
+  std::unordered_map<long long, int> frequencies;
+  frequencies.reserve(durations.size());
+  for (const long long duration_seconds : durations) {
+    ++frequencies[duration_seconds];
+  }
+
+  std::vector<long long> sorted_durations = durations;
+  std::ranges::sort(sorted_durations);
+  const size_t kMiddle = sorted_durations.size() / 2;
+  const double kMedian =
+      sorted_durations.size() % 2 == 1
+          ? static_cast<double>(sorted_durations[kMiddle])
+          : (static_cast<double>(sorted_durations[kMiddle - 1]) +
+             static_cast<double>(sorted_durations[kMiddle])) /
+                2.0;
+
+  int mode_frequency = 0;
+  std::optional<long long> mode_seconds;
+  for (const auto& [duration_seconds, frequency] : frequencies) {
+    if (frequency < 2 ||
+        (mode_seconds.has_value() && frequency < mode_frequency)) {
+      continue;
+    }
+    if (!mode_seconds.has_value() || frequency > mode_frequency ||
+        (frequency == mode_frequency && duration_seconds < *mode_seconds)) {
+      mode_frequency = frequency;
+      mode_seconds = duration_seconds;
+    }
+  }
+
+  double mean = 0.0;
+  double sum_squared_delta = 0.0;
+  int sample_count = 0;
+  for (const long long duration_seconds : durations) {
+    ++sample_count;
+    const double kValue = static_cast<double>(duration_seconds);
+    const double kDelta = kValue - mean;
+    mean += kDelta / static_cast<double>(sample_count);
+    const double kDelta2 = kValue - mean;
+    sum_squared_delta += kDelta * kDelta2;
+  }
+  const double standard_deviation =
+      std::sqrt(sum_squared_delta / static_cast<double>(sample_count));
+  double absolute_delta_sum = 0.0;
+  for (const long long duration_seconds : durations) {
+    absolute_delta_sum +=
+        std::abs(static_cast<double>(duration_seconds) - mean);
+  }
+
+  return {
+      .mode_seconds =
+          mode_seconds.has_value()
+              ? std::optional<double>{static_cast<double>(*mode_seconds)}
+              : std::nullopt,
+      .median_seconds = kMedian,
+      .minimum_seconds = static_cast<double>(sorted_durations.front()),
+      .maximum_seconds = static_cast<double>(sorted_durations.back()),
+      .standard_deviation_seconds = standard_deviation,
+      .lower_quartile_seconds = InterpolatedPercentile(sorted_durations, 0.25),
+      .upper_quartile_seconds = InterpolatedPercentile(sorted_durations, 0.75),
+      .coefficient_of_variation = mean > 0.0 ? standard_deviation / mean : 0.0,
+      .mean_absolute_deviation_seconds =
+          absolute_delta_sum / static_cast<double>(sample_count),
+  };
+}
 
 auto BuildTotalsByDate(const std::vector<LegacyDayDurationRow>& sparse_rows)
     -> std::unordered_map<std::string, DaySummary> {
@@ -184,17 +285,23 @@ auto AppendCompositionNodeStats(
     const std::vector<InsightsCompositionTreeNodeView>& views,
     int denominator_days, InsightsCompositionStats& result) -> void {
   for (const auto& view : views) {
+    const ActivityAggregate kActivityAggregate{
+        .total_duration_seconds = view.node->duration,
+        .occurrence_count = view.node->occurrence_count};
     result.nodes.emplace(
-        view.path, InsightsCompositionNodeStats{
-                       .average_duration_seconds =
-                           AverageOrZero(view.node->duration, denominator_days),
-                       .average_occurrence_count = AverageOrZero(
-                           static_cast<double>(view.node->occurrence_count),
-                           denominator_days),
-                       .average_occurrence_ratio = AverageOrZero(
-                           static_cast<double>(view.node->occurrence_count),
-                           static_cast<int>(view.level_occurrence_count)),
-                   });
+        view.path,
+        InsightsCompositionNodeStats{
+            .average_duration_seconds =
+                CalculateAverageOrZero(view.node->duration, denominator_days),
+            .average_duration_per_occurrence_seconds =
+                kActivityAggregate.AverageDurationPerOccurrenceSeconds(),
+            .average_occurrence_count = CalculateAverageOrZero(
+                static_cast<double>(view.node->occurrence_count),
+                denominator_days),
+            .average_occurrence_ratio = CalculateAverageOrZero(
+                static_cast<double>(view.node->occurrence_count),
+                static_cast<int>(view.level_occurrence_count)),
+        });
     AppendCompositionNodeStats(view.children, denominator_days, result);
   }
 }
@@ -219,6 +326,8 @@ auto BuildInsightsChartSeries(
 
   InsightsChartSeriesResult result;
   result.series.reserve(static_cast<size_t>(kRangeDays));
+  std::vector<long long> active_durations;
+  active_durations.reserve(static_cast<size_t>(kRangeDays));
   for (auto cursor = kStartDays; cursor <= kEndDays;
        cursor += std::chrono::days{1}) {
     const std::string kDate =
@@ -228,11 +337,14 @@ auto BuildInsightsChartSeries(
         kIt == kTotalsByDate.end() ? 0LL : kIt->second.total_seconds;
     const long long kEpochDay =
         static_cast<long long>(cursor.time_since_epoch().count());
-    result.stats.total_duration_seconds += kDurationSeconds;
+    result.stats.activity.Add(kDurationSeconds, kIt == kTotalsByDate.end()
+                                                    ? 0LL
+                                                    : kIt->second.record_count);
     result.stats.range_days = kRangeDays;
     if (kIt != kTotalsByDate.end() &&
         (kIt->second.record_count > 0 || kDurationSeconds > 0)) {
       ++result.stats.active_days;
+      active_durations.push_back(kDurationSeconds);
     }
     result.series.push_back(InsightsChartSeriesPoint{
         .date = kDate,
@@ -241,14 +353,28 @@ auto BuildInsightsChartSeries(
     });
   }
 
-  result.stats.average_denominator_days =
-      average_day_basis ==
-              tracer_core::core::dto::InsightsAverageDayBasis::kCalendarDays
-          ? result.stats.range_days
-          : result.stats.active_days;
+  result.stats.average_denominator_days = ResolveAverageDenominator(
+      average_day_basis, result.stats.active_days, result.stats.range_days);
   result.stats.average_duration_seconds =
-      AverageOrZero(result.stats.total_duration_seconds,
-                    result.stats.average_denominator_days);
+      CalculateAverageOrZero(result.stats.activity.total_duration_seconds,
+                             result.stats.average_denominator_days);
+  result.stats.average_duration_per_occurrence_seconds =
+      result.stats.activity.AverageDurationPerOccurrenceSeconds();
+
+  const auto kDistributionStats =
+      CalculateChartDistributionStats(active_durations);
+  result.stats.mode_duration_seconds = kDistributionStats.mode_seconds;
+  result.stats.median_duration_seconds = kDistributionStats.median_seconds;
+  result.stats.minimum_duration_seconds = kDistributionStats.minimum_seconds;
+  result.stats.maximum_duration_seconds = kDistributionStats.maximum_seconds;
+  result.stats.lower_quartile_duration_seconds =
+      kDistributionStats.lower_quartile_seconds;
+  result.stats.upper_quartile_duration_seconds =
+      kDistributionStats.upper_quartile_seconds;
+  result.stats.coefficient_of_variation =
+      kDistributionStats.coefficient_of_variation;
+  result.stats.mean_absolute_deviation_seconds =
+      kDistributionStats.mean_absolute_deviation_seconds;
 
   return result;
 }
@@ -260,13 +386,10 @@ auto BuildInsightsCompositionStats(
     int range_days) -> InsightsCompositionStats {
   InsightsCompositionStats result;
   result.active_days = static_cast<int>(recorded_days.size());
-  const int denominator_days =
-      average_day_basis ==
-              tracer_core::core::dto::InsightsAverageDayBasis::kCalendarDays
-          ? range_days
-          : result.active_days;
+  result.average_denominator_days = ResolveAverageDenominator(
+      average_day_basis, result.active_days, range_days);
   AppendCompositionNodeStats(BuildInsightsCompositionTreeView(tree),
-                             denominator_days, result);
+                             result.average_denominator_days, result);
   return result;
 }
 

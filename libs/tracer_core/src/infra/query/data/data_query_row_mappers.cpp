@@ -51,8 +51,8 @@ auto BindSqlParams(sqlite3_stmt* statement,
 }
 
 auto BindFrequentActivities(sqlite3_stmt* statement,
-                             const ActivityFrequentQueryOptions& options,
-                             int lookback_days, int limit) -> void {
+                            const ActivityFrequentQueryOptions& options,
+                            int lookback_days, int limit) -> void {
   int bind_index = 1;
   if (options.anchor_date.has_value() && !options.anchor_date->empty()) {
     sqlite3_bind_text(statement, bind_index++, options.anchor_date->c_str(), -1,
@@ -72,7 +72,7 @@ auto BindFrequentActivities(sqlite3_stmt* statement,
 }
 
 [[nodiscard]] auto ReadActivityFrequentRows(sqlite3* db_conn,
-                                              sqlite3_stmt* statement)
+                                            sqlite3_stmt* statement)
     -> std::vector<ActivityFrequentRow> {
   std::vector<ActivityFrequentRow> rows;
 
@@ -130,8 +130,8 @@ auto BindFrequentActivities(sqlite3_stmt* statement,
 }  // namespace
 
 auto ExecuteFrequentActivities(sqlite3* db_conn, const std::string& sql,
-                                const ActivityFrequentQueryOptions& options,
-                                int lookback_days, int limit)
+                               const ActivityFrequentQueryOptions& options,
+                               int lookback_days, int limit)
     -> std::vector<ActivityFrequentRow> {
   sqlite3_stmt* statement = PrepareStatementOrThrow(db_conn, sql);
   try {

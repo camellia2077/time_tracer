@@ -188,6 +188,21 @@ gradle_tasks = [
     ":app:lintDebug",
 ]
 
+[build.profiles.android_detekt]
+description = "Detekt checks for every Android module."
+gradle_tasks = [
+    ":app:detekt",
+    ":contract:detekt",
+    ":feature-data:detekt",
+    ":feature-insights:detekt",
+    ":feature-record:detekt",
+    ":feature-ui-common:detekt",
+    ":runtime:detekt",
+]
+gradle_args = [
+    "--continue",
+]
+
 [build.profiles.android_edit]
 description = "Android edit-loop build only (AS-first debug APK path, no QA finalizers)."
 gradle_tasks = [

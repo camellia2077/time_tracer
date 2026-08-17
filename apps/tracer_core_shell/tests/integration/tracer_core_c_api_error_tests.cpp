@@ -22,13 +22,11 @@ void RunErrorPathChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
       "error-injection missing export type");
   RequireNotOk(api.runtime_txt(runtime, "{bad json"),
                "error-injection invalid txt json");
-  RequireNotOk(
-      api.runtime_query(
-          runtime,
-          json{{"action", "tree"}, {"tree_max_depth", "bad-string"}}
-              .dump()
-              .c_str()),
-      "error-injection invalid tree max_depth");
+  RequireNotOk(api.runtime_query(runtime, json{{"action", "tree"},
+                                               {"tree_max_depth", "bad-string"}}
+                                              .dump()
+                                              .c_str()),
+               "error-injection invalid tree max_depth");
 }
 
 }  // namespace tracer_core_c_api_stability_internal

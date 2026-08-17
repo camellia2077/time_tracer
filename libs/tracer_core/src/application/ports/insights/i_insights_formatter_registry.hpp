@@ -22,8 +22,8 @@ class IInsightsFormatterRegistry {
 
 // Default formatter registry provider. Implemented in infrastructure.
 auto CreateInsightsFormatterRegistry(
-    std::shared_ptr<IStaticInsightsFormatterRegistrar> static_registrar = nullptr)
-    -> std::shared_ptr<IInsightsFormatterRegistry>;
+    std::shared_ptr<IStaticInsightsFormatterRegistrar> static_registrar =
+        nullptr) -> std::shared_ptr<IInsightsFormatterRegistry>;
 
 }  // namespace tracer_core::application::ports
 

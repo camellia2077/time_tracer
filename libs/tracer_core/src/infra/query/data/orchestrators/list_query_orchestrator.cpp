@@ -71,20 +71,17 @@ auto HandleActivityFrequentQuery(
     tracer_core::core::dto::DataQueryOutputMode output_mode)
     -> tracer_core::core::dto::TextOutput {
   query_data_repository::ActivityFrequentQueryOptions options;
-  options.lookback_days =
-      request.lookback_days.value_or(
-          query_data_repository::kDefaultActivityFrequentLookbackDays);
-  options.limit =
-      request.top_n.value_or(request.limit.value_or(
-          query_data_repository::kDefaultActivityFrequentLimit));
+  options.lookback_days = request.lookback_days.value_or(
+      query_data_repository::kDefaultActivityFrequentLookbackDays);
+  options.limit = request.top_n.value_or(request.limit.value_or(
+      query_data_repository::kDefaultActivityFrequentLimit));
   options.anchor_date = request.anchor_date;
   options.prefix = request.activity_prefix;
   options.score_by_duration = request.activity_score_by_duration;
   const auto kRows =
       query_data_repository::QueryFrequentActivities(db_conn, options);
   return BuildSuccessOutput(
-      data_query_renderers::RenderFrequentActivitiesOutput(kRows,
-                                                            output_mode));
+      data_query_renderers::RenderFrequentActivitiesOutput(kRows, output_mode));
 }
 
 }  // namespace tracer::core::infrastructure::query::data::orchestrators

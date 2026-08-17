@@ -26,14 +26,15 @@ void DisplaySummary(std::string& insights_stream,
       {config->GetPeriodLabel(),
        TexUtils::EscapeLatex(data.start_date + " - " + data.end_date)}};
   if (data.actual_days > 0) {
-    items.insert(items.end(), {
-        {config->GetTotalTimeLabel(),
-         TexUtils::EscapeLatex(
-             TimeFormatDuration(data.total_duration, data.actual_days))},
-        {config->GetActivityCountLabel(),
-         FormatCountWithAverage(data.matched_record_count,
-                                data.requested_days)},
-        {config->GetActualDaysLabel(), std::to_string(data.actual_days)}});
+    items.insert(
+        items.end(),
+        {{config->GetTotalTimeLabel(),
+          TexUtils::EscapeLatex(TimeFormatDuration(
+              data.activity.total_duration_seconds, data.actual_days))},
+         {config->GetActivityCountLabel(),
+          FormatCountWithAverage(data.activity.occurrence_count,
+                                 data.requested_days)},
+         {config->GetActualDaysLabel(), std::to_string(data.actual_days)}});
   }
   TexCommonUtils::RenderSummaryList(insights_stream, items,
                                     config->GetListTopSepPt(),
@@ -41,14 +42,16 @@ void DisplaySummary(std::string& insights_stream,
   if (data.actual_days > 0) {
     if (!data.statuses.empty()) {
       TexCommonUtils::RenderTitle(
-          insights_stream, TexUtils::EscapeLatex(config->GetCustomSectionLabel()),
+          insights_stream,
+          TexUtils::EscapeLatex(config->GetCustomSectionLabel()),
           config->GetCategoryTitleFontSize(), true);
       std::vector<TexCommonUtils::SummaryItem> statuses;
       statuses.reserve(data.statuses.size());
       for (const auto& status : data.statuses) {
-        statuses.emplace_back(status.label, TexUtils::EscapeLatex(
-            FormatStatusStatistics(status.occurrence_count, status.total_duration,
-                                   config->GetStatusCountUnit())));
+        statuses.emplace_back(
+            status.label, TexUtils::EscapeLatex(FormatStatusStatistics(
+                              status.occurrence_count, status.total_duration,
+                              config->GetStatusCountUnit())));
       }
       TexCommonUtils::RenderSummaryList(insights_stream, statuses,
                                         config->GetListTopSepPt(),

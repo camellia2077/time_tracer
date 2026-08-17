@@ -63,8 +63,8 @@ auto WriteEncryptedZipFromEntries(
         package_entries,
     std::string_view passphrase, int& failures) -> bool;
 auto DecodeZipPackage(const fs::path& zip_path,
-                         const fs::path& decrypted_package_path,
-                         std::string_view passphrase, int& failures)
+                      const fs::path& decrypted_package_path,
+                      std::string_view passphrase, int& failures)
     -> std::optional<exchange_pkg::DecodedTracerExchangePackage>;
 auto SetReadOnlyFlag(const fs::path& path, bool read_only) -> bool;
 auto PrepareRuntimeFixture(const RuntimeTestPaths& paths,

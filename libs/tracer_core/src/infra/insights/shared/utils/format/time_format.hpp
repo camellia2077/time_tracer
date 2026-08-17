@@ -16,7 +16,7 @@
  * @return 格式化后的时长字符串。
  */
 INSIGHTS_SHARED_API auto TimeFormatDuration(std::int64_t total_seconds,
-                                           int avg_days = 1) -> std::string;
+                                            int avg_days = 1) -> std::string;
 
 /**
  * @brief 格式化时钟时间；秒为零时省略秒部分。

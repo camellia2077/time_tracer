@@ -6,12 +6,13 @@
 #include <string>
 #include <vector>
 
-#include "infra/insights/daily/formatters/latex/day_tex_config.hpp"
+#include "infra/insights/daily/formatters/latex/daily_tex_formatter_config.hpp"
 #include "infra/insights/daily/formatters/statistics/i_stat_strategy.hpp"
 
 class LatexStrategy : public IStatStrategy {
  public:
-  explicit LatexStrategy(const std::shared_ptr<DayTexConfig>& config);
+  explicit LatexStrategy(
+      const std::shared_ptr<DailyTexFormatterConfig>& config);
 
   [[nodiscard]] auto FormatHeader(const std::string& title) const
       -> std::string override;
@@ -25,7 +26,7 @@ class LatexStrategy : public IStatStrategy {
       -> std::string override;
 
  private:
-  std::shared_ptr<DayTexConfig> config_;
+  std::shared_ptr<DailyTexFormatterConfig> config_;
 };
 
 #endif  // INFRASTRUCTURE_INSIGHTS_DAILY_FORMATTERS_STATISTICS_LATEX_STRATEGY_H_

@@ -1,14 +1,15 @@
-// infra/insights/daily/formatters/latex/day_tex_formatter.hpp
-#ifndef INFRASTRUCTURE_INSIGHTS_DAILY_FORMATTERS_LATEX_DAY_TEX_FORMATTER_H_
-#define INFRASTRUCTURE_INSIGHTS_DAILY_FORMATTERS_LATEX_DAY_TEX_FORMATTER_H_
+// infra/insights/daily/formatters/latex/daily_tex_formatter.hpp
+#ifndef INFRASTRUCTURE_INSIGHTS_DAILY_FORMATTERS_LATEX_DAILY_TEX_FORMATTER_H_
+#define INFRASTRUCTURE_INSIGHTS_DAILY_FORMATTERS_LATEX_DAILY_TEX_FORMATTER_H_
 
 #include "domain/insights/models/daily_insights_data.hpp"
-#include "infra/insights/daily/formatters/latex/day_tex_config.hpp"
+#include "infra/insights/daily/formatters/latex/daily_tex_formatter_config.hpp"
 #include "infra/insights/shared/formatters/templates/base_tex_formatter.hpp"
 
-class DayTexFormatter : public BaseTexFormatter<DailyInsightsData, DayTexConfig> {
+class DailyTexFormatter
+    : public BaseTexFormatter<DailyInsightsData, DailyTexFormatterConfig> {
  public:
-  explicit DayTexFormatter(std::shared_ptr<DayTexConfig> config);
+  explicit DailyTexFormatter(std::shared_ptr<DailyTexFormatterConfig> config);
 
  protected:
   // --- 实现基类钩子 ---
@@ -29,4 +30,4 @@ class DayTexFormatter : public BaseTexFormatter<DailyInsightsData, DayTexConfig>
   [[nodiscard]] auto GetNoRecordsMsg() const -> std::string override;
 };
 
-#endif  // INFRASTRUCTURE_INSIGHTS_DAILY_FORMATTERS_LATEX_DAY_TEX_FORMATTER_H_
+#endif  // INFRASTRUCTURE_INSIGHTS_DAILY_FORMATTERS_LATEX_DAILY_TEX_FORMATTER_H_

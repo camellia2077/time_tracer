@@ -12,47 +12,50 @@
 
 namespace tracer::core::infrastructure::insights {
 
-InsightsDtoFormatter::InsightsDtoFormatter(const InsightsCatalog& insights_catalog)
+InsightsDtoFormatter::InsightsDtoFormatter(
+    const InsightsCatalog& insights_catalog)
     : insights_catalog_(insights_catalog) {}
 
 auto InsightsDtoFormatter::FormatDaily(const DailyInsightsData& insights,
-                                     InsightsFormat format) -> std::string {
+                                       InsightsFormat format) -> std::string {
   return FormatWithCache(insights, format, daily_cache_);
 }
 
 auto InsightsDtoFormatter::FormatMonthly(const MonthlyInsightsData& insights,
-                                       InsightsFormat format) -> std::string {
+                                         InsightsFormat format) -> std::string {
   return FormatWithCache(insights, format, monthly_cache_);
 }
 
 auto InsightsDtoFormatter::FormatPeriod(const PeriodInsightsData& insights,
-                                      InsightsFormat format) -> std::string {
+                                        InsightsFormat format) -> std::string {
   return FormatWithCache(insights, format, period_cache_);
 }
 
 auto InsightsDtoFormatter::FormatWeekly(const WeeklyInsightsData& insights,
-                                      InsightsFormat format) -> std::string {
+                                        InsightsFormat format) -> std::string {
   return FormatWithCache(insights, format, weekly_cache_);
 }
 
 auto InsightsDtoFormatter::FormatYearly(const YearlyInsightsData& insights,
-                                      InsightsFormat format) -> std::string {
+                                        InsightsFormat format) -> std::string {
   return FormatWithCache(insights, format, yearly_cache_);
 }
 
 template <typename InsightsDataType>
-auto FormatLocalizedInsights(const InsightsDataType& insights, InsightsFormat format,
-                           const InsightsCatalog& base_catalog,
-                           const MarkdownInsightsConfigs* localized_markdown)
+auto FormatLocalizedInsights(const InsightsDataType& insights,
+                             InsightsFormat format,
+                             const InsightsCatalog& base_catalog,
+                             const MarkdownInsightsConfigs* localized_markdown)
     -> std::string {
   if (localized_markdown == nullptr || format != InsightsFormat::kMarkdown) {
-    return GenericFormatterFactory<InsightsDataType>::Create(format, base_catalog)
+    return GenericFormatterFactory<InsightsDataType>::Create(format,
+                                                             base_catalog)
         ->FormatInsights(insights);
   }
   InsightsCatalog localized_catalog = base_catalog;
   localized_catalog.loaded_insights.markdown = *localized_markdown;
   return GenericFormatterFactory<InsightsDataType>::Create(format,
-                                                         localized_catalog)
+                                                           localized_catalog)
       ->FormatInsights(insights);
 }
 
@@ -62,54 +65,55 @@ auto FindLocalizedMarkdown(const InsightsCatalog& catalog,
   const auto iter =
       catalog.loaded_insights.markdown_locales.find(std::string(locale));
   return iter == catalog.loaded_insights.markdown_locales.end() ? nullptr
-                                                               : &iter->second;
+                                                                : &iter->second;
 }
 
-auto InsightsDtoFormatter::FormatDailyLocalized(const DailyInsightsData& insights,
-                                              InsightsFormat format,
-                                              std::string_view locale)
-    -> std::string {
-  return FormatLocalizedInsights(insights, format, insights_catalog_,
-                               FindLocalizedMarkdown(insights_catalog_, locale));
+auto InsightsDtoFormatter::FormatDailyLocalized(
+    const DailyInsightsData& insights, InsightsFormat format,
+    std::string_view locale) -> std::string {
+  return FormatLocalizedInsights(
+      insights, format, insights_catalog_,
+      FindLocalizedMarkdown(insights_catalog_, locale));
 }
 
-auto InsightsDtoFormatter::FormatMonthlyLocalized(const MonthlyInsightsData& insights,
-                                                InsightsFormat format,
-                                                std::string_view locale)
-    -> std::string {
-  return FormatLocalizedInsights(insights, format, insights_catalog_,
-                               FindLocalizedMarkdown(insights_catalog_, locale));
+auto InsightsDtoFormatter::FormatMonthlyLocalized(
+    const MonthlyInsightsData& insights, InsightsFormat format,
+    std::string_view locale) -> std::string {
+  return FormatLocalizedInsights(
+      insights, format, insights_catalog_,
+      FindLocalizedMarkdown(insights_catalog_, locale));
 }
 
-auto InsightsDtoFormatter::FormatPeriodLocalized(const PeriodInsightsData& insights,
-                                               InsightsFormat format,
-                                               std::string_view locale)
-    -> std::string {
-  return FormatLocalizedInsights(insights, format, insights_catalog_,
-                               FindLocalizedMarkdown(insights_catalog_, locale));
+auto InsightsDtoFormatter::FormatPeriodLocalized(
+    const PeriodInsightsData& insights, InsightsFormat format,
+    std::string_view locale) -> std::string {
+  return FormatLocalizedInsights(
+      insights, format, insights_catalog_,
+      FindLocalizedMarkdown(insights_catalog_, locale));
 }
 
-auto InsightsDtoFormatter::FormatWeeklyLocalized(const WeeklyInsightsData& insights,
-                                               InsightsFormat format,
-                                               std::string_view locale)
-    -> std::string {
-  return FormatLocalizedInsights(insights, format, insights_catalog_,
-                               FindLocalizedMarkdown(insights_catalog_, locale));
+auto InsightsDtoFormatter::FormatWeeklyLocalized(
+    const WeeklyInsightsData& insights, InsightsFormat format,
+    std::string_view locale) -> std::string {
+  return FormatLocalizedInsights(
+      insights, format, insights_catalog_,
+      FindLocalizedMarkdown(insights_catalog_, locale));
 }
 
-auto InsightsDtoFormatter::FormatYearlyLocalized(const YearlyInsightsData& insights,
-                                               InsightsFormat format,
-                                               std::string_view locale)
-    -> std::string {
-  return FormatLocalizedInsights(insights, format, insights_catalog_,
-                               FindLocalizedMarkdown(insights_catalog_, locale));
+auto InsightsDtoFormatter::FormatYearlyLocalized(
+    const YearlyInsightsData& insights, InsightsFormat format,
+    std::string_view locale) -> std::string {
+  return FormatLocalizedInsights(
+      insights, format, insights_catalog_,
+      FindLocalizedMarkdown(insights_catalog_, locale));
 }
 
 template <typename InsightsDataType>
 auto InsightsDtoFormatter::FormatWithCache(
     const InsightsDataType& insights, InsightsFormat format,
-    std::map<InsightsFormat, std::unique_ptr<IInsightsFormatter<InsightsDataType>>>&
-        cache) -> std::string {
+    std::map<InsightsFormat,
+             std::unique_ptr<IInsightsFormatter<InsightsDataType>>>& cache)
+    -> std::string {
   auto formatter_iter = cache.find(format);
   if (formatter_iter == cache.end()) {
     auto formatter = GenericFormatterFactory<InsightsDataType>::Create(

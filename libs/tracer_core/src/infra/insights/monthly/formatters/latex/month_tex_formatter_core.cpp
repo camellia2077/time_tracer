@@ -24,7 +24,8 @@ auto MonthTexFormatter::IsEmptyData(const MonthlyInsightsData& data) const
   return data.actual_days == 0;
 }
 
-auto MonthTexFormatter::GetAvgDays(const MonthlyInsightsData& data) const -> int {
+auto MonthTexFormatter::GetAvgDays(const MonthlyInsightsData& data) const
+    -> int {
   return data.actual_days;
 }
 

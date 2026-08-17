@@ -37,7 +37,8 @@ class BatchMonthDataFetcher {
  public:
   explicit BatchMonthDataFetcher(sqlite3* sqlite_db);
 
-  [[nodiscard]] auto FetchAllData() -> std::map<std::string, MonthlyInsightsData>;
+  [[nodiscard]] auto FetchAllData()
+      -> std::map<std::string, MonthlyInsightsData>;
 
  private:
   sqlite3* db_;

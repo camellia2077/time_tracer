@@ -13,14 +13,14 @@ using nlohmann::json;
 
 auto NativeInit(JNIEnv* env, jobject /*thiz*/, jstring db_path,
                 jstring output_root, jstring converter_config_toml_path,
-                jstring status_configs_json)
-    -> jstring {
+                jstring status_configs_json) -> jstring {
   return ExecuteJniMethod(env, [&]() -> std::string {
     const std::string db_path_utf8 = ToUtf8(env, db_path);
     const std::string output_root_utf8 = ToUtf8(env, output_root);
     const std::string converter_config_toml_path_utf8 =
         ToUtf8(env, converter_config_toml_path);
-    const std::string status_configs_json_utf8 = ToUtf8(env, status_configs_json);
+    const std::string status_configs_json_utf8 =
+        ToUtf8(env, status_configs_json);
     if (output_root_utf8.empty()) {
       return BuildResponseJson(false, "outputRoot must not be empty.",
                                std::string{});
@@ -72,8 +72,8 @@ auto NativeInit(JNIEnv* env, jobject /*thiz*/, jstring db_path,
 }
 
 auto NativeInitPipeline(JNIEnv* env, jobject /*thiz*/, jstring db_path,
-                        jstring output_root,
-                        jstring converter_config_toml_path) -> jstring {
+                        jstring output_root, jstring converter_config_toml_path)
+    -> jstring {
   return ExecuteJniMethod(env, [&]() -> std::string {
     const std::string db_path_utf8 = ToUtf8(env, db_path);
     const std::string output_root_utf8 = ToUtf8(env, output_root);
@@ -90,10 +90,9 @@ auto NativeInitPipeline(JNIEnv* env, jobject /*thiz*/, jstring db_path,
 
     const char* db_path_arg =
         db_path_utf8.empty() ? nullptr : db_path_utf8.c_str();
-    TtCoreRuntimeHandle* created_runtime =
-        tracer_core_pipeline_runtime_create(
-            db_path_arg, output_root_utf8.c_str(),
-            converter_config_toml_path_utf8.c_str());
+    TtCoreRuntimeHandle* created_runtime = tracer_core_pipeline_runtime_create(
+        db_path_arg, output_root_utf8.c_str(),
+        converter_config_toml_path_utf8.c_str());
     if (created_runtime == nullptr) {
       const char* error_message = tracer_core_last_error();
       const std::string details =
@@ -111,7 +110,8 @@ auto NativeInitPipeline(JNIEnv* env, jobject /*thiz*/, jstring db_path,
       g_runtime.pipeline_only = true;
     }
 
-    return BuildResponseJson(true, std::string{}, "pipeline runtime initialized");
+    return BuildResponseJson(true, std::string{},
+                             "pipeline runtime initialized");
   });
 }
 
@@ -147,13 +147,12 @@ auto NativeIngest(JNIEnv* env, jobject /*thiz*/, jstring input_path,
         return BuildResponseJson(false, "nativeInit must be called first.",
                                  std::string{});
       }
-      const char* response_json = g_runtime.pipeline_only
-                                      ? tracer_core_pipeline_runtime_ingest_json(
-                                            g_runtime.core_runtime,
-                                            request_json.c_str())
-                                      : tracer_core_runtime_ingest_json(
-                                            g_runtime.core_runtime,
-                                            request_json.c_str());
+      const char* response_json =
+          g_runtime.pipeline_only
+              ? tracer_core_pipeline_runtime_ingest_json(g_runtime.core_runtime,
+                                                         request_json.c_str())
+              : tracer_core_runtime_ingest_json(g_runtime.core_runtime,
+                                                request_json.c_str());
       response_payload = ParseCoreResponse(response_json, "nativeIngest");
     }
 
@@ -190,13 +189,12 @@ auto NativeIngestSingleTxtReplaceMonth(JNIEnv* env, jobject /*thiz*/,
         return BuildResponseJson(false, "nativeInit must be called first.",
                                  std::string{});
       }
-      const char* response_json = g_runtime.pipeline_only
-                                      ? tracer_core_pipeline_runtime_ingest_json(
-                                            g_runtime.core_runtime,
-                                            request_json.c_str())
-                                      : tracer_core_runtime_ingest_json(
-                                            g_runtime.core_runtime,
-                                            request_json.c_str());
+      const char* response_json =
+          g_runtime.pipeline_only
+              ? tracer_core_pipeline_runtime_ingest_json(g_runtime.core_runtime,
+                                                         request_json.c_str())
+              : tracer_core_runtime_ingest_json(g_runtime.core_runtime,
+                                                request_json.c_str());
       response_payload = ParseCoreResponse(
           response_json, "nativeIngest(single_txt_replace_month)");
     }
@@ -220,15 +218,14 @@ auto NativeListTxtIngestSyncStatus(JNIEnv* env, jobject /*thiz*/,
     }
 
     const char* response_json = tracer_core_runtime_ingest_sync_status_json(
-        g_runtime.core_runtime, request_json_utf8.empty()
-                                    ? "{}"
-                                    : request_json_utf8.c_str());
-    return response_json != nullptr ? std::string(response_json)
-                                    : BuildResponseJson(
-                                          false,
-                                          "nativeListTxtIngestSyncStatus "
-                                          "returned null response.",
-                                          std::string{});
+        g_runtime.core_runtime,
+        request_json_utf8.empty() ? "{}" : request_json_utf8.c_str());
+    return response_json != nullptr
+               ? std::string(response_json)
+               : BuildResponseJson(false,
+                                   "nativeListTxtIngestSyncStatus "
+                                   "returned null response.",
+                                   std::string{});
   });
 }
 
@@ -240,8 +237,9 @@ auto NativeClearTxtIngestSyncStatus(JNIEnv* env, jobject /*thiz*/) -> jstring {
                                std::string{});
     }
 
-    const char* response_json = tracer_core_runtime_clear_ingest_sync_status_json(
-        g_runtime.core_runtime);
+    const char* response_json =
+        tracer_core_runtime_clear_ingest_sync_status_json(
+            g_runtime.core_runtime);
     return response_json != nullptr
                ? std::string(response_json)
                : BuildResponseJson(false,
@@ -315,9 +313,10 @@ auto NativeValidateLogic(JNIEnv* env, jobject /*thiz*/, jstring input_path,
           g_runtime.pipeline_only
               ? tracer_core_pipeline_runtime_validate_logic_json(
                     g_runtime.core_runtime, request_json.c_str())
-              : tracer_core_runtime_validate_logic_json(
-                    g_runtime.core_runtime, request_json.c_str());
-      response_payload = ParseCoreResponse(response_json, "nativeValidateLogic");
+              : tracer_core_runtime_validate_logic_json(g_runtime.core_runtime,
+                                                        request_json.c_str());
+      response_payload =
+          ParseCoreResponse(response_json, "nativeValidateLogic");
     }
 
     if (response_payload.ok) {
@@ -331,14 +330,13 @@ auto NativeRecordActivityAtomically(JNIEnv* env, jobject /*thiz*/,
                                     jstring target_date_iso,
                                     jstring raw_activity_name, jstring remark,
                                     jstring preferred_txt_path,
-                                    jint date_check_mode,
-                                    jint time_order_mode) -> jstring {
+                                    jint date_check_mode, jint time_order_mode)
+    -> jstring {
   return ExecuteJniMethod(env, [&]() -> std::string {
     const std::string target_date_iso_utf8 = ToUtf8(env, target_date_iso);
     const std::string raw_activity_name_utf8 = ToUtf8(env, raw_activity_name);
     const std::string remark_utf8 = ToUtf8(env, remark);
-    const std::string preferred_txt_path_utf8 =
-        ToUtf8(env, preferred_txt_path);
+    const std::string preferred_txt_path_utf8 = ToUtf8(env, preferred_txt_path);
     if (target_date_iso_utf8.empty()) {
       return BuildResponseJson(false, "targetDateIso must not be empty.",
                                std::string{});
@@ -352,8 +350,7 @@ auto NativeRecordActivityAtomically(JNIEnv* env, jobject /*thiz*/,
       request_payload.preferred_txt_path = preferred_txt_path_utf8;
     }
     request_payload.date_check_mode = ParseDateCheckMode(date_check_mode);
-    request_payload.time_order_mode =
-        ParseRecordTimeOrderMode(time_order_mode);
+    request_payload.time_order_mode = ParseRecordTimeOrderMode(time_order_mode);
     const std::string request_json =
         tt_transport::EncodeRecordActivityAtomicallyRequest(request_payload);
 
@@ -365,21 +362,23 @@ auto NativeRecordActivityAtomically(JNIEnv* env, jobject /*thiz*/,
                                  std::string{});
       }
       response_payload =
-          ParseCoreResponse(
-              tracer_core_runtime_record_activity_atomically_json(
-                  g_runtime.core_runtime, request_json.c_str()),
-              "nativeRecordActivityAtomically");
+          ParseCoreResponse(tracer_core_runtime_record_activity_atomically_json(
+                                g_runtime.core_runtime, request_json.c_str()),
+                            "nativeRecordActivityAtomically");
     }
 
     return tt_transport::SerializeResponseEnvelope(response_payload);
   });
 }
 
-auto NativeUpdateActivityRemarkAtomically(
-    JNIEnv* env, jobject /*thiz*/, jstring target_date_iso, jlong logical_id,
-    jstring remark, jstring preferred_txt_path, jint date_check_mode) -> jstring {
+auto NativeUpdateActivityRemarkAtomically(JNIEnv* env, jobject /*thiz*/,
+                                          jstring target_date_iso,
+                                          jlong logical_id, jstring remark,
+                                          jstring preferred_txt_path,
+                                          jint date_check_mode) -> jstring {
   return ExecuteJniMethod(env, [&]() -> std::string {
-    tt_transport::UpdateActivityRemarkAtomicallyRequestPayload request_payload{};
+    tt_transport::UpdateActivityRemarkAtomicallyRequestPayload
+        request_payload{};
     request_payload.target_date_iso = ToUtf8(env, target_date_iso);
     request_payload.logical_id = logical_id;
     request_payload.remark = ToUtf8(env, remark);
@@ -389,7 +388,8 @@ auto NativeUpdateActivityRemarkAtomically(
     }
     request_payload.date_check_mode = ParseDateCheckMode(date_check_mode);
     const std::string request_json =
-        tt_transport::EncodeUpdateActivityRemarkAtomicallyRequest(request_payload);
+        tt_transport::EncodeUpdateActivityRemarkAtomicallyRequest(
+            request_payload);
 
     tt_transport::ResponseEnvelope response_payload{};
     {
@@ -407,9 +407,10 @@ auto NativeUpdateActivityRemarkAtomically(
   });
 }
 
-auto NativeUpdateDayRemarkAtomically(
-    JNIEnv* env, jobject /*thiz*/, jstring target_date_iso, jstring remark,
-    jstring preferred_txt_path, jint date_check_mode) -> jstring {
+auto NativeUpdateDayRemarkAtomically(JNIEnv* env, jobject /*thiz*/,
+                                     jstring target_date_iso, jstring remark,
+                                     jstring preferred_txt_path,
+                                     jint date_check_mode) -> jstring {
   return ExecuteJniMethod(env, [&]() -> std::string {
     tt_transport::UpdateDayRemarkAtomicallyRequestPayload request_payload{};
     request_payload.target_date_iso = ToUtf8(env, target_date_iso);
@@ -438,7 +439,8 @@ auto NativeUpdateDayRemarkAtomically(
   });
 }
 
-auto NativeConfig(JNIEnv* env, jobject /*thiz*/, jstring request_json) -> jstring {
+auto NativeConfig(JNIEnv* env, jobject /*thiz*/, jstring request_json)
+    -> jstring {
   return ExecuteJniMethod(env, [&]() -> std::string {
     const std::string request_json_utf8 = ToUtf8(env, request_json);
 
@@ -458,12 +460,12 @@ auto NativeConfig(JNIEnv* env, jobject /*thiz*/, jstring request_json) -> jstrin
         request_json_utf8.empty() ? "{}" : request_json_utf8.c_str());
     return response_json != nullptr
                ? std::string(response_json)
-               : nlohmann::json{
-                     {"ok", false},
-                     {"error_message", "nativeConfig returned null response."},
-                     {"error_code", "runtime.generic_error"},
-                     {"error_category", "runtime"},
-                     {"hints", nlohmann::json::array()}}
+               : nlohmann::json{{"ok", false},
+                                {"error_message",
+                                 "nativeConfig returned null response."},
+                                {"error_code", "runtime.generic_error"},
+                                {"error_category", "runtime"},
+                                {"hints", nlohmann::json::array()}}
                      .dump();
   });
 }

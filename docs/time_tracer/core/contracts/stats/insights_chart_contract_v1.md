@@ -15,16 +15,30 @@
 1. `schema_version` (`int`, 必填，当前为 `1`)
 2. `action` (`string`, 必填，固定 `insights_chart` 或兼容 token `insights-chart`)
 3. `output_mode` (`string`, 必填，固定 `semantic_json`)
-4. `roots` (`string[]`, 必填)
-5. `selected_root` (`string`, 必填，可为空字符串)
-6. `lookback_days` (`int`, 必填，未提供显式范围时用于窗口语义)
-7. `from_date` (`string`, 可选，`YYYY-MM-DD`)
-8. `to_date` (`string`, 可选，`YYYY-MM-DD`)
-9. `average_duration_seconds` (`int`, 必填)
-10. `total_duration_seconds` (`int`, 必填)
-11. `active_days` (`int`, 必填)
-12. `range_days` (`int`, 必填)
-13. `series` (`object[]`, 必填)
+4. `roots` (`string[]`, 必填，顶层活动名称)
+5. `root_tree` (`object[]`, 必填，可选择的完整活动层级)
+6. `selected_root` (`string`, 必填，可为空字符串；可为任意层级的路径)
+7. `lookback_days` (`int`, 必填，未提供显式范围时用于窗口语义)
+8. `from_date` (`string`, 可选，`YYYY-MM-DD`)
+9. `to_date` (`string`, 可选，`YYYY-MM-DD`)
+10. `average_duration_seconds` (`int`, 必填)
+11. `total_occurrence_count` (`int`, 必填，查询范围内活动发生次数)
+12. `average_duration_per_occurrence_seconds` (`int`, 必填，平均每次发生耗时)
+13. `mode_duration_seconds` (`number|null`, 必填；没有重复样本时为 `null`)
+14. `median_duration_seconds` (`number`, 必填)
+15. `minimum_duration_seconds` (`number`, 必填)
+16. `maximum_duration_seconds` (`number`, 必填)
+17. `lower_quartile_duration_seconds` (`number`, 必填，P25)
+18. `upper_quartile_duration_seconds` (`number`, 必填，P75)
+19. `coefficient_of_variation` (`number`, 必填，标准差/平均值；平均值为 0 时为 0)
+20. `mean_absolute_deviation_seconds` (`number`, 必填，关于平均值的平均绝对偏差)
+21. `total_duration_seconds` (`int`, 必填)
+22. `active_days` (`int`, 必填)
+23. `range_days` (`int`, 必填)
+24. `series` (`object[]`, 必填)
+
+`root_tree[]` 节点字段与 `tree.roots[]` 一致：`name`、`path`、`duration_seconds`、`children`。
+`path` 使用下划线连接层级，例如 `Work_Engineering`；请求 `selected_root` 时必须使用完整路径，不能只传最后一级名称。
 
 ## `series[]` 字段（v1）
 1. `date` (`string`, 必填，`YYYY-MM-DD`)
@@ -54,6 +68,10 @@ TOML 文件名或自身重新判断 hierarchy 深度。
 2. `range_days = 日期范围闭区间天数`
 3. `active_days = 至少存在一条活动事实（包括 end-only）的天数`
 4. `average_duration_seconds = total_duration_seconds / active_days`（`active_days=0` 时为 `0`；没有活动记录的日期不计入分母）
+5. `total_occurrence_count` 为查询范围内活动发生次数；`average_duration_per_occurrence_seconds = total_duration_seconds / total_occurrence_count`（`total_occurrence_count=0` 时为 `0`）。
+6. `mode_duration_seconds`、`median_duration_seconds`、`minimum_duration_seconds`、`maximum_duration_seconds`、`lower_quartile_duration_seconds`、`upper_quartile_duration_seconds`、`coefficient_of_variation`、`mean_absolute_deviation_seconds` 基于查询范围内实际发生过活动事实的日期时长计算，不包含仅为补齐日期范围而生成的 0 时长日期；发生事实但时长为 0 的日期（例如 end-only）仍属于统计样本。
+7. `coefficient_of_variation = standard_deviation(active_day_durations) / mean(active_day_durations)`，其中标准差使用总体标准差，均值为 0 时 CV 为 `0`；平均绝对偏差以均值为中心计算。
+8. 众数只在至少有一个时长值重复出现时有值；没有重复样本时为 `null`。存在多个众数时取较小的时长值；无活动样本时中位数等数值统计为 `0`，众数为 `null`。
 
 ## 空数据约束
 1. 空数据时返回完整结构，不省略关键字段。
@@ -64,6 +82,8 @@ TOML 文件名或自身重新判断 hierarchy 深度。
 1. Core：负责查询、聚合、统计、契约输出。
 2. Android/Windows：负责 UI/HTML 渲染，不重复实现统计公式。
 3. 若新增统计字段，应优先在 Core 扩展，并同步文档与测试。
+4. 活动总时长与发生次数由共享的 `ActivityAggregate` 统一累计；Trend、Breakdown
+   和结构化周期 Insights 必须从该聚合派生，端侧不得重新汇总完整活动日集合。
 
 ## 兼容策略
 1. v1 内采用“字段追加优先”，避免删除/重命名既有字段。

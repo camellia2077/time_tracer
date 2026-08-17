@@ -11,18 +11,19 @@ namespace {
 constexpr int kSeparatorLength = 40;
 }
 
-InsightsHandler::InsightsHandler(std::unique_ptr<IInsightsQueryService> query_service)
+InsightsHandler::InsightsHandler(
+    std::unique_ptr<IInsightsQueryService> query_service)
     : query_service_(std::move(query_service)) {}
 
 InsightsHandler::~InsightsHandler() = default;
 
-auto InsightsHandler::RunDailyQuery(std::string_view date, InsightsFormat format)
-    -> std::string {
+auto InsightsHandler::RunDailyQuery(std::string_view date,
+                                    InsightsFormat format) -> std::string {
   return query_service_->RunDailyQuery(date, format);
 }
 
-auto InsightsHandler::RunMonthlyQuery(std::string_view month, InsightsFormat format)
-    -> std::string {
+auto InsightsHandler::RunMonthlyQuery(std::string_view month,
+                                      InsightsFormat format) -> std::string {
   return query_service_->RunMonthlyQuery(month, format);
 }
 
@@ -32,17 +33,17 @@ auto InsightsHandler::RunPeriodQuery(int days, InsightsFormat format)
 }
 
 auto InsightsHandler::RunWeeklyQuery(std::string_view iso_week,
-                                   InsightsFormat format) -> std::string {
+                                     InsightsFormat format) -> std::string {
   return query_service_->RunWeeklyQuery(iso_week, format);
 }
 
-auto InsightsHandler::RunYearlyQuery(std::string_view year, InsightsFormat format)
-    -> std::string {
+auto InsightsHandler::RunYearlyQuery(std::string_view year,
+                                     InsightsFormat format) -> std::string {
   return query_service_->RunYearlyQuery(year, format);
 }
 
 auto InsightsHandler::RunPeriodQueries(const std::vector<int>& days_list,
-                                     InsightsFormat format) -> std::string {
+                                       InsightsFormat format) -> std::string {
   std::ostringstream output;
   for (size_t index = 0; index < days_list.size(); ++index) {
     if (index > 0) {

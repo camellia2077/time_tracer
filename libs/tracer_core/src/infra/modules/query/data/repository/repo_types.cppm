@@ -6,8 +6,7 @@ export module tracer.core.infrastructure.query.data.repository.types;
 
 export namespace tracer::core::infrastructure::query::data {
 
-using ::tracer::core::infrastructure::query::data::
-    ActivityFrequentQueryOptions;
+using ::tracer::core::infrastructure::query::data::ActivityFrequentQueryOptions;
 using ::tracer::core::infrastructure::query::data::ActivityFrequentRow;
 using ::tracer::core::infrastructure::query::data::DataQueryAction;
 using ::tracer::core::infrastructure::query::data::DayDurationRow;

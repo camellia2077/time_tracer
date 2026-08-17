@@ -1,7 +1,7 @@
-// infra/insights/daily/formatters/markdown/day_md_formatter_core.cpp
+// infra/insights/daily/formatters/markdown/daily_md_formatter_core.cpp
 #include <string>
 
-#include "infra/insights/daily/formatters/markdown/day_md_formatter.hpp"
+#include "infra/insights/daily/formatters/markdown/daily_md_formatter.hpp"
 #include "infra/insights/shared/utils/format/insights_string_utils.hpp"
 #include "infra/insights/shared/utils/format/status_statistics_format.hpp"
 #include "infra/insights/shared/utils/format/time_format.hpp"
@@ -54,41 +54,48 @@ auto BuildActivityLine(const TimeRecord& record,
 // NOLINTEND(bugprone-easily-swappable-parameters)
 }  // namespace
 
-DayMdConfig::DayMdConfig(const DailyMdConfig& config)
-    : DayBaseConfig(config.labels, {}),
+DailyMdFormatterConfig::DailyMdFormatterConfig(const DailyMdConfig& config)
+    : DailyFormatterBaseConfig(config.labels, {}),
       end_only_time_format_(config.end_only_time_format) {}
 
-auto DayMdConfig::GetEndOnlyTimeFormat() const -> const std::string& {
+auto DailyMdFormatterConfig::GetEndOnlyTimeFormat() const
+    -> const std::string& {
   return end_only_time_format_;
 }
 
-DayMdFormatter::DayMdFormatter(std::shared_ptr<DayMdConfig> config)
+DailyMdFormatter::DailyMdFormatter(
+    std::shared_ptr<DailyMdFormatterConfig> config)
     : BaseMdFormatter(std::move(config)) {}
 
-auto DayMdFormatter::IsEmptyData(const DailyInsightsData& data) const -> bool {
-  return data.activity_count == 0 && data.detailed_records.empty();
+auto DailyMdFormatter::IsEmptyData(const DailyInsightsData& data) const
+    -> bool {
+  return data.activity.occurrence_count == 0 && data.detailed_records.empty();
 }
 
-auto DayMdFormatter::GetAvgDays(const DailyInsightsData& /*data*/) const -> int {
+auto DailyMdFormatter::GetAvgDays(const DailyInsightsData& /*data*/) const
+    -> int {
   return 1;
 }
 
-auto DayMdFormatter::GetNoRecordsMsg() const -> std::string {
+auto DailyMdFormatter::GetNoRecordsMsg() const -> std::string {
   return config_->GetNoRecords();
 }
 
-void DayMdFormatter::FormatHeaderContent(std::string& insights_stream,
-                                         const DailyInsightsData& data) const {
+void DailyMdFormatter::FormatHeaderContent(
+    std::string& insights_stream, const DailyInsightsData& data) const {
   insights_stream += "## ";
   insights_stream += config_->GetSummarySectionLabel();
   insights_stream += "\n\n";
-  insights_stream += BuildMarkdownItemLine(config_->GetPeriodLabel(), data.date);
+  insights_stream +=
+      BuildMarkdownItemLine(config_->GetPeriodLabel(), data.date);
   insights_stream += BuildMarkdownItemLine(
-      config_->GetTotalTimeLabel(), TimeFormatDuration(data.total_duration));
-  insights_stream += BuildMarkdownItemLine(config_->GetActivityCountLabel(),
-                                         std::to_string(data.activity_count));
+      config_->GetTotalTimeLabel(),
+      TimeFormatDuration(data.activity.total_duration_seconds));
+  insights_stream +=
+      BuildMarkdownItemLine(config_->GetActivityCountLabel(),
+                            std::to_string(data.activity.occurrence_count));
   insights_stream += BuildMarkdownItemLine(config_->GetGetupTimeLabel(),
-                                         data.metadata.getup_time);
+                                           data.metadata.getup_time);
 
   std::string formatted_remark = FormatMultilineForList(
       data.metadata.remark, kRemarkIndent, kRemarkIndentPrefix);
@@ -100,19 +107,19 @@ void DayMdFormatter::FormatHeaderContent(std::string& insights_stream,
     insights_stream += "\n\n";
     for (const auto& status : data.metadata.statuses) {
       insights_stream += BuildMarkdownItemLine(
-          status.label, FormatStatusStatistics(status.occurrence_count,
-                                               status.total_duration,
-                                               config_->GetStatusCountUnit()));
+          status.label,
+          FormatStatusStatistics(status.occurrence_count, status.total_duration,
+                                 config_->GetStatusCountUnit()));
     }
   }
 }
 
-void DayMdFormatter::FormatExtraContent(std::string& insights_stream,
-                                        const DailyInsightsData& data) const {
+void DailyMdFormatter::FormatExtraContent(std::string& insights_stream,
+                                          const DailyInsightsData& data) const {
   DisplayDetailedActivities(insights_stream, data);
 }
 
-void DayMdFormatter::DisplayDetailedActivities(
+void DailyMdFormatter::DisplayDetailedActivities(
     std::string& insights_stream, const DailyInsightsData& data) const {
   if (data.detailed_records.empty()) {
     return;
@@ -125,7 +132,7 @@ void DayMdFormatter::DisplayDetailedActivities(
     std::string project_path =
         ReplaceAll(record.project_path, "_", config_->GetActivityConnector());
     insights_stream += BuildActivityLine(record, project_path,
-                                       config_->GetEndOnlyTimeFormat());
+                                         config_->GetEndOnlyTimeFormat());
     if (record.activityRemark.has_value()) {
       // Keep the label on its own line so the layout stays readable for both
       // single-line and multiline remarks. <br> is intentional: a raw source

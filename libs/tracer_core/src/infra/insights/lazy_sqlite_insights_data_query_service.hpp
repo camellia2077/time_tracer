@@ -49,7 +49,8 @@ class LazySqliteInsightsDataQueryService final
 
 namespace infrastructure::insights {
 
-using tracer::core::infrastructure::insights::LazySqliteInsightsDataQueryService;
+using tracer::core::infrastructure::insights::
+    LazySqliteInsightsDataQueryService;
 
 }  // namespace infrastructure::insights
 

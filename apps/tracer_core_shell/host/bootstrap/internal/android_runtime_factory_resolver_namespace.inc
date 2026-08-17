@@ -31,7 +31,7 @@ constexpr std::string_view kDatabaseFilename = "time_data.sqlite3";
 }
 
 [[nodiscard]] auto ResolveRequiredInsightsTomlPath(const fs::path& path,
-                                                 std::string_view field_name)
+                                                   std::string_view field_name)
     -> fs::path {
   if (path.empty()) {
     throw std::runtime_error("Android runtime bundle field '" +
@@ -68,16 +68,16 @@ constexpr std::string_view kDatabaseFilename = "time_data.sqlite3";
     const infra_config_internal::AndroidBundleInsightsConfigPathSet& config)
     -> AndroidInsightsConfigPathSet {
   return {
-      .day = ResolveRequiredInsightsTomlPath(config.day,
-                                           "insights.markdown.root"),
+      .daily =
+          ResolveRequiredInsightsTomlPath(config.daily, "insights.markdown.root"),
       .month = ResolveRequiredInsightsTomlPath(config.month,
-                                             "insights.markdown.root"),
+                                               "insights.markdown.root"),
       .period = ResolveRequiredInsightsTomlPath(config.period,
-                                              "insights.markdown.root"),
+                                                "insights.markdown.root"),
       .week = ResolveRequiredInsightsTomlPath(config.week,
-                                            "insights.markdown.root"),
+                                              "insights.markdown.root"),
       .year = ResolveRequiredInsightsTomlPath(config.year,
-                                            "insights.markdown.root"),
+                                              "insights.markdown.root"),
   };
 }
 

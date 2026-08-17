@@ -5,8 +5,8 @@
 
 namespace tracer_core::application::tests {
 
-using tracer_core::core::dto::PeriodBatchQueryRequest;
 using tracer_core::core::dto::InsightsDisplayMode;
+using tracer_core::core::dto::PeriodBatchQueryRequest;
 using tracer_core::core::dto::TemporalInsightsQueryRequest;
 using tracer_core::core::dto::TemporalInsightsTargetsRequest;
 using tracer_core::core::dto::TemporalSelectionKind;
@@ -55,8 +55,9 @@ auto TestTemporalInsightsQueryResponses(TestState& state) -> void {
        .format = InsightsFormat::kMarkdown});
   Expect(state, kRecentSuccess.ok,
          "RunTemporalInsightsQuery recent should succeed with anchor_date.");
-  Expect(state, kRecentSuccess.content == "period:2026-03-01|2026-03-07",
-         "RunTemporalInsightsQuery recent should format anchored fixed window.");
+  Expect(
+      state, kRecentSuccess.content == "period:2026-03-01|2026-03-07",
+      "RunTemporalInsightsQuery recent should format anchored fixed window.");
   Expect(
       state,
       kRecentSuccess.insights_window_metadata.has_value() &&
@@ -72,7 +73,8 @@ auto TestTemporalInsightsQueryResponses(TestState& state) -> void {
   Expect(
       state,
       Contains(kBadRecentArg.error_message, "RunTemporalInsightsQuery failed"),
-      "RunTemporalInsightsQuery invalid argument should include operation name.");
+      "RunTemporalInsightsQuery invalid argument should include operation "
+      "name.");
 
   insights_data_query->fail_target_not_found = true;
   const auto kMissingDay = runtime_api.insights().RunTemporalInsightsQuery(
@@ -111,18 +113,20 @@ auto TestTemporalInsightsTargetsResponses(TestState& state) -> void {
       {.display_mode = InsightsDisplayMode::kMonth});
   Expect(state, kSuccess.ok,
          "RunTemporalInsightsTargetsQuery should return ok on success.");
-  Expect(
-      state, kSuccess.items == insights_data_query->monthly_targets,
-      "RunTemporalInsightsTargetsQuery should return monthly canonical targets.");
+  Expect(state, kSuccess.items == insights_data_query->monthly_targets,
+         "RunTemporalInsightsTargetsQuery should return monthly canonical "
+         "targets.");
 
   insights_data_query->fail_list_targets = true;
   const auto kFailure = runtime_api.insights().RunTemporalInsightsTargetsQuery(
       {.display_mode = InsightsDisplayMode::kDay});
-  Expect(state, !kFailure.ok,
-         "RunTemporalInsightsTargetsQuery should return failed DTO when listing "
-         "throws.");
   Expect(
-      state, Contains(kFailure.error_message, "RunTemporalInsightsTargetsQuery"),
+      state, !kFailure.ok,
+      "RunTemporalInsightsTargetsQuery should return failed DTO when listing "
+      "throws.");
+  Expect(
+      state,
+      Contains(kFailure.error_message, "RunTemporalInsightsTargetsQuery"),
       "RunTemporalInsightsTargetsQuery failure should include operation name.");
 
   auto runtime_without_targets =
@@ -135,7 +139,8 @@ auto TestTemporalInsightsTargetsResponses(TestState& state) -> void {
          "service is missing.");
   Expect(
       state,
-      Contains(kMissingService.error_message, "RunTemporalInsightsTargetsQuery"),
+      Contains(kMissingService.error_message,
+               "RunTemporalInsightsTargetsQuery"),
       "RunTemporalInsightsTargetsQuery missing-service failure should include "
       "operation name.");
 }
@@ -159,9 +164,10 @@ auto TestStructuredWindowInsightsSemantics(TestState& state) -> void {
          "expose error code.");
   const auto* kRecentInsights =
       std::get_if<PeriodInsightsData>(&kEmptyRecent.insights);
-  Expect(state, kRecentInsights != nullptr,
-         "RunTemporalStructuredInsightsQuery recent should return period insights "
-         "data.");
+  Expect(
+      state, kRecentInsights != nullptr,
+      "RunTemporalStructuredInsightsQuery recent should return period insights "
+      "data.");
   if (kRecentInsights != nullptr) {
     Expect(state, !kRecentInsights->has_records,
            "RunTemporalStructuredInsightsQuery recent empty window should set "
@@ -169,7 +175,7 @@ auto TestStructuredWindowInsightsSemantics(TestState& state) -> void {
     Expect(state, kRecentInsights->matched_day_count == 0,
            "RunTemporalStructuredInsightsQuery recent empty window should set "
            "matched_day_count=0.");
-    Expect(state, kRecentInsights->matched_record_count == 0,
+    Expect(state, kRecentInsights->activity.occurrence_count == 0,
            "RunTemporalStructuredInsightsQuery recent empty window should set "
            "matched_record_count=0.");
     Expect(state, kRecentInsights->requested_days == 7,
@@ -207,10 +213,12 @@ auto TestStructuredWindowInsightsSemantics(TestState& state) -> void {
   Expect(state, kEmptyRange.error_contract.error_code.empty(),
          "RunTemporalStructuredInsightsQuery range empty window should not "
          "expose error code.");
-  const auto* kRangeInsights = std::get_if<PeriodInsightsData>(&kEmptyRange.insights);
-  Expect(state, kRangeInsights != nullptr,
-         "RunTemporalStructuredInsightsQuery range should return period insights "
-         "data.");
+  const auto* kRangeInsights =
+      std::get_if<PeriodInsightsData>(&kEmptyRange.insights);
+  Expect(
+      state, kRangeInsights != nullptr,
+      "RunTemporalStructuredInsightsQuery range should return period insights "
+      "data.");
   if (kRangeInsights != nullptr) {
     Expect(state, !kRangeInsights->has_records,
            "RunTemporalStructuredInsightsQuery range empty window should set "
@@ -218,7 +226,7 @@ auto TestStructuredWindowInsightsSemantics(TestState& state) -> void {
     Expect(state, kRangeInsights->matched_day_count == 0,
            "RunTemporalStructuredInsightsQuery range empty window should set "
            "matched_day_count=0.");
-    Expect(state, kRangeInsights->matched_record_count == 0,
+    Expect(state, kRangeInsights->activity.occurrence_count == 0,
            "RunTemporalStructuredInsightsQuery range empty window should set "
            "matched_record_count=0.");
   }
@@ -227,9 +235,10 @@ auto TestStructuredWindowInsightsSemantics(TestState& state) -> void {
       runtime_api.insights().RunTemporalStructuredInsightsQuery(
           {.display_mode = InsightsDisplayMode::kRecent,
            .selection = BuildRecentSelection(0)});
-  Expect(state, !kInvalidRecent.ok,
-         "RunTemporalStructuredInsightsQuery recent should fail on non-positive "
-         "days.");
+  Expect(
+      state, !kInvalidRecent.ok,
+      "RunTemporalStructuredInsightsQuery recent should fail on non-positive "
+      "days.");
   Expect(state,
          Contains(kInvalidRecent.error_message,
                   "RunTemporalStructuredInsightsQuery failed"),

@@ -128,10 +128,10 @@ TT_CORE_API TtCoreRuntimeHandle* tracer_core_pipeline_runtime_create(
 // Destroys a runtime handle created by `tracer_core_runtime_create`.
 TT_CORE_API void tracer_core_runtime_destroy(TtCoreRuntimeHandle* handle);
 
-// Applies Android-owned, report-scope status definitions to an initialized runtime.
-// `status_configs_json` uses {"day":[{"id","label","parent"}, ...], ...}
-// with all six scopes: day, week, month, year, recent, and range.
-// Returns TT_CORE_STATUS_OK on success; otherwise inspect tracer_core_last_error().
+// Applies Android-owned, report-scope status definitions to an initialized
+// runtime. `status_configs_json` uses {"day":[{"id","label","parent"}, ...],
+// ...} with all six scopes: day, week, month, year, recent, and range. Returns
+// TT_CORE_STATUS_OK on success; otherwise inspect tracer_core_last_error().
 TT_CORE_API int tracer_core_runtime_set_insights_statuses_json(
     TtCoreRuntimeHandle* handle, const char* status_configs_json);
 
@@ -142,10 +142,9 @@ TT_CORE_API const char* tracer_core_pipeline_runtime_validate_structure_json(
 TT_CORE_API const char* tracer_core_pipeline_runtime_validate_logic_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
 
-// Runs ingest/query/insights with JSON request payload and returns JSON response.
-// Returned pointer is thread-local and remains valid until the next API call
-// on the same thread.
-// Standard response envelope fields:
+// Runs ingest/query/insights with JSON request payload and returns JSON
+// response. Returned pointer is thread-local and remains valid until the next
+// API call on the same thread. Standard response envelope fields:
 // - ok / error_message / error_code / error_category / hints
 // - content (for text responses)
 TT_CORE_API const char* tracer_core_runtime_ingest_json(
@@ -164,7 +163,8 @@ TT_CORE_API const char* tracer_core_runtime_validate_logic_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
 TT_CORE_API const char* tracer_core_runtime_record_activity_atomically_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
-TT_CORE_API const char* tracer_core_runtime_update_activity_remark_atomically_json(
+TT_CORE_API const char*
+tracer_core_runtime_update_activity_remark_atomically_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
 TT_CORE_API const char* tracer_core_runtime_update_day_remark_atomically_json(
     TtCoreRuntimeHandle* handle, const char* request_json);

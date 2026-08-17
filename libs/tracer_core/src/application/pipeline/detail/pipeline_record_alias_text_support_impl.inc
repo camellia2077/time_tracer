@@ -230,6 +230,17 @@ constexpr std::string_view kOvernightContinuationWarning =
   return static_cast<int>(lines.size());
 }
 
+[[nodiscard]] auto FindRecordEventInsertIndex(
+    const std::vector<std::string>& lines, const int block_start,
+    const int block_end) -> int {
+  int insert_index = block_end;
+  while (insert_index > block_start + 1 &&
+         Trim(lines[static_cast<std::size_t>(insert_index - 1)]).empty()) {
+    --insert_index;
+  }
+  return insert_index;
+}
+
 [[nodiscard]] auto FindFirstActivityName(const std::vector<std::string>& lines,
                                          const int block_start,
                                          const int block_end)
@@ -593,7 +604,16 @@ constexpr std::string_view kOvernightContinuationWarning =
     }
   }
 
-  lines.insert(lines.begin() + block_end, event_line);
+  const int event_insert_index =
+      FindRecordEventInsertIndex(lines, block_start, block_end);
+  if (event_insert_index != block_end) {
+    runtime_bridge::LogInfo(std::format(
+        "[record.insert] day={} block_start={} block_end={} insert_index={} "
+        "trailing_separator_lines={}",
+        logical_date.day_marker, block_start, block_end, event_insert_index,
+        block_end - event_insert_index));
+  }
+  lines.insert(lines.begin() + event_insert_index, event_line);
   const int updated_block_end = FindDayBlockEnd(lines, block_start);
   const auto completeness_warning = ResolveAuthoredEventCompletenessWarning(
       lines, block_start, updated_block_end, wake_keywords);

@@ -552,14 +552,15 @@ void TestStructureValidatorBridge(int& failures) {
          "StructValidator should reject too-long point activity after "
          "cross-midnight interval.",
          failures);
-  Expect(std::any_of(cross_midnight_point_too_long_diagnostics.begin(),
-                     cross_midnight_point_too_long_diagnostics.end(),
-                     [](const Diagnostic& diagnostic) -> bool {
-                       return diagnostic.code == "activity.duration.too_long";
-                     }),
-         "Too-long point activity after cross-midnight interval should insights "
-         "duration diagnostic.",
-         failures);
+  Expect(
+      std::any_of(cross_midnight_point_too_long_diagnostics.begin(),
+                  cross_midnight_point_too_long_diagnostics.end(),
+                  [](const Diagnostic& diagnostic) -> bool {
+                    return diagnostic.code == "activity.duration.too_long";
+                  }),
+      "Too-long point activity after cross-midnight interval should insights "
+      "duration diagnostic.",
+      failures);
 
   DailyLog cross_midnight_point_allowed_day = cross_midnight_point_too_long_day;
   cross_midnight_point_allowed_day.rawEvents.back().remark =
@@ -718,13 +719,14 @@ void TestStructureValidatorBridge(int& failures) {
          "StructValidator should reject cross-midnight intervals over 16h "
          "without @allow-long.",
          failures);
-  Expect(std::any_of(too_long_interval_diagnostics.begin(),
-                     too_long_interval_diagnostics.end(),
-                     [](const Diagnostic& diagnostic) -> bool {
-                       return diagnostic.code == "activity.duration.too_long";
-                     }),
-         "Too-long cross-midnight interval should insights duration diagnostic.",
-         failures);
+  Expect(
+      std::any_of(too_long_interval_diagnostics.begin(),
+                  too_long_interval_diagnostics.end(),
+                  [](const Diagnostic& diagnostic) -> bool {
+                    return diagnostic.code == "activity.duration.too_long";
+                  }),
+      "Too-long cross-midnight interval should insights duration diagnostic.",
+      failures);
   Expect(std::none_of(too_long_interval_diagnostics.begin(),
                       too_long_interval_diagnostics.end(),
                       [](const Diagnostic& diagnostic) -> bool {
@@ -776,13 +778,14 @@ void TestStructureValidatorBridge(int& failures) {
          "StructValidator should reject cross-midnight interval text that "
          "starts before the last boundary.",
          failures);
-  Expect(std::any_of(boundary_overlap_interval_diagnostics.begin(),
-                     boundary_overlap_interval_diagnostics.end(),
-                     [](const Diagnostic& diagnostic) -> bool {
-                       return diagnostic.code == "timeline.event.overlap";
-                     }),
-         "Boundary-overlapping cross-midnight interval should insights overlap.",
-         failures);
+  Expect(
+      std::any_of(boundary_overlap_interval_diagnostics.begin(),
+                  boundary_overlap_interval_diagnostics.end(),
+                  [](const Diagnostic& diagnostic) -> bool {
+                    return diagnostic.code == "timeline.event.overlap";
+                  }),
+      "Boundary-overlapping cross-midnight interval should insights overlap.",
+      failures);
 
   DailyLog allowed_long_interval_day;
   allowed_long_interval_day.date = "2026-03-09";

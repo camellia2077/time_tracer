@@ -63,9 +63,9 @@ auto BuildAndroidPipelineState(const fs::path& output_root,
   auto time_sheet_repository =
       std::make_shared<infra_persistence_write::SqliteTimeSheetRepository>(
           db_path.string());
-  auto ingest_runtime_repository =
-      std::make_shared<infra_persistence_runtime::SqliteIngestRuntimeRepository>(
-          db_path.string());
+  auto ingest_runtime_repository = std::make_shared<
+      infra_persistence_runtime::SqliteIngestRuntimeRepository>(
+      db_path.string());
   auto database_health_checker =
       std::make_shared<infra_persistence_runtime::SqliteDatabaseHealthChecker>(
           db_path.string());
@@ -84,9 +84,9 @@ auto BuildAndroidPipelineState(const fs::path& output_root,
   state->workflow_handler = std::make_shared<app_workflow::WorkflowHandler>(
       output_root, std::move(processed_data_loader),
       std::move(time_sheet_repository), std::move(ingest_runtime_repository),
-      std::move(database_health_checker),
-      std::move(converter_config_provider), std::move(ingest_input_provider),
-      std::move(processed_data_storage), std::move(validation_issue_reporter));
+      std::move(database_health_checker), std::move(converter_config_provider),
+      std::move(ingest_input_provider), std::move(processed_data_storage),
+      std::move(validation_issue_reporter));
   return state;
 }
 
@@ -119,8 +119,8 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
   tracer_core::domain::ports::ClearBufferedDiagnostics();
   tracer_core::domain::ports::ClearDiagnosticsDedup();
 
-  auto pipeline_state = BuildAndroidPipelineState(
-      kOutputRoot, kDbPath, kConverterConfigTomlPath);
+  auto pipeline_state =
+      BuildAndroidPipelineState(kOutputRoot, kDbPath, kConverterConfigTomlPath);
   auto workflow = pipeline_state->workflow_handler;
 
   auto platform_clock =
@@ -128,7 +128,7 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
 
   auto insights_catalog = std::make_shared<InsightsCatalog>(
       android_runtime_detail::BuildAndroidInsightsCatalog(kOutputRoot,
-                                                        kRuntimeConfigPaths));
+                                                          kRuntimeConfigPaths));
 
   auto insights_query_service =
       std::make_unique<infra_insights::LazySqliteInsightsQueryService>(
@@ -185,8 +185,8 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
 
 void SetAndroidRuntimeStatusConfigs(AndroidRuntime& runtime,
                                     InsightsStatusConfigs status_configs) {
-  const auto state = std::static_pointer_cast<AndroidRuntimeState>(
-      runtime.runtime_state);
+  const auto state =
+      std::static_pointer_cast<AndroidRuntimeState>(runtime.runtime_state);
   if (!state || !state->insights_catalog) {
     throw std::runtime_error("Android insights catalog is not initialized.");
   }
@@ -209,8 +209,8 @@ auto BuildAndroidPipelineRuntime(const AndroidRuntimeRequest& request)
   tracer_core::domain::ports::ClearBufferedDiagnostics();
   tracer_core::domain::ports::ClearDiagnosticsDedup();
 
-  auto pipeline_state = BuildAndroidPipelineState(
-      kOutputRoot, kDbPath, kConverterConfigTomlPath);
+  auto pipeline_state =
+      BuildAndroidPipelineState(kOutputRoot, kDbPath, kConverterConfigTomlPath);
   AndroidPipelineRuntime runtime;
   runtime.pipeline_api = std::make_shared<app_use_cases::PipelineApi>(
       *pipeline_state->workflow_handler);

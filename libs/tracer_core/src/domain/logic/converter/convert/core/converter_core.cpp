@@ -33,7 +33,7 @@ auto ResolveMappedDescription(const RawEvent& raw_event,
                               const ConverterConfig& config) -> std::string {
   const auto kMapping = config.text_mapping.find(raw_event.description);
   return kMapping == config.text_mapping.end() ? raw_event.description
-                                              : kMapping->second;
+                                               : kMapping->second;
 }
 
 auto HasExplicitSleepInterval(const DailyLog& day,
@@ -80,8 +80,8 @@ void DayProcessor::Process(DailyLog& previous_day, DailyLog& day_to_process) {
       !day_to_process.getupTime.empty() && !day_to_process.isContinuation &&
       !HasExplicitSleepInterval(previous_day, config_)) {
     BaseActivityRecord sleep_activity = BaseActivityRecord::MakeInterval(
-        previous_day.rawEvents.back().endTimeStr,
-        day_to_process.getupTime, ResolveSleepInferenceProjectPath(config_));
+        previous_day.rawEvents.back().endTimeStr, day_to_process.getupTime,
+        ResolveSleepInferenceProjectPath(config_));
 
     day_to_process.processedActivities.insert(
         day_to_process.processedActivities.begin(), sleep_activity);
@@ -105,9 +105,8 @@ void LogLinker::LinkLogs(
 
     DailyLog& current_first_day = days.front();
     if (prev_month_last_day != nullptr) {
-      const bool kHasValidGetup =
-          !current_first_day.getupTime.empty() &&
-          current_first_day.getupTime != "00:00:00";
+      const bool kHasValidGetup = !current_first_day.getupTime.empty() &&
+                                  current_first_day.getupTime != "00:00:00";
       const bool kMissingInferredSleep =
           !HasInferredOvernightSleep(current_first_day, config_);
       // Linking depends on a valid getup time and whether overnight sleep was

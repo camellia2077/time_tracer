@@ -53,8 +53,8 @@ void SetLastError(const char* message) {
 }
 
 [[nodiscard]] auto BuildIngestSyncStatusResponse(
-    const tracer_core::core::dto::IngestSyncStatusOutput& output)
-    -> const char* {
+    const tracer_core::core::dto::IngestSyncStatusOutput& output) -> const
+    char* {
   tt_transport::IngestSyncStatusResponsePayload payload{};
   payload.ok = output.ok;
   payload.error_message = output.error_message;
@@ -237,6 +237,7 @@ void SetLastError(const char* message) {
   return tracer_core::shell::c_api_bridge::ParseTemporalSelectionKind(value);
 }
 
-[[nodiscard]] auto ParseInsightsFormat(const std::string& value) -> InsightsFormat {
+[[nodiscard]] auto ParseInsightsFormat(const std::string& value)
+    -> InsightsFormat {
   return tracer_core::shell::c_api_bridge::ParseInsightsFormat(value);
 }

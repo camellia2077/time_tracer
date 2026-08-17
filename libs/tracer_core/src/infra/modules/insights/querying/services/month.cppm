@@ -7,6 +7,7 @@ export module tracer.core.infrastructure.insights.querying.services
 
 export namespace tracer::core::infrastructure::insights::services {
 
-using ::tracer::core::infrastructure::insights::services::MonthlyInsightsService;
+using ::tracer::core::infrastructure::insights::services::
+    MonthlyInsightsService;
 
 }  // namespace tracer::core::infrastructure::insights::services

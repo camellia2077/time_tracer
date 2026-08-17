@@ -56,27 +56,31 @@ constexpr std::string_view kLibwinpthreadRuntimeName = "libwinpthread-1.dll";
       {"defaults",
        {{"default_format", ToStringJson(cli_config.defaults.default_format)}}},
       {"command_defaults",
-       {{"export_format",
-         ToStringJson(cli_config.command_defaults.export_format)},
-        {"query_format",
-         ToStringJson(cli_config.command_defaults.query_format)},
-        {"convert_save_processed_output",
-         cli_config.command_defaults.convert_save_processed_output.has_value()
-             ? json(*cli_config.command_defaults.convert_save_processed_output)
-             : json(nullptr)},
-        {"convert_validate_logic",
-         cli_config.command_defaults.convert_validate_logic.has_value()
-             ? json(*cli_config.command_defaults.convert_validate_logic)
-             : json(nullptr)},
-        {"convert_validate_structure",
-         cli_config.command_defaults.convert_validate_structure.has_value()
-             ? json(*cli_config.command_defaults.convert_validate_structure)
-             : json(nullptr)},
-        {"ingest_save_processed_output",
-         cli_config.command_defaults.ingest_save_processed_output.has_value()
-             ? json(*cli_config.command_defaults.ingest_save_processed_output)
-             : json(nullptr)},
-        }}};
+       {
+           {"export_format",
+            ToStringJson(cli_config.command_defaults.export_format)},
+           {"query_format",
+            ToStringJson(cli_config.command_defaults.query_format)},
+           {"convert_save_processed_output",
+            cli_config.command_defaults.convert_save_processed_output
+                    .has_value()
+                ? json(*cli_config.command_defaults
+                            .convert_save_processed_output)
+                : json(nullptr)},
+           {"convert_validate_logic",
+            cli_config.command_defaults.convert_validate_logic.has_value()
+                ? json(*cli_config.command_defaults.convert_validate_logic)
+                : json(nullptr)},
+           {"convert_validate_structure",
+            cli_config.command_defaults.convert_validate_structure.has_value()
+                ? json(*cli_config.command_defaults.convert_validate_structure)
+                : json(nullptr)},
+           {"ingest_save_processed_output",
+            cli_config.command_defaults.ingest_save_processed_output.has_value()
+                ? json(
+                      *cli_config.command_defaults.ingest_save_processed_output)
+                : json(nullptr)},
+       }}};
 }
 
 [[nodiscard]] auto BuildFailureJsonResponse(

@@ -15,8 +15,8 @@ import tracer.core.infrastructure.insights.querying;
 auto RunInfrastructureModuleInsightsSmoke() -> int {
   const auto kGetInsightsFormatDetails =
       &tracer::core::infrastructure::insights::GetInsightsFormatDetails;
-  const auto kFormatDaily =
-      &tracer::core::infrastructure::insights::InsightsDtoFormatter::FormatDaily;
+  const auto kFormatDaily = &tracer::core::infrastructure::insights::
+                                InsightsDtoFormatter::FormatDaily;
   const auto kRunPeriodQuery =
       &tracer::core::infrastructure::insights::InsightsService::RunPeriodQuery;
   const auto kQueryAllDaily = &tracer::core::infrastructure::insights::
@@ -25,8 +25,8 @@ auto RunInfrastructureModuleInsightsSmoke() -> int {
       &tracer::core::infrastructure::insights::SqliteInsightsDataQueryService::
           ListDailyTargets;
   const auto kListYearlyTargets =
-      &tracer::core::infrastructure::insights::LazySqliteInsightsDataQueryService::
-          ListYearlyTargets;
+      &tracer::core::infrastructure::insights::
+          LazySqliteInsightsDataQueryService::ListYearlyTargets;
   (void)kGetInsightsFormatDetails;
   (void)kFormatDaily;
   (void)kRunPeriodQuery;
@@ -89,7 +89,8 @@ auto RunInfrastructureModuleInsightsSmoke() -> int {
                             .remark = std::nullopt,
                             .date = "2023-11-30"}});
     const auto kEndOnlyDay = data_query_service.QueryDaily("2023-11-30");
-    if (kEndOnlyDay.activity_count != 1 || kEndOnlyDay.total_duration != 0 ||
+    if (kEndOnlyDay.activity.occurrence_count != 1 ||
+        kEndOnlyDay.activity.total_duration_seconds != 0 ||
         kEndOnlyDay.detailed_records.size() != 1U ||
         kEndOnlyDay.detailed_records.front().kind !=
             ActivityRecordKind::kEndOnly) {
@@ -97,8 +98,10 @@ auto RunInfrastructureModuleInsightsSmoke() -> int {
     }
     const auto kEndOnlyRange =
         data_query_service.QueryRange("2023-11-30", "2023-11-30");
-    if (!kEndOnlyRange.has_records || kEndOnlyRange.activity_days.size() != 1U ||
-        kEndOnlyRange.activity_days.front().total_duration != 0 ||
+    if (!kEndOnlyRange.has_records ||
+        kEndOnlyRange.activity_days.size() != 1U ||
+        kEndOnlyRange.activity_days.front().activity.total_duration_seconds !=
+            0 ||
         kEndOnlyRange.activity_days.front().detailed_records.size() != 1U ||
         kEndOnlyRange.activity_days.front().detailed_records.front().kind !=
             ActivityRecordKind::kEndOnly) {
@@ -108,7 +111,7 @@ auto RunInfrastructureModuleInsightsSmoke() -> int {
     {
       const auto kEmptyRecent = data_query_service.QueryPeriod(7);
       if (kEmptyRecent.has_records || kEmptyRecent.matched_day_count != 0 ||
-          kEmptyRecent.matched_record_count != 0) {
+          kEmptyRecent.activity.occurrence_count != 0) {
         return 46;
       }
     }
@@ -116,7 +119,7 @@ auto RunInfrastructureModuleInsightsSmoke() -> int {
       const auto kEmptyRange =
           data_query_service.QueryRange("2024-12-01", "2024-12-31");
       if (kEmptyRange.has_records || kEmptyRange.matched_day_count != 0 ||
-          kEmptyRange.matched_record_count != 0) {
+          kEmptyRange.activity.occurrence_count != 0) {
         return 47;
       }
     }

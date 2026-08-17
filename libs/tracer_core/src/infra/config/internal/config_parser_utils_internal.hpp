@@ -31,7 +31,7 @@ struct BundlePathSource {
 };
 
 struct AndroidBundleInsightsConfigPathSet {
-  fs::path day;
+  fs::path daily;
   fs::path month;
   fs::path period;
   fs::path week;
@@ -108,11 +108,11 @@ auto EnsureFieldAbsent(const toml::table& tbl, std::string_view key,
                        std::string_view replacement_hint) -> void;
 
 auto LoadInsightsPathsFromTable(const toml::table& section,
-                              const InsightsPathSource& source,
-                              std::string_view section_field_path,
-                              fs::path& day_path, fs::path& month_path,
-                              fs::path& period_path, fs::path& week_path,
-                              fs::path& year_path) -> void;
+                                const InsightsPathSource& source,
+                                std::string_view section_field_path,
+                                fs::path& day_path, fs::path& month_path,
+                                fs::path& period_path, fs::path& week_path,
+                                fs::path& year_path) -> void;
 
 auto ParseGlobalDefaults(const toml::table& defaults_tbl,
                          const ConfigParseSource& source, AppConfig& config)

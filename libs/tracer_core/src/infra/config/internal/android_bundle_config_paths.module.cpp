@@ -13,7 +13,7 @@ namespace {
     -> tracer::core::infrastructure::config::internal::
         AndroidBundleInsightsConfigPathSet {
   return {
-      .day = paths.day,
+      .daily = paths.daily,
       .month = paths.month,
       .period = paths.period,
       .week = paths.week,

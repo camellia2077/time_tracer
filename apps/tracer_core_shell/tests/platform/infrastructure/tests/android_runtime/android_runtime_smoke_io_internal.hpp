@@ -24,8 +24,9 @@ auto VerifyExplicitChartRange(
 auto VerifyChartForRootScenarios(
     const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
     const ChartProbeContext& chart_probe, int& failures) -> void;
-auto VerifyInsightsOutputs(const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
-                         int& failures) -> void;
+auto VerifyInsightsOutputs(
+    const std::shared_ptr<ITracerCoreRuntime>& runtime_api, int& failures)
+    -> void;
 
 }  // namespace android_runtime_tests::smoke
 

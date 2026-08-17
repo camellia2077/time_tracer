@@ -89,9 +89,9 @@ class BaseTexFormatter : public IInsightsFormatter<InsightsDataT> {
     output += "}\n\n";
 
     output += TexUtils::FormatProjectTree(
-        data.project_tree, data.total_duration, GetAvgDays(data),
-        config_->GetCategoryTitleFontSize(), config_->GetListTopSepPt(),
-        config_->GetListItemSepEx());
+        data.project_tree, data.activity.total_duration_seconds,
+        GetAvgDays(data), config_->GetCategoryTitleFontSize(),
+        config_->GetListTopSepPt(), config_->GetListItemSepEx());
   }
 
   [[nodiscard]] virtual auto GeneratePostfix() const -> std::string {

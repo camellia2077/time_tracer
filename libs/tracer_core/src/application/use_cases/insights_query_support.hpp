@@ -27,12 +27,14 @@ auto BuildTemporalStructuredInsightsFailure(
     -> tracer_core::core::dto::TemporalStructuredInsightsOutput;
 auto BuildTemporalStructuredInsightsFailure(
     std::string_view operation,
-    const tracer_core::core::dto::TemporalStructuredInsightsQueryRequest& request,
+    const tracer_core::core::dto::TemporalStructuredInsightsQueryRequest&
+        request,
     std::string_view details)
     -> tracer_core::core::dto::TemporalStructuredInsightsOutput;
 auto BuildTemporalStructuredInsightsFailure(
     std::string_view operation,
-    const tracer_core::core::dto::TemporalStructuredInsightsQueryRequest& request,
+    const tracer_core::core::dto::TemporalStructuredInsightsQueryRequest&
+        request,
     const std::exception& exception)
     -> tracer_core::core::dto::TemporalStructuredInsightsOutput;
 
@@ -62,7 +64,8 @@ auto RequireSingleDaySelection(
     -> std::string;
 auto RequireDateRangeSelection(
     const tracer_core::core::dto::TemporalSelectionPayload& selection)
-    -> tracer::core::application::use_cases::insights_support::DateRangeArgument;
+    -> tracer::core::application::use_cases::insights_support::
+        DateRangeArgument;
 auto RequireRecentSelection(
     const tracer_core::core::dto::TemporalSelectionPayload& selection)
     -> RecentSelection;

@@ -29,7 +29,7 @@ class ActivityMapper {
 
   auto MapActivities(DailyLog& day) -> void;
 
-  private:
+ private:
   struct TimeRange {
     std::string_view start_iso_time;
     std::string_view end_iso_time;

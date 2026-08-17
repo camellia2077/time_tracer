@@ -15,7 +15,8 @@ namespace MonthTexUtils {
  * 格式的摘要（标题和总结信息）。
 
  */
-void DisplayHeader(std::string& insights_stream, const MonthlyInsightsData& data,
+void DisplayHeader(std::string& insights_stream,
+                   const MonthlyInsightsData& data,
                    const std::shared_ptr<MonthTexConfig>& config);
 
 }  // namespace MonthTexUtils

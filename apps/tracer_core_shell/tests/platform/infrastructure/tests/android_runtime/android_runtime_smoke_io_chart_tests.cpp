@@ -99,8 +99,8 @@ auto ProbeChartRange(const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
       tracer_core::core::dto::DataQueryAction::kInsightsChart;
   chart_range_request.lookback_days = 7;
   if (const auto chart_range_result = RunDataQueryOrRecordFailure(
-          runtime_api, chart_range_request, "RunDataQuery(insights-chart, range)",
-          failures);
+          runtime_api, chart_range_request,
+          "RunDataQuery(insights-chart, range)", failures);
       chart_range_result.has_value()) {
     if (const auto payload = ParseJsonOrRecordFailure(
             chart_range_result->content, "insights-chart range", failures);
@@ -212,8 +212,9 @@ auto VerifyChartForRootScenarios(
           runtime_api, chart_root_request,
           "RunDataQuery(insights-chart, selected root)", failures);
       chart_root_result.has_value()) {
-    if (const auto payload = ParseJsonOrRecordFailure(
-            chart_root_result->content, "insights-chart selected root", failures);
+    if (const auto payload =
+            ParseJsonOrRecordFailure(chart_root_result->content,
+                                     "insights-chart selected root", failures);
         payload.has_value()) {
       ValidateChartSeriesPayload(*payload, "insights-chart selected root",
                                  failures);
@@ -301,7 +302,8 @@ auto VerifyChartForRootScenarios(
     if (const auto payload = ParseJsonOrRecordFailure(
             result->content, "insights-chart empty root", failures);
         payload.has_value()) {
-      ValidateChartSeriesPayload(*payload, "insights-chart empty root", failures);
+      ValidateChartSeriesPayload(*payload, "insights-chart empty root",
+                                 failures);
       if (!payload->value("selected_root", std::string()).empty()) {
         ++failures;
         std::cerr << "[FAIL] insights-chart empty root should normalize to "

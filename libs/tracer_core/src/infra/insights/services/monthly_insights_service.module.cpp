@@ -40,8 +40,8 @@ static auto ParseYearMonth(const std::string& year_month_str)
 
 namespace tracer::core::infrastructure::insights::services {
 
-MonthlyInsightsService::MonthlyInsightsService(sqlite3* database_connection,
-                                           const InsightsCatalog& insights_catalog)
+MonthlyInsightsService::MonthlyInsightsService(
+    sqlite3* database_connection, const InsightsCatalog& insights_catalog)
     : db_(database_connection), insights_catalog_(insights_catalog) {
   if (db_ == nullptr) {
     throw std::invalid_argument("Database connection cannot be null.");

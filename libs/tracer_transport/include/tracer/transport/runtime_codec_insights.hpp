@@ -8,8 +8,8 @@
 
 namespace tracer::transport {
 
-[[nodiscard]] auto EncodeInsightsResponse(const InsightsResponsePayload& response)
-    -> std::string;
+[[nodiscard]] auto EncodeInsightsResponse(
+    const InsightsResponsePayload& response) -> std::string;
 [[nodiscard]] auto DecodeTemporalInsightsRequest(std::string_view request_json)
     -> TemporalInsightsRequestPayload;
 [[nodiscard]] auto EncodeTemporalInsightsRequest(

@@ -20,12 +20,12 @@ namespace tracer::core::infrastructure::query::data {
 
 namespace tracer_core::infrastructure::query::data {
 
-using tracer::core::infrastructure::query::data::QueryFrequentActivities;
 using tracer::core::infrastructure::query::data::QueryDatesByFilters;
 using tracer::core::infrastructure::query::data::QueryDayDurations;
 using tracer::core::infrastructure::query::data::
     QueryDayDurationsByRootInDateRange;
 using tracer::core::infrastructure::query::data::QueryDays;
+using tracer::core::infrastructure::query::data::QueryFrequentActivities;
 using tracer::core::infrastructure::query::data::QueryLatestTrackedDate;
 using tracer::core::infrastructure::query::data::QueryMonths;
 using tracer::core::infrastructure::query::data::QueryProjectRootNames;

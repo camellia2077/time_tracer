@@ -254,7 +254,8 @@ extern "C" TT_CORE_API auto tracer_core_runtime_record_activity_atomically_json(
     return BuildFailureResponse(error.what());
   } catch (...) {
     return BuildFailureResponse(
-        "tracer_core_runtime_record_activity_atomically_json failed unexpectedly.");
+        "tracer_core_runtime_record_activity_atomically_json failed "
+        "unexpectedly.");
   }
 }
 
@@ -319,7 +320,8 @@ tracer_core_runtime_update_activity_remark_atomically_json(
     return BuildFailureResponse(error.what());
   } catch (...) {
     return BuildFailureResponse(
-        "tracer_core_runtime_update_activity_remark_atomically_json failed unexpectedly.");
+        "tracer_core_runtime_update_activity_remark_atomically_json failed "
+        "unexpectedly.");
   }
 }
 
@@ -345,6 +347,7 @@ tracer_core_runtime_update_day_remark_atomically_json(
     return BuildFailureResponse(error.what());
   } catch (...) {
     return BuildFailureResponse(
-        "tracer_core_runtime_update_day_remark_atomically_json failed unexpectedly.");
+        "tracer_core_runtime_update_day_remark_atomically_json failed "
+        "unexpectedly.");
   }
 }

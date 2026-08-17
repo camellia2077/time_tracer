@@ -34,6 +34,27 @@ Important rules:
   - Android tracer exchange export passes a detached output fd into JNI.
   - Native writes encrypted `.zip` bytes directly to that fd.
 
+## Authoring Ownership
+
+Raw TXT and canonical activity-hierarchy TOML changes have one semantic owner:
+Core. This applies to create, edit, delete, rename, and conversion operations.
+
+1. Presentation collects user intent and keeps only UI state, document/path
+   selection, and presentation feedback.
+2. Presentation invokes the owning Core runtime operation through the JNI/C ABI
+   boundary; it does not construct an alternative local mutation algorithm.
+3. Core validates and determines the resulting TXT/TOML content, replacement
+   plan, or atomic write outcome.
+4. Core atomic Record and remark operations own their physical TXT write,
+   validation, and re-ingest transaction.
+5. When a Core content-transform action returns updated content or a
+   replacement plan, Android may perform the contract-defined physical write
+   and sync transaction, but it persists exactly that Core result and does not
+   reinterpret its semantics.
+
+This rule prevents Android-local fallback writers from drifting from the
+shared TXT/TOML behavior used by the other hosts.
+
 ## C ABI Scope
 
 Current Android JNI integration uses C ABI entrypoints in these categories:
@@ -182,6 +203,12 @@ For Week, Month, Year, Range, and Recent, structured insights additionally
 return `activity_days[]` in descending date order. Each item keeps the Core
 logical day plus that day's `detailed_records`, allowing the Android Activity
 section to browse a selected window without parsing the Markdown report.
+
+Period structured insights also return `total_duration` and
+`matched_record_count` at `insights` level. These are the selected window's
+single Core-owned activity aggregate: total duration and total occurrence
+count. Android stores and reuses this aggregate for the Activity overview and
+period comparison instead of summing `activity_days[]` again.
 
 Structured insights return `insights.statuses[]` with each configured status's
 `id`, `label`, `occurrence_count`, and `total_duration`. Android renders those

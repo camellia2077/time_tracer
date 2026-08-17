@@ -14,7 +14,8 @@ TracerCoreRuntime::TracerCoreRuntime(
       query_api_(std::move(query_api)),
       insights_api_(std::move(insights_api)),
       tracer_exchange_api_(std::move(tracer_exchange_api)) {
-  if (!pipeline_api_ || !query_api_ || !insights_api_ || !tracer_exchange_api_) {
+  if (!pipeline_api_ || !query_api_ || !insights_api_ ||
+      !tracer_exchange_api_) {
     throw std::invalid_argument(
         "TracerCoreRuntime capability APIs must not be null.");
   }

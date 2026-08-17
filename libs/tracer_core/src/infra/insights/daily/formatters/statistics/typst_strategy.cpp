@@ -7,7 +7,8 @@ constexpr size_t kMainItemPadding = 8;
 constexpr size_t kSubItemPadding = 10;
 }  // namespace
 
-TypstStrategy::TypstStrategy(const std::shared_ptr<DayTypConfig>& config)
+TypstStrategy::TypstStrategy(
+    const std::shared_ptr<DailyTypFormatterConfig>& config)
     : config_(config) {}
 
 auto TypstStrategy::FormatHeader(const std::string& title) const

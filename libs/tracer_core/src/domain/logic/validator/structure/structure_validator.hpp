@@ -48,8 +48,7 @@ struct MixedTimelineAnalysis {
 // interactive day editing. It keeps the established mixed point/interval and
 // cross-midnight semantics in one Core implementation.
 [[nodiscard]] auto AnalyzeMixedTimeline(
-    const DailyLog& day,
-    const std::unordered_set<std::string>& wake_keywords)
+    const DailyLog& day, const std::unordered_set<std::string>& wake_keywords)
     -> MixedTimelineAnalysis;
 
 class StructValidator {

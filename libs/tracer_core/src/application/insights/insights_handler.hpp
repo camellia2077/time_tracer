@@ -10,7 +10,8 @@ class IInsightsQueryService;
 
 class InsightsHandler : public IInsightsHandler {
  public:
-  explicit InsightsHandler(std::unique_ptr<IInsightsQueryService> query_service);
+  explicit InsightsHandler(
+      std::unique_ptr<IInsightsQueryService> query_service);
   ~InsightsHandler() override;
 
   auto RunDailyQuery(std::string_view date, InsightsFormat format)
@@ -22,8 +23,8 @@ class InsightsHandler : public IInsightsHandler {
       -> std::string override;
   auto RunYearlyQuery(std::string_view year, InsightsFormat format)
       -> std::string override;
-  auto RunPeriodQueries(const std::vector<int>& days_list, InsightsFormat format)
-      -> std::string override;
+  auto RunPeriodQueries(const std::vector<int>& days_list,
+                        InsightsFormat format) -> std::string override;
 
  private:
   std::unique_ptr<IInsightsQueryService> query_service_;

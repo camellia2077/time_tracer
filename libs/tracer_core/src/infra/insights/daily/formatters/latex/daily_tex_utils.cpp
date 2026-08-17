@@ -1,5 +1,5 @@
-// infra/insights/daily/formatters/latex/day_tex_utils.cpp
-#include "infra/insights/daily/formatters/latex/day_tex_utils.hpp"
+// infra/insights/daily/formatters/latex/daily_tex_utils.cpp
+#include "infra/insights/daily/formatters/latex/daily_tex_utils.hpp"
 
 #include <vector>
 
@@ -9,10 +9,10 @@
 #include "infra/insights/shared/utils/format/status_statistics_format.hpp"
 #include "infra/insights/shared/utils/format/time_format.hpp"
 
-namespace DayTexUtils {
+namespace DailyTexUtils {
 
 void DisplayHeader(std::string& insights_stream, const DailyInsightsData& data,
-                   const std::shared_ptr<DayTexConfig>& config) {
+                   const std::shared_ptr<DailyTexFormatterConfig>& config) {
   // 1. 渲染标题
   std::string title_content =
       TexUtils::EscapeLatex(config->GetSummarySectionLabel());
@@ -26,9 +26,10 @@ void DisplayHeader(std::string& insights_stream, const DailyInsightsData& data,
 
   std::vector<TexCommonUtils::SummaryItem> items = {
       {config->GetPeriodLabel(), TexUtils::EscapeLatex(data.date)},
-      {config->GetTotalTimeLabel(),
-       TexUtils::EscapeLatex(TimeFormatDuration(data.total_duration))},
-      {config->GetActivityCountLabel(), std::to_string(data.activity_count)}};
+      {config->GetTotalTimeLabel(), TexUtils::EscapeLatex(TimeFormatDuration(
+                                        data.activity.total_duration_seconds))},
+      {config->GetActivityCountLabel(),
+       std::to_string(data.activity.occurrence_count)}};
 
   items.emplace_back(config->GetGetupTimeLabel(),
                      TexUtils::EscapeLatex(data.metadata.getup_time));
@@ -39,15 +40,16 @@ void DisplayHeader(std::string& insights_stream, const DailyInsightsData& data,
                                     config->GetListTopSepPt(),
                                     config->GetListItemSepEx());
   if (!data.metadata.statuses.empty()) {
-    TexCommonUtils::RenderTitle(insights_stream,
-                                TexUtils::EscapeLatex(config->GetCustomSectionLabel()),
-                                config->GetCategoryTitleFontSize(), true);
+    TexCommonUtils::RenderTitle(
+        insights_stream, TexUtils::EscapeLatex(config->GetCustomSectionLabel()),
+        config->GetCategoryTitleFontSize(), true);
     std::vector<TexCommonUtils::SummaryItem> statuses;
     statuses.reserve(data.metadata.statuses.size());
     for (const auto& status : data.metadata.statuses) {
-      statuses.emplace_back(status.label, TexUtils::EscapeLatex(
-          FormatStatusStatistics(status.occurrence_count, status.total_duration,
-                                 config->GetStatusCountUnit())));
+      statuses.emplace_back(status.label,
+                            TexUtils::EscapeLatex(FormatStatusStatistics(
+                                status.occurrence_count, status.total_duration,
+                                config->GetStatusCountUnit())));
     }
     TexCommonUtils::RenderSummaryList(insights_stream, statuses,
                                       config->GetListTopSepPt(),
@@ -55,9 +57,9 @@ void DisplayHeader(std::string& insights_stream, const DailyInsightsData& data,
   }
 }
 
-void DisplayDetailedActivities(std::string& insights_stream,
-                               const DailyInsightsData& data,
-                               const std::shared_ptr<DayTexConfig>& config) {
+void DisplayDetailedActivities(
+    std::string& insights_stream, const DailyInsightsData& data,
+    const std::shared_ptr<DailyTexFormatterConfig>& config) {
   if (data.detailed_records.empty()) {
     return;
   }
@@ -122,4 +124,4 @@ void DisplayDetailedActivities(std::string& insights_stream,
   insights_stream += "\\end{itemize}\n\n";
 }
 
-}  // namespace DayTexUtils
+}  // namespace DailyTexUtils

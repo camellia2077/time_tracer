@@ -16,7 +16,8 @@ class IInsightsHandler {
       -> std::string = 0;
   virtual auto RunMonthlyQuery(std::string_view month, InsightsFormat format)
       -> std::string = 0;
-  virtual auto RunPeriodQuery(int days, InsightsFormat format) -> std::string = 0;
+  virtual auto RunPeriodQuery(int days, InsightsFormat format)
+      -> std::string = 0;
   virtual auto RunWeeklyQuery(std::string_view iso_week, InsightsFormat format)
       -> std::string = 0;
   virtual auto RunYearlyQuery(std::string_view year, InsightsFormat format)

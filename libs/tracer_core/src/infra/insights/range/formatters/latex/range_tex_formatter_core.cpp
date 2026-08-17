@@ -21,7 +21,8 @@ auto RangeTexFormatter::ValidateData(const RangeInsightsData& data) const
   return std::string{};
 }
 
-auto RangeTexFormatter::IsEmptyData(const RangeInsightsData& data) const -> bool {
+auto RangeTexFormatter::IsEmptyData(const RangeInsightsData& data) const
+    -> bool {
   return data.actual_days == 0;
 }
 
@@ -33,7 +34,7 @@ auto RangeTexFormatter::GetNoRecordsMsg() const -> std::string {
   return config_->GetNoRecordsMessage();
 }
 
-void RangeTexFormatter::FormatHeaderContent(std::string& insights_stream,
-                                            const RangeInsightsData& data) const {
+void RangeTexFormatter::FormatHeaderContent(
+    std::string& insights_stream, const RangeInsightsData& data) const {
   RangeTexUtils::DisplaySummary(insights_stream, data, config_);
 }

@@ -39,7 +39,8 @@ auto BuildTimelineTestConfig() -> ConverterConfig {
 auto TestConvertResponses(TestState& state) -> void {
   FakePipelineWorkflow pipeline_workflow;
   FakeInsightsHandler insights_handler;
-  auto runtime_api = BuildRuntimeApiForTest(pipeline_workflow, insights_handler);
+  auto runtime_api =
+      BuildRuntimeApiForTest(pipeline_workflow, insights_handler);
 
   const ConvertRequest kRequest = {.input_path = "source-path",
                                    .date_check_mode = DateCheckMode::kFull,
@@ -104,7 +105,8 @@ auto TestConvertResponses(TestState& state) -> void {
 auto TestIngestResponses(TestState& state) -> void {
   FakePipelineWorkflow pipeline_workflow;
   FakeInsightsHandler insights_handler;
-  auto runtime_api = BuildRuntimeApiForTest(pipeline_workflow, insights_handler);
+  auto runtime_api =
+      BuildRuntimeApiForTest(pipeline_workflow, insights_handler);
 
   const IngestRequest kRequest = {.input_path = "source-folder",
                                   .date_check_mode = DateCheckMode::kContinuity,
@@ -142,7 +144,8 @@ auto TestIngestResponses(TestState& state) -> void {
 auto TestValidateResponses(TestState& state) -> void {
   FakePipelineWorkflow pipeline_workflow;
   FakeInsightsHandler insights_handler;
-  auto runtime_api = BuildRuntimeApiForTest(pipeline_workflow, insights_handler);
+  auto runtime_api =
+      BuildRuntimeApiForTest(pipeline_workflow, insights_handler);
 
   const auto kStructureOk = runtime_api.pipeline().RunValidateStructure(
       {.input_path = "input-folder"});
@@ -302,14 +305,16 @@ auto TestIntervalDayBuildsExplicitRecords(TestState& state) -> void {
   DailyLog interval_day;
   interval_day.date = "2026-02-03";
   interval_day.isContinuation = true;
-  interval_day.rawEvents.push_back(RawEvent{.kind = RawEventKindType::Interval,
-                                            .startTimeStr = std::string("09:00:00"),
-                                            .endTimeStr = "10:30:00",
-                                            .description = "study"});
-  interval_day.rawEvents.push_back(RawEvent{.kind = RawEventKindType::Interval,
-                                            .startTimeStr = std::string("14:01:00"),
-                                            .endTimeStr = "19:00:00",
-                                            .description = "sleep"});
+  interval_day.rawEvents.push_back(
+      RawEvent{.kind = RawEventKindType::Interval,
+               .startTimeStr = std::string("09:00:00"),
+               .endTimeStr = "10:30:00",
+               .description = "study"});
+  interval_day.rawEvents.push_back(
+      RawEvent{.kind = RawEventKindType::Interval,
+               .startTimeStr = std::string("14:01:00"),
+               .endTimeStr = "19:00:00",
+               .description = "sleep"});
 
   processor.Process(previous_day, interval_day);
 
@@ -351,10 +356,11 @@ auto TestMixedDayUsesIntervalEndAsNextPointBoundary(TestState& state) -> void {
   mixed_day.rawEvents.push_back(RawEvent{.kind = RawEventKindType::Point,
                                          .endTimeStr = "06:06:00",
                                          .description = "wake"});
-  mixed_day.rawEvents.push_back(RawEvent{.kind = RawEventKindType::Interval,
-                                         .startTimeStr = std::string("09:00:00"),
-                                         .endTimeStr = "10:30:00",
-                                         .description = "study"});
+  mixed_day.rawEvents.push_back(
+      RawEvent{.kind = RawEventKindType::Interval,
+               .startTimeStr = std::string("09:00:00"),
+               .endTimeStr = "10:30:00",
+               .description = "study"});
   mixed_day.rawEvents.push_back(RawEvent{.kind = RawEventKindType::Point,
                                          .endTimeStr = "13:53:00",
                                          .description = "sleep"});
@@ -423,10 +429,11 @@ auto TestWrappedIntervalPreservesCrossMidnightDuration(TestState& state)
   DailyLog interval_day;
   interval_day.date = "2026-02-06";
   interval_day.isContinuation = true;
-  interval_day.rawEvents.push_back(RawEvent{.kind = RawEventKindType::Interval,
-                                            .startTimeStr = std::string("21:32:00"),
-                                            .endTimeStr = "01:35:00",
-                                            .description = "study"});
+  interval_day.rawEvents.push_back(
+      RawEvent{.kind = RawEventKindType::Interval,
+               .startTimeStr = std::string("21:32:00"),
+               .endTimeStr = "01:35:00",
+               .description = "study"});
 
   processor.Process(previous_day, interval_day);
 
@@ -457,11 +464,12 @@ auto TestCrossMidnightIntervalDoesNotUseWrapThreshold(TestState& state)
   DailyLog interval_day;
   interval_day.date = "2026-02-07";
   interval_day.isContinuation = true;
-  interval_day.rawEvents.push_back(RawEvent{.kind = RawEventKindType::Interval,
-                                            .startTimeStr = std::string("10:30:00"),
-                                            .endTimeStr = "09:00:00",
-                                            .description = "study",
-                                            .remark = "@allow-long"});
+  interval_day.rawEvents.push_back(
+      RawEvent{.kind = RawEventKindType::Interval,
+               .startTimeStr = std::string("10:30:00"),
+               .endTimeStr = "09:00:00",
+               .description = "study",
+               .remark = "@allow-long"});
 
   processor.Process(previous_day, interval_day);
 

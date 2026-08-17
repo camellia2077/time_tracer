@@ -17,8 +17,8 @@ import tracer.core.shared.period_utils;
 namespace modperiod = tracer::core::shared::modperiod;
 namespace tracer::core::infrastructure::insights::services {
 
-WeeklyInsightsService::WeeklyInsightsService(sqlite3* database_connection,
-                                         const InsightsCatalog& insights_catalog)
+WeeklyInsightsService::WeeklyInsightsService(
+    sqlite3* database_connection, const InsightsCatalog& insights_catalog)
     : db_(database_connection), insights_catalog_(insights_catalog) {
   if (db_ == nullptr) {
     throw std::invalid_argument("Database connection cannot be null.");

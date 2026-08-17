@@ -98,7 +98,8 @@ auto ActivityNameTextConverter::ConvertName(
   // An alias that is already present in the input remains untouched. This is
   // important for aliases such as a user-facing short name that also happens
   // to be a canonical value of another declaration.
-  if (aliases_.contains(kOriginal) || wake_canonical_names_.contains(kOriginal)) {
+  if (aliases_.contains(kOriginal) ||
+      wake_canonical_names_.contains(kOriginal)) {
     return kOriginal;
   }
   const auto kMapping = canonical_to_alias_.find(kOriginal);

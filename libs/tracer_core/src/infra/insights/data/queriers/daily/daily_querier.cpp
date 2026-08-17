@@ -27,9 +27,9 @@ auto BuildDailyStats(
   DerivedTimeStatsAggregator aggregator;
   for (const auto& [project_id, duration_seconds] : project_stats) {
     aggregator.AddPathDuration(
-        tracer::core::infrastructure::insights::data::record_mapping::JoinProjectPath(
-            provider.GetPathParts(project_id)),
-                               duration_seconds);
+        tracer::core::infrastructure::insights::data::record_mapping::
+            JoinProjectPath(provider.GetPathParts(project_id)),
+        duration_seconds);
   }
   return aggregator.BuildInsightsStatsMap();
 }
@@ -48,12 +48,13 @@ auto DayQuerier::FetchData() -> DailyInsightsData {
       BaseQuerier::FetchData();  // BaseQuerier 填充 data.project_stats
   FetchMetadata(data);
 
-  if (data.activity_count > 0 || status_config_ != nullptr) {
+  if (data.activity.occurrence_count > 0 || status_config_ != nullptr) {
     ProjectNameCache name_cache;
     name_cache.EnsureLoaded(db_);
-    if (data.activity_count > 0) {
+    if (data.activity.occurrence_count > 0) {
       FetchDetailedRecords(data, name_cache);
-      data.activity_count = static_cast<int>(data.detailed_records.size());
+      data.activity.occurrence_count =
+          static_cast<int>(data.detailed_records.size());
       data.stats = BuildDailyStats(data.project_stats, name_cache);
       BuildProjectTreeFromIds(data.project_tree, data.project_stats,
                               name_cache);
@@ -98,7 +99,7 @@ void DayQuerier::FetchMetadata(DailyInsightsData& data) {
       if (getup_ptr != nullptr) {
         data.metadata.getup_time = reinterpret_cast<const char*>(getup_ptr);
       }
-      data.activity_count = sqlite3_column_int(stmt, 2);
+      data.activity.occurrence_count = sqlite3_column_int(stmt, 2);
     }
   }
   sqlite3_finalize(stmt);
@@ -122,11 +123,16 @@ void DayQuerier::FetchDetailedRecords(DailyInsightsData& data,
     sqlite3_bind_text(stmt, 1, param_.data(), static_cast<int>(param_.size()),
                       SQLITE_TRANSIENT);
     while (sqlite3_step(stmt) == SQLITE_ROW) {
-      TimeRecord record = tracer::core::infrastructure::insights::data::record_mapping::ReadTimeRecord(
-          stmt, {.start_time = 0, .end_time = 1, .project_id = 2,
-                 .duration = 3, .activity_remark = 4, .logical_id = 5,
-                 .record_kind = 6},
-          provider);
+      TimeRecord record = tracer::core::infrastructure::insights::data::
+          record_mapping::ReadTimeRecord(stmt,
+                                         {.start_time = 0,
+                                          .end_time = 1,
+                                          .project_id = 2,
+                                          .duration = 3,
+                                          .activity_remark = 4,
+                                          .logical_id = 5,
+                                          .record_kind = 6},
+                                         provider);
       data.detailed_records.push_back(record);
     }
   }
@@ -190,7 +196,8 @@ void BatchDayDataFetcher::FetchDaysMetadata(BatchDataResult& result) {
     data.metadata.getup_time = (getup_ptr != nullptr)
                                    ? reinterpret_cast<const char*>(getup_ptr)
                                    : "N/A";
-    data.activity_count = sqlite3_column_int(stmt, kColActivityCount);
+    data.activity.occurrence_count =
+        sqlite3_column_int(stmt, kColActivityCount);
   }
   sqlite3_finalize(stmt);
 }
@@ -234,22 +241,27 @@ void BatchDayDataFetcher::FetchTimeRecords(BatchDataResult& result) {
     constexpr int kColLogicalId = 6;
     constexpr int kColRecordKind = 7;
 
-    TimeRecord record = tracer::core::infrastructure::insights::data::record_mapping::ReadTimeRecord(
-        stmt, {.start_time = kColStart, .end_time = kColEnd,
-               .project_id = kColProjectId, .duration = kColDuration,
-               .activity_remark = kColActivityRemark,
-               .logical_id = kColLogicalId, .record_kind = kColRecordKind},
-        provider_);
+    TimeRecord record = tracer::core::infrastructure::insights::data::
+        record_mapping::ReadTimeRecord(stmt,
+                                       {.start_time = kColStart,
+                                        .end_time = kColEnd,
+                                        .project_id = kColProjectId,
+                                        .duration = kColDuration,
+                                        .activity_remark = kColActivityRemark,
+                                        .logical_id = kColLogicalId,
+                                        .record_kind = kColRecordKind},
+                                       provider_);
     const std::int64_t project_id = sqlite3_column_int64(stmt, kColProjectId);
 
     data.detailed_records.push_back(record);
-    data.total_duration += record.duration_seconds;
+    data.activity.Add(record.duration_seconds);
     data.project_stats.emplace_back(project_id, record.duration_seconds);
   }
   sqlite3_finalize(stmt);
 
   for (auto& [date, data] : result.data_map) {
-    data.activity_count = static_cast<int>(data.detailed_records.size());
+    data.activity.occurrence_count =
+        static_cast<int>(data.detailed_records.size());
   }
 
   for (auto& [date, data] : result.data_map) {

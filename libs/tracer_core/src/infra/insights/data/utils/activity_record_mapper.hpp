@@ -25,7 +25,8 @@ struct TimeRecordColumnIndexes {
   int record_kind;
 };
 
-inline auto JoinProjectPath(const std::vector<std::string>& parts) -> std::string {
+inline auto JoinProjectPath(const std::vector<std::string>& parts)
+    -> std::string {
   if (parts.empty()) {
     return "";
   }

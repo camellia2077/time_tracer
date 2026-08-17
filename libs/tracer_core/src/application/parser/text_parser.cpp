@@ -79,15 +79,15 @@ auto FormatIsoTime(const std::string& compact_time) -> std::string {
   }
 
   const int kHour = ((authored_time[kTimeHourOffset] - '0') * 10) +
-                   (authored_time[kTimeHourOffset + 1] - '0');
+                    (authored_time[kTimeHourOffset + 1] - '0');
   const int kMinute = ((authored_time[kTimeMinuteOffset] - '0') * 10) +
-                     (authored_time[kTimeMinuteOffset + 1] - '0');
+                      (authored_time[kTimeMinuteOffset + 1] - '0');
   if (kHour > kMaxHour || kMinute > kMaxMinute) {
     return std::nullopt;
   }
   if (authored_time.length() == kCanonicalTimeDigitsLength) {
     const int kSecond = ((authored_time[kTimeSecondOffset] - '0') * 10) +
-                       (authored_time[kTimeSecondOffset + 1] - '0');
+                        (authored_time[kTimeSecondOffset + 1] - '0');
     if (kSecond > kMaxSecond) {
       return std::nullopt;
     }
@@ -336,7 +336,7 @@ auto TextParser::ParseLine(const std::string& line, int line_number,
                       "Invalid event line format");
     }
     const auto kStartTime =
-      NormalizeTxtTimeToIso(std::string_view(line).substr(0, kTimeLength));
+        NormalizeTxtTimeToIso(std::string_view(line).substr(0, kTimeLength));
     const auto kEndTime = NormalizeTxtTimeToIso(
         std::string_view(line).substr(kEndOffset, kTimeLength));
     if (!kStartTime.has_value() || !kEndTime.has_value()) {

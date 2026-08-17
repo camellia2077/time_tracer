@@ -36,7 +36,7 @@ namespace fs = std::filesystem;
 namespace infra_config_internal = modconfig_internal;
 
 auto LoadLocalizedMarkdownInsights(const fs::path& markdown_dir,
-                                  InsightsCatalog& catalog) -> void {
+                                   InsightsCatalog& catalog) -> void {
   constexpr std::array<std::string_view, 5> kInsightsNames = {
       "day", "month", "period", "week", "year"};
   if (!fs::exists(markdown_dir) || !fs::is_directory(markdown_dir)) {
@@ -62,7 +62,7 @@ auto LoadLocalizedMarkdownInsights(const fs::path& markdown_dir,
     }
 
     MarkdownInsightsConfigs localized;
-    localized.day = InsightsConfigLoader::LoadDailyMdConfig(day_path);
+    localized.daily = InsightsConfigLoader::LoadDailyMdConfig(day_path);
     localized.month = InsightsConfigLoader::LoadMonthlyMdConfig(month_path);
     localized.period = InsightsConfigLoader::LoadPeriodMdConfig(period_path);
     localized.week = InsightsConfigLoader::LoadWeeklyMdConfig(week_path);
@@ -121,7 +121,8 @@ auto ResolveAndroidRuntimeConfigPathsBridge(
           "Android runtime bundle contains LaTeX insights paths, but this core "
           "build disables LaTeX (TT_INSIGHTS_ENABLE_LATEX=OFF).");
     }
-    const std::optional<AndroidInsightsConfigPathSet> latex_paths = std::nullopt;
+    const std::optional<AndroidInsightsConfigPathSet> latex_paths =
+        std::nullopt;
 #endif
 
 #if TT_INSIGHTS_ENABLE_TYPST
@@ -136,7 +137,8 @@ auto ResolveAndroidRuntimeConfigPathsBridge(
           "Android runtime bundle contains Typst insights paths, but this core "
           "build disables Typst (TT_INSIGHTS_ENABLE_TYPST=OFF).");
     }
-    const std::optional<AndroidInsightsConfigPathSet> typst_paths = std::nullopt;
+    const std::optional<AndroidInsightsConfigPathSet> typst_paths =
+        std::nullopt;
 #endif
 
     return {
@@ -159,26 +161,29 @@ auto BuildAndroidInsightsCatalogBridge(
     const AndroidRuntimeConfigPaths& runtime_config_paths) -> InsightsCatalog {
   InsightsCatalog catalog;
 
-  catalog.loaded_insights.markdown.day =
-      InsightsConfigLoader::LoadDailyMdConfig(runtime_config_paths.markdown.day);
+  catalog.loaded_insights.markdown.daily =
+      InsightsConfigLoader::LoadDailyMdConfig(
+          runtime_config_paths.markdown.daily);
   catalog.loaded_insights.markdown.month =
       InsightsConfigLoader::LoadMonthlyMdConfig(
           runtime_config_paths.markdown.month);
   catalog.loaded_insights.markdown.period =
       InsightsConfigLoader::LoadPeriodMdConfig(
           runtime_config_paths.markdown.period);
-  catalog.loaded_insights.markdown.week = InsightsConfigLoader::LoadWeeklyMdConfig(
-      runtime_config_paths.markdown.week);
-  catalog.loaded_insights.markdown.year = InsightsConfigLoader::LoadYearlyMdConfig(
-      runtime_config_paths.markdown.year);
+  catalog.loaded_insights.markdown.week =
+      InsightsConfigLoader::LoadWeeklyMdConfig(
+          runtime_config_paths.markdown.week);
+  catalog.loaded_insights.markdown.year =
+      InsightsConfigLoader::LoadYearlyMdConfig(
+          runtime_config_paths.markdown.year);
   LoadLocalizedMarkdownInsights(
-      ResolveMarkdownLocaleRoot(runtime_config_paths.markdown.day), catalog);
+      ResolveMarkdownLocaleRoot(runtime_config_paths.markdown.daily), catalog);
 
 #if TT_INSIGHTS_ENABLE_LATEX
   if (runtime_config_paths.latex.has_value()) {
     const auto& latex = *runtime_config_paths.latex;
-    catalog.loaded_insights.latex.day =
-        InsightsConfigLoader::LoadDailyTexConfig(latex.day);
+    catalog.loaded_insights.latex.daily =
+        InsightsConfigLoader::LoadDailyTexConfig(latex.daily);
     catalog.loaded_insights.latex.month =
         InsightsConfigLoader::LoadMonthlyTexConfig(latex.month);
     catalog.loaded_insights.latex.period =
@@ -199,8 +204,8 @@ auto BuildAndroidInsightsCatalogBridge(
 #if TT_INSIGHTS_ENABLE_TYPST
   if (runtime_config_paths.typst.has_value()) {
     const auto& typst = *runtime_config_paths.typst;
-    catalog.loaded_insights.typst.day =
-        InsightsConfigLoader::LoadDailyTypConfig(typst.day);
+    catalog.loaded_insights.typst.daily =
+        InsightsConfigLoader::LoadDailyTypConfig(typst.daily);
     catalog.loaded_insights.typst.month =
         InsightsConfigLoader::LoadMonthlyTypConfig(typst.month);
     catalog.loaded_insights.typst.period =

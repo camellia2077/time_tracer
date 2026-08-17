@@ -8,11 +8,11 @@ export module tracer.core.infrastructure.query.data.renderers
 export namespace tracer::core::infrastructure::query::data::renderers {
 
 using ::tracer::core::infrastructure::query::data::renderers::
-    BuildSemanticFrequentActivitiesPayload;
-using ::tracer::core::infrastructure::query::data::renderers::
     BuildSemanticDayDurationsPayload;
 using ::tracer::core::infrastructure::query::data::renderers::
     BuildSemanticDayStatsPayload;
+using ::tracer::core::infrastructure::query::data::renderers::
+    BuildSemanticFrequentActivitiesPayload;
 using ::tracer::core::infrastructure::query::data::renderers::
     BuildSemanticJsonObjectPayload;
 using ::tracer::core::infrastructure::query::data::renderers::

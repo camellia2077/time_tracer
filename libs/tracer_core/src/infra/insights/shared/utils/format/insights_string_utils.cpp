@@ -97,7 +97,7 @@ auto FormatCountWithPercentage(int count, int total_count,
   return result;
 }
 
-auto FormatCountWithAverage(int count, int total_days) -> std::string {
+auto FormatCountWithAverage(std::int64_t count, int total_days) -> std::string {
   if (total_days <= 0) {
     return std::to_string(count);
   }

@@ -18,12 +18,14 @@ auto Expect(bool condition, const std::string& message, int& failures) -> void {
 
 auto ReadTextFile(const std::filesystem::path& path) -> std::string {
   std::ifstream input(path, std::ios::binary);
-  return {std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>()};
+  return {std::istreambuf_iterator<char>(input),
+          std::istreambuf_iterator<char>()};
 }
 
 auto ReadBytes(const std::filesystem::path& path) -> std::vector<std::uint8_t> {
   std::ifstream input(path, std::ios::binary);
-  return {std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>()};
+  return {std::istreambuf_iterator<char>(input),
+          std::istreambuf_iterator<char>()};
 }
 
 auto WriteBytes(const std::filesystem::path& path,

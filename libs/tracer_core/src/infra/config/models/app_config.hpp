@@ -19,21 +19,21 @@ struct PipelineConfig {
 
 struct InsightsConfigPaths {
   // Typst Insights Configs
-  fs::path day_typ_config_path;
+  fs::path daily_typ_config_path;
   fs::path month_typ_config_path;
   fs::path period_typ_config_path;
   fs::path week_typ_config_path;
   fs::path year_typ_config_path;
 
   // LaTeX Insights Configs
-  fs::path day_tex_config_path;
+  fs::path daily_tex_config_path;
   fs::path month_tex_config_path;
   fs::path period_tex_config_path;
   fs::path week_tex_config_path;
   fs::path year_tex_config_path;
 
   // Markdown Insights Configs
-  fs::path day_md_config_path;
+  fs::path daily_md_config_path;
   fs::path month_md_config_path;
   fs::path period_md_config_path;
   fs::path week_md_config_path;

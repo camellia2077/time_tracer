@@ -60,7 +60,8 @@ struct DataQueryRequest {
   std::optional<std::string> tree_period_argument;
   std::optional<int> tree_max_depth;
   std::optional<std::string> root;
-  InsightsAverageDayBasis average_day_basis = InsightsAverageDayBasis::kActiveDays;
+  InsightsAverageDayBasis average_day_basis =
+      InsightsAverageDayBasis::kActiveDays;
 };
 
 struct TreeQueryRequest {

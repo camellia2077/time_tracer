@@ -34,8 +34,9 @@ auto BuildStructuredPeriodBatchFailure(std::string_view operation)
 auto BuildPeriodBatchErrorLine(int days, std::string_view details)
     -> std::string;
 
-auto BuildDayPath(const std::filesystem::path& export_root, InsightsFormat format,
-                  std::string_view date) -> std::filesystem::path;
+auto BuildDayPath(const std::filesystem::path& export_root,
+                  InsightsFormat format, std::string_view date)
+    -> std::filesystem::path;
 auto BuildMonthPath(const std::filesystem::path& export_root,
                     InsightsFormat format, std::string_view month)
     -> std::filesystem::path;

@@ -44,7 +44,8 @@ namespace tracer_core::shell::c_api_bridge {
     -> tracer_core::core::dto::InsightsOperationKind;
 [[nodiscard]] auto ParseTemporalSelectionKind(const std::string& value)
     -> tracer_core::core::dto::TemporalSelectionKind;
-[[nodiscard]] auto ParseInsightsFormat(const std::string& value) -> InsightsFormat;
+[[nodiscard]] auto ParseInsightsFormat(const std::string& value)
+    -> InsightsFormat;
 
 }  // namespace tracer_core::shell::c_api_bridge
 

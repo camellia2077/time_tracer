@@ -26,7 +26,8 @@ class GenericFormatterFactory {
 
     if (iter == creators.end()) {
       throw std::invalid_argument(
-          "Unsupported insights format or formatter not registered for this data "
+          "Unsupported insights format or formatter not registered for this "
+          "data "
           "type.");
     }
 
@@ -35,6 +36,10 @@ class GenericFormatterFactory {
 
   static void RegisterCreator(InsightsFormat format, Creator creator) {
     GetCreators()[format] = std::move(creator);
+  }
+
+  static void UnregisterCreator(InsightsFormat format) {
+    GetCreators().erase(format);
   }
 
   static auto GetCreators() -> std::map<InsightsFormat, Creator>& {

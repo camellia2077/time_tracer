@@ -11,11 +11,11 @@ auto NativeQuery(JNIEnv* env, jobject /*thiz*/, jint action, jint year,
                  jint month, jstring from_date, jstring to_date, jstring remark,
                  jstring day_remark, jstring project, jstring root,
                  jint exercise, jint status, jboolean cross_midnight_activity,
-                 jboolean reverse, jint limit,
-                 jint top_n, jint lookback_days, jstring anchor_date,
-                 jboolean score_by_duration, jstring tree_period,
-                 jstring tree_period_argument, jint tree_max_depth,
-                 jstring output_mode, jstring average_day_basis) -> jstring {
+                 jboolean reverse, jint limit, jint top_n, jint lookback_days,
+                 jstring anchor_date, jboolean score_by_duration,
+                 jstring tree_period, jstring tree_period_argument,
+                 jint tree_max_depth, jstring output_mode,
+                 jstring average_day_basis) -> jstring {
   return ExecuteJniMethod(env, [&]() -> std::string {
     tt_transport::QueryRequestPayload request_payload{};
     request_payload.action = ParseDataQueryAction(action);
@@ -114,7 +114,6 @@ auto NativeQuery(JNIEnv* env, jobject /*thiz*/, jint action, jint year,
   });
 }
 
-
 auto NativeInsightsJson(JNIEnv* env, jobject /*thiz*/, jstring request_json)
     -> jstring {
   return ExecuteJniMethod(env, [&]() -> std::string {
@@ -130,7 +129,8 @@ auto NativeInsightsJson(JNIEnv* env, jobject /*thiz*/, jstring request_json)
       const char* response = tracer_core_runtime_temporal_insights_json(
           g_runtime.core_runtime, request.c_str());
       if (response == nullptr || response[0] == '\0') {
-        throw std::runtime_error("nativeInsightsJson received empty core response.");
+        throw std::runtime_error(
+            "nativeInsightsJson received empty core response.");
       }
       return response;
     }

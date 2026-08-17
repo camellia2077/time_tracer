@@ -104,7 +104,7 @@ auto TestInsightsChartSeriesCalculator(int& failures) -> void {
     Expect(kResult.series[2].epoch_day == kResult.series[1].epoch_day + 1,
            "insights chart epoch_day should remain contiguous.", failures);
   }
-  Expect(kResult.stats.total_duration_seconds == kDuration5400,
+  Expect(kResult.stats.activity.total_duration_seconds == kDuration5400,
          "insights chart total duration should sum recorded interval durations only.",
          failures);
   Expect(kResult.stats.active_days == 2,
@@ -114,7 +114,30 @@ auto TestInsightsChartSeriesCalculator(int& failures) -> void {
   Expect(kResult.stats.average_duration_seconds == kDuration1800,
          "insights chart average should use calendar range_days denominator.",
          failures);
-  Expect(kResult.stats.total_duration_seconds < (3LL * 24LL * 60LL * 60LL),
+  Expect(
+      !kResult.stats.mode_duration_seconds.has_value(),
+      "insights chart mode should be absent when no active duration repeats.",
+      failures);
+  ExpectNear(kResult.stats.median_duration_seconds, 2700.0,
+             "insights chart median should use active days only.", failures);
+  ExpectNear(kResult.stats.minimum_duration_seconds, 1800.0,
+             "insights chart minimum should use active days only.", failures);
+  ExpectNear(kResult.stats.maximum_duration_seconds, 3600.0,
+             "insights chart maximum should use active days only.", failures);
+  ExpectNear(kResult.stats.lower_quartile_duration_seconds, 2250.0,
+             "insights chart lower quartile should use active days only.",
+             failures);
+  ExpectNear(kResult.stats.upper_quartile_duration_seconds, 3150.0,
+             "insights chart upper quartile should use active days only.",
+             failures);
+  ExpectNear(kResult.stats.coefficient_of_variation, 0.333333333333333,
+             "insights chart coefficient of variation should be stddev/mean.",
+             failures);
+  ExpectNear(kResult.stats.mean_absolute_deviation_seconds, 900.0,
+             "insights chart mean absolute deviation should use active days.",
+             failures);
+  Expect(kResult.stats.activity.total_duration_seconds <
+             (3LL * 24LL * 60LL * 60LL),
          "sparse interval recorded duration may be less than calendar span.",
          failures);
 }
@@ -255,7 +278,7 @@ auto CheckDaysStatsOrchestratorSemanticSnapshot(sqlite3* database,
 }
 
 auto CheckInsightsChartOrchestratorSemanticSnapshot(sqlite3* database,
-                                                  int& failures) -> bool {
+                                                    int& failures) -> bool {
   using tracer_core::core::dto::DataQueryAction;
   using tracer_core::core::dto::DataQueryRequest;
   constexpr long long kExpectedTotalDurationSeconds = 5400LL;
@@ -290,9 +313,67 @@ auto CheckInsightsChartOrchestratorSemanticSnapshot(sqlite3* database,
              kExpectedAverageDurationSeconds,
          "insights-chart orchestrator semantic snapshot should keep average.",
          failures);
-  Expect(kChartPayload.value("range_days", -1) == 3,
-         "insights-chart orchestrator semantic snapshot should keep range_days.",
+  const auto kModeIt = kChartPayload.find("mode_duration_seconds");
+  Expect(
+      kModeIt != kChartPayload.end() && kModeIt->is_null(),
+      "insights-chart semantic snapshot should use null when mode is absent.",
+      failures);
+  const auto kRootTreeIt = kChartPayload.find("root_tree");
+  const bool kHasRootTree =
+      kRootTreeIt != kChartPayload.end() && kRootTreeIt->is_array();
+  Expect(kHasRootTree,
+         "insights-chart semantic snapshot should include root_tree.",
          failures);
+  if (kHasRootTree && !kRootTreeIt->empty()) {
+    const auto& kStudyNode = (*kRootTreeIt)[0];
+    Expect(kStudyNode.value("path", std::string{}) == "study",
+           "insights-chart root_tree should include the root path.", failures);
+    const auto kChildrenIt = kStudyNode.find("children");
+    const bool kHasChildren =
+        kChildrenIt != kStudyNode.end() && kChildrenIt->is_array();
+    Expect(kHasChildren,
+           "insights-chart root_tree should include child activities.",
+           failures);
+    if (kHasChildren && !kChildrenIt->empty()) {
+      Expect((*kChildrenIt)[0].value("path", std::string{}) == "study_cpp",
+             "insights-chart root_tree should expose the full child path.",
+             failures);
+    }
+  }
+  Expect(kChartPayload.value("median_duration_seconds", -1.0) == 2700.0,
+         "insights-chart orchestrator semantic snapshot should include median.",
+         failures);
+  ExpectNear(
+      kChartPayload.value("minimum_duration_seconds", -1.0), 1800.0,
+      "insights-chart orchestrator semantic snapshot should include minimum.",
+      failures);
+  ExpectNear(
+      kChartPayload.value("maximum_duration_seconds", -1.0), 3600.0,
+      "insights-chart orchestrator semantic snapshot should include maximum.",
+      failures);
+  ExpectNear(kChartPayload.value("lower_quartile_duration_seconds", -1.0),
+             2250.0,
+             "insights-chart orchestrator semantic snapshot should include "
+             "lower quartile.",
+             failures);
+  ExpectNear(kChartPayload.value("upper_quartile_duration_seconds", -1.0),
+             3150.0,
+             "insights-chart orchestrator semantic snapshot should include "
+             "upper quartile.",
+             failures);
+  ExpectNear(kChartPayload.value("coefficient_of_variation", -1.0),
+             0.333333333333333,
+             "insights-chart orchestrator semantic snapshot should include "
+             "coefficient of variation.",
+             failures);
+  ExpectNear(kChartPayload.value("mean_absolute_deviation_seconds", -1.0),
+             900.0,
+             "insights-chart orchestrator semantic snapshot should include "
+             "mean absolute deviation.",
+             failures);
+  Expect(kChartPayload.value("range_days", -1) == 3,
+      "insights-chart orchestrator semantic snapshot should keep range_days.",
+      failures);
   Expect(!kChartPayload.contains("recorded_coverage_ratio"),
          "insights-chart semantic snapshot should not expose recorded_coverage_ratio yet.",
          failures);
@@ -340,6 +421,25 @@ auto CheckInsightsChartOrchestratorSemanticSnapshot(sqlite3* database,
   Expect(kMissingRootPayload.value("active_days", -1) == 0,
          "insights-chart missing-root fallback should return zero active days.",
          failures);
+
+  DataQueryRequest child_root_request = insights_chart_request;
+  child_root_request.root = "study_cpp";
+  const auto kChildRootOutput =
+      data_query_orchestrators::HandleInsightsChartQuery(
+          database, child_root_request, DataQueryOutputMode::kSemanticJson);
+  Expect(kChildRootOutput.ok, "insights-chart child-root query should succeed.",
+         failures);
+  if (kChildRootOutput.ok) {
+    const auto kChildRootPayload = json::parse(kChildRootOutput.content);
+    Expect(
+        kChildRootPayload.value("selected_root", std::string{}) == "study_cpp",
+        "insights-chart child-root query should preserve the full path.",
+        failures);
+    Expect(kChildRootPayload.value("total_duration_seconds", -1LL) ==
+               kExpectedTotalDurationSeconds,
+           "insights-chart child-root query should filter by the full path.",
+           failures);
+  }
   const auto kMissingRootSeriesIt = kMissingRootPayload.find("series");
   const bool kHasMissingRootSeries =
       kMissingRootSeriesIt != kMissingRootPayload.end() &&
@@ -359,7 +459,7 @@ auto CheckInsightsChartOrchestratorSemanticSnapshot(sqlite3* database,
 }
 
 auto CheckInsightsCompositionOrchestratorSemanticSnapshot(sqlite3* database,
-                                                        int& failures)
+                                                          int& failures)
     -> bool {
   using tracer_core::core::dto::DataQueryAction;
   using tracer_core::core::dto::DataQueryRequest;
@@ -379,9 +479,9 @@ auto CheckInsightsCompositionOrchestratorSemanticSnapshot(sqlite3* database,
 
   const auto kCompositionPayload = json::parse(kCompositionOutput.content);
   Expect(kCompositionPayload.value("action", std::string{}) ==
-             "insights_composition",
-         "insights-composition orchestrator semantic snapshot should keep action.",
-         failures);
+          "insights_composition",
+      "insights-composition orchestrator semantic snapshot should keep action.",
+      failures);
   Expect(kCompositionPayload.value("active_root_count", -1) == 1,
          "insights-composition orchestrator should count active roots.",
          failures);
@@ -408,8 +508,8 @@ auto CheckInsightsCompositionOrchestratorSemanticSnapshot(sqlite3* database,
          "insights-composition orchestrator semantic snapshot should include tree array.",
          failures);
   if (kHasTree) {
-    Expect(kTreeIt->size() == 1U,
-           "insights-composition orchestrator should emit one tree root per active root.",
+      Expect(kTreeIt->size() == 1U,
+             "insights-composition orchestrator should emit one tree root per active root.",
            failures);
     if (kTreeIt->size() >= 1U) {
       Expect((*kTreeIt)[0].value("name", std::string{}) == "study",
@@ -418,14 +518,14 @@ auto CheckInsightsCompositionOrchestratorSemanticSnapshot(sqlite3* database,
       Expect((*kTreeIt)[0].value("duration_seconds", -1LL) == 5400LL,
              "insights-composition tree root should keep study duration.",
              failures);
-      Expect((*kTreeIt)[0].value("average_duration_seconds", -1LL) == 2700LL,
-             "insights-composition tree root should expose active-day average duration.",
+        Expect((*kTreeIt)[0].value("average_duration_seconds", -1LL) == 2700LL,
+               "insights-composition tree root should expose active-day average duration.",
              failures);
-      Expect((*kTreeIt)[0].value("average_occurrence_count", -1.0) == 1.0,
-             "insights-composition tree root should expose active-day average occurrences.",
+        Expect((*kTreeIt)[0].value("average_occurrence_count", -1.0) == 1.0,
+               "insights-composition tree root should expose active-day average occurrences.",
              failures);
-      Expect((*kTreeIt)[0].value("average_occurrence_ratio", -1.0) == 1.0,
-             "insights-composition tree root should expose current-level occurrence ratio.",
+        Expect((*kTreeIt)[0].value("average_occurrence_ratio", -1.0) == 1.0,
+               "insights-composition tree root should expose current-level occurrence ratio.",
              failures);
       Expect((*kTreeIt)[0].contains("occurrence_count") &&
                  (*kTreeIt)[0]["occurrence_count"].is_number_integer(),
@@ -445,9 +545,9 @@ auto CheckInsightsCompositionOrchestratorSemanticSnapshot(sqlite3* database,
 
   Expect(ExecuteSql(
              database,
-             "INSERT INTO time_records(date, start, end, duration, "
-             "project_path_snapshot, activity_remark) VALUES "
-             "('2026-02-02', '09:00', '10:00', 3600, 'sleep_nap', '');"),
+                    "INSERT INTO time_records(date, start, end, duration, "
+                    "project_path_snapshot, activity_remark) VALUES "
+                    "('2026-02-02', '09:00', '10:00', 3600, 'sleep_nap', '');"),
          "insights-composition guard fixture should add a second active root.",
          failures);
   const auto kMultipleRootOutput =
@@ -586,13 +686,13 @@ auto TestCrossMidnightActivityFilterUsesTimeline(int& failures) -> void {
       "('2026-02-04', 2026, 2, 0, '', '00:00');");
   const bool kSeededRecords = ExecuteSql(
       kDatabase.get(),
-      "INSERT INTO time_records(date, start, end, duration, "
-      "project_path_snapshot, activity_remark) VALUES "
-      "('2026-02-01', '21:32', '01:35', 14580, 'study_late', ''),"
-      "('2026-02-02', '09:00', '10:00', 3600, 'study_cpp', ''),"
-      "('2026-02-02', '21:00', '22:30', 5400, 'sleep_night', ''),"
-      "('2026-02-03', '09:00', '10:00', 3600, 'study_cpp', ''),"
-      "('2026-02-04', '09:00', '10:00', 3600, 'study_cpp', '');");
+                 "INSERT INTO time_records(date, start, end, duration, "
+                 "project_path_snapshot, activity_remark) VALUES "
+                 "('2026-02-01', '21:32', '01:35', 14580, 'study_late', ''),"
+                 "('2026-02-02', '09:00', '10:00', 3600, 'study_cpp', ''),"
+                 "('2026-02-02', '21:00', '22:30', 5400, 'sleep_night', ''),"
+                 "('2026-02-03', '09:00', '10:00', 3600, 'study_cpp', ''),"
+                 "('2026-02-04', '09:00', '10:00', 3600, 'study_cpp', '');");
   Expect(kCreatedDays && kCreatedRecords && kSeededDays && kSeededRecords,
          "cross-midnight activity filter test should seed sqlite fixture.",
          failures);
@@ -606,18 +706,18 @@ auto TestCrossMidnightActivityFilterUsesTimeline(int& failures) -> void {
       kDatabase.get(), cross_midnight_activity_filters);
   Expect(kCrossMidnightActivityDates.size() == 1U &&
              kCrossMidnightActivityDates.front() == "2026-02-01",
-         "cross-midnight activity filter should match only days with an activity interval crossing 00:00.",
+          "cross-midnight activity filter should match only days with an activity interval crossing 00:00.",
          failures);
 
   const auto kCrossMidnightActivityDurations = data_query::QueryDayDurations(
       kDatabase.get(), cross_midnight_activity_filters);
   Expect(kCrossMidnightActivityDurations.size() == 1U &&
              kCrossMidnightActivityDurations.front().date == "2026-02-01",
-         "cross-midnight activity duration query should ignore generated sleep metadata.",
+          "cross-midnight activity duration query should ignore generated sleep metadata.",
          failures);
   if (kCrossMidnightActivityDurations.size() == 1U) {
     Expect(kCrossMidnightActivityDurations.front().total_seconds == 14580,
-           "cross-midnight activity duration query should return only recorded activity duration, not sleep proxy duration.",
+             "cross-midnight activity duration query should return only recorded activity duration, not sleep proxy duration.",
            failures);
   }
 
@@ -739,11 +839,11 @@ auto TestOrchestratorRendererSemanticSnapshot(int& failures) -> void {
     return;
   }
   if (!CheckInsightsChartOrchestratorSemanticSnapshot(kDatabase.get(),
-                                                    failures)) {
+                                                      failures)) {
     return;
   }
   if (!CheckInsightsCompositionOrchestratorSemanticSnapshot(kDatabase.get(),
-                                                          failures)) {
+                                                            failures)) {
     return;
   }
 }

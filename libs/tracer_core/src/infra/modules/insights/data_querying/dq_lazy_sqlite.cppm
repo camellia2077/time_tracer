@@ -7,6 +7,7 @@ export module tracer.core.infrastructure.insights.data_querying
 
 export namespace tracer::core::infrastructure::insights {
 
-using ::tracer::core::infrastructure::insights::LazySqliteInsightsDataQueryService;
+using ::tracer::core::infrastructure::insights::
+    LazySqliteInsightsDataQueryService;
 
 }  // namespace tracer::core::infrastructure::insights

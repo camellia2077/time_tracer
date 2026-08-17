@@ -54,12 +54,12 @@ auto StringToTimeT(const std::string& datetime_str) -> std::int64_t {
   }
 
   try {
-    const int kHour =
-        std::stoi(std::string(time_value.substr(kTimeHourOffset, kTimeHourLength)));
-    const int kMinute =
-        std::stoi(std::string(time_value.substr(kTimeMinuteOffset, kTimeMinuteLength)));
-    const int kSecond =
-        std::stoi(std::string(time_value.substr(kTimeSecondOffset, kTimeSecondLength)));
+    const int kHour = std::stoi(
+        std::string(time_value.substr(kTimeHourOffset, kTimeHourLength)));
+    const int kMinute = std::stoi(
+        std::string(time_value.substr(kTimeMinuteOffset, kTimeMinuteLength)));
+    const int kSecond = std::stoi(
+        std::string(time_value.substr(kTimeSecondOffset, kTimeSecondLength)));
     if (kHour < 0 || kHour >= kHoursPerDay || kMinute < 0 ||
         kMinute >= kMinutesPerHour || kSecond < 0 ||
         kSecond >= kSecondsPerMinute) {

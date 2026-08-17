@@ -32,7 +32,8 @@ enum class ActivityHierarchyDocumentNodeKind {
 };
 
 struct ActivityHierarchyNode {
-  ActivityHierarchyDocumentNodeKind kind = ActivityHierarchyDocumentNodeKind::kLeaf;
+  ActivityHierarchyDocumentNodeKind kind =
+      ActivityHierarchyDocumentNodeKind::kLeaf;
   std::string canonical_key;
   ActivityHierarchyDocumentSourceLocation source;
   std::vector<ActivityHierarchyAlias> aliases;
@@ -51,15 +52,16 @@ struct ActivityHierarchyDocument {
 struct ActivityHierarchyCanonicalNode {
   std::string canonical;
   std::vector<std::string> path;
-  ActivityHierarchyDocumentNodeKind kind = ActivityHierarchyDocumentNodeKind::kLeaf;
+  ActivityHierarchyDocumentNodeKind kind =
+      ActivityHierarchyDocumentNodeKind::kLeaf;
   const ActivityHierarchyNode* node = nullptr;
 };
 
 class ActivityHierarchyDocumentParseError final : public std::runtime_error {
  public:
-  ActivityHierarchyDocumentParseError(ActivityHierarchyDocumentSourceLocation source,
-                          std::vector<std::string> groups, std::string field,
-                          std::string message)
+  ActivityHierarchyDocumentParseError(
+      ActivityHierarchyDocumentSourceLocation source,
+      std::vector<std::string> groups, std::string field, std::string message)
       : std::runtime_error(std::move(message)),
         source_(source),
         groups_(std::move(groups)),
@@ -89,9 +91,9 @@ inline auto ActivityHierarchyDocumentSource(const toml::source_region& source)
   };
 }
 
-inline auto BuildActivityHierarchyCanonicalPath(std::string_view parent,
-                                    const std::vector<std::string>& groups,
-                                    std::string_view leaf = {}) -> std::string {
+inline auto BuildActivityHierarchyCanonicalPath(
+    std::string_view parent, const std::vector<std::string>& groups,
+    std::string_view leaf = {}) -> std::string {
   std::string canonical(parent);
   for (const auto& group : groups) {
     canonical += "_";
@@ -111,7 +113,8 @@ inline auto IsActivityHierarchyParentColor(std::string_view color) -> bool {
          });
 }
 
-inline auto ParseActivityHierarchyDocument(const toml::table& table) -> ActivityHierarchyDocument {
+inline auto ParseActivityHierarchyDocument(const toml::table& table)
+    -> ActivityHierarchyDocument {
   for (const auto& [key_node, value_node] : table) {
     const std::string key(key_node.str());
     if (key != "parent" && key != "color" && key != "canonical") {
@@ -127,8 +130,9 @@ inline auto ParseActivityHierarchyDocument(const toml::table& table) -> Activity
                           : parent_node->value<std::string>();
   if (!parent.has_value() || parent->empty()) {
     throw ActivityHierarchyDocumentParseError(
-        parent_node == nullptr ? ActivityHierarchyDocumentSourceLocation{1U, 1U}
-                               : ActivityHierarchyDocumentSource(parent_node->source()),
+        parent_node == nullptr
+            ? ActivityHierarchyDocumentSourceLocation{1U, 1U}
+            : ActivityHierarchyDocumentSource(parent_node->source()),
         {}, "parent",
         "Canonical TOML must contain a non-empty `parent` string.");
   }
@@ -163,8 +167,8 @@ inline auto ParseActivityHierarchyDocument(const toml::table& table) -> Activity
     const toml::array* values = node.as_array();
     if (values == nullptr || values->empty()) {
       throw ActivityHierarchyDocumentParseError(
-          ActivityHierarchyDocumentSource(node.source()), groups, std::string(field),
-          "Alias field must be a non-empty string array.");
+          ActivityHierarchyDocumentSource(node.source()), groups,
+          std::string(field), "Alias field must be a non-empty string array.");
     }
     std::vector<ActivityHierarchyAlias> aliases;
     aliases.reserve(values->size());
@@ -172,7 +176,8 @@ inline auto ParseActivityHierarchyDocument(const toml::table& table) -> Activity
       const auto value = item.value<std::string>();
       if (!value.has_value() || value->empty()) {
         throw ActivityHierarchyDocumentParseError(
-            ActivityHierarchyDocumentSource(item.source()), groups, std::string(field),
+            ActivityHierarchyDocumentSource(item.source()), groups,
+            std::string(field),
             "Alias field must contain only non-empty strings.");
       }
       aliases.push_back({
@@ -244,7 +249,8 @@ inline auto ParseActivityHierarchyDocument(const toml::table& table) -> Activity
   };
 }
 
-inline auto CollectActivityHierarchyCanonicalNodes(const ActivityHierarchyDocument& document)
+inline auto CollectActivityHierarchyCanonicalNodes(
+    const ActivityHierarchyDocument& document)
     -> std::vector<ActivityHierarchyCanonicalNode> {
   std::vector<ActivityHierarchyCanonicalNode> result;
   const std::function<void(const std::vector<ActivityHierarchyNode>&,
@@ -259,8 +265,9 @@ inline auto CollectActivityHierarchyCanonicalNodes(const ActivityHierarchyDocume
               node.kind == ActivityHierarchyDocumentNodeKind::kGroup
                   ? path
                   : std::vector<std::string>(path.begin(), path.end() - 1),
-              node.kind == ActivityHierarchyDocumentNodeKind::kGroup ? std::string_view{}
-                                                         : node.canonical_key),
+              node.kind == ActivityHierarchyDocumentNodeKind::kGroup
+                  ? std::string_view{}
+                  : node.canonical_key),
           .path = path,
           .kind = node.kind,
           .node = &node,
@@ -277,8 +284,8 @@ inline auto CollectActivityHierarchyCanonicalNodes(const ActivityHierarchyDocume
   return result;
 }
 
-inline auto ValidateActivityHierarchyAliasUniqueness(const ActivityHierarchyDocument& document)
-    -> void {
+inline auto ValidateActivityHierarchyAliasUniqueness(
+    const ActivityHierarchyDocument& document) -> void {
   std::vector<ActivityHierarchyAlias> seen;
   for (const auto& canonical_node :
        CollectActivityHierarchyCanonicalNodes(document)) {

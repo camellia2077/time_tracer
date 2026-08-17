@@ -1,17 +1,17 @@
-// infra/insights/daily/formatters/typst/day_typ_config.hpp
-#ifndef INFRASTRUCTURE_INSIGHTS_DAILY_FORMATTERS_TYPST_DAY_TYP_CONFIG_H_
-#define INFRASTRUCTURE_INSIGHTS_DAILY_FORMATTERS_TYPST_DAY_TYP_CONFIG_H_
+// infra/insights/daily/formatters/typst/daily_typ_formatter_config.hpp
+#ifndef INFRASTRUCTURE_INSIGHTS_DAILY_FORMATTERS_TYPST_DAILY_TYP_FORMATTER_CONFIG_H_
+#define INFRASTRUCTURE_INSIGHTS_DAILY_FORMATTERS_TYPST_DAILY_TYP_FORMATTER_CONFIG_H_
 
 #include <map>
 #include <string>
 
 #include "infra/config/models/insights_config_models.hpp"
-#include "infra/insights/daily/common/day_base_config.hpp"
+#include "infra/insights/daily/common/daily_formatter_base_config.hpp"
 #include "infra/insights/shared/config/typst_style_config.hpp"
 
-class DayTypConfig : public DayBaseConfig {
+class DailyTypFormatterConfig : public DailyFormatterBaseConfig {
  public:
-  explicit DayTypConfig(const DailyTypConfig& config);
+  explicit DailyTypFormatterConfig(const DailyTypConfig& config);
 
   [[nodiscard]] auto GetStatisticFontSize() const -> int;
   [[nodiscard]] auto GetStatisticTitleFontSize() const -> int;
@@ -47,4 +47,4 @@ class DayTypConfig : public DayBaseConfig {
   std::map<std::string, std::string> keyword_colors_;
 };
 
-#endif  // INFRASTRUCTURE_INSIGHTS_DAILY_FORMATTERS_TYPST_DAY_TYP_CONFIG_H_
+#endif  // INFRASTRUCTURE_INSIGHTS_DAILY_FORMATTERS_TYPST_DAILY_TYP_FORMATTER_CONFIG_H_

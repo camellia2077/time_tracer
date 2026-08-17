@@ -18,14 +18,16 @@ struct AndroidStaticInsightsFormatterPolicy {
     return {};
   }
 
-  [[nodiscard]] static auto AllFormats() -> AndroidStaticInsightsFormatterPolicy {
+  [[nodiscard]] static auto AllFormats()
+      -> AndroidStaticInsightsFormatterPolicy {
     return {
         .enable_markdown = true, .enable_latex = true, .enable_typst = true};
   }
 };
 
 class AndroidStaticInsightsFormatterRegistrar final
-    : public tracer_core::application::ports::IStaticInsightsFormatterRegistrar {
+    : public tracer_core::application::ports::
+          IStaticInsightsFormatterRegistrar {
  public:
   explicit AndroidStaticInsightsFormatterRegistrar(
       AndroidStaticInsightsFormatterPolicy policy =

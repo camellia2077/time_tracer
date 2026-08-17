@@ -35,7 +35,8 @@ class BaseGenerator {
    */
   BaseGenerator(sqlite3* database_connection, const InsightsCatalog& catalog,
                 const DailyStatusConfig& status_config)
-      : db_(database_connection), insights_catalog_(catalog),
+      : db_(database_connection),
+        insights_catalog_(catalog),
         status_config_(status_config) {}
 
   virtual ~BaseGenerator() = default;
@@ -47,7 +48,8 @@ class BaseGenerator {
    * @return 包含格式化报告的字符串。
    */
   [[nodiscard]] auto GenerateInsights(QueryParamType param,
-                                    InsightsFormat format) const -> std::string {
+                                      InsightsFormat format) const
+      -> std::string {
     // 1. 创建具体的查询器并获取数据
     QuerierType querier(db_, param, &status_config_);
     InsightsDataType insights_data = querier.FetchData();

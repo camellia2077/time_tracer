@@ -20,7 +20,8 @@ namespace {
 using tracer::core::infrastructure::insights::data::stats::
     IsAnaerobicProjectPath;
 using tracer::core::infrastructure::insights::data::stats::IsCardioProjectPath;
-using tracer::core::infrastructure::insights::data::stats::IsExerciseProjectPath;
+using tracer::core::infrastructure::insights::data::stats::
+    IsExerciseProjectPath;
 using tracer::core::infrastructure::insights::data::stats::IsStudyProjectPath;
 
 auto DaysInYear(int year) -> int {
@@ -42,7 +43,8 @@ auto YearQuerier::FetchData() -> YearlyInsightsData {
   YearlyInsightsData probe;
   PrepareData(probe);
   if (!this->HasAnyDayRows()) {
-    throw tracer_core::common::InsightsTargetNotFoundError("year", this->param_);
+    throw tracer_core::common::InsightsTargetNotFoundError("year",
+                                                           this->param_);
   }
   return RangeQuerierBase::FetchData();
 }
@@ -149,8 +151,7 @@ auto BatchYearDataFetcher::FetchAllData()
     }
 
     project_agg[year_str][project_id] += duration;
-    data.total_duration += duration;
-    data.matched_record_count += activity_count;
+    data.activity.Add(duration, activity_count);
     distinct_dates[year_str].insert(date);
 
     const auto kPathParts = name_cache.GetPathParts(project_id);
@@ -177,7 +178,7 @@ auto BatchYearDataFetcher::FetchAllData()
   sqlite3_finalize(stmt);
 
   insights::data::batch::FinalizeGroupedAggregation(results, project_agg,
-                                                   distinct_dates, name_cache);
+                                                    distinct_dates, name_cache);
 
   for (auto& [year_label, data] : results) {
     data.status_true_days = static_cast<int>(status_dates[year_label].size());

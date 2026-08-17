@@ -55,7 +55,8 @@ void TestParseMissingOptionalDefaults(int& failures) {
   Expect(!parsed.envelope.insights_hash_sha256.has_value(),
          "Missing `insights_hash_sha256` should default to nullopt.", failures);
   Expect(!parsed.envelope.insights_window_metadata.has_value(),
-         "Missing insights window metadata should default to nullopt.", failures);
+         "Missing insights window metadata should default to nullopt.",
+         failures);
 }
 
 void TestParseOptionalTypeMismatchDefaults(int& failures) {

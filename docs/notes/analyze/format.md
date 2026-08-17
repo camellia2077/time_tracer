@@ -16,10 +16,9 @@ python tools/run.py format ...
 如果要直接覆盖仓库路径，而不是借某个 app 的 CMake `format` target：
 
 ```powershell
-python tools/run.py format --paths libs apps/tracer_core_shell
 python tools/run.py format --paths libs
+python tools/run.py format --paths libs apps/tracer_core_shell
 python tools/run.py format --paths apps/tracer_core_shell
-
 ```
 
 说明：

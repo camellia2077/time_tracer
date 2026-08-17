@@ -7,13 +7,13 @@ export module tracer.core.infrastructure.query.data.renderers.text_renderer;
 export namespace tracer::core::infrastructure::query::data::renderers {
 
 using ::tracer::core::infrastructure::query::data::renderers::
-    RenderFrequentActivitiesText;
-using ::tracer::core::infrastructure::query::data::renderers::
     RenderDayDurationStatsOutputText;
 using ::tracer::core::infrastructure::query::data::renderers::
     RenderDayDurationStatsText;
 using ::tracer::core::infrastructure::query::data::renderers::
     RenderDayDurationsText;
+using ::tracer::core::infrastructure::query::data::renderers::
+    RenderFrequentActivitiesText;
 using ::tracer::core::infrastructure::query::data::renderers::
     RenderJsonObjectText;
 using ::tracer::core::infrastructure::query::data::renderers::RenderListText;

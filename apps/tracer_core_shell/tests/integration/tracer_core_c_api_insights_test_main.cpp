@@ -46,17 +46,13 @@ auto main() -> int {
             "Failed to copy shared program config for insights fixture");
     fs::create_directories(kRuntimeUserRoot / "activity_hierarchy", io_error);
     Require(!io_error, "Failed to create insights fixture user config");
-    fs::copy_file(
-        kFixtureConfigRoot / "behavior.toml",
-        kRuntimeUserRoot / "behavior.toml",
-        fs::copy_options::overwrite_existing,
-        io_error);
+    fs::copy_file(kFixtureConfigRoot / "behavior.toml",
+                  kRuntimeUserRoot / "behavior.toml",
+                  fs::copy_options::overwrite_existing, io_error);
     Require(!io_error, "Failed to install insights fixture behavior config");
-    fs::copy_file(
-        kFixtureConfigRoot / "activity_hierarchy" / "reporting.toml",
-        kRuntimeUserRoot / "activity_hierarchy" / "reporting.toml",
-        fs::copy_options::overwrite_existing,
-        io_error);
+    fs::copy_file(kFixtureConfigRoot / "activity_hierarchy" / "reporting.toml",
+                  kRuntimeUserRoot / "activity_hierarchy" / "reporting.toml",
+                  fs::copy_options::overwrite_existing, io_error);
     Require(!io_error, "Failed to install insights fixture activity config");
 
     const fs::path kConverterConfig = kRuntimeUserRoot / "behavior.toml";

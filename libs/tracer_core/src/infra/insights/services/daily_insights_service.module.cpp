@@ -14,8 +14,8 @@ import tracer.core.domain.insights.types.insights_types;
 
 namespace tracer::core::infrastructure::insights::services {
 
-DailyInsightsService::DailyInsightsService(sqlite3* sqlite_db,
-                                       const InsightsCatalog& insights_catalog)
+DailyInsightsService::DailyInsightsService(
+    sqlite3* sqlite_db, const InsightsCatalog& insights_catalog)
     : db_(sqlite_db), insights_catalog_(insights_catalog) {
   if (db_ == nullptr) {
     throw std::invalid_argument("Database connection cannot be null.");
@@ -32,13 +32,13 @@ auto DailyInsightsService::GenerateAllInsights(InsightsFormat format)
   BatchDayDataFetcher fetcher(db_, name_cache, &insights_catalog_.statuses.day);
   BatchDataResult batch_data = fetcher.FetchAllData();
 
-  auto formatter =
-      GenericFormatterFactory<DailyInsightsData>::Create(format, insights_catalog_);
+  auto formatter = GenericFormatterFactory<DailyInsightsData>::Create(
+      format, insights_catalog_);
 
   for (const auto& [date, year, month] : batch_data.date_order) {
     DailyInsightsData& data = batch_data.data_map[date];
 
-    if (data.total_duration > 0) {
+    if (data.activity.total_duration_seconds > 0) {
       ::insights::services::EnsureProjectTree(data, name_cache);
 
       std::string formatted_insights = formatter->FormatInsights(data);

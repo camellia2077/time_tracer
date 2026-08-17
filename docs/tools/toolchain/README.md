@@ -13,6 +13,12 @@
    - `verify` / suite / result contract 与 `tools/` / `test/`
      分工入口
 
+Android 全模块 Detekt 静态分析可直接运行：
+
+```powershell
+python tools/run.py android-detekt --concise
+```
+
 ## 专项文档
 
 1. [command_map/README.md](command_map/README.md)

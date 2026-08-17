@@ -62,7 +62,8 @@ auto TestRuntimeAccessorsAndForwarding(TestState& state) -> void {
            {.kind = tracer_core::core::dto::TemporalSelectionKind::kSingleDay,
             .date = "2026-03-21"},
        .format = InsightsFormat::kMarkdown});
-  Expect(state, insights_result.ok && insights_result.content == "daily:2026-03-21",
+  Expect(state,
+         insights_result.ok && insights_result.content == "daily:2026-03-21",
          "Insights API should still return the delegated insights result.");
 
   const auto exchange_result =

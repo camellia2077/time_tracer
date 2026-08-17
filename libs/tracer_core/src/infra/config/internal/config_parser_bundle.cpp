@@ -17,11 +17,11 @@ namespace ConfigParserUtils::internal {
 namespace infra_file_io = tracer::core::infrastructure::internal::file_io;
 
 auto LoadInsightsPathsFromTable(const toml::table& section,
-                              const InsightsPathSource& source,
-                              std::string_view section_field_path,
-                              fs::path& day_path, fs::path& month_path,
-                              fs::path& period_path, fs::path& week_path,
-                              fs::path& year_path) -> void {
+                                const InsightsPathSource& source,
+                                std::string_view section_field_path,
+                                fs::path& day_path, fs::path& month_path,
+                                fs::path& period_path, fs::path& week_path,
+                                fs::path& year_path) -> void {
   const std::string kRoot = RequireNonEmptyStringField(
       section, "root", source.source_path, section_field_path);
   const fs::path kRootPath =
@@ -97,12 +97,12 @@ auto ValidateBundleFileList(const toml::table& bundle_tbl,
 }
 
 auto LoadAndroidInsightsPathSetFromTable(const toml::table& section,
-                                       const InsightsPathSource& source,
-                                       std::string_view section_field_path)
+                                         const InsightsPathSource& source,
+                                         std::string_view section_field_path)
     -> AndroidBundleInsightsConfigPathSet {
   AndroidBundleInsightsConfigPathSet out{};
-  LoadInsightsPathsFromTable(section, source, section_field_path, out.day,
-                           out.month, out.period, out.week, out.year);
+  LoadInsightsPathsFromTable(section, source, section_field_path, out.daily,
+                             out.month, out.period, out.week, out.year);
   return out;
 }
 
@@ -158,24 +158,24 @@ auto TryResolveAndroidBundleConfigPathsImpl(const fs::path& config_dir)
   out.converter_config_toml_path =
       parsed_config.pipeline.converter_main_config_path;
   out.markdown = {
-      .day = parsed_config.insights.day_md_config_path,
+      .daily = parsed_config.insights.daily_md_config_path,
       .month = parsed_config.insights.month_md_config_path,
       .period = parsed_config.insights.period_md_config_path,
       .week = parsed_config.insights.week_md_config_path,
       .year = parsed_config.insights.year_md_config_path,
   };
-  if (!parsed_config.insights.day_typ_config_path.empty()) {
+  if (!parsed_config.insights.daily_typ_config_path.empty()) {
     out.typst = AndroidBundleInsightsConfigPathSet{
-        .day = parsed_config.insights.day_typ_config_path,
+        .daily = parsed_config.insights.daily_typ_config_path,
         .month = parsed_config.insights.month_typ_config_path,
         .period = parsed_config.insights.period_typ_config_path,
         .week = parsed_config.insights.week_typ_config_path,
         .year = parsed_config.insights.year_typ_config_path,
     };
   }
-  if (!parsed_config.insights.day_tex_config_path.empty()) {
+  if (!parsed_config.insights.daily_tex_config_path.empty()) {
     out.latex = AndroidBundleInsightsConfigPathSet{
-        .day = parsed_config.insights.day_tex_config_path,
+        .daily = parsed_config.insights.daily_tex_config_path,
         .month = parsed_config.insights.month_tex_config_path,
         .period = parsed_config.insights.period_tex_config_path,
         .week = parsed_config.insights.week_tex_config_path,

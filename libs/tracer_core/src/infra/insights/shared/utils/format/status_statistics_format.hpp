@@ -9,7 +9,8 @@
 
 inline auto FormatStatusStatistics(int occurrence_count,
                                    std::int64_t total_duration,
-                                   const std::string& count_unit) -> std::string {
+                                   const std::string& count_unit)
+    -> std::string {
   return std::to_string(occurrence_count) + " " + count_unit + " (" +
          TimeFormatDuration(total_duration) + ")";
 }

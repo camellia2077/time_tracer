@@ -23,23 +23,22 @@ struct SummaryItem {
  * @param is_subsection 如果为 true，则使用 \subsection*，否则使用 \section*
  */
 INSIGHTS_SHARED_API void RenderTitle(std::string& insights_stream,
-                                    const std::string& content, int font_size,
-                                    bool is_subsection = false);
+                                     const std::string& content, int font_size,
+                                     bool is_subsection = false);
 
 /**
  * @brief 渲染紧凑的摘要信息列表 (itemize 环境)
  */
-INSIGHTS_SHARED_API void RenderSummaryList(std::string& insights_stream,
-                                          const std::vector<SummaryItem>& items,
-                                          double top_sep_pt,
-                                          double item_sep_ex);
+INSIGHTS_SHARED_API void RenderSummaryList(
+    std::string& insights_stream, const std::vector<SummaryItem>& items,
+    double top_sep_pt, double item_sep_ex);
 
 /**
  * @brief Build compact itemize options, e.g. "[topsep=2pt,
  * itemsep=0.2ex]".
  */
 INSIGHTS_SHARED_API auto BuildCompactListOptions(double top_sep_pt,
-                                                double item_sep_ex)
+                                                 double item_sep_ex)
     -> std::string;
 
 }  // namespace TexCommonUtils

@@ -19,7 +19,7 @@ namespace {
     const config_parser_internal::AndroidBundleInsightsConfigPathSet& paths)
     -> AndroidBundleInsightsConfigPathSet {
   return {
-      .day = paths.day,
+      .daily = paths.daily,
       .month = paths.month,
       .period = paths.period,
       .week = paths.week,

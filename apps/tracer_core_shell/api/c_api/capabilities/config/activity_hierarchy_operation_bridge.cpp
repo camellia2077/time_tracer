@@ -32,7 +32,7 @@ namespace config = tracer::core::application::config;
           {"kind", ToString(node.kind)},
           // Kept for older clients. New clients should use `kind`.
           {"is_group", node.IsGroup()},
-           {"aliases", node.aliases},
+          {"aliases", node.aliases},
           {"children", std::move(children)}};
 }
 
@@ -75,7 +75,7 @@ namespace config = tracer::core::application::config;
 }
 
 [[nodiscard]] auto ReadNullableStringField(const json& payload,
-                                            std::string_view field_name)
+                                           std::string_view field_name)
     -> std::optional<std::string> {
   const auto it = payload.find(std::string(field_name));
   if (it == payload.end() || it->is_null()) {
@@ -164,8 +164,8 @@ namespace config = tracer::core::application::config;
   if (kind == "rename_group_alias") {
     return Kind::kRenameGroupAlias;
   }
-  throw std::invalid_argument("Unsupported activity hierarchy operation kind: " +
-                              std::string(kind));
+  throw std::invalid_argument(
+      "Unsupported activity hierarchy operation kind: " + std::string(kind));
 }
 
 [[nodiscard]] auto ParseOperationRequest(const json& payload)
@@ -192,7 +192,8 @@ namespace config = tracer::core::application::config;
 
 [[nodiscard]] auto ToOperationResultJson(
     const config::ActivityHierarchyOperationResult& result) -> json {
-  const auto hierarchy = config::DescribeActivityHierarchy(result.updated_toml_content);
+  const auto hierarchy =
+      config::DescribeActivityHierarchy(result.updated_toml_content);
   json replacements = json::array();
   for (const auto& replacement : result.replacements) {
     replacements.push_back({{"old_canonical", replacement.old_canonical},
@@ -200,9 +201,8 @@ namespace config = tracer::core::application::config;
   }
   json alias_replacements = json::array();
   for (const auto& replacement : result.alias_replacements) {
-    alias_replacements.push_back(
-        {{"old_alias", replacement.old_alias},
-         {"new_alias", replacement.new_alias}});
+    alias_replacements.push_back({{"old_alias", replacement.old_alias},
+                                  {"new_alias", replacement.new_alias}});
   }
   return {{"updated_toml_content", result.updated_toml_content},
           {"replacements", std::move(replacements)},
@@ -211,12 +211,13 @@ namespace config = tracer::core::application::config;
 }
 
 [[nodiscard]] auto ToCrossDocumentOperationResultJson(
-    const config::ActivityHierarchyCrossDocumentOperationResult& result) -> json {
+    const config::ActivityHierarchyCrossDocumentOperationResult& result)
+    -> json {
   json updated_documents = json::array();
   for (const auto& document : result.updated_documents) {
-    updated_documents.push_back({{"source_name", document.source_name},
-                                 {"updated_toml_content",
-                                  document.updated_toml_content}});
+    updated_documents.push_back(
+        {{"source_name", document.source_name},
+         {"updated_toml_content", document.updated_toml_content}});
   }
   json replacements = json::array();
   for (const auto& replacement : result.replacements) {
@@ -225,9 +226,8 @@ namespace config = tracer::core::application::config;
   }
   json alias_replacements = json::array();
   for (const auto& replacement : result.alias_replacements) {
-    alias_replacements.push_back(
-        {{"old_alias", replacement.old_alias},
-         {"new_alias", replacement.new_alias}});
+    alias_replacements.push_back({{"old_alias", replacement.old_alias},
+                                  {"new_alias", replacement.new_alias}});
   }
   return {{"updated_documents", std::move(updated_documents)},
           {"replacements", std::move(replacements)},
@@ -239,17 +239,18 @@ namespace config = tracer::core::application::config;
 auto ApplyActivityHierarchyOperationJson(const nlohmann::json& payload)
     -> nlohmann::json {
   const auto result = config::ApplyActivityHierarchyOperation(
-      RequireStringField(payload, "toml_content"), ParseOperationRequest(payload));
+      RequireStringField(payload, "toml_content"),
+      ParseOperationRequest(payload));
   return ToOperationResultJson(result);
 }
 
-auto MoveActivityHierarchyLeafBetweenDocumentsJson(const nlohmann::json& payload)
-    -> nlohmann::json {
+auto MoveActivityHierarchyLeafBetweenDocumentsJson(
+    const nlohmann::json& payload) -> nlohmann::json {
   return MoveActivityHierarchyNodeBetweenDocumentsJson(payload);
 }
 
-auto MoveActivityHierarchyNodeBetweenDocumentsJson(const nlohmann::json& payload)
-    -> nlohmann::json {
+auto MoveActivityHierarchyNodeBetweenDocumentsJson(
+    const nlohmann::json& payload) -> nlohmann::json {
   const auto documents_it = payload.find("documents");
   if (documents_it == payload.end() || !documents_it->is_array()) {
     throw std::invalid_argument("field `documents` must be an array.");
@@ -279,9 +280,8 @@ auto RewriteActivityHierarchyDocumentJson(const nlohmann::json& payload)
 
 auto DescribeActivityHierarchyJson(const nlohmann::json& payload)
     -> nlohmann::json {
-  return {{"hierarchy",
-           ToJson(config::DescribeActivityHierarchy(
-               RequireStringField(payload, "toml_content")))}};
+  return {{"hierarchy", ToJson(config::DescribeActivityHierarchy(
+                            RequireStringField(payload, "toml_content")))}};
 }
 
 auto ValidateActivityHierarchyDocumentsJson(const nlohmann::json& payload)

@@ -9,8 +9,9 @@ namespace android_runtime_tests::smoke {
 using tracer_core::core::dto::InsightsDisplayMode;
 using tracer_core::core::dto::TemporalSelectionKind;
 
-auto VerifyInsightsOutputs(const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
-                         int& failures) -> void {
+auto VerifyInsightsOutputs(
+    const std::shared_ptr<ITracerCoreRuntime>& runtime_api, int& failures)
+    -> void {
   const auto insights_result = RunAndCheckInsightsQuery(
       runtime_api,
       {.display_mode = InsightsDisplayMode::kRecent,
@@ -37,7 +38,8 @@ auto VerifyInsightsOutputs(const std::shared_ptr<ITracerCoreRuntime>& runtime_ap
       std::cerr << "[FAIL] Android day markdown insights should include "
                    "'Period' label.\n";
     }
-    if (!Contains(day_insights_result->content, "- **Total Time Recorded**: ")) {
+    if (!Contains(day_insights_result->content,
+                  "- **Total Time Recorded**: ")) {
       ++failures;
       std::cerr << "[FAIL] Android day markdown insights should include "
                    "'Total Time Recorded' label.\n";

@@ -14,8 +14,8 @@ namespace tracer_core::common {
 class InsightsContractError : public LogicError {
  public:
   InsightsContractError(std::string message, std::string error_code,
-                         std::string error_category,
-                         std::vector<std::string> hints = {})
+                        std::string error_category,
+                        std::vector<std::string> hints = {})
       : LogicError(message),
         error_code_(std::move(error_code)),
         error_category_(std::move(error_category)),
@@ -42,7 +42,7 @@ class InsightsContractError : public LogicError {
 class InsightsTargetNotFoundError final : public InsightsContractError {
  public:
   InsightsTargetNotFoundError(std::string_view target_type,
-                            std::string_view target_value)
+                              std::string_view target_value)
       : InsightsContractError(
             BuildMessage(target_type, target_value),
             std::string(
@@ -61,8 +61,8 @@ class InsightsTargetNotFoundError final : public InsightsContractError {
 };
 
 template <typename TOutput>
-auto ApplyInsightsContract(TOutput& output,
-                            const InsightsContractError& error) -> void {
+auto ApplyInsightsContract(TOutput& output, const InsightsContractError& error)
+    -> void {
   output.error_contract.error_code = error.error_code();
   output.error_contract.error_category = error.error_category();
   output.error_contract.hints = error.hints();

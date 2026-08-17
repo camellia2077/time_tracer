@@ -9,7 +9,8 @@
 
 namespace tracer_core::application::tests {
 
-namespace insights_support = tracer::core::application::use_cases::insights_support;
+namespace insights_support =
+    tracer::core::application::use_cases::insights_support;
 using tracer_core::core::dto::InsightsDisplayMode;
 using tracer_core::core::dto::TemporalSelectionKind;
 using tracer_core::core::dto::TemporalSelectionPayload;
@@ -165,9 +166,10 @@ auto TestStructuredInsightsDistinguishesEmptyWindowFromMissingTarget(
       runtime_api.insights().RunTemporalStructuredInsightsQuery(
           {.display_mode = InsightsDisplayMode::kRange,
            .selection = BuildRangeSelection("2024-12-01", "2024-12-31")});
-  Expect(state, empty_range.ok,
-         "RunTemporalStructuredInsightsQuery should treat empty range windows as "
-         "successful insights.");
+  Expect(
+      state, empty_range.ok,
+      "RunTemporalStructuredInsightsQuery should treat empty range windows as "
+      "successful insights.");
   Expect(state, empty_range.error_contract.error_code.empty(),
          "RunTemporalStructuredInsightsQuery empty range should not expose "
          "target-not-found error code.");
@@ -180,7 +182,7 @@ auto TestStructuredInsightsDistinguishesEmptyWindowFromMissingTarget(
     Expect(state, !empty_range_insights->has_records,
            "RunTemporalStructuredInsightsQuery empty range should preserve "
            "has_records=false.");
-    Expect(state, empty_range_insights->matched_record_count == 0,
+    Expect(state, empty_range_insights->activity.occurrence_count == 0,
            "RunTemporalStructuredInsightsQuery empty range should preserve "
            "matched_record_count=0.");
   }
@@ -190,9 +192,10 @@ auto TestStructuredInsightsDistinguishesEmptyWindowFromMissingTarget(
       runtime_api.insights().RunTemporalStructuredInsightsQuery(
           {.display_mode = InsightsDisplayMode::kDay,
            .selection = BuildDaySelection("2024-12-31")});
-  Expect(state, !missing_day.ok,
-         "RunTemporalStructuredInsightsQuery should fail when the named insights "
-         "target is missing.");
+  Expect(
+      state, !missing_day.ok,
+      "RunTemporalStructuredInsightsQuery should fail when the named insights "
+      "target is missing.");
   Expect(state,
          missing_day.error_contract.error_code == "insights.target.not_found",
          "RunTemporalStructuredInsightsQuery missing target should expose "
@@ -207,7 +210,9 @@ auto TestStructuredRangePreservesConfiguredStatuses(TestState& state) -> void {
   FakeInsightsHandler insights_handler;
   auto insights_data_query = std::make_shared<FakeInsightsDataQueryService>();
   insights_data_query->period_statuses = {
-      {.id = "study", .label = "Study", .occurrence_count = 3,
+      {.id = "study",
+       .label = "Study",
+       .occurrence_count = 3,
        .total_duration = 5400},
   };
   auto runtime_api = BuildRuntimeApiForTest(pipeline_workflow, insights_handler,
@@ -220,10 +225,11 @@ auto TestStructuredRangePreservesConfiguredStatuses(TestState& state) -> void {
   Expect(state, result.ok && insights != nullptr,
          "structured range insights should return period data.");
   if (insights != nullptr) {
-    Expect(state, insights->statuses.size() == 1U &&
-                      insights->statuses[0].id == "study" &&
-                      insights->statuses[0].occurrence_count == 3 &&
-                      insights->statuses[0].total_duration == 5400,
+    Expect(state,
+           insights->statuses.size() == 1U &&
+               insights->statuses[0].id == "study" &&
+               insights->statuses[0].occurrence_count == 3 &&
+               insights->statuses[0].total_duration == 5400,
            "structured range insights should preserve configured statuses.");
   }
 }

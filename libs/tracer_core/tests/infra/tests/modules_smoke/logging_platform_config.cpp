@@ -209,7 +209,7 @@ auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int {
   const AppConfig kLoadedAppConfig = config_loader.LoadConfiguration();
   if (kLoadedAppConfig.pipeline.converter_main_config_path.filename() !=
           "behavior.toml" ||
-      kLoadedAppConfig.loaded_insights.markdown.day.labels
+      kLoadedAppConfig.loaded_insights.markdown.daily.labels
               .summary_section_label != "Summary") {
     return 403;
   }

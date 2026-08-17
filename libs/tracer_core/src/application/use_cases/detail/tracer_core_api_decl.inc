@@ -3,8 +3,8 @@ class TracerCoreApi : public ITracerCoreApi {
   using ProjectRepositoryPtr = std::shared_ptr<IProjectRepository>;
   using DataQueryServicePtr =
       std::shared_ptr<tracer_core::application::ports::IDataQueryService>;
-  using InsightsDataQueryServicePtr =
-      std::shared_ptr<tracer_core::application::ports::IInsightsDataQueryService>;
+  using InsightsDataQueryServicePtr = std::shared_ptr<
+      tracer_core::application::ports::IInsightsDataQueryService>;
   using InsightsDtoFormatterPtr =
       std::shared_ptr<tracer_core::application::ports::IInsightsDtoFormatter>;
   using TracerExchangeServicePtr =
@@ -12,7 +12,8 @@ class TracerCoreApi : public ITracerCoreApi {
 
   TracerCoreApi(
       ::tracer::core::application::workflow::IWorkflowHandler& workflow_handler,
-      IInsightsHandler& insights_handler, ProjectRepositoryPtr project_repository,
+      IInsightsHandler& insights_handler,
+      ProjectRepositoryPtr project_repository,
       DataQueryServicePtr data_query_service,
       InsightsDataQueryServicePtr insights_data_query_service = nullptr,
       InsightsDtoFormatterPtr insights_dto_formatter = nullptr,

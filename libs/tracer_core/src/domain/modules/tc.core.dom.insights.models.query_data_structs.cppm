@@ -6,13 +6,13 @@ export module tracer.core.domain.insights.models.query_data_structs;
 
 export namespace tracer::core::domain::modinsights {
 
-using ::FormattedDailyInsightsEntry;
 using ::FormattedDailyInsightsByMonth;
+using ::FormattedDailyInsightsEntry;
 using ::FormattedGroupedInsights;
-using ::FormattedMonthlyInsights;
-using ::FormattedPeriodInsights;
 using ::FormattedInsightsByIsoWeek;
 using ::FormattedInsightsByMonth;
+using ::FormattedMonthlyInsights;
+using ::FormattedPeriodInsights;
 using ::FormattedWeeklyInsights;
 using ::FormattedYearlyInsights;
 

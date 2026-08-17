@@ -102,8 +102,8 @@ void SetLastError(const char* message);
 [[nodiscard]] auto BuildOperationResponse(
     const tracer_core::core::dto::OperationAck& output) -> const char*;
 [[nodiscard]] auto BuildIngestSyncStatusResponse(
-    const tracer_core::core::dto::IngestSyncStatusOutput& output)
-    -> const char*;
+    const tracer_core::core::dto::IngestSyncStatusOutput& output) -> const
+    char*;
 [[nodiscard]] auto BuildInsightsTargetsResponse(
     const tracer_core::core::dto::TemporalInsightsTargetsOutput& output)
     -> const char*;
@@ -146,7 +146,8 @@ void SetLastError(const char* message);
     -> tracer_core::core::dto::InsightsOperationKind;
 [[nodiscard]] auto ParseTemporalSelectionKind(const std::string& value)
     -> tracer_core::core::dto::TemporalSelectionKind;
-[[nodiscard]] auto ParseInsightsFormat(const std::string& value) -> InsightsFormat;
+[[nodiscard]] auto ParseInsightsFormat(const std::string& value)
+    -> InsightsFormat;
 
 void SetCryptoProgressCallbackRegistration(
     TtCoreCryptoProgressCallback callback, void* user_data);

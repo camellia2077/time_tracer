@@ -83,10 +83,11 @@ auto ExpectMapping(const tracer::core::infrastructure::config::loader::detail::
   };
   Check(mappings == expected,
         "Alias mapping expansion must preserve canonical hierarchy.", failures);
-  Check(definition.child_files.size() == 1U &&
-            definition.child_files.front().color == "#22C55E",
-        "Activity hierarchy parent color must be retained by the config loader.",
-        failures);
+  Check(
+      definition.child_files.size() == 1U &&
+          definition.child_files.front().color == "#22C55E",
+      "Activity hierarchy parent color must be retained by the config loader.",
+      failures);
 }
 
 auto ExpectTree(const fs::path& path, int& failures) -> void {
@@ -124,7 +125,8 @@ auto RenderOperationResult(const fs::path& root, std::string_view name,
 auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
   namespace config = tracer::core::application::config;
 
-  const auto snapshot = config::DescribeActivityHierarchy(kActivityHierarchyToml);
+  const auto snapshot =
+      config::DescribeActivityHierarchy(kActivityHierarchyToml);
   const auto walk = std::ranges::find_if(snapshot.nodes, [](const auto& node) {
     return node.canonical_key == "walk";
   });
@@ -132,8 +134,7 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
       snapshot.nodes,
       [](const auto& node) { return node.canonical_key == "cardio"; });
   Check(snapshot.parent == "exercise" && snapshot.color == "#22C55E" &&
-            snapshot.nodes.size() == 2U &&
-            walk != snapshot.nodes.end() &&
+            snapshot.nodes.size() == 2U && walk != snapshot.nodes.end() &&
             walk->kind == config::ActivityHierarchyNodeKind::kLeaf &&
             walk->aliases == std::vector<std::string>{"步行"} &&
             cardio != snapshot.nodes.end() &&
@@ -150,7 +151,8 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
       });
   Check(config::DescribeActivityHierarchy(set_parent_color.updated_toml_content)
                 .color == "#FF0000",
-        "Set parent color must write the validated presentation color.", failures);
+        "Set parent color must write the validated presentation color.",
+        failures);
 
   const auto clear_parent_color = config::ApplyActivityHierarchyOperation(
       set_parent_color.updated_toml_content,
@@ -158,7 +160,8 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
           .kind = config::ActivityHierarchyOperationKind::kSetParentColor,
           .color = std::nullopt,
       });
-  Check(!config::DescribeActivityHierarchy(clear_parent_color.updated_toml_content)
+  Check(!config::DescribeActivityHierarchy(
+             clear_parent_color.updated_toml_content)
              .color.has_value(),
         "A missing parent color request must remove the optional color field.",
         failures);
@@ -180,11 +183,12 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
         failures);
 
   const auto add_group = config::ApplyActivityHierarchyOperation(
-      kActivityHierarchyToml, {
-                      .kind = config::ActivityHierarchyOperationKind::kAddGroup,
-                      .target_path = "root",
-                      .canonical_key = "strength",
-                  });
+      kActivityHierarchyToml,
+      {
+          .kind = config::ActivityHierarchyOperationKind::kAddGroup,
+          .target_path = "root",
+          .canonical_key = "strength",
+      });
   Check(RenderOperationResult(root, "add-group", add_group.updated_toml_content)
                 .find("strength\n") != std::string::npos,
         "Add group operation changed.", failures);
@@ -315,18 +319,19 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
         "Alias-selected promote operation changed.", failures);
 
   const auto move = config::ApplyActivityHierarchyOperation(
-      kActivityHierarchyToml, {
-                      .kind = config::ActivityHierarchyOperationKind::kMoveLeaf,
-                      .target_path = "cardio.running.treadmill",
-                      .destination_path = "cardio",
-                  });
+      kActivityHierarchyToml,
+      {
+          .kind = config::ActivityHierarchyOperationKind::kMoveLeaf,
+          .target_path = "cardio.running.treadmill",
+          .destination_path = "cardio",
+      });
   CheckReplacements(
       move.replacements,
       {{"exercise_cardio_running_treadmill", "exercise_cardio_treadmill"}},
       "Move leaf replacement plan changed.", failures);
   Check(RenderOperationResult(root, "move", move.updated_toml_content)
                 .find("treadmill — aliases: treadmill, 跑步机\n") !=
-             std::string::npos,
+            std::string::npos,
         "Move leaf operation changed.", failures);
 
   const auto move_group_nested = config::ApplyActivityHierarchyOperation(
@@ -554,7 +559,6 @@ auto ExpectHierarchyOperations(const fs::path& root, int& failures) -> void {
                 std::string::npos,
         "Core group cross-document move must preserve the complete subtree.",
         failures);
-
 }
 
 auto ExpectDuplicateAliasRejection(const fs::path& directory, int& failures)
@@ -607,11 +611,12 @@ auto ExpectParentColorValidation(const fs::path& directory, int& failures)
                 directory,
                 tracer::core::infrastructure::config::loader::ReadToml));
   } catch (const std::runtime_error& error) {
-    rejected_invalid_color = std::string(error.what()).find("#RRGGBB") !=
-                             std::string::npos;
+    rejected_invalid_color =
+        std::string(error.what()).find("#RRGGBB") != std::string::npos;
   }
   Check(rejected_invalid_color,
-        "Activity hierarchy must reject invalid parent color values.", failures);
+        "Activity hierarchy must reject invalid parent color values.",
+        failures);
 
   std::error_code cleanup_error;
   fs::remove_all(directory, cleanup_error);
@@ -627,8 +632,8 @@ auto ExpectParentColorValidation(const fs::path& directory, int& failures)
                 tracer::core::infrastructure::config::loader::ReadToml));
   } catch (const std::runtime_error& error) {
     rejected_unknown_field =
-        std::string(error.what()).find("unsupported top-level field `colour`") !=
-        std::string::npos;
+        std::string(error.what())
+            .find("unsupported top-level field `colour`") != std::string::npos;
   }
   Check(rejected_unknown_field,
         "Activity hierarchy must reject unknown top-level fields.", failures);

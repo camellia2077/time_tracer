@@ -16,10 +16,10 @@
 
 namespace tracer::core::application::use_cases {
 
-using tracer_core::core::dto::OperationAck;
-using tracer_core::core::dto::PeriodBatchQueryRequest;
 using tracer_core::core::dto::InsightsDisplayMode;
 using tracer_core::core::dto::InsightsExportScope;
+using tracer_core::core::dto::OperationAck;
+using tracer_core::core::dto::PeriodBatchQueryRequest;
 using tracer_core::core::dto::StructuredPeriodBatchItem;
 using tracer_core::core::dto::StructuredPeriodBatchOutput;
 using tracer_core::core::dto::StructuredPeriodBatchQueryRequest;
@@ -53,8 +53,8 @@ auto ResolveExportPath(const TemporalInsightsExportRequest& request,
     case InsightsDisplayMode::kMonth: {
       const auto kRange =
           insights_query_support::RequireDateRangeSelection(selection);
-      return insights_api_support::BuildMonthPath(kExportRoot, request.format,
-                                                kRange.start_date.substr(0, 7));
+      return insights_api_support::BuildMonthPath(
+          kExportRoot, request.format, kRange.start_date.substr(0, 7));
     }
     case InsightsDisplayMode::kRecent:
       return insights_api_support::BuildRecentPath(
@@ -70,8 +70,8 @@ auto ResolveExportPath(const TemporalInsightsExportRequest& request,
     case InsightsDisplayMode::kYear: {
       const auto kRange =
           insights_query_support::RequireDateRangeSelection(selection);
-      return insights_api_support::BuildYearPath(kExportRoot, request.format,
-                                               kRange.start_date.substr(0, 4));
+      return insights_api_support::BuildYearPath(
+          kExportRoot, request.format, kRange.start_date.substr(0, 4));
     }
     case InsightsDisplayMode::kRange: {
       const auto kRange =
@@ -83,14 +83,13 @@ auto ResolveExportPath(const TemporalInsightsExportRequest& request,
   throw std::invalid_argument("Unhandled export display mode.");
 }
 
-auto RenderTemporalInsightsForExport(InsightsApi& api,
-                                   const TemporalInsightsExportRequest& request,
-                                   const TemporalSelectionPayload& selection)
-    -> TextOutput {
+auto RenderTemporalInsightsForExport(
+    InsightsApi& api, const TemporalInsightsExportRequest& request,
+    const TemporalSelectionPayload& selection) -> TextOutput {
   return api.RunTemporalInsightsQuery({.display_mode = request.display_mode,
-                                     .selection = selection,
-                                     .format = request.format,
-                                     .locale = request.locale});
+                                       .selection = selection,
+                                       .format = request.format,
+                                       .locale = request.locale});
 }
 
 void RequireExportScopeRules(const TemporalInsightsExportRequest& request) {
@@ -168,9 +167,10 @@ auto BuildSelectionFromTarget(InsightsDisplayMode display_mode,
 
 }  // namespace
 
-InsightsApi::InsightsApi(IInsightsHandler& insights_handler,
-                     InsightsDataQueryServicePtr insights_data_query_service,
-                     InsightsDtoFormatterPtr insights_dto_formatter)
+InsightsApi::InsightsApi(
+    IInsightsHandler& insights_handler,
+    InsightsDataQueryServicePtr insights_data_query_service,
+    InsightsDtoFormatterPtr insights_dto_formatter)
     : insights_handler_(insights_handler),
       insights_data_query_service_(std::move(insights_data_query_service)),
       insights_dto_formatter_(std::move(insights_dto_formatter)) {}
@@ -244,8 +244,8 @@ auto InsightsApi::RunTemporalStructuredInsightsQuery(
               "insights.invalid_selection", "insights",
               {"Use single_day for day or recent_days for recent."});
         }
-        const auto kRange =
-            insights_query_support::RequireDateRangeSelection(request.selection);
+        const auto kRange = insights_query_support::RequireDateRangeSelection(
+            request.selection);
         PeriodInsightsData insights{};
         switch (request.display_mode) {
           case InsightsDisplayMode::kMonth:
@@ -267,8 +267,8 @@ auto InsightsApi::RunTemporalStructuredInsightsQuery(
                     kRange.start_date.substr(0, 4)));
             break;
           case InsightsDisplayMode::kRange:
-            insights = insights_data_query_service_->QueryRange(kRange.start_date,
-                                                            kRange.end_date);
+            insights = insights_data_query_service_->QueryRange(
+                kRange.start_date, kRange.end_date);
             break;
           case InsightsDisplayMode::kDay:
           case InsightsDisplayMode::kRecent:
@@ -308,8 +308,9 @@ auto InsightsApi::RunTemporalStructuredInsightsQuery(
         "RunTemporalStructuredInsightsQuery", request,
         "Unhandled temporal selection kind.");
   } catch (const tracer_core::common::InsightsContractError& error) {
-    auto failure = insights_query_support::BuildTemporalStructuredInsightsFailure(
-        "RunTemporalStructuredInsightsQuery", request, error);
+    auto failure =
+        insights_query_support::BuildTemporalStructuredInsightsFailure(
+            "RunTemporalStructuredInsightsQuery", request, error);
     tracer_core::common::ApplyInsightsContract(failure, error);
     return failure;
   } catch (const std::exception& exception) {
@@ -354,7 +355,7 @@ auto InsightsApi::RunPeriodBatchQuery(const PeriodBatchQueryRequest& request)
 
         try {
           output << insights_dto_formatter_->FormatPeriod(*item.insights,
-                                                        request.format);
+                                                          request.format);
         } catch (const std::exception& exception) {
           output << insights_api_support::BuildPeriodBatchErrorLine(
               item.kDays, exception.what());
@@ -369,7 +370,7 @@ auto InsightsApi::RunPeriodBatchQuery(const PeriodBatchQueryRequest& request)
 
     return {.ok = true,
             .content = insights_handler_.RunPeriodQueries(request.days_list,
-                                                        request.format),
+                                                          request.format),
             .error_message = ""};
   } catch (const std::exception& exception) {
     return core_api_failure::BuildTextFailure("RunPeriodBatchQuery", exception);
@@ -457,7 +458,8 @@ auto InsightsApi::RunTemporalInsightsTargetsQuery(
       case InsightsDisplayMode::kRange:
       case InsightsDisplayMode::kRecent:
         throw tracer_core::common::InsightsContractError(
-            "Insights targets are not supported for range/recent display modes.",
+            "Insights targets are not supported for range/recent display "
+            "modes.",
             "insights.unsupported_display_mode", "insights",
             {"Use day, week, month, or year targets instead."});
     }

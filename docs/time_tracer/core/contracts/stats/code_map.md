@@ -24,15 +24,17 @@
    - 通用文本响应结构（`TextOutput`）与共享 envelope。
 
 ## Core 查询与统计语义层
-1. `libs/tracer_core/src/infra/query/data/data_query_types.hpp`
+1. `libs/tracer_core/src/domain/insights/models/activity_aggregate.hpp`
+   - 活动总时长、发生次数及每次平均耗时的共享聚合模型。
+2. `libs/tracer_core/src/infra/query/data/data_query_types.hpp`
    - 统计数据结构（`DayDurationRow`、`DayDurationStats`）。
-2. `libs/tracer_core/src/infra/query/data/stats/day_duration_stats_calculator.cpp`
+3. `libs/tracer_core/src/infra/query/data/stats/day_duration_stats_calculator.cpp`
    - `days-stats` 的均值、方差、标准差、百分位、MAD 等计算。
-3. `libs/tracer_core/src/infra/query/data/stats/insights_chart_stats_calculator.cpp`
+4. `libs/tracer_core/src/infra/query/data/stats/insights_chart_stats_calculator.cpp`
    - `insights-chart` 的日序列聚合与总时长/平均值/活跃天数计算。
-4. `libs/tracer_core/src/infra/query/data/renderers/data_query_renderer.cpp`
-5. `libs/tracer_core/src/infra/query/data/renderers/text_renderer.cpp`
-6. `libs/tracer_core/src/infra/query/data/renderers/semantic_json_renderer.cpp`
+5. `libs/tracer_core/src/infra/query/data/renderers/data_query_renderer.cpp`
+6. `libs/tracer_core/src/infra/query/data/renderers/text_renderer.cpp`
+7. `libs/tracer_core/src/infra/query/data/renderers/semantic_json_renderer.cpp`
    - 统一渲染入口与 text/semantic_json 分层实现。
 
 ## Core 数据访问与编排层
@@ -50,8 +52,8 @@
    - 请求参数归一化、过滤参数解析与校验。
 10. `libs/tracer_core/src/infra/query/data/repository/query_runtime_service_dispatch.cpp`
    - 轻量 action 路由（调用 orchestrators）。
-11. `libs/tracer_core/src/infra/query/data/repository/query_runtime_service_insights_mapping.cpp`
-   - `insights-chart` 统计字段组装（平均值、总时长、活跃天数、范围天数）。
+11. `libs/tracer_core/src/infra/query/data/repository/query_runtime_service_insights_content.cpp`
+   - `insights-chart` 统计字段组装（平均值、众数、中位数、最低/最高范围、四分位范围、CV、MAD、总时长、活跃天数、范围天数）。
 
 ## Transport 层
 1. `libs/tracer_transport/include/tracer/transport/runtime_requests.hpp`

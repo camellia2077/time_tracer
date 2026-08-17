@@ -1,5 +1,5 @@
 struct AndroidBundleInsightsConfigPathSet {
-  std::filesystem::path day;
+  std::filesystem::path daily;
   std::filesystem::path month;
   std::filesystem::path period;
   std::filesystem::path week;

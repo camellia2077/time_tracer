@@ -16,7 +16,8 @@ class IInsightsQueryService {
   [[nodiscard]] virtual auto RunDailyQuery(std::string_view date_str,
                                            InsightsFormat format) const
       -> std::string = 0;
-  [[nodiscard]] virtual auto RunPeriodQuery(int days, InsightsFormat format) const
+  [[nodiscard]] virtual auto RunPeriodQuery(int days,
+                                            InsightsFormat format) const
       -> std::string = 0;
   [[nodiscard]] virtual auto RunMonthlyQuery(std::string_view year_month_str,
                                              InsightsFormat format) const

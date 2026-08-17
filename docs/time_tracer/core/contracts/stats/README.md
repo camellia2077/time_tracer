@@ -31,3 +31,4 @@
 2. 新增统计字段时，必须同步更新契约文档和测试基线。
 3. 默认输出模式仍为 `text`，跨端集成建议优先使用 `semantic_json`。
 4. 变更 `insights-chart` 字段时，先看 `insights_chart_contract_v1.md`，再更新 schema 与测试基线。
+5. 活动次数与活动时长的共享聚合规则见 `activity_aggregate_contract_v1.md`；端侧不得重新累计完整查询范围的活动日数据。

@@ -3,7 +3,7 @@
 # --- Shared Insights Library ---
 add_library(insights_shared SHARED
     # Base Configs
-    "daily/common/day_base_config.cpp"
+    "daily/common/daily_formatter_base_config.cpp"
     "monthly/common/month_base_config.cpp"
     "range/common/range_base_config.cpp"
     "daily/formatters/statistics/stat_formatter.cpp"

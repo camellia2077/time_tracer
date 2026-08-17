@@ -97,8 +97,8 @@ namespace tracer_core::shell::c_api_bridge {
     return DataQueryAction::kActivityHierarchyLeafMappings;
   }
   if (normalized == "mapping_alias_keys" ||
-      normalized == "mapping-alias-keys" ||
-      normalized == "alias_keys" || normalized == "alias-keys") {
+      normalized == "mapping-alias-keys" || normalized == "alias_keys" ||
+      normalized == "alias-keys") {
     return DataQueryAction::kMappingAliasKeys;
   }
   if (normalized == "wake_keywords" || normalized == "wake-keywords") {
@@ -106,8 +106,7 @@ namespace tracer_core::shell::c_api_bridge {
   }
   if (normalized == "authorable_event_tokens" ||
       normalized == "authorable-event-tokens" ||
-      normalized == "authorable_tokens" ||
-      normalized == "authorable-tokens") {
+      normalized == "authorable_tokens" || normalized == "authorable-tokens") {
     return DataQueryAction::kAuthorableEventTokens;
   }
   if (normalized == "insights_chart" || normalized == "insights-chart" ||
@@ -131,9 +130,11 @@ namespace tracer_core::shell::c_api_bridge {
   }
   throw std::invalid_argument(
       "field `action` must be one of: years|months|days|days_duration|"
-      "days_stats|search|activity_frequent|mapping_names|activity_alias_mappings|mapping_alias_keys|"
+      "days_stats|search|activity_frequent|mapping_names|activity_alias_"
+      "mappings|mapping_alias_keys|"
       "wake_keywords|authorable_event_tokens|insights_chart|"
-      "insights_composition|previous_activity_tail|latest_activity_record|tree.");
+      "insights_composition|previous_activity_tail|latest_activity_record|"
+      "tree.");
 }
 
 [[nodiscard]] auto ParseDataQueryOutputMode(const std::string& value)
@@ -201,12 +202,12 @@ namespace tracer_core::shell::c_api_bridge {
   if (normalized == "all_matching" || normalized == "all-matching") {
     return InsightsExportScope::kAllMatching;
   }
-  if (normalized == "batch_recent_list" ||
-      normalized == "batch-recent-list") {
+  if (normalized == "batch_recent_list" || normalized == "batch-recent-list") {
     return InsightsExportScope::kBatchRecentList;
   }
   throw std::invalid_argument(
-      "field `export_scope` must be one of: single|all_matching|batch_recent_list.");
+      "field `export_scope` must be one of: "
+      "single|all_matching|batch_recent_list.");
 }
 
 [[nodiscard]] auto ParseInsightsOperationKind(const std::string& value)
@@ -226,7 +227,8 @@ namespace tracer_core::shell::c_api_bridge {
     return InsightsOperationKind::kExport;
   }
   throw std::invalid_argument(
-      "field `operation_kind` must be one of: query|structured_query|targets|export.");
+      "field `operation_kind` must be one of: "
+      "query|structured_query|targets|export.");
 }
 
 [[nodiscard]] auto ParseTemporalSelectionKind(const std::string& value)
@@ -243,10 +245,12 @@ namespace tracer_core::shell::c_api_bridge {
     return TemporalSelectionKind::kRecentDays;
   }
   throw std::invalid_argument(
-      "field `selection_kind` must be one of: single_day|date_range|recent_days.");
+      "field `selection_kind` must be one of: "
+      "single_day|date_range|recent_days.");
 }
 
-[[nodiscard]] auto ParseInsightsFormat(const std::string& value) -> InsightsFormat {
+[[nodiscard]] auto ParseInsightsFormat(const std::string& value)
+    -> InsightsFormat {
   const std::string normalized = ToLowerAscii(value);
   if (normalized == "markdown" || normalized == "md") {
     return InsightsFormat::kMarkdown;

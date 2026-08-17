@@ -42,7 +42,7 @@ auto ResolveMarkdownLocaleRoot(const std::filesystem::path& day_config_path)
 }
 
 auto LoadLocalizedMarkdownInsights(const std::filesystem::path& markdown_dir,
-                                  LoadedInsightsConfigs& insights) -> void {
+                                   LoadedInsightsConfigs& insights) -> void {
   constexpr std::array<std::string_view, 5> kInsightsNames = {
       "day", "month", "period", "week", "year"};
   for (const auto& entry : std::filesystem::directory_iterator(markdown_dir)) {
@@ -66,7 +66,7 @@ auto LoadLocalizedMarkdownInsights(const std::filesystem::path& markdown_dir,
         !std::filesystem::exists(year_path)) {
       continue;
     }
-    localized.day = InsightsConfigLoader::LoadDailyMdConfig(day_path);
+    localized.daily = InsightsConfigLoader::LoadDailyMdConfig(day_path);
     localized.month = InsightsConfigLoader::LoadMonthlyMdConfig(month_path);
     localized.period = InsightsConfigLoader::LoadPeriodMdConfig(period_path);
     localized.week = InsightsConfigLoader::LoadWeeklyMdConfig(week_path);
@@ -78,9 +78,10 @@ auto LoadLocalizedMarkdownInsights(const std::filesystem::path& markdown_dir,
 }  // namespace
 
 void LoadDetailedInsights(AppConfig& config) {
-  if (!config.insights.day_typ_config_path.empty()) {
-    config.loaded_insights.typst.day = InsightsConfigLoader::LoadDailyTypConfig(
-        config.insights.day_typ_config_path);
+  if (!config.insights.daily_typ_config_path.empty()) {
+    config.loaded_insights.typst.daily =
+        InsightsConfigLoader::LoadDailyTypConfig(
+            config.insights.daily_typ_config_path);
   }
   if (!config.insights.month_typ_config_path.empty()) {
     config.loaded_insights.typst.month =
@@ -93,17 +94,20 @@ void LoadDetailedInsights(AppConfig& config) {
             config.insights.period_typ_config_path);
   }
   if (!config.insights.week_typ_config_path.empty()) {
-    config.loaded_insights.typst.week = InsightsConfigLoader::LoadWeeklyTypConfig(
-        config.insights.week_typ_config_path);
+    config.loaded_insights.typst.week =
+        InsightsConfigLoader::LoadWeeklyTypConfig(
+            config.insights.week_typ_config_path);
   }
   if (!config.insights.year_typ_config_path.empty()) {
-    config.loaded_insights.typst.year = InsightsConfigLoader::LoadYearlyTypConfig(
-        config.insights.year_typ_config_path);
+    config.loaded_insights.typst.year =
+        InsightsConfigLoader::LoadYearlyTypConfig(
+            config.insights.year_typ_config_path);
   }
 
-  if (!config.insights.day_tex_config_path.empty()) {
-    config.loaded_insights.latex.day = InsightsConfigLoader::LoadDailyTexConfig(
-        config.insights.day_tex_config_path);
+  if (!config.insights.daily_tex_config_path.empty()) {
+    config.loaded_insights.latex.daily =
+        InsightsConfigLoader::LoadDailyTexConfig(
+            config.insights.daily_tex_config_path);
   }
   if (!config.insights.month_tex_config_path.empty()) {
     config.loaded_insights.latex.month =
@@ -116,17 +120,20 @@ void LoadDetailedInsights(AppConfig& config) {
             config.insights.period_tex_config_path);
   }
   if (!config.insights.week_tex_config_path.empty()) {
-    config.loaded_insights.latex.week = InsightsConfigLoader::LoadWeeklyTexConfig(
-        config.insights.week_tex_config_path);
+    config.loaded_insights.latex.week =
+        InsightsConfigLoader::LoadWeeklyTexConfig(
+            config.insights.week_tex_config_path);
   }
   if (!config.insights.year_tex_config_path.empty()) {
-    config.loaded_insights.latex.year = InsightsConfigLoader::LoadYearlyTexConfig(
-        config.insights.year_tex_config_path);
+    config.loaded_insights.latex.year =
+        InsightsConfigLoader::LoadYearlyTexConfig(
+            config.insights.year_tex_config_path);
   }
 
-  if (!config.insights.day_md_config_path.empty()) {
-    config.loaded_insights.markdown.day = InsightsConfigLoader::LoadDailyMdConfig(
-        config.insights.day_md_config_path);
+  if (!config.insights.daily_md_config_path.empty()) {
+    config.loaded_insights.markdown.daily =
+        InsightsConfigLoader::LoadDailyMdConfig(
+            config.insights.daily_md_config_path);
   }
   if (!config.insights.month_md_config_path.empty()) {
     config.loaded_insights.markdown.month =
@@ -148,9 +155,9 @@ void LoadDetailedInsights(AppConfig& config) {
         InsightsConfigLoader::LoadYearlyMdConfig(
             config.insights.year_md_config_path);
   }
-  if (!config.insights.day_md_config_path.empty()) {
+  if (!config.insights.daily_md_config_path.empty()) {
     LoadLocalizedMarkdownInsights(
-        ResolveMarkdownLocaleRoot(config.insights.day_md_config_path),
+        ResolveMarkdownLocaleRoot(config.insights.daily_md_config_path),
         config.loaded_insights);
   }
 }

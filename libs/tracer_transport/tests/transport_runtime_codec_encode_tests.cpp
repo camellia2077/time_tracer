@@ -232,7 +232,8 @@ void TestEncodeRequestRoundTrip(int& failures) {
            "EncodeTemporalInsightsRequest round-trip anchor_date mismatch.",
            failures);
     Expect(decoded.format == request.format,
-           "EncodeTemporalInsightsRequest round-trip format mismatch.", failures);
+           "EncodeTemporalInsightsRequest round-trip format mismatch.",
+           failures);
   }
 
   {
@@ -242,7 +243,8 @@ void TestEncodeRequestRoundTrip(int& failures) {
     const auto encoded = EncodeInsightsBatchRequest(request);
     const auto decoded = DecodeInsightsBatchRequest(encoded);
     Expect(decoded.days_list == request.days_list,
-           "EncodeInsightsBatchRequest round-trip days_list mismatch.", failures);
+           "EncodeInsightsBatchRequest round-trip days_list mismatch.",
+           failures);
     Expect(decoded.format == request.format,
            "EncodeInsightsBatchRequest round-trip format mismatch.", failures);
   }
@@ -301,13 +303,14 @@ void TestEncodeResponses(int& failures) {
              query["hints"].size() == 2U,
          "EncodeQueryResponse hints mismatch.", failures);
 
-  const std::string insights_json = EncodeInsightsResponse(InsightsResponsePayload{
-      .ok = true,
-      .error_message = "",
-      .content = "## Monthly Summary",
-      .error_contract = ErrorContractPayload{.error_code = "insights.none",
-                                             .error_category = "logic",
-                                             .hints = {"hint-insights"}}});
+  const std::string insights_json =
+      EncodeInsightsResponse(InsightsResponsePayload{
+          .ok = true,
+          .error_message = "",
+          .content = "## Monthly Summary",
+          .error_contract = ErrorContractPayload{.error_code = "insights.none",
+                                                 .error_category = "logic",
+                                                 .hints = {"hint-insights"}}});
   const json insights = json::parse(insights_json);
   Expect(insights.value("content", std::string{}) == "## Monthly Summary",
          "EncodeInsightsResponse content mismatch.", failures);

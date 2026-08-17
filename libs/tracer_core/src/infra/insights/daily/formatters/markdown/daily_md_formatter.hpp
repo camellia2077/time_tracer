@@ -1,14 +1,15 @@
-// infra/insights/daily/formatters/markdown/day_md_formatter.hpp
-#ifndef INFRASTRUCTURE_INSIGHTS_DAILY_FORMATTERS_MARKDOWN_DAY_MD_FORMATTER_H_
-#define INFRASTRUCTURE_INSIGHTS_DAILY_FORMATTERS_MARKDOWN_DAY_MD_FORMATTER_H_
+// infra/insights/daily/formatters/markdown/daily_md_formatter.hpp
+#ifndef INFRASTRUCTURE_INSIGHTS_DAILY_FORMATTERS_MARKDOWN_DAILY_MD_FORMATTER_H_
+#define INFRASTRUCTURE_INSIGHTS_DAILY_FORMATTERS_MARKDOWN_DAILY_MD_FORMATTER_H_
 
 #include "domain/insights/models/daily_insights_data.hpp"
-#include "infra/insights/daily/formatters/markdown/day_md_config.hpp"
+#include "infra/insights/daily/formatters/markdown/daily_md_formatter_config.hpp"
 #include "infra/insights/shared/formatters/templates/base_md_formatter.hpp"
 
-class DayMdFormatter : public BaseMdFormatter<DailyInsightsData, DayMdConfig> {
+class DailyMdFormatter
+    : public BaseMdFormatter<DailyInsightsData, DailyMdFormatterConfig> {
  public:
-  explicit DayMdFormatter(std::shared_ptr<DayMdConfig> config);
+  explicit DailyMdFormatter(std::shared_ptr<DailyMdFormatterConfig> config);
 
  protected:
   // --- 实现基类钩子 ---
@@ -30,4 +31,4 @@ class DayMdFormatter : public BaseMdFormatter<DailyInsightsData, DayMdConfig> {
                                  const DailyInsightsData& data) const;
 };
 
-#endif  // INFRASTRUCTURE_INSIGHTS_DAILY_FORMATTERS_MARKDOWN_DAY_MD_FORMATTER_H_
+#endif  // INFRASTRUCTURE_INSIGHTS_DAILY_FORMATTERS_MARKDOWN_DAILY_MD_FORMATTER_H_

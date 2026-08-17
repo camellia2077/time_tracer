@@ -31,8 +31,7 @@ class IRuntimeActivityQueryRepository {
       std::string_view date) const
       -> std::optional<ActivityTailQueryResult> = 0;
   [[nodiscard]] virtual auto TryGetLatestActivityRecordOnDate(
-      std::string_view date) const
-      -> std::optional<LatestActivityRecord> = 0;
+      std::string_view date) const -> std::optional<LatestActivityRecord> = 0;
 };
 
 }  // namespace tracer_core::application::ports

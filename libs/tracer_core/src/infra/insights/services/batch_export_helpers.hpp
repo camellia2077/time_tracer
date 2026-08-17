@@ -19,7 +19,7 @@ inline auto CreateProjectNameCache(sqlite3* sqlite_db) -> ProjectNameCache {
 template <typename InsightsDataT>
 inline void EnsureProjectTree(InsightsDataT& data,
                               const IProjectInfoProvider& provider) {
-  if (data.total_duration <= 0 || !data.project_tree.empty()) {
+  if (data.activity.total_duration_seconds <= 0 || !data.project_tree.empty()) {
     return;
   }
   BuildProjectTreeFromIds(data.project_tree, data.project_stats, provider);
@@ -27,10 +27,10 @@ inline void EnsureProjectTree(InsightsDataT& data,
 
 template <typename MapT, typename FormatterT, typename InserterT>
 inline void FormatInsightsMap(MapT& data_map, FormatterT& formatter,
-                            const IProjectInfoProvider& provider,
-                            InserterT insert) {
+                              const IProjectInfoProvider& provider,
+                              InserterT insert) {
   for (auto& [key, data] : data_map) {
-    if (data.total_duration <= 0) {
+    if (data.activity.total_duration_seconds <= 0) {
       continue;
     }
     EnsureProjectTree(data, provider);

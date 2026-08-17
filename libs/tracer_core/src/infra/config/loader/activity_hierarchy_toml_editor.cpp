@@ -22,17 +22,17 @@ struct Match {
   bool is_group = false;
 };
 
-auto CollectMatches(
-    const tracer::core::infrastructure::config::loader::detail::ActivityHierarchyDocument&
-        document,
-    std::map<std::string, Match>& matches) -> void {
+auto CollectMatches(const tracer::core::infrastructure::config::loader::detail::
+                        ActivityHierarchyDocument& document,
+                    std::map<std::string, Match>& matches) -> void {
   for (const auto& node : tracer::core::infrastructure::config::loader::detail::
            CollectActivityHierarchyCanonicalNodes(document)) {
     matches.emplace(
         node.canonical,
         Match{node.canonical, node.path,
-              node.kind == tracer::core::infrastructure::config::loader::
-                               detail::ActivityHierarchyDocumentNodeKind::kGroup});
+              node.kind ==
+                  tracer::core::infrastructure::config::loader::detail::
+                      ActivityHierarchyDocumentNodeKind::kGroup});
   }
 }
 
@@ -47,7 +47,7 @@ auto CollectMatches(
     const auto kEnd = path.find('.', start);
     const auto kPart =
         path.substr(start, kEnd == std::string_view::npos ? path.size() - start
-                                                         : kEnd - start);
+                                                          : kEnd - start);
     if (kPart.empty()) {
       throw std::invalid_argument(
           "Canonical target path contains an empty component.");
@@ -83,10 +83,9 @@ auto ValidateNewKey(std::string_view new_name) -> void {
   }
 }
 
-auto RenameOne(
-    const Replacement& replacement, toml::table& canonical,
-    const tracer::core::infrastructure::config::loader::detail::ActivityHierarchyDocument&
-        document) -> void {
+auto RenameOne(const Replacement& replacement, toml::table& canonical,
+               const tracer::core::infrastructure::config::loader::detail::
+                   ActivityHierarchyDocument& document) -> void {
   std::map<std::string, Match> matches;
   CollectMatches(document, matches);
   const auto kSource = matches.find(replacement.old_canonical);
@@ -149,12 +148,12 @@ auto RenameOne(
   }
 }
 
-using ActivityHierarchyDocument =
-    tracer::core::infrastructure::config::loader::detail::ActivityHierarchyDocument;
+using ActivityHierarchyDocument = tracer::core::infrastructure::config::loader::
+    detail::ActivityHierarchyDocument;
 using ActivityHierarchyCanonicalNode = tracer::core::infrastructure::config::
     loader::detail::ActivityHierarchyCanonicalNode;
-using ActivityHierarchyDocumentNodeKind =
-    tracer::core::infrastructure::config::loader::detail::ActivityHierarchyDocumentNodeKind;
+using ActivityHierarchyDocumentNodeKind = tracer::core::infrastructure::config::
+    loader::detail::ActivityHierarchyDocumentNodeKind;
 
 auto ParseHierarchyPath(std::string_view value, bool allow_root,
                         std::string_view field) -> std::vector<std::string> {
@@ -290,14 +289,16 @@ auto MakeAliasArray(const std::vector<std::string>& aliases) -> toml::array {
   return result;
 }
 
-auto SerializeActivityHierarchyDocument(const toml::table& document) -> std::string {
+auto SerializeActivityHierarchyDocument(const toml::table& document)
+    -> std::string {
   std::ostringstream output;
   output << document;
   return output.str();
 }
 
 auto AppendRawDocumentMigrationPlan(
-    const ActivityHierarchyDocument& original, const ActivityHierarchyDocument& updated,
+    const ActivityHierarchyDocument& original,
+    const ActivityHierarchyDocument& updated,
     const std::vector<std::string>& original_groups,
     const std::vector<std::string>& updated_groups,
     std::vector<Replacement>& canonical_replacements,
@@ -312,10 +313,10 @@ auto AppendRawDocumentMigrationPlan(
 
     const auto kOldPath = tracer::core::infrastructure::config::loader::detail::
         BuildActivityHierarchyCanonicalPath(original.parent, original_groups,
-                                old_node.canonical_key);
+                                            old_node.canonical_key);
     const auto kNewPath = tracer::core::infrastructure::config::loader::detail::
         BuildActivityHierarchyCanonicalPath(updated.parent, updated_groups,
-                                new_node.canonical_key);
+                                            new_node.canonical_key);
     if (kOldPath != kNewPath) {
       canonical_replacements.push_back({kOldPath, kNewPath});
     }
@@ -337,8 +338,10 @@ auto AppendRawDocumentMigrationPlan(
       auto new_child_groups = updated_groups;
       new_child_groups.push_back(new_node.canonical_key);
       AppendRawDocumentMigrationPlan(
-          ActivityHierarchyDocument{.parent = original.parent, .nodes = old_node.children},
-          ActivityHierarchyDocument{.parent = updated.parent, .nodes = new_node.children},
+          ActivityHierarchyDocument{.parent = original.parent,
+                                    .nodes = old_node.children},
+          ActivityHierarchyDocument{.parent = updated.parent,
+                                    .nodes = new_node.children},
           old_child_groups, new_child_groups, canonical_replacements,
           alias_replacements);
     }
@@ -375,8 +378,9 @@ auto DescribeNode(const tracer::core::infrastructure::config::loader::detail::
 }
 
 auto CollectRenamedCanonicalReplacements(
-    const ActivityHierarchyDocument& document, const std::vector<std::string>& target_path,
-    std::string_view new_name) -> std::vector<Replacement> {
+    const ActivityHierarchyDocument& document,
+    const std::vector<std::string>& target_path, std::string_view new_name)
+    -> std::vector<Replacement> {
   std::vector<Replacement> replacements;
   for (const auto& node : tracer::core::infrastructure::config::loader::detail::
            CollectActivityHierarchyCanonicalNodes(document)) {
@@ -395,10 +399,11 @@ auto CollectRenamedCanonicalReplacements(
     replacements.push_back(
         {node.canonical,
          tracer::core::infrastructure::config::loader::detail::
-             BuildActivityHierarchyCanonicalPath(document.parent, kGroups,
-                                     node.kind == ActivityHierarchyDocumentNodeKind::kGroup
-                                         ? std::string_view{}
-                                         : renamed_path.back())});
+             BuildActivityHierarchyCanonicalPath(
+                 document.parent, kGroups,
+                 node.kind == ActivityHierarchyDocumentNodeKind::kGroup
+                     ? std::string_view{}
+                     : renamed_path.back())});
   }
   return replacements;
 }
@@ -413,8 +418,8 @@ auto ApplyActivityHierarchyOperationImpl(
 
   toml::table document = toml::parse(toml_content);
   ActivityHierarchyDocument activity_hierarchy_document =
-      tracer::core::infrastructure::config::loader::detail::ParseActivityHierarchyDocument(
-          document);
+      tracer::core::infrastructure::config::loader::detail::
+          ParseActivityHierarchyDocument(document);
   tracer::core::infrastructure::config::loader::detail::
       ValidateActivityHierarchyAliasUniqueness(activity_hierarchy_document);
   toml::table* canonical = document["canonical"].as_table();
@@ -430,8 +435,9 @@ auto ApplyActivityHierarchyOperationImpl(
     }
     const auto kPath =
         ParseHierarchyPath(request.target_path, false, "Leaf path");
-    const auto& current = RequireCanonicalNode(
-        activity_hierarchy_document, kPath, ActivityHierarchyDocumentNodeKind::kLeaf, "leaf");
+    const auto& current =
+        RequireCanonicalNode(activity_hierarchy_document, kPath,
+                             ActivityHierarchyDocumentNodeKind::kLeaf, "leaf");
     if (current.node->aliases.size() != request.aliases.size()) {
       return;
     }
@@ -454,7 +460,8 @@ auto ApplyActivityHierarchyOperationImpl(
     const auto kPath =
         ParseHierarchyPath(request.target_path, false, "Group path");
     const auto& current = RequireCanonicalNode(
-        activity_hierarchy_document, kPath, ActivityHierarchyDocumentNodeKind::kGroup, "group");
+        activity_hierarchy_document, kPath,
+        ActivityHierarchyDocumentNodeKind::kGroup, "group");
     if (current.node->aliases.size() != request.aliases.size()) {
       return;
     }
@@ -495,7 +502,8 @@ auto ApplyActivityHierarchyOperationImpl(
       const auto kPath =
           ParseHierarchyPath(request.target_path, false, "Group path");
       static_cast<void>(RequireCanonicalNode(
-          activity_hierarchy_document, kPath, ActivityHierarchyDocumentNodeKind::kGroup, "group"));
+          activity_hierarchy_document, kPath,
+          ActivityHierarchyDocumentNodeKind::kGroup, "group"));
       auto parent_path = kPath;
       const std::string kKey = parent_path.back();
       parent_path.pop_back();
@@ -518,7 +526,8 @@ auto ApplyActivityHierarchyOperationImpl(
       const auto kPath =
           ParseHierarchyPath(request.target_path, false, "Leaf path");
       static_cast<void>(RequireCanonicalNode(
-          activity_hierarchy_document, kPath, ActivityHierarchyDocumentNodeKind::kLeaf, "leaf"));
+          activity_hierarchy_document, kPath,
+          ActivityHierarchyDocumentNodeKind::kLeaf, "leaf"));
       auto parent_path = kPath;
       const std::string kKey = parent_path.back();
       parent_path.pop_back();
@@ -531,7 +540,8 @@ auto ApplyActivityHierarchyOperationImpl(
       const auto kPath =
           ParseHierarchyPath(request.target_path, false, "Leaf path");
       static_cast<void>(RequireCanonicalNode(
-          activity_hierarchy_document, kPath, ActivityHierarchyDocumentNodeKind::kLeaf, "leaf"));
+          activity_hierarchy_document, kPath,
+          ActivityHierarchyDocumentNodeKind::kLeaf, "leaf"));
       auto parent_path = kPath;
       const std::string kKey = parent_path.back();
       parent_path.pop_back();
@@ -541,7 +551,8 @@ auto ApplyActivityHierarchyOperationImpl(
     case config::ActivityHierarchyOperationKind::kPromoteLeaf: {
       const auto kPath = ResolveLeafPath(activity_hierarchy_document, request);
       const auto kSource = RequireCanonicalNode(
-          activity_hierarchy_document, kPath, ActivityHierarchyDocumentNodeKind::kLeaf, "leaf");
+          activity_hierarchy_document, kPath,
+          ActivityHierarchyDocumentNodeKind::kLeaf, "leaf");
       auto parent_path = kPath;
       const std::string kKey = parent_path.back();
       parent_path.pop_back();
@@ -557,14 +568,16 @@ auto ApplyActivityHierarchyOperationImpl(
       break;
     }
     case config::ActivityHierarchyOperationKind::kMoveLeaf: {
-      const auto kSourcePath = ResolveLeafPath(activity_hierarchy_document, request);
+      const auto kSourcePath =
+          ResolveLeafPath(activity_hierarchy_document, request);
       const auto kDestinationPath = ParseHierarchyPath(
           request.destination_path, false, "Destination group path");
       const auto kSource = RequireCanonicalNode(
-          activity_hierarchy_document, kSourcePath, ActivityHierarchyDocumentNodeKind::kLeaf, "leaf");
-      static_cast<void>(RequireCanonicalNode(activity_hierarchy_document, kDestinationPath,
-                                             ActivityHierarchyDocumentNodeKind::kGroup,
-                                             "destination group"));
+          activity_hierarchy_document, kSourcePath,
+          ActivityHierarchyDocumentNodeKind::kLeaf, "leaf");
+      static_cast<void>(RequireCanonicalNode(
+          activity_hierarchy_document, kDestinationPath,
+          ActivityHierarchyDocumentNodeKind::kGroup, "destination group"));
       auto source_parent_path = kSourcePath;
       const std::string kKey = source_parent_path.back();
       source_parent_path.pop_back();
@@ -585,24 +598,26 @@ auto ApplyActivityHierarchyOperationImpl(
       result.replacements.push_back({
           kSource.canonical,
           tracer::core::infrastructure::config::loader::detail::
-              BuildActivityHierarchyCanonicalPath(activity_hierarchy_document.parent, kDestinationPath,
-                                      kKey),
+              BuildActivityHierarchyCanonicalPath(
+                  activity_hierarchy_document.parent, kDestinationPath, kKey),
       });
       break;
     }
     case config::ActivityHierarchyOperationKind::kMoveGroup: {
-      const auto kSourcePath = ResolveGroupPath(activity_hierarchy_document, request);
-      const auto kDestinationPath = request.destination_path == "root"
-                                        ? std::vector<std::string>{}
-                                        : ParseHierarchyPath(
-                                              request.destination_path, false,
-                                              "Destination group path");
+      const auto kSourcePath =
+          ResolveGroupPath(activity_hierarchy_document, request);
+      const auto kDestinationPath =
+          request.destination_path == "root"
+              ? std::vector<std::string>{}
+              : ParseHierarchyPath(request.destination_path, false,
+                                   "Destination group path");
       const auto kSource = RequireCanonicalNode(
-          activity_hierarchy_document, kSourcePath, ActivityHierarchyDocumentNodeKind::kGroup, "group");
+          activity_hierarchy_document, kSourcePath,
+          ActivityHierarchyDocumentNodeKind::kGroup, "group");
       if (!kDestinationPath.empty()) {
         static_cast<void>(RequireCanonicalNode(
-            activity_hierarchy_document, kDestinationPath, ActivityHierarchyDocumentNodeKind::kGroup,
-            "destination group"));
+            activity_hierarchy_document, kDestinationPath,
+            ActivityHierarchyDocumentNodeKind::kGroup, "destination group"));
       }
       if (IsPathPrefix(kSourcePath, kDestinationPath)) {
         throw std::invalid_argument(
@@ -617,14 +632,14 @@ auto ApplyActivityHierarchyOperationImpl(
         throw std::invalid_argument("Canonical key already exists: " + kKey);
       }
 
-      toml::table moved_group = *kMutableParent(source_parent_path)
-                                     ->at(kKey)
-                                     .as_table();
+      toml::table moved_group =
+          *kMutableParent(source_parent_path)->at(kKey).as_table();
       kMutableParent(source_parent_path)->erase(kKey);
       destination->insert(kKey, std::move(moved_group));
 
       for (const auto& node : tracer::core::infrastructure::config::loader::
-               detail::CollectActivityHierarchyCanonicalNodes(activity_hierarchy_document)) {
+               detail::CollectActivityHierarchyCanonicalNodes(
+                   activity_hierarchy_document)) {
         if (!IsPathPrefix(kSourcePath, node.path)) {
           continue;
         }
@@ -632,8 +647,9 @@ auto ApplyActivityHierarchyOperationImpl(
         new_path.push_back(kKey);
         new_path.insert(
             new_path.end(),
-            node.path.begin() + static_cast<
-                std::vector<std::string>::difference_type>(kSourcePath.size()),
+            node.path.begin() +
+                static_cast<std::vector<std::string>::difference_type>(
+                    kSourcePath.size()),
             node.path.end());
         const auto kNewCanonical = BuildNodeCanonical(
             activity_hierarchy_document.parent, new_path, node.kind);
@@ -653,12 +669,12 @@ auto ApplyActivityHierarchyOperationImpl(
             "Source and destination canonical leaves must differ.");
       }
 
-      const auto kSource =
-          RequireCanonicalNode(activity_hierarchy_document, kSourcePath,
-                               ActivityHierarchyDocumentNodeKind::kLeaf, "source leaf");
+      const auto kSource = RequireCanonicalNode(
+          activity_hierarchy_document, kSourcePath,
+          ActivityHierarchyDocumentNodeKind::kLeaf, "source leaf");
       const auto kDestination = RequireCanonicalNode(
-          activity_hierarchy_document, kDestinationPath, ActivityHierarchyDocumentNodeKind::kLeaf,
-          "destination leaf");
+          activity_hierarchy_document, kDestinationPath,
+          ActivityHierarchyDocumentNodeKind::kLeaf, "destination leaf");
       if (kDestination.node->aliases.empty()) {
         throw std::invalid_argument(
             "Destination canonical leaf must contain at least one alias.");
@@ -669,7 +685,8 @@ auto ApplyActivityHierarchyOperationImpl(
       source_parent_path.pop_back();
       kMutableParent(source_parent_path)->erase(kSourceKey);
 
-      result.replacements.push_back({kSource.canonical, kDestination.canonical});
+      result.replacements.push_back(
+          {kSource.canonical, kDestination.canonical});
       for (const auto& alias : kSource.node->aliases) {
         result.alias_replacements.push_back(
             {alias.value, kDestination.node->aliases.front().value});
@@ -680,7 +697,8 @@ auto ApplyActivityHierarchyOperationImpl(
       const auto kPath =
           ParseHierarchyPath(request.target_path, false, "Group path");
       static_cast<void>(RequireCanonicalNode(
-          activity_hierarchy_document, kPath, ActivityHierarchyDocumentNodeKind::kGroup, "group"));
+          activity_hierarchy_document, kPath,
+          ActivityHierarchyDocumentNodeKind::kGroup, "group"));
       toml::table* group = kMutableParent(kPath);
       group->erase("group_aliases");
       if (!request.aliases.empty()) {
@@ -701,7 +719,8 @@ auto ApplyActivityHierarchyOperationImpl(
             "New parent name must differ from the current parent.");
       }
       for (const auto& node : tracer::core::infrastructure::config::loader::
-               detail::CollectActivityHierarchyCanonicalNodes(activity_hierarchy_document)) {
+               detail::CollectActivityHierarchyCanonicalNodes(
+                   activity_hierarchy_document)) {
         result.replacements.push_back(
             {node.canonical,
              tracer::core::infrastructure::config::loader::detail::
@@ -736,21 +755,24 @@ auto ApplyActivityHierarchyOperationImpl(
       const bool kGroup =
           request.kind ==
           config::ActivityHierarchyOperationKind::kRenameGroupCanonical;
-      const auto kPath = ParseHierarchyPath(request.target_path, false,
-                                           kGroup ? "Group path" : "Leaf path");
+      const auto kPath = ParseHierarchyPath(
+          request.target_path, false, kGroup ? "Group path" : "Leaf path");
       ValidateNewKey(request.new_name);
       const auto kSource = RequireCanonicalNode(
           activity_hierarchy_document, kPath,
-          kGroup ? ActivityHierarchyDocumentNodeKind::kGroup : ActivityHierarchyDocumentNodeKind::kLeaf,
+          kGroup ? ActivityHierarchyDocumentNodeKind::kGroup
+                 : ActivityHierarchyDocumentNodeKind::kLeaf,
           kGroup ? "group" : "leaf");
       auto parent_path = kPath;
       parent_path.pop_back();
       const std::string kNewCanonical = tracer::core::infrastructure::config::
           loader::detail::BuildActivityHierarchyCanonicalPath(
-              activity_hierarchy_document.parent, parent_path, request.new_name);
+              activity_hierarchy_document.parent, parent_path,
+              request.new_name);
       result.replacements = CollectRenamedCanonicalReplacements(
           activity_hierarchy_document, kPath, request.new_name);
-      RenameOne({kSource.canonical, kNewCanonical}, *canonical, activity_hierarchy_document);
+      RenameOne({kSource.canonical, kNewCanonical}, *canonical,
+                activity_hierarchy_document);
       if (!kGroup && !request.aliases.empty()) {
         toml::table* parent = kMutableParent(parent_path);
         parent->erase(request.new_name);
@@ -784,7 +806,8 @@ auto ApplyActivityHierarchyOperationImpl(
       const auto kPath =
           ParseHierarchyPath(request.target_path, false, "Group path");
       static_cast<void>(RequireCanonicalNode(
-          activity_hierarchy_document, kPath, ActivityHierarchyDocumentNodeKind::kGroup, "group"));
+          activity_hierarchy_document, kPath,
+          ActivityHierarchyDocumentNodeKind::kGroup, "group"));
       const auto kAppended = MakeAliasArray(request.aliases);
       toml::table* group = kMutableParent(kPath);
       auto* existing = group->get_as<toml::array>("group_aliases");
@@ -805,7 +828,8 @@ auto ApplyActivityHierarchyOperationImpl(
             "Old and new group aliases must not be empty.");
       }
       static_cast<void>(RequireCanonicalNode(
-          activity_hierarchy_document, kPath, ActivityHierarchyDocumentNodeKind::kGroup, "group"));
+          activity_hierarchy_document, kPath,
+          ActivityHierarchyDocumentNodeKind::kGroup, "group"));
       toml::table* group = kMutableParent(kPath);
       auto* existing = group->get_as<toml::array>("group_aliases");
       if (existing == nullptr) {
@@ -831,9 +855,8 @@ auto ApplyActivityHierarchyOperationImpl(
     }
   }
 
-  const ActivityHierarchyDocument kUpdated =
-      tracer::core::infrastructure::config::loader::detail::ParseActivityHierarchyDocument(
-          document);
+  const ActivityHierarchyDocument kUpdated = tracer::core::infrastructure::
+      config::loader::detail::ParseActivityHierarchyDocument(document);
   tracer::core::infrastructure::config::loader::detail::
       ValidateActivityHierarchyAliasUniqueness(kUpdated);
   result.updated_toml_content = SerializeActivityHierarchyDocument(document);
@@ -976,16 +999,17 @@ auto MoveActivityHierarchyNodeBetweenDocuments(
 
   std::vector<AliasCanonicalReplacement> replacements;
   for (const auto& node : infrastructure::config::loader::detail::
-           CollectActivityHierarchyCanonicalNodes(parsed_documents[source_index])) {
+           CollectActivityHierarchyCanonicalNodes(
+               parsed_documents[source_index])) {
     if (!IsPathPrefix(kSourcePath, node.path)) {
       continue;
     }
     auto new_path = destination_path;
     new_path.push_back(kSourceKey);
-    new_path.insert(
-        new_path.end(),
-        node.path.begin() + static_cast<std::vector<std::string>::difference_type>(
-                                kSourcePath.size()),
+    new_path.insert(new_path.end(),
+                    node.path.begin() +
+                        static_cast<std::vector<std::string>::difference_type>(
+                            kSourcePath.size()),
                     node.path.end());
     const auto kOldCanonical = BuildNodeCanonical(
         parsed_documents[source_index].parent, node.path, node.kind);
@@ -1000,7 +1024,8 @@ auto MoveActivityHierarchyNodeBetweenDocuments(
   updated_documents.reserve(documents.size());
   for (std::size_t index = 0U; index < documents.size(); ++index) {
     updated_documents.push_back(
-        {documents[index].source_name, SerializeActivityHierarchyDocument(tables[index])});
+        {documents[index].source_name,
+         SerializeActivityHierarchyDocument(tables[index])});
   }
   ValidateActivityHierarchyDocuments(updated_documents);
 
@@ -1024,7 +1049,7 @@ auto MoveActivityHierarchyLeafBetweenDocuments(
         "Leaf cross-document move requires the move_leaf operation.");
   }
   return MoveActivityHierarchyNodeBetweenDocuments(documents, source_name,
-                                                    destination_name, request);
+                                                   destination_name, request);
 }
 
 auto RewriteActivityHierarchyDocument(std::string_view original_toml_content,
@@ -1039,16 +1064,19 @@ auto RewriteActivityHierarchyDocument(std::string_view original_toml_content,
       infrastructure::config::loader::detail::ParseActivityHierarchyDocument(
           kOriginalTable);
   const ActivityHierarchyDocument kUpdated =
-      infrastructure::config::loader::detail::ParseActivityHierarchyDocument(kUpdatedTable);
-  infrastructure::config::loader::detail::ValidateActivityHierarchyAliasUniqueness(
-      kOriginal);
-  infrastructure::config::loader::detail::ValidateActivityHierarchyAliasUniqueness(
-      kUpdated);
+      infrastructure::config::loader::detail::ParseActivityHierarchyDocument(
+          kUpdatedTable);
+  infrastructure::config::loader::detail::
+      ValidateActivityHierarchyAliasUniqueness(kOriginal);
+  infrastructure::config::loader::detail::
+      ValidateActivityHierarchyAliasUniqueness(kUpdated);
 
   ActivityHierarchyOperationResult result;
-  AppendRawDocumentMigrationPlan(kOriginal, kUpdated, {}, {}, result.replacements,
+  AppendRawDocumentMigrationPlan(kOriginal, kUpdated, {}, {},
+                                 result.replacements,
                                  result.alias_replacements);
-  result.updated_toml_content = SerializeActivityHierarchyDocument(kUpdatedTable);
+  result.updated_toml_content =
+      SerializeActivityHierarchyDocument(kUpdatedTable);
   return result;
 }
 
@@ -1056,9 +1084,10 @@ auto DescribeActivityHierarchy(std::string_view toml_content)
     -> ActivityHierarchySnapshot {
   const toml::table kParsed = toml::parse(toml_content);
   const ActivityHierarchyDocument kDocument =
-      infrastructure::config::loader::detail::ParseActivityHierarchyDocument(kParsed);
-  infrastructure::config::loader::detail::ValidateActivityHierarchyAliasUniqueness(
-      kDocument);
+      infrastructure::config::loader::detail::ParseActivityHierarchyDocument(
+          kParsed);
+  infrastructure::config::loader::detail::
+      ValidateActivityHierarchyAliasUniqueness(kDocument);
   ActivityHierarchySnapshot snapshot{.parent = kDocument.parent,
                                      .color = kDocument.color};
   for (const auto& node : kDocument.nodes) {
@@ -1077,7 +1106,8 @@ auto ValidateActivityHierarchyDocuments(
     }
     const toml::table kParsed = toml::parse(input.toml_content);
     const ActivityHierarchyDocument kDocument =
-        infrastructure::config::loader::detail::ParseActivityHierarchyDocument(kParsed);
+        infrastructure::config::loader::detail::ParseActivityHierarchyDocument(
+            kParsed);
     infrastructure::config::loader::detail::
         ValidateActivityHierarchyAliasUniqueness(kDocument);
     for (const auto& node : infrastructure::config::loader::detail::

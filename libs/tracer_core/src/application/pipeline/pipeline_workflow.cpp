@@ -56,6 +56,8 @@ namespace pipeline_detail = tracer::core::application::pipeline::detail;
 using tracer::core::domain::types::AppOptions;
 using tracer::core::shared::string_utils::Trim;
 using tracer_core::application::dto::IngestInputModel;
+using tracer_core::core::dto::ApplyTxtDayEditRequest;
+using tracer_core::core::dto::ApplyTxtDayEditResponse;
 using tracer_core::core::dto::ConvertTxtActivityNamesRequest;
 using tracer_core::core::dto::ConvertTxtActivityNamesResponse;
 using tracer_core::core::dto::DefaultTxtDayMarkerRequest;
@@ -71,12 +73,10 @@ using tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesRequest;
 using tracer_core::core::dto::ReplaceTxtCanonicalActivityNamesResponse;
 using tracer_core::core::dto::ReplaceTxtDayBlockRequest;
 using tracer_core::core::dto::ReplaceTxtDayBlockResponse;
-using tracer_core::core::dto::ResolveTxtDayEditRequest;
-using tracer_core::core::dto::ResolveTxtDayEditResponse;
 using tracer_core::core::dto::ResolveTxtDayBlockRequest;
 using tracer_core::core::dto::ResolveTxtDayBlockResponse;
-using tracer_core::core::dto::ApplyTxtDayEditRequest;
-using tracer_core::core::dto::ApplyTxtDayEditResponse;
+using tracer_core::core::dto::ResolveTxtDayEditRequest;
+using tracer_core::core::dto::ResolveTxtDayEditResponse;
 using tracer_core::core::dto::UpdateActivityRemarkAtomicallyRequest;
 using tracer_core::core::dto::UpdateActivityRemarkAtomicallyResponse;
 using tracer_core::core::dto::UpdateDayRemarkAtomicallyRequest;
@@ -195,14 +195,14 @@ auto PipelineWorkflow::RunReplaceTxtDayBlock(
 
 auto PipelineWorkflow::RunResolveTxtDayEdit(
     const ResolveTxtDayEditRequest& request) -> ResolveTxtDayEditResponse {
-  return txt_day_block::ResolveDayEdit(request,
-                                       converter_config_provider_->LoadConverterConfig());
+  return txt_day_block::ResolveDayEdit(
+      request, converter_config_provider_->LoadConverterConfig());
 }
 
-auto PipelineWorkflow::RunApplyTxtDayEdit(
-    const ApplyTxtDayEditRequest& request) -> ApplyTxtDayEditResponse {
-  return txt_day_block::ApplyDayEdit(request,
-                                     converter_config_provider_->LoadConverterConfig());
+auto PipelineWorkflow::RunApplyTxtDayEdit(const ApplyTxtDayEditRequest& request)
+    -> ApplyTxtDayEditResponse {
+  return txt_day_block::ApplyDayEdit(
+      request, converter_config_provider_->LoadConverterConfig());
 }
 
 auto PipelineWorkflow::RunUpdateActivityRemarkAtomically(

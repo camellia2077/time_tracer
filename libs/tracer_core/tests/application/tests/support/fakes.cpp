@@ -214,9 +214,11 @@ auto FakePipelineWorkflow::InstallActiveConverterConfig(
         ActiveConverterConfigInstallRequest& /*request*/) -> void {}
 
 auto FakeInsightsHandler::RunDailyQuery(std::string_view /*date*/,
-                                      InsightsFormat /*format*/) -> std::string {
+                                        InsightsFormat /*format*/)
+    -> std::string {
   if (fail_target_not_found) {
-    throw tracer_core::common::InsightsTargetNotFoundError("day", "missing-day");
+    throw tracer_core::common::InsightsTargetNotFoundError("day",
+                                                           "missing-day");
   }
   if (fail_query) {
     throw std::runtime_error("daily query failed");
@@ -225,11 +227,11 @@ auto FakeInsightsHandler::RunDailyQuery(std::string_view /*date*/,
 }
 
 auto FakeInsightsHandler::RunMonthlyQuery(std::string_view /*month*/,
-                                        InsightsFormat /*format*/)
+                                          InsightsFormat /*format*/)
     -> std::string {
   if (fail_target_not_found) {
     throw tracer_core::common::InsightsTargetNotFoundError("month",
-                                                         "missing-month");
+                                                           "missing-month");
   }
   if (fail_query) {
     throw std::runtime_error("monthly query failed");
@@ -237,7 +239,8 @@ auto FakeInsightsHandler::RunMonthlyQuery(std::string_view /*month*/,
   return monthly_query_result;
 }
 
-auto FakeInsightsHandler::RunPeriodQuery(int /*days*/, InsightsFormat /*format*/)
+auto FakeInsightsHandler::RunPeriodQuery(int /*days*/,
+                                         InsightsFormat /*format*/)
     -> std::string {
   if (fail_query) {
     throw std::runtime_error("recent query failed");
@@ -246,10 +249,11 @@ auto FakeInsightsHandler::RunPeriodQuery(int /*days*/, InsightsFormat /*format*/
 }
 
 auto FakeInsightsHandler::RunWeeklyQuery(std::string_view /*iso_week*/,
-                                       InsightsFormat /*format*/) -> std::string {
+                                         InsightsFormat /*format*/)
+    -> std::string {
   if (fail_target_not_found) {
     throw tracer_core::common::InsightsTargetNotFoundError("week",
-                                                         "missing-week");
+                                                           "missing-week");
   }
   if (fail_query) {
     throw std::runtime_error("weekly query failed");
@@ -258,10 +262,11 @@ auto FakeInsightsHandler::RunWeeklyQuery(std::string_view /*iso_week*/,
 }
 
 auto FakeInsightsHandler::RunYearlyQuery(std::string_view /*year*/,
-                                       InsightsFormat /*format*/) -> std::string {
+                                         InsightsFormat /*format*/)
+    -> std::string {
   if (fail_target_not_found) {
     throw tracer_core::common::InsightsTargetNotFoundError("year",
-                                                         "missing-year");
+                                                           "missing-year");
   }
   if (fail_query) {
     throw std::runtime_error("yearly query failed");
@@ -269,8 +274,8 @@ auto FakeInsightsHandler::RunYearlyQuery(std::string_view /*year*/,
   return yearly_query_result;
 }
 
-auto FakeInsightsHandler::RunPeriodQueries(const std::vector<int>& /*days_list*/,
-                                         InsightsFormat /*format*/)
+auto FakeInsightsHandler::RunPeriodQueries(
+    const std::vector<int>& /*days_list*/, InsightsFormat /*format*/)
     -> std::string {
   if (fail_period_batch_query) {
     throw std::runtime_error("period-batch query failed");
@@ -306,7 +311,7 @@ auto FakeInsightsDataQueryService::QueryPeriod(int days) -> PeriodInsightsData {
 }
 
 auto FakeInsightsDataQueryService::QueryRange(std::string_view start_date,
-                                            std::string_view end_date)
+                                              std::string_view end_date)
     -> PeriodInsightsData {
   PeriodInsightsData insights;
   insights.start_date = std::string(start_date);
@@ -368,7 +373,8 @@ auto FakeInsightsDataQueryService::ListYearlyTargets()
 }
 
 auto FakeInsightsDataQueryService::QueryPeriodBatch(
-    const std::vector<int>& /*days_list*/) -> std::map<int, PeriodInsightsData> {
+    const std::vector<int>& /*days_list*/)
+    -> std::map<int, PeriodInsightsData> {
   return {};
 }
 
@@ -393,31 +399,31 @@ auto FakeInsightsDataQueryService::QueryAllYearly()
 }
 
 auto FakeInsightsDtoFormatter::FormatDaily(const DailyInsightsData& insights,
-                                         InsightsFormat /*format*/)
+                                           InsightsFormat /*format*/)
     -> std::string {
   return "daily:" + insights.date;
 }
 
-auto FakeInsightsDtoFormatter::FormatMonthly(const MonthlyInsightsData& insights,
-                                           InsightsFormat /*format*/)
+auto FakeInsightsDtoFormatter::FormatMonthly(
+    const MonthlyInsightsData& insights, InsightsFormat /*format*/)
     -> std::string {
   return "month:" + insights.range_label;
 }
 
 auto FakeInsightsDtoFormatter::FormatPeriod(const PeriodInsightsData& insights,
-                                          InsightsFormat /*format*/)
+                                            InsightsFormat /*format*/)
     -> std::string {
   return "period:" + insights.start_date + "|" + insights.end_date;
 }
 
 auto FakeInsightsDtoFormatter::FormatWeekly(const WeeklyInsightsData& insights,
-                                          InsightsFormat /*format*/)
+                                            InsightsFormat /*format*/)
     -> std::string {
   return "week:" + insights.range_label;
 }
 
 auto FakeInsightsDtoFormatter::FormatYearly(const YearlyInsightsData& insights,
-                                          InsightsFormat /*format*/)
+                                            InsightsFormat /*format*/)
     -> std::string {
   return "year:" + insights.range_label;
 }
@@ -491,7 +497,8 @@ auto FakeTracerExchangeService::RunInspect(
 }
 
 auto BuildRuntimeApi(
-    FakePipelineWorkflow& pipeline_workflow, FakeInsightsHandler& insights_handler,
+    FakePipelineWorkflow& pipeline_workflow,
+    FakeInsightsHandler& insights_handler,
     const std::shared_ptr<FakeProjectRepository>& repository,
     const std::shared_ptr<FakeDataQueryService>& data_query,
     const std::shared_ptr<FakeTracerExchangeService>& tracer_exchange_service,
@@ -504,8 +511,8 @@ auto BuildRuntimeApi(
       insights_handler, insights_data_query_service, insights_formatter);
   auto tracer_exchange_api =
       std::make_shared<TracerExchangeApi>(tracer_exchange_service);
-  return {std::move(pipeline_api), std::move(query_api), std::move(insights_api),
-          std::move(tracer_exchange_api)};
+  return {std::move(pipeline_api), std::move(query_api),
+          std::move(insights_api), std::move(tracer_exchange_api)};
 }
 
 }  // namespace tracer_core::application::tests

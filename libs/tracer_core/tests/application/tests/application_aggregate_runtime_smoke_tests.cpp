@@ -167,16 +167,19 @@ class SmokeInsightsHandler final : public IInsightsHandler {
   auto RunDailyQuery(std::string_view, InsightsFormat) -> std::string override {
     return "smoke-daily";
   }
-  auto RunMonthlyQuery(std::string_view, InsightsFormat) -> std::string override {
+  auto RunMonthlyQuery(std::string_view, InsightsFormat)
+      -> std::string override {
     return "smoke-monthly";
   }
   auto RunPeriodQuery(int, InsightsFormat) -> std::string override {
     return "smoke-period";
   }
-  auto RunWeeklyQuery(std::string_view, InsightsFormat) -> std::string override {
+  auto RunWeeklyQuery(std::string_view, InsightsFormat)
+      -> std::string override {
     return "smoke-weekly";
   }
-  auto RunYearlyQuery(std::string_view, InsightsFormat) -> std::string override {
+  auto RunYearlyQuery(std::string_view, InsightsFormat)
+      -> std::string override {
     return "smoke-yearly";
   }
   auto RunPeriodQueries(const std::vector<int>&, InsightsFormat)
@@ -240,7 +243,8 @@ class SmokeInsightsDataQueryService final
   auto QueryAllDaily() -> std::map<std::string, DailyInsightsData> override {
     return {};
   }
-  auto QueryAllMonthly() -> std::map<std::string, MonthlyInsightsData> override {
+  auto QueryAllMonthly()
+      -> std::map<std::string, MonthlyInsightsData> override {
     return {};
   }
   auto QueryAllWeekly() -> std::map<std::string, WeeklyInsightsData> override {

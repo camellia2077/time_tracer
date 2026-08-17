@@ -157,8 +157,9 @@ auto TestReplaceMonthStillRunsForEmptyData(TestState& state) -> void {
          "Empty replace-month import should not call ImportData.");
   Expect(state, repository.replace_days == 0 && repository.replace_records == 0,
          "Empty replace-month import should pass empty data vectors.");
-  Expect(state, kStats.db_open_success && kStats.transaction_success,
-         "Empty replace-month import should insights successful DB transaction.");
+  Expect(
+      state, kStats.db_open_success && kStats.transaction_success,
+      "Empty replace-month import should insights successful DB transaction.");
   Expect(
       state,
       kStats.replaced_month.has_value() && *kStats.replaced_month == "2026-02",

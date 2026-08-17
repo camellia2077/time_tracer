@@ -39,15 +39,14 @@ constexpr size_t kTimeSecondLength = 2;
   try {
     const int kStartHour = std::stoi(
         std::string(start_iso_time.substr(kTimeHourOffset, kTimeHourLength)));
-    const int kStartMinute = std::stoi(
-        std::string(
-            start_iso_time.substr(kTimeMinuteOffset, kTimeMinuteLength)));
+    const int kStartMinute = std::stoi(std::string(
+        start_iso_time.substr(kTimeMinuteOffset, kTimeMinuteLength)));
     const int kEndHour = std::stoi(
         std::string(end_iso_time.substr(kTimeHourOffset, kTimeHourLength)));
     const int kEndMinute = std::stoi(
         std::string(end_iso_time.substr(kTimeMinuteOffset, kTimeMinuteLength)));
-    const int kStartSecond = std::stoi(
-        std::string(start_iso_time.substr(kTimeSecondOffset, kTimeSecondLength)));
+    const int kStartSecond = std::stoi(std::string(
+        start_iso_time.substr(kTimeSecondOffset, kTimeSecondLength)));
     const int kEndSecond = std::stoi(
         std::string(end_iso_time.substr(kTimeSecondOffset, kTimeSecondLength)));
     const int kStartTotal =
@@ -211,14 +210,12 @@ auto ActivityMapper::AppendActivity(
     return 0;
   }
   try {
-    const int kStartHour = std::stoi(
-        std::string(
-            range.start_iso_time.substr(kTimeHourOffset, kTimeHourLength)));
+    const int kStartHour = std::stoi(std::string(
+        range.start_iso_time.substr(kTimeHourOffset, kTimeHourLength)));
     const int kStartMinute = std::stoi(std::string(
         range.start_iso_time.substr(kTimeMinuteOffset, kTimeMinuteLength)));
-    const int kEndHour = std::stoi(
-        std::string(
-            range.end_iso_time.substr(kTimeHourOffset, kTimeHourLength)));
+    const int kEndHour = std::stoi(std::string(
+        range.end_iso_time.substr(kTimeHourOffset, kTimeHourLength)));
     const int kEndMinute = std::stoi(std::string(
         range.end_iso_time.substr(kTimeMinuteOffset, kTimeMinuteLength)));
 

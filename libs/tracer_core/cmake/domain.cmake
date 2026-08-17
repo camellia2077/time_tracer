@@ -31,6 +31,7 @@ target_sources(tc_domain_lib PUBLIC
         "${TRACER_CORE_LIB_SOURCE_ROOT}/domain/modules/tracer.core.domain.model.processing_result.cppm"
         "${TRACER_CORE_LIB_SOURCE_ROOT}/domain/modules/tracer.core.domain.model.daily_log.cppm"
         "${TRACER_CORE_LIB_SOURCE_ROOT}/domain/modules/tc.core.dom.insights.types.insights_types.cppm"
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/domain/modules/tc.core.dom.insights.models.activity_aggregate.cppm"
         "${TRACER_CORE_LIB_SOURCE_ROOT}/domain/modules/tc.core.dom.insights.models.project_tree.cppm"
         "${TRACER_CORE_LIB_SOURCE_ROOT}/domain/modules/tc.core.dom.insights.models.range_insights_data.cppm"
         "${TRACER_CORE_LIB_SOURCE_ROOT}/domain/modules/tc.core.dom.insights.models.period_insights_models.cppm"

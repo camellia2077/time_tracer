@@ -17,7 +17,6 @@ using tracer_core::core::c_api::internal::BuildTreeResponse;
 using tracer_core::core::c_api::internal::ClearLastError;
 using tracer_core::core::c_api::internal::ParseDataQueryOutputMode;
 using tracer_core::core::c_api::internal::ParseInsightsAverageDayBasis;
-using tracer_core::core::c_api::internal::ParseInsightsAverageDayBasis;
 using tracer_core::core::c_api::internal::ParseQueryAction;
 using tracer_core::core::c_api::internal::RequireRuntime;
 using tracer_core::core::c_api::internal::ToRequestJsonView;

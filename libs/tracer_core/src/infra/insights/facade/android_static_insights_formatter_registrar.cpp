@@ -4,8 +4,9 @@
 
 namespace infrastructure::insights {
 
-AndroidStaticInsightsFormatterRegistrar::AndroidStaticInsightsFormatterRegistrar(
-    AndroidStaticInsightsFormatterPolicy policy)
+AndroidStaticInsightsFormatterRegistrar::
+    AndroidStaticInsightsFormatterRegistrar(
+        AndroidStaticInsightsFormatterPolicy policy)
     : policy_(policy) {}
 
 auto AndroidStaticInsightsFormatterRegistrar::RegisterStaticFormatters() const

@@ -303,21 +303,20 @@ auto main() -> int {
 
     const std::filesystem::path kConfigRoot = kTempRoot / "config";
     std::filesystem::create_directories(kConfigRoot / "user", io_error);
-    std::filesystem::copy(
-        kRepoRoot / "config" / "program", kConfigRoot / "program",
-        std::filesystem::copy_options::recursive |
-            std::filesystem::copy_options::overwrite_existing,
-        io_error);
+    std::filesystem::copy(kRepoRoot / "config" / "program",
+                          kConfigRoot / "program",
+                          std::filesystem::copy_options::recursive |
+                              std::filesystem::copy_options::overwrite_existing,
+                          io_error);
     std::filesystem::copy_file(
         kRepoRoot / "config" / "user" / "behavior.toml",
         kConfigRoot / "user" / "behavior.toml",
         std::filesystem::copy_options::overwrite_existing, io_error);
-    std::filesystem::copy(
-        kRepoRoot / "test" / "data" / "activity_hierarchy",
-        kConfigRoot / "user" / "activity_hierarchy",
-        std::filesystem::copy_options::recursive |
-            std::filesystem::copy_options::overwrite_existing,
-        io_error);
+    std::filesystem::copy(kRepoRoot / "test" / "data" / "activity_hierarchy",
+                          kConfigRoot / "user" / "activity_hierarchy",
+                          std::filesystem::copy_options::recursive |
+                              std::filesystem::copy_options::overwrite_existing,
+                          io_error);
     if (io_error) {
       std::cerr << "[FAIL] unable to prepare temp config folder: "
                 << io_error.message() << '\n';
@@ -325,11 +324,9 @@ auto main() -> int {
       return 1;
     }
 
-    TtCoreRuntimeHandle* runtime_handle =
-      kRuntimeCreate(kDbPath.string().c_str(), kOutputRoot.string().c_str(),
-                       (kConfigRoot / "user" / "behavior.toml")
-                           .string()
-                           .c_str());
+    TtCoreRuntimeHandle* runtime_handle = kRuntimeCreate(
+        kDbPath.string().c_str(), kOutputRoot.string().c_str(),
+        (kConfigRoot / "user" / "behavior.toml").string().c_str());
     if (runtime_handle == nullptr) {
       std::cerr << "[FAIL] tracer_core_runtime_create failed: " << kLastError()
                 << '\n';
@@ -369,8 +366,9 @@ auto main() -> int {
                        {"date", "2026-01-01"},
                        {"format", "markdown"}}
             .dump();
-    if (!IsOkResponse(kRuntimeInsights(runtime_handle, kInsightsRequest.c_str()),
-                      "insights", &response_error)) {
+    if (!IsOkResponse(
+            kRuntimeInsights(runtime_handle, kInsightsRequest.c_str()),
+            "insights", &response_error)) {
       std::cerr << "[FAIL] " << response_error << '\n';
       kRuntimeDestroy(runtime_handle);
       CloseLibrary(library);

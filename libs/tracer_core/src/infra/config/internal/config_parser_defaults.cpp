@@ -192,30 +192,32 @@ auto ParseRuntimeConfigPaths(const toml::table& config_tbl,
           TryReadTableField(*insights_tbl, "typst", source_path, "insights")) {
     has_any_insights_format = true;
     LoadInsightsPathsFromTable(*typst_tbl, kInsightsSource, "insights.typst",
-                             config.insights.day_typ_config_path,
-                             config.insights.month_typ_config_path,
-                             config.insights.period_typ_config_path,
-                             config.insights.week_typ_config_path,
-                             config.insights.year_typ_config_path);
+                               config.insights.daily_typ_config_path,
+                               config.insights.month_typ_config_path,
+                               config.insights.period_typ_config_path,
+                               config.insights.week_typ_config_path,
+                               config.insights.year_typ_config_path);
   }
   if (const toml::table* latex_tbl =
           TryReadTableField(*insights_tbl, "latex", source_path, "insights")) {
     has_any_insights_format = true;
     LoadInsightsPathsFromTable(*latex_tbl, kInsightsSource, "insights.latex",
-                             config.insights.day_tex_config_path,
-                             config.insights.month_tex_config_path,
-                             config.insights.period_tex_config_path,
-                             config.insights.week_tex_config_path,
-                             config.insights.year_tex_config_path);
+                               config.insights.daily_tex_config_path,
+                               config.insights.month_tex_config_path,
+                               config.insights.period_tex_config_path,
+                               config.insights.week_tex_config_path,
+                               config.insights.year_tex_config_path);
   }
-  if (const toml::table* markdown_tbl =
-          TryReadTableField(*insights_tbl, "markdown", source_path, "insights")) {
+  if (const toml::table* markdown_tbl = TryReadTableField(
+          *insights_tbl, "markdown", source_path, "insights")) {
     has_any_insights_format = true;
-    LoadInsightsPathsFromTable(
-        *markdown_tbl, kInsightsSource, "insights.markdown",
-        config.insights.day_md_config_path, config.insights.month_md_config_path,
-        config.insights.period_md_config_path,
-        config.insights.week_md_config_path, config.insights.year_md_config_path);
+    LoadInsightsPathsFromTable(*markdown_tbl, kInsightsSource,
+                               "insights.markdown",
+                               config.insights.daily_md_config_path,
+                               config.insights.month_md_config_path,
+                               config.insights.period_md_config_path,
+                               config.insights.week_md_config_path,
+                               config.insights.year_md_config_path);
   }
   if (!has_any_insights_format) {
     ThrowConfigFieldError(source_path, "insights",

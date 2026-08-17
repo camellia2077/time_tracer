@@ -178,12 +178,13 @@ auto RunInfrastructureModuleQueryInternalOrchestratorsSmoke() -> int {
       return 19;
     }
 
-    const auto insights_chart_output = tracer::core::infrastructure::query::data::
-        orchestrators::HandleInsightsChartQuery(
+    const auto insights_chart_output = tracer::core::infrastructure::query::
+        data::orchestrators::HandleInsightsChartQuery(
             connection.GetDb(), chart_request,
             tracer_core::core::dto::DataQueryOutputMode::kText);
-    if (!insights_chart_output.ok || insights_chart_output.content.find(
-                                       "\"series\":[]") == std::string::npos) {
+    if (!insights_chart_output.ok ||
+        insights_chart_output.content.find("\"series\":[]") ==
+            std::string::npos) {
       return 20;
     }
 

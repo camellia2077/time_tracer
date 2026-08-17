@@ -2,6 +2,7 @@
 #ifndef INFRASTRUCTURE_INSIGHTS_SHARED_UTILS_FORMAT_INSIGHTS_STRING_UTILS_H_
 #define INFRASTRUCTURE_INSIGHTS_SHARED_UTILS_FORMAT_INSIGHTS_STRING_UTILS_H_
 
+#include <cstdint>
 #include <string>
 
 #include "domain/insights/models/range_insights_data.hpp"
@@ -23,7 +24,7 @@ INSIGHTS_SHARED_API auto BoolToString(const std::string& value) -> std::string;
  * @brief 替换字符串中所有匹配的子串。
  */
 INSIGHTS_SHARED_API auto ReplaceAll(std::string str, const std::string& from,
-                                   const std::string& replacement_str)
+                                    const std::string& replacement_str)
     -> std::string;
 
 /**
@@ -46,7 +47,7 @@ INSIGHTS_SHARED_API auto FormatMultilineForList(
  *
  */
 INSIGHTS_SHARED_API auto FormatTitleTemplate(std::string title_template,
-                                            const RangeInsightsData& data)
+                                             const RangeInsightsData& data)
     -> std::string;
 
 /**
@@ -64,8 +65,8 @@ INSIGHTS_SHARED_API auto FormatCountWithPercentage(
     int count, int total_count, const std::string& percent_suffix = "%")
     -> std::string;
 
-INSIGHTS_SHARED_API auto FormatCountWithAverage(int count, int total_days)
-    -> std::string;
+INSIGHTS_SHARED_API auto FormatCountWithAverage(std::int64_t count,
+                                                int total_days) -> std::string;
 
 INSIGHTS_SHARED_API auto FormatBooleanCountLabel(std::string label, int count)
     -> std::string;

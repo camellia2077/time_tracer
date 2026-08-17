@@ -29,15 +29,15 @@ set(TIME_TRACKER_INFRA_INSIGHTS_SOURCES
     "insights/facade/android_static_insights_formatter_registrar_support.cpp"
     "insights/facade/android_static_insights_formatter_registrar_builders.cpp"
     "insights/facade/insights_formatter_registry_adapter.cpp"
-    "insights/daily/formatters/markdown/day_md_formatter_core.cpp"
+    "insights/daily/formatters/markdown/daily_md_formatter_core.cpp"
     "insights/monthly/formatters/markdown/month_md_formatter_core.cpp"
     "insights/range/formatters/markdown/range_md_formatter_core.cpp"
 )
 
 if(TT_INSIGHTS_ENABLE_LATEX)
     list(APPEND TIME_TRACKER_INFRA_INSIGHTS_SOURCES
-        "insights/daily/formatters/latex/day_tex_formatter_core.cpp"
-        "insights/daily/formatters/latex/day_tex_utils.cpp"
+        "insights/daily/formatters/latex/daily_tex_formatter_core.cpp"
+        "insights/daily/formatters/latex/daily_tex_utils.cpp"
         "insights/daily/formatters/statistics/latex_strategy.cpp"
         "insights/monthly/formatters/latex/month_tex_formatter_core.cpp"
         "insights/monthly/formatters/latex/month_tex_utils.cpp"
@@ -48,8 +48,8 @@ endif()
 
 if(TT_INSIGHTS_ENABLE_TYPST)
     list(APPEND TIME_TRACKER_INFRA_INSIGHTS_SOURCES
-        "insights/daily/formatters/typst/day_typ_formatter_core.cpp"
-        "insights/daily/formatters/typst/day_typ_utils.cpp"
+        "insights/daily/formatters/typst/daily_typ_formatter_core.cpp"
+        "insights/daily/formatters/typst/daily_typ_utils.cpp"
         "insights/daily/formatters/statistics/typst_strategy.cpp"
         "insights/monthly/formatters/typst/month_typ_formatter_core.cpp"
         "insights/range/formatters/typst/range_typ_formatter_core.cpp"

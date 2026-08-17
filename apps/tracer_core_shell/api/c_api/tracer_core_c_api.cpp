@@ -104,28 +104,28 @@ extern "C" TT_CORE_API auto tracer_core_get_command_contract_json(
 
     json commands =
         json::array({json{{"id", "blink"},
-                           {"aliases", json::array({"ingest"})},
+                          {"aliases", json::array({"ingest"})},
                           {"supports", json{{"structured_output", false}}}},
                      json{{"id", "ingest"},
-                           {"aliases", json::array({"blink"})},
+                          {"aliases", json::array({"blink"})},
                           {"supports", json{{"structured_output", false}}}},
                      json{{"id", "query"},
-                           {"aliases", json::array()},
+                          {"aliases", json::array()},
                           {"supports", json{{"structured_output", true}}}},
                      json{{"id", "tree"},
-                           {"aliases", json::array()},
+                          {"aliases", json::array()},
                           {"supports", json{{"structured_output", true}}}},
                      json{{"id", "insights"},
-                           {"aliases", json::array()},
+                          {"aliases", json::array()},
                           {"supports", json{{"structured_output", false}}}},
                      json{{"id", "txt"},
-                           {"aliases", json::array()},
+                          {"aliases", json::array()},
                           {"supports", json{{"structured_output", true}}}},
                      json{{"id", "export"},
-                           {"aliases", json::array()},
+                          {"aliases", json::array()},
                           {"supports", json{{"structured_output", false}}}},
                      json{{"id", "crypto"},
-                           {"aliases", json::array()},
+                          {"aliases", json::array()},
                           {"supports", json{{"structured_output", false}}}}});
 
     if (command_filter.has_value()) {
@@ -251,8 +251,8 @@ extern "C" TT_CORE_API auto tracer_core_runtime_set_insights_statuses_json(
     const auto parse_scope = [&payload](std::string_view scope) {
       const auto statuses_iter = payload.find(scope);
       if (statuses_iter == payload.end() || !statuses_iter->is_array()) {
-        throw std::invalid_argument("status_configs_json." + std::string(scope) +
-                                    " must be an array.");
+        throw std::invalid_argument("status_configs_json." +
+                                    std::string(scope) + " must be an array.");
       }
       DailyStatusConfig config;
       std::set<std::string> ids;
@@ -263,24 +263,29 @@ extern "C" TT_CORE_API auto tracer_core_runtime_set_insights_statuses_json(
         const std::string id = item.value("id", std::string{});
         const std::string label = item.value("label", std::string{});
         const std::string parent = item.value("parent", std::string{});
-        if (id.empty() || label.empty() || parent.empty() || !ids.insert(id).second) {
-          throw std::invalid_argument("status definitions require unique id, label, and parent.");
+        if (id.empty() || label.empty() || parent.empty() ||
+            !ids.insert(id).second) {
+          throw std::invalid_argument(
+              "status definitions require unique id, label, and parent.");
         }
         config.statuses.push_back({.id = id, .label = label, .parent = parent});
       }
       return config;
     };
     infrastructure::bootstrap::SetAndroidRuntimeStatusConfigs(
-        handle->runtime,
-        {.day = parse_scope("day"), .week = parse_scope("week"),
-         .month = parse_scope("month"), .year = parse_scope("year"),
-         .recent = parse_scope("recent"), .range = parse_scope("range")});
+        handle->runtime, {.day = parse_scope("day"),
+                          .week = parse_scope("week"),
+                          .month = parse_scope("month"),
+                          .year = parse_scope("year"),
+                          .recent = parse_scope("recent"),
+                          .range = parse_scope("range")});
     return TT_CORE_STATUS_OK;
   } catch (const std::exception& error) {
     SetLastError(error.what());
     return TT_CORE_STATUS_ERROR;
   } catch (...) {
-    SetLastError("tracer_core_runtime_set_insights_statuses_json failed unexpectedly.");
+    SetLastError(
+        "tracer_core_runtime_set_insights_statuses_json failed unexpectedly.");
     return TT_CORE_STATUS_ERROR;
   }
 }

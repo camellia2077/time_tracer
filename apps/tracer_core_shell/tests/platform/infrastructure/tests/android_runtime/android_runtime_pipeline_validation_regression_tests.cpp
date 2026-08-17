@@ -350,8 +350,8 @@ auto TestValidateLogicRejectsBadTimeRangeFixture(int& failures) -> void {
   cleanup();
 }
 
-auto TestRecordActivityAtomicallyAllowsFirstRecordOnLateMonthDay(
-    int& failures) -> void {
+auto TestRecordActivityAtomicallyAllowsFirstRecordOnLateMonthDay(int& failures)
+    -> void {
   const RuntimeTestPaths kPaths = BuildTempTestPaths(
       "time_tracer_android_runtime_record_first_late_month_day_test");
   RemoveTree(kPaths.test_root);
@@ -403,8 +403,8 @@ auto TestRecordActivityAtomicallyAllowsFirstRecordOnLateMonthDay(
   cleanup();
 }
 
-auto TestRecordActivityAtomicallyAcceptsWakeKeywordFromConfigOnly(
-    int& failures) -> void {
+auto TestRecordActivityAtomicallyAcceptsWakeKeywordFromConfigOnly(int& failures)
+    -> void {
   const RuntimeTestPaths kPaths = BuildTempTestPaths(
       "time_tracer_android_runtime_record_warning_config_only_wake_test");
   RemoveTree(kPaths.test_root);
@@ -462,8 +462,8 @@ auto TestRecordActivityAtomicallyAcceptsWakeKeywordFromConfigOnly(
   cleanup();
 }
 
-auto TestRecordActivityAtomicallyAcceptsCanonicalActivityToken(
-    int& failures) -> void {
+auto TestRecordActivityAtomicallyAcceptsCanonicalActivityToken(int& failures)
+    -> void {
   const RuntimeTestPaths kPaths = BuildTempTestPaths(
       "time_tracer_android_runtime_record_canonical_token_test");
   RemoveTree(kPaths.test_root);
@@ -518,8 +518,8 @@ auto TestRecordActivityAtomicallyAcceptsCanonicalActivityToken(
   cleanup();
 }
 
-auto TestRecordActivityAtomicallyWarnsForOvernightContinuationDay(
-    int& failures) -> void {
+auto TestRecordActivityAtomicallyWarnsForOvernightContinuationDay(int& failures)
+    -> void {
   const RuntimeTestPaths kPaths = BuildTempTestPaths(
       "time_tracer_android_runtime_record_warning_continuation_day_test");
   RemoveTree(kPaths.test_root);
@@ -583,8 +583,8 @@ auto TestRecordActivityAtomicallyWarnsForOvernightContinuationDay(
   cleanup();
 }
 
-auto TestRecordActivityAtomicallyPreservesMultilineRemark(
-    int& failures) -> void {
+auto TestRecordActivityAtomicallyPreservesMultilineRemark(int& failures)
+    -> void {
   const RuntimeTestPaths kPaths = BuildTempTestPaths(
       "time_tracer_android_runtime_record_multiline_remark_test");
   RemoveTree(kPaths.test_root);
@@ -634,6 +634,75 @@ auto TestRecordActivityAtomicallyPreservesMultilineRemark(
     ++failures;
     std::cerr << "[FAIL] Atomic record should write multiline remarks as "
                  "physical // continuation lines.\n";
+  }
+
+  cleanup();
+}
+
+auto TestRecordActivityAtomicallyInsertsBeforeTrailingDaySeparator(
+    int& failures) -> void {
+  const RuntimeTestPaths kPaths = BuildTempTestPaths(
+      "time_tracer_android_runtime_record_trailing_separator_test");
+  RemoveTree(kPaths.test_root);
+
+  const auto cleanup = [&]() -> void { RemoveTree(kPaths.test_root); };
+  const std::filesystem::path kRepoRoot = BuildRepoRoot();
+  const std::filesystem::path kConfigTomlPath =
+      kRepoRoot / "config" / "user" / "behavior.toml";
+  const std::filesystem::path kMonthFile =
+      kPaths.test_root / "input" / "2026" / "2026-03.txt";
+  const std::string month_file_text =
+      std::string("y2026\nm03\n\nd0301\n") + BuildRecentWakeEventLine() +
+      "\nd0302\n0656w\n";
+  if (!WriteFileWithParents(kMonthFile, month_file_text)) {
+    ++failures;
+    std::cerr << "[FAIL] Trailing-separator record test should write the "
+                 "pre-existing month file.\n";
+    cleanup();
+    return;
+  }
+
+  infrastructure::bootstrap::AndroidRuntime runtime;
+  try {
+    runtime = infrastructure::bootstrap::BuildAndroidRuntime(
+        BuildRuntimeRequest(kPaths, kConfigTomlPath));
+  } catch (const std::exception& exception) {
+    ++failures;
+    std::cerr << "[FAIL] BuildAndroidRuntime should succeed for trailing "
+                 "separator record test: "
+              << exception.what() << '\n';
+    cleanup();
+    return;
+  }
+
+  const auto kAck = runtime.runtime_api->pipeline().RunRecordActivityAtomically(
+      {.target_date_iso = "2026-03-01",
+       .raw_activity_name = "bilibili",
+       .remark = "",
+       .preferred_txt_path = "2026/2026-03.txt",
+       .date_check_mode = DateCheckMode::kNone,
+       .time_order_mode = TimeOrderMode::kStrictCalendar});
+  if (!kAck.ok) {
+    ++failures;
+    std::cerr << "[FAIL] RunRecordActivityAtomically should insert before a "
+                 "trailing day separator: "
+              << kAck.message << '\n';
+    cleanup();
+    return;
+  }
+
+  std::ifstream month_input(kMonthFile);
+  std::stringstream month_buffer;
+  month_buffer << month_input.rdbuf();
+  const std::string month_text = month_buffer.str();
+  const std::size_t separator = month_text.find("\n\nd0302\n");
+  const std::size_t day_start = month_text.find("d0301\n");
+  if (!month_input.good() || separator == std::string::npos ||
+      day_start == std::string::npos ||
+      Contains(month_text.substr(day_start, separator - day_start), "\n\n")) {
+    ++failures;
+    std::cerr << "[FAIL] Atomic Record should insert before the blank day "
+                 "separator left by Files activity deletion.\n";
   }
 
   cleanup();
@@ -887,6 +956,7 @@ auto RunPipelineValidationRegressionTests(int& failures) -> void {
   TestRecordActivityAtomicallyAcceptsWakeKeywordFromConfigOnly(failures);
   TestRecordActivityAtomicallyAcceptsCanonicalActivityToken(failures);
   TestRecordActivityAtomicallyPreservesMultilineRemark(failures);
+  TestRecordActivityAtomicallyInsertsBeforeTrailingDaySeparator(failures);
   TestRecordActivityAtomicallyWarnsForOvernightContinuationDay(failures);
   TestRecordActivityAtomicallySkipsCompletenessWarningForCompleteDay(failures);
   TestConvertLogsActualConversionFailure(failures);

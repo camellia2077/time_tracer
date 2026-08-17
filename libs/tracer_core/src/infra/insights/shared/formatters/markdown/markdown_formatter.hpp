@@ -22,8 +22,8 @@ namespace MarkdownFormatter {
 // Public API: keep parameter order and naming for ABI compatibility.
 // NOLINTBEGIN(bugprone-easily-swappable-parameters)
 INSIGHTS_SHARED_API auto FormatProjectTree(const insights::ProjectTree& tree,
-                                          std::int64_t total_duration,
-                                          int avg_days) -> std::string;
+                                           std::int64_t total_duration,
+                                           int avg_days) -> std::string;
 // NOLINTEND(bugprone-easily-swappable-parameters)
 
 }  // namespace MarkdownFormatter

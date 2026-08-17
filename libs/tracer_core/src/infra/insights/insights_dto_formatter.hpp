@@ -26,8 +26,9 @@ class InsightsDtoFormatter final
       -> std::string override;
   auto FormatYearly(const YearlyInsightsData& insights, InsightsFormat format)
       -> std::string override;
-  auto FormatDailyLocalized(const DailyInsightsData& insights, InsightsFormat format,
-                            std::string_view locale) -> std::string override;
+  auto FormatDailyLocalized(const DailyInsightsData& insights,
+                            InsightsFormat format, std::string_view locale)
+      -> std::string override;
   auto FormatMonthlyLocalized(const MonthlyInsightsData& insights,
                               InsightsFormat format, std::string_view locale)
       -> std::string override;
@@ -45,19 +46,25 @@ class InsightsDtoFormatter final
   template <typename InsightsDataType>
   auto FormatWithCache(
       const InsightsDataType& insights, InsightsFormat format,
-      std::map<InsightsFormat, std::unique_ptr<IInsightsFormatter<InsightsDataType>>>&
-          cache) -> std::string;
+      std::map<InsightsFormat,
+               std::unique_ptr<IInsightsFormatter<InsightsDataType>>>& cache)
+      -> std::string;
 
   const InsightsCatalog& insights_catalog_;
-  std::map<InsightsFormat, std::unique_ptr<IInsightsFormatter<DailyInsightsData>>>
+  std::map<InsightsFormat,
+           std::unique_ptr<IInsightsFormatter<DailyInsightsData>>>
       daily_cache_;
-  std::map<InsightsFormat, std::unique_ptr<IInsightsFormatter<MonthlyInsightsData>>>
+  std::map<InsightsFormat,
+           std::unique_ptr<IInsightsFormatter<MonthlyInsightsData>>>
       monthly_cache_;
-  std::map<InsightsFormat, std::unique_ptr<IInsightsFormatter<PeriodInsightsData>>>
+  std::map<InsightsFormat,
+           std::unique_ptr<IInsightsFormatter<PeriodInsightsData>>>
       period_cache_;
-  std::map<InsightsFormat, std::unique_ptr<IInsightsFormatter<WeeklyInsightsData>>>
+  std::map<InsightsFormat,
+           std::unique_ptr<IInsightsFormatter<WeeklyInsightsData>>>
       weekly_cache_;
-  std::map<InsightsFormat, std::unique_ptr<IInsightsFormatter<YearlyInsightsData>>>
+  std::map<InsightsFormat,
+           std::unique_ptr<IInsightsFormatter<YearlyInsightsData>>>
       yearly_cache_;
 };
 

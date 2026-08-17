@@ -13,11 +13,10 @@ auto ResolveActiveTextRootPath(
 // Keep exchange operations independent from a stale caller-supplied path
 // (for example config/config.toml from the pre-user-config layout).
 auto ResolveAndroidActiveConverterConfigPath(
-    const fs::path& stored_converter_config_path,
-    const fs::path& output_root) -> fs::path {
+    const fs::path& stored_converter_config_path, const fs::path& output_root)
+    -> fs::path {
   const fs::path runtime_root = fs::absolute(output_root).parent_path();
-  const fs::path canonical_path =
-      runtime_root / "config/user/behavior.toml";
+  const fs::path canonical_path = runtime_root / "config/user/behavior.toml";
   if (fs::exists(canonical_path) && fs::is_regular_file(canonical_path)) {
     return canonical_path;
   }
@@ -33,8 +32,8 @@ auto WriteAllBytesToFd(int fd, std::span<const std::uint8_t> bytes,
         bytes.size() - offset, static_cast<std::size_t>(INT_MAX)));
     const int written = _write(fd, bytes.data() + offset, chunk_size);
 #else
-    const ssize_t written = ::write(fd, bytes.data() + offset,
-                                    bytes.size() - offset);
+    const ssize_t written =
+        ::write(fd, bytes.data() + offset, bytes.size() - offset);
 #endif
     if (written <= 0) {
       error_message = "Failed to write encrypted output fd.";
@@ -100,21 +99,21 @@ auto BuildExportTracerExchangeFromPayloadRequest(
   return {
       .input_text_payloads = args.payload_items,
       .encrypted_output_writer =
-          [output_fd = args.output_fd,
-           consumed = false](std::span<const std::uint8_t> ciphertext_bytes,
-                             std::string& error_message) mutable -> bool {
-            if (consumed || output_fd < 0) {
-              error_message = "Encrypted output fd has already been consumed.";
-              return false;
-            }
-            consumed = true;
-            const int fd = output_fd;
-            output_fd = -1;
-            const bool write_ok =
-                WriteAllBytesToFd(fd, ciphertext_bytes, error_message);
-            const bool close_ok = CloseFd(fd, error_message);
-            return write_ok && close_ok;
-          },
+          [output_fd = args.output_fd, consumed = false](
+              std::span<const std::uint8_t> ciphertext_bytes,
+              std::string& error_message) mutable -> bool {
+        if (consumed || output_fd < 0) {
+          error_message = "Encrypted output fd has already been consumed.";
+          return false;
+        }
+        consumed = true;
+        const int fd = output_fd;
+        output_fd = -1;
+        const bool write_ok =
+            WriteAllBytesToFd(fd, ciphertext_bytes, error_message);
+        const bool close_ok = CloseFd(fd, error_message);
+        return write_ok && close_ok;
+      },
       .active_converter_main_config_path = converter_config_toml_path,
       .date_check_mode = args.date_check_mode,
       .passphrase = args.passphrase,
@@ -169,8 +168,8 @@ auto DispatchExportTracerExchangeFromPayload(
   return WithLockedRuntime([&](ITracerCoreRuntime& runtime,
                                const fs::path& converter_config_toml_path) {
     return runtime.tracer_exchange().RunTracerExchangeExport(
-        BuildExportTracerExchangeFromPayloadRequest(env, args,
-                                                    converter_config_toml_path));
+        BuildExportTracerExchangeFromPayloadRequest(
+            env, args, converter_config_toml_path));
   });
 }
 

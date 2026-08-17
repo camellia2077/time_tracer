@@ -15,16 +15,16 @@ class IInsightsDtoFormatter {
  public:
   virtual ~IInsightsDtoFormatter() = default;
 
-  virtual auto FormatDaily(const DailyInsightsData& insights, InsightsFormat format)
-      -> std::string = 0;
+  virtual auto FormatDaily(const DailyInsightsData& insights,
+                           InsightsFormat format) -> std::string = 0;
   virtual auto FormatMonthly(const MonthlyInsightsData& insights,
                              InsightsFormat format) -> std::string = 0;
-  virtual auto FormatPeriod(const PeriodInsightsData& insights, InsightsFormat format)
-      -> std::string = 0;
-  virtual auto FormatWeekly(const WeeklyInsightsData& insights, InsightsFormat format)
-      -> std::string = 0;
-  virtual auto FormatYearly(const YearlyInsightsData& insights, InsightsFormat format)
-      -> std::string = 0;
+  virtual auto FormatPeriod(const PeriodInsightsData& insights,
+                            InsightsFormat format) -> std::string = 0;
+  virtual auto FormatWeekly(const WeeklyInsightsData& insights,
+                            InsightsFormat format) -> std::string = 0;
+  virtual auto FormatYearly(const YearlyInsightsData& insights,
+                            InsightsFormat format) -> std::string = 0;
 
   virtual auto FormatDailyLocalized(const DailyInsightsData& insights,
                                     InsightsFormat format,

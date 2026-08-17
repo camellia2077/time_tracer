@@ -15,15 +15,15 @@
 namespace tracer_core::core::c_api::insights {
 namespace {
 
-using nlohmann::json;
-using tracer_core::core::dto::InsightsDisplayMode;
-using tracer_core::core::dto::TemporalSelectionKind;
-using tracer_core::core::dto::TemporalStructuredInsightsOutput;
 using ::ActivityRecordKind;
 using ::DailyInsightsData;
 using ::PeriodInsightsData;
 using ::insights::ProjectNode;
 using ::insights::ProjectTree;
+using nlohmann::json;
+using tracer_core::core::dto::InsightsDisplayMode;
+using tracer_core::core::dto::TemporalSelectionKind;
+using tracer_core::core::dto::TemporalStructuredInsightsOutput;
 namespace fs = std::filesystem;
 namespace config = tracer::core::application::config;
 
@@ -97,11 +97,13 @@ auto LoadParentColors(const fs::path& converter_config_toml_path)
   const fs::path hierarchy_directory =
       converter_config_toml_path.parent_path() / "activity_hierarchy";
   std::map<std::string, std::string> colors;
-  if (!fs::exists(hierarchy_directory) || !fs::is_directory(hierarchy_directory)) {
+  if (!fs::exists(hierarchy_directory) ||
+      !fs::is_directory(hierarchy_directory)) {
     return colors;
   }
 
-  for (const auto& entry : fs::recursive_directory_iterator(hierarchy_directory)) {
+  for (const auto& entry :
+       fs::recursive_directory_iterator(hierarchy_directory)) {
     if (!entry.is_regular_file() || entry.path().extension() != ".toml") {
       continue;
     }
@@ -126,12 +128,14 @@ auto FindParentColor(const std::string& project_path,
     -> std::optional<std::string> {
   const std::string parent = project_path.substr(0, project_path.find('_'));
   const auto color = parent_colors.find(parent);
-  return color == parent_colors.end() ? std::nullopt
-                                      : std::optional<std::string>{color->second};
+  return color == parent_colors.end()
+             ? std::nullopt
+             : std::optional<std::string>{color->second};
 }
 
-auto EncodeDetailedRecords(const DailyInsightsData& insights,
-                           const std::map<std::string, std::string>& parent_colors) -> json {
+auto EncodeDetailedRecords(
+    const DailyInsightsData& insights,
+    const std::map<std::string, std::string>& parent_colors) -> json {
   json records = json::array();
   for (const auto& record : insights.detailed_records) {
     json output = {
@@ -143,7 +147,8 @@ auto EncodeDetailedRecords(const DailyInsightsData& insights,
         {"duration_seconds", record.duration_seconds},
         {"activity_remark", record.activityRemark.value_or("")},
     };
-    if (const auto parent_color = FindParentColor(record.project_path, parent_colors);
+    if (const auto parent_color =
+            FindParentColor(record.project_path, parent_colors);
         parent_color.has_value()) {
       output["parent_color"] = *parent_color;
     }
@@ -152,8 +157,9 @@ auto EncodeDetailedRecords(const DailyInsightsData& insights,
   return records;
 }
 
-auto EncodeDailyInsights(const DailyInsightsData& insights,
-                         const std::map<std::string, std::string>& parent_colors) -> json {
+auto EncodeDailyInsights(
+    const DailyInsightsData& insights,
+    const std::map<std::string, std::string>& parent_colors) -> json {
   json records = EncodeDetailedRecords(insights, parent_colors);
 
   json stats = json::object();
@@ -175,7 +181,7 @@ auto EncodeDailyInsights(const DailyInsightsData& insights,
        {{"remark", insights.metadata.remark},
         {"getup_time", insights.metadata.getup_time},
         {"statuses", std::move(statuses)}}},
-      {"total_duration", insights.total_duration},
+      {"total_duration", insights.activity.total_duration_seconds},
       {"project_stats", EncodeProjectStats(insights.project_stats)},
       {"detailed_records", std::move(records)},
       {"stats", std::move(stats)},
@@ -184,18 +190,21 @@ auto EncodeDailyInsights(const DailyInsightsData& insights,
 }
 
 auto EncodeActivityDays(const PeriodInsightsData& insights,
-                        const std::map<std::string, std::string>& parent_colors) -> json {
+                        const std::map<std::string, std::string>& parent_colors)
+    -> json {
   json days = json::array();
   for (const auto& day : insights.activity_days) {
-    days.push_back(json{{"date", day.date},
-                        {"total_duration", day.total_duration},
-                        {"detailed_records", EncodeDetailedRecords(day, parent_colors)}});
+    days.push_back(
+        json{{"date", day.date},
+             {"total_duration", day.activity.total_duration_seconds},
+             {"detailed_records", EncodeDetailedRecords(day, parent_colors)}});
   }
   return days;
 }
 
-auto EncodePeriodInsights(const PeriodInsightsData& insights,
-                          const std::map<std::string, std::string>& parent_colors) -> json {
+auto EncodePeriodInsights(
+    const PeriodInsightsData& insights,
+    const std::map<std::string, std::string>& parent_colors) -> json {
   json statuses = json::array();
   for (const auto& status : insights.statuses) {
     statuses.push_back(json{{"id", status.id},
@@ -210,8 +219,8 @@ auto EncodePeriodInsights(const PeriodInsightsData& insights,
       {"requested_days", insights.requested_days},
       {"has_records", insights.has_records},
       {"matched_day_count", insights.matched_day_count},
-      {"matched_record_count", insights.matched_record_count},
-      {"total_duration", insights.total_duration},
+      {"matched_record_count", insights.activity.occurrence_count},
+      {"total_duration", insights.activity.total_duration_seconds},
       {"actual_days", insights.actual_days},
       {"statuses", std::move(statuses)},
       {"is_valid", insights.is_valid},

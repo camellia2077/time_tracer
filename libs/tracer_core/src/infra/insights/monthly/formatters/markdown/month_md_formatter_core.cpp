@@ -47,7 +47,8 @@ auto MonthMdFormatter::IsEmptyData(const MonthlyInsightsData& data) const
   return data.actual_days == 0;
 }
 
-auto MonthMdFormatter::GetAvgDays(const MonthlyInsightsData& data) const -> int {
+auto MonthMdFormatter::GetAvgDays(const MonthlyInsightsData& data) const
+    -> int {
   return data.actual_days;
 }
 
@@ -61,21 +62,23 @@ void MonthMdFormatter::FormatHeaderContent(
   insights_stream += config_->GetSummarySectionLabel();
   insights_stream += "\n\n";
 
-  insights_stream += BuildMarkdownItemLine(config_->GetPeriodLabel(),
-                                         data.start_date + " - " + data.end_date);
+  insights_stream += BuildMarkdownItemLine(
+      config_->GetPeriodLabel(), data.start_date + " - " + data.end_date);
 
   if (data.actual_days <= 0) {
     return;
   }
 
   insights_stream += BuildMarkdownItemLine(config_->GetActualDaysLabel(),
-                                         std::to_string(data.actual_days));
+                                           std::to_string(data.actual_days));
   insights_stream += BuildMarkdownItemLine(
       config_->GetTotalTimeLabel(),
-      TimeFormatDuration(data.total_duration, data.actual_days));
+      TimeFormatDuration(data.activity.total_duration_seconds,
+                         data.actual_days));
   insights_stream += BuildMarkdownItemLine(
       config_->GetActivityCountLabel(),
-      FormatCountWithAverage(data.matched_record_count, data.requested_days));
+      FormatCountWithAverage(data.activity.occurrence_count,
+                             data.requested_days));
   if (!data.statuses.empty()) {
     insights_stream += "\n## ";
     insights_stream += config_->GetCustomSectionLabel();

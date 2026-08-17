@@ -18,8 +18,7 @@ using tracer::core::infrastructure::query::data::ActivityFrequentRow;
 using tracer::core::infrastructure::query::data::DataQueryAction;
 using tracer::core::infrastructure::query::data::DayDurationRow;
 using tracer::core::infrastructure::query::data::DayDurationStats;
-using tracer::core::infrastructure::query::data::
-    kDefaultActivityFrequentLimit;
+using tracer::core::infrastructure::query::data::kDefaultActivityFrequentLimit;
 using tracer::core::infrastructure::query::data::
     kDefaultActivityFrequentLookbackDays;
 using tracer::core::infrastructure::query::data::kSupportedDataQueryActions;

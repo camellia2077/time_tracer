@@ -13,7 +13,8 @@ auto BuildRuntimeApiForTest(FakePipelineWorkflow& pipeline_workflow,
 }
 
 auto BuildRuntimeApiForTest(
-    FakePipelineWorkflow& pipeline_workflow, FakeInsightsHandler& insights_handler,
+    FakePipelineWorkflow& pipeline_workflow,
+    FakeInsightsHandler& insights_handler,
     const std::shared_ptr<FakeDataQueryService>& data_query)
     -> TracerCoreRuntime {
   auto repository = std::make_shared<FakeProjectRepository>();
@@ -22,7 +23,8 @@ auto BuildRuntimeApiForTest(
 }
 
 auto BuildRuntimeApiForTest(
-    FakePipelineWorkflow& pipeline_workflow, FakeInsightsHandler& insights_handler,
+    FakePipelineWorkflow& pipeline_workflow,
+    FakeInsightsHandler& insights_handler,
     const std::shared_ptr<FakeInsightsDataQueryService>& insights_data_query)
     -> TracerCoreRuntime {
   auto repository = std::make_shared<FakeProjectRepository>();

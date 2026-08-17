@@ -32,18 +32,36 @@ auto RunInsightsConsistencyTests(int& failures) -> void {
 
     infrastructure::bootstrap::SetAndroidRuntimeStatusConfigs(
         fixture.runtime,
-        {.day = {.statuses = {{.id = "status", .label = "Study", .parent = "study"},
-                              {.id = "exercise", .label = "Exercise", .parent = "exercise"}}},
-         .week = {.statuses = {{.id = "status", .label = "Study", .parent = "study"},
-                               {.id = "exercise", .label = "Exercise", .parent = "exercise"}}},
-         .month = {.statuses = {{.id = "status", .label = "Study", .parent = "study"},
-                                {.id = "exercise", .label = "Exercise", .parent = "exercise"}}},
-         .year = {.statuses = {{.id = "status", .label = "Study", .parent = "study"},
-                               {.id = "exercise", .label = "Exercise", .parent = "exercise"}}},
-         .recent = {.statuses = {{.id = "status", .label = "Study", .parent = "study"},
-                                 {.id = "exercise", .label = "Exercise", .parent = "exercise"}}},
-         .range = {.statuses = {{.id = "status", .label = "Study", .parent = "study"},
-                                {.id = "exercise", .label = "Exercise", .parent = "exercise"}}}});
+        {.day = {.statuses =
+                     {{.id = "status", .label = "Study", .parent = "study"},
+                      {.id = "exercise",
+                       .label = "Exercise",
+                       .parent = "exercise"}}},
+         .week = {.statuses =
+                      {{.id = "status", .label = "Study", .parent = "study"},
+                       {.id = "exercise",
+                        .label = "Exercise",
+                        .parent = "exercise"}}},
+         .month = {.statuses =
+                       {{.id = "status", .label = "Study", .parent = "study"},
+                        {.id = "exercise",
+                         .label = "Exercise",
+                         .parent = "exercise"}}},
+         .year = {.statuses =
+                      {{.id = "status", .label = "Study", .parent = "study"},
+                       {.id = "exercise",
+                        .label = "Exercise",
+                        .parent = "exercise"}}},
+         .recent = {.statuses =
+                        {{.id = "status", .label = "Study", .parent = "study"},
+                         {.id = "exercise",
+                          .label = "Exercise",
+                          .parent = "exercise"}}},
+         .range = {
+             .statuses = {{.id = "status", .label = "Study", .parent = "study"},
+                          {.id = "exercise",
+                           .label = "Exercise",
+                           .parent = "exercise"}}}});
 
     insights_consistency_internal::RunInsightsConsistencyFieldVerificationTests(
         fixture.runtime.runtime_api, failures);

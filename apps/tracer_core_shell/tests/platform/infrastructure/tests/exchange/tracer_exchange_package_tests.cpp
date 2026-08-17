@@ -13,8 +13,7 @@ using namespace tracer_exchange_tests_internal;
 
 auto TestTracerExchangePackageRoundTrip(int& failures) -> void {
   const auto payloads = BuildSamplePayloads();
-  const auto entries = BuildValidPackageEntries(
-      payloads, "main = true\n");
+  const auto entries = BuildValidPackageEntries(payloads, "main = true\n");
   const auto bytes = exchange_pkg::EncodePackageBytes(entries);
   const auto decoded = exchange_pkg::DecodePackageBytes(bytes);
 
@@ -26,9 +25,8 @@ auto TestTracerExchangePackageRoundTrip(int& failures) -> void {
          "Decoded manifest should retain source_root_name.", failures);
   Expect(decoded.manifest.payload_files.size() == payloads.size(),
          "Decoded manifest should retain all payload file paths.", failures);
-  Expect(decoded.entries.size() ==
-             exchange_pkg::kRequiredPackagePaths.size() + 1U + 1U +
-                 payloads.size(),
+  Expect(decoded.entries.size() == exchange_pkg::kRequiredPackagePaths.size() +
+                                       1U + 1U + payloads.size(),
          "Decoded package should contain fixed entries plus all payload files.",
          failures);
 

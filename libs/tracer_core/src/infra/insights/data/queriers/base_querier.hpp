@@ -98,7 +98,7 @@ class BaseQuerier {
 
         data.project_stats.push_back({project_id, total_duration});
 
-        data.total_duration += total_duration;
+        data.activity.AddDuration(total_duration);
       }
     }
     sqlite3_finalize(stmt);

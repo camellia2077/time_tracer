@@ -97,11 +97,12 @@ auto QueryDayDurationsByRootInDateRange(sqlite3* db_conn,
 }
 
 auto QueryFrequentActivities(sqlite3* db_conn,
-                              const ActivityFrequentQueryOptions& options)
+                             const ActivityFrequentQueryOptions& options)
     -> std::vector<ActivityFrequentRow> {
-  // `0` is a valid business input for frequent activities. It means "skip querying any
-  // frequent activity data", which both keeps the runtime semantics explicit and lets
-  // UI callers clear the numeric fields before typing replacement values.
+  // `0` is a valid business input for frequent activities. It means "skip
+  // querying any frequent activity data", which both keeps the runtime
+  // semantics explicit and lets UI callers clear the numeric fields before
+  // typing replacement values.
   if (options.lookback_days <= 0 || options.limit <= 0) {
     return {};
   }
@@ -115,7 +116,7 @@ auto QueryFrequentActivities(sqlite3* db_conn,
   const std::string kSql =
       query_data_internal::BuildFrequentActivitiesSql(options);
   return query_data_internal::ExecuteFrequentActivities(db_conn, kSql, options,
-                                                         kLookbackDays, kLimit);
+                                                        kLookbackDays, kLimit);
 }
 
 auto QueryLatestTrackedDate(sqlite3* db_conn) -> std::optional<std::string> {

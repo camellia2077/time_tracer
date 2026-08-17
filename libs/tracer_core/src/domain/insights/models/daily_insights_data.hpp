@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "domain/model/time_data_models.hpp"
+#include "domain/insights/models/activity_aggregate.hpp"
 #include "domain/insights/models/project_tree.hpp"
 #include "domain/insights/models/insights_status_value.hpp"
 
@@ -31,8 +32,7 @@ struct DayMetadata {
 struct DailyInsightsData {
   std::string date;
   DayMetadata metadata;
-  std::int64_t total_duration = 0;
-  int activity_count = 0;
+  ActivityAggregate activity;
 
   std::vector<std::pair<std::int64_t, std::int64_t>> project_stats;
   std::vector<TimeRecord> detailed_records;

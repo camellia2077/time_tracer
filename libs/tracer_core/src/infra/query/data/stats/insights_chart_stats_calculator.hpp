@@ -10,6 +10,7 @@
 #include "domain/insights/models/project_tree.hpp"
 #include "application/dto/query_requests.hpp"
 #include "infra/query/data/data_query_types.hpp"
+#include "infra/query/data/stats/average_calculator.hpp"
 #include "infra/query/data/stats/stats_models.hpp"
 
 namespace tracer::core::infrastructure::query::data::stats {
@@ -22,12 +23,6 @@ struct InsightsChartDateRange {
 [[nodiscard]] auto CalculateInclusiveDateRangeDays(std::string_view start_date,
                                                    std::string_view end_date)
     -> int;
-
-template <typename TValue>
-[[nodiscard]] constexpr auto AverageOrZero(TValue total, int denominator)
-    -> TValue {
-  return denominator > 0 ? total / static_cast<TValue>(denominator) : TValue{};
-}
 
 struct InsightsCompositionTreeNodeView {
   std::string name;
@@ -42,19 +37,22 @@ struct InsightsCompositionTreeNodeView {
     -> std::vector<InsightsCompositionTreeNodeView>;
 
 [[nodiscard]] auto BuildInsightsChartSeries(
-    InsightsChartDateRange range, const std::vector<DayDurationRow>& sparse_rows,
+    InsightsChartDateRange range,
+    const std::vector<DayDurationRow>& sparse_rows,
     tracer_core::core::dto::InsightsAverageDayBasis average_day_basis =
         tracer_core::core::dto::InsightsAverageDayBasis::kActiveDays)
     -> InsightsChartSeriesResult;
 
 struct InsightsCompositionNodeStats {
   std::int64_t average_duration_seconds = 0;
+  std::int64_t average_duration_per_occurrence_seconds = 0;
   double average_occurrence_count = 0.0;
   double average_occurrence_ratio = 0.0;
 };
 
 struct InsightsCompositionStats {
   int active_days = 0;
+  int average_denominator_days = 0;
   std::unordered_map<std::string, InsightsCompositionNodeStats> nodes;
 };
 
@@ -69,6 +67,7 @@ struct InsightsCompositionStats {
 
 namespace tracer_core::infrastructure::query::data::stats {
 
-using tracer::core::infrastructure::query::data::stats::BuildInsightsChartSeries;
+using tracer::core::infrastructure::query::data::stats::
+    BuildInsightsChartSeries;
 
 }  // namespace tracer_core::infrastructure::query::data::stats

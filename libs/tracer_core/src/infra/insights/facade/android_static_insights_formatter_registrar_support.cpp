@@ -1,9 +1,6 @@
 #include "infra/insights/facade/android_static_insights_formatter_registrar_internal.hpp"
 
 #include <memory>
-#include <stdexcept>
-#include <string>
-#include <string_view>
 #include <utility>
 
 #ifndef TT_INSIGHTS_ENABLE_LATEX
@@ -45,7 +42,7 @@ auto BuildYearlyLatexCoreFormatter(const InsightsCatalog& catalog)
 #endif
 
 #if TT_INSIGHTS_ENABLE_TYPST
-auto BuildDayTypstCoreFormatter(const InsightsCatalog& catalog)
+auto BuildDailyTypstCoreFormatter(const InsightsCatalog& catalog)
     -> std::unique_ptr<IInsightsFormatter<DailyInsightsData>>;
 auto BuildMonthTypstCoreFormatter(const InsightsCatalog& catalog)
     -> std::unique_ptr<IInsightsFormatter<MonthlyInsightsData>>;
@@ -65,42 +62,23 @@ auto RegisterCoreCreator(InsightsFormat format, Builder&& builder) -> void {
       format, std::forward<Builder>(builder));
 }
 
-template <typename InsightsDataType>
-auto RegisterDisabledCreator(InsightsFormat format, std::string_view reason)
-    -> void {
-  GenericFormatterFactory<InsightsDataType>::RegisterCreator(
-      format,
-      [reason](const InsightsCatalog& /*catalog*/)
-          -> std::unique_ptr<IInsightsFormatter<InsightsDataType>> {
-        throw std::invalid_argument(std::string(reason));
-      });
-}
-
-auto RegisterDisabledFormatForAllTypes(InsightsFormat format,
-                                       std::string_view reason) -> void {
-  RegisterDisabledCreator<DailyInsightsData>(format, reason);
-  RegisterDisabledCreator<MonthlyInsightsData>(format, reason);
-  RegisterDisabledCreator<PeriodInsightsData>(format, reason);
-  RegisterDisabledCreator<WeeklyInsightsData>(format, reason);
-  RegisterDisabledCreator<YearlyInsightsData>(format, reason);
-}
-
 using DailyBuilder = std::unique_ptr<IInsightsFormatter<DailyInsightsData>> (*)(
     const InsightsCatalog&);
-using MonthlyBuilder = std::unique_ptr<IInsightsFormatter<MonthlyInsightsData>> (*)(
-    const InsightsCatalog&);
-using PeriodBuilder = std::unique_ptr<IInsightsFormatter<PeriodInsightsData>> (*)(
-    const InsightsCatalog&);
-using WeeklyBuilder = std::unique_ptr<IInsightsFormatter<WeeklyInsightsData>> (*)(
-    const InsightsCatalog&);
-using YearlyBuilder = std::unique_ptr<IInsightsFormatter<YearlyInsightsData>> (*)(
-    const InsightsCatalog&);
-using AndroidPolicy = AndroidStaticInsightsFormatterPolicy;
+using MonthlyBuilder =
+    std::unique_ptr<IInsightsFormatter<MonthlyInsightsData>> (*)(
+        const InsightsCatalog&);
+using PeriodBuilder =
+    std::unique_ptr<IInsightsFormatter<PeriodInsightsData>> (*)(
+        const InsightsCatalog&);
+using WeeklyBuilder =
+    std::unique_ptr<IInsightsFormatter<WeeklyInsightsData>> (*)(
+        const InsightsCatalog&);
+using YearlyBuilder =
+    std::unique_ptr<IInsightsFormatter<YearlyInsightsData>> (*)(
+        const InsightsCatalog&);
 
 struct FormatRegistrationRow {
   InsightsFormat format;
-  bool AndroidPolicy::* enabled_flag;
-  std::string_view disabled_reason;
   DailyBuilder build_daily;
   MonthlyBuilder build_monthly;
   PeriodBuilder build_period;
@@ -108,20 +86,8 @@ struct FormatRegistrationRow {
   YearlyBuilder build_yearly;
 };
 
-#if !TT_INSIGHTS_ENABLE_LATEX
-constexpr std::string_view kLatexCompiledOutReason =
-    "LaTeX formatter is not compiled into this core build.";
-#endif
-#if !TT_INSIGHTS_ENABLE_TYPST
-constexpr std::string_view kTypstCompiledOutReason =
-    "Typst formatter is not compiled into this core build.";
-#endif
-
 constexpr FormatRegistrationRow kMarkdownRegistrationRow = {
     .format = InsightsFormat::kMarkdown,
-    .enabled_flag = &AndroidPolicy::enable_markdown,
-    .disabled_reason =
-        "Markdown formatter is disabled by Android static formatter policy.",
     .build_daily = &BuildDayMarkdownCoreFormatter,
     .build_monthly = &BuildMonthMarkdownCoreFormatter,
     .build_period = &BuildPeriodMarkdownCoreFormatter,
@@ -131,9 +97,6 @@ constexpr FormatRegistrationRow kMarkdownRegistrationRow = {
 #if TT_INSIGHTS_ENABLE_LATEX
 constexpr FormatRegistrationRow kLatexRegistrationRow = {
     .format = InsightsFormat::kLaTeX,
-    .enabled_flag = &AndroidPolicy::enable_latex,
-    .disabled_reason =
-        "LaTeX formatter is disabled by Android static formatter policy.",
     .build_daily = &BuildDayLatexCoreFormatter,
     .build_monthly = &BuildMonthLatexCoreFormatter,
     .build_period = &BuildPeriodLatexCoreFormatter,
@@ -144,10 +107,7 @@ constexpr FormatRegistrationRow kLatexRegistrationRow = {
 #if TT_INSIGHTS_ENABLE_TYPST
 constexpr FormatRegistrationRow kTypstRegistrationRow = {
     .format = InsightsFormat::kTyp,
-    .enabled_flag = &AndroidPolicy::enable_typst,
-    .disabled_reason =
-        "Typst formatter is disabled by Android static formatter policy.",
-    .build_daily = &BuildDayTypstCoreFormatter,
+    .build_daily = &BuildDailyTypstCoreFormatter,
     .build_monthly = &BuildMonthTypstCoreFormatter,
     .build_period = &BuildPeriodTypstCoreFormatter,
     .build_weekly = &BuildWeeklyTypstCoreFormatter,
@@ -162,13 +122,25 @@ auto RegisterCreatorsForRow(const FormatRegistrationRow& row) -> void {
   RegisterCoreCreator<YearlyInsightsData>(row.format, row.build_yearly);
 }
 
+auto UnregisterCreatorsForFormat(InsightsFormat format) -> void {
+  GenericFormatterFactory<DailyInsightsData>::UnregisterCreator(format);
+  GenericFormatterFactory<MonthlyInsightsData>::UnregisterCreator(format);
+  GenericFormatterFactory<PeriodInsightsData>::UnregisterCreator(format);
+  GenericFormatterFactory<WeeklyInsightsData>::UnregisterCreator(format);
+  GenericFormatterFactory<YearlyInsightsData>::UnregisterCreator(format);
+}
+
+auto UnregisterCreatorsForRow(const FormatRegistrationRow& row) -> void {
+  UnregisterCreatorsForFormat(row.format);
+}
+
 auto RegisterRowByPolicy(const FormatRegistrationRow& row, bool enabled)
     -> void {
-  if (enabled) {
-    RegisterCreatorsForRow(row);
+  if (!enabled) {
+    UnregisterCreatorsForRow(row);
     return;
   }
-  RegisterDisabledFormatForAllTypes(row.format, row.disabled_reason);
+  RegisterCreatorsForRow(row);
 }
 
 }  // namespace
@@ -184,8 +156,7 @@ auto RegisterLatexFormatters(const AndroidStaticInsightsFormatterPolicy& policy)
   RegisterRowByPolicy(kLatexRegistrationRow, policy.enable_latex);
 #else
   static_cast<void>(policy);
-  RegisterDisabledFormatForAllTypes(InsightsFormat::kLaTeX,
-                                    kLatexCompiledOutReason);
+  UnregisterCreatorsForFormat(InsightsFormat::kLaTeX);
 #endif
 }
 
@@ -195,8 +166,7 @@ auto RegisterTypstFormatters(const AndroidStaticInsightsFormatterPolicy& policy)
   RegisterRowByPolicy(kTypstRegistrationRow, policy.enable_typst);
 #else
   static_cast<void>(policy);
-  RegisterDisabledFormatForAllTypes(InsightsFormat::kTyp,
-                                    kTypstCompiledOutReason);
+  UnregisterCreatorsForFormat(InsightsFormat::kTyp);
 #endif
 }
 

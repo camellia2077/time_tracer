@@ -49,8 +49,9 @@ void ProcessStatItems(const std::vector<StatisticItemConfig>& items,
   }
 }
 
-auto StatFormatter::Format(const DailyInsightsData& data,
-                           const std::shared_ptr<DayBaseConfig>& config) const
+auto StatFormatter::Format(
+    const DailyInsightsData& data,
+    const std::shared_ptr<DailyFormatterBaseConfig>& config) const
     -> std::string {
   const auto& items_config =
       config->GetStatisticsItems();  // 现在这是一个 vector

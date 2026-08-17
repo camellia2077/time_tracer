@@ -40,6 +40,7 @@
    - `range_days = 日期范围内的总天数（闭区间）`
    - `active_days = 至少存在一条活动事实（包括 end-only）的天数`
    - `average_duration_seconds = total_duration_seconds / active_days`（`active_days=0` 时为 `0`；无记录日期不计入分母）
+   - `mode_duration_seconds`、`median_duration_seconds`、`minimum_duration_seconds`、`maximum_duration_seconds`、`lower_quartile_duration_seconds`、`upper_quartile_duration_seconds`、`coefficient_of_variation`、`mean_absolute_deviation_seconds`：基于实际发生过活动事实的日期时长计算，不包含补齐的 0 时长日期；发生事实但时长为 0 的日期仍计入；CV 使用总体标准差除以平均值（平均值为 0 时为 0），四分位数采用线性插值，平均绝对偏差以均值为中心；无重复样本时众数为 `null`，多个众数并列时取较小值。
 3. `days-stats`（基于过滤后的全部样本，不受 `limit/reverse` 截断）
    - `count`：样本数
    - `mean_seconds`：均值

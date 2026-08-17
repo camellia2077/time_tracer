@@ -112,8 +112,8 @@ auto DecodeTemporalInsightsRequest(std::string_view request_json)
   return out;
 }
 
-auto EncodeTemporalInsightsRequest(const TemporalInsightsRequestPayload& request)
-    -> std::string {
+auto EncodeTemporalInsightsRequest(
+    const TemporalInsightsRequestPayload& request) -> std::string {
   json payload = {
       {"operation_kind", request.operation_kind},
       {"display_mode", request.display_mode},
@@ -151,8 +151,8 @@ auto EncodeTemporalInsightsRequest(const TemporalInsightsRequestPayload& request
   return payload.dump();
 }
 
-auto EncodeInsightsTargetsResponse(const InsightsTargetsResponsePayload& response)
-    -> std::string {
+auto EncodeInsightsTargetsResponse(
+    const InsightsTargetsResponsePayload& response) -> std::string {
   return json{
       {"ok", response.ok},
       {"type", response.type},

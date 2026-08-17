@@ -56,14 +56,15 @@ inline auto FindDailyStatusProjectNode(const insights::ProjectTree& tree,
 }
 
 template <typename StatusValueT>
-inline auto BuildStatusValues(
-    const insights::ProjectTree& project_tree, const DailyStatusConfig& config)
+inline auto BuildStatusValues(const insights::ProjectTree& project_tree,
+                              const DailyStatusConfig& config)
     -> std::vector<StatusValueT> {
   std::vector<StatusValueT> values;
   values.reserve(config.statuses.size());
   for (const auto& status : config.statuses) {
     StatusValueT value{.id = status.id, .label = status.label};
-    if (const auto* node = FindDailyStatusProjectNode(project_tree, status.parent);
+    if (const auto* node =
+            FindDailyStatusProjectNode(project_tree, status.parent);
         node != nullptr) {
       value.occurrence_count = static_cast<int>(node->occurrence_count);
       value.total_duration = node->duration;

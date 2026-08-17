@@ -23,13 +23,13 @@
 
 真正的字符串拼接（Concatenation）和字符画绘制，下放到了极其细分的具象格式化器中。
 
-**源码定位**: `libs/tracer_core/src/infra/insights/daily/formatters/markdown/day_md_formatter_core.cpp`
+**源码定位**: `libs/tracer_core/src/infra/insights/daily/formatters/markdown/daily_md_formatter_core.cpp`
 
 ### 2.1 纯手工字符串流式组装
 Time Tracer 没有选用沉重的第三方模板引擎（如 Jinja 或 Mustache），而是利用 C++ 的 `std::string::operator+=` 进行了最高效的基础流式拼接：
 
 ```cpp
-void DayMdFormatter::FormatHeaderContent(...) const {
+void DailyMdFormatter::FormatHeaderContent(...) const {
   insights_stream += "## ";
   insights_stream += config_->GetTitlePrefix(); // 例如 "日度报告"
   insights_stream += " ";
@@ -40,7 +40,7 @@ void DayMdFormatter::FormatHeaderContent(...) const {
 ```
 
 ### 2.2 I18n 兼容设计 (`Config` 提取)
-代码中所有的硬编码文案（如 `总时长`、`是否按时睡觉` 等标签），全部从 `DayMdConfig` 中动态读取。
+代码中所有的硬编码文案（如 `总时长`、`是否按时睡觉` 等标签），全部从 `DailyMdConfig` 中动态读取。
 由于引擎支持跨平台，在 Android 平台调用时，它可以下发属于自己的本地化 Config 实例，使得同一套 C++ 拼接引擎能吐出原生对应语言（中/英）的 Markdown。
 
 Markdown 的本地化配置按 BCP-47 语言代码分目录保存，例如
@@ -68,7 +68,7 @@ end_only_time_format = "截至 {end_time}"
 
 ### 2.3 树节点递归渲染
 最引人瞩目的多层级项目时长明细树，是如何画进 Markdown 的？
-- `DayMdFormatter` 在末尾会调用 `MarkdownFormatter::FormatProjectTree`。
+- `DailyMdFormatter` 在末尾会调用 `MarkdownFormatter::FormatProjectTree`。
 - 这个通用的 Tree 渲染器（位于 `shared` 目录），会使用深度优先遍历（DFS），并结合深度的缩进等级，输出标准的 Markdown 列表格式，例如：
 
 ```markdown

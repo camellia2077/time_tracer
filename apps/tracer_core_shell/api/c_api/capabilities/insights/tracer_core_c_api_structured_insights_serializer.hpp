@@ -10,8 +10,7 @@ namespace tracer_core::core::c_api::insights {
 
 auto SerializeTemporalStructuredInsights(
     const tracer_core::core::dto::TemporalStructuredInsightsOutput& output,
-    const std::filesystem::path& converter_config_toml_path)
-    -> nlohmann::json;
+    const std::filesystem::path& converter_config_toml_path) -> nlohmann::json;
 
 }  // namespace tracer_core::core::c_api::insights
 

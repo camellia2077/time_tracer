@@ -11,6 +11,7 @@ import tracer.core.infrastructure.insights.dto;
 #include <filesystem>
 #include <iostream>
 #include <memory>
+#include <stdexcept>
 #include <string_view>
 #include <utility>
 
@@ -18,6 +19,7 @@ import tracer.core.infrastructure.insights.dto;
 #include "domain/model/time_data_models.hpp"
 #include "infra/config/models/insights_catalog.hpp"
 #include "infra/insights/facade/android_static_insights_formatter_registrar.hpp"
+#include "infra/insights/shared/factories/generic_formatter_factory.hpp"
 #include "infra/insights/shared/utils/format/insights_string_utils.hpp"
 #include "infra/insights/shared/utils/format/time_format.hpp"
 #include "infra/tests/insights_formatter/insights_formatter_parity_internal.hpp"
@@ -34,9 +36,9 @@ namespace insights = tracer::core::domain::modinsights;
 using insights_formatter_parity_internal::CaseOutputs;
 using insights_formatter_parity_internal::ParityOutputs;
 using tracer::core::domain::modinsights::DailyInsightsData;
+using tracer::core::domain::modinsights::InsightsFormat;
 using tracer::core::domain::modinsights::MonthlyInsightsData;
 using tracer::core::domain::modinsights::PeriodInsightsData;
-using tracer::core::domain::modinsights::InsightsFormat;
 using tracer::core::domain::modinsights::TimeRecord;
 using tracer::core::domain::modinsights::WeeklyInsightsData;
 using tracer::core::domain::modinsights::YearlyInsightsData;
@@ -64,7 +66,7 @@ auto BuildInsightsCatalog(const fs::path& repo_root) -> InsightsCatalog {
   const fs::path latex_config_dir = insights_config_root / "latex";
   const fs::path typst_config_dir = insights_config_root / "typst";
 
-  catalog.loaded_insights.markdown.day =
+  catalog.loaded_insights.markdown.daily =
       infra_config::InsightsConfigLoader::LoadDailyMdConfig(
           markdown_default_config_dir / "day.toml");
   catalog.loaded_insights.markdown.month =
@@ -83,7 +85,7 @@ auto BuildInsightsCatalog(const fs::path& repo_root) -> InsightsCatalog {
   for (const std::string_view locale : {"en", "zh", "ja"}) {
     const fs::path locale_dir = markdown_config_dir / std::string(locale);
     MarkdownInsightsConfigs localized;
-    localized.day = infra_config::InsightsConfigLoader::LoadDailyMdConfig(
+    localized.daily = infra_config::InsightsConfigLoader::LoadDailyMdConfig(
         locale_dir / "day.toml");
     localized.month = infra_config::InsightsConfigLoader::LoadMonthlyMdConfig(
         locale_dir / "month.toml");
@@ -94,40 +96,40 @@ auto BuildInsightsCatalog(const fs::path& repo_root) -> InsightsCatalog {
     localized.year = infra_config::InsightsConfigLoader::LoadYearlyMdConfig(
         locale_dir / "year.toml");
     catalog.loaded_insights.markdown_locales.emplace(std::string(locale),
-                                                    std::move(localized));
+                                                     std::move(localized));
   }
 
-  catalog.loaded_insights.latex.day =
+  catalog.loaded_insights.latex.daily =
       infra_config::InsightsConfigLoader::LoadDailyTexConfig(latex_config_dir /
-                                                           "day.toml");
+                                                             "day.toml");
   catalog.loaded_insights.latex.month =
-      infra_config::InsightsConfigLoader::LoadMonthlyTexConfig(latex_config_dir /
-                                                             "month.toml");
+      infra_config::InsightsConfigLoader::LoadMonthlyTexConfig(
+          latex_config_dir / "month.toml");
   catalog.loaded_insights.latex.period =
       infra_config::InsightsConfigLoader::LoadPeriodTexConfig(latex_config_dir /
-                                                            "period.toml");
+                                                              "period.toml");
   catalog.loaded_insights.latex.week =
       infra_config::InsightsConfigLoader::LoadWeeklyTexConfig(latex_config_dir /
-                                                            "week.toml");
+                                                              "week.toml");
   catalog.loaded_insights.latex.year =
       infra_config::InsightsConfigLoader::LoadYearlyTexConfig(latex_config_dir /
-                                                            "year.toml");
+                                                              "year.toml");
 
-  catalog.loaded_insights.typst.day =
+  catalog.loaded_insights.typst.daily =
       infra_config::InsightsConfigLoader::LoadDailyTypConfig(typst_config_dir /
-                                                           "day.toml");
+                                                             "day.toml");
   catalog.loaded_insights.typst.month =
-      infra_config::InsightsConfigLoader::LoadMonthlyTypConfig(typst_config_dir /
-                                                             "month.toml");
+      infra_config::InsightsConfigLoader::LoadMonthlyTypConfig(
+          typst_config_dir / "month.toml");
   catalog.loaded_insights.typst.period =
       infra_config::InsightsConfigLoader::LoadPeriodTypConfig(typst_config_dir /
-                                                            "period.toml");
+                                                              "period.toml");
   catalog.loaded_insights.typst.week =
       infra_config::InsightsConfigLoader::LoadWeeklyTypConfig(typst_config_dir /
-                                                            "week.toml");
+                                                              "week.toml");
   catalog.loaded_insights.typst.year =
       infra_config::InsightsConfigLoader::LoadYearlyTypConfig(typst_config_dir /
-                                                            "year.toml");
+                                                              "year.toml");
 
   return catalog;
 }
@@ -150,6 +152,36 @@ auto BuildFormatter(FormatterPipeline pipeline, const InsightsCatalog& catalog)
   }
 
   return std::make_unique<infra_insights::InsightsDtoFormatter>(catalog);
+}
+
+auto CheckAndroidStaticFormatterPolicyReset(const InsightsCatalog& catalog,
+                                            int& failures) -> void {
+  infrastructure::insights::AndroidStaticInsightsFormatterRegistrar(
+      infrastructure::insights::AndroidStaticInsightsFormatterPolicy::
+          AllFormats())
+      .RegisterStaticFormatters();
+  infrastructure::insights::AndroidStaticInsightsFormatterRegistrar(
+      infrastructure::insights::AndroidStaticInsightsFormatterPolicy::
+          MarkdownOnly())
+      .RegisterStaticFormatters();
+
+  try {
+    static_cast<void>(GenericFormatterFactory<DailyInsightsData>::Create(
+        InsightsFormat::kLaTeX, catalog));
+    ++failures;
+    std::cerr << "[FAIL] Markdown-only formatter policy left LaTeX creator "
+                 "registered.\n";
+  } catch (const std::invalid_argument&) {
+  }
+
+  try {
+    static_cast<void>(GenericFormatterFactory<DailyInsightsData>::Create(
+        InsightsFormat::kMarkdown, catalog));
+  } catch (const std::exception& exception) {
+    ++failures;
+    std::cerr << "[FAIL] Markdown-only formatter policy removed Markdown: "
+              << exception.what() << '\n';
+  }
 }
 
 auto BuildDailyProjectTree() -> insights::ProjectTree {
@@ -194,15 +226,18 @@ auto BuildDailyFixture() -> DailyInsightsData {
   DailyInsightsData insights;
   insights.date = "2021-01-03";
   insights.metadata.statuses = {
-      {.id = "study", .label = "Study", .occurrence_count = 2,
+      {.id = "study",
+       .label = "Study",
+       .occurrence_count = 2,
        .total_duration = 7200},
-      {.id = "exercise", .label = "Exercise", .occurrence_count = 1,
+      {.id = "exercise",
+       .label = "Exercise",
+       .occurrence_count = 1,
        .total_duration = 1800},
   };
   insights.metadata.getup_time = "07:30:00";
   insights.metadata.remark = "Deep work\nEvening workout";
-  insights.total_duration = 12600;
-  insights.activity_count = 3;
+  insights.activity = {.total_duration_seconds = 12600, .occurrence_count = 3};
   insights.stats["sleep_total_time"] = 25200;
   insights.stats["study_time"] = 3600;
   insights.stats["total_exercise_time"] = 1800;
@@ -244,27 +279,36 @@ auto BuildRangeFixture(const std::string& range_label,
                        const std::string& start_date,
                        const std::string& end_date, int requested_days,
                        int actual_days, int status_days, int exercise_days,
-                       int cardio_days, int anaerobic_days) -> RangeInsightsType {
+                       int cardio_days, int anaerobic_days)
+    -> RangeInsightsType {
   RangeInsightsType insights;
   insights.range_label = range_label;
   insights.start_date = start_date;
   insights.end_date = end_date;
   insights.requested_days = requested_days;
-  insights.total_duration = 54000;
+  insights.activity.total_duration_seconds = 54000;
   insights.actual_days = actual_days;
-  insights.matched_record_count = actual_days * 2;
+  insights.activity.occurrence_count = actual_days * 2;
   insights.status_true_days = status_days;
   insights.exercise_true_days = exercise_days;
   insights.cardio_true_days = cardio_days;
   insights.anaerobic_true_days = anaerobic_days;
   insights.statuses = {
-      {.id = "status", .label = "Status Days", .occurrence_count = status_days,
+      {.id = "status",
+       .label = "Status Days",
+       .occurrence_count = status_days,
        .total_duration = static_cast<std::int64_t>(status_days) * 3600},
-      {.id = "exercise", .label = "Exercise Days", .occurrence_count = exercise_days,
+      {.id = "exercise",
+       .label = "Exercise Days",
+       .occurrence_count = exercise_days,
        .total_duration = static_cast<std::int64_t>(exercise_days) * 3600},
-      {.id = "cardio", .label = "Cardio Days", .occurrence_count = cardio_days,
+      {.id = "cardio",
+       .label = "Cardio Days",
+       .occurrence_count = cardio_days,
        .total_duration = static_cast<std::int64_t>(cardio_days) * 3600},
-      {.id = "anaerobic", .label = "Anaerobic Days", .occurrence_count = anaerobic_days,
+      {.id = "anaerobic",
+       .label = "Anaerobic Days",
+       .occurrence_count = anaerobic_days,
        .total_duration = static_cast<std::int64_t>(anaerobic_days) * 3600},
   };
   insights.is_valid = true;
@@ -277,8 +321,8 @@ auto CollectOutputs(infra_insights::InsightsDtoFormatter& formatter,
                     const MonthlyInsightsData& monthly_insights,
                     const WeeklyInsightsData& weekly_insights,
                     const YearlyInsightsData& yearly_insights,
-                    const PeriodInsightsData& range_insights, InsightsFormat format)
-    -> CaseOutputs {
+                    const PeriodInsightsData& range_insights,
+                    InsightsFormat format) -> CaseOutputs {
   CaseOutputs outputs;
   outputs.day = formatter.FormatDaily(daily_insights, format);
   outputs.month = formatter.FormatMonthly(monthly_insights, format);
@@ -353,9 +397,11 @@ auto CheckDailyActivityCountLabels(const ParityOutputs& outputs, int& failures)
 auto CheckDailyStatusLabelsArePresent(const ParityOutputs& outputs,
                                       int& failures) -> void {
   constexpr std::string_view kMarkdownStudy = "- **Study**: 2 times (2h 0m)";
-  constexpr std::string_view kMarkdownExercise = "- **Exercise**: 1 times (0h 30m)";
+  constexpr std::string_view kMarkdownExercise =
+      "- **Exercise**: 1 times (0h 30m)";
   constexpr std::string_view kLatexStudy = "\\textbf{Study}: 2 times (2h 0m)";
-  constexpr std::string_view kLatexExercise = "\\textbf{Exercise}: 1 times (0h 30m)";
+  constexpr std::string_view kLatexExercise =
+      "\\textbf{Exercise}: 1 times (0h 30m)";
   constexpr std::string_view kTypstStudy = "+ *Study:* 2 times (2h 0m)";
   constexpr std::string_view kTypstExercise = "+ *Exercise:* 1 times (0h 30m)";
 
@@ -386,11 +432,11 @@ auto CheckDailyStatusLabelsArePresent(const ParityOutputs& outputs,
                  outputs.android_by_format[2].day, kTypstExercise, failures);
 }
 
-auto CheckDailyTimelineFormatting(infra_insights::InsightsDtoFormatter& formatter,
-                                  const DailyInsightsData& source_insights,
-                                  int& failures) -> void {
+auto CheckDailyTimelineFormatting(
+    infra_insights::InsightsDtoFormatter& formatter,
+    const DailyInsightsData& source_insights, int& failures) -> void {
   DailyInsightsData timeline_insights = source_insights;
-  timeline_insights.activity_count = 2;
+  timeline_insights.activity.occurrence_count = 2;
   timeline_insights.detailed_records = {
       TimeRecord{.start_time = "08:00:12",
                  .end_time = "09:10:05",
@@ -473,12 +519,12 @@ auto CheckMarkdownActivityRemarkLineBreaks(const ParityOutputs& outputs,
                  outputs.android_by_format[2].day, kTypstExpected, failures);
 }
 
-auto CheckEndOnlyLocalizedMarkdown(infra_insights::InsightsDtoFormatter& formatter,
-                                   const DailyInsightsData& source_insights,
-                                   int& failures) -> void {
+auto CheckEndOnlyLocalizedMarkdown(
+    infra_insights::InsightsDtoFormatter& formatter,
+    const DailyInsightsData& source_insights, int& failures) -> void {
   DailyInsightsData end_only_insights = source_insights;
-  end_only_insights.total_duration = 0;
-  end_only_insights.activity_count = 1;
+  end_only_insights.activity.total_duration_seconds = 0;
+  end_only_insights.activity.occurrence_count = 1;
   end_only_insights.detailed_records.clear();
   end_only_insights.detailed_records.push_back(TimeRecord{
       .kind = ActivityRecordKind::kEndOnly,
@@ -526,14 +572,18 @@ auto RunFormatterParityTests() -> int {
   }
 
   const DailyInsightsData daily_insights = BuildDailyFixture();
-  const MonthlyInsightsData monthly_insights = BuildRangeFixture<MonthlyInsightsData>(
-      "2026-01", "2026-01-01", "2026-01-31", 31, 6, 5, 3, 2, 2);
-  const WeeklyInsightsData weekly_insights = BuildRangeFixture<WeeklyInsightsData>(
-      "2026-W05", "2026-01-27", "2026-02-02", 7, 4, 3, 2, 1, 1);
-  const YearlyInsightsData yearly_insights = BuildRangeFixture<YearlyInsightsData>(
-      "2026", "2026-01-01", "2026-12-31", 365, 120, 90, 60, 40, 30);
-  const PeriodInsightsData range_insights = BuildRangeFixture<PeriodInsightsData>(
-      "Last 10 days", "2026-01-01", "2026-01-10", 10, 5, 4, 2, 1, 2);
+  const MonthlyInsightsData monthly_insights =
+      BuildRangeFixture<MonthlyInsightsData>("2026-01", "2026-01-01",
+                                             "2026-01-31", 31, 6, 5, 3, 2, 2);
+  const WeeklyInsightsData weekly_insights =
+      BuildRangeFixture<WeeklyInsightsData>("2026-W05", "2026-01-27",
+                                            "2026-02-02", 7, 4, 3, 2, 1, 1);
+  const YearlyInsightsData yearly_insights =
+      BuildRangeFixture<YearlyInsightsData>("2026", "2026-01-01", "2026-12-31",
+                                            365, 120, 90, 60, 40, 30);
+  const PeriodInsightsData range_insights =
+      BuildRangeFixture<PeriodInsightsData>("Last 10 days", "2026-01-01",
+                                            "2026-01-10", 10, 5, 4, 2, 1, 2);
 
   ParityOutputs outputs;
   try {
@@ -589,6 +639,7 @@ auto RunFormatterParityTests() -> int {
   CheckDailyActivityCountLabels(outputs, failures);
   CheckDailyStatusLabelsArePresent(outputs, failures);
   CheckMarkdownActivityRemarkLineBreaks(outputs, failures);
+  CheckAndroidStaticFormatterPolicyReset(catalog, failures);
 
   if (failures == 0) {
     std::cout << "[PASS] time_tracker_formatter_parity_tests\n";

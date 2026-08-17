@@ -12,20 +12,20 @@
 #endif
 
 #include "infra/config/models/insights_catalog.hpp"
-#include "infra/insights/daily/formatters/markdown/day_md_formatter.hpp"
+#include "infra/insights/daily/formatters/markdown/daily_md_formatter.hpp"
 #include "infra/insights/monthly/formatters/markdown/month_md_formatter.hpp"
 #include "infra/insights/range/formatters/markdown/range_md_formatter.hpp"
 #include "infra/insights/shared/factories/generic_formatter_factory.hpp"
 #include "infra/insights/shared/interfaces/i_insights_formatter.hpp"
 
 #if TT_INSIGHTS_ENABLE_LATEX
-#include "infra/insights/daily/formatters/latex/day_tex_formatter.hpp"
+#include "infra/insights/daily/formatters/latex/daily_tex_formatter.hpp"
 #include "infra/insights/monthly/formatters/latex/month_tex_formatter.hpp"
 #include "infra/insights/range/formatters/latex/range_tex_formatter.hpp"
 #endif
 
 #if TT_INSIGHTS_ENABLE_TYPST
-#include "infra/insights/daily/formatters/typst/day_typ_formatter.hpp"
+#include "infra/insights/daily/formatters/typst/daily_typ_formatter.hpp"
 #include "infra/insights/monthly/formatters/typst/month_typ_formatter.hpp"
 #include "infra/insights/range/formatters/typst/range_typ_formatter.hpp"
 #endif
@@ -52,7 +52,8 @@ class RangeInsightsFormatterAdapter final
 
   [[nodiscard]] auto FormatInsights(const InsightsDataType& insights) const
       -> std::string override {
-    return delegate_->FormatInsights(static_cast<const RangeInsightsData&>(insights));
+    return delegate_->FormatInsights(
+        static_cast<const RangeInsightsData&>(insights));
   }
 
  private:
@@ -78,8 +79,8 @@ auto BuildRangeLatexCoreFormatter(const RangeInsightsLabels& labels,
                                   const FontConfig& fonts,
                                   const LayoutConfig& layout)
     -> std::unique_ptr<IInsightsFormatter<RangeInsightsData>> {
-  return BuildCoreFormatter<RangeTexConfig, RangeTexFormatter, RangeInsightsData>(
-      labels, fonts, layout);
+  return BuildCoreFormatter<RangeTexConfig, RangeTexFormatter,
+                            RangeInsightsData>(labels, fonts, layout);
 }
 #endif
 
@@ -88,8 +89,8 @@ auto BuildRangeTypstCoreFormatter(const RangeInsightsLabels& labels,
                                   const FontConfig& fonts,
                                   const LayoutConfig& layout)
     -> std::unique_ptr<IInsightsFormatter<RangeInsightsData>> {
-  return BuildCoreFormatter<RangeTypConfig, RangeTypFormatter, RangeInsightsData>(
-      labels, fonts, layout);
+  return BuildCoreFormatter<RangeTypConfig, RangeTypFormatter,
+                            RangeInsightsData>(labels, fonts, layout);
 }
 #endif
 
@@ -97,23 +98,26 @@ auto BuildRangeTypstCoreFormatter(const RangeInsightsLabels& labels,
 
 auto BuildDayMarkdownCoreFormatter(const InsightsCatalog& catalog)
     -> std::unique_ptr<IInsightsFormatter<DailyInsightsData>> {
-  return BuildCoreFormatter<DayMdConfig, DayMdFormatter, DailyInsightsData>(
-      catalog.loaded_insights.markdown.day);
+  return BuildCoreFormatter<DailyMdFormatterConfig, DailyMdFormatter,
+                            DailyInsightsData>(
+      catalog.loaded_insights.markdown.daily);
 }
 
 #if TT_INSIGHTS_ENABLE_LATEX
 auto BuildDayLatexCoreFormatter(const InsightsCatalog& catalog)
     -> std::unique_ptr<IInsightsFormatter<DailyInsightsData>> {
-  return BuildCoreFormatter<DayTexConfig, DayTexFormatter, DailyInsightsData>(
-      catalog.loaded_insights.latex.day);
+  return BuildCoreFormatter<DailyTexFormatterConfig, DailyTexFormatter,
+                            DailyInsightsData>(
+      catalog.loaded_insights.latex.daily);
 }
 #endif
 
 #if TT_INSIGHTS_ENABLE_TYPST
-auto BuildDayTypstCoreFormatter(const InsightsCatalog& catalog)
+auto BuildDailyTypstCoreFormatter(const InsightsCatalog& catalog)
     -> std::unique_ptr<IInsightsFormatter<DailyInsightsData>> {
-  return BuildCoreFormatter<DayTypConfig, DayTypFormatter, DailyInsightsData>(
-      catalog.loaded_insights.typst.day);
+  return BuildCoreFormatter<DailyTypFormatterConfig, DailyTypFormatter,
+                            DailyInsightsData>(
+      catalog.loaded_insights.typst.daily);
 }
 #endif
 
@@ -164,10 +168,10 @@ auto BuildYearlyMarkdownCoreFormatter(const InsightsCatalog& catalog)
 #if TT_INSIGHTS_ENABLE_LATEX
 auto BuildPeriodLatexCoreFormatter(const InsightsCatalog& catalog)
     -> std::unique_ptr<IInsightsFormatter<PeriodInsightsData>> {
-  return BuildRangeAdapter<PeriodInsightsData>(
-      BuildRangeLatexCoreFormatter(catalog.loaded_insights.latex.period.labels,
-                                   catalog.loaded_insights.latex.period.fonts,
-                                   catalog.loaded_insights.latex.period.layout));
+  return BuildRangeAdapter<PeriodInsightsData>(BuildRangeLatexCoreFormatter(
+      catalog.loaded_insights.latex.period.labels,
+      catalog.loaded_insights.latex.period.fonts,
+      catalog.loaded_insights.latex.period.layout));
 }
 
 auto BuildWeeklyLatexCoreFormatter(const InsightsCatalog& catalog)
@@ -190,10 +194,10 @@ auto BuildYearlyLatexCoreFormatter(const InsightsCatalog& catalog)
 #if TT_INSIGHTS_ENABLE_TYPST
 auto BuildPeriodTypstCoreFormatter(const InsightsCatalog& catalog)
     -> std::unique_ptr<IInsightsFormatter<PeriodInsightsData>> {
-  return BuildRangeAdapter<PeriodInsightsData>(
-      BuildRangeTypstCoreFormatter(catalog.loaded_insights.typst.period.labels,
-                                   catalog.loaded_insights.typst.period.fonts,
-                                   catalog.loaded_insights.typst.period.layout));
+  return BuildRangeAdapter<PeriodInsightsData>(BuildRangeTypstCoreFormatter(
+      catalog.loaded_insights.typst.period.labels,
+      catalog.loaded_insights.typst.period.fonts,
+      catalog.loaded_insights.typst.period.layout));
 }
 
 auto BuildWeeklyTypstCoreFormatter(const InsightsCatalog& catalog)

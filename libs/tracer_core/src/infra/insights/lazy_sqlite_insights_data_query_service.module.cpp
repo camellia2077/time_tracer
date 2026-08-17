@@ -68,9 +68,8 @@ auto LazySqliteInsightsDataQueryService::QueryDaily(std::string_view date)
     -> DailyInsightsData {
   return WithStructuredInsightsService(
       db_path_, platform_clock_,
-      [&](SqliteInsightsDataQueryService& insights_service) -> DailyInsightsData {
-        return insights_service.QueryDaily(date);
-      },
+      [&](SqliteInsightsDataQueryService& insights_service)
+          -> DailyInsightsData { return insights_service.QueryDaily(date); },
       &insights_catalog_->statuses.day);
 }
 
@@ -78,46 +77,52 @@ auto LazySqliteInsightsDataQueryService::QueryMonthly(std::string_view month)
     -> MonthlyInsightsData {
   return WithStructuredInsightsService(
       db_path_, platform_clock_,
-      [&](SqliteInsightsDataQueryService& insights_service) -> MonthlyInsightsData {
+      [&](SqliteInsightsDataQueryService& insights_service)
+          -> MonthlyInsightsData {
         return insights_service.QueryMonthly(month);
-      }, &insights_catalog_->statuses.month);
+      },
+      &insights_catalog_->statuses.month);
 }
 
 auto LazySqliteInsightsDataQueryService::QueryPeriod(int days)
     -> PeriodInsightsData {
   return WithStructuredInsightsService(
       db_path_, platform_clock_,
-      [&](SqliteInsightsDataQueryService& insights_service) -> PeriodInsightsData {
-        return insights_service.QueryPeriod(days);
-      }, &insights_catalog_->statuses.recent);
+      [&](SqliteInsightsDataQueryService& insights_service)
+          -> PeriodInsightsData { return insights_service.QueryPeriod(days); },
+      &insights_catalog_->statuses.recent);
 }
 
 auto LazySqliteInsightsDataQueryService::QueryRange(std::string_view start_date,
-                                                  std::string_view end_date)
+                                                    std::string_view end_date)
     -> PeriodInsightsData {
   return WithStructuredInsightsService(
       db_path_, platform_clock_,
-      [&](SqliteInsightsDataQueryService& insights_service) -> PeriodInsightsData {
+      [&](SqliteInsightsDataQueryService& insights_service)
+          -> PeriodInsightsData {
         return insights_service.QueryRange(start_date, end_date);
-      }, &insights_catalog_->statuses.range);
+      },
+      &insights_catalog_->statuses.range);
 }
 
 auto LazySqliteInsightsDataQueryService::QueryWeekly(std::string_view iso_week)
     -> WeeklyInsightsData {
   return WithStructuredInsightsService(
       db_path_, platform_clock_,
-      [&](SqliteInsightsDataQueryService& insights_service) -> WeeklyInsightsData {
+      [&](SqliteInsightsDataQueryService& insights_service)
+          -> WeeklyInsightsData {
         return insights_service.QueryWeekly(iso_week);
-      }, &insights_catalog_->statuses.week);
+      },
+      &insights_catalog_->statuses.week);
 }
 
 auto LazySqliteInsightsDataQueryService::QueryYearly(std::string_view year)
     -> YearlyInsightsData {
   return WithStructuredInsightsService(
       db_path_, platform_clock_,
-      [&](SqliteInsightsDataQueryService& insights_service) -> YearlyInsightsData {
-        return insights_service.QueryYearly(year);
-      }, &insights_catalog_->statuses.year);
+      [&](SqliteInsightsDataQueryService& insights_service)
+          -> YearlyInsightsData { return insights_service.QueryYearly(year); },
+      &insights_catalog_->statuses.year);
 }
 
 auto LazySqliteInsightsDataQueryService::ListDailyTargets()
@@ -167,7 +172,8 @@ auto LazySqliteInsightsDataQueryService::QueryPeriodBatch(
       [&](SqliteInsightsDataQueryService& insights_service)
           -> std::map<int, PeriodInsightsData> {
         return insights_service.QueryPeriodBatch(days_list);
-      }, &insights_catalog_->statuses.recent);
+      },
+      &insights_catalog_->statuses.recent);
 }
 
 auto LazySqliteInsightsDataQueryService::QueryAllDaily()
@@ -188,7 +194,8 @@ auto LazySqliteInsightsDataQueryService::QueryAllMonthly()
       [&](SqliteInsightsDataQueryService& insights_service)
           -> std::map<std::string, MonthlyInsightsData> {
         return insights_service.QueryAllMonthly();
-      }, &insights_catalog_->statuses.month);
+      },
+      &insights_catalog_->statuses.month);
 }
 
 auto LazySqliteInsightsDataQueryService::QueryAllWeekly()
@@ -198,7 +205,8 @@ auto LazySqliteInsightsDataQueryService::QueryAllWeekly()
       [&](SqliteInsightsDataQueryService& insights_service)
           -> std::map<std::string, WeeklyInsightsData> {
         return insights_service.QueryAllWeekly();
-      }, &insights_catalog_->statuses.week);
+      },
+      &insights_catalog_->statuses.week);
 }
 
 auto LazySqliteInsightsDataQueryService::QueryAllYearly()
@@ -208,7 +216,8 @@ auto LazySqliteInsightsDataQueryService::QueryAllYearly()
       [&](SqliteInsightsDataQueryService& insights_service)
           -> std::map<std::string, YearlyInsightsData> {
         return insights_service.QueryAllYearly();
-      }, &insights_catalog_->statuses.year);
+      },
+      &insights_catalog_->statuses.year);
 }
 
 }  // namespace tracer::core::infrastructure::insights

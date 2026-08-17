@@ -28,7 +28,8 @@ auto BuildWindowMetadata(const PeriodInsightsData& insights)
     -> tracer_core::core::dto::InsightsWindowMetadata {
   return {.has_records = insights.has_records,
           .matched_day_count = insights.matched_day_count,
-          .matched_record_count = insights.matched_record_count,
+          .matched_record_count =
+              static_cast<int>(insights.activity.occurrence_count),
           .start_date = insights.start_date,
           .end_date = insights.end_date,
           .requested_days = insights.requested_days};
@@ -41,9 +42,8 @@ auto CopyRangeFields(const RangeInsightsData& source, RangeInsightsData& target)
   target.end_date = source.end_date;
   target.has_records = source.has_records;
   target.matched_day_count = source.matched_day_count;
-  target.matched_record_count = source.matched_record_count;
+  target.activity = source.activity;
   target.requested_days = source.requested_days;
-  target.total_duration = source.total_duration;
   target.actual_days = source.actual_days;
   target.status_true_days = source.status_true_days;
   target.exercise_true_days = source.exercise_true_days;
@@ -56,7 +56,8 @@ auto CopyRangeFields(const RangeInsightsData& source, RangeInsightsData& target)
   target.activity_days = source.activity_days;
 }
 
-auto WrapMonthlyInsights(const PeriodInsightsData& source) -> MonthlyInsightsData {
+auto WrapMonthlyInsights(const PeriodInsightsData& source)
+    -> MonthlyInsightsData {
   MonthlyInsightsData out;
   CopyRangeFields(source, out);
   if (out.range_label.empty() && out.start_date.size() >= 7U) {
@@ -65,7 +66,8 @@ auto WrapMonthlyInsights(const PeriodInsightsData& source) -> MonthlyInsightsDat
   return out;
 }
 
-auto WrapWeeklyInsights(const PeriodInsightsData& source) -> WeeklyInsightsData {
+auto WrapWeeklyInsights(const PeriodInsightsData& source)
+    -> WeeklyInsightsData {
   WeeklyInsightsData out;
   CopyRangeFields(source, out);
   if (out.range_label.empty() && !out.start_date.empty()) {
@@ -74,7 +76,8 @@ auto WrapWeeklyInsights(const PeriodInsightsData& source) -> WeeklyInsightsData 
   return out;
 }
 
-auto WrapYearlyInsights(const PeriodInsightsData& source) -> YearlyInsightsData {
+auto WrapYearlyInsights(const PeriodInsightsData& source)
+    -> YearlyInsightsData {
   YearlyInsightsData out;
   CopyRangeFields(source, out);
   if (out.range_label.empty() && out.start_date.size() >= 4U) {
@@ -91,8 +94,8 @@ auto ParseIsoDate(std::string_view value) -> std::chrono::sys_days {
   const unsigned kDay =
       static_cast<unsigned>(std::stoi(kNormalized.substr(8, 2)));
   const std::chrono::year_month_day kYmd{std::chrono::year(kYear),
-                                        std::chrono::month(kMonth),
-                                        std::chrono::day(kDay)};
+                                         std::chrono::month(kMonth),
+                                         std::chrono::day(kDay)};
   if (!kYmd.ok()) {
     throw std::invalid_argument("Invalid ISO date: " + kNormalized);
   }
@@ -124,10 +127,9 @@ auto ToPeriodInsights(const RangeInsightsData& source) -> PeriodInsightsData {
   return out;
 }
 
-auto BuildTemporalStructuredInsightsFailure(std::string_view operation,
-                                          InsightsDisplayMode display_mode,
-                                          TemporalSelectionKind selection_kind,
-                                          std::string_view details)
+auto BuildTemporalStructuredInsightsFailure(
+    std::string_view operation, InsightsDisplayMode display_mode,
+    TemporalSelectionKind selection_kind, std::string_view details)
     -> TemporalStructuredInsightsOutput {
   return {
       .ok = false,
@@ -141,8 +143,8 @@ auto BuildTemporalStructuredInsightsFailure(
     std::string_view operation,
     const TemporalStructuredInsightsQueryRequest& request,
     std::string_view details) -> TemporalStructuredInsightsOutput {
-  return BuildTemporalStructuredInsightsFailure(operation, request.display_mode,
-                                              request.selection.kind, details);
+  return BuildTemporalStructuredInsightsFailure(
+      operation, request.display_mode, request.selection.kind, details);
 }
 
 auto BuildTemporalStructuredInsightsFailure(
@@ -150,7 +152,7 @@ auto BuildTemporalStructuredInsightsFailure(
     const TemporalStructuredInsightsQueryRequest& request,
     const std::exception& exception) -> TemporalStructuredInsightsOutput {
   return BuildTemporalStructuredInsightsFailure(operation, request,
-                                              exception.what());
+                                                exception.what());
 }
 
 auto BuildTemporalTargetsFailure(std::string_view operation,
@@ -327,7 +329,7 @@ auto RequireDateRangeSelection(const TemporalSelectionPayload& selection)
         {"Remove anchor_date or use recent display mode with recent_days."});
   }
   return insights_api_support::ParseRangeArgument(selection.start_date + "|" +
-                                                selection.end_date);
+                                                  selection.end_date);
 }
 
 auto RequireRecentSelection(const TemporalSelectionPayload& selection)

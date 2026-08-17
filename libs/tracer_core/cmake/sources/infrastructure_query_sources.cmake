@@ -28,6 +28,8 @@ set(TIME_TRACKER_INFRA_QUERY_SOURCES
     "query/data/repository/query_runtime_service_request.cpp"
     "query/data/repository/query_runtime_service_mapping_content.cpp"
     "query/data/repository/query_runtime_service_insights_content.cpp"
+    "query/data/repository/query_runtime_service_insights_chart_content.cpp"
+    "query/data/repository/query_runtime_service_insights_composition_content.cpp"
     "query/data/repository/query_runtime_service_dispatch.cpp"
     "query/data/repository/query_runtime_service_period.cpp"
 )

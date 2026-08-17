@@ -77,8 +77,9 @@ class BaseTypFormatter : public IInsightsFormatter<InsightsDataT> {
     stream += "\n\n";
 
     stream += TypUtils::FormatProjectTree(
-        data.project_tree, data.total_duration, GetAvgDays(data),
-        config_->GetCategoryTitleFont(), config_->GetCategoryTitleFontSize());
+        data.project_tree, data.activity.total_duration_seconds,
+        GetAvgDays(data), config_->GetCategoryTitleFont(),
+        config_->GetCategoryTitleFontSize());
   }
 };
 

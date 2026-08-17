@@ -12,9 +12,9 @@ export import tracer.core.application.use_cases.interface;
 
 export namespace tracer::core::application::use_cases {
 
+using ::tracer::core::application::use_cases::InsightsApi;
 using ::tracer::core::application::use_cases::PipelineApi;
 using ::tracer::core::application::use_cases::QueryApi;
-using ::tracer::core::application::use_cases::InsightsApi;
 using ::tracer::core::application::use_cases::TracerCoreRuntime;
 using ::tracer::core::application::use_cases::TracerExchangeApi;
 
@@ -22,9 +22,9 @@ using ::tracer::core::application::use_cases::TracerExchangeApi;
 
 export namespace tracer::core::application::modusecases {
 
+using ::tracer::core::application::use_cases::InsightsApi;
 using ::tracer::core::application::use_cases::PipelineApi;
 using ::tracer::core::application::use_cases::QueryApi;
-using ::tracer::core::application::use_cases::InsightsApi;
 using ::tracer::core::application::use_cases::TracerCoreRuntime;
 using ::tracer::core::application::use_cases::TracerExchangeApi;
 

@@ -34,8 +34,10 @@ class IInsightsDataQueryService {
   virtual auto QueryAllDaily() -> std::map<std::string, DailyInsightsData> = 0;
   virtual auto QueryAllMonthly()
       -> std::map<std::string, MonthlyInsightsData> = 0;
-  virtual auto QueryAllWeekly() -> std::map<std::string, WeeklyInsightsData> = 0;
-  virtual auto QueryAllYearly() -> std::map<std::string, YearlyInsightsData> = 0;
+  virtual auto QueryAllWeekly()
+      -> std::map<std::string, WeeklyInsightsData> = 0;
+  virtual auto QueryAllYearly()
+      -> std::map<std::string, YearlyInsightsData> = 0;
 };
 
 }  // namespace tracer_core::application::ports

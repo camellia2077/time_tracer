@@ -91,10 +91,9 @@ auto ValidatePeriodKeys(const toml::table& query_config,
                         const std::string& file_name,
                         const std::string& insights_type) -> bool {
   const std::set<std::string> kPeriodKeys = {
-      "actual_days_label",      "total_time_label",   "no_records_message",
-      "invalid_range_message",
-      "project_breakdown_label", "status_count_unit", "custom_section_label",
-      "summary_section_label", "period_label"};
+      "actual_days_label",     "total_time_label",        "no_records_message",
+      "invalid_range_message", "project_breakdown_label", "status_count_unit",
+      "custom_section_label",  "summary_section_label",   "period_label"};
 
   return std::ranges::all_of(kPeriodKeys, [&](const auto& key) -> auto {
     if (query_config.contains(key)) {
@@ -126,11 +125,17 @@ auto BaseStrategy::Validate(const toml::table& query_config,
 
 auto BaseStrategy::ValidateCommonRules(const toml::table& query_config,
                                        const std::string& file_name) -> bool {
-  const std::set<std::string> kNumericKeys = {
-      "base_font_size",   "insights_title_font_size", "category_title_font_size",
-      "margin_in",        "margin_top_cm",          "margin_bottom_cm",
-      "margin_left_cm",   "margin_right_cm",        "list_top_sep_pt",
-      "list_item_sep_ex", "line_spacing_em"};
+  const std::set<std::string> kNumericKeys = {"base_font_size",
+                                              "insights_title_font_size",
+                                              "category_title_font_size",
+                                              "margin_in",
+                                              "margin_top_cm",
+                                              "margin_bottom_cm",
+                                              "margin_left_cm",
+                                              "margin_right_cm",
+                                              "list_top_sep_pt",
+                                              "list_item_sep_ex",
+                                              "line_spacing_em"};
 
   for (const auto& [key, node] : query_config) {
     std::string key_str(key.str());
@@ -200,11 +205,10 @@ auto BaseStrategy::IsValidHexColor(const std::string& color_string) -> bool {
 auto DailyMd::ValidateSpecificKeys(const toml::table& query_config,
                                    const std::string& file_name) const -> bool {
   const std::set<std::string> kDailyMdKeys = {
-      "total_time_label",      "getup_time_label",   "remark_label",
-      "all_activities_label",
-      "activity_remark_label", "activity_connector", "end_only_time_format",
-      "no_records_message",    "status_count_unit", "custom_section_label",
-      "summary_section_label", "period_label"};
+      "total_time_label",     "getup_time_label",      "remark_label",
+      "all_activities_label", "activity_remark_label", "activity_connector",
+      "end_only_time_format", "no_records_message",    "status_count_unit",
+      "custom_section_label", "summary_section_label", "period_label"};
 
   return ValidateRequiredKeys(query_config, file_name, kDailyMdKeys, "daily");
 }
@@ -213,12 +217,11 @@ auto DailyTex::ValidateSpecificKeys(const toml::table& query_config,
                                     const std::string& file_name) const
     -> bool {
   const std::set<std::string> kDailyTexKeys = {
-      "total_time_label",     "getup_time_label",     "remark_label",
-      "no_records_message",   "statistics_label",      "all_activities_label",
-      "activity_remark_label",
-      "activity_connector", "keyword_colors",       "statistics_items",
-      "status_count_unit", "custom_section_label", "summary_section_label",
-      "period_label"};
+      "total_time_label",      "getup_time_label",   "remark_label",
+      "no_records_message",    "statistics_label",   "all_activities_label",
+      "activity_remark_label", "activity_connector", "keyword_colors",
+      "statistics_items",      "status_count_unit",  "custom_section_label",
+      "summary_section_label", "period_label"};
 
   return ValidateRequiredKeys(query_config, file_name, kDailyTexKeys, "daily");
 }
@@ -227,12 +230,11 @@ auto DailyTyp::ValidateSpecificKeys(const toml::table& query_config,
                                     const std::string& file_name) const
     -> bool {
   const std::set<std::string> kDailyTypKeys = {
-      "total_time_label",   "getup_time_label",     "remark_label",
-      "no_records_message", "statistics_label",      "all_activities_label",
-      "activity_remark_label",
-      "activity_connector", "keyword_colors",       "statistics_items",
-      "status_count_unit", "custom_section_label", "summary_section_label",
-      "period_label"};
+      "total_time_label",      "getup_time_label",   "remark_label",
+      "no_records_message",    "statistics_label",   "all_activities_label",
+      "activity_remark_label", "activity_connector", "keyword_colors",
+      "statistics_items",      "status_count_unit",  "custom_section_label",
+      "summary_section_label", "period_label"};
 
   return ValidateRequiredKeys(query_config, file_name, kDailyTypKeys, "daily");
 }

@@ -22,8 +22,8 @@ class RangeQuerierBase : public BaseQuerier<InsightsDataType, QueryParamType> {
 
     this->FetchActualDays(data);
     data.matched_day_count = this->FetchMatchedDayRowCount();
-    data.matched_record_count = this->FetchMatchedRecordCount();
-    data.has_records = data.matched_record_count > 0;
+    data.activity.occurrence_count = this->FetchMatchedRecordCount();
+    data.has_records = data.activity.occurrence_count > 0;
     if (data.has_records ||
         (status_config_ != nullptr && !status_config_->statuses.empty())) {
       ProjectNameCache name_cache;
@@ -76,7 +76,8 @@ class RangeQuerierBase : public BaseQuerier<InsightsDataType, QueryParamType> {
     sql += schema::time_records::db::kLogicalId;
     sql += " ASC;";
 
-    if (sqlite3_prepare_v2(this->db_, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+    if (sqlite3_prepare_v2(this->db_, sql.c_str(), -1, &stmt, nullptr) !=
+        SQLITE_OK) {
       sqlite3_finalize(stmt);
       return;
     }
@@ -93,12 +94,17 @@ class RangeQuerierBase : public BaseQuerier<InsightsDataType, QueryParamType> {
         current_day = &data.activity_days.back();
       }
 
-      TimeRecord record = tracer::core::infrastructure::insights::data::record_mapping::ReadTimeRecord(
-          stmt, {.start_time = 1, .end_time = 2, .project_id = 3,
-                 .duration = 4, .activity_remark = 5, .logical_id = 6,
-                 .record_kind = 7},
-          provider);
-      current_day->total_duration += record.duration_seconds;
+      TimeRecord record = tracer::core::infrastructure::insights::data::
+          record_mapping::ReadTimeRecord(stmt,
+                                         {.start_time = 1,
+                                          .end_time = 2,
+                                          .project_id = 3,
+                                          .duration = 4,
+                                          .activity_remark = 5,
+                                          .logical_id = 6,
+                                          .record_kind = 7},
+                                         provider);
+      current_day->activity.Add(record.duration_seconds);
       current_day->detailed_records.push_back(std::move(record));
     }
     sqlite3_finalize(stmt);

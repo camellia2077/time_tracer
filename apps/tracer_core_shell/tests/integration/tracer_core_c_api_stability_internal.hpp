@@ -51,7 +51,8 @@ using RuntimeRecordActivityAtomicallyFn = const char* (*)(TtCoreRuntimeHandle*,
 using RuntimeTxtFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
 using RuntimeQueryFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
 using RuntimeInsightsFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
-using RuntimeInsightsBatchFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
+using RuntimeInsightsBatchFn = const char* (*)(TtCoreRuntimeHandle*,
+                                               const char*);
 using RuntimeCryptoEncryptFn = const char* (*)(TtCoreRuntimeHandle*,
                                                const char*);
 using RuntimeCryptoDecryptFn = const char* (*)(TtCoreRuntimeHandle*,
@@ -149,7 +150,7 @@ void RunCallbackBridgeChecks(const CoreApiFns& api,
 
 void RunQueryChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime);
 void RunInsightsChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
-                        const fs::path& output_root);
+                       const fs::path& output_root);
 void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
                        const fs::path& input_root);
 void RunErrorPathChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,

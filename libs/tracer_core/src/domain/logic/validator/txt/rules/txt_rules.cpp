@@ -139,8 +139,8 @@ auto LineRules::IsValidEventLine(const std::string& line, int line_number,
       line.length() >= kCanonicalTimeDigitsLength &&
       std::ranges::all_of(line.substr(0, kCanonicalTimeDigitsLength),
                           [](char value) { return IsAsciiDigit(value); });
-  const size_t kTimeLength = kUsesSixDigitTime ? kCanonicalTimeDigitsLength
-                                                 : kLegacyTimeDigitsLength;
+  const size_t kTimeLength =
+      kUsesSixDigitTime ? kCanonicalTimeDigitsLength : kLegacyTimeDigitsLength;
   if (line.length() > kTimeLength && line[kTimeLength] == '-') {
     const size_t kEndOffset = kTimeLength + 1U;
     if (line.length() < kEndOffset + kTimeLength ||

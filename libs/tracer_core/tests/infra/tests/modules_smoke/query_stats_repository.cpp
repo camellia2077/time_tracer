@@ -8,6 +8,8 @@ import tracer.core.infrastructure.query.data.stats;
 
 #include "application/pipeline/importer/model/import_models.hpp"
 #include "application/dto/query_requests.hpp"
+#include "domain/insights/models/activity_aggregate.hpp"
+#include "domain/insights/models/project_tree.hpp"
 #include "infra/tests/modules_smoke/query.hpp"
 
 auto RunInfrastructureModuleQueryStatsRepositorySmoke() -> int {
@@ -15,7 +17,17 @@ auto RunInfrastructureModuleQueryStatsRepositorySmoke() -> int {
       &tracer::core::infrastructure::query::data::stats::
           ComputeDayDurationStats;
   const auto kBuildInsightsChartSeries =
-      &tracer::core::infrastructure::query::data::stats::BuildInsightsChartSeries;
+      &tracer::core::infrastructure::query::data::stats::
+          BuildInsightsChartSeries;
+  const auto kBuildInsightsCompositionStats =
+      &tracer::core::infrastructure::query::data::stats::
+          BuildInsightsCompositionStats;
+  const auto kResolveAverageDenominator =
+      &tracer::core::infrastructure::query::data::stats::
+          ResolveAverageDenominator;
+  const auto kCalculateAverageOrZero =
+      &tracer::core::infrastructure::query::data::stats::CalculateAverageOrZero<
+          long long>;
   const auto kStatsBoundaryReady =
       &tracer::core::infrastructure::query::data::stats::BoundaryReady;
   const auto kQueryYears =
@@ -31,6 +43,9 @@ auto RunInfrastructureModuleQueryStatsRepositorySmoke() -> int {
       &tracer::core::infrastructure::query::data::renderers::BoundaryReady;
   (void)kComputeDayDurationStats;
   (void)kBuildInsightsChartSeries;
+  (void)kBuildInsightsCompositionStats;
+  (void)kResolveAverageDenominator;
+  (void)kCalculateAverageOrZero;
   (void)kStatsBoundaryReady;
   (void)kQueryYears;
   (void)kQueryProjectTree;
@@ -59,15 +74,109 @@ auto RunInfrastructureModuleQueryStatsRepositorySmoke() -> int {
     return 7;
   }
 
-  const auto kSeries =
-      tracer::core::infrastructure::query::data::stats::BuildInsightsChartSeries(
+  const auto kSeries = tracer::core::infrastructure::query::data::stats::
+      BuildInsightsChartSeries(
           {.start_date = "2026-02-01", .end_date = "2026-02-03"}, kRows);
   if (kSeries.series.size() != 3U ||
       kSeries.series.front().date != "2026-02-01" ||
       kSeries.series.back().date != "2026-02-03" ||
       kSeries.stats.active_days != 3 ||
-      kSeries.stats.total_duration_seconds != 10800) {
+      kSeries.stats.activity.total_duration_seconds != 10800) {
     return 8;
+  }
+  if (kSeries.stats.average_denominator_days != 3 ||
+      kSeries.stats.average_duration_seconds != 3600 ||
+      kSeries.stats.activity.occurrence_count != 3 ||
+      kSeries.stats.average_duration_per_occurrence_seconds != 3600) {
+    return 18;
+  }
+
+  const std::vector<tracer::core::infrastructure::query::data::DayDurationRow>
+      kDistributionRows = {
+          {.date = "2026-02-01", .total_seconds = 3600, .record_count = 1},
+          {.date = "2026-02-03", .total_seconds = 3600, .record_count = 1},
+      };
+  const auto kDistributionSeries = tracer::core::infrastructure::query::data::
+      stats::BuildInsightsChartSeries(
+          {.start_date = "2026-02-01", .end_date = "2026-02-05"},
+          kDistributionRows);
+  if (!kDistributionSeries.stats.mode_duration_seconds.has_value() ||
+      *kDistributionSeries.stats.mode_duration_seconds != 3600.0 ||
+      kDistributionSeries.stats.median_duration_seconds != 3600.0) {
+    return 22;
+  }
+
+  const auto kCalendarSeries = tracer::core::infrastructure::query::data::
+      stats::BuildInsightsChartSeries(
+          {.start_date = "2026-02-01", .end_date = "2026-02-04"}, kRows,
+          tracer_core::core::dto::InsightsAverageDayBasis::kCalendarDays);
+  if (kCalendarSeries.stats.average_denominator_days != 4 ||
+      kCalendarSeries.stats.average_duration_seconds != 2700) {
+    return 19;
+  }
+
+  const auto kEmptySeries = tracer::core::infrastructure::query::data::stats::
+      BuildInsightsChartSeries(
+          {.start_date = "2026-02-01", .end_date = "2026-02-03"}, {});
+  if (kEmptySeries.series.size() != 3U || kEmptySeries.stats.active_days != 0 ||
+      kEmptySeries.stats.activity.total_duration_seconds != 0 ||
+      kEmptySeries.stats.mode_duration_seconds.has_value() ||
+      kEmptySeries.stats.minimum_duration_seconds != 0.0 ||
+      kEmptySeries.stats.maximum_duration_seconds != 0.0) {
+    return 23;
+  }
+
+  const std::vector<tracer::core::infrastructure::query::data::DayDurationRow>
+      kTieRows = {
+          {.date = "2026-02-01", .total_seconds = 100, .record_count = 1},
+          {.date = "2026-02-02", .total_seconds = 200, .record_count = 1},
+          {.date = "2026-02-03", .total_seconds = 200, .record_count = 1},
+          {.date = "2026-02-04", .total_seconds = 100, .record_count = 1},
+      };
+  const auto kTieSeries = tracer::core::infrastructure::query::data::stats::
+      BuildInsightsChartSeries(
+          {.start_date = "2026-02-01", .end_date = "2026-02-04"}, kTieRows);
+  if (!kTieSeries.stats.mode_duration_seconds.has_value() ||
+      *kTieSeries.stats.mode_duration_seconds != 100.0 ||
+      kTieSeries.stats.median_duration_seconds != 150.0) {
+    return 24;
+  }
+
+  ActivityAggregate aggregate;
+  aggregate.AddDuration(3600);
+  if (aggregate.total_duration_seconds != 3600 ||
+      aggregate.occurrence_count != 0) {
+    return 25;
+  }
+  aggregate.Add(1800, 2);
+  if (aggregate.total_duration_seconds != 5400 ||
+      aggregate.occurrence_count != 2) {
+    return 26;
+  }
+
+  insights::ProjectTree kTree;
+  kTree.emplace("study", insights::ProjectNode{
+                             .duration = 9000,
+                             .occurrence_count = 3,
+                             .children = {},
+                         });
+  const auto kCompositionStats = tracer::core::infrastructure::query::data::
+      stats::BuildInsightsCompositionStats(
+          kTree, {kRows[0], kRows[2]},
+          tracer_core::core::dto::InsightsAverageDayBasis::kActiveDays, 4);
+  const auto kCompositionNode = kCompositionStats.nodes.find("study");
+  if (kCompositionStats.average_denominator_days != 2 ||
+      kCompositionNode == kCompositionStats.nodes.end() ||
+      kCompositionNode->second.average_duration_seconds != 4500 ||
+      kCompositionNode->second.average_duration_per_occurrence_seconds !=
+          3000) {
+    return 20;
+  }
+  if (kResolveAverageDenominator(
+          tracer_core::core::dto::InsightsAverageDayBasis::kCalendarDays, 2,
+          4) != 4 ||
+      kCalculateAverageOrZero(9000, 2) != 4500) {
+    return 21;
   }
 
   const auto kSemanticOutput =

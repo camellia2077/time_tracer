@@ -6,6 +6,7 @@ from unittest import TestCase
 from unittest.mock import patch
 
 from tools.toolchain.cli.handlers import android
+from tools.toolchain.cli.handlers import android_detekt
 
 
 class _FakeContext:
@@ -178,3 +179,27 @@ class TestAndroidCommand(TestCase):
         result = android.run(args, _FakeContext(Path("."), Path(".")))
 
         self.assertEqual(result, 2)
+
+
+class TestAndroidDetektCommand(TestCase):
+    def test_dispatches_all_android_detekt_modules(self) -> None:
+        class FakeBuildCommand:
+            last_kwargs = None
+
+            def __init__(self, _ctx):
+                pass
+
+            def build(self, **kwargs) -> int:
+                FakeBuildCommand.last_kwargs = kwargs
+                return 0
+
+        args = argparse.Namespace(concise=True, extra_args=["--info"])
+
+        with patch.object(android_detekt, "BuildCommand", FakeBuildCommand):
+            result = android_detekt.run(args, _FakeContext(Path("."), Path(".")))
+
+        self.assertEqual(result, 0)
+        self.assertEqual(FakeBuildCommand.last_kwargs["app_name"], "tracer_android")
+        self.assertEqual(FakeBuildCommand.last_kwargs["profile_name"], "android_detekt")
+        self.assertTrue(FakeBuildCommand.last_kwargs["concise"])
+        self.assertEqual(FakeBuildCommand.last_kwargs["extra_args"], ["--info"])

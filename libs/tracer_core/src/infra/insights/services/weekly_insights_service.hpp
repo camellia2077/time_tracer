@@ -15,7 +15,7 @@ namespace tracer::core::infrastructure::insights::services {
 class WeeklyInsightsService {
  public:
   explicit WeeklyInsightsService(sqlite3* database_connection,
-                               const InsightsCatalog& insights_catalog);
+                                 const InsightsCatalog& insights_catalog);
 
   [[nodiscard]] auto GenerateInsights(InsightsFormat format)
       -> FormattedWeeklyInsights;

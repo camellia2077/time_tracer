@@ -12,14 +12,14 @@ namespace tracer::core::application::use_cases {
 
 class InsightsApi final : public IInsightsApi {
  public:
-  using InsightsDataQueryServicePtr =
-      std::shared_ptr<tracer_core::application::ports::IInsightsDataQueryService>;
+  using InsightsDataQueryServicePtr = std::shared_ptr<
+      tracer_core::application::ports::IInsightsDataQueryService>;
   using InsightsDtoFormatterPtr =
       std::shared_ptr<tracer_core::application::ports::IInsightsDtoFormatter>;
 
   InsightsApi(IInsightsHandler& insights_handler,
-            InsightsDataQueryServicePtr insights_data_query_service = nullptr,
-            InsightsDtoFormatterPtr insights_dto_formatter = nullptr);
+              InsightsDataQueryServicePtr insights_data_query_service = nullptr,
+              InsightsDtoFormatterPtr insights_dto_formatter = nullptr);
 
   auto RunTemporalInsightsQuery(
       const tracer_core::core::dto::TemporalInsightsQueryRequest& request)

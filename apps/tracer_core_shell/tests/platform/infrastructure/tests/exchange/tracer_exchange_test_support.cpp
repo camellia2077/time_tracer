@@ -68,8 +68,7 @@ auto BuildValidPackageEntries(
   manifest.config_files.push_back("config/user/behavior.toml");
 
   std::vector<exchange_pkg::TracerExchangePackageEntry> entries;
-  entries.reserve(exchange_pkg::kRequiredPackagePaths.size() +
-                  1U +
+  entries.reserve(exchange_pkg::kRequiredPackagePaths.size() + 1U +
                   sorted_alias_child_configs.size() + payloads.size());
   entries.push_back(BuildEntry(exchange_pkg::kManifestPath,
                                exchange_pkg::BuildManifestText(manifest)));
@@ -167,8 +166,8 @@ auto BuildRepoAliasChildConfigs() -> std::vector<PayloadFixture> {
   for (const auto& relative_path : relative_paths) {
     const fs::path relative_fs_path(relative_path);
     entries.push_back({
-        .relative_path = (fs::path("config") / "user" /
-                          "activity_hierarchy" / relative_fs_path.filename())
+        .relative_path = (fs::path("config") / "user" / "activity_hierarchy" /
+                          relative_fs_path.filename())
                              .generic_string(),
         .text = ReadRepoConverterConfig(relative_path),
     });
@@ -245,16 +244,16 @@ auto WriteEncryptedZipFromEntries(
 }
 
 auto DecodeZipPackage(const fs::path& zip_path,
-                         const fs::path& /*decrypted_package_path*/,
-                         std::string_view passphrase, int& failures)
+                      const fs::path& /*decrypted_package_path*/,
+                      std::string_view passphrase, int& failures)
     -> std::optional<exchange_pkg::DecodedTracerExchangePackage> {
   try {
     const auto bytes = ReadBytes(zip_path);
     return exchange_pkg::DecodeZipBytes(bytes, passphrase);
   } catch (const std::exception& error) {
     ++failures;
-    std::cerr << "[FAIL] DecodeZipBytes failed unexpectedly: "
-              << error.what() << '\n';
+    std::cerr << "[FAIL] DecodeZipBytes failed unexpectedly: " << error.what()
+              << '\n';
     return std::nullopt;
   }
 }

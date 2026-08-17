@@ -46,8 +46,7 @@ auto BuildRuntimeRequest(
     const RuntimeTestPaths& paths,
     const std::filesystem::path& converter_config_toml_path)
     -> infrastructure::bootstrap::AndroidRuntimeRequest {
-  std::filesystem::path resolved_converter_config =
-      converter_config_toml_path;
+  std::filesystem::path resolved_converter_config = converter_config_toml_path;
   const std::filesystem::path repo_converter_config =
       BuildRepoRoot() / "config" / "user" / "behavior.toml";
   if (std::filesystem::absolute(converter_config_toml_path) ==
@@ -141,8 +140,7 @@ auto PrepareAndroidConfigFixture(const std::filesystem::path& target_root)
       BuildRepoRoot() / "test" / "data" / "activity_hierarchy";
   const std::filesystem::path android_bundle_path =
       source_root / "meta" / "bundle.toml";
-  const std::filesystem::path android_config_path =
-      source_root / "config.toml";
+  const std::filesystem::path android_config_path = source_root / "config.toml";
 
   const auto copy_required_file = [&](std::string_view relative_path) -> bool {
     return CopyFileWithParents(
@@ -150,8 +148,8 @@ auto PrepareAndroidConfigFixture(const std::filesystem::path& target_root)
         target_root / "program" / std::filesystem::path(relative_path));
   };
 
-  return CopyFileWithParents(android_bundle_path,
-                             target_root / "program" / "meta" / "bundle.toml") &&
+  return CopyFileWithParents(android_bundle_path, target_root / "program" /
+                                                      "meta" / "bundle.toml") &&
          CopyFileWithParents(android_config_path,
                              target_root / "program" / "config.toml") &&
          CopyFileWithParents(user_source_root / "behavior.toml",

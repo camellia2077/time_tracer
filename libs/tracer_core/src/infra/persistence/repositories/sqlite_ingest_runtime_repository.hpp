@@ -21,7 +21,8 @@ class SqliteIngestRuntimeRepository final
       const -> std::optional<
           tracer_core::application::ports::PreviousActivityTail> override;
   [[nodiscard]] auto TryGetLatestActivityTailAtOrBeforeDate(
-      std::string_view date) const -> std::optional<
+      std::string_view date) const
+      -> std::optional<
           tracer_core::application::ports::ActivityTailQueryResult> override;
   [[nodiscard]] auto TryGetLatestActivityRecordOnDate(std::string_view date)
       const -> std::optional<

@@ -24,10 +24,9 @@ auto TestStructureLayerMdSectionIntegrity(
        .format = InsightsFormat::kMarkdown});
   if (!day_result.ok) {
     ++failures;
-    std::cerr
-        << "[FAIL] StructureLayer/Day: RunTemporalInsightsQuery should "
-           "succeed: "
-        << day_result.error_message << '\n';
+    std::cerr << "[FAIL] StructureLayer/Day: RunTemporalInsightsQuery should "
+                 "succeed: "
+              << day_result.error_message << '\n';
     return;
   }
 
@@ -62,10 +61,9 @@ auto TestStructureLayerMdSectionIntegrity(
        .format = InsightsFormat::kMarkdown});
   if (!month_result.ok) {
     ++failures;
-    std::cerr
-        << "[FAIL] StructureLayer/Month: RunTemporalInsightsQuery should "
-           "succeed: "
-        << month_result.error_message << '\n';
+    std::cerr << "[FAIL] StructureLayer/Month: RunTemporalInsightsQuery should "
+                 "succeed: "
+              << month_result.error_message << '\n';
     return;
   }
 

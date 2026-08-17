@@ -7,6 +7,7 @@ def command_specs() -> list[CommandSpec]:
         analyze,
         analyze_split,
         android,
+        android_detekt,
         build,
         clean,
         config_migrate,
@@ -38,6 +39,7 @@ def command_specs() -> list[CommandSpec]:
     return [
         configure.COMMAND,
         android.COMMAND,
+        android_detekt.COMMAND,
         build.COMMAND,
         analyze.COMMAND,
         analyze_split.COMMAND,

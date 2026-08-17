@@ -17,9 +17,11 @@ import tracer.core.application.use_cases.interface;
 namespace tt_transport = tracer::transport;
 using tracer::core::application::use_cases::ITracerCoreRuntime;
 
+using tracer_core::core::c_api::insights::BuildInsightsTextResponse;
+using tracer_core::core::c_api::insights::SerializeTemporalStructuredInsights;
 using tracer_core::core::c_api::internal::BuildFailureResponse;
-using tracer_core::core::c_api::internal::BuildOperationResponse;
 using tracer_core::core::c_api::internal::BuildInsightsTargetsResponse;
+using tracer_core::core::c_api::internal::BuildOperationResponse;
 using tracer_core::core::c_api::internal::ClearLastError;
 using tracer_core::core::c_api::internal::ParseInsightsDisplayMode;
 using tracer_core::core::c_api::internal::ParseInsightsExportScope;
@@ -28,10 +30,8 @@ using tracer_core::core::c_api::internal::ParseInsightsOperationKind;
 using tracer_core::core::c_api::internal::ParseTemporalSelectionKind;
 using tracer_core::core::c_api::internal::RequireRuntime;
 using tracer_core::core::c_api::internal::ToRequestJsonView;
-using tracer_core::core::c_api::insights::BuildInsightsTextResponse;
-using tracer_core::core::c_api::insights::SerializeTemporalStructuredInsights;
-using tracer_core::core::dto::PeriodBatchQueryRequest;
 using tracer_core::core::dto::InsightsOperationKind;
+using tracer_core::core::dto::PeriodBatchQueryRequest;
 using tracer_core::core::dto::TemporalInsightsExportRequest;
 using tracer_core::core::dto::TemporalInsightsQueryRequest;
 using tracer_core::core::dto::TemporalInsightsTargetsRequest;
@@ -75,8 +75,8 @@ auto BuildTemporalQueryRequest(
     -> TemporalInsightsQueryRequest {
   TemporalInsightsQueryRequest request{};
   request.display_mode = ParseInsightsDisplayMode(payload.display_mode);
-  request.selection = BuildSelectionFromPayload(payload).value_or(
-      TemporalSelectionPayload{});
+  request.selection =
+      BuildSelectionFromPayload(payload).value_or(TemporalSelectionPayload{});
   if (payload.format.has_value()) {
     request.format = ParseInsightsFormat(*payload.format);
   }
@@ -136,8 +136,8 @@ extern "C" TT_CORE_API auto tracer_core_runtime_temporal_insights_json(
   try {
     ClearLastError();
     ITracerCoreRuntime& runtime = RequireRuntime(handle);
-    const auto payload =
-        tt_transport::DecodeTemporalInsightsRequest(ToRequestJsonView(request_json));
+    const auto payload = tt_transport::DecodeTemporalInsightsRequest(
+        ToRequestJsonView(request_json));
 
     // The canonical insights ABI now multiplexes query/targets/export through
     // one temporal entrypoint so every host shares the same request contract.
@@ -155,11 +155,13 @@ extern "C" TT_CORE_API auto tracer_core_runtime_temporal_insights_json(
                 .dump();
         return tracer_core::core::c_api::internal::g_last_response.c_str();
       case InsightsOperationKind::kTargets:
-        return BuildInsightsTargetsResponse(runtime.insights().RunTemporalInsightsTargetsQuery(
-            BuildTemporalTargetsRequest(payload)));
+        return BuildInsightsTargetsResponse(
+            runtime.insights().RunTemporalInsightsTargetsQuery(
+                BuildTemporalTargetsRequest(payload)));
       case InsightsOperationKind::kExport:
-        return BuildOperationResponse(runtime.insights().RunTemporalInsightsExport(
-            BuildTemporalExportRequest(payload, handle->output_root)));
+        return BuildOperationResponse(
+            runtime.insights().RunTemporalInsightsExport(
+                BuildTemporalExportRequest(payload, handle->output_root)));
     }
 
     return BuildFailureResponse(
@@ -182,8 +184,8 @@ extern "C" TT_CORE_API auto tracer_core_runtime_insights_batch_json(
   try {
     ClearLastError();
     ITracerCoreRuntime& runtime = RequireRuntime(handle);
-    const auto payload =
-        tt_transport::DecodeInsightsBatchRequest(ToRequestJsonView(request_json));
+    const auto payload = tt_transport::DecodeInsightsBatchRequest(
+        ToRequestJsonView(request_json));
 
     PeriodBatchQueryRequest request{};
     request.days_list = payload.days_list;
@@ -191,7 +193,8 @@ extern "C" TT_CORE_API auto tracer_core_runtime_insights_batch_json(
       request.format = ParseInsightsFormat(*payload.format);
     }
 
-    return BuildInsightsTextResponse(runtime.insights().RunPeriodBatchQuery(request));
+    return BuildInsightsTextResponse(
+        runtime.insights().RunPeriodBatchQuery(request));
   } catch (const tracer_core::common::InsightsContractError& error) {
     return BuildFailureResponse(error.what(), error.error_code(),
                                 error.error_category(), error.hints());

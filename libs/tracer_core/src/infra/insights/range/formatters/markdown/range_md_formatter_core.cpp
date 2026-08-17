@@ -37,7 +37,8 @@ auto RangeMdFormatter::ValidateData(const RangeInsightsData& data) const
   return std::string{};
 }
 
-auto RangeMdFormatter::IsEmptyData(const RangeInsightsData& data) const -> bool {
+auto RangeMdFormatter::IsEmptyData(const RangeInsightsData& data) const
+    -> bool {
   return data.actual_days == 0;
 }
 
@@ -49,14 +50,14 @@ auto RangeMdFormatter::GetNoRecordsMsg() const -> std::string {
   return config_->GetNoRecordsMessage();
 }
 
-void RangeMdFormatter::FormatHeaderContent(std::string& insights_stream,
-                                           const RangeInsightsData& data) const {
+void RangeMdFormatter::FormatHeaderContent(
+    std::string& insights_stream, const RangeInsightsData& data) const {
   insights_stream += "## ";
   insights_stream += config_->GetSummarySectionLabel();
   insights_stream += "\n\n";
 
-  insights_stream += BuildMarkdownItemLine(config_->GetPeriodLabel(),
-                                         data.start_date + " - " + data.end_date);
+  insights_stream += BuildMarkdownItemLine(
+      config_->GetPeriodLabel(), data.start_date + " - " + data.end_date);
 
   if (data.actual_days <= 0) {
     return;
@@ -64,12 +65,14 @@ void RangeMdFormatter::FormatHeaderContent(std::string& insights_stream,
 
   insights_stream += BuildMarkdownItemLine(
       config_->GetTotalTimeLabel(),
-      TimeFormatDuration(data.total_duration, data.actual_days));
+      TimeFormatDuration(data.activity.total_duration_seconds,
+                         data.actual_days));
   insights_stream += BuildMarkdownItemLine(
       config_->GetActivityCountLabel(),
-      FormatCountWithAverage(data.matched_record_count, data.requested_days));
+      FormatCountWithAverage(data.activity.occurrence_count,
+                             data.requested_days));
   insights_stream += BuildMarkdownItemLine(config_->GetActualDaysLabel(),
-                                         std::to_string(data.actual_days));
+                                           std::to_string(data.actual_days));
   if (!data.statuses.empty()) {
     insights_stream += "\n## ";
     insights_stream += config_->GetCustomSectionLabel();

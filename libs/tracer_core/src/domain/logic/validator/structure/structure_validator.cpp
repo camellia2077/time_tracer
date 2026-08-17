@@ -63,8 +63,8 @@ auto IsLeap(int year) -> bool {
     const int kHour = std::stoi(digits.substr(0, 2));
     const int kMinute = std::stoi(digits.substr(2, 2));
     const int kSecond = std::stoi(digits.substr(4, 2));
-    if (kHour < 0 || kHour >= 24 || kMinute < 0 || kMinute >= 60 || kSecond < 0 ||
-        kSecond >= 60) {
+    if (kHour < 0 || kHour >= 24 || kMinute < 0 || kMinute >= 60 ||
+        kSecond < 0 || kSecond >= 60) {
       return std::nullopt;
     }
     return ((kHour * 60) + kMinute) * kSecondsPerMinute + kSecond;
@@ -286,9 +286,8 @@ void ValidateWakeKeywordPosition(
 
 }  // namespace
 
-auto AnalyzeMixedTimeline(
-    const DailyLog& day,
-    const std::unordered_set<std::string>& wake_keywords)
+auto AnalyzeMixedTimeline(const DailyLog& day,
+                          const std::unordered_set<std::string>& wake_keywords)
     -> MixedTimelineAnalysis {
   MixedTimelineAnalysis analysis;
   analysis.event_bounds.resize(day.rawEvents.size());
@@ -365,7 +364,7 @@ auto AnalyzeMixedTimeline(
       }
       bounds.participates_in_timeline = true;
       bounds.start_timeline_seconds = expanded_start_minutes;
-      bounds.end_timeline_seconds = *kExpandedEnd;
+      bounds.end_timeline_seconds = kExpandedEnd;
       last_known_boundary_minutes = kExpandedEnd;
       continue;
     }
@@ -406,8 +405,8 @@ namespace {
 void ValidateMixedTimeline(const DailyLog& day,
                            const std::unordered_set<std::string>& wake_keywords,
                            std::vector<Diagnostic>& diagnostics) {
-  const auto analysis = AnalyzeMixedTimeline(day, wake_keywords);
-  for (const auto& issue : analysis.issues) {
+  const auto kAnalysis = AnalyzeMixedTimeline(day, wake_keywords);
+  for (const auto& issue : kAnalysis.issues) {
     const auto& event = day.rawEvents[issue.event_index];
     std::string code;
     std::string message;

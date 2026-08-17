@@ -64,7 +64,8 @@ auto MonthTypFormatter::IsEmptyData(const MonthlyInsightsData& data) const
   return data.actual_days == 0;
 }
 
-auto MonthTypFormatter::GetAvgDays(const MonthlyInsightsData& data) const -> int {
+auto MonthTypFormatter::GetAvgDays(const MonthlyInsightsData& data) const
+    -> int {
   return data.actual_days;
 }
 
@@ -92,15 +93,17 @@ void MonthTypFormatter::FormatHeaderContent(
 
   if (data.actual_days > 0) {
     insights_stream += BuildBulletLine(config_->GetActualDaysLabel(),
-                                     std::to_string(data.actual_days));
+                                       std::to_string(data.actual_days));
     insights_stream += "\n";
-    insights_stream += BuildBulletLine(
-        config_->GetTotalTimeLabel(),
-        TimeFormatDuration(data.total_duration, data.actual_days));
+    insights_stream +=
+        BuildBulletLine(config_->GetTotalTimeLabel(),
+                        TimeFormatDuration(data.activity.total_duration_seconds,
+                                           data.actual_days));
     insights_stream += "\n";
-    insights_stream += BuildBulletLine(
-        config_->GetActivityCountLabel(),
-        FormatCountWithAverage(data.matched_record_count, data.requested_days));
+    insights_stream +=
+        BuildBulletLine(config_->GetActivityCountLabel(),
+                        FormatCountWithAverage(data.activity.occurrence_count,
+                                               data.requested_days));
     insights_stream += "\n";
     if (!data.statuses.empty()) {
       insights_stream += "\n";
@@ -110,9 +113,9 @@ void MonthTypFormatter::FormatHeaderContent(
       insights_stream += "\n\n";
       for (const auto& status : data.statuses) {
         insights_stream += BuildBulletLine(
-            status.label, FormatStatusStatistics(status.occurrence_count,
-                                                 status.total_duration,
-                                                 config_->GetStatusCountUnit()));
+            status.label, FormatStatusStatistics(
+                              status.occurrence_count, status.total_duration,
+                              config_->GetStatusCountUnit()));
         insights_stream += "\n";
       }
     }

@@ -100,7 +100,8 @@ namespace {
       continue;
     }
 
-    const auto kInsertResult = unique_entries.emplace(kEntry->month_key, *kEntry);
+    const auto kInsertResult =
+        unique_entries.emplace(kEntry->month_key, *kEntry);
     if (!kInsertResult.second) {
       duplicate_months.insert(kEntry->month_key);
       unique_entries.erase(kEntry->month_key);

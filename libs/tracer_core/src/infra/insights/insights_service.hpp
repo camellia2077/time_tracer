@@ -19,9 +19,10 @@
 namespace tracer::core::infrastructure::insights {
 class InsightsService : public IInsightsQueryService {
  public:
-  InsightsService(sqlite3* sqlite_db, const InsightsCatalog& catalog,
-                std::shared_ptr<tracer_core::application::ports::IPlatformClock>
-                    platform_clock);
+  InsightsService(
+      sqlite3* sqlite_db, const InsightsCatalog& catalog,
+      std::shared_ptr<tracer_core::application::ports::IPlatformClock>
+          platform_clock);
   ~InsightsService() override = default;
 
   [[nodiscard]] auto RunDailyQuery(std::string_view date_str,

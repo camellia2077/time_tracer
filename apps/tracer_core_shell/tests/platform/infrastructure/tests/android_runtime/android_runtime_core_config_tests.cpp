@@ -239,7 +239,8 @@ auto TestAndroidPipelineRuntimeDoesNotRequireProgramConfig(int& failures)
 
   try {
     const auto request = BuildRuntimeRequest(paths, config_toml_path);
-    auto runtime = infrastructure::bootstrap::BuildAndroidPipelineRuntime(request);
+    auto runtime =
+        infrastructure::bootstrap::BuildAndroidPipelineRuntime(request);
     if (!runtime.pipeline_api) {
       ++failures;
       std::cerr << "[FAIL] Pipeline runtime without program config should "
@@ -254,7 +255,8 @@ auto TestAndroidPipelineRuntimeDoesNotRequireProgramConfig(int& failures)
   RemoveTree(paths.test_root);
 }
 
-auto TestInsightsConfigLoaderRejectsInvalidDailyMarkdown(int& failures) -> void {
+auto TestInsightsConfigLoaderRejectsInvalidDailyMarkdown(int& failures)
+    -> void {
   const RuntimeTestPaths paths =
       BuildTempTestPaths("time_tracer_insights_config_loader_invalid_test");
   const std::filesystem::path kInvalidInsightsPath =
@@ -280,8 +282,8 @@ auto TestInsightsConfigLoaderRejectsInvalidDailyMarkdown(int& failures) -> void 
 
   if (!threw) {
     ++failures;
-    std::cerr
-        << "[FAIL] LoadDailyMdConfig should fail for invalid insights config.\n";
+    std::cerr << "[FAIL] LoadDailyMdConfig should fail for invalid insights "
+                 "config.\n";
   } else if (!Contains(message, "Invalid insights config [") ||
              !Contains(message, "summary_section_label")) {
     ++failures;

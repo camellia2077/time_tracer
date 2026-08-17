@@ -1,17 +1,17 @@
-// infra/insights/daily/formatters/latex/day_tex_config.hpp
-#ifndef INFRASTRUCTURE_INSIGHTS_DAILY_FORMATTERS_LATEX_DAY_TEX_CONFIG_H_
-#define INFRASTRUCTURE_INSIGHTS_DAILY_FORMATTERS_LATEX_DAY_TEX_CONFIG_H_
+// infra/insights/daily/formatters/latex/daily_tex_formatter_config.hpp
+#ifndef INFRASTRUCTURE_INSIGHTS_DAILY_FORMATTERS_LATEX_DAILY_TEX_FORMATTER_CONFIG_H_
+#define INFRASTRUCTURE_INSIGHTS_DAILY_FORMATTERS_LATEX_DAILY_TEX_FORMATTER_CONFIG_H_
 
 #include <map>
 #include <string>
 
 #include "infra/config/models/insights_config_models.hpp"
-#include "infra/insights/daily/common/day_base_config.hpp"
+#include "infra/insights/daily/common/daily_formatter_base_config.hpp"
 #include "infra/insights/shared/config/tex_style_config.hpp"
 
-class DayTexConfig : public DayBaseConfig {
+class DailyTexFormatterConfig : public DailyFormatterBaseConfig {
  public:
-  explicit DayTexConfig(const DailyTexConfig& config);
+  explicit DailyTexFormatterConfig(const DailyTexConfig& config);
 
   [[nodiscard]] auto GetKeywordColors() const
       -> const std::map<std::string, std::string>&;
@@ -46,4 +46,4 @@ class DayTexConfig : public DayBaseConfig {
   std::map<std::string, std::string> keyword_colors_;
 };
 
-#endif  // INFRASTRUCTURE_INSIGHTS_DAILY_FORMATTERS_LATEX_DAY_TEX_CONFIG_H_
+#endif  // INFRASTRUCTURE_INSIGHTS_DAILY_FORMATTERS_LATEX_DAILY_TEX_FORMATTER_CONFIG_H_

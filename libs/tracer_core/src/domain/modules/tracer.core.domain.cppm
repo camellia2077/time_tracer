@@ -16,6 +16,7 @@ export import tracer.core.domain.types.converter_config;
 export import tracer.core.domain.types.app_options;
 
 export import tracer.core.domain.insights.types.insights_types;
+export import tracer.core.domain.insights.models.activity_aggregate;
 export import tracer.core.domain.insights.models.project_tree;
 export import tracer.core.domain.insights.models.range_insights_data;
 export import tracer.core.domain.insights.models.period_insights_models;

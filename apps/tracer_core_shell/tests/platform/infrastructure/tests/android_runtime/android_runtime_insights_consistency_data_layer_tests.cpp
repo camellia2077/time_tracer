@@ -40,12 +40,13 @@ auto TestDataLayerStructuredFieldVerification(
 
   if (structured_result.display_mode != InsightsDisplayMode::kDay) {
     ++failures;
-    std::cerr
-        << "[FAIL] DataLayer/FieldVerify: Insights display_mode should be day.\n";
+    std::cerr << "[FAIL] DataLayer/FieldVerify: Insights display_mode should "
+                 "be day.\n";
     return;
   }
 
-  const auto* daily = std::get_if<DailyInsightsData>(&structured_result.insights);
+  const auto* daily =
+      std::get_if<DailyInsightsData>(&structured_result.insights);
   if (daily == nullptr) {
     ++failures;
     std::cerr << "[FAIL] DataLayer/FieldVerify: Insights variant should hold "
@@ -53,11 +54,11 @@ auto TestDataLayerStructuredFieldVerification(
     return;
   }
 
-  if (daily->total_duration <= 0) {
+  if (daily->activity.total_duration_seconds <= 0) {
     ++failures;
     std::cerr << "[FAIL] DataLayer/FieldVerify: total_duration should be > 0, "
                  "actual: "
-              << daily->total_duration << '\n';
+              << daily->activity.total_duration_seconds << '\n';
   }
 
   if (daily->detailed_records.empty()) {
@@ -102,11 +103,11 @@ auto TestDataLayerStructuredFieldVerification(
     for (const auto& record : daily->detailed_records) {
       records_sum += record.duration_seconds;
     }
-    if (records_sum != daily->total_duration) {
+    if (records_sum != daily->activity.total_duration_seconds) {
       ++failures;
       std::cerr << "[FAIL] DataLayer/FieldVerify: sum of record durations ("
                 << records_sum << ") should equal total_duration ("
-                << daily->total_duration << ").\n";
+                << daily->activity.total_duration_seconds << ").\n";
     }
   }
 
@@ -121,8 +122,7 @@ auto TestDataLayerStructuredFieldVerification(
     if (record.kind == ActivityRecordKind::kEndOnly) {
       if (!record.start_time.empty() || record.duration_seconds != 0) {
         ++failures;
-        std::cerr << "[FAIL] DataLayer/FieldVerify: end-only activity["
-                  << index
+        std::cerr << "[FAIL] DataLayer/FieldVerify: end-only activity[" << index
                   << "] should have empty start_time and zero duration.\n";
       }
       continue;
@@ -169,7 +169,8 @@ auto TestDataLayerEndOnlyConsistency(
   synthetic_input
       << "y2026\nm03\n\nd0302\n"
          "090000study_math_probability-theory_probability-distribution\n"
-         "100000study_math_probability-theory_probability-basics_conditional-probability\n";
+         "100000study_math_probability-theory_probability-basics_conditional-"
+         "probability\n";
   synthetic_input.close();
   if (!synthetic_input) {
     ++failures;
@@ -206,7 +207,8 @@ auto TestDataLayerEndOnlyConsistency(
     return;
   }
 
-  const auto* daily = std::get_if<DailyInsightsData>(&structured_result.insights);
+  const auto* daily =
+      std::get_if<DailyInsightsData>(&structured_result.insights);
   if (daily == nullptr) {
     ++failures;
     std::cerr << "[FAIL] DataLayer/EndOnly: insights should hold "
@@ -215,9 +217,11 @@ auto TestDataLayerEndOnlyConsistency(
     return;
   }
 
-  const auto end_only_it = std::find_if(
-      daily->detailed_records.begin(), daily->detailed_records.end(),
-      [](const auto& record) { return record.kind == ActivityRecordKind::kEndOnly; });
+  const auto end_only_it =
+      std::find_if(daily->detailed_records.begin(),
+                   daily->detailed_records.end(), [](const auto& record) {
+                     return record.kind == ActivityRecordKind::kEndOnly;
+                   });
   if (end_only_it == daily->detailed_records.end()) {
     ++failures;
     std::cerr << "[FAIL] DataLayer/EndOnly: first day should retain an "
@@ -232,7 +236,7 @@ auto TestDataLayerEndOnlyConsistency(
     std::cerr << "[FAIL] DataLayer/EndOnly: end-only activity should preserve "
                  "end_time only and zero duration.\n";
   }
-  if (daily->activity_count <
+  if (daily->activity.occurrence_count <
       static_cast<int>(daily->detailed_records.size())) {
     ++failures;
     std::cerr << "[FAIL] DataLayer/EndOnly: activity_count should include "
@@ -248,12 +252,13 @@ auto TestDataLayerCrossIngestConsistency(
 
   const tracer_core::core::dto::TemporalInsightsQueryRequest md_request{
       .display_mode = InsightsDisplayMode::kDay,
-      .selection =
-          {.kind = TemporalSelectionKind::kSingleDay, .date = target_date},
+      .selection = {.kind = TemporalSelectionKind::kSingleDay,
+                    .date = target_date},
       .format = InsightsFormat::kMarkdown,
   };
 
-  const auto md_before = runtime_api->insights().RunTemporalInsightsQuery(md_request);
+  const auto md_before =
+      runtime_api->insights().RunTemporalInsightsQuery(md_request);
   if (!md_before.ok) {
     ++failures;
     std::cerr << "[FAIL] CrossIngest: RunTemporalInsightsQuery(day, before) "
@@ -269,7 +274,8 @@ auto TestDataLayerCrossIngestConsistency(
                         .date = target_date},
       };
   const auto data_before =
-      runtime_api->insights().RunTemporalStructuredInsightsQuery(struct_request);
+      runtime_api->insights().RunTemporalStructuredInsightsQuery(
+          struct_request);
   if (!data_before.ok) {
     ++failures;
     std::cerr
@@ -279,7 +285,8 @@ auto TestDataLayerCrossIngestConsistency(
     return;
   }
 
-  const auto* daily_before = std::get_if<DailyInsightsData>(&data_before.insights);
+  const auto* daily_before =
+      std::get_if<DailyInsightsData>(&data_before.insights);
   if (daily_before == nullptr) {
     ++failures;
     std::cerr << "[FAIL] CrossIngest: before insights should hold "
@@ -287,7 +294,8 @@ auto TestDataLayerCrossIngestConsistency(
     return;
   }
 
-  const long long duration_before = daily_before->total_duration;
+  const long long duration_before =
+      daily_before->activity.total_duration_seconds;
   const size_t records_before = daily_before->detailed_records.size();
   const size_t tree_size_before = daily_before->project_tree.size();
 
@@ -307,7 +315,8 @@ auto TestDataLayerCrossIngestConsistency(
     return;
   }
 
-  const auto md_after = runtime_api->insights().RunTemporalInsightsQuery(md_request);
+  const auto md_after =
+      runtime_api->insights().RunTemporalInsightsQuery(md_request);
   if (!md_after.ok) {
     ++failures;
     std::cerr << "[FAIL] CrossIngest: RunTemporalInsightsQuery(day, after) "
@@ -317,7 +326,8 @@ auto TestDataLayerCrossIngestConsistency(
   }
 
   const auto data_after =
-      runtime_api->insights().RunTemporalStructuredInsightsQuery(struct_request);
+      runtime_api->insights().RunTemporalStructuredInsightsQuery(
+          struct_request);
   if (!data_after.ok) {
     ++failures;
     std::cerr
@@ -327,7 +337,8 @@ auto TestDataLayerCrossIngestConsistency(
     return;
   }
 
-  const auto* daily_after = std::get_if<DailyInsightsData>(&data_after.insights);
+  const auto* daily_after =
+      std::get_if<DailyInsightsData>(&data_after.insights);
   if (daily_after == nullptr) {
     ++failures;
     std::cerr << "[FAIL] CrossIngest: after insights should hold "
@@ -335,11 +346,11 @@ auto TestDataLayerCrossIngestConsistency(
     return;
   }
 
-  if (daily_after->total_duration != duration_before) {
+  if (daily_after->activity.total_duration_seconds != duration_before) {
     ++failures;
     std::cerr << "[FAIL] CrossIngest: total_duration changed after re-ingest ("
-              << duration_before << " -> " << daily_after->total_duration
-              << ").\n";
+              << duration_before << " -> "
+              << daily_after->activity.total_duration_seconds << ").\n";
   }
 
   if (daily_after->detailed_records.size() != records_before) {

@@ -20,9 +20,9 @@ namespace TypUtils {
 // Public API: keep parameter order and naming for ABI compatibility.
 // NOLINTBEGIN(bugprone-easily-swappable-parameters)
 [[nodiscard]] INSIGHTS_SHARED_API auto BuildPageSetup(double margin_top_cm,
-                                                     double margin_bottom_cm,
-                                                     double margin_left_cm,
-                                                     double margin_right_cm)
+                                                      double margin_bottom_cm,
+                                                      double margin_left_cm,
+                                                      double margin_right_cm)
     -> std::string;
 // NOLINTEND(bugprone-easily-swappable-parameters)
 

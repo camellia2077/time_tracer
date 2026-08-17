@@ -1,5 +1,5 @@
-// infra/insights/daily/formatters/typst/day_typ_utils.cpp
-#include "infra/insights/daily/formatters/typst/day_typ_utils.hpp"
+// infra/insights/daily/formatters/typst/daily_typ_utils.cpp
+#include "infra/insights/daily/formatters/typst/daily_typ_utils.hpp"
 
 #include <string>
 
@@ -25,7 +25,7 @@ auto BuildBulletLine(const std::string& label, const std::string& value)
 }
 
 auto BuildActivityLine(const TimeRecord& record,
-                       const std::shared_ptr<DayTypConfig>& config)
+                       const std::shared_ptr<DailyTypFormatterConfig>& config)
     -> std::string {
   std::string project_path =
       ReplaceAll(record.project_path, "_", config->GetActivityConnector());
@@ -72,10 +72,10 @@ auto BuildActivityLine(const TimeRecord& record,
 
 }  // namespace
 
-namespace DayTypUtils {
+namespace DailyTypUtils {
 
 void DisplayHeader(std::string& insights_stream, const DailyInsightsData& data,
-                   const std::shared_ptr<DayTypConfig>& config) {
+                   const std::shared_ptr<DailyTypFormatterConfig>& config) {
   insights_stream += TypUtils::BuildTitleText(
       config->GetTitleFont(), config->GetInsightsTitleFontSize(),
       config->GetSummarySectionLabel());
@@ -83,11 +83,13 @@ void DisplayHeader(std::string& insights_stream, const DailyInsightsData& data,
 
   insights_stream += BuildBulletLine(config->GetPeriodLabel(), data.date);
   insights_stream += "\n";
-  insights_stream += BuildBulletLine(config->GetTotalTimeLabel(),
-                                   TimeFormatDuration(data.total_duration));
+  insights_stream +=
+      BuildBulletLine(config->GetTotalTimeLabel(),
+                      TimeFormatDuration(data.activity.total_duration_seconds));
   insights_stream += "\n";
-  insights_stream += BuildBulletLine(config->GetActivityCountLabel(),
-                                   std::to_string(data.activity_count));
+  insights_stream +=
+      BuildBulletLine(config->GetActivityCountLabel(),
+                      std::to_string(data.activity.occurrence_count));
   insights_stream += "\n";
   insights_stream +=
       BuildBulletLine(config->GetGetupTimeLabel(), data.metadata.getup_time);
@@ -95,7 +97,8 @@ void DisplayHeader(std::string& insights_stream, const DailyInsightsData& data,
 
   std::string formatted_remark =
       FormatMultilineForList(data.metadata.remark, 2, " \\");
-  insights_stream += BuildBulletLine(config->GetRemarkLabel(), formatted_remark);
+  insights_stream +=
+      BuildBulletLine(config->GetRemarkLabel(), formatted_remark);
   insights_stream += "\n";
   if (!data.metadata.statuses.empty()) {
     insights_stream += "\n";
@@ -105,24 +108,24 @@ void DisplayHeader(std::string& insights_stream, const DailyInsightsData& data,
     insights_stream += "\n\n";
     for (const auto& status : data.metadata.statuses) {
       insights_stream += BuildBulletLine(
-          status.label, FormatStatusStatistics(status.occurrence_count,
-                                               status.total_duration,
-                                               config->GetStatusCountUnit()));
+          status.label,
+          FormatStatusStatistics(status.occurrence_count, status.total_duration,
+                                 config->GetStatusCountUnit()));
       insights_stream += "\n";
     }
   }
 }
 
-void DisplayDetailedActivities(std::string& insights_stream,
-                               const DailyInsightsData& data,
-                               const std::shared_ptr<DayTypConfig>& config) {
+void DisplayDetailedActivities(
+    std::string& insights_stream, const DailyInsightsData& data,
+    const std::shared_ptr<DailyTypFormatterConfig>& config) {
   if (data.detailed_records.empty()) {
     return;
   }
 
-  insights_stream += TypUtils::BuildTitleText(config->GetCategoryTitleFont(),
-                                            config->GetCategoryTitleFontSize(),
-                                            config->GetAllActivitiesLabel());
+  insights_stream += TypUtils::BuildTitleText(
+      config->GetCategoryTitleFont(), config->GetCategoryTitleFontSize(),
+      config->GetAllActivitiesLabel());
   insights_stream += "\n\n";
 
   for (const auto& record : data.detailed_records) {
@@ -131,4 +134,4 @@ void DisplayDetailedActivities(std::string& insights_stream,
   }
 }
 
-}  // namespace DayTypUtils
+}  // namespace DailyTypUtils

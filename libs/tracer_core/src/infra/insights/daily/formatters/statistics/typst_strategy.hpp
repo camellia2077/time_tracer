@@ -7,11 +7,12 @@
 #include <vector>
 
 #include "infra/insights/daily/formatters/statistics/i_stat_strategy.hpp"
-#include "infra/insights/daily/formatters/typst/day_typ_config.hpp"
+#include "infra/insights/daily/formatters/typst/daily_typ_formatter_config.hpp"
 
 class TypstStrategy : public IStatStrategy {
  public:
-  explicit TypstStrategy(const std::shared_ptr<DayTypConfig>& config);
+  explicit TypstStrategy(
+      const std::shared_ptr<DailyTypFormatterConfig>& config);
 
   [[nodiscard]] auto FormatHeader(const std::string& title) const
       -> std::string override;
@@ -25,7 +26,7 @@ class TypstStrategy : public IStatStrategy {
       -> std::string override;
 
  private:
-  std::shared_ptr<DayTypConfig> config_;
+  std::shared_ptr<DailyTypFormatterConfig> config_;
 };
 
 #endif  // INFRASTRUCTURE_INSIGHTS_DAILY_FORMATTERS_STATISTICS_TYPST_STRATEGY_H_

@@ -92,11 +92,29 @@
   "action": "insights_chart",
   "output_mode": "semantic_json",
   "roots": ["study", "sleep"],
+  "root_tree": [
+    {
+      "name": "study",
+      "path": "study",
+      "duration_seconds": 12600,
+      "children": []
+    }
+  ],
   "selected_root": "study",
   "lookback_days": 7,
   "from_date": "2026-02-16",
   "to_date": "2026-02-22",
   "average_duration_seconds": 1800,
+  "total_occurrence_count": 7,
+  "average_duration_per_occurrence_seconds": 1800,
+  "mode_duration_seconds": 1800.0,
+  "median_duration_seconds": 1800.0,
+  "minimum_duration_seconds": 0.0,
+  "maximum_duration_seconds": 3600.0,
+  "lower_quartile_duration_seconds": 900.0,
+  "upper_quartile_duration_seconds": 2700.0,
+  "coefficient_of_variation": 0.8165,
+  "mean_absolute_deviation_seconds": 1200.0,
   "total_duration_seconds": 12600,
   "active_days": 5,
   "range_days": 7,
@@ -108,8 +126,10 @@
 
 说明：
 1. `average_duration_seconds` 按 `active_days` 计算；没有任何活动记录的日期不计入分母。
-2. 空数据时 `series` 可为空，统计字段为 0。
-3. `series[].epoch_day` 为可选字段，用于端侧优化 x 轴渲染。
+2. `average_duration_per_occurrence_seconds = total_duration_seconds / total_occurrence_count`；发生次数为 0 时为 0。
+3. 空数据时 `series` 可为空，统计字段为 0。
+4. `series[].epoch_day` 为可选字段，用于端侧优化 x 轴渲染。
+5. `mode_duration_seconds`、`median_duration_seconds`、`minimum_duration_seconds`、`maximum_duration_seconds`、`lower_quartile_duration_seconds`、`upper_quartile_duration_seconds`、`coefficient_of_variation`、`mean_absolute_deviation_seconds` 基于实际发生过活动事实的日期时长计算，不包含补齐的 0 时长日期；发生事实但时长为 0 的日期仍计入。无重复样本时 `mode_duration_seconds` 为 `null`；CV 使用活动样本的总体标准差除以平均值，四分位数采用线性插值，平均绝对偏差以均值为中心。
 
 ## `tree`
 ```json
@@ -159,14 +179,16 @@
   "tree": [
     {
       "name": "study",
-      "duration_seconds": 7200,
-      "occurrence_count": 2,
-      "average_duration_seconds": 3600,
+          "duration_seconds": 7200,
+          "occurrence_count": 2,
+          "average_duration_seconds": 3600,
+          "average_duration_per_occurrence_seconds": 3600,
       "average_occurrence_count": 1.0,
       "average_occurrence_ratio": 1.0,
       "children": [
         { "name": "cpp", "duration_seconds": 3600, "occurrence_count": 1,
-          "average_duration_seconds": 1800, "average_occurrence_count": 0.5,
+          "average_duration_seconds": 1800, "average_duration_per_occurrence_seconds": 3600,
+          "average_occurrence_count": 0.5,
           "average_occurrence_ratio": 1.0,
           "children": [] }
       ]
@@ -178,7 +200,7 @@
 说明：
 1. `tree` 是唯一的分布数据源，始终保留未折叠的完整加权活动树。
 2. 端侧从根节点或当前节点的 `children` 逐层构建分布图和下钻路径；可按 `duration_seconds` 或 `occurrence_count` 统计分布。
-3. `average_duration_seconds` 和 `average_occurrence_count` 使用 `active_days` 作为分母；`average_occurrence_ratio` 是当前层级的记录次数占比。
+3. `average_duration_seconds` 和 `average_occurrence_count` 使用 `active_days` 作为分母；`average_duration_per_occurrence_seconds` 使用节点 `occurrence_count` 作为分母；`average_occurrence_ratio` 是当前层级的记录次数占比。
 
 ## 兼容性规则
 1. `text` 模式不受此文档约束。

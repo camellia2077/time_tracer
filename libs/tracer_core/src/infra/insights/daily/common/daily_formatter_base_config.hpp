@@ -1,6 +1,6 @@
-// infra/insights/daily/common/day_base_config.hpp
-#ifndef INFRASTRUCTURE_INSIGHTS_DAILY_COMMON_DAY_BASE_CONFIG_H_
-#define INFRASTRUCTURE_INSIGHTS_DAILY_COMMON_DAY_BASE_CONFIG_H_
+// infra/insights/daily/common/daily_formatter_base_config.hpp
+#ifndef INFRASTRUCTURE_INSIGHTS_DAILY_COMMON_DAILY_FORMATTER_BASE_CONFIG_H_
+#define INFRASTRUCTURE_INSIGHTS_DAILY_COMMON_DAILY_FORMATTER_BASE_CONFIG_H_
 
 #include <string>
 #include <vector>
@@ -17,11 +17,12 @@ struct StatisticItemConfig {
 
 DISABLE_C4251_WARNING
 
-class INSIGHTS_SHARED_API DayBaseConfig {
+class INSIGHTS_SHARED_API DailyFormatterBaseConfig {
  public:
-  DayBaseConfig(const DailyInsightsLabels& labels,
-                const std::vector<InsightsStatisticsItem>& statistics_items);
-  virtual ~DayBaseConfig() = default;
+  DailyFormatterBaseConfig(
+      const DailyInsightsLabels& labels,
+      const std::vector<InsightsStatisticsItem>& statistics_items);
+  virtual ~DailyFormatterBaseConfig() = default;
 
   [[nodiscard]] auto GetTotalTimeLabel() const -> const std::string&;
   [[nodiscard]] auto GetActivityCountLabel() const -> const std::string&;
@@ -68,4 +69,4 @@ class INSIGHTS_SHARED_API DayBaseConfig {
 
 ENABLE_C4251_WARNING
 
-#endif  // INFRASTRUCTURE_INSIGHTS_DAILY_COMMON_DAY_BASE_CONFIG_H_
+#endif  // INFRASTRUCTURE_INSIGHTS_DAILY_COMMON_DAILY_FORMATTER_BASE_CONFIG_H_

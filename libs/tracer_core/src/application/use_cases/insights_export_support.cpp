@@ -57,8 +57,8 @@ auto BuildMonthPath(const fs::path& export_root, InsightsFormat format,
          (std::string(month) + std::string(ExtensionForFormat(format)));
 }
 
-auto BuildRecentPath(const fs::path& export_root, InsightsFormat format, int days)
-    -> fs::path {
+auto BuildRecentPath(const fs::path& export_root, InsightsFormat format,
+                     int days) -> fs::path {
   return export_root / DirectoryForFormat(format) / "recent" /
          ("last_" + std::to_string(days) + "_days_insights" +
           std::string(ExtensionForFormat(format)));

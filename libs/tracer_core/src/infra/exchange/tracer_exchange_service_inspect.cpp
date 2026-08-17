@@ -33,8 +33,8 @@ auto BuildInspectResult(
   result.ok = true;
   result.input_tracer_path = input_path;
   result.outer_metadata.version = 3U;
-  result.outer_metadata.kdf_id = 1U;       // PBKDF2-HMAC-SHA1 (ZIP AES)
-  result.outer_metadata.cipher_id = 3U;   // AES-256-CTR + HMAC-SHA1
+  result.outer_metadata.kdf_id = 1U;          // PBKDF2-HMAC-SHA1 (ZIP AES)
+  result.outer_metadata.cipher_id = 3U;       // AES-256-CTR + HMAC-SHA1
   result.outer_metadata.compression_id = 8U;  // ZIP deflate
   result.outer_metadata.ops_limit = 1000U;    // ZIP AES PBKDF2 rounds
   result.outer_metadata.plaintext_size = 0U;

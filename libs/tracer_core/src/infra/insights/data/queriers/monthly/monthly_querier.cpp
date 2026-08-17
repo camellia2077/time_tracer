@@ -21,7 +21,8 @@ namespace {
 using tracer::core::infrastructure::insights::data::stats::
     IsAnaerobicProjectPath;
 using tracer::core::infrastructure::insights::data::stats::IsCardioProjectPath;
-using tracer::core::infrastructure::insights::data::stats::IsExerciseProjectPath;
+using tracer::core::infrastructure::insights::data::stats::
+    IsExerciseProjectPath;
 using tracer::core::infrastructure::insights::data::stats::IsStudyProjectPath;
 
 auto DaysInMonth(std::string_view year_month) -> int {
@@ -48,7 +49,8 @@ auto MonthQuerier::FetchData() -> MonthlyInsightsData {
     return data;
   }
   if (!this->HasAnyDayRows()) {
-    throw tracer_core::common::InsightsTargetNotFoundError("month", this->param_);
+    throw tracer_core::common::InsightsTargetNotFoundError("month",
+                                                           this->param_);
   }
   return RangeQuerierBase::FetchData();
 }
@@ -187,12 +189,11 @@ void BatchMonthDataFetcher::FetchProjectStats(
     }
 
     project_agg[year_month][project_id] += duration;
-    data.total_duration += duration;
-    data.matched_record_count += activity_count;
+    data.activity.Add(duration, activity_count);
 
     const std::string project_path =
-        tracer::core::infrastructure::insights::data::record_mapping::JoinProjectPath(
-            provider.GetPathParts(project_id));
+        tracer::core::infrastructure::insights::data::record_mapping::
+            JoinProjectPath(provider.GetPathParts(project_id));
     if (IsStudyProjectPath(project_path)) {
       status_dates[year_month].insert(date);
     }

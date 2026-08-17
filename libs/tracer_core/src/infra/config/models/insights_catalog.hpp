@@ -8,7 +8,7 @@
 #include "infra/config/models/insights_config_models.hpp"
 
 struct MarkdownInsightsConfigs {
-  DailyMdConfig day;
+  DailyMdConfig daily;
   MonthlyMdConfig month;
   PeriodMdConfig period;
   WeeklyMdConfig week;
@@ -17,7 +17,7 @@ struct MarkdownInsightsConfigs {
 
 struct LoadedInsightsConfigs {
   struct {
-    DailyTexConfig day;
+    DailyTexConfig daily;
     MonthlyTexConfig month;
     PeriodTexConfig period;
     WeeklyTexConfig week;
@@ -25,7 +25,7 @@ struct LoadedInsightsConfigs {
   } latex;
 
   struct {
-    DailyTypConfig day;
+    DailyTypConfig daily;
     MonthlyTypConfig month;
     PeriodTypConfig period;
     WeeklyTypConfig week;

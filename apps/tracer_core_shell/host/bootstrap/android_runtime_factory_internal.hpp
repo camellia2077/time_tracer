@@ -11,7 +11,7 @@
 namespace infrastructure::bootstrap::android_runtime_detail {
 
 struct AndroidInsightsConfigPathSet {
-  std::filesystem::path day;
+  std::filesystem::path daily;
   std::filesystem::path month;
   std::filesystem::path period;
   std::filesystem::path week;
@@ -23,7 +23,8 @@ struct AndroidRuntimeConfigPaths {
   AndroidInsightsConfigPathSet markdown;
   std::optional<AndroidInsightsConfigPathSet> latex;
   std::optional<AndroidInsightsConfigPathSet> typst;
-  infrastructure::insights::AndroidStaticInsightsFormatterPolicy formatter_policy;
+  infrastructure::insights::AndroidStaticInsightsFormatterPolicy
+      formatter_policy;
 };
 
 [[nodiscard]] auto ResolveOutputRoot(const std::filesystem::path& output_root)

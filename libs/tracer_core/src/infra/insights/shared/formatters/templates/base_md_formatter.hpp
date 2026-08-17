@@ -73,7 +73,8 @@ class BaseMdFormatter : public IInsightsFormatter<InsightsDataT> {
     insights_stream += config_->GetProjectBreakdownLabel();
     insights_stream += "\n";
     insights_stream += MarkdownFormatter::FormatProjectTree(
-        data.project_tree, data.total_duration, GetAvgDays(data));
+        data.project_tree, data.activity.total_duration_seconds,
+        GetAvgDays(data));
   }
 };
 

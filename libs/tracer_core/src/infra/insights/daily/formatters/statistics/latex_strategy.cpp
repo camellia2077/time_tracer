@@ -4,7 +4,8 @@
 #include "infra/insights/shared/formatters/latex/tex_common_utils.hpp"
 #include "infra/insights/shared/formatters/latex/tex_utils.hpp"
 
-LatexStrategy::LatexStrategy(const std::shared_ptr<DayTexConfig>& config)
+LatexStrategy::LatexStrategy(
+    const std::shared_ptr<DailyTexFormatterConfig>& config)
     : config_(config) {}
 
 auto LatexStrategy::FormatHeader(const std::string& title) const

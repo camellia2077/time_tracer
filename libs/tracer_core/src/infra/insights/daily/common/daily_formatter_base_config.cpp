@@ -1,5 +1,5 @@
-// infra/insights/daily/common/day_base_config.cpp
-#include "infra/insights/daily/common/day_base_config.hpp"
+// infra/insights/daily/common/daily_formatter_base_config.cpp
+#include "infra/insights/daily/common/daily_formatter_base_config.hpp"
 
 #include <algorithm>
 #include <stdexcept>
@@ -23,14 +23,14 @@ auto BuildStatisticItemTree(const InsightsStatisticsItem& item)
 
 }  // namespace
 
-DayBaseConfig::DayBaseConfig(
+DailyFormatterBaseConfig::DailyFormatterBaseConfig(
     const DailyInsightsLabels& labels,
     const std::vector<InsightsStatisticsItem>& statistics_items)
     : statistics_items_(BuildStatisticsItems(statistics_items)) {
   LoadBaseConfig(labels);
 }
 
-auto DayBaseConfig::BuildStatisticsItems(
+auto DailyFormatterBaseConfig::BuildStatisticsItems(
     const std::vector<InsightsStatisticsItem>& statistics_items)
     -> std::vector<StatisticItemConfig> {
   if (statistics_items.empty()) {
@@ -45,7 +45,8 @@ auto DayBaseConfig::BuildStatisticsItems(
   return tree_items;
 }
 
-void DayBaseConfig::LoadBaseConfig(const DailyInsightsLabels& labels) {
+void DailyFormatterBaseConfig::LoadBaseConfig(
+    const DailyInsightsLabels& labels) {
   total_time_label_ = labels.total_time_label;
   activity_count_label_ = labels.activity_count_label;
   status_count_unit_ = labels.status_count_unit;
@@ -62,49 +63,58 @@ void DayBaseConfig::LoadBaseConfig(const DailyInsightsLabels& labels) {
   project_breakdown_label_ = labels.project_breakdown_label;
 }
 
-auto DayBaseConfig::GetTotalTimeLabel() const -> const std::string& {
+auto DailyFormatterBaseConfig::GetTotalTimeLabel() const -> const std::string& {
   return total_time_label_;
 }
-auto DayBaseConfig::GetActivityCountLabel() const -> const std::string& {
+auto DailyFormatterBaseConfig::GetActivityCountLabel() const
+    -> const std::string& {
   return activity_count_label_;
 }
-auto DayBaseConfig::GetStatusCountUnit() const -> const std::string& {
+auto DailyFormatterBaseConfig::GetStatusCountUnit() const
+    -> const std::string& {
   return status_count_unit_;
 }
-auto DayBaseConfig::GetCustomSectionLabel() const -> const std::string& {
+auto DailyFormatterBaseConfig::GetCustomSectionLabel() const
+    -> const std::string& {
   return custom_section_label_;
 }
-auto DayBaseConfig::GetSummarySectionLabel() const -> const std::string& {
+auto DailyFormatterBaseConfig::GetSummarySectionLabel() const
+    -> const std::string& {
   return summary_section_label_;
 }
-auto DayBaseConfig::GetPeriodLabel() const -> const std::string& {
+auto DailyFormatterBaseConfig::GetPeriodLabel() const -> const std::string& {
   return period_label_;
 }
-auto DayBaseConfig::GetGetupTimeLabel() const -> const std::string& {
+auto DailyFormatterBaseConfig::GetGetupTimeLabel() const -> const std::string& {
   return getup_time_label_;
 }
-auto DayBaseConfig::GetRemarkLabel() const -> const std::string& {
+auto DailyFormatterBaseConfig::GetRemarkLabel() const -> const std::string& {
   return remark_label_;
 }
-auto DayBaseConfig::GetNoRecords() const -> const std::string& {
+auto DailyFormatterBaseConfig::GetNoRecords() const -> const std::string& {
   return no_records_;
 }
-auto DayBaseConfig::GetStatisticsLabel() const -> const std::string& {
+auto DailyFormatterBaseConfig::GetStatisticsLabel() const
+    -> const std::string& {
   return statistics_label_;
 }
-auto DayBaseConfig::GetAllActivitiesLabel() const -> const std::string& {
+auto DailyFormatterBaseConfig::GetAllActivitiesLabel() const
+    -> const std::string& {
   return all_activities_label_;
 }
-auto DayBaseConfig::GetActivityRemarkLabel() const -> const std::string& {
+auto DailyFormatterBaseConfig::GetActivityRemarkLabel() const
+    -> const std::string& {
   return activity_remark_label_;
 }
-auto DayBaseConfig::GetActivityConnector() const -> const std::string& {
+auto DailyFormatterBaseConfig::GetActivityConnector() const
+    -> const std::string& {
   return activity_connector_;
 }
-auto DayBaseConfig::GetStatisticsItems() const
+auto DailyFormatterBaseConfig::GetStatisticsItems() const
     -> const std::vector<StatisticItemConfig>& {
   return statistics_items_;
 }
-auto DayBaseConfig::GetProjectBreakdownLabel() const -> const std::string& {
+auto DailyFormatterBaseConfig::GetProjectBreakdownLabel() const
+    -> const std::string& {
   return project_breakdown_label_;
 }

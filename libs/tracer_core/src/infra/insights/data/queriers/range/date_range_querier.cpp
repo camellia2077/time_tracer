@@ -70,8 +70,9 @@ DateRangeQuerier::DateRangeQuerier(sqlite3* sqlite_db,
                                    std::string_view end_date,
                                    const DailyStatusConfig* status_config)
     : RangeQuerierBase(
-          sqlite_db, DateRangeQueryParam{.start_date = std::string(start_date),
-                                         .end_date = std::string(end_date)},
+          sqlite_db,
+          DateRangeQueryParam{.start_date = std::string(start_date),
+                              .end_date = std::string(end_date)},
           status_config) {}
 
 auto DateRangeQuerier::ValidateInput() const -> bool {

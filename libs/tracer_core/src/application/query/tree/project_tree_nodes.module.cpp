@@ -30,11 +30,11 @@ struct NamedInsightsNodeRef {
   for (const auto& [name, child] : node.children) {
     children.push_back({.name = name, .node = &child});
   }
-  std::ranges::sort(
-      children,
-      [](const NamedInsightsNodeRef& lhs, const NamedInsightsNodeRef& rhs) -> bool {
-        return lhs.name < rhs.name;
-      });
+  std::ranges::sort(children,
+                    [](const NamedInsightsNodeRef& lhs,
+                       const NamedInsightsNodeRef& rhs) -> bool {
+                      return lhs.name < rhs.name;
+                    });
   return children;
 }
 
@@ -68,7 +68,7 @@ struct NamedInsightsNodeRef {
   out.children.reserve(kChildren.size());
   for (const auto& child : kChildren) {
     out.children.push_back(BuildNodeFromInsightsNode(child.name, *child.node,
-                                                   out.path, node.duration));
+                                                     out.path, node.duration));
   }
   return out;
 }
@@ -120,11 +120,11 @@ auto BuildProjectTreeNodesFromInsightsTree(const ProjectTree& tree)
   for (const auto& [name, node] : tree) {
     roots.push_back({.name = name, .node = &node});
   }
-  std::ranges::sort(
-      roots,
-      [](const NamedInsightsNodeRef& lhs, const NamedInsightsNodeRef& rhs) -> bool {
-        return lhs.name < rhs.name;
-      });
+  std::ranges::sort(roots,
+                    [](const NamedInsightsNodeRef& lhs,
+                       const NamedInsightsNodeRef& rhs) -> bool {
+                      return lhs.name < rhs.name;
+                    });
 
   std::vector<ProjectTreeNode> out;
   out.reserve(roots.size());

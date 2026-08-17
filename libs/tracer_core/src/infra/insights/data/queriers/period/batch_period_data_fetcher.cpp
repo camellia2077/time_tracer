@@ -21,7 +21,8 @@ namespace {
 using tracer::core::infrastructure::insights::data::stats::
     IsAnaerobicProjectPath;
 using tracer::core::infrastructure::insights::data::stats::IsCardioProjectPath;
-using tracer::core::infrastructure::insights::data::stats::IsExerciseProjectPath;
+using tracer::core::infrastructure::insights::data::stats::
+    IsExerciseProjectPath;
 using tracer::core::infrastructure::insights::data::stats::IsStudyProjectPath;
 }  // namespace
 
@@ -108,8 +109,7 @@ auto BatchPeriodDataFetcher::FetchAllData(const std::vector<int>& days_list)
       // 字符串日期比较： "2025-01-01" >= "2024-12-31" 依然成立（字典序）
       if (record.date >= data.start_date) {
         project_agg[record.project_id] += record.duration;
-        data.total_duration += record.duration;
-        ++data.matched_record_count;
+        data.activity.Add(record.duration);
         distinct_dates.insert(record.date);
 
         const auto kPathParts = name_cache.GetPathParts(record.project_id);
@@ -140,8 +140,8 @@ auto BatchPeriodDataFetcher::FetchAllData(const std::vector<int>& days_list)
     data.cardio_true_days = static_cast<int>(cardio_dates.size());
     data.anaerobic_true_days = static_cast<int>(anaerobic_dates.size());
 
-    insights::data::batch::FinalizeAggregation(data, project_agg, distinct_dates,
-                                              name_cache);
+    insights::data::batch::FinalizeAggregation(data, project_agg,
+                                               distinct_dates, name_cache);
   }
 
   return results;

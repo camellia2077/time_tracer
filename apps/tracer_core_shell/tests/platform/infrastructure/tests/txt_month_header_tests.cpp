@@ -26,9 +26,8 @@ using tracer::core::domain::modlogic::validator_txt::TextValidator;
 auto BuildTestConverterConfig() -> ConverterConfig {
   ConverterConfig config;
   config.sleep_inference.wake_keywords = {"wake"};
-  config.text_mapping = {{"study", "study"},
-                         {"sleep", "sleep"},
-                         {"wake", "wake"}};
+  config.text_mapping = {
+      {"study", "study"}, {"sleep", "sleep"}, {"wake", "wake"}};
   config.top_parent_mapping = {{"study", "study"}};
   config.initial_top_parents = {{"study", "study"}};
   return config;
@@ -104,12 +103,12 @@ auto TestParserSupportsIntervalEventLines(int& failures) -> void {
 
   const RawEvent& interval_event = parsed_days.front().rawEvents[1];
   Expect(interval_event.kind == RawEventKindType::Interval,
-         "Parser should classify HHMM-HHMMtoken as interval event.",
-         failures);
+         "Parser should classify HHMM-HHMMtoken as interval event.", failures);
   Expect(interval_event.startTimeStr.has_value() &&
              *interval_event.startTimeStr == "09:00:00" &&
              interval_event.endTimeStr == "10:30:00",
-         "Interval parser should normalize authored start/end times to ISO HH:mm:ss.",
+         "Interval parser should normalize authored start/end times to ISO "
+         "HH:mm:ss.",
          failures);
   Expect(interval_event.remark == "focus",
          "Interval parser should preserve inline remarks.", failures);
@@ -138,9 +137,11 @@ auto TestParserPreservesMultilineActivityRemarks(int& failures) -> void {
   if (parsed_days.empty() || parsed_days.front().rawEvents.size() < 2) {
     return;
   }
-  Expect(parsed_days.front().rawEvents[1].remark == "first line\nsecond line\\path",
-         "TextParser should preserve physical newlines and literal backslashes.",
-         failures);
+  Expect(
+      parsed_days.front().rawEvents[1].remark ==
+          "first line\nsecond line\\path",
+      "TextParser should preserve physical newlines and literal backslashes.",
+      failures);
 }
 
 auto TestParserRejectsDateMonthMismatch(int& failures) -> void {
@@ -218,11 +219,13 @@ auto TestParserRejectsMissingMonthHeaderFixture(int& failures) -> void {
     message = error.what();
     threw = Contains(message, "month header (mMM)");
   }
-  Expect(threw,
-         "TextParser should reject the missing-month fixture with an mMM error.",
-         failures);
+  Expect(
+      threw,
+      "TextParser should reject the missing-month fixture with an mMM error.",
+      failures);
   Expect(Contains(message, "2026-01.missing_month_header.txt:3"),
-         "missing-month fixture parse error should point at the first day marker line.",
+         "missing-month fixture parse error should point at the first day "
+         "marker line.",
          failures);
 }
 
@@ -234,8 +237,7 @@ auto TestValidatorRequiresMonthHeader(int& failures) -> void {
   const bool kMonthOk = text_validator.Validate(
       "month_ok.txt", "y2026\nm02\nd0201\n0641wake\n", month_errors);
   Expect(kMonthOk && month_errors.empty(),
-         "TextValidator should accept yYYYY + mMM + matching dMMDD.",
-         failures);
+         "TextValidator should accept yYYYY + mMM + matching dMMDD.", failures);
 
   std::set<Error> missing_month_errors;
   const bool kMissingMonthOk = text_validator.Validate(
@@ -274,9 +276,10 @@ auto TestValidatorRequiresMonthHeaderFixture(int& failures) -> void {
 
   const std::string fixture_text = ReadFixtureText(
       "test/fixtures/text/invalid/2026-01.missing_month_header.txt");
-  Expect(!fixture_text.empty(),
-         "validator missing-month fixture should be readable from test/fixtures.",
-         failures);
+  Expect(
+      !fixture_text.empty(),
+      "validator missing-month fixture should be readable from test/fixtures.",
+      failures);
   if (fixture_text.empty()) {
     return;
   }
@@ -285,11 +288,12 @@ auto TestValidatorRequiresMonthHeaderFixture(int& failures) -> void {
   const bool ok = text_validator.Validate("2026-01.missing_month_header.txt",
                                           fixture_text, errors);
   const std::string error_text = CollectErrorMessages(errors);
-  Expect(!ok,
-         "TextValidator should reject the missing-month fixture.", failures);
-  Expect(Contains(error_text, "Month header (mMM) is required"),
-         "missing-month fixture should insights explicit missing header wording.",
+  Expect(!ok, "TextValidator should reject the missing-month fixture.",
          failures);
+  Expect(
+      Contains(error_text, "Month header (mMM) is required"),
+      "missing-month fixture should insights explicit missing header wording.",
+      failures);
 }
 
 auto TestValidatorRejectsMonthConflicts(int& failures) -> void {
@@ -338,9 +342,10 @@ auto TestValidatorSupportsIntervalEventLines(int& failures) -> void {
   const bool kMissingActivityOk = text_validator.Validate(
       "interval_missing_activity.txt", "y2026\nm02\nd0201\n0900-1030\n",
       missing_activity_errors);
-  Expect(!kMissingActivityOk,
-         "TextValidator should reject interval lines without an activity token.",
-         failures);
+  Expect(
+      !kMissingActivityOk,
+      "TextValidator should reject interval lines without an activity token.",
+      failures);
 
   std::set<Error> invalid_time_errors;
   const bool kInvalidTimeOk = text_validator.Validate(
@@ -354,9 +359,10 @@ auto TestValidatorSupportsIntervalEventLines(int& failures) -> void {
   const bool kUnknownIntervalOk = text_validator.Validate(
       "interval_unknown.txt", "y2026\nm02\nd0201\n0900-1030unknown\n",
       unknown_interval_errors);
-  Expect(!kUnknownIntervalOk,
-         "TextValidator should reject unknown interval activities semantically.",
-         failures);
+  Expect(
+      !kUnknownIntervalOk,
+      "TextValidator should reject unknown interval activities semantically.",
+      failures);
   Expect(Contains(CollectErrorMessages(unknown_interval_errors),
                   "Unrecognized activity 'unknown'"),
          "Unknown interval activity should keep semantic validation wording.",
@@ -377,8 +383,8 @@ auto TestValidatorReadsIntervalFixture(int& failures) -> void {
   }
 
   std::set<Error> errors;
-  const bool ok = text_validator.Validate("2026-01.interval_day.txt",
-                                          fixture_text, errors);
+  const bool ok =
+      text_validator.Validate("2026-01.interval_day.txt", fixture_text, errors);
   Expect(ok && errors.empty(),
          "TextValidator should accept the interval-day fixture.", failures);
 }

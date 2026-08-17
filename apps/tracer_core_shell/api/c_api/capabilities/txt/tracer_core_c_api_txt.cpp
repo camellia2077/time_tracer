@@ -22,10 +22,12 @@ using tracer_core::core::c_api::internal::ClearLastError;
 using tracer_core::core::c_api::internal::RequireRuntime;
 using tracer_core::core::c_api::internal::ToRequestJsonView;
 using tracer_core::shell::config_bridge::ApplyActivityHierarchyOperationJson;
-using tracer_core::shell::config_bridge::MoveActivityHierarchyLeafBetweenDocumentsJson;
-using tracer_core::shell::config_bridge::MoveActivityHierarchyNodeBetweenDocumentsJson;
-using tracer_core::shell::config_bridge::RewriteActivityHierarchyDocumentJson;
 using tracer_core::shell::config_bridge::DescribeActivityHierarchyJson;
+using tracer_core::shell::config_bridge::
+    MoveActivityHierarchyLeafBetweenDocumentsJson;
+using tracer_core::shell::config_bridge::
+    MoveActivityHierarchyNodeBetweenDocumentsJson;
+using tracer_core::shell::config_bridge::RewriteActivityHierarchyDocumentJson;
 using tracer_core::shell::config_bridge::ValidateActivityHierarchyDocumentsJson;
 
 namespace {
@@ -105,7 +107,8 @@ auto BuildTxtSuccessResponse(Builder&& builder) -> const char* {
     }
     const auto interval_it = value.find("is_interval");
     if (interval_it == value.end() || !interval_it->is_boolean()) {
-      throw std::invalid_argument("each `events.is_interval` must be a boolean.");
+      throw std::invalid_argument(
+          "each `events.is_interval` must be a boolean.");
     }
     events.push_back({
         .is_interval = interval_it->get<bool>(),
@@ -135,11 +138,11 @@ extern "C" TT_CORE_API auto tracer_core_runtime_config_json(
     const std::string action = RequireStringField(payload, "action");
     if (action == "read_quick_access") {
       try {
-        const auto config = tracer::core::application::config::ParseQuickAccessToml(
-            RequireStringField(payload, "toml_content"));
-        return BuildTxtSuccessResponse([&]() -> json {
-          return json{{"quick_access", config.aliases}};
-        });
+        const auto config =
+            tracer::core::application::config::ParseQuickAccessToml(
+                RequireStringField(payload, "toml_content"));
+        return BuildTxtSuccessResponse(
+            [&]() -> json { return json{{"quick_access", config.aliases}}; });
       } catch (const std::exception& error) {
         return BuildFailureResponse(error.what(), "config.quick_access.failed",
                                     "config", {});
@@ -178,16 +181,18 @@ extern "C" TT_CORE_API auto tracer_core_runtime_config_json(
       const auto response = runtime.pipeline().RunResolveTxtDayBlock(
           {.content = RequireStringField(payload, "content"),
            .day_marker = RequireStringField(payload, "day_marker"),
-           .selected_month = ReadOptionalStringField(payload, "selected_month")});
+           .selected_month =
+               ReadOptionalStringField(payload, "selected_month")});
       if (!response.ok) {
         return BuildFailureResponse(response.error_message);
       }
       return BuildTxtSuccessResponse([&]() -> json {
-        json result = {{"normalized_day_marker", response.normalized_day_marker},
-                       {"found", response.found},
-                       {"is_marker_valid", response.is_marker_valid},
-                       {"can_save", response.can_save},
-                       {"day_body", response.day_body}};
+        json result = {
+            {"normalized_day_marker", response.normalized_day_marker},
+            {"found", response.found},
+            {"is_marker_valid", response.is_marker_valid},
+            {"can_save", response.can_save},
+            {"day_body", response.day_body}};
         if (response.day_content_iso_date.has_value()) {
           result["day_content_iso_date"] = *response.day_content_iso_date;
         }
@@ -215,31 +220,34 @@ extern "C" TT_CORE_API auto tracer_core_runtime_config_json(
       const auto response = runtime.pipeline().RunResolveTxtDayEdit(
           {.content = RequireStringField(payload, "content"),
            .day_marker = RequireStringField(payload, "day_marker"),
-           .selected_month = ReadOptionalStringField(payload, "selected_month")});
+           .selected_month =
+               ReadOptionalStringField(payload, "selected_month")});
       if (!response.ok) {
         return BuildFailureResponse(response.error_message);
       }
       return BuildTxtSuccessResponse([&]() -> json {
         json events = json::array();
         for (const auto& event : response.events) {
-          events.push_back({{"is_interval", event.is_interval},
-                            {"start_time", event.start_time},
-                            {"end_time", event.end_time},
-                            {"activity_token", event.activity_token},
-                            {"remark", event.remark},
-                            {"start_timeline_seconds", event.start_timeline_seconds},
-                            {"end_timeline_seconds", event.end_timeline_seconds},
-                            {"previous_end_timeline_seconds",
-                             event.previous_end_timeline_seconds},
-                            {"next_start_timeline_seconds",
-                             event.next_start_timeline_seconds}});
+          events.push_back(
+              {{"is_interval", event.is_interval},
+               {"start_time", event.start_time},
+               {"end_time", event.end_time},
+               {"activity_token", event.activity_token},
+               {"remark", event.remark},
+               {"start_timeline_seconds", event.start_timeline_seconds},
+               {"end_timeline_seconds", event.end_timeline_seconds},
+               {"previous_end_timeline_seconds",
+                event.previous_end_timeline_seconds},
+               {"next_start_timeline_seconds",
+                event.next_start_timeline_seconds}});
         }
-        json result = {{"normalized_day_marker", response.normalized_day_marker},
-                       {"found", response.found},
-                       {"is_marker_valid", response.is_marker_valid},
-                       {"can_save", response.can_save},
-                       {"day_remark", response.day_remark},
-                       {"events", std::move(events)}};
+        json result = {
+            {"normalized_day_marker", response.normalized_day_marker},
+            {"found", response.found},
+            {"is_marker_valid", response.is_marker_valid},
+            {"can_save", response.can_save},
+            {"day_remark", response.day_remark},
+            {"events", std::move(events)}};
         if (response.day_content_iso_date.has_value()) {
           result["day_content_iso_date"] = *response.day_content_iso_date;
         }
@@ -292,11 +300,13 @@ extern "C" TT_CORE_API auto tracer_core_runtime_config_json(
         }
         replacements.push_back(
             {.old_canonical = RequireStringField(replacement, "old_canonical"),
-             .new_canonical = RequireStringField(replacement, "new_canonical")});
+             .new_canonical =
+                 RequireStringField(replacement, "new_canonical")});
       }
-      const auto response = runtime.pipeline().RunReplaceTxtCanonicalActivityNames(
-          {.content = RequireStringField(payload, "content"),
-           .replacements = std::move(replacements)});
+      const auto response =
+          runtime.pipeline().RunReplaceTxtCanonicalActivityNames(
+              {.content = RequireStringField(payload, "content"),
+               .replacements = std::move(replacements)});
       if (!response.ok) {
         return BuildFailureResponse(response.error_message);
       }
@@ -338,31 +348,35 @@ extern "C" TT_CORE_API auto tracer_core_runtime_config_json(
         return BuildTxtSuccessResponse(
             [&]() { return ApplyActivityHierarchyOperationJson(payload); });
       } catch (const std::exception& error) {
-        return BuildFailureResponse(error.what(), "config.activity_hierarchy.failed",
-                                    "config",
-                                    {"Inspect the hierarchy operation fields."});
+        return BuildFailureResponse(
+            error.what(), "config.activity_hierarchy.failed", "config",
+            {"Inspect the hierarchy operation fields."});
       }
     }
 
     if (action == "move_activity_hierarchy_leaf_between_documents") {
       try {
-        return BuildTxtSuccessResponse(
-            [&]() { return MoveActivityHierarchyLeafBetweenDocumentsJson(payload); });
+        return BuildTxtSuccessResponse([&]() {
+          return MoveActivityHierarchyLeafBetweenDocumentsJson(payload);
+        });
       } catch (const std::exception& error) {
         return BuildFailureResponse(
             error.what(), "config.activity_hierarchy.failed", "config",
-            {"Inspect the source, destination, document set, and leaf operation fields."});
+            {"Inspect the source, destination, document set, and leaf "
+             "operation fields."});
       }
     }
 
     if (action == "move_activity_hierarchy_node_between_documents") {
       try {
-        return BuildTxtSuccessResponse(
-            [&]() { return MoveActivityHierarchyNodeBetweenDocumentsJson(payload); });
+        return BuildTxtSuccessResponse([&]() {
+          return MoveActivityHierarchyNodeBetweenDocumentsJson(payload);
+        });
       } catch (const std::exception& error) {
         return BuildFailureResponse(
             error.what(), "config.activity_hierarchy.failed", "config",
-            {"Inspect the source, destination, document set, and move operation fields."});
+            {"Inspect the source, destination, document set, and move "
+             "operation fields."});
       }
     }
 
@@ -371,9 +385,9 @@ extern "C" TT_CORE_API auto tracer_core_runtime_config_json(
         return BuildTxtSuccessResponse(
             [&]() { return RewriteActivityHierarchyDocumentJson(payload); });
       } catch (const std::exception& error) {
-        return BuildFailureResponse(error.what(), "config.activity_hierarchy.failed",
-                                    "config",
-                                    {"Inspect the original and updated canonical TOML."});
+        return BuildFailureResponse(
+            error.what(), "config.activity_hierarchy.failed", "config",
+            {"Inspect the original and updated canonical TOML."});
       }
     }
 
@@ -382,8 +396,8 @@ extern "C" TT_CORE_API auto tracer_core_runtime_config_json(
         return BuildTxtSuccessResponse(
             [&]() { return DescribeActivityHierarchyJson(payload); });
       } catch (const std::exception& error) {
-        return BuildFailureResponse(error.what(), "config.activity_hierarchy.failed",
-                                    "config", {});
+        return BuildFailureResponse(
+            error.what(), "config.activity_hierarchy.failed", "config", {});
       }
     }
 
@@ -392,8 +406,8 @@ extern "C" TT_CORE_API auto tracer_core_runtime_config_json(
         return BuildTxtSuccessResponse(
             [&]() { return ValidateActivityHierarchyDocumentsJson(payload); });
       } catch (const std::exception& error) {
-        return BuildFailureResponse(error.what(), "config.activity_hierarchy.failed",
-                                    "config", {});
+        return BuildFailureResponse(
+            error.what(), "config.activity_hierarchy.failed", "config", {});
       }
     }
 
@@ -402,21 +416,30 @@ extern "C" TT_CORE_API auto tracer_core_runtime_config_json(
         const std::string toml_content =
             RequireStringField(payload, "toml_content");
         return BuildTxtSuccessResponse([&]() -> json {
-          return json{{"content",
-                       tracer::core::application::config::RenderActivityHierarchyText(
-                           std::string_view(toml_content),
-                           payload.value("show_aliases", false))}};
+          return json{
+              {"content",
+               tracer::core::application::config::RenderActivityHierarchyText(
+                   std::string_view(toml_content),
+                   payload.value("show_aliases", false))}};
         });
       } catch (const std::exception& error) {
-        return BuildFailureResponse(error.what(), "config.activity_hierarchy.failed",
-                                    "config", {});
+        return BuildFailureResponse(
+            error.what(), "config.activity_hierarchy.failed", "config", {});
       }
     }
 
     return BuildFailureResponse(
         "Unsupported runtime config action: " + action,
         "runtime.invalid_request", "runtime",
-        {"Use action=read_quick_access|write_quick_access|default_day_marker|resolve_day_block|replace_day_block|resolve_day_edit|apply_day_edit|convert_activity_names|replace_canonical_activity_names|replace_alias_activity_names|apply_activity_hierarchy_operation|move_activity_hierarchy_leaf_between_documents|move_activity_hierarchy_node_between_documents|rewrite_activity_hierarchy_document|describe_activity_hierarchy|validate_activity_hierarchy_documents|render_activity_hierarchy_text."});
+        {"Use "
+         "action=read_quick_access|write_quick_access|default_day_marker|"
+         "resolve_day_block|replace_day_block|resolve_day_edit|apply_day_edit|"
+         "convert_activity_names|replace_canonical_activity_names|replace_"
+         "alias_activity_names|apply_activity_hierarchy_operation|move_"
+         "activity_hierarchy_leaf_between_documents|move_activity_hierarchy_"
+         "node_between_documents|rewrite_activity_hierarchy_document|describe_"
+         "activity_hierarchy|validate_activity_hierarchy_documents|render_"
+         "activity_hierarchy_text."});
   } catch (const std::exception& error) {
     return BuildFailureResponse(error.what());
   } catch (...) {

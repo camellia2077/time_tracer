@@ -18,7 +18,8 @@ auto RenderActivityHierarchyText(
   const auto kPath = std::filesystem::absolute(activity_hierarchy_toml_path);
   if (!std::filesystem::exists(kPath) ||
       !std::filesystem::is_regular_file(kPath)) {
-    throw std::runtime_error("Canonical TOML file not found: " + kPath.string());
+    throw std::runtime_error("Canonical TOML file not found: " +
+                             kPath.string());
   }
   std::ifstream input(kPath);
   if (!input) {
@@ -26,7 +27,7 @@ auto RenderActivityHierarchyText(
                              kPath.string());
   }
   const std::string kContent((std::istreambuf_iterator<char>(input)),
-                            std::istreambuf_iterator<char>());
+                             std::istreambuf_iterator<char>());
   return RenderActivityHierarchyText(std::string_view(kContent), show_aliases);
 }
 

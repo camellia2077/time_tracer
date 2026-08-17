@@ -161,7 +161,8 @@ auto SerializeResponseEnvelope(const ResponseEnvelope& envelope)
         envelope.insights_window_metadata->matched_record_count;
     payload["start_date"] = envelope.insights_window_metadata->start_date;
     payload["end_date"] = envelope.insights_window_metadata->end_date;
-    payload["requested_days"] = envelope.insights_window_metadata->requested_days;
+    payload["requested_days"] =
+        envelope.insights_window_metadata->requested_days;
   }
   return payload.dump();
 }

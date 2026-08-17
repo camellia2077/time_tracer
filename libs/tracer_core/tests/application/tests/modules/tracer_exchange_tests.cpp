@@ -135,7 +135,8 @@ auto TestImportFailureIsWrapped(TestState& state) -> void {
 auto TestInspectWithoutServiceFailsGracefully(TestState& state) -> void {
   FakePipelineWorkflow pipeline_workflow;
   FakeInsightsHandler insights_handler;
-  auto runtime_api = BuildRuntimeApiForTest(pipeline_workflow, insights_handler);
+  auto runtime_api =
+      BuildRuntimeApiForTest(pipeline_workflow, insights_handler);
 
   const auto result = runtime_api.tracer_exchange().RunTracerExchangeInspect(
       {.input_tracer_path = "sample.zip", .passphrase = "secret"});

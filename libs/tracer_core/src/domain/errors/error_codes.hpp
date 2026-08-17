@@ -130,8 +130,7 @@ inline constexpr std::string_view kFieldInvalid = "config.field.invalid";
 // ---------------------------------------------------------------------------
 namespace insights {
 
-inline constexpr std::string_view kTargetNotFound =
-    "insights.target.not_found";
+inline constexpr std::string_view kTargetNotFound = "insights.target.not_found";
 
 }  // namespace insights
 

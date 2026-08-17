@@ -86,18 +86,20 @@ auto SqliteInsightsDataQueryService::QueryDaily(std::string_view date)
 
 auto SqliteInsightsDataQueryService::QueryMonthly(std::string_view month)
     -> MonthlyInsightsData {
-  MonthQuerier querier(EnsureDbConnection(db_connection_), month, &status_config_);
+  MonthQuerier querier(EnsureDbConnection(db_connection_), month,
+                       &status_config_);
   return querier.FetchData();
 }
 
-auto SqliteInsightsDataQueryService::QueryPeriod(int days) -> PeriodInsightsData {
+auto SqliteInsightsDataQueryService::QueryPeriod(int days)
+    -> PeriodInsightsData {
   PeriodQuerier querier(EnsureDbConnection(db_connection_), days,
                         *platform_clock_, &status_config_);
   return querier.FetchData();
 }
 
 auto SqliteInsightsDataQueryService::QueryRange(std::string_view start_date,
-                                              std::string_view end_date)
+                                                std::string_view end_date)
     -> PeriodInsightsData {
   DateRangeQuerier querier(EnsureDbConnection(db_connection_), start_date,
                            end_date, &status_config_);
@@ -106,13 +108,15 @@ auto SqliteInsightsDataQueryService::QueryRange(std::string_view start_date,
 
 auto SqliteInsightsDataQueryService::QueryWeekly(std::string_view iso_week)
     -> WeeklyInsightsData {
-  WeekQuerier querier(EnsureDbConnection(db_connection_), iso_week, &status_config_);
+  WeekQuerier querier(EnsureDbConnection(db_connection_), iso_week,
+                      &status_config_);
   return querier.FetchData();
 }
 
 auto SqliteInsightsDataQueryService::QueryYearly(std::string_view year)
     -> YearlyInsightsData {
-  YearQuerier querier(EnsureDbConnection(db_connection_), year, &status_config_);
+  YearQuerier querier(EnsureDbConnection(db_connection_), year,
+                      &status_config_);
   return querier.FetchData();
 }
 

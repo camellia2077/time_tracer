@@ -15,7 +15,7 @@ namespace tracer::core::infrastructure::insights::services {
 class YearlyInsightsService {
  public:
   explicit YearlyInsightsService(sqlite3* sqlite_db,
-                               const InsightsCatalog& insights_catalog);
+                                 const InsightsCatalog& insights_catalog);
 
   auto GenerateInsights(InsightsFormat format) -> FormattedYearlyInsights;
 

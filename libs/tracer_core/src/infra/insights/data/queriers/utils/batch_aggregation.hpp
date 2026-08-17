@@ -14,15 +14,16 @@ namespace insights::data::batch {
 
 template <typename InsightsDataT>
 void FinalizeAggregation(
-    InsightsDataT& data, const std::map<std::int64_t, std::int64_t>& project_agg,
-    int actual_days, const IProjectInfoProvider& provider) {
+    InsightsDataT& data,
+    const std::map<std::int64_t, std::int64_t>& project_agg, int actual_days,
+    const IProjectInfoProvider& provider) {
   data.actual_days = actual_days;
   data.project_stats.clear();
   data.project_stats.reserve(project_agg.size());
   for (const auto& [project_id, duration] : project_agg) {
     data.project_stats.emplace_back(project_id, duration);
   }
-  if (data.total_duration > 0) {
+  if (data.activity.total_duration_seconds > 0) {
     data.project_tree.clear();
     BuildProjectTreeFromIds(data.project_tree, data.project_stats, provider);
   }
@@ -30,7 +31,8 @@ void FinalizeAggregation(
 
 template <typename InsightsDataT>
 void FinalizeAggregation(
-    InsightsDataT& data, const std::map<std::int64_t, std::int64_t>& project_agg,
+    InsightsDataT& data,
+    const std::map<std::int64_t, std::int64_t>& project_agg,
     const std::set<std::string>& distinct_dates,
     const IProjectInfoProvider& provider) {
   FinalizeAggregation(data, project_agg,
@@ -41,7 +43,7 @@ template <typename InsightsDataT>
 void FinalizeAggregationFromStats(InsightsDataT& data, int actual_days,
                                   const IProjectInfoProvider& provider) {
   data.actual_days = actual_days;
-  if (data.total_duration > 0) {
+  if (data.activity.total_duration_seconds > 0) {
     data.project_tree.clear();
     BuildProjectTreeFromIds(data.project_tree, data.project_stats, provider);
   }

@@ -24,16 +24,16 @@ namespace {
 
 namespace modtext = tracer::core::shared::canonical_text;
 using tracer::core::shared::string_utils::Trim;
+using tracer_core::core::dto::ApplyTxtDayEditRequest;
+using tracer_core::core::dto::ApplyTxtDayEditResponse;
 using tracer_core::core::dto::DefaultTxtDayMarkerRequest;
 using tracer_core::core::dto::DefaultTxtDayMarkerResponse;
 using tracer_core::core::dto::ReplaceTxtDayBlockRequest;
 using tracer_core::core::dto::ReplaceTxtDayBlockResponse;
-using tracer_core::core::dto::ResolveTxtDayEditRequest;
-using tracer_core::core::dto::ResolveTxtDayEditResponse;
 using tracer_core::core::dto::ResolveTxtDayBlockRequest;
 using tracer_core::core::dto::ResolveTxtDayBlockResponse;
-using tracer_core::core::dto::ApplyTxtDayEditRequest;
-using tracer_core::core::dto::ApplyTxtDayEditResponse;
+using tracer_core::core::dto::ResolveTxtDayEditRequest;
+using tracer_core::core::dto::ResolveTxtDayEditResponse;
 using tracer_core::core::dto::TxtDayEditEvent;
 
 struct ParsedIsoDate {
@@ -279,17 +279,17 @@ struct ParsedYearMonth {
                                    std::string_view normalized_day_marker,
                                    std::string_view selected_month,
                                    const ConverterConfig& config) -> DailyLog {
-  const auto parsed_month = TryParseSelectedMonth(selected_month);
-  const auto iso_date =
+  const auto kParsedMonth = TryParseSelectedMonth(selected_month);
+  const auto kIsoDate =
       BuildDayContentIsoDate(selected_month, normalized_day_marker);
-  if (!parsed_month.has_value() || !iso_date.has_value()) {
+  if (!kParsedMonth.has_value() || !kIsoDate.has_value()) {
     throw std::invalid_argument(
         "selected_month and day_marker must identify a valid calendar day.");
   }
 
   std::ostringstream source;
-  source << "y" << std::format("{:04d}", parsed_month->year) << "\n";
-  source << "m" << std::format("{:02d}", parsed_month->month) << "\n\n";
+  source << "y" << std::format("{:04d}", kParsedMonth->year) << "\n";
+  source << "m" << std::format("{:02d}", kParsedMonth->month) << "\n\n";
   source << BuildDayMarkerLine(normalized_day_marker) << "\n";
   source << day_body;
   if (!day_body.empty() && day_body.back() != '\n') {
@@ -338,7 +338,8 @@ struct ParsedYearMonth {
 }
 
 [[nodiscard]] auto BuildTimelineEditError(
-    const validator::structure::MixedTimelineAnalysis& analysis) -> std::string {
+    const validator::structure::MixedTimelineAnalysis& analysis)
+    -> std::string {
   if (analysis.issues.empty()) {
     return "";
   }
@@ -363,26 +364,26 @@ struct ParsedYearMonth {
 }
 
 auto AppendRemarkLines(std::string& output, std::string_view remark,
-                       const bool first_inline) -> void {
-  const auto lines = SplitLines(remark);
+                       const bool kFirstInline) -> void {
+  const auto kLines = SplitLines(remark);
   bool first = true;
-  for (const auto& line : lines) {
-    const std::string trimmed = Trim(line);
-    if (trimmed.empty()) {
+  for (const auto& line : kLines) {
+    const std::string kTrimmed = Trim(line);
+    if (kTrimmed.empty()) {
       continue;
     }
-    if (first && first_inline) {
+    if (first && kFirstInline) {
       output += " // ";
-      output += trimmed;
+      output += kTrimmed;
       output.push_back('\n');
     } else {
       output += "// ";
-      output += trimmed;
+      output += kTrimmed;
       output.push_back('\n');
     }
     first = false;
   }
-  if (first_inline && first) {
+  if (kFirstInline && first) {
     output.push_back('\n');
   }
 }
@@ -515,100 +516,103 @@ auto ReplaceDayBlock(const ReplaceTxtDayBlockRequest& request)
 }
 
 auto ResolveDayEdit(const ResolveTxtDayEditRequest& request,
-                    const ConverterConfig& config) -> ResolveTxtDayEditResponse {
-  const auto resolved = ResolveDayBlock({
+                    const ConverterConfig& config)
+    -> ResolveTxtDayEditResponse {
+  const auto kResolved = ResolveDayBlock({
       .content = request.content,
       .day_marker = request.day_marker,
       .selected_month = request.selected_month,
   });
-  if (!resolved.ok || !resolved.found || !resolved.is_marker_valid) {
-    return {.ok = resolved.ok,
-            .normalized_day_marker = resolved.normalized_day_marker,
-            .found = resolved.found,
-            .is_marker_valid = resolved.is_marker_valid,
-            .can_save = resolved.can_save,
-            .day_content_iso_date = resolved.day_content_iso_date,
-            .error_message = resolved.error_message};
+  if (!kResolved.ok || !kResolved.found || !kResolved.is_marker_valid) {
+    return {.ok = kResolved.ok,
+            .normalized_day_marker = kResolved.normalized_day_marker,
+            .found = kResolved.found,
+            .is_marker_valid = kResolved.is_marker_valid,
+            .can_save = kResolved.can_save,
+            .day_content_iso_date = kResolved.day_content_iso_date,
+            .error_message = kResolved.error_message};
   }
   try {
-    const DailyLog day = ParseDayForEdit(
-        resolved.day_body, resolved.normalized_day_marker, request.selected_month,
-        config);
-    const auto timeline = validator::structure::AnalyzeMixedTimeline(
-        day, std::unordered_set<std::string>(config.sleep_inference.wake_keywords.begin(),
-                                             config.sleep_inference.wake_keywords.end()));
-    if (!timeline.ok()) {
-      throw std::invalid_argument(BuildTimelineEditError(timeline));
+    const DailyLog kDay =
+        ParseDayForEdit(kResolved.day_body, kResolved.normalized_day_marker,
+                        request.selected_month, config);
+    const auto kTimeline = validator::structure::AnalyzeMixedTimeline(
+        kDay, std::unordered_set<std::string>(
+                  config.sleep_inference.wake_keywords.begin(),
+                  config.sleep_inference.wake_keywords.end()));
+    if (!kTimeline.ok()) {
+      throw std::invalid_argument(BuildTimelineEditError(kTimeline));
     }
     std::string day_remark;
-    for (const auto& remark : day.generalRemarks) {
+    for (const auto& remark : kDay.generalRemarks) {
       if (!day_remark.empty()) {
         day_remark.push_back('\n');
       }
       day_remark += remark;
     }
     return {.ok = true,
-            .normalized_day_marker = resolved.normalized_day_marker,
+            .normalized_day_marker = kResolved.normalized_day_marker,
             .found = true,
             .is_marker_valid = true,
             .can_save = true,
             .day_remark = std::move(day_remark),
-            .events = ToDayEditEvents(day, timeline),
-            .day_content_iso_date = resolved.day_content_iso_date,
+            .events = ToDayEditEvents(kDay, kTimeline),
+            .day_content_iso_date = kResolved.day_content_iso_date,
             .error_message = ""};
   } catch (const std::exception& error) {
     return {.ok = false,
-            .normalized_day_marker = resolved.normalized_day_marker,
+            .normalized_day_marker = kResolved.normalized_day_marker,
             .found = true,
             .is_marker_valid = true,
             .can_save = false,
-            .day_content_iso_date = resolved.day_content_iso_date,
+            .day_content_iso_date = kResolved.day_content_iso_date,
             .error_message = error.what()};
   }
 }
 
 auto ApplyDayEdit(const ApplyTxtDayEditRequest& request,
                   const ConverterConfig& config) -> ApplyTxtDayEditResponse {
-  const auto resolved = ResolveDayBlock({
+  const auto kResolved = ResolveDayBlock({
       .content = request.content,
       .day_marker = request.day_marker,
       .selected_month = request.selected_month,
   });
-  if (!resolved.ok || !resolved.found || !resolved.is_marker_valid) {
-    return {.ok = resolved.ok,
-            .normalized_day_marker = resolved.normalized_day_marker,
-            .found = resolved.found,
-            .is_marker_valid = resolved.is_marker_valid,
+  if (!kResolved.ok || !kResolved.found || !kResolved.is_marker_valid) {
+    return {.ok = kResolved.ok,
+            .normalized_day_marker = kResolved.normalized_day_marker,
+            .found = kResolved.found,
+            .is_marker_valid = kResolved.is_marker_valid,
             .updated_content = request.content,
-            .error_message = resolved.error_message};
+            .error_message = kResolved.error_message};
   }
   try {
-    const std::string edited_body = RenderEditedDayBody(request);
+    const std::string kEditedBody = RenderEditedDayBody(request);
     // Parse the normalized result through the canonical parser before exposing
     // it to the host. Full-month ingest remains the final persistence gate.
-    const DailyLog edited_day = ParseDayForEdit(
-        edited_body, resolved.normalized_day_marker, request.selected_month, config);
-    const auto timeline = validator::structure::AnalyzeMixedTimeline(
-        edited_day, std::unordered_set<std::string>(
+    const DailyLog kEditedDay =
+        ParseDayForEdit(kEditedBody, kResolved.normalized_day_marker,
+                        request.selected_month, config);
+    const auto kTimeline = validator::structure::AnalyzeMixedTimeline(
+        kEditedDay, std::unordered_set<std::string>(
                         config.sleep_inference.wake_keywords.begin(),
                         config.sleep_inference.wake_keywords.end()));
-    if (!timeline.ok()) {
-      throw std::invalid_argument(BuildTimelineEditError(timeline));
+    if (!kTimeline.ok()) {
+      throw std::invalid_argument(BuildTimelineEditError(kTimeline));
     }
-    const auto replaced = ReplaceDayBlock({
+    const auto kReplaced = ReplaceDayBlock({
         .content = request.content,
-        .day_marker = resolved.normalized_day_marker,
-        .edited_day_body = edited_body,
+        .day_marker = kResolved.normalized_day_marker,
+        .edited_day_body = kEditedBody,
     });
-    return {.ok = replaced.ok,
-            .normalized_day_marker = replaced.normalized_day_marker,
-            .found = replaced.found,
-            .is_marker_valid = replaced.is_marker_valid,
-            .updated_content = replaced.updated_content,
-            .error_message = replaced.error_message};
+    return {.ok = kReplaced.ok,
+            .normalized_day_marker = kReplaced.normalized_day_marker,
+            .found = kReplaced.found,
+            .is_marker_valid = kReplaced.is_marker_valid,
+            .updated_content = kReplaced.updated_content,
+            .error_message = kReplaced.error_message};
   } catch (const std::exception& error) {
     return {.ok = false,
-            .normalized_day_marker = resolved.normalized_day_marker,
+            .normalized_day_marker = kResolved.normalized_day_marker,
             .found = true,
             .is_marker_valid = true,
             .updated_content = request.content,

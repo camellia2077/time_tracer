@@ -70,12 +70,12 @@ auto ExecuteJniMethod(JNIEnv* env, Fn&& fn) -> jstring {
 }
 
 auto NativeInit(JNIEnv* env, jobject thiz, jstring db_path, jstring output_root,
-                jstring converter_config_toml_path,
-                jstring status_configs_json) -> jstring;
+                jstring converter_config_toml_path, jstring status_configs_json)
+    -> jstring;
 
 auto NativeInitPipeline(JNIEnv* env, jobject thiz, jstring db_path,
-                        jstring output_root,
-                        jstring converter_config_toml_path) -> jstring;
+                        jstring output_root, jstring converter_config_toml_path)
+    -> jstring;
 
 auto NativeShutdown(JNIEnv* env, jobject thiz) -> jstring;
 
@@ -101,19 +101,21 @@ auto NativeValidateLogic(JNIEnv* env, jobject thiz, jstring input_path,
 
 auto NativeRecordActivityAtomically(JNIEnv* env, jobject thiz,
                                     jstring target_date_iso,
-                                    jstring raw_activity_name,
-                                    jstring remark,
+                                    jstring raw_activity_name, jstring remark,
                                     jstring preferred_txt_path,
-                                    jint date_check_mode,
-                                    jint time_order_mode) -> jstring;
+                                    jint date_check_mode, jint time_order_mode)
+    -> jstring;
 
-auto NativeUpdateActivityRemarkAtomically(
-    JNIEnv* env, jobject thiz, jstring target_date_iso, jlong logical_id,
-    jstring remark, jstring preferred_txt_path, jint date_check_mode) -> jstring;
+auto NativeUpdateActivityRemarkAtomically(JNIEnv* env, jobject thiz,
+                                          jstring target_date_iso,
+                                          jlong logical_id, jstring remark,
+                                          jstring preferred_txt_path,
+                                          jint date_check_mode) -> jstring;
 
-auto NativeUpdateDayRemarkAtomically(
-    JNIEnv* env, jobject thiz, jstring target_date_iso, jstring remark,
-    jstring preferred_txt_path, jint date_check_mode) -> jstring;
+auto NativeUpdateDayRemarkAtomically(JNIEnv* env, jobject thiz,
+                                     jstring target_date_iso, jstring remark,
+                                     jstring preferred_txt_path,
+                                     jint date_check_mode) -> jstring;
 
 auto NativeConfig(JNIEnv* env, jobject thiz, jstring request_json) -> jstring;
 
@@ -137,11 +139,11 @@ auto NativeQuery(JNIEnv* env, jobject thiz, jint action, jint year, jint month,
                  jstring from_date, jstring to_date, jstring remark,
                  jstring day_remark, jstring project, jstring root,
                  jint exercise, jint status, jboolean cross_midnight_activity,
-                 jboolean reverse, jint limit,
-                 jint top_n, jint lookback_days, jstring anchor_date,
-                 jboolean score_by_duration, jstring tree_period,
-                 jstring tree_period_argument, jint tree_max_depth,
-                 jstring output_mode, jstring average_day_basis) -> jstring;
+                 jboolean reverse, jint limit, jint top_n, jint lookback_days,
+                 jstring anchor_date, jboolean score_by_duration,
+                 jstring tree_period, jstring tree_period_argument,
+                 jint tree_max_depth, jstring output_mode,
+                 jstring average_day_basis) -> jstring;
 
 auto NativeInsightsJson(JNIEnv* env, jobject thiz, jstring request_json)
     -> jstring;
