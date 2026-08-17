@@ -28,7 +28,6 @@ internal class RuntimeIngestService(
                 )
                 validationCandidateFile = writeValidationCandidate(
                     paths = paths,
-                    sourceInputPath = inputPath,
                     normalizedContent = preparedInput.normalizedContent
                 )
 
@@ -98,7 +97,6 @@ internal class RuntimeIngestService(
 
     private fun writeValidationCandidate(
         paths: RuntimePaths,
-        sourceInputPath: String,
         normalizedContent: String
     ): File {
         val candidateRoot = File(paths.cacheRootPath).apply { mkdirs() }

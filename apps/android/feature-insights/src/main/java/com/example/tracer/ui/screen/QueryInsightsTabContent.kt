@@ -60,7 +60,7 @@ fun QueryInsightsTabContent(
         preferredParameterSection,
         preferredAverageDayBasis
     ) {
-        // These four DataStore values form one insights presentation selection. Applying them
+        // Persisted presentation values form one insights selection. Applying them
         // independently can launch a default text insights before the persisted Chart mode has
         // arrived, whose late result overwrites the chart during cold start.
         queryInsightsViewModel.applyInsightsAverageDayBasis(preferredAverageDayBasis)
@@ -72,6 +72,13 @@ fun QueryInsightsTabContent(
             parameterSection = preferredParameterSection
         )
     }
+
+    // The ViewModel owns the one-time restore state. After it becomes true, DataStore writeback
+    // from later user selections cannot hide the screen while preferences catch up.
+    if (!queryUiState.isPresentationRestored) {
+        return
+    }
+
     // DataStore preferences are asynchronous persistence input, while chart results and loading
     // state are produced by the ViewModel. Rendering the selectors from preferences but the
     // chart from queryUiState split one user selection across two clocks: after switching Month,
@@ -130,7 +137,6 @@ fun QueryInsightsTabContent(
 
     Column(modifier = modifier.fillMaxSize()) {
         InsightsModeTabs(
-            selectedIndex = InsightsMode.entries.indexOf(displayedInsightsMode),
             insightsModes = InsightsMode.entries,
             insightsMode = displayedInsightsMode,
             onInsightsModeChange = onInsightsModeChange
@@ -201,9 +207,14 @@ fun QueryInsightsTabContent(
                     null
                 },
                 periodActivityDays = queryUiState.periodActivityDays[selectedPeriod].orEmpty(),
+                periodActivityAggregate = queryUiState.periodActivityAggregates[selectedPeriod]
+                    ?: ActivityAggregate(),
                 periodActivityProjectTree = queryUiState.periodActivityProjectTrees[selectedPeriod].orEmpty(),
                 periodComparison = queryUiState.periodComparison,
                 canComparePreviousPeriod = queryInsightsViewModel.canComparePreviousPeriod(),
+                trendChartComparison = queryUiState.trendChartComparison,
+                canCompareChartPreviousPeriod =
+                    queryInsightsViewModel.canCompareChartPreviousPeriod(),
                 calendarAvailability = calendarAvailability,
                 dayActivitiesView = dayActivitiesView,
                 periodActivitiesView = periodActivitiesView,
@@ -212,6 +223,10 @@ fun QueryInsightsTabContent(
                 onPeriodComparisonToggle = queryInsightsViewModel::onPeriodComparisonToggle,
                 onComparisonPeriodSelected =
                     queryInsightsViewModel::onComparisonPeriodSelected,
+                onChartPeriodComparisonToggle =
+                    queryInsightsViewModel::onChartPeriodComparisonToggle,
+                onChartComparisonPeriodSelected =
+                    queryInsightsViewModel::onChartComparisonPeriodSelected,
                 parameterSection = displayedParameterSection,
                 insightsError = displayInsightsError,
                 analysisError = queryUiState.analysisError,
@@ -221,14 +236,10 @@ fun QueryInsightsTabContent(
                 trendChartRoots = queryUiState.trendChartRoots,
                 trendChartSelectedRoot = queryUiState.trendChartSelectedRoot,
                 insightsMode = displayedInsightsMode,
-                trendChartLoading = queryUiState.trendChartLoading,
                 trendChartError = queryUiState.trendChartError,
                 trendChartRenderModel = queryUiState.trendChartRenderModel,
-                trendChartLastTrace = queryUiState.trendChartLastTrace,
-                compositionChartLoading = queryUiState.compositionChartLoading,
                 compositionChartError = queryUiState.compositionChartError,
                 compositionChartRenderModel = queryUiState.compositionChartRenderModel,
-                compositionChartLastTrace = queryUiState.compositionChartLastTrace,
                 chartShowAverageLine = chartShowAverageLine,
                 piePalettePreset = piePalettePreset,
                 heatmapTomlConfig = heatmapTomlConfig,

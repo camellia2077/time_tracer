@@ -323,7 +323,9 @@ class QueryInsightsResultDisplayRobolectricTest {
                     week = "202614"
                 ),
                 activityDays = emptyList(),
-                projectTree = emptyList()
+                projectTree = emptyList(),
+                activityAggregate = ActivityAggregate(),
+                chartRenderModel = null
             ),
             parameterSection = InsightsParameterSection.ACTIVITIES,
             insightsMode = InsightsMode.MONTH
@@ -437,6 +439,10 @@ class QueryInsightsResultDisplayRobolectricTest {
         insightsSummary: InsightsSummary? = null,
         dayTimeline: StructuredDailyInsights? = null,
         periodActivityDays: List<StructuredDailyInsights> = emptyList(),
+        periodActivityAggregate: ActivityAggregate = ActivityAggregate(
+            totalDurationSeconds = periodActivityDays.sumOf(StructuredDailyInsights::totalDurationSeconds),
+            occurrenceCount = periodActivityDays.sumOf { it.activities.size.toLong() }
+        ),
         periodActivityProjectTree: List<StructuredInsightsProjectNode> = emptyList(),
         periodComparison: InsightsPeriodComparisonState = InsightsPeriodComparisonState.Hidden,
         parameterSection: InsightsParameterSection = InsightsParameterSection.DAY,
@@ -447,13 +453,16 @@ class QueryInsightsResultDisplayRobolectricTest {
                 var dayActivitiesView by remember { mutableStateOf(InsightsActivityView.RECORDS) }
                 var periodActivitiesView by remember { mutableStateOf(InsightsActivityView.OVERVIEW) }
                 QueryInsightsResultDisplay(
-                    resultDisplayMode = InsightsResultDisplayMode.TEXT,
+                    resultDisplayMode = InsightsResultDisplayMode.DETAILS,
                     activeResult = activeResult,
                     insightsSummary = insightsSummary,
                     dayTimeline = dayTimeline,
                     periodActivityDays = periodActivityDays,
+                    periodActivityAggregate = periodActivityAggregate,
                     periodActivityProjectTree = periodActivityProjectTree,
                     periodComparison = periodComparison,
+                    trendChartComparison = InsightsPeriodComparisonState.Hidden,
+                    canCompareChartPreviousPeriod = false,
                     dayActivitiesView = dayActivitiesView,
                     periodActivitiesView = periodActivitiesView,
                     onDayActivitiesViewChange = { dayActivitiesView = it },
@@ -467,14 +476,10 @@ class QueryInsightsResultDisplayRobolectricTest {
                     trendChartRoots = emptyList(),
                     trendChartSelectedRoot = "",
                     insightsMode = insightsMode,
-                    trendChartLoading = false,
                     trendChartError = "",
                     trendChartRenderModel = null,
-                    trendChartLastTrace = null,
-                    compositionChartLoading = false,
                     compositionChartError = "",
                     compositionChartRenderModel = null,
-                    compositionChartLastTrace = null,
                     chartShowAverageLine = false,
                     piePalettePreset = InsightsPiePalettePreset.SOFT,
                     heatmapTomlConfig = defaultInsightsHeatmapTomlConfig(),
@@ -486,7 +491,9 @@ class QueryInsightsResultDisplayRobolectricTest {
                     onCompositionVisualModeChange = {},
                     onChartRootChange = {},
                     onChartShowAverageLineChange = {},
-                    onChartVisualModeChange = {}
+                    onChartVisualModeChange = {},
+                    onChartPeriodComparisonToggle = {},
+                    onChartComparisonPeriodSelected = {}
                 )
             }
         }

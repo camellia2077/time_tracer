@@ -273,14 +273,14 @@ class UserPreferencesRepositoryTest {
             scope = backgroundScope
         )
 
-        assertEquals(InsightsResultDisplayMode.TEXT, repository.insightsResultDisplayMode.first())
+        assertEquals(InsightsResultDisplayMode.DETAILS, repository.insightsResultDisplayMode.first())
 
         repository.setInsightsResultDisplayMode(InsightsResultDisplayMode.CHART)
 
         assertEquals(InsightsResultDisplayMode.CHART, repository.insightsResultDisplayMode.first())
 
         repository.setInsightsMode(InsightsMode.MONTH)
-        assertEquals(InsightsResultDisplayMode.TEXT, repository.insightsResultDisplayMode.first())
+        assertEquals(InsightsResultDisplayMode.DETAILS, repository.insightsResultDisplayMode.first())
 
         repository.setInsightsResultDisplayMode(InsightsResultDisplayMode.CHART)
         repository.setInsightsMode(InsightsMode.DAY)

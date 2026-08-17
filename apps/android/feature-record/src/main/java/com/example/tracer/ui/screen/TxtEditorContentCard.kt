@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -73,6 +74,11 @@ internal fun TxtEditorContentCard(
     val dayContentIsoDate = dayBlockEditorState.dayContentIsoDate
     val currentDayText = currentDay?.let { formatEditorCurrentDayText(it) }
     val dayMarkerText = dayBlockEditorState.normalizedDayMarker.ifBlank { dayMarkerInput }
+    val isStructuredDayLoading =
+        outputMode == TxtOutputMode.DAY &&
+            dayViewMode == TxtDayViewMode.STRUCTURED &&
+            canEditDay &&
+            structuredDayEdit == null
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -115,7 +121,9 @@ internal fun TxtEditorContentCard(
                             ),
                             onClick = { dayViewMode = mode },
                             selected = dayViewMode == mode,
-                            enabled = mode != TxtDayViewMode.STRUCTURED || canShowStructuredDay,
+                            enabled = mode != TxtDayViewMode.STRUCTURED ||
+                                canShowStructuredDay ||
+                                isStructuredDayLoading,
                             colors = TracerSegmentedButtonDefaults.colors(),
                             modifier = Modifier.weight(1f),
                             label = {
@@ -193,7 +201,9 @@ internal fun TxtEditorContentCard(
                 )
             }
 
-            if (
+            if (isStructuredDayLoading) {
+                TxtStructuredDayLoading()
+            } else if (
                 outputMode == TxtOutputMode.DAY &&
                     dayViewMode == TxtDayViewMode.STRUCTURED &&
                     canShowStructuredDay
@@ -224,6 +234,24 @@ internal fun TxtEditorContentCard(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun TxtStructuredDayLoading() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        CircularProgressIndicator()
+        Text(
+            text = stringResource(R.string.record_hint_loading),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 

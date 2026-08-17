@@ -21,6 +21,9 @@ host/runtime integration; shared business semantics remain in `tracer_core`.
   `docs/time_tracer/presentation/android/specs/CONFIG_ASSET_LIFECYCLE.md`
 - Runtime payloads:
   `docs/time_tracer/presentation/android/runtime-protocol.md`
+- Raw TXT or canonical activity-hierarchy TOML semantic mutation:
+  - `docs/time_tracer/presentation/android/runtime-protocol.md`
+  - `docs/time_tracer/core/contracts/text/runtime_txt_day_block_json_contract_v1.md`
 - User-visible behavior:
   `docs/time_tracer/presentation/android/features.md`
 - Exchange, TXT import/export, SAF/document, or fd export:
@@ -38,8 +41,15 @@ host/runtime integration; shared business semantics remain in `tracer_core`.
 - `contract`: gateway interfaces and shared presentation models.
 - UI routes and app-side tests should depend on the smallest gateway interface;
   `RuntimeGateway` remains an aggregate composition boundary.
-- Do not reimplement core TXT, validation, insights, query, or exchange semantics
-  in Kotlin presentation code.
+- Do not reimplement Core TXT, validation, insights, query, or exchange
+  semantics in Kotlin presentation code.
+- Route every Raw TXT or canonical activity-hierarchy TOML create, edit, delete,
+  rename, and conversion request through its owning Core runtime operation; do
+  not add a local fallback that decides the resulting TXT/TOML content.
+- For Core atomic Record and remark operations, Core owns the write, validation,
+  and re-ingest transaction. For Core content-transform operations, Android may
+  perform the contract-defined physical write and sync, but must persist the
+  returned content or replacement plan unchanged.
 
 ## Local Invariants
 

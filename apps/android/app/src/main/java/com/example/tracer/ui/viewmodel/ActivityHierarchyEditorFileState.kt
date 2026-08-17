@@ -107,11 +107,15 @@ internal fun newAliasTomlPath(
     fileName: String
 ): String? {
     val requestedName = fileName.trim()
-    if (
-        requestedName.isBlank() ||
-        requestedName == "." ||
-        requestedName == ".." ||
-        requestedName.any { character -> character == '/' || character == '\\' || character.isISOControl() }
+    if (requestedName.isBlank()) {
+        return null
+    }
+    if (requestedName == "." || requestedName == "..") {
+        return null
+    }
+    if (requestedName.any { character ->
+            character == '/' || character == '\\' || character.isISOControl()
+        }
     ) {
         return null
     }

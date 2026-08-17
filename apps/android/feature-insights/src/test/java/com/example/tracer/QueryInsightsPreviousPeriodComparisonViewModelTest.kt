@@ -87,7 +87,9 @@ class QueryInsightsPreviousPeriodComparisonViewModelTest {
                 label = "Jan 2025",
                 selection = selectedComparison,
                 activityDays = listOf(StructuredDailyInsights("2025-01-01", 1_800)),
-                projectTree = listOf(StructuredInsightsProjectNode("previous", 1_800))
+                projectTree = listOf(StructuredInsightsProjectNode("previous", 1_800)),
+                activityAggregate = ActivityAggregate(),
+                chartRenderModel = null
             ),
             periodComparisonVersion = 2
         )

@@ -42,12 +42,11 @@ internal class RuntimeSqliteDatabaseSwap {
         targetDirectory.mkdirs()
         sqliteFiles(sourceDatabase).filter(File::exists).forEach { source ->
             val target = File(targetDirectory, source.name)
-            val options = if (replaceExisting) {
-                arrayOf(StandardCopyOption.REPLACE_EXISTING)
+            if (replaceExisting) {
+                Files.move(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING)
             } else {
-                emptyArray()
+                Files.move(source.toPath(), target.toPath())
             }
-            Files.move(source.toPath(), target.toPath(), *options)
         }
     }
 

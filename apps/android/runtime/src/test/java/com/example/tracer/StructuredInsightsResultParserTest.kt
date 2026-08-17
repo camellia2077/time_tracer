@@ -63,12 +63,13 @@ class StructuredInsightsResultParserTest {
                 initialized = true,
                 operationOk = true,
                 outputText = "",
-                rawResponse = """{"ok":true,"insights_kind":"period","insights":{"statuses":[{"id":"study","label":"Study","occurrence_count":3,"total_duration":7200},{"id":"exercise","label":"Exercise","occurrence_count":0,"total_duration":0}]}}"""
+                rawResponse = """{"ok":true,"insights_kind":"period","insights":{"matched_record_count":3,"total_duration":7200,"statuses":[{"id":"study","label":"Study","occurrence_count":3,"total_duration":7200},{"id":"exercise","label":"Exercise","occurrence_count":0,"total_duration":0}]}}"""
             )
         )
 
         assertTrue(result.operationOk)
         assertEquals(null, result.insights)
+        assertEquals(ActivityAggregate(7200L, 3L), result.activityAggregate)
         assertEquals(
             listOf(
                 InsightsStatusValue(id = "study", label = "Study", occurrenceCount = 3, totalDurationSeconds = 7200),

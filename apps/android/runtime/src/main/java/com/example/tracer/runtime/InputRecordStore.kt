@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package com.example.tracer
 
 import java.io.File
@@ -5,6 +7,9 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+
+private const val FIRST_MONTH = 1
+private const val LAST_MONTH = 12
 
 internal class InputRecordStore {
     private val appMonthFileFormatter = SimpleDateFormat("yyyy-MM", Locale.US)
@@ -29,7 +34,7 @@ internal class InputRecordStore {
         year: Int,
         month: Int
     ): EnsureMonthFileResult {
-        require(month in 1..12) { "Month must be between 1 and 12." }
+        require(month in FIRST_MONTH..LAST_MONTH) { "Month must be between 1 and 12." }
         val monthFile = File(inputRootPath, buildMonthRelativePath(String.format(Locale.US, "%04d-%02d", year, month)))
         val created = !monthFile.exists()
         ensureRawMonthFile(monthFile, year, month)

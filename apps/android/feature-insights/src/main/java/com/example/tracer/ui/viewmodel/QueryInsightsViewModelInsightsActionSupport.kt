@@ -7,6 +7,8 @@ internal fun QueryInsightsUiState.copyWithInsightsOutcome(
     textProvider: QueryInsightsTextProvider,
     dayTimeline: StructuredDailyInsights? = this.dayTimeline,
     activityDays: List<StructuredDailyInsights> = this.periodActivityDays[period].orEmpty(),
+    activityAggregate: ActivityAggregate = this.periodActivityAggregates[period]
+        ?: ActivityAggregate(),
     projectTree: List<StructuredInsightsProjectNode> = this.periodActivityProjectTrees[period].orEmpty(),
     statusValues: List<InsightsStatusValue> = emptyList()
 ): QueryInsightsUiState {
@@ -44,6 +46,11 @@ internal fun QueryInsightsUiState.copyWithInsightsOutcome(
             periodActivityDays + (period to activityDays)
         } else {
             periodActivityDays - period
+        },
+        periodActivityAggregates = if (result.operationOk) {
+            periodActivityAggregates + (period to activityAggregate)
+        } else {
+            periodActivityAggregates - period
         },
         periodActivityProjectTrees = if (result.operationOk) {
             periodActivityProjectTrees + (period to projectTree)

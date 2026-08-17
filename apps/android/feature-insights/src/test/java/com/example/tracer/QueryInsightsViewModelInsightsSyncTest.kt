@@ -53,7 +53,7 @@ class QueryInsightsViewModelInsightsSyncTest {
         viewModel.onResultDisplayModeChange(InsightsResultDisplayMode.CHART)
         viewModel.onInsightsModeChange(InsightsMode.WEEK)
         viewModel.onInsightsWeekChange("202615")
-        viewModel.onResultDisplayModeChange(InsightsResultDisplayMode.TEXT)
+        viewModel.onResultDisplayModeChange(InsightsResultDisplayMode.DETAILS)
         advanceUntilIdle()
 
         assertEquals(InsightsDisplayMode.WEEK, fakeInsightsGateway.lastTemporalRequest?.displayMode)
@@ -316,7 +316,7 @@ class QueryInsightsViewModelInsightsSyncTest {
         viewModel.applyPersistedInsightsPresentation(
             insightsMode = InsightsMode.DAY,
             chartSemanticMode = InsightsChartSemanticMode.COMPOSITION,
-            resultDisplayMode = InsightsResultDisplayMode.TEXT,
+            resultDisplayMode = InsightsResultDisplayMode.DETAILS,
             parameterSection = InsightsParameterSection.DAY
         )
         advanceUntilIdle()

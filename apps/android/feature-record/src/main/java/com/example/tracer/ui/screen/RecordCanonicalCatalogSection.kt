@@ -296,7 +296,7 @@ internal fun CanonicalRootDropPreview(modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 4.dp)
-            .testTag(canonicalCatalogRootDropPreviewTestTag()),
+            .testTag(CANONICAL_CATALOG_ROOT_DROP_PREVIEW_TEST_TAG),
         thickness = 3.dp,
         color = MaterialTheme.colorScheme.primary
     )

@@ -202,19 +202,22 @@ fun TracerScreen(
     // Do not render preference-backed segmented controls with their defaults and then
     // hydrate them in a later frame. That state change is rendered by Material as a short
     // selection animation during cold start.
-    if (persistedRecordInput == null ||
-        insightsChartSemanticMode == null ||
-        insightsChartVisualMode == null ||
-        insightsChartTrendRoot == null ||
-        insightsMode == null ||
-        insightsResultDisplayMode == null ||
-        insightsParameterSection == null ||
-        insightsDayActivitiesView == null ||
-        insightsPeriodActivitiesView == null ||
-        insightsTimeParametersExpanded == null
-        || insightsAverageDayBasis == null || insightsPiePalettePreset == null ||
-        configCardExpansionPreferences == null
-    ) {
+    val preferencesAreReady = listOf(
+        persistedRecordInput,
+        insightsChartSemanticMode,
+        insightsChartVisualMode,
+        insightsChartTrendRoot,
+        insightsMode,
+        insightsResultDisplayMode,
+        insightsParameterSection,
+        insightsDayActivitiesView,
+        insightsPeriodActivitiesView,
+        insightsTimeParametersExpanded,
+        insightsAverageDayBasis,
+        insightsPiePalettePreset,
+        configCardExpansionPreferences
+    ).all { it != null }
+    if (!preferencesAreReady) {
         return
     }
 

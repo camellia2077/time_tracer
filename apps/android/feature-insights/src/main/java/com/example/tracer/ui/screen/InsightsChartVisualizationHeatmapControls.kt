@@ -193,12 +193,6 @@ private fun HeatmapPalettePreviewStrip(
     }
 }
 
-private fun InsightsHeatmapThemePolicy.labelRes(): Int =
-    when (this) {
-        InsightsHeatmapThemePolicy.FOLLOW_SYSTEM -> R.string.insights_chart_heatmap_theme_policy_system
-        InsightsHeatmapThemePolicy.PALETTE -> R.string.insights_chart_heatmap_theme_policy_palette
-    }
-
 private fun parsePaletteHexColor(raw: String): Color? {
     val normalized = raw.trim()
     return runCatching { Color(AndroidColor.parseColor(normalized)) }.getOrNull()

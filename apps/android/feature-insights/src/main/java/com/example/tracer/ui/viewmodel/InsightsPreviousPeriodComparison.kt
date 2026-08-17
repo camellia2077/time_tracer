@@ -19,6 +19,149 @@ internal fun resolveDefaultComparisonPeriodRequest(
     }
 }
 
+/** Resolves a comparison window for Trend without requiring the Activities insights payload. */
+internal fun resolveDefaultChartComparisonPeriodRequest(
+    state: QueryInsightsUiState,
+    locale: String
+): ComparisonPeriodRequest? = when (state.insightsMode) {
+    InsightsMode.DAY -> state.insightsDate.toBasicIsoDate()?.minusDays(1)?.let { day ->
+        previousRequest(
+            displayMode = InsightsDisplayMode.DAY,
+            selection = TemporalSelectionPayload(
+                kind = TemporalSelectionKind.SINGLE_DAY,
+                date = day.toString()
+            ),
+            start = day,
+            end = day,
+            locale = locale
+        )
+    }
+
+    InsightsMode.WEEK -> resolveIsoWeekSelection(state.insightsWeek)?.let { week ->
+        val previousStart = week.weekStart.minusDays(7)
+        val previousEnd = week.weekEnd.minusDays(7)
+        previousRequest(
+            displayMode = InsightsDisplayMode.WEEK,
+            selection = TemporalSelectionPayload(
+                kind = TemporalSelectionKind.DATE_RANGE,
+                startDate = previousStart.toString(),
+                endDate = previousEnd.toString()
+            ),
+            start = previousStart,
+            end = previousEnd,
+            locale = locale
+        )
+    }
+
+    InsightsMode.MONTH -> state.insightsMonth.toInsightsYearMonth()?.minusMonths(1)?.let { month ->
+        previousRequest(
+            displayMode = InsightsDisplayMode.MONTH,
+            selection = TemporalSelectionPayload(
+                kind = TemporalSelectionKind.DATE_RANGE,
+                startDate = month.atDay(1).toString(),
+                endDate = month.atEndOfMonth().toString()
+            ),
+            start = month.atDay(1),
+            end = month.atEndOfMonth(),
+            locale = locale
+        )
+    }
+
+    InsightsMode.YEAR -> null
+
+    InsightsMode.RANGE -> {
+        val start = state.insightsRangeStartDate.toBasicIsoDate()
+        val end = state.insightsRangeEndDate.toBasicIsoDate()
+        if (start == null || end == null || end.isBefore(start)) null else {
+            val days = java.time.temporal.ChronoUnit.DAYS.between(start, end) + 1
+            val previousEnd = start.minusDays(1)
+            val previousStart = previousEnd.minusDays(days - 1)
+            previousRequest(
+                displayMode = InsightsDisplayMode.RANGE,
+                selection = TemporalSelectionPayload(
+                    kind = TemporalSelectionKind.DATE_RANGE,
+                    startDate = previousStart.toString(),
+                    endDate = previousEnd.toString()
+                ),
+                start = previousStart,
+                end = previousEnd,
+                locale = locale
+            )
+        }
+    }
+
+    InsightsMode.RECENT -> {
+        val days = state.insightsRecentDays.toIntOrNull()?.takeIf { it > 0 }
+        val currentAnchor = state.insightsDate.toBasicIsoDate()
+        if (days == null || currentAnchor == null) null else {
+            val previousEnd = currentAnchor.minusDays(days.toLong())
+            val previousStart = previousEnd.minusDays(days.toLong() - 1)
+            previousRequest(
+                displayMode = InsightsDisplayMode.RECENT,
+                selection = TemporalSelectionPayload(
+                    kind = TemporalSelectionKind.RECENT_DAYS,
+                    days = days,
+                    anchorDate = previousEnd.toString()
+                ),
+                start = previousStart,
+                end = previousEnd,
+                locale = locale
+            )
+        }
+    }
+}
+
+internal fun resolveChartComparisonPeriodRequest(
+    state: QueryInsightsUiState,
+    selection: InsightsPeriodSelection,
+    locale: String
+): ComparisonPeriodRequest? = when (state.insightsMode) {
+    InsightsMode.DAY -> selection.date.toBasicIsoDate()?.let { day ->
+        previousRequest(
+            displayMode = InsightsDisplayMode.DAY,
+            selection = TemporalSelectionPayload(
+                kind = TemporalSelectionKind.SINGLE_DAY,
+                date = day.toString()
+            ),
+            start = day,
+            end = day,
+            locale = locale
+        )
+    }
+
+    InsightsMode.WEEK -> resolveIsoWeekSelection(selection.week)?.let { week ->
+        previousRequest(
+            displayMode = InsightsDisplayMode.WEEK,
+            selection = TemporalSelectionPayload(
+                kind = TemporalSelectionKind.DATE_RANGE,
+                startDate = week.weekStart.toString(),
+                endDate = week.weekEnd.toString()
+            ),
+            start = week.weekStart,
+            end = week.weekEnd,
+            locale = locale
+        )
+    }
+
+    InsightsMode.MONTH -> selection.month.toIsoYearMonth()?.let { month ->
+        previousRequest(
+            displayMode = InsightsDisplayMode.MONTH,
+            selection = TemporalSelectionPayload(
+                kind = TemporalSelectionKind.DATE_RANGE,
+                startDate = month.atDay(1).toString(),
+                endDate = month.atEndOfMonth().toString()
+            ),
+            start = month.atDay(1),
+            end = month.atEndOfMonth(),
+            locale = locale
+        )
+    }
+
+    InsightsMode.YEAR -> null
+
+    InsightsMode.RANGE, InsightsMode.RECENT -> null
+}
+
 internal fun defaultComparisonPeriodDraft(
     state: QueryInsightsUiState
 ): InsightsPeriodSelection? {
@@ -174,6 +317,11 @@ internal fun QueryInsightsUiState.toPeriodSelection(): InsightsPeriodSelection =
 internal fun QueryInsightsUiState.clearPeriodComparison(): QueryInsightsUiState = copy(
     periodComparison = InsightsPeriodComparisonState.Hidden,
     periodComparisonVersion = periodComparisonVersion + 1
+)
+
+internal fun QueryInsightsUiState.clearTrendChartComparison(): QueryInsightsUiState = copy(
+    trendChartComparison = InsightsPeriodComparisonState.Hidden,
+    trendChartComparisonVersion = trendChartComparisonVersion + 1
 )
 
 private fun previousRequest(

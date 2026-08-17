@@ -94,12 +94,12 @@ fun QueryInsightsViewModel.refreshInsightsDayDefault() {
 
 fun QueryInsightsViewModel.onInsightsTabEntered() {
     // On a cold start the tab lifecycle reaches here before DataStore has delivered the
-    // insights presentation preferences. Do not issue the default TEXT query yet: it can
+    // insights presentation preferences. Do not issue the default DETAILS query yet: it can
     // finish after the persisted CHART query and overwrite the visible chart with a
     // Markdown/no-data state.
-    logChart("tab entered; preferencesApplied=$insightsPresentationPreferencesApplied ${chartSelection()}")
+    logChart("tab entered; presentationRestored=${uiState.isPresentationRestored} ${chartSelection()}")
     refreshInsightsCalendarAvailability()
-    refreshInsightsDayDefault(refresh = insightsPresentationPreferencesApplied)
+    refreshInsightsDayDefault(refresh = uiState.isPresentationRestored)
 }
 
 private fun QueryInsightsViewModel.refreshInsightsCalendarAvailability() {
@@ -145,17 +145,16 @@ fun QueryInsightsViewModel.applyPersistedInsightsPresentation(
 ) {
     // Treat the persisted display, period, semantic mode, and parameter section as one
     // selection. Applying them in separate Compose effects briefly leaves the ViewModel in
-    // its default TEXT state, which starts a query whose delayed result can replace CHART.
+    // its default DETAILS state, which starts a query whose delayed result can replace CHART.
     val normalizedParameterSection = parameterSection
     val normalizedChartSemanticMode = chartSemanticMode.normalizeForInsightsMode(insightsMode)
-    val firstPreferenceApplication = !insightsPresentationPreferencesApplied
+    val firstPreferenceApplication = !uiState.isPresentationRestored
     val changed = uiState.insightsMode != insightsMode ||
         uiState.preferredChartSemanticMode != chartSemanticMode ||
         uiState.chartSemanticMode != normalizedChartSemanticMode ||
         uiState.resultDisplayMode != resultDisplayMode ||
         uiState.parameterSection != normalizedParameterSection ||
         uiState.trendChartSelectedRoot != trendChartSelectedRoot.trim()
-    insightsPresentationPreferencesApplied = true
     if (!firstPreferenceApplication && !changed) {
         // This effect can be launched from the chart's loading composition. Its snapshot
         // may predate a just-committed result; copying the unchanged preference selection
@@ -171,6 +170,7 @@ fun QueryInsightsViewModel.applyPersistedInsightsPresentation(
         preferredChartSemanticMode = chartSemanticMode,
         chartSemanticMode = normalizedChartSemanticMode,
         resultDisplayMode = resultDisplayMode,
+        isPresentationRestored = true,
         parameterSection = normalizedParameterSection,
         trendChartSelectedRoot = trendChartSelectedRoot.trim()
     )
@@ -225,7 +225,7 @@ fun QueryInsightsViewModel.onResultDisplayModeChange(mode: InsightsResultDisplay
     logChart("display mode applied; ${chartSelection()}")
     if (mode == InsightsResultDisplayMode.CHART) {
         refreshCurrentChart()
-    } else if (mode == InsightsResultDisplayMode.TEXT) {
+    } else if (mode == InsightsResultDisplayMode.DETAILS) {
         // Switching from Chart to Text can happen after the insights mode has already
         // changed. Re-query the current period here so Week/Month/etc. does not wait for
         // a later tab visit or another parameter change to populate the Markdown result.
@@ -327,13 +327,14 @@ internal fun QueryInsightsUiState.invalidateChartState(): QueryInsightsUiState =
     trendChartTotalDurationSeconds = null,
     trendChartActiveDays = null,
     trendChartRangeDays = null,
-    trendChartUsesLegacyStatsFallback = false,
     trendChartLoading = false,
     trendChartError = "",
     compositionChartRenderModel = null,
     compositionChartLastTrace = null,
     compositionChartLoading = false,
-    compositionChartError = ""
+    compositionChartError = "",
+    trendChartComparison = InsightsPeriodComparisonState.Hidden,
+    trendChartComparisonVersion = trendChartComparisonVersion + 1
 )
 
 private fun QueryResult?.isAnalysisResultForDifferentPeriod(

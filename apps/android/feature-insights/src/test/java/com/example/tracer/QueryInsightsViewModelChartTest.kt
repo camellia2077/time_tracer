@@ -6,6 +6,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -51,7 +52,6 @@ class QueryInsightsViewModelChartTest {
         assertEquals(9000L, state.trendChartTotalDurationSeconds)
         assertEquals(2, state.trendChartActiveDays)
         assertEquals(2, state.trendChartRangeDays)
-        assertEquals(false, state.trendChartUsesLegacyStatsFallback)
     }
 
     @Test
@@ -160,7 +160,7 @@ class QueryInsightsViewModelChartTest {
         assertEquals(1, fakeQueryGateway.chartQueryCount)
         assertTrue(viewModel.uiState.trendChartPoints.isNotEmpty())
 
-        viewModel.onResultDisplayModeChange(InsightsResultDisplayMode.TEXT)
+        viewModel.onResultDisplayModeChange(InsightsResultDisplayMode.DETAILS)
         viewModel.onInsightsModeChange(InsightsMode.DAY)
         viewModel.onInsightsDateChange("20260413")
         advanceUntilIdle()
@@ -288,30 +288,6 @@ class QueryInsightsViewModelChartTest {
     }
 
     @Test
-    fun switchToChart_withoutCoreStats_usesDerivedStatsFromPipeline() = runTest {
-        val fakeQueryGateway = FakeChartQueryGateway(includeCoreStats = false)
-        val viewModel = QueryInsightsViewModel(
-            insightsGateway = FakeChartInsightsGateway(),
-            queryGateway = fakeQueryGateway
-        )
-        viewModel.selectTrendChart()
-
-        viewModel.onInsightsModeChange(InsightsMode.RECENT)
-        viewModel.onResultDisplayModeChange(InsightsResultDisplayMode.CHART)
-        advanceUntilIdle()
-
-        val state = viewModel.uiState
-        assertEquals(2, state.trendChartPoints.size)
-        assertEquals(4500L, state.trendChartAverageDurationSeconds)
-        assertEquals(9000L, state.trendChartTotalDurationSeconds)
-        assertEquals(2, state.trendChartActiveDays)
-        assertEquals(2, state.trendChartRangeDays)
-        assertEquals(true, state.trendChartUsesLegacyStatsFallback)
-        assertNotNull(state.trendChartLastTrace)
-        assertEquals(false, state.trendChartLastTrace?.cacheHit)
-    }
-
-    @Test
     fun switchToChart_withDay_usesCompositionQuery() = runTest {
         val fakeQueryGateway = FakeChartQueryGateway()
         val viewModel = QueryInsightsViewModel(
@@ -344,6 +320,7 @@ class QueryInsightsViewModelChartTest {
             insightsGateway = insightsGateway,
             queryGateway = queryGateway
         )
+        assertFalse(viewModel.uiState.isPresentationRestored)
 
         // The tab-enter callback runs before preference hydration on a cold start.
         viewModel.onInsightsTabEntered()
@@ -361,9 +338,13 @@ class QueryInsightsViewModelChartTest {
         )
         advanceUntilIdle()
 
+        assertTrue(viewModel.uiState.isPresentationRestored)
         assertEquals(0, insightsGateway.insightsQueryCount)
         assertEquals(1, queryGateway.compositionQueryCount)
         assertNotNull(viewModel.uiState.compositionChartRenderModel)
+
+        viewModel.onInsightsModeChange(InsightsMode.MONTH)
+        assertTrue(viewModel.uiState.isPresentationRestored)
     }
 
     @Test
@@ -413,7 +394,7 @@ class QueryInsightsViewModelChartTest {
             viewModel.applyPersistedInsightsPresentation(
                 insightsMode = insightsMode,
                 chartSemanticMode = InsightsChartSemanticMode.COMPOSITION,
-                resultDisplayMode = InsightsResultDisplayMode.TEXT,
+                resultDisplayMode = InsightsResultDisplayMode.DETAILS,
                 parameterSection = InsightsParameterSection.DAY
             )
             advanceUntilIdle()
@@ -622,7 +603,6 @@ private class FakeChartInsightsGateway : InsightsGateway {
 }
 
 private class FakeChartQueryGateway(
-    private val includeCoreStats: Boolean = true,
     private val chartResponder: (suspend (InsightsChartQueryParams, Int) -> InsightsChartQueryResult)? =
         null
 ) : QueryGateway {
@@ -667,22 +647,14 @@ private class FakeChartQueryGateway(
                 InsightsChartPoint(date = "2026-02-13", durationSeconds = 3600L),
                 InsightsChartPoint(date = "2026-02-14", durationSeconds = 5400L)
             ),
-            usesLegacyStatsFallback = !includeCoreStats
+            averageDurationSeconds = 4500L,
+            totalDurationSeconds = 9000L,
+            activeDays = 2,
+            rangeDays = 2
         )
-        val resolvedChartData = if (includeCoreStats) {
-            chartData.copy(
-                averageDurationSeconds = 4500L,
-                totalDurationSeconds = 9000L,
-                activeDays = 2,
-                rangeDays = 2,
-                usesLegacyStatsFallback = false
-            )
-        } else {
-            chartData
-        }
         return InsightsChartQueryResult(
             ok = true,
-            data = resolvedChartData,
+            data = chartData,
             message = "ok"
         )
     }

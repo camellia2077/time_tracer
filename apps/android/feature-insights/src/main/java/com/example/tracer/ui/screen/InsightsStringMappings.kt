@@ -28,6 +28,6 @@ internal fun DataTreePeriod.labelRes(): Int =
 @StringRes
 internal fun InsightsResultDisplayMode.labelRes(): Int =
     when (this) {
-        InsightsResultDisplayMode.TEXT -> R.string.insights_result_mode_text
+        InsightsResultDisplayMode.DETAILS -> R.string.insights_result_mode_details
         InsightsResultDisplayMode.CHART -> R.string.insights_result_mode_chart
     }

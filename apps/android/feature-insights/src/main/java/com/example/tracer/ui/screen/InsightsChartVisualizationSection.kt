@@ -1,32 +1,49 @@
 package com.example.tracer
 
-import android.util.Log
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.insights.R
+import com.example.tracer.ui.components.CalendarAvailability
 
 @Composable
 internal fun InsightsChartVisualizationSection(
     chartError: String,
-    chartLoading: Boolean,
     insightsMode: InsightsMode,
     sortedChartPoints: List<InsightsChartPoint>,
+    rawSortedChartPoints: List<InsightsChartPoint>,
+    useMonthlyChartAggregation: Boolean,
     chartFromDateIso: String?,
     chartToDateIso: String?,
     chartVisualMode: InsightsChartVisualMode,
     onChartVisualModeChange: (InsightsChartVisualMode) -> Unit,
     selectedPointIndex: Int,
     onPointSelected: (Int) -> Unit,
-    chartAverageDurationSeconds: Long?,
-    chartUsesLegacyStatsFallback: Boolean,
+    chartAverageDurationSeconds: Long,
+    comparisonChartPoints: List<InsightsChartPoint>,
+    comparisonPeriodLabel: String,
+    periodComparison: InsightsPeriodComparisonState,
+    canComparePreviousPeriod: Boolean,
+    calendarAvailability: CalendarAvailability,
+    onPeriodComparisonToggle: () -> Unit,
+    onComparisonPeriodSelected: (InsightsPeriodSelection) -> Unit,
+    chartTotalOccurrenceCount: Long,
+    chartTotalDurationSeconds: Long,
+    chartAverageDurationPerOccurrenceSeconds: Long,
+    chartModeDurationSeconds: Double?,
+    chartMedianDurationSeconds: Double?,
+    chartMinimumDurationSeconds: Double?,
+    chartMaximumDurationSeconds: Double?,
+    chartLowerQuartileDurationSeconds: Double?,
+    chartUpperQuartileDurationSeconds: Double?,
+    chartCoefficientOfVariation: Double?,
+    chartMeanAbsoluteDeviationSeconds: Double?,
     chartShowAverageLine: Boolean,
     onChartShowAverageLineChange: (Boolean) -> Unit,
     heatmapTomlConfig: InsightsHeatmapTomlConfig,
@@ -36,18 +53,6 @@ internal fun InsightsChartVisualizationSection(
     heatmapApplyMessage: String,
     isAppDarkThemeActive: Boolean
 ) {
-    // The ViewModel logs query completion. This companion UI log records the exact inputs the
-    // composable receives after recomposition, distinguishing a rendering-state overwrite from
-    // a query that actually returned no points during cold-start diagnosis.
-    LaunchedEffect(chartLoading, chartError, insightsMode, sortedChartPoints) {
-        runCatching {
-            Log.i(
-                "TracerInsightsChart",
-                "trend render inputs; loading=$chartLoading mode=$insightsMode " +
-                    "points=${sortedChartPoints.size} error=${chartError.ifBlank { "<none>" }}"
-            )
-        }
-    }
     if (chartError.isNotBlank()) {
         Text(
             text = chartError,
@@ -82,10 +87,15 @@ internal fun InsightsChartVisualizationSection(
     val effectiveChartVisualMode = resolveInsightsChartVisualMode(
         insightsMode = insightsMode,
         requestedMode = selectedChartVisualMode,
-        points = sortedChartPoints,
+        points = rawSortedChartPoints,
         fromDateIso = chartFromDateIso,
         toDateIso = chartToDateIso
     )
+    val chartVisualizationAverageDurationSeconds = if (useMonthlyChartAggregation) {
+        sortedChartPoints.map { it.durationSeconds }.average().toLong()
+    } else {
+        chartAverageDurationSeconds
+    }
 
     InsightsChartVisualModeSelector(
         insightsMode = insightsMode,
@@ -104,18 +114,34 @@ internal fun InsightsChartVisualizationSection(
         heatmapApplyMessage = heatmapApplyMessage
     )
 
+    val comparisonVisible = insightsMode != InsightsMode.YEAR &&
+        effectiveChartVisualMode in setOf(
+            InsightsChartVisualMode.LINE,
+            InsightsChartVisualMode.BAR
+        )
+    if (comparisonVisible) {
+        InsightsPeriodComparisonControl(
+            periodComparison = periodComparison,
+            canComparePreviousPeriod = canComparePreviousPeriod,
+            insightsMode = insightsMode,
+            calendarAvailability = calendarAvailability,
+            onPeriodComparisonToggle = onPeriodComparisonToggle,
+            onComparisonPeriodSelected = onComparisonPeriodSelected
+        )
+    }
+
     when (effectiveChartVisualMode) {
         InsightsChartVisualMode.LINE -> {
             InsightsLineChart(
                 points = sortedChartPoints,
+                comparisonPoints = if (comparisonVisible) comparisonChartPoints else emptyList(),
+                comparisonPeriodLabel = comparisonPeriodLabel,
                 selectedIndex = selectedPointIndex,
-                averageDurationSeconds = chartAverageDurationSeconds,
-                usesLegacyStatsFallback = chartUsesLegacyStatsFallback,
+                averageDurationSeconds = chartVisualizationAverageDurationSeconds,
                 showAverageLine = chartShowAverageLine,
                 onPointSelected = onPointSelected,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(220.dp)
                     .clip(MaterialTheme.shapes.medium)
             )
         }
@@ -123,21 +149,21 @@ internal fun InsightsChartVisualizationSection(
         InsightsChartVisualMode.BAR -> {
             InsightsBarChart(
                 points = sortedChartPoints,
+                comparisonPoints = if (comparisonVisible) comparisonChartPoints else emptyList(),
+                comparisonPeriodLabel = comparisonPeriodLabel,
                 selectedIndex = selectedPointIndex,
-                averageDurationSeconds = chartAverageDurationSeconds,
-                usesLegacyStatsFallback = chartUsesLegacyStatsFallback,
+                averageDurationSeconds = chartVisualizationAverageDurationSeconds,
                 showAverageLine = chartShowAverageLine,
                 onPointSelected = onPointSelected,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(220.dp)
                     .clip(MaterialTheme.shapes.medium)
             )
         }
 
         InsightsChartVisualMode.HEATMAP_MONTH -> {
             InsightsHeatmapChart(
-                points = sortedChartPoints,
+                points = rawSortedChartPoints,
                 selectedIndex = selectedPointIndex,
                 mode = InsightsHeatmapMode.MONTH,
                 heatmapTomlConfig = heatmapTomlConfig,
@@ -153,7 +179,7 @@ internal fun InsightsChartVisualizationSection(
 
         InsightsChartVisualMode.HEATMAP_MULTI_MONTH -> {
             InsightsMultiMonthHeatmap(
-                points = sortedChartPoints,
+                points = rawSortedChartPoints,
                 selectedIndex = selectedPointIndex,
                 insightsMode = insightsMode,
                 heatmapTomlConfig = heatmapTomlConfig,
@@ -167,9 +193,23 @@ internal fun InsightsChartVisualizationSection(
 
     InsightsChartVisualizationSummary(
         sortedChartPoints = sortedChartPoints,
+        recordedPoints = rawSortedChartPoints,
         selectedPointIndex = selectedPointIndex,
+        chartFromDateIso = chartFromDateIso,
+        chartToDateIso = chartToDateIso,
         chartAverageDurationSeconds = chartAverageDurationSeconds,
-        chartUsesLegacyStatsFallback = chartUsesLegacyStatsFallback,
+        chartTotalOccurrenceCount = chartTotalOccurrenceCount,
+        chartTotalDurationSeconds = chartTotalDurationSeconds,
+        chartAverageDurationPerOccurrenceSeconds =
+            chartAverageDurationPerOccurrenceSeconds,
+        chartModeDurationSeconds = chartModeDurationSeconds,
+        chartMedianDurationSeconds = chartMedianDurationSeconds,
+        chartMinimumDurationSeconds = chartMinimumDurationSeconds,
+        chartMaximumDurationSeconds = chartMaximumDurationSeconds,
+        chartLowerQuartileDurationSeconds = chartLowerQuartileDurationSeconds,
+        chartUpperQuartileDurationSeconds = chartUpperQuartileDurationSeconds,
+        chartCoefficientOfVariation = chartCoefficientOfVariation,
+        chartMeanAbsoluteDeviationSeconds = chartMeanAbsoluteDeviationSeconds,
         chartVisualMode = effectiveChartVisualMode
     )
 }

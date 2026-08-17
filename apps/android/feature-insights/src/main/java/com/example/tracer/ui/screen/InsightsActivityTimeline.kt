@@ -33,6 +33,7 @@ import kotlinx.coroutines.launch
 @Composable
 internal fun InsightsActivityTimeline(
     insights: StructuredDailyInsights,
+    activityAggregate: ActivityAggregate,
     projectTree: List<StructuredInsightsProjectNode>,
     calendarAvailability: CalendarAvailability,
     periodComparison: InsightsPeriodComparisonState = InsightsPeriodComparisonState.Hidden,
@@ -71,6 +72,7 @@ internal fun InsightsActivityTimeline(
         if (selectedView == InsightsActivityView.OVERVIEW) {
             InsightsActivityOverview(
                 activityDays = listOf(insights),
+                activityAggregate = activityAggregate,
                 projectTree = projectTree,
                 insightsMode = InsightsMode.DAY,
                 periodComparison = periodComparison,

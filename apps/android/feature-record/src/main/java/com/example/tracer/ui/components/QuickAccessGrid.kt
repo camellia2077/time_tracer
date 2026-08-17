@@ -112,7 +112,7 @@ internal fun QuickAccessActivityGrid(
             SimpleFlowRow(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .testTag(quickAccessGridTestTag()),
+                    .testTag(QUICK_ACCESS_GRID_TEST_TAG),
                 horizontalGap = QuickAccessGridHorizontalGap,
                 verticalGap = QuickAccessGridVerticalGap
             ) {
@@ -139,7 +139,7 @@ internal fun QuickAccessActivityGrid(
             SimpleFlowRow(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .testTag(quickAccessGridTestTag()),
+                    .testTag(QUICK_ACCESS_GRID_TEST_TAG),
                 horizontalGap = QuickAccessGridHorizontalGap,
                 verticalGap = QuickAccessGridVerticalGap
             ) {
@@ -180,7 +180,7 @@ internal fun QuickAccessActivityGrid(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(with(density) { flowLayout.totalHeightPx.toDp() })
-                    .testTag(quickAccessGridTestTag())
+                    .testTag(QUICK_ACCESS_GRID_TEST_TAG)
             ) {
                 displayedActivities.forEach { activity ->
                     key(activity) {

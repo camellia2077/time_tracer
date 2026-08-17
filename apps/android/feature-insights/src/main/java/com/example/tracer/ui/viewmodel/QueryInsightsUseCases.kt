@@ -36,6 +36,16 @@ internal class QueryInsightsUseCases(
         request: TemporalInsightsQueryRequest
     ): StructuredInsightsCallResult = insightsGateway.insightsStructured(request)
 
+    suspend fun loadComparisonChart(
+        comparison: ComparisonPeriodRequest,
+        selectedRoot: String,
+        averageDayBasis: InsightsAverageDayBasis
+    ): ChartComparisonResult = chartUseCase.executeComparison(
+        comparison = comparison,
+        selectedRoot = selectedRoot,
+        averageDayBasis = averageDayBasis
+    )
+
     suspend fun insightsDay(
         currentState: QueryInsightsUiState,
         emit: (QueryInsightsUiState) -> Unit

@@ -3,6 +3,7 @@ package com.example.tracer
 import java.io.File
 
 internal object RuntimeDataCleanupTargets {
+    private const val FAILED_PATH_PREVIEW_LIMIT = 3
     private const val DatabaseDirName = "db"
     private const val DatabaseFileName = "time_data.sqlite3"
     private val DatabaseWhitelistNames = listOf(
@@ -43,8 +44,12 @@ internal object RuntimeDataCleanupTargets {
         }
 
         if (failedPaths.isNotEmpty()) {
-            val preview = failedPaths.take(3).joinToString(" | ")
-            val suffix = if (failedPaths.size > 3) " | ...(${failedPaths.size} failed)" else ""
+            val preview = failedPaths.take(FAILED_PATH_PREVIEW_LIMIT).joinToString(" | ")
+            val suffix = if (failedPaths.size > FAILED_PATH_PREVIEW_LIMIT) {
+                " | ...(${failedPaths.size} failed)"
+            } else {
+                ""
+            }
             return "clear -> removed $removedCount file(s). failed: $preview$suffix"
         }
 
@@ -84,8 +89,8 @@ internal object RuntimeDataCleanupTargets {
         existingRoots.forEach(::pruneEmptyDatabaseDir)
 
         return if (failedPaths.isNotEmpty()) {
-            val preview = failedPaths.take(3).joinToString(" | ")
-            val suffix = if (failedPaths.size > 3) {
+            val preview = failedPaths.take(FAILED_PATH_PREVIEW_LIMIT).joinToString(" | ")
+            val suffix = if (failedPaths.size > FAILED_PATH_PREVIEW_LIMIT) {
                 " | ...(${failedPaths.size} failed)"
             } else {
                 ""
@@ -132,8 +137,8 @@ internal object RuntimeDataCleanupTargets {
         }
 
         if (failedPaths.isNotEmpty()) {
-            val preview = failedPaths.take(3).joinToString(" | ")
-            val suffix = if (failedPaths.size > 3) {
+            val preview = failedPaths.take(FAILED_PATH_PREVIEW_LIMIT).joinToString(" | ")
+            val suffix = if (failedPaths.size > FAILED_PATH_PREVIEW_LIMIT) {
                 " | ...(${failedPaths.size} failed)"
             } else {
                 ""

@@ -42,7 +42,7 @@ internal fun <T> List<T>.moveItem(fromIndex: Int, toIndex: Int): List<T> {
     return mutable.toList()
 }
 
-internal fun quickAccessGridTestTag(): String = "quick_access_grid_flow"
+internal const val QUICK_ACCESS_GRID_TEST_TAG = "quick_access_grid_flow"
 
 internal fun quickAccessItemTestTag(activity: String): String {
     val normalized = activity

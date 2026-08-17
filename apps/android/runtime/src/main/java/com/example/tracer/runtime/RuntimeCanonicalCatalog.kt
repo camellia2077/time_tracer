@@ -54,7 +54,9 @@ internal object RuntimeCanonicalCatalogParser {
         for ((key, node) in table.entrySet()) {
             if (key == GROUP_ALIASES_KEY) {
                 if (!isGroupTable) {
-                    throw IllegalArgumentException("`group_aliases` is only valid inside an activity category.")
+                    require(isGroupTable) {
+                        "`group_aliases` is only valid inside an activity category."
+                    }
                 }
                 continue
             }
@@ -74,9 +76,7 @@ internal object RuntimeCanonicalCatalogParser {
                     )
                 )
 
-                else -> throw IllegalArgumentException(
-                    "Alias field `$key` must be an array or nested table."
-                )
+                else -> error("Alias field `$key` must be an array or nested table.")
             }
         }
     }
@@ -88,9 +88,12 @@ internal object RuntimeCanonicalCatalogParser {
 
     private fun TomlArray.toStringList(fieldName: String): List<String> = buildList {
         for (index in 0 until size()) {
-            val value = getString(index)?.trim()
-                ?: throw IllegalArgumentException("`$fieldName` must be a string array.")
-            if (value.isEmpty()) throw IllegalArgumentException("`$fieldName` must not contain empty names.")
+            val value = requireNotNull(getString(index)?.trim()) {
+                "`$fieldName` must be a string array."
+            }
+            require(value.isNotEmpty()) {
+                "`$fieldName` must not contain empty names."
+            }
             add(value)
         }
     }

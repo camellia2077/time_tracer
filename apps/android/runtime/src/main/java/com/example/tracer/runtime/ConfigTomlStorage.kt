@@ -102,6 +102,7 @@ internal class ConfigTomlStorage(private val configRootPath: String) {
         )
     }
 
+    @Suppress("ReturnCount")
     fun writeTomlFile(relativePath: String, content: String): TxtFileContentResult {
         val requested = normalizeRequestedPath(relativePath)
             ?: return TxtFileContentResult(
@@ -169,6 +170,7 @@ internal class ConfigTomlStorage(private val configRootPath: String) {
         )
     }
 
+    @Suppress("ReturnCount")
     fun deleteTomlFile(relativePath: String): TxtFileContentResult {
         val requested = normalizeRequestedPath(relativePath)
             ?: return TxtFileContentResult(

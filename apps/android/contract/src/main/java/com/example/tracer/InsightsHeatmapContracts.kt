@@ -1,5 +1,10 @@
 package com.example.tracer
 
+private const val LIGHT_THRESHOLD_LOW = 1.0
+private const val LIGHT_THRESHOLD_MEDIUM = 4.0
+private const val LIGHT_THRESHOLD_HIGH = 7.0
+private const val LIGHT_THRESHOLD_MAX = 9.0
+
 enum class InsightsHeatmapThemePolicy {
     FOLLOW_SYSTEM,
     PALETTE
@@ -21,7 +26,12 @@ data class InsightsHeatmapTomlConfig(
 
 fun defaultInsightsHeatmapTomlConfig(): InsightsHeatmapTomlConfig =
     InsightsHeatmapTomlConfig(
-        thresholdsHours = listOf(1.0, 4.0, 7.0, 9.0),
+        thresholdsHours = listOf(
+            LIGHT_THRESHOLD_LOW,
+            LIGHT_THRESHOLD_MEDIUM,
+            LIGHT_THRESHOLD_HIGH,
+            LIGHT_THRESHOLD_MAX
+        ),
         defaultLightPalette = "GREEN_LIGHT",
         defaultDarkPalette = "GREEN_DARK",
         palettes = linkedMapOf(

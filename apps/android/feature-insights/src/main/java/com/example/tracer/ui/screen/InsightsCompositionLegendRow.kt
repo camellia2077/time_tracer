@@ -14,6 +14,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.insights.R
+import java.util.Locale
 
 @Composable
 internal fun CompositionLegendRow(
@@ -23,6 +24,8 @@ internal fun CompositionLegendRow(
     label: String = slice.root,
     modifier: Modifier = Modifier
 ) {
+    val averageDurationPerOccurrenceSeconds =
+        slice.averageDurationPerOccurrenceSeconds
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -39,7 +42,7 @@ internal fun CompositionLegendRow(
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = String.format("%.1f%%", slice.percent),
+                text = String.format(Locale.ROOT, "%.1f%%", slice.percent),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -65,6 +68,20 @@ internal fun CompositionLegendRow(
                         else R.string.insights_chart_composition_average_duration,
                         if (showFrequency) slice.averageOccurrenceCount ?: 0.0
                         else formatDurationHoursMinutes(slice.averageDurationSeconds ?: 0L)
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            if (averageDurationPerOccurrenceSeconds != null &&
+                (slice.occurrenceCount ?: 0L) > 0L
+            ) {
+                Text(
+                    text = stringResource(
+                        R.string.insights_chart_composition_average_per_occurrence,
+                        formatDurationHoursMinutes(
+                            averageDurationPerOccurrenceSeconds
+                        )
                     ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant

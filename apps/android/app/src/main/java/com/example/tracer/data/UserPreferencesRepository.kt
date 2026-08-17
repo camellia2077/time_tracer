@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package com.example.tracer.data
 
 import android.content.Context
@@ -12,6 +14,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.example.tracer.PersistedRecordInputDraft
 import com.example.tracer.PersistedRecordInputSnapshot
 import com.example.tracer.RecordAuthoringMode
+
 import com.example.tracer.TxtOutputMode
 import com.example.tracer.RecordLogicalDayTarget
 import com.example.tracer.RecordFrequentOutputMode
@@ -29,6 +32,8 @@ import java.nio.charset.StandardCharsets
 import java.util.Base64
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+
+private const val DAILY_STATUS_FIELD_COUNT = 3
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
@@ -113,7 +118,7 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             InsightsChartVisualMode.LINE
         val DEFAULT_INSIGHTS_MODE: InsightsMode = InsightsMode.DAY
         val DEFAULT_INSIGHTS_RESULT_DISPLAY_MODE: InsightsResultDisplayMode =
-            InsightsResultDisplayMode.TEXT
+            InsightsResultDisplayMode.DETAILS
         val DEFAULT_INSIGHTS_PARAMETER_SECTION: InsightsParameterSection =
             InsightsParameterSection.DAY
         val DEFAULT_INSIGHTS_DAY_ACTIVITIES_VIEW: InsightsActivityView = InsightsActivityView.RECORDS
@@ -623,7 +628,7 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         }
         return raw.lineSequence().mapNotNull { line ->
             val parts = line.split('\t')
-            if (parts.size != 3) {
+            if (parts.size != DAILY_STATUS_FIELD_COUNT) {
                 return@mapNotNull null
             }
             val (id, label, parent) = parts.map(::decodeDailyStatusPart)

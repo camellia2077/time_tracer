@@ -25,6 +25,39 @@ internal class QueryInsightsChartUseCase(
         cache.clear()
     }
 
+    suspend fun executeComparison(
+        comparison: ComparisonPeriodRequest,
+        selectedRoot: String,
+        averageDayBasis: InsightsAverageDayBasis
+    ): ChartComparisonResult {
+        val params = comparison.request.toChartQueryParams(
+            root = selectedRoot.trim().ifEmpty { null },
+            averageDayBasis = averageDayBasis
+        ) ?: return ChartComparisonResult(
+            renderModel = null,
+            errorMessage = "Comparison period is invalid."
+        )
+        val queryResult = queryGateway.queryInsightsChart(params)
+        val payload = queryResult.data
+        if (!queryResult.ok || payload == null) {
+            return ChartComparisonResult(
+                renderModel = null,
+                errorMessage = queryResult.message.ifBlank {
+                    textProvider.chartPayloadInvalid()
+                }
+            )
+        }
+        val domainModel = mapCorePayloadToDomainModel(payload)
+        return ChartComparisonResult(
+            renderModel = mapDomainModelToRenderModel(
+                model = domainModel,
+                selectedRootOverride = params.root.orEmpty(),
+                fromDateIso = params.fromDateIso,
+                toDateIso = params.toDateIso
+            )
+        )
+    }
+
     suspend fun execute(
         currentState: QueryInsightsUiState,
         emit: (QueryInsightsUiState) -> Unit
@@ -165,7 +198,6 @@ internal class QueryInsightsChartUseCase(
             trendChartTotalDurationSeconds = renderModel.totalDurationSeconds,
             trendChartActiveDays = renderModel.activeDays,
             trendChartRangeDays = renderModel.rangeDays,
-            trendChartUsesLegacyStatsFallback = renderModel.usesLegacyStatsFallback,
             resultDisplayMode = InsightsResultDisplayMode.CHART,
             statusText = "${textProvider.queryChartResult(ok = true)} $statusSuffix"
         )
@@ -180,6 +212,60 @@ internal class QueryInsightsChartUseCase(
         val raw = "${key.root}|${key.insightsMode}|${key.lookbackDays}|" +
             "${key.fromDateIso}|${key.toDateIso}|${key.averageDayBasis}"
         return raw.hashCode().toUInt().toString(16).padStart(8, '0')
+    }
+}
+
+private fun TemporalInsightsQueryRequest.toChartQueryParams(
+    root: String?,
+    averageDayBasis: InsightsAverageDayBasis
+): InsightsChartQueryParams? = when (val value = selection) {
+    is TemporalSelectionPayload -> when (value.kind) {
+        TemporalSelectionKind.SINGLE_DAY -> value.date?.let { date ->
+            InsightsChartQueryParams(
+                root = root,
+                lookbackDays = 1,
+                fromDateIso = date,
+                toDateIso = date,
+                averageDayBasis = averageDayBasis
+            )
+        }
+        TemporalSelectionKind.DATE_RANGE -> {
+            val start = value.startDate
+            val end = value.endDate
+            if (start == null || end == null) null else {
+                val days = runCatching {
+                    java.time.temporal.ChronoUnit.DAYS.between(
+                        java.time.LocalDate.parse(start),
+                        java.time.LocalDate.parse(end)
+                    ).toInt() + 1
+                }.getOrNull()?.takeIf { it > 0 } ?: return null
+                InsightsChartQueryParams(
+                    root = root,
+                    lookbackDays = days,
+                    fromDateIso = start,
+                    toDateIso = end,
+                    averageDayBasis = averageDayBasis
+                )
+            }
+        }
+        TemporalSelectionKind.RECENT_DAYS -> {
+            val days = value.days?.takeIf { it > 0 }
+            val anchor = value.anchorDate?.let {
+                runCatching { java.time.LocalDate.parse(it) }.getOrNull()
+            }
+            if (days == null || anchor == null) {
+                null
+            } else {
+                val start = anchor.minusDays(days.toLong() - 1)
+                InsightsChartQueryParams(
+                    root = root,
+                    lookbackDays = days,
+                    fromDateIso = start.toString(),
+                    toDateIso = anchor.toString(),
+                    averageDayBasis = averageDayBasis
+                )
+            }
+        }
     }
 }
 

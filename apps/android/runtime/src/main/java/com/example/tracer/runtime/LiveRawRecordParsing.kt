@@ -1,5 +1,17 @@
 package com.example.tracer
 
+private const val DAY_BLOCK_CONTENT_OFFSET = 1
+private const val SHORT_TIME_LENGTH = 4
+private const val LONG_TIME_LENGTH = 6
+private const val HOURS_START = 0
+private const val MINUTES_START = 2
+private const val SECONDS_START = 4
+private const val MINUTES_PER_HOUR = 60
+private const val SECONDS_PER_MINUTE = 60
+private const val MAX_HOUR = 23
+private const val MAX_MINUTE_OR_SECOND = 59
+private const val DAY_MARKER_LENGTH = 5
+
 internal class LiveRawRecordParsing(
     private val normalization: LiveRawRecordNormalization
 ) {
@@ -15,7 +27,7 @@ internal class LiveRawRecordParsing(
             return false
         }
 
-        for (index in (blockStart + 1) until blockEnd) {
+        for (index in (blockStart + DAY_BLOCK_CONTENT_OFFSET) until blockEnd) {
             val lineTime = extractEventTimeToken(lines[index]) ?: continue
             if (lineTime != eventTime) {
                 continue
@@ -35,7 +47,7 @@ internal class LiveRawRecordParsing(
         blockStart: Int,
         blockEnd: Int
     ): String? {
-        for (index in (blockStart + 1) until blockEnd) {
+        for (index in (blockStart + DAY_BLOCK_CONTENT_OFFSET) until blockEnd) {
             val activity = extractActivityName(lines[index])
             if (activity.isNotEmpty()) {
                 return activity
@@ -49,7 +61,7 @@ internal class LiveRawRecordParsing(
         blockStart: Int,
         blockEnd: Int
     ): String? {
-        for (index in (blockEnd - 1) downTo (blockStart + 1)) {
+        for (index in (blockEnd - DAY_BLOCK_CONTENT_OFFSET) downTo (blockStart + DAY_BLOCK_CONTENT_OFFSET)) {
             val time = extractEventTimeToken(lines[index]) ?: continue
             if (parseTimeToSeconds(time) != null) {
                 return time
@@ -66,15 +78,21 @@ internal class LiveRawRecordParsing(
 
     fun extractEventTimeToken(line: String): String? {
         val trimmed = line.trimStart()
-        if (trimmed.length < 4) {
+        if (trimmed.length < SHORT_TIME_LENGTH) {
             return null
         }
         val timeLength = authoredTimeLength(trimmed) ?: return null
         if (trimmed.length > timeLength && trimmed[timeLength] == '-' &&
-            trimmed.length >= (timeLength * 2) + 1 &&
-            trimmed.substring(timeLength + 1, (timeLength * 2) + 1).all { it.isDigit() }
+            trimmed.length >= (timeLength * 2) + DAY_BLOCK_CONTENT_OFFSET &&
+            trimmed.substring(
+                timeLength + DAY_BLOCK_CONTENT_OFFSET,
+                (timeLength * 2) + DAY_BLOCK_CONTENT_OFFSET
+            ).all { it.isDigit() }
         ) {
-            return trimmed.substring(timeLength + 1, (timeLength * 2) + 1)
+            return trimmed.substring(
+                timeLength + DAY_BLOCK_CONTENT_OFFSET,
+                (timeLength * 2) + DAY_BLOCK_CONTENT_OFFSET
+            )
         }
         return trimmed.substring(0, timeLength)
     }
@@ -109,7 +127,7 @@ internal class LiveRawRecordParsing(
     }
 
     fun findDayBlockEnd(lines: List<String>, blockStart: Int): Int {
-        for (index in (blockStart + 1) until lines.size) {
+        for (index in (blockStart + DAY_BLOCK_CONTENT_OFFSET) until lines.size) {
             if (isDayMarker(lines[index])) {
                 return index
             }
@@ -121,32 +139,46 @@ internal class LiveRawRecordParsing(
         val trimmed = line.trim()
         // TXT day-block headers use dMMDD so bare HHMM event lines such as 1921
         // never parse as calendar days. Android callers still pass day identity as MMDD.
-        return trimmed.length == 5 &&
+        return trimmed.length == DAY_MARKER_LENGTH &&
             trimmed.first() == 'd' &&
             trimmed.drop(1).all { it.isDigit() }
     }
 
+    @Suppress("ComplexCondition")
     fun parseTimeToSeconds(time: String): Int? {
-        if ((time.length != 4 && time.length != 6) || !time.all { it.isDigit() }) {
+        val hasValidLength = time.length == SHORT_TIME_LENGTH || time.length == LONG_TIME_LENGTH
+        if (!hasValidLength || !time.all { it.isDigit() }) {
             return null
         }
-        val hours = time.substring(0, 2).toIntOrNull() ?: return null
-        val minutes = time.substring(2, 4).toIntOrNull() ?: return null
-        val seconds = if (time.length == 6) {
-            time.substring(4, 6).toIntOrNull() ?: return null
+        val hours = time.substring(HOURS_START, MINUTES_START).toIntOrNull()
+        val minutes = time.substring(MINUTES_START, SHORT_TIME_LENGTH).toIntOrNull()
+        val seconds = if (time.length == LONG_TIME_LENGTH) {
+            time.substring(SECONDS_START, LONG_TIME_LENGTH).toIntOrNull()
         } else {
-            0
+            HOURS_START
         }
-        if (hours !in 0..23 || minutes !in 0..59 || seconds !in 0..59) {
+        if (hours == null || minutes == null || seconds == null ||
+            hours !in HOURS_START..MAX_HOUR ||
+            minutes !in HOURS_START..MAX_MINUTE_OR_SECOND ||
+            seconds !in HOURS_START..MAX_MINUTE_OR_SECOND
+        ) {
             return null
         }
-        return (hours * 60 + minutes) * 60 + seconds
+        return (hours * MINUTES_PER_HOUR + minutes) * SECONDS_PER_MINUTE + seconds
     }
 
     private fun authoredTimeLength(line: String): Int? {
-        if (line.length < 4 || !line.substring(0, 4).all { it.isDigit() }) {
+        if (line.length < SHORT_TIME_LENGTH ||
+            !line.substring(HOURS_START, SHORT_TIME_LENGTH).all { it.isDigit() }
+        ) {
             return null
         }
-        return if (line.length >= 6 && line.substring(0, 6).all { it.isDigit() }) 6 else 4
+        return if (line.length >= LONG_TIME_LENGTH &&
+            line.substring(HOURS_START, LONG_TIME_LENGTH).all { it.isDigit() }
+        ) {
+            LONG_TIME_LENGTH
+        } else {
+            SHORT_TIME_LENGTH
+        }
     }
 }

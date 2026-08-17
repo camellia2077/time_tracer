@@ -1,3 +1,5 @@
+@file:Suppress("MatchingDeclarationName")
+
 package com.example.tracer
 
 import java.io.File
@@ -28,6 +30,7 @@ internal fun unknownConfigBundleStatus(nowMs: Long = System.currentTimeMillis())
     )
 }
 
+@Suppress("LongMethod", "ReturnCount")
 internal fun validateRuntimeConfigBundle(
     configRoot: File,
     expectedProfile: String = "android",

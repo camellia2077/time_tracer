@@ -50,6 +50,7 @@ internal suspend fun runDayInsightsAction(
         textProvider = textProvider,
         dayTimeline = structuredResult?.insights,
         activityDays = structuredResult.activityDaysFor(DataTreePeriod.DAY),
+        activityAggregate = structuredResult.activityAggregateFor(),
         projectTree = structuredResult.projectTreeFor(),
         statusValues = structuredResult?.takeIf { it.operationOk }?.statuses.orEmpty()
     )
@@ -91,6 +92,7 @@ internal suspend fun runMonthInsightsAction(
         result = result,
         textProvider = textProvider,
         activityDays = structuredResult.activityDaysFor(DataTreePeriod.MONTH),
+        activityAggregate = structuredResult.activityAggregateFor(),
         projectTree = structuredResult.projectTreeFor(),
         statusValues = structuredResult?.statuses.orEmpty()
     )
@@ -130,6 +132,7 @@ internal suspend fun runYearInsightsAction(
         result = result,
         textProvider = textProvider,
         activityDays = structuredResult.activityDaysFor(DataTreePeriod.YEAR),
+        activityAggregate = structuredResult.activityAggregateFor(),
         projectTree = structuredResult.projectTreeFor(),
         statusValues = structuredResult?.statuses.orEmpty()
     )
@@ -172,6 +175,7 @@ internal suspend fun runWeekInsightsAction(
         result = result,
         textProvider = textProvider,
         activityDays = structuredResult.activityDaysFor(DataTreePeriod.WEEK),
+        activityAggregate = structuredResult.activityAggregateFor(),
         projectTree = structuredResult.projectTreeFor(),
         statusValues = structuredResult?.statuses.orEmpty()
     )
@@ -211,6 +215,7 @@ internal suspend fun runRecentInsightsAction(
         result = result,
         textProvider = textProvider,
         activityDays = structuredResult.activityDaysFor(DataTreePeriod.RECENT),
+        activityAggregate = structuredResult.activityAggregateFor(),
         projectTree = structuredResult.projectTreeFor(),
         statusValues = structuredResult?.statuses.orEmpty()
     )
@@ -271,6 +276,7 @@ internal suspend fun runRangeInsightsAction(
         result = result,
         textProvider = textProvider,
         activityDays = structuredResult.activityDaysFor(DataTreePeriod.RANGE),
+        activityAggregate = structuredResult.activityAggregateFor(),
         projectTree = structuredResult.projectTreeFor(),
         statusValues = structuredResult?.statuses.orEmpty()
     )
@@ -286,3 +292,6 @@ private fun StructuredInsightsCallResult?.activityDaysFor(
 
 private fun StructuredInsightsCallResult?.projectTreeFor(): List<StructuredInsightsProjectNode> =
     this?.projectTree.orEmpty()
+
+private fun StructuredInsightsCallResult?.activityAggregateFor(): ActivityAggregate =
+    this?.activityAggregate ?: ActivityAggregate()

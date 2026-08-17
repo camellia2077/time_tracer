@@ -80,6 +80,7 @@ data class TreeNode(
     val durationSeconds: Long? = null,
     val occurrenceCount: Long? = null,
     val averageDurationSeconds: Long? = null,
+    val averageDurationPerOccurrenceSeconds: Long? = null,
     val averageOccurrenceCount: Double? = null,
     val averageOccurrenceRatio: Double? = null,
     val parentDurationPercent: Float? = null,

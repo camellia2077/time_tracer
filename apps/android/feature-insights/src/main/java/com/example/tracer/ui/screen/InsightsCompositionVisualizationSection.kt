@@ -78,9 +78,7 @@ internal fun InsightsCompositionVisualizationSection(
         return
     }
 
-    val rootSlices = renderModel?.tree.orEmpty().toInsightsCompositionSlices(
-        averageDenominatorDays = renderModel?.averageDenominatorDays ?: 0
-    )
+    val rootSlices = renderModel?.tree.orEmpty().toInsightsCompositionSlices()
     if (rootSlices.isEmpty()) {
         Text(
             text = if (insightsMode == InsightsMode.RANGE) {
@@ -103,8 +101,7 @@ internal fun InsightsCompositionVisualizationSection(
         resolveCompositionDrilldownNodes(renderModel?.tree.orEmpty(), drilldownPath)
     }
     val visibleSlices = drilldownNodes.toInsightsCompositionSlices(
-        compositionMeasure = compositionMeasure,
-        averageDenominatorDays = renderModel?.averageDenominatorDays ?: 0
+        compositionMeasure = compositionMeasure
     )
     val nodesWithOccurrences = drilldownNodes.count {
         (it.occurrenceCount ?: 0L) > 0L

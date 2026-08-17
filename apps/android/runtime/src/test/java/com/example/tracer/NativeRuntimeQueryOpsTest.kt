@@ -134,6 +134,12 @@ class NativeRuntimeQueryOpsTest {
               "selected_root": "study",
               "lookback_days": 7,
               "average_duration_seconds": 4500,
+              "total_occurrence_count": 7,
+              "average_duration_per_occurrence_seconds": 4500,
+              "mode_duration_seconds": null,
+              "median_duration_seconds": 4500.0,
+              "minimum_duration_seconds": 0.0,
+              "maximum_duration_seconds": 7200.0,
               "total_duration_seconds": 31500,
               "active_days": 5,
               "range_days": 7,
@@ -157,16 +163,21 @@ class NativeRuntimeQueryOpsTest {
         assertEquals(20494L, data.points[0].epochDay)
         assertEquals(20495L, data.points[1].epochDay)
         assertEquals(4500L, data.averageDurationSeconds)
+        assertEquals(7L, data.totalOccurrenceCount)
+        assertEquals(4500L, data.averageDurationPerOccurrenceSeconds)
+        assertNull(data.modeDurationSeconds)
+        assertEquals(4500.0, data.medianDurationSeconds)
+        assertEquals(0.0, data.minimumDurationSeconds)
+        assertEquals(7200.0, data.maximumDurationSeconds)
         assertEquals(31500L, data.totalDurationSeconds)
         assertEquals(5, data.activeDays)
         assertEquals(7, data.rangeDays)
-        assertEquals(false, data.usesLegacyStatsFallback)
         assertEquals(1, data.schemaVersion)
         assertEquals(false, data.usesSchemaVersionFallback)
     }
 
     @Test
-    fun parseInsightsChartContent_missingStatsFields_resolvesFallbackStats() {
+    fun parseInsightsChartContent_missingStatsFields_returnsNull() {
         val content = """
             {
               "roots": ["sleep", "", "sleep"],
@@ -180,23 +191,7 @@ class NativeRuntimeQueryOpsTest {
         """.trimIndent()
 
         val parsed = parseInsightsChartContent(content)
-        assertNotNull(parsed)
-        val data = checkNotNull(parsed)
-
-        assertEquals(listOf("sleep"), data.roots)
-        assertEquals("", data.selectedRoot)
-        assertEquals(14, data.lookbackDays)
-        assertEquals(1, data.points.size)
-        assertEquals("2026-02-10", data.points[0].date)
-        assertEquals(0L, data.points[0].durationSeconds)
-        assertEquals(20494L, data.points[0].epochDay)
-        assertEquals(0L, data.averageDurationSeconds)
-        assertEquals(0L, data.totalDurationSeconds)
-        assertEquals(0, data.activeDays)
-        assertEquals(1, data.rangeDays)
-        assertEquals(true, data.usesLegacyStatsFallback)
-        assertNull(data.schemaVersion)
-        assertEquals(true, data.usesSchemaVersionFallback)
+        assertNull(parsed)
     }
 
     @Test
@@ -207,6 +202,12 @@ class NativeRuntimeQueryOpsTest {
               "roots": ["study"],
               "selected_root": "study",
               "lookback_days": 7,
+              "average_duration_seconds": 1200,
+              "total_occurrence_count": 1,
+              "average_duration_per_occurrence_seconds": 1200,
+              "total_duration_seconds": 1200,
+              "active_days": 1,
+              "range_days": 7,
               "series": [
                 {"date": "2026-02-10", "duration_seconds": 1200}
               ]
@@ -222,7 +223,7 @@ class NativeRuntimeQueryOpsTest {
     }
 
     @Test
-    fun parseInsightsChartContent_missingStatsAndSeries_usesLookbackForRangeFallback() {
+    fun parseInsightsChartContent_missingStatsAndSeries_returnsNull() {
         val content = """
             {
               "roots": ["study"],
@@ -233,18 +234,11 @@ class NativeRuntimeQueryOpsTest {
         """.trimIndent()
 
         val parsed = parseInsightsChartContent(content)
-        assertNotNull(parsed)
-        val data = checkNotNull(parsed)
-
-        assertEquals(0L, data.averageDurationSeconds)
-        assertEquals(0L, data.totalDurationSeconds)
-        assertEquals(0, data.activeDays)
-        assertEquals(21, data.rangeDays)
-        assertEquals(true, data.usesLegacyStatsFallback)
+        assertNull(parsed)
     }
 
     @Test
-    fun parseInsightsChartContent_missingStats_usesActiveDaysAsAverageDenominator() {
+    fun parseInsightsChartContent_missingStats_returnsNull() {
         val content = """
             {
               "roots": ["study"],
@@ -258,13 +252,7 @@ class NativeRuntimeQueryOpsTest {
         """.trimIndent()
 
         val parsed = parseInsightsChartContent(content)
-        assertNotNull(parsed)
-        val data = checkNotNull(parsed)
-
-        assertEquals(3600L, data.totalDurationSeconds)
-        assertEquals(1, data.activeDays)
-        assertEquals(2, data.rangeDays)
-        assertEquals(3600L, data.averageDurationSeconds)
+        assertNull(parsed)
     }
 
     @Test
@@ -283,11 +271,14 @@ class NativeRuntimeQueryOpsTest {
                   "duration_seconds": 5400,
                   "occurrence_count": 3,
                   "average_duration_seconds": 1350,
+                  "average_duration_per_occurrence_seconds": 1800,
                   "average_occurrence_count": 0.75,
                   "average_occurrence_ratio": 0.75,
                   "children": [
                     {"name": "math", "duration_seconds": 5400, "occurrence_count": 3,
-                     "average_duration_seconds": 1350, "average_occurrence_ratio": 1.0,
+                     "average_duration_seconds": 1350,
+                     "average_duration_per_occurrence_seconds": 1800,
+                     "average_occurrence_ratio": 1.0,
                      "children": []}
                   ]
                 },
@@ -310,6 +301,7 @@ class NativeRuntimeQueryOpsTest {
         assertEquals("study", data.tree.first().name)
         assertEquals(3L, data.tree.first().occurrenceCount)
         assertEquals(1_350L, data.tree.first().averageDurationSeconds)
+        assertEquals(1_800L, data.tree.first().averageDurationPerOccurrenceSeconds)
         assertEquals(0.75, data.tree.first().averageOccurrenceCount)
         assertEquals(0.75, data.tree.first().averageOccurrenceRatio)
         assertEquals("math", data.tree.first().children.single().name)

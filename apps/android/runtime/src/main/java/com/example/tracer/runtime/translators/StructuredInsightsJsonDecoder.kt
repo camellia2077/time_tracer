@@ -17,6 +17,7 @@ internal data class StructuredInsightsWirePayload(
     val isDaily: Boolean,
     val date: String,
     val totalDurationSeconds: Long,
+    val totalOccurrenceCount: Long,
     val dayRemark: String,
     val statuses: List<InsightsStatusValue>,
     val records: List<StructuredInsightsWireRecord>,
@@ -86,6 +87,11 @@ internal class StructuredInsightsJsonDecoder {
             isDaily = isDaily,
             date = insights.optString("date"),
             totalDurationSeconds = insights.optLong("total_duration", 0L),
+            totalOccurrenceCount = if (isDaily) {
+                records.size.toLong()
+            } else {
+                insights.optLong("matched_record_count", 0L)
+            },
             dayRemark = metadata?.optString("remark", "").orEmpty(),
             statuses = statuses,
             records = records,

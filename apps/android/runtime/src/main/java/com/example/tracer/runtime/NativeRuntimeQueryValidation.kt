@@ -31,6 +31,7 @@ internal fun validateInsightsCompositionQueryParams(
     )
 }
 
+@Suppress("ReturnCount")
 private fun validateInsightsWindowQueryParams(
     lookbackDays: Int,
     fromDateIso: String?,

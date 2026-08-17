@@ -59,7 +59,7 @@ internal fun QueryInsightsParameterCards(
         InsightsParameterSection.DAY
     }
 
-    if (resultDisplayMode == InsightsResultDisplayMode.TEXT) {
+    if (resultDisplayMode == InsightsResultDisplayMode.DETAILS) {
         InsightsParameterSectionSelector(
             selectedSection = effectiveSelectedSection,
             sections = availableSections,
@@ -67,7 +67,7 @@ internal fun QueryInsightsParameterCards(
         )
     }
 
-    when (if (resultDisplayMode == InsightsResultDisplayMode.TEXT) {
+    when (if (resultDisplayMode == InsightsResultDisplayMode.DETAILS) {
         effectiveSelectedSection
     } else {
         InsightsParameterSection.DAY

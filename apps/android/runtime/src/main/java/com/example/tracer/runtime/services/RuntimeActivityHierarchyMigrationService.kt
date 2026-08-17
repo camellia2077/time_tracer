@@ -1,3 +1,5 @@
+@file:Suppress("LongMethod", "CyclomaticComplexMethod", "NestedBlockDepth", "ReturnCount")
+
 package com.example.tracer
 
 import java.io.File

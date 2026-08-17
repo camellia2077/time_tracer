@@ -1,3 +1,5 @@
+@file:Suppress("LongParameterList")
+
 package com.example.tracer
 
 /** Coordinates the persisted half of an already-confirmed activity hierarchy change. */

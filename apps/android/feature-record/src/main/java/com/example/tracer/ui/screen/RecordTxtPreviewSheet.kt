@@ -126,7 +126,7 @@ internal fun RecordTxtPreviewSheet(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
                 .verticalScroll(rememberScrollState())
-                .testTag(recordTxtPreviewSheetTestTag()),
+                .testTag(RECORD_TXT_PREVIEW_SHEET_TEST_TAG),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
@@ -146,7 +146,7 @@ internal fun RecordTxtPreviewSheet(
             when {
                 isLoading || previewState.isLoading -> {
                     CircularProgressIndicator(
-                        modifier = Modifier.testTag(recordTxtPreviewLoadingTestTag())
+                        modifier = Modifier.testTag(RECORD_TXT_PREVIEW_LOADING_TEST_TAG)
                     )
                     Text(
                         text = stringResource(R.string.record_txt_preview_loading),
@@ -203,7 +203,7 @@ internal fun RecordTxtPreviewSheet(
                             stringResource(R.string.record_txt_preview_day_block_empty)
                         },
                         style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.testTag(recordTxtPreviewContentTestTag())
+                        modifier = Modifier.testTag(RECORD_TXT_PREVIEW_CONTENT_TEST_TAG)
                     )
                 }
             }
@@ -211,8 +211,8 @@ internal fun RecordTxtPreviewSheet(
     }
 }
 
-internal fun recordTxtPreviewSheetTestTag(): String = "record_txt_preview_sheet"
+internal const val RECORD_TXT_PREVIEW_SHEET_TEST_TAG = "record_txt_preview_sheet"
 
-internal fun recordTxtPreviewLoadingTestTag(): String = "record_txt_preview_loading"
+internal const val RECORD_TXT_PREVIEW_LOADING_TEST_TAG = "record_txt_preview_loading"
 
-internal fun recordTxtPreviewContentTestTag(): String = "record_txt_preview_content"
+internal const val RECORD_TXT_PREVIEW_CONTENT_TEST_TAG = "record_txt_preview_content"

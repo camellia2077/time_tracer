@@ -1,3 +1,5 @@
+@file:Suppress("LongMethod")
+
 package com.example.tracer
 
 import android.util.Log

@@ -1,3 +1,5 @@
+@file:Suppress("LongMethod")
+
 package com.example.tracer
 
 import android.util.Log
@@ -6,6 +8,13 @@ import kotlinx.coroutines.withContext
 
 private const val REMARK_UPDATE_LOG_TAG = "TimeTracerRemarkUpdate"
 private const val RECORD_LOG_TAG = "TimeTracerRecord"
+private const val MONTH_COMPONENT_COUNT = 2
+private const val FIRST_MONTH = 1
+private const val LAST_MONTH = 12
+private const val MONTH_KEY_START = 0
+private const val YEAR_KEY_END = 4
+private const val MONTH_KEY_START_OFFSET = 5
+private const val MONTH_KEY_END = 7
 
 internal class RuntimeRecordDelegate(
     private val ensureRuntimePaths: () -> RuntimePaths,
@@ -110,7 +119,7 @@ internal class RuntimeRecordDelegate(
     suspend fun createMonthTxt(month: String): RecordActionResult = withContext(Dispatchers.IO) {
         try {
             val parsed = month.trim().split("-")
-            if (parsed.size != 2) {
+            if (parsed.size != MONTH_COMPONENT_COUNT) {
                 return@withContext RecordActionResult(
                     ok = false,
                     message = "Invalid month format: $month. Expected YYYY-MM."
@@ -118,7 +127,7 @@ internal class RuntimeRecordDelegate(
             }
             val year = parsed[0].toIntOrNull()
             val monthValue = parsed[1].toIntOrNull()
-            if (year == null || monthValue == null || monthValue !in 1..12) {
+            if (year == null || monthValue == null || monthValue !in FIRST_MONTH..LAST_MONTH) {
                 return@withContext RecordActionResult(
                     ok = false,
                     message = "Invalid month format: $month. Expected YYYY-MM with month 01-12."
@@ -307,9 +316,9 @@ internal class RuntimeRecordDelegate(
             val logicalDate = logicalDateResult.date!!
             val target = resolveRecordTarget(paths, logicalDate, preferredTxtPath)
             val targetRelativePath = target.preferredInnerPath
-                ?: buildMonthRelativePath(logicalDate.substring(0, 7))
-            val logicalYear = logicalDate.substring(0, 4).toInt()
-            val logicalMonth = logicalDate.substring(5, 7).toInt()
+                ?: buildMonthRelativePath(logicalDate.substring(MONTH_KEY_START, MONTH_KEY_END))
+            val logicalYear = logicalDate.substring(MONTH_KEY_START, YEAR_KEY_END).toInt()
+            val logicalMonth = logicalDate.substring(MONTH_KEY_START_OFFSET, MONTH_KEY_END).toInt()
             rawRecordStore.ensureMonthFile(
                 inputRootPath = paths.inputRootPath,
                 year = logicalYear,
@@ -325,7 +334,7 @@ internal class RuntimeRecordDelegate(
                 )
             }
 
-            val selectedMonth = logicalDate.substring(0, 7)
+            val selectedMonth = logicalDate.substring(MONTH_KEY_START, MONTH_KEY_END)
             val markerResult = defaultTxtDayMarker(selectedMonth, logicalDate)
             if (!markerResult.ok) {
                 return@withContext RecordActionResult(

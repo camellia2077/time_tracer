@@ -4,15 +4,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.PrimaryScrollableTabRow
-import androidx.compose.material3.Tab
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.example.tracer.feature.insights.R
 
 enum class InsightsMode {
     DAY,
@@ -58,7 +54,6 @@ internal fun QueryInsightsSection(
 ) {
     val analysisPeriod = insightsMode.toDataTreePeriod()
     val insightsModes = InsightsMode.entries
-    val selectedIndex = insightsModes.indexOf(insightsMode)
     val numericKeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
 
     Column(
@@ -67,7 +62,6 @@ internal fun QueryInsightsSection(
     ) {
         if (showModeTabs) {
             InsightsModeTabs(
-                selectedIndex = selectedIndex,
                 insightsModes = insightsModes,
                 insightsMode = insightsMode,
                 onInsightsModeChange = onInsightsModeChange
@@ -126,30 +120,15 @@ internal fun QueryInsightsSection(
 
 @Composable
 internal fun InsightsModeTabs(
-    selectedIndex: Int,
     insightsModes: List<InsightsMode>,
     insightsMode: InsightsMode,
     onInsightsModeChange: (InsightsMode) -> Unit
 ) {
-    PrimaryScrollableTabRow(
-        selectedTabIndex = selectedIndex,
-        modifier = Modifier.fillMaxWidth(),
-        edgePadding = 0.dp
-    ) {
-        insightsModes.forEach { mode ->
-            Tab(
-                selected = insightsMode == mode,
-                onClick = { onInsightsModeChange(mode) },
-                text = {
-                    Text(
-                        text = stringResource(mode.labelRes()),
-                        maxLines = 1,
-                        softWrap = false
-                    )
-                }
-            )
-        }
-    }
+    StaticScrollableTextTabRow(
+        labels = insightsModes.map { stringResource(it.labelRes()) },
+        selectedIndex = insightsModes.indexOf(insightsMode),
+        onSelectedIndexChange = { index -> onInsightsModeChange(insightsModes[index]) }
+    )
 }
 
 internal fun InsightsMode.toDataTreePeriod(): DataTreePeriod =

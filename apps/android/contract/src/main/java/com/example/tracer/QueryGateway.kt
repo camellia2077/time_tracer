@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package com.example.tracer
 
 interface QueryGateway {

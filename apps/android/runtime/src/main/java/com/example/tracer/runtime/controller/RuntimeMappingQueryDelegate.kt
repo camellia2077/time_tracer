@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 private const val MAPPING_QUERY_RECORD_TAG = "TimeTracerRecord"
+private const val MAPPING_SAMPLE_LIMIT = 8
 
 internal class RuntimeMappingQueryDelegate(
     private val runDataQuery: (DataQueryRequest) -> DataQueryTextResult
@@ -219,7 +220,7 @@ internal class RuntimeMappingQueryDelegate(
         val names = parseMappingNamesContent(queryResult.outputText).sorted()
         logMappingQuery(
             "mapping.query.parsed action=$action count=${names.size} " +
-                "containsW=${names.contains("w")} sample=${names.take(8).joinToString(",")}"
+                "containsW=${names.contains("w")} sample=${names.take(MAPPING_SAMPLE_LIMIT).joinToString(",")}"
         )
         if (names.isEmpty() && !allowEmptyNames) {
             return ActivityMappingNamesResult(

@@ -16,6 +16,10 @@ internal data class LogicalDateParseResult(
     val message: String
 )
 
+private const val MONTH_KEY_START = 0
+private const val YEAR_KEY_END = 4
+private const val MONTH_KEY_END = 7
+
 internal fun parseLogicalDate(targetDateIso: String?): LogicalDateParseResult {
     if (targetDateIso.isNullOrBlank()) {
         val nowStr = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Calendar.getInstance().time)
@@ -51,7 +55,7 @@ internal fun resolveRecordTarget(
     val preferredInnerPath = preferredTxtPath?.let {
         resolveCanonicalTxtRelativePath(paths.inputRootPath, it)
     }
-    val targetMonthFileName = buildMonthRelativePath(logicalDate.substring(0, 7))
+    val targetMonthFileName = buildMonthRelativePath(logicalDate.substring(MONTH_KEY_START, MONTH_KEY_END))
     val targetFile = if (preferredInnerPath.isNullOrBlank()) {
         java.io.File(paths.inputRootPath, targetMonthFileName)
     } else {
@@ -69,7 +73,7 @@ internal fun buildMonthRelativePath(monthKey: String): String {
     require(Regex("""^\d{4}-\d{2}$""").matches(normalized)) {
         "Invalid month key: $monthKey"
     }
-    val year = normalized.substring(0, 4)
+    val year = normalized.substring(MONTH_KEY_START, YEAR_KEY_END)
     return "$year/$normalized.txt"
 }
 

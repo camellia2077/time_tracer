@@ -6,7 +6,7 @@
     <string name="insights_mode_year">年</string>
     <string name="insights_mode_range">期間</string>
     <string name="insights_mode_recent">最近</string>
-    <string name="insights_result_mode_text">テキスト</string>
+    <string name="insights_result_mode_details">詳細</string>
     <string name="insights_result_mode_chart">グラフ</string>
 
     <string name="insights_title_mode_parameters">日付選択</string>
@@ -40,9 +40,18 @@
     <string name="insights_tree_sort_duration_asc">時間：低い順</string>
 
     <string name="insights_chart_semantic_trend">推移</string>
+    <string name="insights_chart_legend_current_period">現在の期間</string>
+    <string name="insights_chart_legend_comparison_period">比較：%1$s</string>
     <string name="insights_chart_semantic_composition">内訳</string>
-    <string name="insights_label_chart_root">最上位の活動</string>
-    <string name="insights_chart_root_all">活動合計時間</string>
+    <string name="insights_label_chart_root">活動範囲</string>
+    <string name="insights_chart_root_all">すべての活動</string>
+    <string name="insights_chart_root_picker_title">活動範囲</string>
+    <string name="insights_chart_root_done">完了</string>
+    <string name="insights_chart_root_close">閉じる</string>
+    <string name="insights_chart_root_current_selection">現在の選択: %1$s</string>
+    <string name="insights_chart_root_select_current">現在の階層を選択: %1$s</string>
+    <string name="insights_chart_root_has_children">子活動を含む</string>
+    <string name="insights_chart_root_open_children">子活動を開く</string>
     <string name="insights_chart_composition_scope_hint">活動の内訳には、選択期間内のすべての最上位活動が含まれます。</string>
     <string name="insights_label_chart_lookback_days">最近日数 (N)</string>
     <string name="insights_label_chart_date_filter_mode">日付フィルター方式</string>
@@ -94,15 +103,23 @@
     <string name="insights_chart_heatmap_theme_policy_palette">手動</string>
     <string name="insights_chart_heatmap_palette_label">手動パレット</string>
     <string name="insights_chart_axis_x_date">X 軸: 日付（MM-dd）</string>
-    <string name="insights_chart_axis_y_hours">Y 軸: 時間（時間）</string>
+    <string name="insights_chart_axis_y_hours">Y 軸: 数値（h）</string>
     <string name="insights_chart_toggle_average_line">平均線を表示</string>
     <string name="insights_chart_average_duration">平均時間: %1$s</string>
+    <string name="insights_chart_total_occurrences">活動総回数: %1$d 回</string>
+    <string name="insights_chart_average_per_occurrence">1回あたり平均時間: %1$s</string>
+    <string name="insights_chart_mode_duration">最頻値: %1$s</string>
+    <string name="insights_chart_median_duration">中央値: %1$s</string>
+    <string name="insights_chart_full_duration_range">全範囲: %1$s–%2$s</string>
+    <string name="insights_chart_typical_daily_range">日常範囲: %1$s–%2$s</string>
+    <string name="insights_chart_coefficient_of_variation">相対変動率（CV）: %1$s</string>
+    <string name="insights_chart_mean_absolute_deviation">平均絶対偏差（MAD）: %1$s</string>
     <string name="insights_chart_total_duration">合計時間: %1$s</string>
     <string name="insights_chart_total_frequency">この階層の記録回数: %1$d</string>
     <string name="insights_chart_active_roots">活動中の最上位活動: %1$d</string>
     <string name="insights_chart_range_days">期間日数: %1$d</string>
-    <string name="insights_chart_legacy_fallback_notice">現在はローカル平均の互換フォールバックを使用中（v0.3.0 で削除予定）。</string>
     <string name="insights_chart_selected_detail">選択: %1$s ・ %2$s</string>
+    <string name="insights_chart_record_completeness">記録の完全性: %1$d / %2$d 日（%3$d%%）</string>
     <string name="insights_chart_composition_summary">選択期間内の最上位活動の内訳です。</string>
     <string name="insights_chart_composition_selected_detail">選択: %1$s ・ %2$s (%3$.1f%%)</string>
     <string name="insights_chart_composition_selected_frequency_detail">選択: %1$s ・ %2$d 回 (%3$.1f%%)</string>
@@ -112,6 +129,7 @@
     <string name="insights_chart_composition_total_duration">合計時間: %1$s</string>
     <string name="insights_chart_composition_total_records">記録: %1$d 回</string>
     <string name="insights_chart_composition_average_duration">平均: %1$s</string>
+    <string name="insights_chart_composition_average_per_occurrence">1回あたり平均時間: %1$s</string>
     <string name="insights_chart_composition_average_records">1日平均記録: %1$.1f 回</string>
     <string name="insights_chart_legend_total">合計</string>
     <string name="insights_chart_legend_average">平均</string>

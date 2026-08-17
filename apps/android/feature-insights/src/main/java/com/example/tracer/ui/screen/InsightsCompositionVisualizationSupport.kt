@@ -101,8 +101,7 @@ internal fun resolveCompositionDrilldownNodes(
 }
 
 internal fun List<TreeNode>.toInsightsCompositionSlices(
-    compositionMeasure: InsightsCompositionMeasure = InsightsCompositionMeasure.DURATION,
-    averageDenominatorDays: Int = 0
+    compositionMeasure: InsightsCompositionMeasure = InsightsCompositionMeasure.DURATION
 ): List<InsightsCompositionSlice> {
     val totalValue = sumOf { node ->
         when (compositionMeasure) {
@@ -128,12 +127,9 @@ internal fun List<TreeNode>.toInsightsCompositionSlices(
             },
             totalDurationSeconds = node.durationSeconds,
             occurrenceCount = node.occurrenceCount,
-            averageDurationSeconds = node.averageDurationSeconds ?:
-                if (averageDenominatorDays > 0) {
-                    (node.durationSeconds ?: 0L) / averageDenominatorDays
-                } else {
-                    null
-                },
+            averageDurationSeconds = node.averageDurationSeconds,
+            averageDurationPerOccurrenceSeconds =
+                node.averageDurationPerOccurrenceSeconds,
             averageOccurrenceCount = node.averageOccurrenceCount,
             averageOccurrenceRatio = node.averageOccurrenceRatio
         )

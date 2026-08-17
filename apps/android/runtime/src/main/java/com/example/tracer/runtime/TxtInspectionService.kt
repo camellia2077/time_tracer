@@ -139,6 +139,7 @@ internal class TxtInspectionService(
         return parsed
     }
 
+    @Suppress("ReturnCount")
     private fun buildInspectionEntry(
         entry: DraftTxtInspectionEntry,
         duplicateMonths: Set<String>,

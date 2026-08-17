@@ -27,7 +27,6 @@ internal class RuntimeEnvironment(private val context: Context) {
         assetBootstrapper.bootstrap(rootDir)
 
         val configRootDir = File(rootDir, "config")
-        val programRootDir = File(configRootDir, "program")
         val userRootDir = File(configRootDir, "user")
         userRootDir.mkdirs()
         // The hierarchy is mutable user configuration. Keep the canonical

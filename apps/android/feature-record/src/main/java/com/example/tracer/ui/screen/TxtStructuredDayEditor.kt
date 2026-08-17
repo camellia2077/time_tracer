@@ -497,22 +497,22 @@ private fun parseClockSeconds(value: String): Int {
         digits.substring(4, 6).toInt()
 }
 
-private fun formatClockSeconds(value: Int): String {
+internal fun formatClockSeconds(value: Int): String {
     val clockValue = ((value % SECONDS_PER_DAY) + SECONDS_PER_DAY) % SECONDS_PER_DAY
     val hour = clockValue / SECONDS_PER_HOUR
     val minute = (clockValue % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE
     val second = clockValue % SECONDS_PER_MINUTE
-    return "%02d%02d%02d".format(hour, minute, second)
+    // Structured day-edit events use ISO clock strings on the Android/Core
+    // boundary. Core validates them, then serializes Raw TXT as HHMMSS.
+    return "%02d:%02d:%02d".format(hour, minute, second)
 }
 
 private const val SECONDS_PER_MINUTE = 60
 private const val SECONDS_PER_HOUR = 60 * SECONDS_PER_MINUTE
 private const val SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR
 
-private fun formatTxtDayEventTime(event: TxtDayEditEvent): String {
-    fun format(value: String): String = value.padStart(6, '0').take(6)
-        .chunked(2)
-        .joinToString(":")
+internal fun formatTxtDayEventTime(event: TxtDayEditEvent): String {
+    fun format(value: String): String = formatIsoClockTime(value)
     return if (event.isInterval) {
         "${format(event.startTime)} – ${format(event.endTime)}"
     } else {

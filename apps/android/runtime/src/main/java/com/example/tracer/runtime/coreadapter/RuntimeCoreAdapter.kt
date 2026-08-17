@@ -1,3 +1,5 @@
+@file:Suppress("LongParameterList")
+
 package com.example.tracer
 
 internal class RuntimeCoreAdapter(

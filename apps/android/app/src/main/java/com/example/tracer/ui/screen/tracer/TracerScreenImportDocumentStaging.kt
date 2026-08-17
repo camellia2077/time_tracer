@@ -31,8 +31,8 @@ internal fun stageSelectedDocument(
         displayName = displayName,
         expectedExtension = expectedExtension
     )
-    if (!stagedName.endsWith(expectedExtension, ignoreCase = true)) {
-        throw IllegalArgumentException("selected file must end with $expectedExtension.")
+    require(stagedName.endsWith(expectedExtension, ignoreCase = true)) {
+        "selected file must end with $expectedExtension."
     }
     val stagedFile = File(stagingRoot, stagedName)
 

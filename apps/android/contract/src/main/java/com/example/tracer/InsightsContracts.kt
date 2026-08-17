@@ -64,6 +64,11 @@ data class InsightsStatusValue(
     val totalDurationSeconds: Long
 )
 
+data class ActivityAggregate(
+    val totalDurationSeconds: Long = 0L,
+    val occurrenceCount: Long = 0L
+)
+
 data class StructuredInsightsProjectNode(
     val name: String,
     val durationSeconds: Long,
@@ -78,6 +83,7 @@ data class StructuredInsightsCallResult(
     val activityDays: List<StructuredDailyInsights> = emptyList(),
     val projectTree: List<StructuredInsightsProjectNode> = emptyList(),
     val statuses: List<InsightsStatusValue> = emptyList(),
+    val activityAggregate: ActivityAggregate = ActivityAggregate(),
     val errorMessage: String = "",
     val operationId: String = ""
 )
@@ -114,13 +120,23 @@ data class InsightsChartData(
     val selectedRoot: String,
     val lookbackDays: Int,
     val points: List<InsightsChartPoint>,
-    val averageDurationSeconds: Long? = null,
-    val totalDurationSeconds: Long? = null,
-    val activeDays: Int? = null,
-    val rangeDays: Int? = null,
+    val rootTree: List<TreeNode> = emptyList(),
+    val averageDurationSeconds: Long = 0L,
+    val totalOccurrenceCount: Long = 0L,
+    val averageDurationPerOccurrenceSeconds: Long = 0L,
+    val modeDurationSeconds: Double? = null,
+    val medianDurationSeconds: Double? = null,
+    val minimumDurationSeconds: Double? = null,
+    val maximumDurationSeconds: Double? = null,
+    val lowerQuartileDurationSeconds: Double? = null,
+    val upperQuartileDurationSeconds: Double? = null,
+    val coefficientOfVariation: Double? = null,
+    val meanAbsoluteDeviationSeconds: Double? = null,
+    val totalDurationSeconds: Long = 0L,
+    val activeDays: Int = 0,
+    val rangeDays: Int = 0,
     val averageDayBasis: InsightsAverageDayBasis = InsightsAverageDayBasis.ACTIVE_DAYS,
     val averageDenominatorDays: Int? = null,
-    val usesLegacyStatsFallback: Boolean = false,
     val schemaVersion: Int? = null,
     val usesSchemaVersionFallback: Boolean = false
 )
@@ -146,6 +162,7 @@ data class InsightsCompositionSlice(
     val totalDurationSeconds: Long? = null,
     val occurrenceCount: Long? = null,
     val averageDurationSeconds: Long? = null,
+    val averageDurationPerOccurrenceSeconds: Long? = null,
     val averageOccurrenceCount: Double? = null,
     val averageOccurrenceRatio: Double? = null
 )

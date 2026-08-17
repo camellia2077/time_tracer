@@ -1,10 +1,8 @@
 package com.example.tracer
 
-import android.content.Context
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
-import androidx.test.core.app.ApplicationProvider
 import com.example.tracer.data.DarkThemeStyle
 import com.example.tracer.data.ThemeConfig
 import com.example.tracer.data.ThemeMode
@@ -18,8 +16,6 @@ import org.robolectric.RobolectricTestRunner
 class ConfigAppearanceSettingsCardRobolectricTest {
     @get:Rule
     val composeRule = createComposeRule()
-
-    private val context: Context = ApplicationProvider.getApplicationContext()
 
     private fun summarySwatches() =
         composeRule.onAllNodesWithTag(

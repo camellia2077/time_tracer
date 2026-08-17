@@ -252,7 +252,7 @@ internal fun List<CanonicalPathNode>.orderCanonicalRoots(orderedRootPaths: List<
         .map { it.value }
 }
 
-internal fun canonicalCatalogRootDropPreviewTestTag(): String =
+internal const val CANONICAL_CATALOG_ROOT_DROP_PREVIEW_TEST_TAG =
     "canonical_catalog_root_drop_preview"
 
 internal fun canonicalCatalogRootTestTag(rootPath: String): String {

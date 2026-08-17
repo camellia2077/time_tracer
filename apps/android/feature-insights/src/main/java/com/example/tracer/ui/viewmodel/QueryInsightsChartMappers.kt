@@ -19,38 +19,27 @@ internal fun mapCorePayloadToDomainModel(payload: InsightsChartData): DomainChar
             )
         )
 
-    val fallbackTotal = normalizedPoints.sumOf { it.durationSeconds }
-    val fallbackActiveDays = normalizedPoints.count { it.durationSeconds > 0L }
-    val fallbackRangeDays = if (normalizedPoints.isNotEmpty()) {
-        normalizedPoints.size
-    } else {
-        payload.lookbackDays.coerceAtLeast(0)
-    }
-    val resolvedTotal = payload.totalDurationSeconds?.coerceAtLeast(0L) ?: fallbackTotal
-    val resolvedActiveDays = payload.activeDays?.coerceAtLeast(0) ?: fallbackActiveDays
-    val resolvedRangeDays = payload.rangeDays?.coerceAtLeast(0) ?: fallbackRangeDays
-    val resolvedAverage = payload.averageDurationSeconds?.coerceAtLeast(0L)
-        ?: if (resolvedActiveDays > 0) {
-            resolvedTotal / resolvedActiveDays
-        } else {
-            0L
-        }
-    val hasFallback = payload.usesLegacyStatsFallback ||
-        payload.averageDurationSeconds == null ||
-        payload.totalDurationSeconds == null ||
-        payload.activeDays == null ||
-        payload.rangeDays == null
-
     return DomainChartModel(
         roots = normalizedRoots,
+        rootTree = payload.rootTree,
         selectedRoot = payload.selectedRoot,
         lookbackDays = payload.lookbackDays.coerceAtLeast(0),
         points = normalizedPoints,
-        averageDurationSeconds = resolvedAverage,
-        totalDurationSeconds = resolvedTotal,
-        activeDays = resolvedActiveDays,
-        rangeDays = resolvedRangeDays,
-        usesLegacyStatsFallback = hasFallback,
+        averageDurationSeconds = payload.averageDurationSeconds.coerceAtLeast(0L),
+        totalOccurrenceCount = payload.totalOccurrenceCount.coerceAtLeast(0L),
+        averageDurationPerOccurrenceSeconds =
+            payload.averageDurationPerOccurrenceSeconds.coerceAtLeast(0L),
+        modeDurationSeconds = payload.modeDurationSeconds,
+        medianDurationSeconds = payload.medianDurationSeconds,
+        minimumDurationSeconds = payload.minimumDurationSeconds,
+        maximumDurationSeconds = payload.maximumDurationSeconds,
+        lowerQuartileDurationSeconds = payload.lowerQuartileDurationSeconds,
+        upperQuartileDurationSeconds = payload.upperQuartileDurationSeconds,
+        coefficientOfVariation = payload.coefficientOfVariation,
+        meanAbsoluteDeviationSeconds = payload.meanAbsoluteDeviationSeconds,
+        totalDurationSeconds = payload.totalDurationSeconds.coerceAtLeast(0L),
+        activeDays = payload.activeDays.coerceAtLeast(0),
+        rangeDays = payload.rangeDays.coerceAtLeast(0),
         schemaVersion = payload.schemaVersion,
         usesSchemaVersionFallback = payload.usesSchemaVersionFallback
     )
@@ -73,6 +62,7 @@ internal fun mapDomainModelToRenderModel(
 
     return ChartRenderModel(
         roots = roots,
+        rootTree = model.rootTree,
         selectedRoot = resolvedRoot,
         lookbackDays = model.lookbackDays,
         points = model.points.map { point ->
@@ -83,10 +73,20 @@ internal fun mapDomainModelToRenderModel(
             )
         },
         averageDurationSeconds = model.averageDurationSeconds,
+        totalOccurrenceCount = model.totalOccurrenceCount,
+        averageDurationPerOccurrenceSeconds =
+            model.averageDurationPerOccurrenceSeconds,
+        modeDurationSeconds = model.modeDurationSeconds,
+        medianDurationSeconds = model.medianDurationSeconds,
+        minimumDurationSeconds = model.minimumDurationSeconds,
+        maximumDurationSeconds = model.maximumDurationSeconds,
+        lowerQuartileDurationSeconds = model.lowerQuartileDurationSeconds,
+        upperQuartileDurationSeconds = model.upperQuartileDurationSeconds,
+        coefficientOfVariation = model.coefficientOfVariation,
+        meanAbsoluteDeviationSeconds = model.meanAbsoluteDeviationSeconds,
         totalDurationSeconds = model.totalDurationSeconds,
         activeDays = model.activeDays,
         rangeDays = model.rangeDays,
-        usesLegacyStatsFallback = model.usesLegacyStatsFallback,
         schemaVersion = model.schemaVersion,
         usesSchemaVersionFallback = model.usesSchemaVersionFallback,
         fromDateIso = fromDateIso,
@@ -130,6 +130,8 @@ private fun normalizeCompositionTree(nodes: List<TreeNode>): List<TreeNode> = no
             durationSeconds = durationSeconds,
             occurrenceCount = node.occurrenceCount?.coerceAtLeast(0L),
             averageDurationSeconds = node.averageDurationSeconds?.coerceAtLeast(0L),
+            averageDurationPerOccurrenceSeconds = node.averageDurationPerOccurrenceSeconds
+                ?.coerceAtLeast(0L),
             averageOccurrenceCount = node.averageOccurrenceCount
                 ?.takeIf { it.isFinite() }
                 ?.coerceAtLeast(0.0),

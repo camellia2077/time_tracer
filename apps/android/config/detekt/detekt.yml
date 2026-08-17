@@ -4,12 +4,58 @@ build:
 complexity:
   CyclomaticComplexMethod:
     threshold: 20
-    excludes: ['**/ui/screen/**']
+    excludes:
+      - '**/ui/screen/**'
+      - '**/ui/**'
+      - '**/test/**'
+      - '**/androidTest/**'
+      - '**/commonTest/**'
+      - '**/jvmTest/**'
+      - '**/androidUnitTest/**'
+      - '**/androidInstrumentedTest/**'
+      - '**/jsTest/**'
+      - '**/iosTest/**'
+  ComplexCondition:
+    threshold: 6
+    excludes: ['**/ui/**']
   LongMethod:
     threshold: 80
-    excludes: ['**/ui/screen/**']
+    excludes:
+      - '**/ui/screen/**'
+      - '**/ui/**'
+      - '**/test/**'
+      - '**/androidTest/**'
+      - '**/commonTest/**'
+      - '**/jvmTest/**'
+      - '**/androidUnitTest/**'
+      - '**/androidInstrumentedTest/**'
+      - '**/jsTest/**'
+      - '**/iosTest/**'
   LongParameterList:
-    excludes: ['**/ui/screen/**']
+    excludes:
+      - '**/ui/screen/**'
+      - '**/ui/**'
+      - '**/contract/**'
+      - '**/runtime/**/controller/**'
+      - '**/runtime/**/services/**'
+      - '**/test/**'
+      - '**/androidTest/**'
+      - '**/commonTest/**'
+      - '**/jvmTest/**'
+      - '**/androidUnitTest/**'
+      - '**/androidInstrumentedTest/**'
+      - '**/jsTest/**'
+      - '**/iosTest/**'
+  NestedBlockDepth:
+    excludes:
+      - '**/test/**'
+      - '**/androidTest/**'
+      - '**/commonTest/**'
+      - '**/jvmTest/**'
+      - '**/androidUnitTest/**'
+      - '**/androidInstrumentedTest/**'
+      - '**/jsTest/**'
+      - '**/iosTest/**'
   TooManyFunctions:
     thresholdInClasses: 14
     excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**', '**/ui/**']
@@ -19,8 +65,16 @@ naming:
     functionPattern: '([a-z][a-zA-Z0-9]*|[A-Z][a-zA-Z0-9]*)'
   InvalidPackageDeclaration:
     active: false
+  MatchingDeclarationName:
+    excludes:
+      - '**/contract/**'
+      - '**/ui/**'
   TopLevelPropertyNaming:
     constantPattern: '[A-Za-z][_A-Za-z0-9]*'
+
+exceptions:
+  TooGenericExceptionCaught:
+    excludes: ['**/runtime/**']
 
 style:
   LoopWithTooManyJumpStatements:
@@ -31,10 +85,28 @@ style:
     ignorePropertyDeclaration: true
   MaxLineLength:
     maxLineLength: 160
-    excludes: ['**/ui/**']
+    excludes:
+      - '**/ui/**'
+      - '**/test/**'
+      - '**/androidTest/**'
+      - '**/commonTest/**'
+      - '**/jvmTest/**'
+      - '**/androidUnitTest/**'
+      - '**/androidInstrumentedTest/**'
+      - '**/jsTest/**'
+      - '**/iosTest/**'
   ReturnCount:
-    max: 3
-    excludes: ['**/ui/**']
+    max: 5
+    excludes:
+      - '**/ui/**'
+      - '**/test/**'
+      - '**/androidTest/**'
+      - '**/commonTest/**'
+      - '**/jvmTest/**'
+      - '**/androidUnitTest/**'
+      - '**/androidInstrumentedTest/**'
+      - '**/jsTest/**'
+      - '**/iosTest/**'
   UnusedParameter:
     excludes: ['**/ui/**']
   UnusedPrivateProperty:

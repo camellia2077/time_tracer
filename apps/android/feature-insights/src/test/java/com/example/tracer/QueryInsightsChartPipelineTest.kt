@@ -92,7 +92,39 @@ class QueryInsightsChartPipelineTest {
     }
 
     @Test
-    fun mapCorePayloadToDomainModel_legacyStats_usesDerivedFallbackValues() {
+    fun executeComparison_queriesTheSelectedRootAndMapsTheComparisonModel() = runTest {
+        val gateway = FakePipelineQueryGateway()
+        val useCase = QueryInsightsChartUseCase(
+            queryGateway = gateway,
+            inputValidator = QueryInputValidator(),
+            textProvider = DefaultQueryInsightsTextProvider
+        )
+
+        val result = useCase.executeComparison(
+            comparison = ComparisonPeriodRequest(
+                request = TemporalInsightsQueryRequest(
+                    displayMode = InsightsDisplayMode.MONTH,
+                    selection = TemporalSelectionPayload(
+                        kind = TemporalSelectionKind.DATE_RANGE,
+                        startDate = "2026-01-01",
+                        endDate = "2026-01-31"
+                    )
+                ),
+                label = "2026-01-01 – 2026-01-31"
+            ),
+            selectedRoot = "study",
+            averageDayBasis = InsightsAverageDayBasis.ACTIVE_DAYS
+        )
+
+        assertEquals("study", gateway.lastChartParams?.root)
+        assertEquals("2026-01-01", gateway.lastChartParams?.fromDateIso)
+        assertEquals("2026-01-31", gateway.lastChartParams?.toDateIso)
+        assertEquals(31, gateway.lastChartParams?.lookbackDays)
+        assertEquals(2, result.renderModel?.points?.size)
+    }
+
+    @Test
+    fun mapCorePayloadToDomainModel_usesCoreStatsValues() {
         val domain = mapCorePayloadToDomainModel(
             InsightsChartData(
                 roots = listOf("study"),
@@ -102,11 +134,12 @@ class QueryInsightsChartPipelineTest {
                     InsightsChartPoint("2026-02-11", 3600L, epochDay = 20495L),
                     InsightsChartPoint("2026-02-10", 0L, epochDay = 20494L)
                 ),
-                averageDurationSeconds = null,
-                totalDurationSeconds = null,
-                activeDays = null,
-                rangeDays = null,
-                usesLegacyStatsFallback = true
+                averageDurationSeconds = 3600L,
+                modeDurationSeconds = 0.0,
+                medianDurationSeconds = 1_800.0,
+                totalDurationSeconds = 3600L,
+                activeDays = 1,
+                rangeDays = 2
             )
         )
 
@@ -115,7 +148,8 @@ class QueryInsightsChartPipelineTest {
         assertEquals(1, domain.activeDays)
         assertEquals(2, domain.rangeDays)
         assertEquals(3600L, domain.averageDurationSeconds)
-        assertEquals(true, domain.usesLegacyStatsFallback)
+        assertEquals(0.0, domain.modeDurationSeconds)
+        assertEquals(1_800.0, domain.medianDurationSeconds)
     }
 
     @Test
@@ -181,7 +215,6 @@ private class FakePipelineQueryGateway : QueryGateway {
                 totalDurationSeconds = 9000L,
                 activeDays = 2,
                 rangeDays = 2,
-                usesLegacyStatsFallback = false,
                 schemaVersion = 1,
                 usesSchemaVersionFallback = false
             ),

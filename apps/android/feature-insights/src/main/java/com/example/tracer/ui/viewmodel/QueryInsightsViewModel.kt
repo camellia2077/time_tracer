@@ -30,7 +30,6 @@ class QueryInsightsViewModel(
         textProvider = textProvider
     )
     internal val inputValidator = QueryInputValidator(textProvider)
-    internal var insightsPresentationPreferencesApplied = false
     // Chart queries can overlap while DataStore restores the persisted chart selection. Keep
     // only the newest query's state updates so a delayed request for the transient selection
     // cannot replace the chart selected by the user (or by the restored preferences).
@@ -171,6 +170,38 @@ class QueryInsightsViewModel(
         loadPeriodComparison(comparison, selection)
     }
 
+    fun onChartPeriodComparisonToggle() {
+        if (uiState.insightsMode == InsightsMode.YEAR) {
+            uiState = uiState.clearTrendChartComparison()
+            return
+        }
+        if (uiState.trendChartComparison !is InsightsPeriodComparisonState.Hidden) {
+            uiState = uiState.clearTrendChartComparison()
+            return
+        }
+        val comparison = resolveDefaultChartComparisonPeriodRequest(
+            state = uiState,
+            locale = useCases.currentInsightsLocale()
+        ) ?: return
+        loadChartPeriodComparison(comparison, selection = null)
+    }
+
+    internal fun onChartComparisonPeriodSelected(selection: InsightsPeriodSelection) {
+        if (uiState.insightsMode == InsightsMode.YEAR) return
+        val comparison = resolveChartComparisonPeriodRequest(
+            state = uiState,
+            selection = selection,
+            locale = useCases.currentInsightsLocale()
+        ) ?: return
+        loadChartPeriodComparison(comparison, selection)
+    }
+
+    fun canCompareChartPreviousPeriod(): Boolean =
+        resolveDefaultChartComparisonPeriodRequest(
+            state = uiState,
+            locale = useCases.currentInsightsLocale()
+        ) != null
+
     private fun loadPeriodComparison(
         comparison: ComparisonPeriodRequest,
         selection: InsightsPeriodSelection?
@@ -198,7 +229,9 @@ class QueryInsightsViewModel(
                         label = comparison.label,
                         selection = activeSelection,
                         activityDays = result.activityDaysForComparison(),
-                        projectTree = result.projectTree
+                        projectTree = result.projectTree,
+                        activityAggregate = result.activityAggregate,
+                        chartRenderModel = null
                     )
                 )
             } else {
@@ -214,13 +247,59 @@ class QueryInsightsViewModel(
         }
     }
 
+    private fun loadChartPeriodComparison(
+        comparison: ComparisonPeriodRequest,
+        selection: InsightsPeriodSelection?
+    ) {
+        val version = uiState.trendChartComparisonVersion + 1
+        val activeSelection = selection ?: uiState.trendChartComparison.selectionOrNull()
+            ?: uiState.toPeriodSelection()
+        uiState = uiState.copy(
+            trendChartComparison = InsightsPeriodComparisonState.Loading(activeSelection),
+            trendChartComparisonVersion = version
+        )
+        viewModelScope.launch {
+            val result = useCases.loadComparisonChart(
+                comparison = comparison,
+                selectedRoot = uiState.trendChartSelectedRoot,
+                averageDayBasis = uiState.averageDayBasis
+            )
+            if (uiState.trendChartComparisonVersion != version ||
+                uiState.trendChartComparison !is InsightsPeriodComparisonState.Loading
+            ) {
+                return@launch
+            }
+            uiState = if (result.renderModel != null) {
+                uiState.copy(
+                    trendChartComparison = InsightsPeriodComparisonState.Ready(
+                        label = comparison.label,
+                        selection = activeSelection,
+                        activityDays = emptyList(),
+                        projectTree = emptyList(),
+                        activityAggregate = ActivityAggregate(),
+                        chartRenderModel = result.renderModel
+                    )
+                )
+            } else {
+                uiState.copy(
+                    trendChartComparison = InsightsPeriodComparisonState.Failed(
+                        selection = activeSelection,
+                        message = result.errorMessage.ifBlank {
+                            "Unable to load the chart comparison period."
+                        }
+                    )
+                )
+            }
+        }
+    }
+
     fun canComparePreviousPeriod(): Boolean = resolveDefaultComparisonPeriodRequest(
         state = uiState,
         locale = useCases.currentInsightsLocale()
     ) != null
 
     fun insightsCurrentSelection() {
-        if (uiState.resultDisplayMode != InsightsResultDisplayMode.TEXT ||
+        if (uiState.resultDisplayMode != InsightsResultDisplayMode.DETAILS ||
             uiState.parameterSection == InsightsParameterSection.ACTIVITY_HIERARCHY
         ) {
             return
@@ -247,9 +326,9 @@ class QueryInsightsViewModel(
         }
         // Locale is restored before the presentation preferences during cold start. Updating
         // the locale is safe, but querying here is not: wait for applyPersistedInsightsPresentation
-        // to select TEXT or CHART before generating its first result.
+        // to select DETAILS or CHART before generating its first result.
         useCases.updateInsightsLocale(locale)
-        if (insightsPresentationPreferencesApplied) {
+        if (uiState.isPresentationRestored) {
             refreshCurrentResult()
         }
     }
@@ -320,7 +399,7 @@ class QueryInsightsViewModel(
     }
 
     private fun shouldAutoInsights(state: QueryInsightsUiState): Boolean {
-        if (state.resultDisplayMode != InsightsResultDisplayMode.TEXT) {
+        if (state.resultDisplayMode != InsightsResultDisplayMode.DETAILS) {
             return false
         }
         return when (state.insightsMode) {
@@ -345,13 +424,6 @@ class QueryInsightsViewModel(
         when (chartSemanticMode.normalizeForInsightsMode(insightsMode)) {
             InsightsChartSemanticMode.TREND -> trendChartLoading
             InsightsChartSemanticMode.COMPOSITION -> compositionChartLoading
-        }
-
-    private fun QueryInsightsUiState.hasChartData(): Boolean =
-        when (chartSemanticMode.normalizeForInsightsMode(insightsMode)) {
-            InsightsChartSemanticMode.TREND -> trendChartRenderModel != null
-            InsightsChartSemanticMode.COMPOSITION ->
-                compositionChartRenderModel != null
         }
 
     internal fun invalidateInFlightChartRequests(reason: String) {

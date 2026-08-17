@@ -72,8 +72,9 @@ object CanonicalTextCodec {
         uri: Uri,
         sourceLabel: String = uri.toString()
     ): String {
-        val input = contentResolver.openInputStream(uri)
-            ?: throw IllegalStateException("Cannot open input stream for $uri")
+        val input = checkNotNull(contentResolver.openInputStream(uri)) {
+            "Cannot open input stream for $uri"
+        }
         input.use { stream ->
             return readInputStream(stream, sourceLabel)
         }

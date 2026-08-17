@@ -3,6 +3,13 @@ package com.example.tracer
 import java.io.File
 import java.util.Locale
 
+private const val ISO_TIME_LENGTH = 8
+private const val HOUR_START = 0
+private const val HOUR_END = 2
+private const val MINUTE_START = 3
+private const val MINUTE_END = 5
+private const val SECOND_START = 6
+
 internal class LiveRawRecordPersistence(
     private val parsing: LiveRawRecordParsing
 ) {
@@ -29,10 +36,16 @@ internal class LiveRawRecordPersistence(
     }
 
     fun formatTxtTime(isoTime: String): String {
-        require(isoTime.length == 8 && isoTime[2] == ':' && isoTime[5] == ':') {
+        require(
+            isoTime.length == ISO_TIME_LENGTH &&
+                isoTime[HOUR_END] == ':' &&
+                isoTime[SECOND_START - 1] == ':'
+        ) {
             "Time must use ISO HH:mm:ss."
         }
-        return isoTime.substring(0, 2) + isoTime.substring(3, 5) + isoTime.substring(6, 8)
+        return isoTime.substring(HOUR_START, HOUR_END) +
+            isoTime.substring(MINUTE_START, MINUTE_END) +
+            isoTime.substring(SECOND_START, ISO_TIME_LENGTH)
     }
 
     fun ensureRawMonthFile(monthFile: File, year: Int, month: Int) {
@@ -50,6 +63,7 @@ internal class LiveRawRecordPersistence(
         )
     }
 
+    @Suppress("LongParameterList")
     fun <T> insertEventIntoDayBlock(
         monthFile: File,
         dayMarker: String,
@@ -91,10 +105,8 @@ internal class LiveRawRecordPersistence(
             blockStart = blockStart,
             blockEnd = blockEnd
         )
-        if (lastEventTime != null && !parsing.isStrictlyAfter(eventTime, lastEventTime)) {
-            throw IllegalStateException(
-                "Record rejected: new time $eventTime must be later than last event time $lastEventTime in day $dayMarker. Use DAY/ALL editor for backfill edits."
-            )
+        check(lastEventTime == null || parsing.isStrictlyAfter(eventTime, lastEventTime)) {
+            "Record rejected: new time $eventTime must be later than last event time $lastEventTime in day $dayMarker. Use DAY/ALL editor for backfill edits."
         }
 
         lines.add(blockEnd, eventLine)

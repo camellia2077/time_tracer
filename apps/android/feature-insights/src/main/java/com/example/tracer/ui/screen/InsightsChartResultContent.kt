@@ -20,6 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.insights.R
+import com.example.tracer.ui.components.CalendarAvailability
 import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
 import java.time.LocalDate
 
@@ -64,14 +65,15 @@ internal fun InsightsChartResultContent(
     trendChartRoots: List<String>,
     trendChartSelectedRoot: String,
     insightsMode: InsightsMode,
-    trendChartLoading: Boolean,
+    calendarAvailability: CalendarAvailability,
     trendChartError: String,
     trendChartRenderModel: ChartRenderModel?,
-    trendChartLastTrace: ChartQueryTrace?,
-    compositionChartLoading: Boolean,
+    trendChartComparison: InsightsPeriodComparisonState,
+    canCompareChartPreviousPeriod: Boolean,
+    onChartPeriodComparisonToggle: () -> Unit,
+    onChartComparisonPeriodSelected: (InsightsPeriodSelection) -> Unit,
     compositionChartError: String,
     compositionChartRenderModel: CompositionChartRenderModel?,
-    compositionChartLastTrace: ChartQueryTrace?,
     chartShowAverageLine: Boolean,
     piePalettePreset: InsightsPiePalettePreset,
     heatmapTomlConfig: InsightsHeatmapTomlConfig,
@@ -88,19 +90,53 @@ internal fun InsightsChartResultContent(
 ) {
     val normalizedSemanticMode = chartSemanticMode.normalizeForInsightsMode(insightsMode)
     val normalizedRoots = remember(trendChartRoots) { trendChartRoots.distinct() }
-    val rootOptions = remember(normalizedRoots) { listOf("") + normalizedRoots }
-    val sortedChartPoints = remember(trendChartRenderModel) {
-        trendChartRenderModel?.points
-            ?.sortedWith(
-                compareBy<InsightsChartPoint>(
-                    { it.epochDay ?: parseEpochDayOrNull(it.date) ?: Long.MAX_VALUE },
-                    { it.date }
-                )
-            )
-            ?: emptyList()
+    val chartRootTree = remember(trendChartRenderModel, normalizedRoots) {
+        trendChartRenderModel?.rootTree?.takeIf { it.isNotEmpty() }
+            ?: normalizedRoots.map { root -> TreeNode(name = root, path = root) }
     }
-    val chartAverageDurationSeconds = trendChartRenderModel?.averageDurationSeconds
-    val chartUsesLegacyStatsFallback = trendChartRenderModel?.usesLegacyStatsFallback == true
+    val rawSortedChartPoints = remember(trendChartRenderModel) {
+        trendChartRenderModel?.points?.sortedChartPoints() ?: emptyList()
+    }
+    val useMonthlyChartAggregation = shouldAggregateChartPointsByMonth(
+        insightsMode = insightsMode,
+        fromDateIso = trendChartRenderModel?.fromDateIso,
+        toDateIso = trendChartRenderModel?.toDateIso
+    )
+    val sortedChartPoints = remember(
+        insightsMode,
+        rawSortedChartPoints,
+        useMonthlyChartAggregation,
+        trendChartRenderModel?.fromDateIso,
+        trendChartRenderModel?.toDateIso
+    ) {
+        if (useMonthlyChartAggregation) {
+            aggregateYearChartPoints(
+                points = rawSortedChartPoints,
+                fromDateIso = trendChartRenderModel?.fromDateIso,
+                toDateIso = trendChartRenderModel?.toDateIso
+            )
+        } else {
+            rawSortedChartPoints
+        }
+    }
+    val comparisonChartModel = (trendChartComparison as? InsightsPeriodComparisonState.Ready)
+        ?.chartRenderModel
+    val sortedComparisonChartPoints = remember(comparisonChartModel) {
+        comparisonChartModel?.points?.sortedChartPoints() ?: emptyList()
+    }
+    val chartAverageDurationSeconds = trendChartRenderModel?.averageDurationSeconds ?: 0L
+    val chartTotalOccurrenceCount = trendChartRenderModel?.totalOccurrenceCount ?: 0L
+    val chartTotalDurationSeconds = trendChartRenderModel?.totalDurationSeconds ?: 0L
+    val chartAverageDurationPerOccurrenceSeconds =
+        trendChartRenderModel?.averageDurationPerOccurrenceSeconds ?: 0L
+    val chartModeDurationSeconds = trendChartRenderModel?.modeDurationSeconds
+    val chartMedianDurationSeconds = trendChartRenderModel?.medianDurationSeconds
+    val chartMinimumDurationSeconds = trendChartRenderModel?.minimumDurationSeconds
+    val chartMaximumDurationSeconds = trendChartRenderModel?.maximumDurationSeconds
+    val chartLowerQuartileDurationSeconds = trendChartRenderModel?.lowerQuartileDurationSeconds
+    val chartUpperQuartileDurationSeconds = trendChartRenderModel?.upperQuartileDurationSeconds
+    val chartCoefficientOfVariation = trendChartRenderModel?.coefficientOfVariation
+    val chartMeanAbsoluteDeviationSeconds = trendChartRenderModel?.meanAbsoluteDeviationSeconds
     val compositionSlices = compositionChartRenderModel?.tree.orEmpty().toInsightsCompositionSlices()
     var selectedPointIndex by remember(sortedChartPoints) {
         mutableIntStateOf(
@@ -120,7 +156,20 @@ internal fun InsightsChartResultContent(
             }
         )
     }
+    var rootPickerVisible by remember { mutableStateOf(false) }
     val effectiveCompositionVisualMode = compositionVisualMode
+
+    if (rootPickerVisible) {
+        InsightsChartRootPickerDialog(
+            rootNodes = chartRootTree,
+            selectedPath = trendChartSelectedRoot,
+            onPathSelected = { path ->
+                onChartRootChange(path)
+                rootPickerVisible = false
+            },
+            onDismiss = { rootPickerVisible = false }
+        )
+    }
 
     Column(
         modifier = modifier
@@ -130,17 +179,18 @@ internal fun InsightsChartResultContent(
     ) {
         InsightsChartParameterSection(
             chartSemanticMode = normalizedSemanticMode,
-            rootOptions = rootOptions,
+            rootTree = chartRootTree,
             trendChartSelectedRoot = trendChartSelectedRoot,
-            onChartRootChange = onChartRootChange
+            onOpenRootPicker = { rootPickerVisible = true }
         )
 
         if (normalizedSemanticMode == InsightsChartSemanticMode.TREND) {
             InsightsChartVisualizationSection(
                 chartError = trendChartError,
-                chartLoading = trendChartLoading,
                 insightsMode = insightsMode,
                 sortedChartPoints = sortedChartPoints,
+                rawSortedChartPoints = rawSortedChartPoints,
+                useMonthlyChartAggregation = useMonthlyChartAggregation,
                 chartFromDateIso = trendChartRenderModel?.fromDateIso,
                 chartToDateIso = trendChartRenderModel?.toDateIso,
                 chartVisualMode = chartVisualMode,
@@ -148,7 +198,26 @@ internal fun InsightsChartResultContent(
                 selectedPointIndex = selectedPointIndex,
                 onPointSelected = { selectedPointIndex = it },
                 chartAverageDurationSeconds = chartAverageDurationSeconds,
-                chartUsesLegacyStatsFallback = chartUsesLegacyStatsFallback,
+                comparisonChartPoints = sortedComparisonChartPoints,
+                comparisonPeriodLabel = (trendChartComparison as?
+                    InsightsPeriodComparisonState.Ready)?.label.orEmpty(),
+                periodComparison = trendChartComparison,
+                canComparePreviousPeriod = canCompareChartPreviousPeriod,
+                calendarAvailability = calendarAvailability,
+                onPeriodComparisonToggle = onChartPeriodComparisonToggle,
+                onComparisonPeriodSelected = onChartComparisonPeriodSelected,
+                chartTotalOccurrenceCount = chartTotalOccurrenceCount,
+                chartTotalDurationSeconds = chartTotalDurationSeconds,
+                chartAverageDurationPerOccurrenceSeconds =
+                    chartAverageDurationPerOccurrenceSeconds,
+                chartModeDurationSeconds = chartModeDurationSeconds,
+                chartMedianDurationSeconds = chartMedianDurationSeconds,
+                chartMinimumDurationSeconds = chartMinimumDurationSeconds,
+                chartMaximumDurationSeconds = chartMaximumDurationSeconds,
+                chartLowerQuartileDurationSeconds = chartLowerQuartileDurationSeconds,
+                chartUpperQuartileDurationSeconds = chartUpperQuartileDurationSeconds,
+                chartCoefficientOfVariation = chartCoefficientOfVariation,
+                chartMeanAbsoluteDeviationSeconds = chartMeanAbsoluteDeviationSeconds,
                 chartShowAverageLine = chartShowAverageLine,
                 onChartShowAverageLineChange = onChartShowAverageLineChange,
                 heatmapTomlConfig = heatmapTomlConfig,
@@ -172,6 +241,14 @@ internal fun InsightsChartResultContent(
         }
     }
 }
+
+private fun List<InsightsChartPoint>.sortedChartPoints(): List<InsightsChartPoint> =
+    sortedWith(
+        compareBy<InsightsChartPoint>(
+            { it.epochDay ?: parseEpochDayOrNull(it.date) ?: Long.MAX_VALUE },
+            { it.date }
+        )
+    )
 
 @Composable
 internal fun InsightsChartSemanticModeSelector(

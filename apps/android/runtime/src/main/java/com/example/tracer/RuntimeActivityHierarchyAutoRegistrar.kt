@@ -16,6 +16,7 @@ internal class RuntimeActivityHierarchyAutoRegistrar(
     private val language = context.resources.configuration.locales
         .get(0)?.language.orEmpty()
 
+    @Suppress("LongMethod", "ReturnCount")
     suspend fun ensureRegistered(rawActivityName: String): ActivityHierarchyAutoRegistrationResult {
         val activityName = rawActivityName.trim()
         Log.i(

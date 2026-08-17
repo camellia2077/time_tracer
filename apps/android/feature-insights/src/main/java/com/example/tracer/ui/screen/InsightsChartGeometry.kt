@@ -1,9 +1,50 @@
 package com.example.tracer
 
+import android.graphics.Paint
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.unit.dp
+import java.util.Locale
 import kotlin.math.atan2
 import kotlin.math.sqrt
+
+private const val CHART_GRID_LINE_COUNT = 4
+
+internal fun DrawScope.drawDurationYAxisLabels(
+    maxDurationHours: Float,
+    leftPadding: Float,
+    topPadding: Float,
+    chartHeight: Float,
+    labelColor: Color
+) {
+    val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = labelColor.toArgb()
+        textSize = 10.dp.toPx()
+        textAlign = Paint.Align.RIGHT
+    }
+    val labelX = leftPadding - 8.dp.toPx()
+    val verticalCenterOffset = -(textPaint.ascent() + textPaint.descent()) / 2f
+    val safeMaxDurationHours = maxDurationHours.coerceAtLeast(1f)
+
+    for (index in 0..CHART_GRID_LINE_COUNT) {
+        val y = topPadding + (chartHeight * index / CHART_GRID_LINE_COUNT.toFloat())
+        val durationHours = (
+            safeMaxDurationHours *
+                (CHART_GRID_LINE_COUNT - index) /
+                CHART_GRID_LINE_COUNT.toFloat()
+            )
+        drawContext.canvas.nativeCanvas.drawText(
+            String.format(Locale.ROOT, "%.1f", durationHours),
+            labelX,
+            y + verticalCenterOffset,
+            textPaint
+        )
+    }
+}
 
 internal data class ChartPlot(
     val offsets: List<Offset>,
@@ -27,6 +68,16 @@ internal data class BarChartPlot(
     val chartHeight: Float
 )
 
+internal data class GroupedBarChartPlot(
+    val currentBars: List<BarColumn>,
+    val comparisonBars: List<BarColumn>,
+    val currentCenters: List<Offset>,
+    val leftPadding: Float,
+    val topPadding: Float,
+    val chartWidth: Float,
+    val chartHeight: Float
+)
+
 internal data class PieSlice(
     val startAngle: Float,
     val sweepAngle: Float
@@ -38,8 +89,12 @@ internal data class PieChartPlot(
     val slices: List<PieSlice>
 )
 
-internal fun buildChartPlot(durationHours: List<Float>, size: Size): ChartPlot {
-    val leftPadding = 44f
+internal fun buildChartPlot(
+    durationHours: List<Float>,
+    size: Size,
+    maxDurationHoursOverride: Float? = null
+): ChartPlot {
+    val leftPadding = 80f
     val rightPadding = 16f
     val topPadding = 16f
     val bottomPadding = 24f
@@ -56,7 +111,8 @@ internal fun buildChartPlot(durationHours: List<Float>, size: Size): ChartPlot {
         )
     }
 
-    val maxY = durationHours.maxOrNull()?.coerceAtLeast(1f) ?: 1f
+    val maxY = (maxDurationHoursOverride ?: durationHours.maxOrNull())
+        ?.coerceAtLeast(1f) ?: 1f
     val offsets = durationHours.mapIndexed { index, value ->
         val x = if (durationHours.size == 1) {
             leftPadding + chartWidth / 2f
@@ -77,7 +133,7 @@ internal fun buildChartPlot(durationHours: List<Float>, size: Size): ChartPlot {
 }
 
 internal fun buildBarChartPlot(durationHours: List<Float>, size: Size): BarChartPlot {
-    val leftPadding = 44f
+    val leftPadding = 80f
     val rightPadding = 16f
     val topPadding = 16f
     val bottomPadding = 24f
@@ -163,21 +219,89 @@ internal fun buildPieChartPlot(durationHours: List<Float>, size: Size): PieChart
 
 internal fun resolveAverageDurationHours(
     durationHours: List<Float>,
-    averageDurationSeconds: Long?,
-    usesLegacyStatsFallback: Boolean
+    averageDurationSeconds: Long
 ): Float? {
     if (durationHours.isEmpty()) {
         return null
     }
     val coreAverageHours = averageDurationSeconds
-        ?.coerceAtLeast(0L)
-        ?.toFloat()
-        ?.div(3600f)
-    return if (usesLegacyStatsFallback || coreAverageHours == null) {
-        durationHours.average().toFloat()
-    } else {
-        coreAverageHours
+        .coerceAtLeast(0L)
+        .toFloat()
+        .div(3600f)
+    return coreAverageHours
+}
+
+internal fun buildGroupedBarChartPlot(
+    currentHours: List<Float>,
+    comparisonHours: List<Float>,
+    size: Size,
+    maxDurationHours: Float
+): GroupedBarChartPlot {
+    val leftPadding = 80f
+    val rightPadding = 16f
+    val topPadding = 16f
+    val bottomPadding = 24f
+    val chartWidth = (size.width - leftPadding - rightPadding).coerceAtLeast(1f)
+    val chartHeight = (size.height - topPadding - bottomPadding).coerceAtLeast(1f)
+    val count = maxOf(currentHours.size, comparisonHours.size)
+    if (count == 0) {
+        return GroupedBarChartPlot(
+            currentBars = emptyList(),
+            comparisonBars = emptyList(),
+            currentCenters = emptyList(),
+            leftPadding = leftPadding,
+            topPadding = topPadding,
+            chartWidth = chartWidth,
+            chartHeight = chartHeight
+        )
     }
+
+    val slotWidth = chartWidth / count.toFloat()
+    val comparisonBarWidth = (slotWidth * 0.82f).coerceAtLeast(2f)
+    val currentBarWidth = (slotWidth * 0.56f).coerceAtLeast(2f)
+    val safeMax = maxDurationHours.coerceAtLeast(1f)
+    val currentBars = mutableListOf<BarColumn>()
+    val comparisonBars = mutableListOf<BarColumn>()
+    val currentCenters = mutableListOf<Offset>()
+
+    repeat(count) { index ->
+        val currentValue = currentHours.getOrElse(index) { 0f }.coerceAtLeast(0f)
+        val comparisonValue = comparisonHours.getOrElse(index) { 0f }.coerceAtLeast(0f)
+        val currentHeight = if (currentValue > 0f) {
+            chartHeight * (currentValue / safeMax).coerceIn(0f, 1f)
+        } else {
+            0f
+        }
+        val comparisonHeight = if (comparisonValue > 0f) {
+            chartHeight * (comparisonValue / safeMax).coerceIn(0f, 1f)
+        } else {
+            0f
+        }
+        val currentTop = topPadding + chartHeight - currentHeight
+        val comparisonTop = topPadding + chartHeight - comparisonHeight
+        val slotCenter = leftPadding + slotWidth * index + slotWidth / 2f
+        val currentLeft = slotCenter - currentBarWidth / 2f
+        val comparisonLeft = slotCenter - comparisonBarWidth / 2f
+        currentBars += BarColumn(
+            topLeft = Offset(currentLeft, currentTop),
+            size = Size(currentBarWidth, currentHeight)
+        )
+        comparisonBars += BarColumn(
+            topLeft = Offset(comparisonLeft, comparisonTop),
+            size = Size(comparisonBarWidth, comparisonHeight)
+        )
+        currentCenters += Offset(slotCenter, topPadding + chartHeight / 2f)
+    }
+
+    return GroupedBarChartPlot(
+        currentBars = currentBars,
+        comparisonBars = comparisonBars,
+        currentCenters = currentCenters,
+        leftPadding = leftPadding,
+        topPadding = topPadding,
+        chartWidth = chartWidth,
+        chartHeight = chartHeight
+    )
 }
 
 internal fun resolveAverageLineY(

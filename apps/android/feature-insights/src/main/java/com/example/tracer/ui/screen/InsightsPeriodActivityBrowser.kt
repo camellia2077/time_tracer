@@ -15,7 +15,6 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -44,6 +43,7 @@ import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
 @Composable
 internal fun InsightsPeriodActivityBrowser(
     activityDays: List<StructuredDailyInsights>,
+    activityAggregate: ActivityAggregate,
     projectTree: List<StructuredInsightsProjectNode>,
     insightsMode: InsightsMode,
     periodComparison: InsightsPeriodComparisonState = InsightsPeriodComparisonState.Hidden,
@@ -78,6 +78,7 @@ internal fun InsightsPeriodActivityBrowser(
         } else if (selectedView == InsightsActivityView.OVERVIEW) {
             InsightsActivityOverview(
                 activityDays = activityDays,
+                activityAggregate = activityAggregate,
                 projectTree = projectTree,
                 insightsMode = insightsMode,
                 periodComparison = periodComparison,
@@ -135,6 +136,7 @@ internal fun InsightsActivityViewSwitcher(
 @Composable
 internal fun InsightsActivityOverview(
     activityDays: List<StructuredDailyInsights>,
+    activityAggregate: ActivityAggregate,
     projectTree: List<StructuredInsightsProjectNode>,
     insightsMode: InsightsMode,
     periodComparison: InsightsPeriodComparisonState = InsightsPeriodComparisonState.Hidden,
@@ -144,17 +146,19 @@ internal fun InsightsActivityOverview(
     onComparisonPeriodSelected: (InsightsPeriodSelection) -> Unit = {}
 ) {
     val comparisonColors = insightsSemanticColors()
-    val totalDuration = activityDays.sumOf { it.totalDurationSeconds }
-    val recordCount = activityDays.sumOf { it.activities.size }
+    val totalDuration = activityAggregate.totalDurationSeconds
+    val recordCount = activityAggregate.occurrenceCount
     val activeDayCount = activityDays.size
     val averageDuration = if (activeDayCount == 0) 0L else totalDuration / activeDayCount
     val previous = periodComparison as? InsightsPeriodComparisonState.Ready
-    val previousTotalDuration = previous?.activityDays?.sumOf { it.totalDurationSeconds }
-    val previousRecordCount = previous?.activityDays?.sumOf { it.activities.size }
+    val previousTotalDuration = previous?.activityAggregate?.totalDurationSeconds
+    val previousRecordCount = previous?.activityAggregate?.occurrenceCount
     val previousActiveDayCount = previous?.activityDays?.size
     val previousAverageDuration = previous?.let {
         val activeDays = it.activityDays.size
-        if (activeDays == 0) 0L else it.activityDays.sumOf(StructuredDailyInsights::totalDurationSeconds) / activeDays
+        if (activeDays == 0) 0L else {
+            it.activityAggregate.totalDurationSeconds / activeDays
+        }
     }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         InsightsPeriodComparisonControl(
@@ -200,7 +204,7 @@ internal fun InsightsActivityOverview(
                 label = stringResource(R.string.insights_period_activities_record_count),
                 value = recordCount.toString(),
                 comparison = previousRecordCount?.let {
-                    periodActivityCountComparison(recordCount.toLong(), it.toLong())
+                    periodActivityCountComparison(recordCount, it)
                 },
                 comparisonColors = comparisonColors,
                 modifier = Modifier.weight(1f)
@@ -241,58 +245,6 @@ internal fun InsightsActivityOverview(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun InsightsPeriodComparisonControl(
-    periodComparison: InsightsPeriodComparisonState,
-    canComparePreviousPeriod: Boolean,
-    insightsMode: InsightsMode,
-    calendarAvailability: CalendarAvailability,
-    onPeriodComparisonToggle: () -> Unit,
-    onComparisonPeriodSelected: (InsightsPeriodSelection) -> Unit
-) {
-    val enabled = canComparePreviousPeriod && periodComparison !is InsightsPeriodComparisonState.Loading
-    val comparing = periodComparison !is InsightsPeriodComparisonState.Hidden
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = stringResource(
-                R.string.insights_period_activities_compare_previous
-            ),
-            modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.titleSmall
-        )
-        Switch(
-            checked = comparing,
-            onCheckedChange = { onPeriodComparisonToggle() },
-            enabled = enabled
-        )
-    }
-    if (periodComparison !is InsightsPeriodComparisonState.Hidden) {
-        InsightsComparisonPeriodPicker(
-            insightsMode = insightsMode,
-            periodComparison = periodComparison,
-            calendarAvailability = calendarAvailability,
-            onPeriodSelected = onComparisonPeriodSelected
-        )
-    }
-    when (periodComparison) {
-        is InsightsPeriodComparisonState.Loading -> Text(
-            text = stringResource(R.string.insights_period_activities_comparison_loading),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        is InsightsPeriodComparisonState.Ready -> Unit
-        is InsightsPeriodComparisonState.Failed -> Text(
-            text = periodComparison.message,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.error
-        )
-        InsightsPeriodComparisonState.Hidden -> Unit
     }
 }
 

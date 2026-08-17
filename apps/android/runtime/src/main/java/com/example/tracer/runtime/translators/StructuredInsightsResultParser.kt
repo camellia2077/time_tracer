@@ -25,6 +25,10 @@ internal class StructuredInsightsResultParser(
                 activityDays = payload.activityDays.map(translator::translateActivityDay),
                 projectTree = payload.projectTree.map(translator::translateProjectNode),
                 statuses = payload.statuses,
+                activityAggregate = ActivityAggregate(
+                    totalDurationSeconds = payload.totalDurationSeconds,
+                    occurrenceCount = payload.totalOccurrenceCount
+                ),
                 operationId = result.operationId
             )
         }.getOrElse { error ->

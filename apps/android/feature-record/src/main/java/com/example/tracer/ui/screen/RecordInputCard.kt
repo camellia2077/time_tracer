@@ -47,6 +47,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
@@ -75,6 +76,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.flow.drop
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -157,7 +161,7 @@ internal fun RecordInputCard(
                     }
                     IconButton(
                         onClick = onOpenTxtPreview,
-                        modifier = Modifier.testTag(recordTxtPreviewButtonTestTag())
+                        modifier = Modifier.testTag(RECORD_TXT_PREVIEW_BUTTON_TEST_TAG)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Description,
@@ -237,7 +241,7 @@ internal fun RecordInputCard(
                 shape = MaterialTheme.shapes.large,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .testTag(recordActivityNameInputTestTag())
+                    .testTag(RECORD_ACTIVITY_NAME_INPUT_TEST_TAG)
             )
 
             val isIntervalRunning = intervalStart.isNotBlank() && intervalEnd.isBlank()
@@ -375,7 +379,7 @@ internal fun RecordInputCard(
                     .height(56.dp)
                     .clickable { isRemarkEditorVisible = true }
                     .padding(horizontal = 4.dp)
-                    .testTag(recordRemarkInputTestTag()),
+                    .testTag(RECORD_REMARK_INPUT_TEST_TAG),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (remarkPreview.isNotBlank()) {
@@ -541,18 +545,55 @@ private fun ElapsedFullScreenDialog(
     onDismiss: () -> Unit
 ) {
     val safeElapsedSeconds = elapsedSeconds.coerceAtLeast(0L)
-    // These are repeating clock faces, not progress targets: the outer arc completes hourly,
-    // and the inner arc completes every minute.
-    val hourCycleProgress = (safeElapsedSeconds % 3600L).toFloat() / 3600f
+    // These are repeating clock faces, not progress targets: the outer arc advances in
+    // completed minutes and completes hourly, while the inner arc advances continuously
+    // through the current minute.
+    val hourCycleProgress = hourCycleProgressForElapsedSeconds(safeElapsedSeconds)
     val minuteCyclePosition = safeElapsedSeconds.toFloat() / 60f
     val animatedMinutePosition = remember { Animatable(minuteCyclePosition) }
-    LaunchedEffect(minuteCyclePosition) {
-        // Keep an unbounded phase so a completed minute flows directly into the next one.
-        // Only the drawing phase is wrapped; the animation itself never jumps backwards.
-        animatedMinutePosition.animateTo(
-            targetValue = minuteCyclePosition,
-            animationSpec = tween(durationMillis = 1000, easing = LinearEasing)
+    var needsMinuteProgressResync by remember { mutableStateOf(false) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var isTimerUiActive by remember(lifecycleOwner) {
+        mutableStateOf(
+            lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
         )
+    }
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_STOP -> {
+                    isTimerUiActive = false
+                    needsMinuteProgressResync = true
+                }
+
+                Lifecycle.Event.ON_START -> isTimerUiActive = true
+                else -> Unit
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+    LaunchedEffect(minuteCyclePosition) {
+        val shouldResyncMinuteProgress = shouldSnapElapsedMinuteProgress(
+                needsForegroundResync = needsMinuteProgressResync,
+                currentPosition = animatedMinutePosition.value,
+                targetPosition = minuteCyclePosition
+            )
+        if (!isTimerUiActive || shouldResyncMinuteProgress) {
+            // Time advanced while the UI was not visible.  Show the current phase immediately
+            // instead of replaying the elapsed minutes as a fast-forward animation.
+            animatedMinutePosition.snapTo(minuteCyclePosition)
+            if (isTimerUiActive && shouldResyncMinuteProgress) {
+                needsMinuteProgressResync = false
+            }
+        } else {
+            // Keep an unbounded phase so a completed minute flows directly into the next one.
+            // Only the drawing phase is wrapped; the animation itself never jumps backwards.
+            animatedMinutePosition.animateTo(
+                targetValue = minuteCyclePosition,
+                animationSpec = tween(durationMillis = 1000, easing = LinearEasing)
+            )
+        }
     }
     val ringTrackColor = MaterialTheme.colorScheme.surfaceVariant
     val ringProgressColor = MaterialTheme.colorScheme.primary
@@ -677,6 +718,18 @@ private fun ElapsedFullScreenDialog(
     }
 }
 
+internal fun shouldSnapElapsedMinuteProgress(
+    needsForegroundResync: Boolean,
+    currentPosition: Float,
+    targetPosition: Float
+): Boolean = needsForegroundResync && currentPosition != targetPosition
+
+internal fun hourCycleProgressForElapsedSeconds(elapsedSeconds: Long): Float {
+    val safeElapsedSeconds = elapsedSeconds.coerceAtLeast(0L)
+    val completedMinutesInHour = (safeElapsedSeconds % 3600L) / 60L
+    return completedMinutesInHour.toFloat() / 60f
+}
+
 private fun formatExactDuration(totalSeconds: Int): String {
     val safeSeconds = totalSeconds.coerceAtLeast(0)
     val hours = safeSeconds / 3600
@@ -741,9 +794,8 @@ internal fun syncActivityNameInputValue(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-internal fun recordTxtPreviewButtonTestTag(): String = "record_txt_preview_button"
+internal const val RECORD_TXT_PREVIEW_BUTTON_TEST_TAG = "record_txt_preview_button"
 
-internal fun recordActivityNameInputTestTag(): String = "record_activity_name_input"
+internal const val RECORD_ACTIVITY_NAME_INPUT_TEST_TAG = "record_activity_name_input"
 
-internal fun recordRemarkInputTestTag(): String = "record_remark_input"
+internal const val RECORD_REMARK_INPUT_TEST_TAG = "record_remark_input"

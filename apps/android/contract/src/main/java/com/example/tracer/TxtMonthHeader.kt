@@ -2,12 +2,23 @@ package com.example.tracer
 
 import java.util.Locale
 
+private const val FIRST_MONTH = 1
+private const val LAST_MONTH = 12
+private const val NEXT_LINE_OFFSET = 1
+private const val YEAR_DIGITS = 4
+private const val MONTH_DIGITS = 2
+
 data class TxtMonthHeader(
     val year: Int,
     val month: Int
 ) {
     val monthKey: String
-        get() = String.format(Locale.US, "%04d-%02d", year, month)
+        get() = String.format(
+            Locale.US,
+            "%0${YEAR_DIGITS}d-%0${MONTH_DIGITS}d",
+            year,
+            month
+        )
 
     val canonicalRelativePath: String
         get() = "$year/$monthKey.txt"
@@ -21,35 +32,31 @@ fun canonicalizeTxtHeaderContent(content: String): String {
 }
 
 fun parseTxtMonthHeader(content: String): TxtMonthHeader? {
-    var yearValue: Int? = null
-    var monthValue: Int? = null
     val yearRegex = Regex("""^y(\d{4})$""")
     val monthRegex = Regex("""^m(\d{2})$""")
-
-    for (rawLine in canonicalizeTxtHeaderContent(content).lineSequence()) {
-        val line = rawLine.trim()
-        if (line.isEmpty()) {
-            continue
-        }
-
-        val yearMatch = yearRegex.matchEntire(line)
-        if (yearMatch != null && yearValue == null) {
-            yearValue = yearMatch.groupValues[1].toIntOrNull()
-            continue
-        }
-
-        val monthMatch = monthRegex.matchEntire(line)
-        if (monthMatch != null && yearValue != null && monthValue == null) {
-            val parsedMonth = monthMatch.groupValues[1].toIntOrNull() ?: return null
-            if (parsedMonth !in 1..12) {
-                return null
-            }
-            monthValue = parsedMonth
-            break
-        }
+    val lines = canonicalizeTxtHeaderContent(content)
+        .lineSequence()
+        .map(String::trim)
+        .filter(String::isNotEmpty)
+        .toList()
+    val yearIndex = lines.indexOfFirst { yearRegex.matches(it) }
+    if (yearIndex < 0) {
+        return null
     }
-
-    if (yearValue == null || monthValue == null) {
+    val yearValue = yearRegex.matchEntire(lines[yearIndex])
+        ?.groupValues
+        ?.getOrNull(1)
+        ?.toIntOrNull()
+        ?: return null
+    val monthValue = lines
+        .drop(yearIndex + NEXT_LINE_OFFSET)
+        .asSequence()
+        .mapNotNull { line ->
+            monthRegex.matchEntire(line)?.groupValues?.getOrNull(1)?.toIntOrNull()
+        }
+        .firstOrNull()
+        ?: return null
+    if (monthValue !in FIRST_MONTH..LAST_MONTH) {
         return null
     }
     return TxtMonthHeader(year = yearValue, month = monthValue)
@@ -61,7 +68,7 @@ fun normalizeTxtMonthKey(value: String): String? {
     val match = Regex("""^(\d{4})-(\d{2})$""").matchEntire(value.trim()) ?: return null
     val year = match.groupValues[1].toIntOrNull() ?: return null
     val month = match.groupValues[2].toIntOrNull() ?: return null
-    if (month !in 1..12) {
+    if (month !in FIRST_MONTH..LAST_MONTH) {
         return null
     }
     return TxtMonthHeader(year = year, month = month).monthKey
@@ -69,5 +76,5 @@ fun normalizeTxtMonthKey(value: String): String? {
 
 fun buildCanonicalTxtRelativePath(monthKey: String): String? {
     val normalized = normalizeTxtMonthKey(monthKey) ?: return null
-    return "${normalized.substring(0, 4)}/$normalized.txt"
+    return "${normalized.substring(0, YEAR_DIGITS)}/$normalized.txt"
 }

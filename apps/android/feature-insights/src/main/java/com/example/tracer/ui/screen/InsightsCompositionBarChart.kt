@@ -110,5 +110,3 @@ internal fun InsightsCompositionBarChart(
         }
     }
 }
-
-private fun formatPercent(value: Float): String = String.format("%.1f%%", value)

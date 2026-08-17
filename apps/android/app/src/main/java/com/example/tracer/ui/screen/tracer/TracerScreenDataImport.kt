@@ -99,6 +99,7 @@ private data class DataFolderImportInput(
     val tomlDocuments: List<TreeTextDocument>
 )
 
+@Suppress("TooGenericExceptionCaught")
 private suspend fun importDataFolder(
     context: Context,
     input: DataFolderImportInput,

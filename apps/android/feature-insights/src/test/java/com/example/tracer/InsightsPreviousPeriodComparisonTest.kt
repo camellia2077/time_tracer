@@ -90,6 +90,33 @@ class InsightsPreviousPeriodComparisonTest {
         assertNull(resolveDefaultComparisonPeriodRequest(comparisonState(InsightsMode.RECENT), "en"))
     }
 
+    @Test
+    fun chartComparison_doesNotRequireAnActivitiesResult() {
+        val resolved = resolveDefaultChartComparisonPeriodRequest(
+            state = QueryInsightsUiState(
+                insightsMode = InsightsMode.MONTH,
+                insightsMonth = "202603"
+            ),
+            locale = "en"
+        )
+
+        assertEquals("2026-02-01", resolved?.request?.selection?.startDate)
+        assertEquals("2026-02-28", resolved?.request?.selection?.endDate)
+    }
+
+    @Test
+    fun chartComparison_isUnavailableForYear() {
+        val resolved = resolveDefaultChartComparisonPeriodRequest(
+            state = QueryInsightsUiState(
+                insightsMode = InsightsMode.YEAR,
+                insightsYear = "2026"
+            ),
+            locale = "en"
+        )
+
+        assertNull(resolved)
+    }
+
     private fun comparisonState(mode: InsightsMode): QueryInsightsUiState {
         val period = mode.toDataTreePeriod()
         return QueryInsightsUiState(

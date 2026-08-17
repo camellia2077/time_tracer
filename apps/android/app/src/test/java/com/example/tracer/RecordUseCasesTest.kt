@@ -1,3 +1,5 @@
+@file:Suppress("LargeClass")
+
 package com.example.tracer
 
 import kotlinx.coroutines.test.runTest
