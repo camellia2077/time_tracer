@@ -7,6 +7,7 @@ from unittest.mock import patch
 
 from tools.toolchain.cli.handlers import android
 from tools.toolchain.cli.handlers import android_detekt
+from tools.toolchain.cli.handlers import android_test
 
 
 class _FakeContext:
@@ -203,3 +204,37 @@ class TestAndroidDetektCommand(TestCase):
         self.assertEqual(FakeBuildCommand.last_kwargs["profile_name"], "android_detekt")
         self.assertTrue(FakeBuildCommand.last_kwargs["concise"])
         self.assertEqual(FakeBuildCommand.last_kwargs["extra_args"], ["--info"])
+
+
+class TestAndroidTestCommand(TestCase):
+    def test_selects_module_task_and_forwards_test_patterns(self) -> None:
+        args = argparse.Namespace(
+            module="feature-insights",
+            test_patterns=[
+                "com.example.tracer.QueryInsightsResultDisplayRobolectricTest",
+                "com.example.tracer.QueryInsightsViewModelChartTest.chart*",
+            ],
+            concise=True,
+            extra_args=["--", "--stacktrace"],
+        )
+
+        with patch.object(android_test, "build_gradle", return_value=0) as build_mock:
+            result = android_test.run(args, _FakeContext(Path("."), Path(".")))
+
+        self.assertEqual(result, 0)
+        self.assertEqual(build_mock.call_args.kwargs["app_name"], "tracer_android")
+        self.assertEqual(
+            build_mock.call_args.kwargs["gradle_tasks_override"],
+            [":feature-insights:testDebugUnitTest"],
+        )
+        self.assertEqual(
+            build_mock.call_args.kwargs["extra_args"],
+            [
+                "--stacktrace",
+                "--tests",
+                "com.example.tracer.QueryInsightsResultDisplayRobolectricTest",
+                "--tests",
+                "com.example.tracer.QueryInsightsViewModelChartTest.chart*",
+            ],
+        )
+        self.assertEqual(build_mock.call_args.kwargs["output_mode"], "quiet")

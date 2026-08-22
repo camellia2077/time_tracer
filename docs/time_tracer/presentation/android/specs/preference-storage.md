@@ -32,8 +32,12 @@ Do not store UI preferences in the runtime SQLite database.
   - dark theme style
   - theme palette
   - the selected UI and Insights color systems are defined in `../ui/color-system.md` and `../ui/insights/README.md`; the selected palette is user-persisted
-- App language
-- Config-page card expansion state
+- App language and motion:
+  - whether page transitions are enabled
+  - selected page-transition style (quick fade or light horizontal slide)
+- Config-page expansion state:
+  - top-level cards
+  - Theme Palette, Insights chart style, and Activity comparison subsections
 - Record assistance preferences:
   - frequent activity lookback days
   - frequent activity top-N
@@ -45,6 +49,8 @@ Do not store UI preferences in the runtime SQLite database.
   - preferred chart semantic mode (Breakdown or Trend)
   - preferred Trend top-level activity
   - pie and heatmap palette selections
+  - period comparison color scheme
+  - period comparison indicator style
   - daily status definitions
 
 Android does not read, write, import, or export `config/user/charts.toml`,

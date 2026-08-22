@@ -23,6 +23,8 @@ import com.example.tracer.ui.viewmodel.ThemeEvent
 internal fun AppearanceSettingsCard(
     themeConfig: ThemeConfig,
     onThemeEvent: (ThemeEvent) -> Unit,
+    themePaletteExpanded: Boolean,
+    onThemePaletteExpandedChange: (Boolean) -> Unit,
     expanded: Boolean = true,
     onToggleExpanded: () -> Unit = {}
 ) {
@@ -45,7 +47,14 @@ internal fun AppearanceSettingsCard(
                 )
 
                 HorizontalDivider()
-                ThemePaletteSection(themeConfig.palette) { onThemeEvent(ThemeEvent.SetPalette(it)) }
+                ThemePaletteSection(
+                    selectedThemePalette = themeConfig.palette,
+                    onSetThemePalette = { onThemeEvent(ThemeEvent.SetPalette(it)) },
+                    expanded = themePaletteExpanded,
+                    onToggleExpanded = {
+                        onThemePaletteExpandedChange(!themePaletteExpanded)
+                    }
+                )
 
                 val isSystemDark = isSystemInDarkTheme()
                 val isDarkActive = themeConfig.palette.supportsLightDarkMode && (

@@ -30,4 +30,5 @@ internal fun InsightsResultDisplayMode.labelRes(): Int =
     when (this) {
         InsightsResultDisplayMode.DETAILS -> R.string.insights_result_mode_details
         InsightsResultDisplayMode.CHART -> R.string.insights_result_mode_chart
+        InsightsResultDisplayMode.HIERARCHY -> R.string.insights_result_mode_hierarchy
     }

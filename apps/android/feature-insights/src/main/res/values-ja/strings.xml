@@ -8,6 +8,7 @@
     <string name="insights_mode_recent">最近</string>
     <string name="insights_result_mode_details">詳細</string>
     <string name="insights_result_mode_chart">グラフ</string>
+    <string name="insights_result_mode_hierarchy">階層</string>
 
     <string name="insights_title_mode_parameters">日付選択</string>
     <string name="insights_parameter_section_day">日付</string>
@@ -206,7 +207,7 @@
     <string name="insights_result_title_analysis_error">解析エラー</string>
     <string name="insights_result_title_tree">%1$s 時間内訳</string>
     <string name="insights_summary_missing_target_body">選択した %1$s 対象に対応する分析データはありません。</string>
-    <string name="insights_summary_no_data_body">この日には活動が記録されていません。</string>
+    <string name="insights_summary_no_data_body">この%1$sには活動が記録されていません。</string>
     <string name="insights_summary_error_code">コード: %1$s</string>
     <string name="insights_summary_error_category">カテゴリ: %1$s</string>
     <string name="insights_summary_hints">ヒント: %1$s</string>

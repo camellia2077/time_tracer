@@ -299,9 +299,7 @@ class QueryInsightsViewModel(
     ) != null
 
     fun insightsCurrentSelection() {
-        if (uiState.resultDisplayMode != InsightsResultDisplayMode.DETAILS ||
-            uiState.parameterSection == InsightsParameterSection.ACTIVITY_HIERARCHY
-        ) {
+        if (uiState.resultDisplayMode != InsightsResultDisplayMode.DETAILS) {
             return
         }
         dispatchIntent(
@@ -350,13 +348,17 @@ class QueryInsightsViewModel(
 
     fun loadChart() {
         chartRequestGeneration += 1L
-        logChart("chart request queued; generation=$chartRequestGeneration ${chartSelection()}")
-        dispatchIntent(QueryInsightsIntent.LoadChart(chartRequestGeneration))
+        val generation = chartRequestGeneration
+        val chartState = uiState
+        logChart("chart request queued; generation=$generation ${chartSelection(chartState)}")
+        dispatchIntent(QueryInsightsIntent.LoadChart(generation))
     }
 
     internal fun refreshCurrentResult() {
         if (uiState.resultDisplayMode == InsightsResultDisplayMode.CHART) {
             refreshCurrentChart()
+        } else if (uiState.resultDisplayMode == InsightsResultDisplayMode.HIERARCHY) {
+            loadTree(uiState.insightsMode.toDataTreePeriod(), uiState.treeLevel)
         } else {
             insightsCurrentSelection()
         }
@@ -389,8 +391,8 @@ class QueryInsightsViewModel(
         if (shouldReloadChart) {
             loadChart()
         }
-        if (autoInsights && shouldAutoInsights(nextState)) {
-            if (nextState.parameterSection == InsightsParameterSection.ACTIVITY_HIERARCHY) {
+        if (autoInsights && hasValidInsightsParameters(nextState)) {
+            if (nextState.resultDisplayMode == InsightsResultDisplayMode.HIERARCHY) {
                 loadTree(nextState.insightsMode.toDataTreePeriod(), nextState.treeLevel)
             } else {
                 insightsCurrentSelection()
@@ -398,10 +400,7 @@ class QueryInsightsViewModel(
         }
     }
 
-    private fun shouldAutoInsights(state: QueryInsightsUiState): Boolean {
-        if (state.resultDisplayMode != InsightsResultDisplayMode.DETAILS) {
-            return false
-        }
+    private fun hasValidInsightsParameters(state: QueryInsightsUiState): Boolean {
         return when (state.insightsMode) {
             InsightsMode.DAY -> inputValidator.validateDateDigits(state.insightsDate).isNullOrBlank()
             InsightsMode.MONTH -> inputValidator.validateMonthDigits(state.insightsMonth).isNullOrBlank()

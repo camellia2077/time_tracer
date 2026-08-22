@@ -21,7 +21,9 @@ Run from repo root unless a section explicitly says otherwise.
 
 - Edit loop:
   - `python tools/run.py build --app tracer_android --profile android_edit`
-- Style verify (only when explicitly requested):
+- Focused module unit test:
+  - `python tools/run.py android-test --module feature-insights --tests com.example.tracer.QueryInsightsResultDisplayRobolectricTest`
+- Style verify (only when explicitly requested; new Android Lint warnings fail against the checked-in baseline):
   - `python tools/run.py verify --app tracer_android --profile android_style --concise`
 - CI/full verify (explicit request or release/merge readiness only):
   - `python tools/run.py verify --app tracer_android --profile android_ci --concise`
@@ -60,6 +62,10 @@ Common targeted commands:
 - `.\gradlew.bat :app:testDebugUnitTest`
 
 ## Validation Rule
+
+`apps/android/app/lint-baseline.xml` records pre-existing Android Lint findings. Do not
+regenerate it to accept a newly introduced warning: fix the warning instead. Change the
+baseline only when intentionally paying down an existing finding.
 
 - For normal Android changes, do not run `android_style` by default.
   - For Android UI changes, run the smallest relevant targeted compile or unit

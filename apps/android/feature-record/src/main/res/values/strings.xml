@@ -136,7 +136,6 @@
     <string name="record_frequent_target_logical_day">Logical Day: %1$s</string>
     <string name="record_frequent_target_date">Target Date: %1$s</string>
     <string name="record_hint_loading">Loading...</string>
-    <string name="record_hint_loading_frequent_activities_for_logical_day">Loading frequent activities for logical day %1$s...</string>
     <string name="record_hint_no_frequent_activities_lookback">No frequent activities are available in the %1$d-day window ending at the current logical day.</string>
     <string name="record_txt_preview_title">Current TXT Preview</string>
     <string name="record_txt_preview_target_date">Target Date: %1$s</string>

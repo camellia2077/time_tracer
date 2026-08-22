@@ -19,6 +19,8 @@
    - `python tools/test.py smoke-windows-cli ...`
 4. suite schema lint：
    - `python tools/lint_suites.py`
+5. Android 模块定向单测：
+   - `python tools/run.py android-test --module feature-insights --tests com.example.tracer.QueryInsightsResultDisplayRobolectricTest`
 
 ## 2. 目录分工
 
@@ -96,6 +98,9 @@ python tools/run.py verify --app tracer_core_shell --profile fast --concise
 # toolchain self-test
 python tools/run.py self-test
 python tools/run.py self-test --group verify-stack --quiet
+
+# Android module test (omit --tests to run the module's full debug unit-test suite)
+python tools/run.py android-test --module feature-insights --tests com.example.tracer.QueryInsightsResultDisplayRobolectricTest
 
 # suite run
 python tools/test.py suite --suite artifact_windows_cli --agent --build-dir build_fast --concise

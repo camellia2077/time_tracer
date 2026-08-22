@@ -6,8 +6,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.BarChart
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.Composable
@@ -32,7 +36,8 @@ internal val DefaultTracerTab: TracerTab = TracerTab.RECORD
 internal data class TabMeta(
     val id: TracerTab,
     @param:StringRes val titleRes: Int,
-    val icon: ImageVector,
+    val selectedIcon: ImageVector,
+    val unselectedIcon: ImageVector,
     val testTag: String? = null
 )
 
@@ -52,6 +57,10 @@ internal data class TracerTabRouteArgs(
     val onThemeEvent: (ThemeEvent) -> Unit,
     val insightsPiePalettePreset: InsightsPiePalettePreset,
     val onInsightsPiePalettePresetChange: (InsightsPiePalettePreset) -> Unit,
+    val insightsComparisonColorScheme: InsightsComparisonColorScheme,
+    val onInsightsComparisonColorSchemeChange: (InsightsComparisonColorScheme) -> Unit,
+    val insightsComparisonIndicatorStyle: InsightsComparisonIndicatorStyle,
+    val onInsightsComparisonIndicatorStyleChange: (InsightsComparisonIndicatorStyle) -> Unit,
     val insightsChartShowAverageLine: Boolean,
     val onInsightsChartShowAverageLineChange: (Boolean) -> Unit,
     val insightsChartSemanticMode: InsightsChartSemanticMode,
@@ -86,6 +95,10 @@ internal data class TracerTabRouteArgs(
     val onPersistConfigCardExpanded: (com.example.tracer.data.ConfigCard, Boolean) -> Unit,
     val promptBeforeUnconfiguredActivityRecord: Boolean,
     val onPromptBeforeUnconfiguredActivityRecordChange: (Boolean) -> Unit,
+    val pageTransitionsEnabled: Boolean,
+    val onPageTransitionsEnabledChange: (Boolean) -> Unit,
+    val pageTransitionStyle: com.example.tracer.data.PageTransitionStyle,
+    val onPageTransitionStyleChange: (com.example.tracer.data.PageTransitionStyle) -> Unit,
     val validAuthorableEventTokens: Set<String>,
     val onPersistRecordQuickActivities: (List<String>) -> Unit,
     val onClearQuickAccessCache: () -> Unit,
@@ -140,7 +153,8 @@ internal object TracerTabRegistry {
             meta = TabMeta(
                 id = TracerTab.INSIGHTS,
                 titleRes = R.string.tracer_tab_insights,
-                icon = Icons.Default.BarChart,
+                selectedIcon = Icons.Filled.BarChart,
+                unselectedIcon = Icons.Outlined.BarChart,
                 testTag = "tab_insights"
             ),
             scrollBehavior = TracerTabScrollBehavior.NONE,
@@ -185,6 +199,8 @@ internal object TracerTabRegistry {
                     preferredAverageDayBasis = args.insightsAverageDayBasis,
                     chartShowAverageLine = args.insightsChartShowAverageLine,
                     piePalettePreset = args.insightsPiePalettePreset,
+                    comparisonColorScheme = args.insightsComparisonColorScheme,
+                    comparisonIndicatorStyle = args.insightsComparisonIndicatorStyle,
                     onChartShowAverageLineChange = args.onInsightsChartShowAverageLineChange,
                     heatmapTomlConfig = args.insightsHeatmapTomlConfig,
                     heatmapStylePreference = args.insightsHeatmapStylePreference,
@@ -201,7 +217,8 @@ internal object TracerTabRegistry {
             meta = TabMeta(
                 id = TracerTab.RECORD,
                 titleRes = R.string.tracer_tab_record,
-                icon = Icons.Default.Edit,
+                selectedIcon = Icons.Filled.Edit,
+                unselectedIcon = Icons.Outlined.Edit,
                 testTag = "tab_record"
             ),
             scrollBehavior = TracerTabScrollBehavior.VERTICAL,
@@ -244,7 +261,8 @@ internal object TracerTabRegistry {
             meta = TabMeta(
                 id = TracerTab.FILES,
                 titleRes = R.string.tracer_tab_files,
-                icon = Icons.Default.FolderOpen,
+                selectedIcon = Icons.Filled.Folder,
+                unselectedIcon = Icons.Outlined.Folder,
                 testTag = "tab_files"
             ),
             scrollBehavior = TracerTabScrollBehavior.VERTICAL,
@@ -267,7 +285,8 @@ internal object TracerTabRegistry {
             meta = TabMeta(
                 id = TracerTab.CONFIG,
                 titleRes = R.string.tracer_tab_config,
-                icon = Icons.Default.Settings,
+                selectedIcon = Icons.Filled.Settings,
+                unselectedIcon = Icons.Outlined.Settings,
                 testTag = "tab_config"
             ),
             scrollBehavior = TracerTabScrollBehavior.VERTICAL,
@@ -287,6 +306,11 @@ internal object TracerTabRegistry {
                         onThemeEvent = args.onThemeEvent,
                         insightsPiePalettePreset = args.insightsPiePalettePreset,
                         onInsightsPiePalettePresetChange = args.onInsightsPiePalettePresetChange,
+                        insightsComparisonColorScheme = args.insightsComparisonColorScheme,
+                        onInsightsComparisonColorSchemeChange = args.onInsightsComparisonColorSchemeChange,
+                        insightsComparisonIndicatorStyle = args.insightsComparisonIndicatorStyle,
+                        onInsightsComparisonIndicatorStyleChange =
+                            args.onInsightsComparisonIndicatorStyleChange,
                         insightsAverageDayBasis = args.insightsAverageDayBasis,
                         onInsightsAverageDayBasisChange = args.onInsightsAverageDayBasisChange,
                         appLanguage = args.appLanguage,
@@ -295,6 +319,10 @@ internal object TracerTabRegistry {
                             args.promptBeforeUnconfiguredActivityRecord,
                         onPromptBeforeUnconfiguredActivityRecordChange =
                             args.onPromptBeforeUnconfiguredActivityRecordChange,
+                        pageTransitionsEnabled = args.pageTransitionsEnabled,
+                        onPageTransitionsEnabledChange = args.onPageTransitionsEnabledChange,
+                        pageTransitionStyle = args.pageTransitionStyle,
+                        onPageTransitionStyleChange = args.onPageTransitionStyleChange,
                         cardExpansionPreferences = args.configCardExpansionPreferences,
                         onConfigCardExpandedChange = args.onPersistConfigCardExpanded,
                         extraContent = {

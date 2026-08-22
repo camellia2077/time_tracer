@@ -8,6 +8,7 @@
     <string name="insights_mode_recent">Recent</string>
     <string name="insights_result_mode_details">Details</string>
     <string name="insights_result_mode_chart">Chart</string>
+    <string name="insights_result_mode_hierarchy">Hierarchy</string>
 
     <string name="insights_title_mode_parameters">Date selection</string>
     <string name="insights_parameter_section_day">Date</string>

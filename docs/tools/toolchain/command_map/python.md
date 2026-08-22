@@ -56,21 +56,27 @@
    - 任务配置：`tools/toolchain/config/build.toml` 的
      `[build.profiles.android_detekt]`
 
-7. 调整 Windows CLI Python 构建入口参数（release/runtime sync/icon 覆盖）
+7. Android 模块或单测类定向测试
+   - 命令：`python tools/run.py android-test --module feature-insights --tests com.example.tracer.QueryInsightsResultDisplayRobolectricTest`
+   - `--module` 支持 `app`、`contract`、所有 `feature-*` 模块和 `runtime`；
+     省略 `--tests` 时运行该模块全部 debug unit tests，重复 `--tests` 可筛选类或方法。
+   - 参数与执行：`tools/toolchain/cli/handlers/android_test.py`
+
+8. 调整 Windows CLI Python 构建入口参数（release/runtime sync/icon 覆盖）
    - `tools/toolchain/cli/handlers/build.py`
    - `tools/toolchain/commands/cmd_build/command.py`
    - `tools/toolchain/commands/cmd_build/cargo.py`
 
-8. 调整 clang-tidy 第三方头过滤
+9. 调整 clang-tidy 第三方头过滤
    - 配置优先：`tools/toolchain/config/workflow.toml` -> `[tidy].header_filter_regex`
    - 默认回退：`tools/toolchain/commands/cmd_build/cmake.py`
 
-9. 执行 clang-tidy 队列收口（统一入口）
+10. 执行 clang-tidy 队列收口（统一入口）
    - 命令（C++ 轨）：`python tools/run.py tidy-close --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --keep-going --concise`
    - 参数层：`tools/toolchain/cli/handlers/tidy/tidy_close.py`
    - 执行层：`tools/toolchain/commands/tidy/execution/close.py`
 
-10. 针对单个 clang-tidy task 做自动 fix / suggest / source-step
+11. 针对单个 clang-tidy task 做自动 fix / suggest / source-step
    - 命令：
      - `python tools/run.py tidy-task-fix --task-log <resolved_task_json>`
      - `python tools/run.py tidy-task-suggest --task-log <resolved_task_json>`
@@ -88,7 +94,7 @@
      - `tools/toolchain/commands/tidy/queue/task_suggest.py`
      - `tools/toolchain/commands/tidy/execution/source_step.py`
 
-11. Clang 底层工具适配
+12. Clang 底层工具适配
    - `tools/toolchain/commands/clang/format.py`
    - `tools/toolchain/commands/clang/tidy/`
    - `tools/toolchain/commands/clang/clangd/`

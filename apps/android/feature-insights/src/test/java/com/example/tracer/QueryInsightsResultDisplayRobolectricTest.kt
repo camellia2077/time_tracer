@@ -482,6 +482,8 @@ class QueryInsightsResultDisplayRobolectricTest {
                     compositionChartRenderModel = null,
                     chartShowAverageLine = false,
                     piePalettePreset = InsightsPiePalettePreset.SOFT,
+                    comparisonColorScheme = InsightsComparisonColorScheme.GREEN_RED,
+                    comparisonIndicatorStyle = InsightsComparisonIndicatorStyle.ARROWS,
                     heatmapTomlConfig = defaultInsightsHeatmapTomlConfig(),
                     heatmapStylePreference = InsightsHeatmapStylePreference(),
                     onHeatmapThemePolicyChange = {},

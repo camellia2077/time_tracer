@@ -84,7 +84,11 @@ fun RecordCanonicalCatalogScreen(
     onSourceChange: (CanonicalCatalogSource) -> Unit = {},
     isFrequentActivitiesLoading: Boolean = false,
     frequentActivities: List<RecordFrequentActivity> = emptyList(),
+    frequentLookbackDays: Int = 7,
+    frequentTopN: Int = 5,
     onFrequentActivitiesRequested: () -> Unit = {},
+    onFrequentLookbackDaysChange: (String) -> Unit = {},
+    onFrequentTopNChange: (String) -> Unit = {},
     onFrequentActivityClick: (String) -> Boolean = { false },
     onTreeRequested: () -> Unit = {},
     categoriesContent: @Composable () -> Unit = {},
@@ -98,6 +102,12 @@ fun RecordCanonicalCatalogScreen(
     onCanonicalParentClick: (String) -> Unit = {}
 ) {
     val isRecordInputTarget = target == CanonicalBrowserTarget.RECORD_INPUT
+    var frequentLookbackDaysInput by remember(frequentLookbackDays) {
+        mutableStateOf(frequentLookbackDays.toString())
+    }
+    var frequentTopNInput by remember(frequentTopN) {
+        mutableStateOf(frequentTopN.toString())
+    }
     Dialog(
         onDismissRequest = onDismissRequest,
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -234,6 +244,43 @@ fun RecordCanonicalCatalogScreen(
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        if (isRecordInputTarget) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                OutlinedTextField(
+                                    value = frequentLookbackDaysInput,
+                                    onValueChange = { rawValue ->
+                                        val digitsOnly = rawValue.filter(Char::isDigit)
+                                        frequentLookbackDaysInput = digitsOnly
+                                        if (digitsOnly.toIntOrNull() != null) {
+                                            onFrequentLookbackDaysChange(digitsOnly)
+                                        }
+                                    },
+                                    label = { Text(stringResource(R.string.record_label_days)) },
+                                    modifier = Modifier.weight(1f),
+                                    keyboardOptions = KeyboardOptions(
+                                        keyboardType = KeyboardType.Number
+                                    )
+                                )
+                                OutlinedTextField(
+                                    value = frequentTopNInput,
+                                    onValueChange = { rawValue ->
+                                        val digitsOnly = rawValue.filter(Char::isDigit)
+                                        frequentTopNInput = digitsOnly
+                                        if (digitsOnly.toIntOrNull() != null) {
+                                            onFrequentTopNChange(digitsOnly)
+                                        }
+                                    },
+                                    label = { Text(stringResource(R.string.record_label_top_n)) },
+                                    modifier = Modifier.weight(1f),
+                                    keyboardOptions = KeyboardOptions(
+                                        keyboardType = KeyboardType.Number
+                                    )
+                                )
+                            }
+                        }
                     }
                 }
                 HorizontalDivider()
@@ -262,7 +309,6 @@ fun RecordCanonicalCatalogScreen(
                         isLoading = isFrequentActivitiesLoading,
                         activities = frequentActivities,
                         displayMode = displayMode,
-                        loadingText = stringResource(R.string.record_hint_loading),
                         emptyText = stringResource(R.string.record_hint_no_frequent_activities),
                         onActivityClick = { onFrequentActivityClick(it) },
                         modifier = Modifier

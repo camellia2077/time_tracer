@@ -135,6 +135,7 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
     private var txtPreviewRequestVersion: Long = 0L
     private var canonicalCatalogLoadJob: Job? = null
     private var activityQueryJob: Job? = null
+    private var frequentActivitiesQueryJob: Job? = null
     private var hasAppliedInitialPersistedRecordInput: Boolean = false
 
     val hasAppliedInitialPersistedRecordInputForUi: Boolean
@@ -311,19 +312,13 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
             lookbackDays = lookbackDays,
             topN = topN
         )
-        if (!uiState.frequentActivitiesVisible) {
+        val isFrequentCatalogVisible =
+            uiState.isCanonicalCatalogVisible &&
+                uiState.canonicalCatalogSource == CanonicalCatalogSource.FREQUENT
+        if (!uiState.frequentActivitiesVisible && !isFrequentCatalogVisible) {
             return
         }
-
-        uiState = intentHandler.showFrequentActivitiesLoading(uiState)
-        viewModelScope.launch {
-            val resultState = intentHandler.loadFrequentActivities(uiState)
-            uiState = uiState.copy(
-                frequentActivities = resultState.frequentActivities,
-                isFrequentActivitiesLoading = resultState.isFrequentActivitiesLoading,
-                statusText = resultState.statusText
-            )
-        }
+        reloadFrequentActivities(showFrequentActivitiesSheet = uiState.frequentActivitiesVisible)
     }
 
     fun updateFrequentOutputMode(value: RecordFrequentOutputMode) {
@@ -371,15 +366,7 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
             return
         }
 
-        uiState = intentHandler.showFrequentActivitiesLoading(uiState)
-        viewModelScope.launch {
-            val resultState = intentHandler.loadFrequentActivities(uiState)
-            uiState = uiState.copy(
-                frequentActivities = resultState.frequentActivities,
-                isFrequentActivitiesLoading = resultState.isFrequentActivitiesLoading,
-                statusText = resultState.statusText
-            )
-        }
+        reloadFrequentActivities(showFrequentActivitiesSheet = true)
     }
 
     fun dismissFrequentActivities() {
@@ -420,15 +407,7 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
     }
 
     fun loadFrequentActivities() {
-        uiState = intentHandler.showFrequentActivitiesLoading(uiState).copy(frequentActivitiesVisible = false)
-        viewModelScope.launch {
-            val resultState = intentHandler.loadFrequentActivities(uiState)
-            uiState = uiState.copy(
-                frequentActivities = resultState.frequentActivities,
-                isFrequentActivitiesLoading = resultState.isFrequentActivitiesLoading,
-                statusText = resultState.statusText
-            )
-        }
+        reloadFrequentActivities(showFrequentActivitiesSheet = false)
     }
 
     fun openDailyStatusParentCatalog() {
@@ -438,6 +417,12 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
     private fun openCanonicalCatalog(target: CanonicalBrowserTarget) {
         canonicalCatalogLoadJob?.cancel()
         uiState = intentHandler.showCanonicalCatalogLoading(uiState, target)
+        if (
+            target == CanonicalBrowserTarget.RECORD_INPUT &&
+                uiState.canonicalCatalogSource == CanonicalCatalogSource.FREQUENT
+        ) {
+            reloadFrequentActivities(showFrequentActivitiesSheet = false)
+        }
         canonicalCatalogLoadJob = viewModelScope.launch {
             uiState = intentHandler.loadCanonicalCatalog(uiState)
         }
@@ -553,6 +538,38 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
                 "ui.record_interval.result status=${uiState.statusText.lineSequence().firstOrNull()}"
             )
             persistRecordInputState()
+        }
+    }
+
+    private fun reloadFrequentActivities(showFrequentActivitiesSheet: Boolean) {
+        frequentActivitiesQueryJob?.cancel()
+        val requestedState = if (showFrequentActivitiesSheet) {
+            intentHandler.showFrequentActivitiesLoading(uiState)
+        } else {
+            uiState.copy(
+                frequentActivitiesVisible = false,
+                isFrequentActivitiesLoading = true,
+                statusText = "Loading frequent activities..."
+            )
+        }
+        uiState = requestedState
+        val requestedLookbackDays = requestedState.frequentLookbackDays
+        val requestedTopN = requestedState.frequentTopN
+        val requestedLogicalDayTarget = requestedState.logicalDayTarget
+        frequentActivitiesQueryJob = viewModelScope.launch {
+            val resultState = intentHandler.loadFrequentActivities(requestedState)
+            if (
+                uiState.frequentLookbackDays != requestedLookbackDays ||
+                uiState.frequentTopN != requestedTopN ||
+                uiState.logicalDayTarget != requestedLogicalDayTarget
+            ) {
+                return@launch
+            }
+            uiState = uiState.copy(
+                frequentActivities = resultState.frequentActivities,
+                isFrequentActivitiesLoading = resultState.isFrequentActivitiesLoading,
+                statusText = resultState.statusText
+            )
         }
     }
 

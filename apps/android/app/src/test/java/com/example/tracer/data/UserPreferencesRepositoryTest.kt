@@ -8,6 +8,8 @@ import com.example.tracer.RecordFrequentOutputMode
 import com.example.tracer.CanonicalCatalogSource
 import com.example.tracer.TxtOutputMode
 import com.example.tracer.InsightsChartSemanticMode
+import com.example.tracer.InsightsComparisonColorScheme
+import com.example.tracer.InsightsComparisonIndicatorStyle
 import com.example.tracer.InsightsParameterSection
 import com.example.tracer.InsightsPiePalettePreset
 import com.example.tracer.InsightsResultDisplayMode
@@ -81,6 +83,44 @@ class UserPreferencesRepositoryTest {
     }
 
     @Test
+    fun pageTransitionPreferences_defaultToEnabledQuickFade_andPersistSelections() = runTest {
+        val repository = buildRepository(
+            testName = "persist_page_transition_preferences",
+            scope = backgroundScope
+        )
+
+        assertEquals(
+            UserPreferencesRepository.DEFAULT_PAGE_TRANSITIONS_ENABLED,
+            repository.pageTransitionsEnabled.first()
+        )
+        assertEquals(
+            UserPreferencesRepository.DEFAULT_PAGE_TRANSITION_STYLE,
+            repository.pageTransitionStyle.first()
+        )
+
+        repository.setPageTransitionsEnabled(false)
+        repository.setPageTransitionStyle(PageTransitionStyle.SLIDE)
+
+        assertEquals(false, repository.pageTransitionsEnabled.first())
+        assertEquals(PageTransitionStyle.SLIDE, repository.pageTransitionStyle.first())
+    }
+
+    @Test
+    fun recordFrequentPreferences_persistsZeroLookbackDaysAndTopN() = runTest {
+        val repository = buildRepository(
+            testName = "persist_zero_frequent_preferences",
+            scope = backgroundScope
+        )
+
+        repository.setRecordFrequentLookbackDays(0)
+        repository.setRecordFrequentTopN(0)
+
+        val preferences = repository.recordFrequentPreferences.first()
+        assertEquals(0, preferences.lookbackDays)
+        assertEquals(0, preferences.topN)
+    }
+
+    @Test
     fun setRecordQuickActivities_emptyList_keepsQuickActivitiesEmpty() = runTest {
         val repository = buildRepository(
             testName = "empty_quick_activities",
@@ -131,6 +171,46 @@ class UserPreferencesRepositoryTest {
         assertEquals(
             InsightsPiePalettePreset.EDITORIAL,
             repository.insightsPiePalettePreset.first()
+        )
+    }
+
+    @Test
+    fun insightsComparisonColorScheme_defaultsAndPersistsSelection() = runTest {
+        val repository = buildRepository(
+            testName = "persist_comparison_color_scheme",
+            scope = backgroundScope
+        )
+
+        assertEquals(
+            InsightsComparisonColorScheme.GREEN_RED,
+            repository.insightsComparisonColorScheme.first()
+        )
+
+        repository.setInsightsComparisonColorScheme(InsightsComparisonColorScheme.BLUE_ORANGE)
+
+        assertEquals(
+            InsightsComparisonColorScheme.BLUE_ORANGE,
+            repository.insightsComparisonColorScheme.first()
+        )
+    }
+
+    @Test
+    fun insightsComparisonIndicatorStyle_defaultsAndPersistsSelection() = runTest {
+        val repository = buildRepository(
+            testName = "persist_comparison_indicator_style",
+            scope = backgroundScope
+        )
+
+        assertEquals(
+            InsightsComparisonIndicatorStyle.ARROWS,
+            repository.insightsComparisonIndicatorStyle.first()
+        )
+
+        repository.setInsightsComparisonIndicatorStyle(InsightsComparisonIndicatorStyle.TREND_LINES)
+
+        assertEquals(
+            InsightsComparisonIndicatorStyle.TREND_LINES,
+            repository.insightsComparisonIndicatorStyle.first()
         )
     }
 
@@ -382,6 +462,9 @@ class UserPreferencesRepositoryTest {
 
         repository.setConfigCardExpanded(ConfigCard.APPEARANCE, false)
         repository.setConfigCardExpanded(ConfigCard.DATA_MANAGEMENT, false)
+        repository.setConfigCardExpanded(ConfigCard.THEME_PALETTE, true)
+        repository.setConfigCardExpanded(ConfigCard.INSIGHTS_CHART_STYLE, true)
+        repository.setConfigCardExpanded(ConfigCard.INSIGHTS_COMPARISON, true)
 
         val preferences = repository.configCardExpansionPreferences.first()
         assertEquals(false, preferences.appearanceExpanded)
@@ -389,6 +472,9 @@ class UserPreferencesRepositoryTest {
         assertEquals(true, preferences.applicationPreferencesExpanded)
         assertEquals(true, preferences.insightsSettingsExpanded)
         assertEquals(true, preferences.aboutExpanded)
+        assertEquals(true, preferences.themePaletteExpanded)
+        assertEquals(true, preferences.insightsChartStyleExpanded)
+        assertEquals(true, preferences.insightsComparisonExpanded)
     }
 
     @Test

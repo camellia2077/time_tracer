@@ -272,7 +272,7 @@ class QueryInsightsViewModelChartTest {
             insightsMode = InsightsMode.WEEK,
             chartSemanticMode = InsightsChartSemanticMode.TREND,
             resultDisplayMode = InsightsResultDisplayMode.CHART,
-            parameterSection = InsightsParameterSection.ACTIVITY_HIERARCHY
+            parameterSection = InsightsParameterSection.DAY
         )
         viewModel.onInsightsWeekChange("202615")
         advanceUntilIdle()

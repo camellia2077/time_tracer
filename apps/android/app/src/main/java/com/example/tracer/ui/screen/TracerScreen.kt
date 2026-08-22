@@ -178,6 +178,10 @@ fun TracerScreen(
     val insightsPiePalettePreset by userPreferencesRepository.insightsPiePalettePreset.collectAsState(
         initial = null
     )
+    val insightsComparisonColorScheme by userPreferencesRepository.insightsComparisonColorScheme
+        .collectAsState(initial = null)
+    val insightsComparisonIndicatorStyle by userPreferencesRepository.insightsComparisonIndicatorStyle
+        .collectAsState(initial = null)
     val configCardExpansionPreferences by userPreferencesRepository.configCardExpansionPreferences
         .collectAsState(initial = null)
     val promptBeforeUnconfiguredActivityRecord by userPreferencesRepository
@@ -186,6 +190,12 @@ fun TracerScreen(
             initial = com.example.tracer.data.UserPreferencesRepository
                 .DEFAULT_PROMPT_BEFORE_UNCONFIGURED_ACTIVITY_RECORD
         )
+    val pageTransitionsEnabled by userPreferencesRepository.pageTransitionsEnabled.collectAsState(
+        initial = com.example.tracer.data.UserPreferencesRepository.DEFAULT_PAGE_TRANSITIONS_ENABLED
+    )
+    val pageTransitionStyle by userPreferencesRepository.pageTransitionStyle.collectAsState(
+        initial = com.example.tracer.data.UserPreferencesRepository.DEFAULT_PAGE_TRANSITION_STYLE
+    )
     val insightsHeatmapState = rememberTracerScreenInsightsHeatmapState(
         selectedTab = selectedTab,
         configGateway = configGateway,
@@ -215,6 +225,8 @@ fun TracerScreen(
         insightsTimeParametersExpanded,
         insightsAverageDayBasis,
         insightsPiePalettePreset,
+        insightsComparisonColorScheme,
+        insightsComparisonIndicatorStyle,
         configCardExpansionPreferences
     ).all { it != null }
     if (!preferencesAreReady) {
@@ -233,6 +245,8 @@ fun TracerScreen(
     val loadedInsightsTimeParametersExpanded = requireNotNull(insightsTimeParametersExpanded)
     val loadedInsightsAverageDayBasis = requireNotNull(insightsAverageDayBasis)
     val loadedInsightsPiePalettePreset = requireNotNull(insightsPiePalettePreset)
+    val loadedInsightsComparisonColorScheme = requireNotNull(insightsComparisonColorScheme)
+    val loadedInsightsComparisonIndicatorStyle = requireNotNull(insightsComparisonIndicatorStyle)
     val loadedConfigCardExpansionPreferences = requireNotNull(configCardExpansionPreferences)
 
     val displayedRecordUiState = if (!recordViewModel.hasAppliedInitialPersistedRecordInputForUi) {
@@ -369,6 +383,18 @@ fun TracerScreen(
                 userPreferencesRepository.setInsightsPiePalettePreset(value)
             }
         },
+        insightsComparisonColorScheme = loadedInsightsComparisonColorScheme,
+        onInsightsComparisonColorSchemeChange = { value ->
+            coroutineScope.launch {
+                userPreferencesRepository.setInsightsComparisonColorScheme(value)
+            }
+        },
+        insightsComparisonIndicatorStyle = loadedInsightsComparisonIndicatorStyle,
+        onInsightsComparisonIndicatorStyleChange = { value ->
+            coroutineScope.launch {
+                userPreferencesRepository.setInsightsComparisonIndicatorStyle(value)
+            }
+        },
         insightsChartShowAverageLine = insightsChartShowAverageLine,
         onInsightsChartShowAverageLineChange = { value ->
             coroutineScope.launch {
@@ -442,6 +468,10 @@ fun TracerScreen(
         promptBeforeUnconfiguredActivityRecord = promptBeforeUnconfiguredActivityRecord,
         onPromptBeforeUnconfiguredActivityRecordChange =
             actions.onPersistPromptBeforeUnconfiguredActivityRecord,
+        pageTransitionsEnabled = pageTransitionsEnabled,
+        onPageTransitionsEnabledChange = actions.onPersistPageTransitionsEnabled,
+        pageTransitionStyle = pageTransitionStyle,
+        onPageTransitionStyleChange = actions.onPersistPageTransitionStyle,
         validAuthorableEventTokens = validAuthorableEventTokens,
         onPersistRecordQuickActivities = actions.onPersistRecordQuickActivities,
         onClearQuickAccessCache = quickActivitiesPreferenceGateway::clearCachedQuickActivities,

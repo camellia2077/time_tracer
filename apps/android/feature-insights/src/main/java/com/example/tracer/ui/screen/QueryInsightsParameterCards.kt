@@ -14,8 +14,7 @@ import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
 
 enum class InsightsParameterSection {
     ACTIVITIES,
-    DAY,
-    ACTIVITY_HIERARCHY
+    DAY
 }
 
 @Composable
@@ -50,29 +49,52 @@ internal fun QueryInsightsParameterCards(
 ) {
     val availableSections = listOf(
         InsightsParameterSection.ACTIVITIES,
-        InsightsParameterSection.ACTIVITY_HIERARCHY,
         InsightsParameterSection.DAY
     )
-    val effectiveSelectedSection = if (selectedSection in availableSections) {
-        selectedSection
-    } else {
-        InsightsParameterSection.DAY
-    }
 
     if (resultDisplayMode == InsightsResultDisplayMode.DETAILS) {
         InsightsParameterSectionSelector(
-            selectedSection = effectiveSelectedSection,
+            selectedSection = selectedSection,
             sections = availableSections,
             onSelectedSectionChange = onSelectedSectionChange
         )
     }
 
-    when (if (resultDisplayMode == InsightsResultDisplayMode.DETAILS) {
-        effectiveSelectedSection
-    } else {
-        InsightsParameterSection.DAY
-    }) {
-        InsightsParameterSection.DAY -> InsightsParametersCard(
+    when (resultDisplayMode) {
+        InsightsResultDisplayMode.HIERARCHY -> TreeParametersCard(
+            analysisPeriod = analysisPeriod,
+            maxAvailableDepth = treeMaxAvailableDepth,
+            treeLevel = treeLevel,
+            keyboardOptions = keyboardOptions,
+            insightsDate = insightsDate,
+            onInsightsDateChange = onInsightsDateChange,
+            insightsMonth = insightsMonth,
+            onInsightsMonthChange = onInsightsMonthChange,
+            calendarAvailability = calendarAvailability,
+            insightsYear = insightsYear,
+            onInsightsYearChange = onInsightsYearChange,
+            insightsWeek = insightsWeek,
+            onInsightsWeekChange = onInsightsWeekChange,
+            insightsRangeStartDate = insightsRangeStartDate,
+            onInsightsRangeStartDateChange = onInsightsRangeStartDateChange,
+            insightsRangeEndDate = insightsRangeEndDate,
+            onInsightsRangeEndDateChange = onInsightsRangeEndDateChange,
+            insightsRecentDays = insightsRecentDays,
+            onInsightsRecentDaysChange = onInsightsRecentDaysChange,
+            onTreeLevelChange = onTreeLevelChange,
+            expanded = timeParametersExpanded,
+            onExpandedChange = onTimeParametersExpandedChange
+        )
+
+        InsightsResultDisplayMode.DETAILS,
+        InsightsResultDisplayMode.CHART -> {
+            val contentSection = if (resultDisplayMode == InsightsResultDisplayMode.DETAILS) {
+                selectedSection
+            } else {
+                InsightsParameterSection.DAY
+            }
+            when (contentSection) {
+                InsightsParameterSection.DAY -> InsightsParametersCard(
             insightsMode = insightsMode,
             keyboardOptions = keyboardOptions,
             insightsDate = insightsDate,
@@ -94,7 +116,7 @@ internal fun QueryInsightsParameterCards(
             onExpandedChange = onTimeParametersExpandedChange
         )
 
-        InsightsParameterSection.ACTIVITIES -> if (
+                InsightsParameterSection.ACTIVITIES -> if (
             insightsMode in setOf(InsightsMode.DAY, InsightsMode.WEEK, InsightsMode.MONTH, InsightsMode.YEAR)
         ) {
             InsightsActivitiesPeriodSelector(
@@ -127,32 +149,9 @@ internal fun QueryInsightsParameterCards(
             onInsightsRecentDaysChange = onInsightsRecentDaysChange,
             expanded = timeParametersExpanded,
             onExpandedChange = onTimeParametersExpandedChange
-        )
-
-        InsightsParameterSection.ACTIVITY_HIERARCHY -> TreeParametersCard(
-            analysisPeriod = analysisPeriod,
-            maxAvailableDepth = treeMaxAvailableDepth,
-            treeLevel = treeLevel,
-            keyboardOptions = keyboardOptions,
-            insightsDate = insightsDate,
-            onInsightsDateChange = onInsightsDateChange,
-            insightsMonth = insightsMonth,
-            onInsightsMonthChange = onInsightsMonthChange,
-            calendarAvailability = calendarAvailability,
-            insightsYear = insightsYear,
-            onInsightsYearChange = onInsightsYearChange,
-            insightsWeek = insightsWeek,
-            onInsightsWeekChange = onInsightsWeekChange,
-            insightsRangeStartDate = insightsRangeStartDate,
-            onInsightsRangeStartDateChange = onInsightsRangeStartDateChange,
-            insightsRangeEndDate = insightsRangeEndDate,
-            onInsightsRangeEndDateChange = onInsightsRangeEndDateChange,
-            insightsRecentDays = insightsRecentDays,
-            onInsightsRecentDaysChange = onInsightsRecentDaysChange,
-            onTreeLevelChange = onTreeLevelChange,
-            expanded = timeParametersExpanded,
-            onExpandedChange = onTimeParametersExpandedChange
-        )
+                )
+            }
+        }
     }
 }
 
@@ -188,6 +187,5 @@ private fun InsightsParameterSectionSelector(
 
 private fun InsightsParameterSection.labelRes(): Int = when (this) {
     InsightsParameterSection.DAY -> R.string.insights_parameter_section_markdown
-    InsightsParameterSection.ACTIVITY_HIERARCHY -> R.string.insights_parameter_section_tree
     InsightsParameterSection.ACTIVITIES -> R.string.insights_parameter_section_activity
 }

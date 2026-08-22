@@ -10,8 +10,11 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.TrendingDown
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -48,6 +51,8 @@ internal fun InsightsPeriodActivityBrowser(
     insightsMode: InsightsMode,
     periodComparison: InsightsPeriodComparisonState = InsightsPeriodComparisonState.Hidden,
     canComparePreviousPeriod: Boolean = false,
+    comparisonColorScheme: InsightsComparisonColorScheme,
+    comparisonIndicatorStyle: InsightsComparisonIndicatorStyle,
     calendarAvailability: CalendarAvailability,
     selectedView: InsightsActivityView,
     onSelectedViewChange: (InsightsActivityView) -> Unit,
@@ -83,6 +88,8 @@ internal fun InsightsPeriodActivityBrowser(
                 insightsMode = insightsMode,
                 periodComparison = periodComparison,
                 canComparePreviousPeriod = canComparePreviousPeriod,
+                comparisonColorScheme = comparisonColorScheme,
+                comparisonIndicatorStyle = comparisonIndicatorStyle,
                 calendarAvailability = calendarAvailability,
                 onPeriodComparisonToggle = onPeriodComparisonToggle,
                 onComparisonPeriodSelected = onComparisonPeriodSelected
@@ -141,11 +148,13 @@ internal fun InsightsActivityOverview(
     insightsMode: InsightsMode,
     periodComparison: InsightsPeriodComparisonState = InsightsPeriodComparisonState.Hidden,
     canComparePreviousPeriod: Boolean = false,
+    comparisonColorScheme: InsightsComparisonColorScheme,
+    comparisonIndicatorStyle: InsightsComparisonIndicatorStyle,
     calendarAvailability: CalendarAvailability,
     onPeriodComparisonToggle: () -> Unit = {},
     onComparisonPeriodSelected: (InsightsPeriodSelection) -> Unit = {}
 ) {
-    val comparisonColors = insightsSemanticColors()
+    val comparisonColors = insightsSemanticColors(comparisonColorScheme)
     val totalDuration = activityAggregate.totalDurationSeconds
     val recordCount = activityAggregate.occurrenceCount
     val activeDayCount = activityDays.size
@@ -187,6 +196,7 @@ internal fun InsightsActivityOverview(
                     periodActivityDurationComparison(totalDuration, it)
                 },
                 comparisonColors = comparisonColors,
+                comparisonIndicatorStyle = comparisonIndicatorStyle,
                 modifier = Modifier.weight(1f)
             )
             PeriodActivityMetric(
@@ -196,6 +206,7 @@ internal fun InsightsActivityOverview(
                     periodActivityCountComparison(activeDayCount.toLong(), it.toLong())
                 },
                 comparisonColors = comparisonColors,
+                comparisonIndicatorStyle = comparisonIndicatorStyle,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -207,6 +218,7 @@ internal fun InsightsActivityOverview(
                     periodActivityCountComparison(recordCount, it)
                 },
                 comparisonColors = comparisonColors,
+                comparisonIndicatorStyle = comparisonIndicatorStyle,
                 modifier = Modifier.weight(1f)
             )
             PeriodActivityMetric(
@@ -216,6 +228,7 @@ internal fun InsightsActivityOverview(
                     periodActivityDurationComparison(averageDuration, it)
                 },
                 comparisonColors = comparisonColors,
+                comparisonIndicatorStyle = comparisonIndicatorStyle,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -239,7 +252,8 @@ internal fun InsightsActivityOverview(
                                 parentDuration = totalDuration,
                                 previousNode = previous?.projectTree?.firstOrNull { it.name == node.name },
                                 showComparison = previous != null,
-                                comparisonColors = comparisonColors
+                                comparisonColors = comparisonColors,
+                                comparisonIndicatorStyle = comparisonIndicatorStyle
                             )
                         }
                 }
@@ -255,6 +269,7 @@ private fun InsightsPeriodActivityProjectNode(
     previousNode: StructuredInsightsProjectNode? = null,
     showComparison: Boolean = false,
     comparisonColors: InsightsSemanticColors,
+    comparisonIndicatorStyle: InsightsComparisonIndicatorStyle,
     depth: Int = 0
 ) {
     val hasChildren = node.children.isNotEmpty()
@@ -307,6 +322,7 @@ private fun InsightsPeriodActivityProjectNode(
                     previous = previousNode?.durationSeconds ?: 0L
                 ),
                 colors = comparisonColors,
+                indicatorStyle = comparisonIndicatorStyle,
                 modifier = Modifier.padding(start = 24.dp, bottom = 8.dp)
             )
         }
@@ -321,6 +337,7 @@ private fun InsightsPeriodActivityProjectNode(
                     previousNode = previousNode?.children?.firstOrNull { it.name == child.name },
                     showComparison = showComparison,
                     comparisonColors = comparisonColors,
+                    comparisonIndicatorStyle = comparisonIndicatorStyle,
                     depth = depth + 1
                 )
             }
@@ -333,6 +350,7 @@ private fun PeriodActivityMetric(
     value: String,
     comparison: PeriodActivityComparison? = null,
     comparisonColors: InsightsSemanticColors,
+    comparisonIndicatorStyle: InsightsComparisonIndicatorStyle,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -352,7 +370,11 @@ private fun PeriodActivityMetric(
                 color = MaterialTheme.colorScheme.primary
             )
             comparison?.let {
-                PeriodActivityComparisonLine(comparison = it, colors = comparisonColors)
+                PeriodActivityComparisonLine(
+                    comparison = it,
+                    colors = comparisonColors,
+                    indicatorStyle = comparisonIndicatorStyle
+                )
             }
         }
     }
@@ -481,11 +503,12 @@ private fun periodActivityComparison(
 private fun PeriodActivityComparisonLine(
     comparison: PeriodActivityComparison,
     colors: InsightsSemanticColors,
+    indicatorStyle: InsightsComparisonIndicatorStyle,
     modifier: Modifier = Modifier
 ) {
     val (icon, text, color) = when (comparison) {
         is PeriodActivityComparison.Increase -> Triple(
-            Icons.Filled.ArrowUpward,
+            comparisonIndicatorIcon(indicatorStyle, increase = true),
             stringResource(
                 R.string.insights_period_activities_comparison_increase,
                 comparison.delta,
@@ -494,7 +517,7 @@ private fun PeriodActivityComparisonLine(
             colors.comparisonIncrease
         )
         is PeriodActivityComparison.Decrease -> Triple(
-            Icons.Filled.ArrowDownward,
+            comparisonIndicatorIcon(indicatorStyle, increase = false),
             stringResource(
                 R.string.insights_period_activities_comparison_decrease,
                 comparison.delta,
@@ -503,7 +526,7 @@ private fun PeriodActivityComparisonLine(
             colors.comparisonDecrease
         )
         is PeriodActivityComparison.New -> Triple(
-            Icons.Filled.ArrowUpward,
+            comparisonIndicatorIcon(indicatorStyle, increase = true),
             stringResource(
                 R.string.insights_period_activities_comparison_new_value,
                 comparison.delta
@@ -534,4 +557,21 @@ private fun PeriodActivityComparisonLine(
             color = color
         )
     }
+}
+
+private fun comparisonIndicatorIcon(
+    indicatorStyle: InsightsComparisonIndicatorStyle,
+    increase: Boolean
+): androidx.compose.ui.graphics.vector.ImageVector = when (indicatorStyle) {
+    InsightsComparisonIndicatorStyle.ARROWS -> if (increase) {
+        Icons.Filled.ArrowUpward
+    } else {
+        Icons.Filled.ArrowDownward
+    }
+    InsightsComparisonIndicatorStyle.TREND_LINES -> if (increase) {
+        Icons.AutoMirrored.Filled.TrendingUp
+    } else {
+        Icons.AutoMirrored.Filled.TrendingDown
+    }
+    InsightsComparisonIndicatorStyle.SIGNS -> if (increase) Icons.Filled.Add else Icons.Filled.Remove
 }

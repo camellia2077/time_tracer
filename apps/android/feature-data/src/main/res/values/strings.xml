@@ -5,12 +5,20 @@
     <string name="data_title_data_management">Data management</string>
     <string name="data_title_ingestion">Data ingestion</string>
     <string name="data_action_import_data_folder">Import Data Folder</string>
+    <string name="data_description_import_data_folder">Import TXT files from a folder</string>
     <string name="data_action_import_single_tracer">Import Compressed Archive</string>
+    <string name="data_description_import_single_tracer">Restore records and configuration from a backup</string>
 
     <string name="data_title_tracer_export">Compressed Archive Export</string>
+    <string name="data_title_export">Export</string>
+    <string name="data_title_compressed_archive">Compressed archive</string>
+    <string name="data_summary_compressed_archive">Full backup · %1$s encryption</string>
     <string name="data_action_exporting">Exporting package...</string>
     <string name="data_action_export_current_txt_tracer">Export TXT + TOML</string>
+    <string name="data_description_export_current_txt_tracer">Save readable record and configuration files</string>
     <string name="data_action_export_all_months_tracer">Export Compressed Archive</string>
+    <string name="data_action_create_compressed_archive">Create compressed archive</string>
+    <string name="data_description_export_all_months_tracer">Create a restorable backup of all activity data</string>
     <string name="data_label_tracer_security_level">Encryption Level</string>
     <string name="data_security_level_interactive">Fast (Interactive)</string>
     <string name="data_security_level_moderate">Balanced (Moderate)</string>
@@ -20,7 +28,11 @@
     <string name="data_action_clear_txt">Clear TXT</string>
     <string name="data_action_clear_database">Clear Database</string>
     <string name="data_action_rebuild_database">Rebuild Database</string>
+    <string name="data_description_rebuild_database">Recreate the local database from TXT records</string>
     <string name="data_action_clear_all_app_data">Clear Activity Data</string>
+    <string name="data_description_clear_all_app_data">Delete all activity records, categories, and the database</string>
+    <string name="data_title_danger_zone">Danger zone</string>
+    <string name="data_description_danger_zone">These actions can remove local data and cannot be undone.</string>
 
     <string name="data_dialog_clear_txt_title">Clear TXT?</string>
     <string name="data_dialog_clear_txt_message">This will clear all TXT files (imported and generated). This action cannot be undone.</string>

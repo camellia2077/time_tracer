@@ -1,0 +1,1313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 9.0.1" type="baseline" client="gradle" dependencies="true" name="AGP (9.0.1)" variant="all" version="9.0.1">
+
+    <issue
+        id="AppBundleLocaleChanges"
+        message="Found dynamic locale changes, but did not find corresponding Play Core library calls for downloading languages and splitting by language is not disabled in the `bundle` configuration"
+        errorLine1="            configuration.setLocales(locales)"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/MainActivity.kt"
+            line="111"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="RedundantLabel"
+        message="Redundant label can be removed"
+        errorLine1="            android:label=&quot;@string/app_name&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/AndroidManifest.xml"
+            line="13"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="ComposableLambdaParameterNaming"
+        message="Composable lambda parameter should be named `content`"
+        errorLine1="    previewContent: (@Composable () -> Unit)? = null"
+        errorLine2="    ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/screen/ConfigExpandableSettingsButton.kt"
+            line="27"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ComposableLambdaParameterNaming"
+        message="Composable lambda parameter should be named `content`"
+        errorLine1="    extraContent: @Composable () -> Unit = {}"
+        errorLine2="    ~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/screen/ConfigScreen.kt"
+            line="103"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ComposableLambdaParameterNaming"
+        message="Composable lambda parameter should be named `content`"
+        errorLine1="    activityCategoriesContent: @Composable () -> Unit,"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/screen/tracer/TracerScreenContent.kt"
+            line="88"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ComposableLambdaParameterNaming"
+        message="Composable lambda parameter should be named `content`"
+        errorLine1="    activityCategoriesContent: @Composable () -> Unit,"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/screen/tracer/TracerScreenRouting.kt"
+            line="111"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ComposableLambdaParameterPosition"
+        message="Composable lambda parameter should be the last parameter so it can be used as a trailing lambda"
+        errorLine1="    activityCategoriesContent: @Composable () -> Unit,"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/screen/tracer/TracerScreenContent.kt"
+            line="88"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ComposableLambdaParameterPosition"
+        message="Composable lambda parameter should be the last parameter so it can be used as a trailing lambda"
+        errorLine1="    activityCategoriesContent: @Composable () -> Unit,"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/screen/tracer/TracerScreenRouting.kt"
+            line="111"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/screen/ConfigInsightsChartStyleSection.kt"
+            line="188"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier,"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/screen/InsightsActivityTimeline.kt"
+            line="47"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/screen/InsightsCompositionBarChart.kt"
+            line="36"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/screen/InsightsCompositionLegendRow.kt"
+            line="25"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/screen/InsightsCompositionTreemapChart.kt"
+            line="43"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/screen/InsightsHeatmapChartCanvas.kt"
+            line="57"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/screen/InsightsMultiMonthHeatmap.kt"
+            line="147"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/screen/InsightsPeriodActivityBrowser.kt"
+            line="61"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/screen/InsightsPeriodActivityBrowser.kt"
+            line="354"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/screen/InsightsPieChartCanvas.kt"
+            line="38"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/screen/InsightsTimelineEntries.kt"
+            line="96"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/screen/RecordCanonicalCatalogSection.kt"
+            line="82"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;days&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;insights_chart_record_completeness&quot;>Record completeness: %1$d / %2$d days (%3$d%%)&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="123"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;occurrences&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;insights_chart_composition_selected_frequency_detail&quot;>Selected: %1$s · %2$d occurrences (%3$.1f%%)&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="126"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;days&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;insights_period_activities_month_summary&quot;>%1$d days · %2$d records&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="162"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;records&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;insights_period_activities_day_summary&quot;>%1$d records&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="163"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;items&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;config_alias_category_child_count&quot;>%1$d items&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="232"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="PluralsCandidate"
+        message="Formatting %d followed by words (&quot;times&quot;): This should probably be a plural rather than a string"
+        errorLine1="    &lt;string name=&quot;insights_status_statistics&quot;>%1$d times · %2$s&lt;/string>"
+        errorLine2="    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="324"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ExportedReceiver"
+        message="Exported receiver does not require permission"
+        errorLine1="        &lt;receiver"
+        errorLine2="         ~~~~~~~~">
+        <location
+            file="src/debug/AndroidManifest.xml"
+            line="4"
+            column="10"/>
+    </issue>
+
+    <issue
+        id="FrequentlyChangingValue"
+        message="Reading a value annotated with @FrequentlyChangingValue inside composition"
+        errorLine1="                                if (number == listState.firstVisibleItemIndex + values.first) {"
+        errorLine2="                                                        ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/screen/RecordIntervalWheelPicker.kt"
+            line="135"
+            column="57"/>
+    </issue>
+
+    <issue
+        id="LogConditional"
+        message="The log call Log.i(...) should be conditional: surround with `if (Log.isLoggable(...))` or `if (BuildConfig.DEBUG) { ... }`"
+        errorLine1="        Log.i("
+        errorLine2="        ^">
+        <location
+            file="src/debug/java/com/example/tracer/DebugCommandReceiver.kt"
+            line="25"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="AutoboxingStateCreation"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`"
+        errorLine1="    var previewSliceIndex by rememberSaveable { mutableStateOf(0) }"
+        errorLine2="                                                ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/screen/ConfigInsightsChartStyleSection.kt"
+            line="54"
+            column="49"/>
+    </issue>
+
+    <issue
+        id="AutoboxingStateCreation"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`"
+        errorLine1="    internal var undoRequestCount by mutableStateOf(0)"
+        errorLine2="                                     ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/components/NativeMultilineTextEditor.kt"
+            line="70"
+            column="38"/>
+    </issue>
+
+    <issue
+        id="AutoboxingStateCreation"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`"
+        errorLine1="    internal var redoRequestCount by mutableStateOf(0)"
+        errorLine2="                                     ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/components/NativeMultilineTextEditor.kt"
+            line="71"
+            column="38"/>
+    </issue>
+
+    <issue
+        id="AutoboxingStateCreation"
+        message="Prefer `mutableLongStateOf` instead of `mutableStateOf`"
+        errorLine1="    var currentTimeMillis by remember { mutableStateOf(System.currentTimeMillis()) }"
+        errorLine2="                                        ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/screen/RecordScreen.kt"
+            line="106"
+            column="41"/>
+    </issue>
+
+    <issue
+        id="AutoboxingStateCreation"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`"
+        errorLine1="        mutableStateOf(event.startTimelineSeconds ?: parseClockSeconds(event.startTime))"
+        errorLine2="        ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/screen/TxtStructuredDayEditor.kt"
+            line="310"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="AutoboxingStateCreation"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`"
+        errorLine1="        mutableStateOf(event.endTimelineSeconds ?: parseClockSeconds(event.endTime))"
+        errorLine2="        ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/screen/TxtStructuredDayEditor.kt"
+            line="313"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.data_title_tracer_export` appears to be unused"
+        errorLine1="    &lt;string name=&quot;data_title_tracer_export&quot;>Compressed Archive Export&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-data/src/main/res/values/strings.xml"
+            line="12"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_parameter_section_day` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_parameter_section_day&quot;>Date&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="14"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_parameter_section_tree` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_parameter_section_tree&quot;>Breakdown&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="15"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_parameter_section_timeline` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_parameter_section_timeline&quot;>Timeline&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="16"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.data_action_export_all_months_tracer` appears to be unused"
+        errorLine1="    &lt;string name=&quot;data_action_export_all_months_tracer&quot;>Export Compressed Archive&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-data/src/main/res/values/strings.xml"
+            line="19"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_title_insights_date` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_title_insights_date&quot;>Insights Date&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="19"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.txt_picker_month_title` appears to be unused"
+        errorLine1="    &lt;string name=&quot;txt_picker_month_title&quot;>Month&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-record/src/main/res/values/strings.xml"
+            line="29"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_action_cancel` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_action_cancel&quot;>Cancel&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="30"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.txt_picker_month_placeholder` appears to be unused"
+        errorLine1="    &lt;string name=&quot;txt_picker_month_placeholder&quot;>Month&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-record/src/main/res/values/strings.xml"
+            line="30"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_action_done` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_action_done&quot;>Done&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="31"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.txt_picker_no_months` appears to be unused"
+        errorLine1="    &lt;string name=&quot;txt_picker_no_months&quot;>No months&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-record/src/main/res/values/strings.xml"
+            line="32"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_action_loading` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_action_loading&quot;>Loading...&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="33"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.txt_picker_open_year_month` appears to be unused"
+        errorLine1="    &lt;string name=&quot;txt_picker_open_year_month&quot;>Open %1$s-%2$s&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-record/src/main/res/values/strings.xml"
+            line="33"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.txt_picker_field_value` appears to be unused"
+        errorLine1="    &lt;string name=&quot;txt_picker_field_value&quot;>%1$s: %2$s&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-record/src/main/res/values/strings.xml"
+            line="34"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_title_project_tree_parameters` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_title_project_tree_parameters&quot;>Breakdown&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="35"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_chart_root_select_current` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_chart_root_select_current&quot;>Select current level: %1$s&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="53"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_label_chart_lookback_days` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_label_chart_lookback_days&quot;>Lookback Days (N)&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="57"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_label_chart_date_filter_mode` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_label_chart_date_filter_mode&quot;>Date Filter Mode&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="58"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_chart_date_mode_lookback` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_chart_date_mode_lookback&quot;>Lookback&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="59"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_chart_date_mode_range` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_chart_date_mode_range&quot;>Date Range&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="60"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_action_load_chart` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_action_load_chart&quot;>Load Chart&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="61"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_action_chart_loading` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_action_chart_loading&quot;>Loading Chart...&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="62"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_label_select_year_month` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_label_select_year_month&quot;>Select year and month&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="68"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_sheet_current_month_label` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_sheet_current_month_label&quot;>Current:&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="72"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_sheet_current_month_unselected` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_sheet_current_month_unselected&quot;>Not selected&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="73"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_picker_field_value` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_picker_field_value&quot;>%1$s: %2$s&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="74"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.tracer_progress_phase_collect_config` appears to be unused"
+        errorLine1="    &lt;string name=&quot;tracer_progress_phase_collect_config&quot;>Collecting parser config&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="77"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_label_chart_range_start` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_label_chart_range_start&quot;>Start Date&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="78"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.tracer_progress_phase_generate_manifest` appears to be unused"
+        errorLine1="    &lt;string name=&quot;tracer_progress_phase_generate_manifest&quot;>Generating exchange manifest&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="78"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_label_chart_range_end` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_label_chart_range_end&quot;>End Date&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="79"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.tracer_progress_phase_write_package_output` appears to be unused"
+        errorLine1="    &lt;string name=&quot;tracer_progress_phase_write_package_output&quot;>Writing exchange package output&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="80"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.tracer_progress_detail_collect_config` appears to be unused"
+        errorLine1="    &lt;string name=&quot;tracer_progress_detail_collect_config&quot;>Config TOML %1$d/%2$d&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="83"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.tracer_progress_detail_generate_manifest` appears to be unused"
+        errorLine1="    &lt;string name=&quot;tracer_progress_detail_generate_manifest&quot;>Manifest %1$d/%2$d&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="84"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.tracer_progress_detail_write_percent` appears to be unused"
+        errorLine1="    &lt;string name=&quot;tracer_progress_detail_write_percent&quot;>Write %1$d%%&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="86"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_chart_pie_hint` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_chart_pie_hint&quot;>Tap a slice to view the activity, time spent, and share.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="92"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_chart_pie_drilldown_summary` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_chart_pie_drilldown_summary&quot;>Tap through the activity hierarchy to inspect each level.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="96"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_chart_composition_bar_hint` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_chart_composition_bar_hint&quot;>Tap a row to view the activity, time spent, and share.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="97"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_chart_heatmap_theme_policy_label` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_chart_heatmap_theme_policy_label&quot;>Heatmap Theme&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="102"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.record_title_assist_settings` appears to be unused"
+        errorLine1="    &lt;string name=&quot;record_title_assist_settings&quot;>Assist Settings&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-record/src/main/res/values/strings.xml"
+            line="102"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_chart_heatmap_theme_policy_system` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_chart_heatmap_theme_policy_system&quot;>System (Default)&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="103"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_chart_heatmap_theme_policy_palette` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_chart_heatmap_theme_policy_palette&quot;>Manual&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="104"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.config_summary_prompt_unconfigured_activity` appears to be unused"
+        errorLine1="    &lt;string name=&quot;config_summary_prompt_unconfigured_activity&quot;>Ask before saving a new activity to the default list.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="119"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_chart_active_roots` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_chart_active_roots&quot;>Active top-level activities: %1$d&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="120"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_chart_range_days` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_chart_range_days&quot;>Days in Range: %1$d&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="121"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.config_action_unconfigured_activity_details` appears to be unused"
+        errorLine1="    &lt;string name=&quot;config_action_unconfigured_activity_details&quot;>What happens when this is enabled?&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="122"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.config_cd_show_unconfigured_activity_prompt` appears to be unused"
+        errorLine1="    &lt;string name=&quot;config_cd_show_unconfigured_activity_prompt&quot;>Show unconfigured activity prompt description&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="124"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_chart_composition_summary` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_chart_composition_summary&quot;>Top-level activities in the selected breakdown.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="124"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.config_cd_hide_unconfigured_activity_prompt` appears to be unused"
+        errorLine1="    &lt;string name=&quot;config_cd_hide_unconfigured_activity_prompt&quot;>Hide unconfigured activity prompt description&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="125"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_chart_composition_selected_detail` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_chart_composition_selected_detail&quot;>Selected: %1$s · %2$s (%3$.1f%%)&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="125"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_chart_composition_selected_frequency_detail` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_chart_composition_selected_frequency_detail&quot;>Selected: %1$s · %2$d occurrences (%3$.1f%%)&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="126"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_chart_composition_selected_stats` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_chart_composition_selected_stats&quot;>Total: %1$s · Records: %2$d · Share: %3$.1f%%&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="127"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_chart_composition_selected_average_stats` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_chart_composition_selected_average_stats&quot;>Daily average: %1$s · Avg records: %2$.1f/day&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="128"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_chart_composition_average_summary` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_chart_composition_average_summary&quot;>Avg time: %1$s · Avg records: %2$.1f/day&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="129"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_chart_legend_total` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_chart_legend_total&quot;>Total&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="135"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_chart_legend_average` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_chart_legend_average&quot;>Avg&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="136"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_chart_composition_selected_average_duration` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_chart_composition_selected_average_duration&quot;>Daily average: %1$s&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="137"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_chart_composition_selected_average_records` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_chart_composition_selected_average_records&quot;>Daily average records: %1$.1f/day&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="138"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.record_status_quick_activities_cannot_be_empty` appears to be unused"
+        errorLine1="    &lt;string name=&quot;record_status_quick_activities_cannot_be_empty&quot;>Quick activities cannot be empty.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-record/src/main/res/values/strings.xml"
+            line="160"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.config_title_configuration_files` appears to be unused"
+        errorLine1="    &lt;string name=&quot;config_title_configuration_files&quot;>Configuration Files&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="166"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.config_action_refresh_list` appears to be unused"
+        errorLine1="    &lt;string name=&quot;config_action_refresh_list&quot;>Refresh List&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="167"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.record_status_invalid_frequent_activity` appears to be unused"
+        errorLine1="    &lt;string name=&quot;record_status_invalid_frequent_activity&quot;>Invalid frequent activity: %1$s. Must match a configured authorable event token (alias key, canonical token, or wake keyword).&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-record/src/main/res/values/strings.xml"
+            line="167"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_period_activities_hide_comparison` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_period_activities_hide_comparison&quot;>Hide comparison&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="168"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.insights_period_activities_comparison_loading` appears to be unused"
+        errorLine1="    &lt;string name=&quot;insights_period_activities_comparison_loading&quot;>Loading comparison period…&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../feature-insights/src/main/res/values/strings.xml"
+            line="169"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.config_category_alias` appears to be unused"
+        errorLine1="    &lt;string name=&quot;config_category_alias&quot;>Categories&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="178"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.config_category_charts` appears to be unused"
+        errorLine1="    &lt;string name=&quot;config_category_charts&quot;>Charts&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="179"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.config_category_meta` appears to be unused"
+        errorLine1="    &lt;string name=&quot;config_category_meta&quot;>Meta&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="180"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.config_category_insights` appears to be unused"
+        errorLine1="    &lt;string name=&quot;config_category_insights&quot;>Insights&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="181"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.config_no_toml_files_in_category` appears to be unused"
+        errorLine1="    &lt;string name=&quot;config_no_toml_files_in_category&quot;>No items in %1$s.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="182"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.config_action_select_toml_file` appears to be unused"
+        errorLine1="    &lt;string name=&quot;config_action_select_toml_file&quot;>Select item&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="183"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.config_title_editor_file` appears to be unused"
+        errorLine1="    &lt;string name=&quot;config_title_editor_file&quot;>Editor: %1$s&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="185"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.config_title_editor_category` appears to be unused"
+        errorLine1="    &lt;string name=&quot;config_title_editor_category&quot;>Category: %1$s&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="187"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.config_label_toml_content` appears to be unused"
+        errorLine1="    &lt;string name=&quot;config_label_toml_content&quot;>TOML Content&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="188"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.config_program_resource_read_only` appears to be unused"
+        errorLine1="    &lt;string name=&quot;config_program_resource_read_only&quot;>Program resources are read-only. Edit activity categories under Activity Categories.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="190"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.config_action_save_changes` appears to be unused"
+        errorLine1="    &lt;string name=&quot;config_action_save_changes&quot;>Save Changes&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="191"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.config_alias_group_recordable_aliases` appears to be unused"
+        errorLine1="    &lt;string name=&quot;config_alias_group_recordable_aliases&quot;>Category record names: %1$s&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="229"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.config_alias_dialog_edit_entry_title` appears to be unused"
+        errorLine1="    &lt;string name=&quot;config_alias_dialog_edit_entry_title&quot;>Edit Alias Entry&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="254"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.config_alias_dialog_rename_alias_title` appears to be unused"
+        errorLine1="    &lt;string name=&quot;config_alias_dialog_rename_alias_title&quot;>Rename Alias&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="255"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.config_alias_alias_key_label` appears to be unused"
+        errorLine1="    &lt;string name=&quot;config_alias_alias_key_label&quot;>Alias Key&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="265"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.config_alias_alias_key_required` appears to be unused"
+        errorLine1="    &lt;string name=&quot;config_alias_alias_key_required&quot;>Alias key must not be empty.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="275"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.config_alias_move_plan_not_saved` appears to be unused"
+        errorLine1="    &lt;string name=&quot;config_alias_move_plan_not_saved&quot;>Preview only. No data has been changed.&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="286"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UseOfNonLambdaOffsetOverload"
+        message="State backed values should use the lambda overload of Modifier.offset"
+        errorLine1="                    .offset("
+        errorLine2="                     ~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/screen/TracerScreenShell.kt"
+            line="170"
+            column="22"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toColorInt` instead?"
+        errorLine1="    runCatching { Color(AndroidColor.parseColor(raw.trim())) }.getOrNull()"
+        errorLine2="                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/screen/ConfigInsightsChartStyleSection.kt"
+            line="339"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toColorInt` instead?"
+        errorLine1="    return runCatching { Color(AndroidColor.parseColor(normalized)) }.getOrNull()"
+        errorLine2="                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/screen/InsightsChartVisualizationHeatmapControls.kt"
+            line="198"
+            column="32"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toColorInt` instead?"
+        errorLine1="        Color(AndroidColor.parseColor(normalized))"
+        errorLine2="              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/example/tracer/ui/screen/InsightsHeatmapChartSupport.kt"
+            line="224"
+            column="15"/>
+    </issue>
+
+</issues>

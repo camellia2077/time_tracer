@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -32,10 +33,15 @@ import androidx.compose.ui.unit.dp
 import com.example.tracer.data.ThemePalette
 import com.example.tracer.ui.theme.definition
 
+private const val THEME_PALETTE_SUMMARY_PREVIEW_TAG = "config_theme_palette_summary_preview"
+private const val THEME_PALETTE_OPTION_TAG = "config_theme_palette_option"
+
 @Composable
 internal fun ThemePaletteSection(
     selectedThemePalette: ThemePalette,
-    onSetThemePalette: (ThemePalette) -> Unit
+    onSetThemePalette: (ThemePalette) -> Unit,
+    expanded: Boolean,
+    onToggleExpanded: () -> Unit
 ) {
     Text(
         text = stringResource(R.string.config_title_theme_palette),
@@ -43,20 +49,59 @@ internal fun ThemePaletteSection(
         color = MaterialTheme.colorScheme.onSurfaceVariant
     )
 
-    val switchablePalettes = ThemePalette.entries.filter { it.supportsLightDarkMode }
-    val fixedPalettes = ThemePalette.entries.filterNot { it.supportsLightDarkMode }
+    ExpandableSettingsButton(
+        text = stringResource(selectedThemePalette.labelRes()),
+        expanded = expanded,
+        onClick = onToggleExpanded,
+        previewContent = { ThemePaletteSummaryPreview(selectedThemePalette) }
+    )
 
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        ThemePaletteRows(
-            palettes = switchablePalettes,
-            selectedThemePalette = selectedThemePalette,
-            onSetThemePalette = onSetThemePalette
+    if (expanded) {
+        val switchablePalettes = ThemePalette.entries.filter { it.supportsLightDarkMode }
+        val fixedPalettes = ThemePalette.entries.filterNot { it.supportsLightDarkMode }
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            ThemePaletteRows(
+                palettes = switchablePalettes,
+                selectedThemePalette = selectedThemePalette,
+                onSetThemePalette = onSetThemePalette
+            )
+            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+            ThemePaletteRows(
+                palettes = fixedPalettes,
+                selectedThemePalette = selectedThemePalette,
+                onSetThemePalette = onSetThemePalette
+            )
+        }
+    }
+}
+
+@Composable
+private fun ThemePaletteSummaryPreview(palette: ThemePalette) {
+    val colors = palette.definition().preview
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(18.dp)
+            .clip(RoundedCornerShape(6.dp))
+            .testTag(THEME_PALETTE_SUMMARY_PREVIEW_TAG)
+    ) {
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight()
+                .background(colors.primary)
         )
-        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-        ThemePaletteRows(
-            palettes = fixedPalettes,
-            selectedThemePalette = selectedThemePalette,
-            onSetThemePalette = onSetThemePalette
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight()
+                .background(colors.accent)
+        )
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight()
+                .background(colors.surface)
         )
     }
 }
@@ -96,20 +141,7 @@ private fun ThemePalettePreviewCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val label = when (palette) {
-        ThemePalette.Indigo -> stringResource(R.string.config_theme_palette_indigo)
-        ThemePalette.GraphiteAmber -> stringResource(R.string.config_theme_palette_graphite)
-        ThemePalette.Teal -> stringResource(R.string.config_theme_palette_teal)
-        ThemePalette.Orange -> stringResource(R.string.config_theme_palette_orange)
-        ThemePalette.Rose -> stringResource(R.string.config_theme_palette_rose)
-        ThemePalette.Amber -> stringResource(R.string.config_theme_palette_amber)
-        ThemePalette.Parchment -> stringResource(R.string.config_theme_palette_parchment)
-        ThemePalette.Snowfield -> stringResource(R.string.config_theme_palette_snowfield)
-        ThemePalette.Blueprint -> stringResource(R.string.config_theme_palette_blueprint)
-        ThemePalette.Newsprint -> stringResource(R.string.config_theme_palette_newsprint)
-        ThemePalette.InkWash -> stringResource(R.string.config_theme_palette_ink_wash)
-        ThemePalette.Kraft -> stringResource(R.string.config_theme_palette_kraft)
-    }
+    val label = stringResource(palette.labelRes())
     val colors = palette.definition().preview
     val shape = RoundedCornerShape(12.dp)
 
@@ -117,6 +149,7 @@ private fun ThemePalettePreviewCard(
         modifier = modifier
             .clip(shape)
             .clickable(onClick = onClick)
+            .testTag(THEME_PALETTE_OPTION_TAG)
             .semantics {
                 this.selected = selected
                 this.role = Role.RadioButton
@@ -170,4 +203,19 @@ private fun ThemePalettePreviewCard(
             )
         }
     }
+}
+
+private fun ThemePalette.labelRes(): Int = when (this) {
+    ThemePalette.Indigo -> R.string.config_theme_palette_indigo
+    ThemePalette.GraphiteAmber -> R.string.config_theme_palette_graphite
+    ThemePalette.Teal -> R.string.config_theme_palette_teal
+    ThemePalette.Orange -> R.string.config_theme_palette_orange
+    ThemePalette.Rose -> R.string.config_theme_palette_rose
+    ThemePalette.Amber -> R.string.config_theme_palette_amber
+    ThemePalette.Parchment -> R.string.config_theme_palette_parchment
+    ThemePalette.Snowfield -> R.string.config_theme_palette_snowfield
+    ThemePalette.Blueprint -> R.string.config_theme_palette_blueprint
+    ThemePalette.Newsprint -> R.string.config_theme_palette_newsprint
+    ThemePalette.InkWash -> R.string.config_theme_palette_ink_wash
+    ThemePalette.Kraft -> R.string.config_theme_palette_kraft
 }

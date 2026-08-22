@@ -5,12 +5,20 @@
     <string name="data_title_data_management">数据管理</string>
     <string name="data_title_ingestion">数据导入</string>
     <string name="data_action_import_data_folder">导入数据文件夹</string>
+    <string name="data_description_import_data_folder">从文件夹导入 TXT 记录文件</string>
     <string name="data_action_import_single_tracer">导入压缩包</string>
+    <string name="data_description_import_single_tracer">从备份恢复记录和配置</string>
 
     <string name="data_title_tracer_export">压缩包导出</string>
+    <string name="data_title_export">导出</string>
+    <string name="data_title_compressed_archive">压缩包</string>
+    <string name="data_summary_compressed_archive">完整备份 · %1$s 加密</string>
     <string name="data_action_exporting">正在导出交换包...</string>
     <string name="data_action_export_current_txt_tracer">导出 TXT + TOML</string>
+    <string name="data_description_export_current_txt_tracer">保存可直接查看的记录和配置文件</string>
     <string name="data_action_export_all_months_tracer">导出压缩包</string>
+    <string name="data_action_create_compressed_archive">创建压缩包</string>
+    <string name="data_description_export_all_months_tracer">创建包含全部活动数据、可恢复的备份</string>
     <string name="data_label_tracer_security_level">加密强度</string>
     <string name="data_security_level_interactive">快速（Interactive）</string>
     <string name="data_security_level_moderate">平衡（Moderate）</string>
@@ -20,7 +28,11 @@
     <string name="data_action_clear_txt">清空 TXT</string>
     <string name="data_action_clear_database">清空数据库</string>
     <string name="data_action_rebuild_database">重建数据库</string>
+    <string name="data_description_rebuild_database">根据 TXT 记录重新创建本地数据库</string>
     <string name="data_action_clear_all_app_data">清除活动数据</string>
+    <string name="data_description_clear_all_app_data">删除全部活动记录、分类和数据库</string>
+    <string name="data_title_danger_zone">危险操作</string>
+    <string name="data_description_danger_zone">这些操作会移除本地数据，且无法撤销。</string>
 
     <string name="data_dialog_clear_txt_title">清空 TXT？</string>
     <string name="data_dialog_clear_txt_message">将清空所有 TXT 文件（导入和生成）。此操作无法撤销。</string>

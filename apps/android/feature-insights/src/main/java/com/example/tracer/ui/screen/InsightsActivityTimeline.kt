@@ -38,6 +38,8 @@ internal fun InsightsActivityTimeline(
     calendarAvailability: CalendarAvailability,
     periodComparison: InsightsPeriodComparisonState = InsightsPeriodComparisonState.Hidden,
     canComparePreviousPeriod: Boolean = false,
+    comparisonColorScheme: InsightsComparisonColorScheme,
+    comparisonIndicatorStyle: InsightsComparisonIndicatorStyle,
     selectedView: InsightsActivityView,
     onSelectedViewChange: (InsightsActivityView) -> Unit,
     onPeriodComparisonToggle: () -> Unit = {},
@@ -77,6 +79,8 @@ internal fun InsightsActivityTimeline(
                 insightsMode = InsightsMode.DAY,
                 periodComparison = periodComparison,
                 canComparePreviousPeriod = canComparePreviousPeriod,
+                comparisonColorScheme = comparisonColorScheme,
+                comparisonIndicatorStyle = comparisonIndicatorStyle,
                 calendarAvailability = calendarAvailability,
                 onPeriodComparisonToggle = onPeriodComparisonToggle,
                 onComparisonPeriodSelected = onComparisonPeriodSelected

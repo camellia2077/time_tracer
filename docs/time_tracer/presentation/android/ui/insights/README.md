@@ -30,6 +30,16 @@ Define semantic colors for Timeline, Tree, and Insights visualizations.
 | Comparison decrease | `#CF222E` | `#F85149` | Negative period-over-period changes; always paired with a down arrow and explicit text |
 | Comparison neutral | `#57606A` | `#8C959F` | Unchanged values; always paired with a neutral icon and explicit text |
 
+The Config tab's **Insights display** section lets users choose the color pair
+used by Activities Overview comparisons: green/red (default), red/green, theme
+accent with neutral-gray decrease (`#9CA3AF`), or blue/orange (`#2563EB` /
+`#F97316`). This setting changes only the increase/decrease colors; localized
+direction text retains its established meaning.
+
+Users can also choose the comparison indicator independently: direction arrows
+(default), trend lines, or plus/minus signs. The neutral indicator remains a
+minus icon, and localized direction text remains present for every style.
+
 ## Tree Progress Bar
 
 The Tree progress bar represents a node's share of the total Tree duration. It is a Tree-specific analytical signal and must remain visually distinct from hierarchy labels and neutral card surfaces.
@@ -49,7 +59,7 @@ The Tree progress bar represents a node's share of the total Tree duration. It i
 - The percentage label must remain readable at the existing small text size and must have stronger emphasis than secondary text.
 - The empty track and Tree card must remain neutral and must not inherit the progress hue.
 - Do not use green, teal, or success-state colors for the Tree progress bar unless the product meaning changes from duration share to status.
-- Comparison increase, decrease, and neutral are separate semantic roles. Every palette reuses the shared `InsightsComparisonColorTokens` values; arrows and localized change text remain required so the meaning never depends on color alone.
+- Comparison increase, decrease, and neutral are separate semantic roles. The selected comparison color scheme controls increase/decrease values; arrows and localized change text remain required so the meaning never depends on color alone.
 - When adding a theme, document the replacement HEX values in this table before changing the implementation.
 
 

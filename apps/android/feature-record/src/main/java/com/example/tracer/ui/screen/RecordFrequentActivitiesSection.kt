@@ -71,7 +71,6 @@ internal fun RecordFrequentActivitiesSection(
     isFrequentActivitiesLoading: Boolean,
     frequentActivities: List<RecordFrequentActivity>,
     frequentOutputMode: RecordFrequentOutputMode,
-    loadingStateText: String,
     emptyStateText: String,
     onToggleFrequentActivities: () -> Unit,
     onFrequentActivityClick: (String) -> Unit,
@@ -106,7 +105,6 @@ internal fun RecordFrequentActivitiesSection(
                 isLoading = isFrequentActivitiesLoading,
                 activities = frequentActivities,
                 displayMode = frequentOutputMode,
-                loadingText = loadingStateText,
                 emptyText = emptyStateText,
                 onActivityClick = onFrequentActivityClick
             )
@@ -119,7 +117,6 @@ internal fun FrequentActivitiesList(
     isLoading: Boolean,
     activities: List<RecordFrequentActivity>,
     displayMode: RecordFrequentOutputMode,
-    loadingText: String,
     emptyText: String,
     onActivityClick: (String) -> Unit,
     modifier: Modifier = Modifier
@@ -129,9 +126,7 @@ internal fun FrequentActivitiesList(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         when {
-            isLoading -> Text(loadingText, style = MaterialTheme.typography.bodySmall)
-            activities.isEmpty() -> Text(emptyText, style = MaterialTheme.typography.bodySmall)
-            else -> com.example.tracer.ui.components.SimpleFlowRow(
+            activities.isNotEmpty() -> com.example.tracer.ui.components.SimpleFlowRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalGap = 8.dp,
                 verticalGap = 8.dp
@@ -150,6 +145,7 @@ internal fun FrequentActivitiesList(
                     )
                 }
             }
+            !isLoading -> Text(emptyText, style = MaterialTheme.typography.bodySmall)
         }
     }
 }
@@ -183,13 +179,13 @@ internal fun RecordFrequentActivitiesSheet(
         R.string.record_hint_no_frequent_activities_lookback,
         frequentLookbackDays
     )
-    val loadingStateText = stringResource(
-        R.string.record_hint_loading_frequent_activities_for_logical_day,
-        logicalDayLabel
-    )
     var settingsExpanded by remember { mutableStateOf(false) }
-    var lookbackDaysInput by remember { mutableStateOf(frequentLookbackDays.toString()) }
-    var topNInput by remember { mutableStateOf(frequentTopN.toString()) }
+    var lookbackDaysInput by remember(frequentLookbackDays) {
+        mutableStateOf(frequentLookbackDays.toString())
+    }
+    var topNInput by remember(frequentTopN) {
+        mutableStateOf(frequentTopN.toString())
+    }
     Dialog(
         onDismissRequest = onDismissRequest,
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -392,7 +388,6 @@ internal fun RecordFrequentActivitiesSheet(
                         isFrequentActivitiesLoading = isFrequentActivitiesLoading,
                         frequentActivities = frequentActivities,
                         frequentOutputMode = frequentOutputMode,
-                        loadingStateText = loadingStateText,
                         emptyStateText = emptyStateText,
                         onToggleFrequentActivities = onDismissRequest,
                         onFrequentActivityClick = {

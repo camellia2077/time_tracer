@@ -1,7 +1,9 @@
 package com.example.tracer
 
 import androidx.compose.runtime.Composable
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
+import com.example.tracer.ui.theme.InsightsColorTokens
 import com.example.tracer.ui.theme.LocalInsightsColorTokens
 
 internal data class InsightsSemanticColors(
@@ -18,8 +20,16 @@ internal data class InsightsSemanticColors(
 )
 
 @Composable
-internal fun insightsSemanticColors(): InsightsSemanticColors {
+internal fun insightsSemanticColors(
+    comparisonColorScheme: InsightsComparisonColorScheme =
+        defaultInsightsComparisonColorScheme()
+): InsightsSemanticColors {
     val tokens = LocalInsightsColorTokens.current
+    val (comparisonIncrease, comparisonDecrease) = resolveComparisonColors(
+        colorScheme = comparisonColorScheme,
+        tokens = tokens,
+        themeAccent = MaterialTheme.colorScheme.secondary
+    )
     return InsightsSemanticColors(
         root = tokens.treeHierarchy,
         child = tokens.treeHierarchy.copy(alpha = 0.7f),
@@ -28,8 +38,23 @@ internal fun insightsSemanticColors(): InsightsSemanticColors {
         track = tokens.track,
         progress = tokens.timelineDuration,
         gap = tokens.gap,
-        comparisonIncrease = tokens.comparisonIncrease,
-        comparisonDecrease = tokens.comparisonDecrease,
+        comparisonIncrease = comparisonIncrease,
+        comparisonDecrease = comparisonDecrease,
         comparisonNeutral = tokens.comparisonNeutral
     )
 }
+
+internal fun resolveComparisonColors(
+    colorScheme: InsightsComparisonColorScheme,
+    tokens: InsightsColorTokens,
+    themeAccent: Color
+): Pair<Color, Color> = when (colorScheme) {
+        InsightsComparisonColorScheme.GREEN_RED ->
+            tokens.comparisonIncrease to tokens.comparisonDecrease
+        InsightsComparisonColorScheme.RED_GREEN ->
+            tokens.comparisonDecrease to tokens.comparisonIncrease
+        InsightsComparisonColorScheme.THEME_ACCENT_NEUTRAL ->
+            themeAccent to Color(0xFF9CA3AF)
+        InsightsComparisonColorScheme.BLUE_ORANGE ->
+            Color(0xFF2563EB) to Color(0xFFF97316)
+    }

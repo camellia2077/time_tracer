@@ -182,7 +182,7 @@ cmake_args = [
 gradle_tasks = [":app:assembleDebug"]
 
 [build.profiles.android_style]
-description = "Android style checks (ktlint + lintDebug; detekt disabled in this flow)."
+description = "Android style checks (ktlint + lintDebug; new Lint warnings fail against the checked-in baseline; detekt disabled in this flow)."
 gradle_tasks = [
     ":app:ktlintCheck",
     ":app:lintDebug",

@@ -42,6 +42,8 @@ fun QueryInsightsTabContent(
     preferredAverageDayBasis: InsightsAverageDayBasis,
     chartShowAverageLine: Boolean,
     piePalettePreset: InsightsPiePalettePreset,
+    comparisonColorScheme: InsightsComparisonColorScheme,
+    comparisonIndicatorStyle: InsightsComparisonIndicatorStyle,
     onChartShowAverageLineChange: (Boolean) -> Unit,
     heatmapTomlConfig: InsightsHeatmapTomlConfig,
     heatmapStylePreference: InsightsHeatmapStylePreference,
@@ -117,17 +119,18 @@ fun QueryInsightsTabContent(
     val displayResult = resolveDisplayResult(
         uiState = queryUiState,
         selectedPeriod = selectedPeriod,
+        resultDisplayMode = displayedResultDisplayMode,
         selectedSection = displayedParameterSection
     )
     val displayInsightsSummary = resolveDisplayInsightsSummary(
         uiState = queryUiState,
         selectedPeriod = selectedPeriod,
-        selectedSection = displayedParameterSection
+        resultDisplayMode = displayedResultDisplayMode
     )
     val displayInsightsError = resolveDisplayInsightsError(
         uiState = queryUiState,
         selectedPeriod = selectedPeriod,
-        selectedSection = displayedParameterSection
+        resultDisplayMode = displayedResultDisplayMode
     )
     val onInsightsModeChange: (InsightsMode) -> Unit = { mode ->
         queryInsightsViewModel.onInsightsModeChange(mode)
@@ -242,6 +245,8 @@ fun QueryInsightsTabContent(
                 compositionChartRenderModel = queryUiState.compositionChartRenderModel,
                 chartShowAverageLine = chartShowAverageLine,
                 piePalettePreset = piePalettePreset,
+                comparisonColorScheme = comparisonColorScheme,
+                comparisonIndicatorStyle = comparisonIndicatorStyle,
                 heatmapTomlConfig = heatmapTomlConfig,
                 heatmapStylePreference = heatmapStylePreference,
                 onHeatmapThemePolicyChange = onHeatmapThemePolicyChange,
@@ -266,10 +271,13 @@ fun QueryInsightsTabContent(
 internal fun resolveDisplayResult(
     uiState: QueryInsightsUiState,
     selectedPeriod: DataTreePeriod,
+    resultDisplayMode: InsightsResultDisplayMode,
     selectedSection: InsightsParameterSection
 ): QueryResult? {
+    if (resultDisplayMode == InsightsResultDisplayMode.HIERARCHY) {
+        return uiState.activeResult as? QueryResult.Tree
+    }
     return when (selectedSection) {
-        InsightsParameterSection.ACTIVITY_HIERARCHY -> uiState.activeResult as? QueryResult.Tree
         InsightsParameterSection.DAY,
         InsightsParameterSection.ACTIVITIES -> uiState.insightsResultsByPeriod[selectedPeriod]
     }
@@ -278,9 +286,9 @@ internal fun resolveDisplayResult(
 private fun resolveDisplayInsightsSummary(
     uiState: QueryInsightsUiState,
     selectedPeriod: DataTreePeriod,
-    selectedSection: InsightsParameterSection
+    resultDisplayMode: InsightsResultDisplayMode
 ): InsightsSummary? {
-    if (selectedSection == InsightsParameterSection.ACTIVITY_HIERARCHY) {
+    if (resultDisplayMode == InsightsResultDisplayMode.HIERARCHY) {
         return null
     }
     return uiState.insightsResultsByPeriod[selectedPeriod]?.summary
@@ -290,9 +298,9 @@ private fun resolveDisplayInsightsSummary(
 private fun resolveDisplayInsightsError(
     uiState: QueryInsightsUiState,
     selectedPeriod: DataTreePeriod,
-    selectedSection: InsightsParameterSection
+    resultDisplayMode: InsightsResultDisplayMode
 ): String {
-    return if (selectedSection == InsightsParameterSection.ACTIVITY_HIERARCHY) {
+    return if (resultDisplayMode == InsightsResultDisplayMode.HIERARCHY) {
         ""
     } else {
         uiState.insightsErrorsByPeriod[selectedPeriod].orEmpty()

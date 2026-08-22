@@ -42,21 +42,19 @@ private const val INSIGHTS_PALETTE_PRESET_SWATCH_TAG = "config_insights_palette_
 internal fun InsightsChartStyleSection(
     insightsPiePalettePreset: InsightsPiePalettePreset,
     onInsightsPiePalettePresetChange: (InsightsPiePalettePreset) -> Unit,
-    initialExpanded: Boolean = false
+    expanded: Boolean,
+    onToggleExpanded: () -> Unit
 ) {
     Text(
         text = stringResource(R.string.config_title_insights_chart_style),
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant
     )
-    // Tests can render the expanded section directly through this initial state hook
-    // instead of depending on click timing in Robolectric.
-    var isPiePaletteExpanded by rememberSaveable { mutableStateOf(initialExpanded) }
     val piePalettePresets = InsightsPiePalettePreset.entries
     var previewSliceIndex by rememberSaveable { mutableStateOf(0) }
 
     ExpandableSettingsButton(
-        text = if (isPiePaletteExpanded) {
+        text = if (expanded) {
             stringResource(
                 R.string.config_insights_breakdown_palette_current,
                 stringResource(insightsPiePalettePreset.labelRes())
@@ -64,8 +62,8 @@ internal fun InsightsChartStyleSection(
         } else {
             stringResource(R.string.config_insights_breakdown_palette_tap_expand)
         },
-        expanded = isPiePaletteExpanded,
-        onClick = { isPiePaletteExpanded = !isPiePaletteExpanded },
+        expanded = expanded,
+        onClick = onToggleExpanded,
         previewContent = {
             // The collapsed row stays summary-only so the button never turns into a
             // second full preview container.
@@ -76,7 +74,7 @@ internal fun InsightsChartStyleSection(
         }
     )
 
-    if (isPiePaletteExpanded) {
+    if (expanded) {
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(10.dp)

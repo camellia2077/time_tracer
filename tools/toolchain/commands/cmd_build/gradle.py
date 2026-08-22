@@ -119,6 +119,7 @@ def build_gradle(
     cmake_args: list[str] | None,
     build_dir_name: str | None,
     profile_name: str | None,
+    gradle_tasks_override: list[str] | None = None,
     run_command_fn: Callable[..., int] | None = None,
     log_file=None,
     output_mode: str = "live",
@@ -132,7 +133,7 @@ def build_gradle(
     if filtered_cmake_args:
         print("--- build: gradle backend ignores --cmake-args.")
 
-    gradle_tasks = build_common.resolve_gradle_tasks(
+    gradle_tasks = list(gradle_tasks_override or []) or build_common.resolve_gradle_tasks(
         ctx=ctx,
         app_name=app_name,
         profile_name=profile_name,

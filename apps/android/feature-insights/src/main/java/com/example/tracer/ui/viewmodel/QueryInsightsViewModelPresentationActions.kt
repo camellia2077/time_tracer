@@ -35,13 +35,7 @@ fun QueryInsightsViewModel.onInsightsModeChange(mode: InsightsMode) {
             chartSemanticMode = preferredChartSemanticMode.normalizeForInsightsMode(mode)
         ).clearPeriodComparison()
     })
-    // Chart and Tree are independent pipelines, but both write the shared UiState. Starting
-    // Tree here while Chart is loading lets a slower Tree result restore an older chart
-    // loading/empty snapshot after the Chart result has already committed. Tree is not
-    // visible in Chart mode, so defer it until the user is actually viewing Text/Tree.
-    if (uiState.resultDisplayMode != InsightsResultDisplayMode.CHART &&
-        uiState.parameterSection == InsightsParameterSection.ACTIVITY_HIERARCHY
-    ) {
+    if (uiState.resultDisplayMode == InsightsResultDisplayMode.HIERARCHY) {
         loadTree(mode.toDataTreePeriod(), uiState.treeLevel)
     }
 }
@@ -146,14 +140,13 @@ fun QueryInsightsViewModel.applyPersistedInsightsPresentation(
     // Treat the persisted display, period, semantic mode, and parameter section as one
     // selection. Applying them in separate Compose effects briefly leaves the ViewModel in
     // its default DETAILS state, which starts a query whose delayed result can replace CHART.
-    val normalizedParameterSection = parameterSection
     val normalizedChartSemanticMode = chartSemanticMode.normalizeForInsightsMode(insightsMode)
     val firstPreferenceApplication = !uiState.isPresentationRestored
     val changed = uiState.insightsMode != insightsMode ||
         uiState.preferredChartSemanticMode != chartSemanticMode ||
         uiState.chartSemanticMode != normalizedChartSemanticMode ||
         uiState.resultDisplayMode != resultDisplayMode ||
-        uiState.parameterSection != normalizedParameterSection ||
+        uiState.parameterSection != parameterSection ||
         uiState.trendChartSelectedRoot != trendChartSelectedRoot.trim()
     if (!firstPreferenceApplication && !changed) {
         // This effect can be launched from the chart's loading composition. Its snapshot
@@ -171,7 +164,7 @@ fun QueryInsightsViewModel.applyPersistedInsightsPresentation(
         chartSemanticMode = normalizedChartSemanticMode,
         resultDisplayMode = resultDisplayMode,
         isPresentationRestored = true,
-        parameterSection = normalizedParameterSection,
+        parameterSection = parameterSection,
         trendChartSelectedRoot = trendChartSelectedRoot.trim()
     )
     // A request that was already loading belongs to the pre-restoration selection. Clear
@@ -190,7 +183,7 @@ fun QueryInsightsViewModel.applyPersistedInsightsPresentation(
     // the screen the user actually persisted, rather than an intermediate default state.
     if (resultDisplayMode == InsightsResultDisplayMode.CHART) {
         refreshCurrentChart()
-    } else if (normalizedParameterSection == InsightsParameterSection.ACTIVITY_HIERARCHY) {
+    } else if (resultDisplayMode == InsightsResultDisplayMode.HIERARCHY) {
         loadTree(insightsMode.toDataTreePeriod(), uiState.treeLevel)
     } else {
         insightsCurrentSelection()
@@ -225,6 +218,8 @@ fun QueryInsightsViewModel.onResultDisplayModeChange(mode: InsightsResultDisplay
     logChart("display mode applied; ${chartSelection()}")
     if (mode == InsightsResultDisplayMode.CHART) {
         refreshCurrentChart()
+    } else if (mode == InsightsResultDisplayMode.HIERARCHY) {
+        loadTree(uiState.insightsMode.toDataTreePeriod(), uiState.treeLevel)
     } else if (mode == InsightsResultDisplayMode.DETAILS) {
         // Switching from Chart to Text can happen after the insights mode has already
         // changed. Re-query the current period here so Week/Month/etc. does not wait for
@@ -263,31 +258,15 @@ fun QueryInsightsViewModel.onChartSemanticModeChange(mode: InsightsChartSemantic
 }
 
 fun QueryInsightsViewModel.onParameterSectionChange(section: InsightsParameterSection) {
-    val sectionChanged = uiState.parameterSection != section
     uiState = uiState.copy(parameterSection = section).clearPeriodComparison()
-    if (section == InsightsParameterSection.ACTIVITY_HIERARCHY) {
-        val selectedPeriod = uiState.insightsMode.toDataTreePeriod()
-        val currentTree = uiState.activeResult as? QueryResult.Tree
-        val hasCurrentTree = currentTree?.period == selectedPeriod
-        // The persisted section can be re-applied after the ViewModel has already
-        // been created (for example after a theme-driven recomposition). In that case
-        // the section value itself may not change, but the Tree result can still be
-        // missing. Rehydrate it while avoiding duplicate requests during loading.
-        if (sectionChanged || (!hasCurrentTree && !uiState.analysisLoading)) {
-            loadTree(selectedPeriod, uiState.treeLevel)
-        }
-    } else {
-        // Activities and Text reuse the current period's cached Markdown and structured
-        // insights. Treating a presentation-only section change as a new query caused an
-        // empty-state frame while that cache was rebuilt. Re-query only when the current
-        // period has no insights yet or the current day explicitly needs a refresh.
-        val currentPeriod = uiState.insightsMode.toDataTreePeriod()
-        val hasCurrentInsights = uiState.insightsResultsByPeriod[currentPeriod] != null
-        val needsInsightsRefresh = uiState.dayInsightsNeedsRefresh &&
-            section != InsightsParameterSection.ACTIVITY_HIERARCHY
-        if (!hasCurrentInsights || needsInsightsRefresh) {
-            insightsCurrentSelection()
-        }
+    // Activities and Text reuse the current period's cached Markdown and structured
+    // insights. Treating a presentation-only section change as a new query caused an
+    // empty-state frame while that cache was rebuilt. Re-query only when the current
+    // period has no insights yet or the current day explicitly needs a refresh.
+    val currentPeriod = uiState.insightsMode.toDataTreePeriod()
+    val hasCurrentInsights = uiState.insightsResultsByPeriod[currentPeriod] != null
+    if (!hasCurrentInsights || uiState.dayInsightsNeedsRefresh) {
+        insightsCurrentSelection()
     }
 }
 

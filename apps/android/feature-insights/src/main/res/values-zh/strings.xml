@@ -8,6 +8,7 @@
     <string name="insights_mode_recent">近期</string>
     <string name="insights_result_mode_details">详细</string>
     <string name="insights_result_mode_chart">图表</string>
+    <string name="insights_result_mode_hierarchy">层级</string>
 
     <string name="insights_title_mode_parameters">日期选择</string>
     <string name="insights_parameter_section_day">日期</string>
@@ -206,7 +207,7 @@
     <string name="insights_result_title_analysis_error">分析错误</string>
     <string name="insights_result_title_tree">%1$s时间明细</string>
     <string name="insights_summary_missing_target_body">所选%1$s目标没有对应的分析数据。</string>
-    <string name="insights_summary_no_data_body">这一天没有记录活动。</string>
+    <string name="insights_summary_no_data_body">此%1$s没有记录活动。</string>
     <string name="insights_summary_error_code">错误码：%1$s</string>
     <string name="insights_summary_error_category">分类：%1$s</string>
     <string name="insights_summary_hints">提示：%1$s</string>

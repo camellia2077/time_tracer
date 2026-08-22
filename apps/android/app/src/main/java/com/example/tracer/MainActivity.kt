@@ -1,5 +1,6 @@
 package com.example.tracer
 
+import android.app.ActivityManager
 import android.app.LocaleManager
 import android.os.Build
 import android.os.LocaleList
@@ -25,7 +26,7 @@ import androidx.activity.enableEdgeToEdge
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        title = getString(R.string.app_name)
+        applySystemTaskLabel()
         enableEdgeToEdge()
         val appContainer = (application as TracerApplication).appContainer
         val runtimeInitializer = appContainer.runtimeInitializer
@@ -83,6 +84,23 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    /**
+     * Keep the task-card label explicit as well as the manifest label.
+     *
+     * Some OEM launchers populate a newly installed app's first recent-task card
+     * before they refresh ActivityInfo.  Supplying the task description during
+     * the earliest activity lifecycle point avoids their package-name fallback.
+     */
+    private fun applySystemTaskLabel() {
+        val appLabel = getString(R.string.app_name)
+        title = appLabel
+        setTaskDescription(
+            ActivityManager.TaskDescription.Builder()
+                .setLabel(appLabel)
+                .build()
+        )
     }
 
     private fun applyAppLanguage(language: AppLanguage) {

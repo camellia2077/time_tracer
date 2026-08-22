@@ -17,7 +17,8 @@ Describe the user-visible insights, query, and chart presentation behavior.
 ## Behavior Summary
 
 - Insights results support text-oriented and chart-oriented presentation.
-- In Text mode, the period selector exposes `Activities | Breakdown | Text`.
+- The top-level result selector exposes `Details | Chart | Hierarchy`. Details
+  exposes `Activities | Text`.
   Activities opens with a time-independent overview (total time, active days,
   record count, active-day average, and each parent activity's duration/share),
   and for Day, Week, Month, and Year exposes a compact calendar period row.
@@ -34,8 +35,9 @@ Describe the user-visible insights, query, and chart presentation behavior.
   The drill-down keeps records folded under days for a single month and under
   months then days for multi-month windows. Its rows reuse the Day timeline's
   record presentation, but use fixed-height rails to represent order rather
-  than duration; Breakdown is aggregated hierarchy analysis; Text remains the
-  full Markdown report.
+  than duration; Text remains the full Markdown report. Hierarchy is the
+  Core-provided full activity tree, kept separate from Chart so exact values
+  and tree depth remain a structure-oriented workflow.
   The period overview's total duration and record count come from Core's
   `ActivityAggregate`; Android does not rebuild them by summing `activity_days`.
 - Chart behavior is driven by query/insights UI state, not by app-level route logic.
@@ -47,7 +49,7 @@ Describe the user-visible insights, query, and chart presentation behavior.
 - The day timeline preserves Core record kinds. An `end_only` record counts as
   a timeline detail and active day, but is rendered as one localized end-time
   point without a duration value or interval line.
-- The text Breakdown tree scrolls horizontally when its visible hierarchy is
+- The Hierarchy tree scrolls horizontally when its visible hierarchy is
   wider than the viewport. Its scrollable width follows the deepest visible
   node, so deeper hierarchies remain accessible instead of being compressed or
   clipped.

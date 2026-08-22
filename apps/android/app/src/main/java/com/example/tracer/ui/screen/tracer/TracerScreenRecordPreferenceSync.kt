@@ -24,7 +24,7 @@ internal fun SyncTracerScreenRecordPreferences(
         recordFrequentPreferences.collapsedCanonicalRootPaths,
         recordFrequentPreferences.orderedCanonicalRootPaths
     ) {
-        recordViewModel.updateFrequentPreferences(
+        recordViewModel.updateFrequentPreferencesAndReloadIfVisible(
             lookbackDays = recordFrequentPreferences.lookbackDays,
             topN = recordFrequentPreferences.topN
         )

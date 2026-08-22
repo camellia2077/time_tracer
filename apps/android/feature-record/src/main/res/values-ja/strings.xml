@@ -133,7 +133,6 @@
     <string name="record_frequent_target_logical_day">論理日: %1$s</string>
     <string name="record_frequent_target_date">対象日: %1$s</string>
     <string name="record_hint_loading">読み込み中...</string>
-    <string name="record_hint_loading_frequent_activities_for_logical_day">論理日 %1$s のよく使う活動を読み込み中...</string>
     <string name="record_hint_no_frequent_activities_lookback">現在の論理日を終点とする過去 %1$d 日の範囲にはよく使う活動がありません。</string>
     <string name="record_cd_frequent_output_canonical_selected">よく使う項目の表示モードは canonical トークンです</string>
     <string name="record_cd_frequent_output_alias_selected">よく使う項目の表示モードは alias トークンです</string>

@@ -22,12 +22,16 @@ import com.example.tracer.CanonicalCatalogSource
 import com.example.tracer.InsightsChartSemanticMode
 import com.example.tracer.InsightsChartVisualMode
 import com.example.tracer.InsightsAverageDayBasis
+import com.example.tracer.InsightsComparisonColorScheme
+import com.example.tracer.InsightsComparisonIndicatorStyle
 import com.example.tracer.InsightsParameterSection
 import com.example.tracer.InsightsPiePalettePreset
 import com.example.tracer.InsightsResultDisplayMode
 import com.example.tracer.InsightsMode
 import com.example.tracer.InsightsActivityView
 import com.example.tracer.defaultInsightsPiePalettePreset
+import com.example.tracer.defaultInsightsComparisonColorScheme
+import com.example.tracer.defaultInsightsComparisonIndicatorStyle
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 import kotlinx.coroutines.flow.Flow
@@ -57,6 +61,11 @@ enum class AppLanguage {
     Japanese
 }
 
+enum class PageTransitionStyle {
+    FADE,
+    SLIDE
+}
+
 data class ThemeConfig(
     val themeMode: ThemeMode,
     val darkThemeStyle: DarkThemeStyle = DarkThemeStyle.Tinted,
@@ -79,7 +88,10 @@ data class RecordFrequentPreferences(
 enum class ConfigCard {
     APPLICATION_PREFERENCES,
     APPEARANCE,
+    THEME_PALETTE,
     INSIGHTS_SETTINGS,
+    INSIGHTS_CHART_STYLE,
+    INSIGHTS_COMPARISON,
     DATA_MANAGEMENT,
     ABOUT
 }
@@ -87,14 +99,20 @@ enum class ConfigCard {
 data class ConfigCardExpansionPreferences(
     val applicationPreferencesExpanded: Boolean,
     val appearanceExpanded: Boolean,
+    val themePaletteExpanded: Boolean = false,
     val insightsSettingsExpanded: Boolean,
+    val insightsChartStyleExpanded: Boolean = false,
+    val insightsComparisonExpanded: Boolean = false,
     val dataManagementExpanded: Boolean,
     val aboutExpanded: Boolean
 ) {
     fun isExpanded(card: ConfigCard): Boolean = when (card) {
         ConfigCard.APPLICATION_PREFERENCES -> applicationPreferencesExpanded
         ConfigCard.APPEARANCE -> appearanceExpanded
+        ConfigCard.THEME_PALETTE -> themePaletteExpanded
         ConfigCard.INSIGHTS_SETTINGS -> insightsSettingsExpanded
+        ConfigCard.INSIGHTS_CHART_STYLE -> insightsChartStyleExpanded
+        ConfigCard.INSIGHTS_COMPARISON -> insightsComparisonExpanded
         ConfigCard.DATA_MANAGEMENT -> dataManagementExpanded
         ConfigCard.ABOUT -> aboutExpanded
     }
@@ -128,6 +146,10 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             defaultInsightsPiePalettePreset()
         val DEFAULT_INSIGHTS_AVERAGE_DAY_BASIS: InsightsAverageDayBasis =
             InsightsAverageDayBasis.ACTIVE_DAYS
+        val DEFAULT_INSIGHTS_COMPARISON_COLOR_SCHEME: InsightsComparisonColorScheme =
+            defaultInsightsComparisonColorScheme()
+        val DEFAULT_INSIGHTS_COMPARISON_INDICATOR_STYLE: InsightsComparisonIndicatorStyle =
+            defaultInsightsComparisonIndicatorStyle()
         const val DEFAULT_INSIGHTS_CHART_TREND_ROOT: String = ""
         private const val MIN_RECORD_FREQUENT_LOOKBACK_DAYS: Int = 0
         private const val MAX_RECORD_FREQUENT_LOOKBACK_DAYS: Int = 60
@@ -138,7 +160,10 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         const val DEFAULT_RECORD_QUICK_ACCESS_EDITOR_VISIBLE: Boolean = false
         const val DEFAULT_RECORD_QUICK_ACCESS_CARD_EXPANDED: Boolean = true
         const val DEFAULT_PROMPT_BEFORE_UNCONFIGURED_ACTIVITY_RECORD: Boolean = false
+        const val DEFAULT_PAGE_TRANSITIONS_ENABLED: Boolean = true
+        val DEFAULT_PAGE_TRANSITION_STYLE: PageTransitionStyle = PageTransitionStyle.FADE
         const val DEFAULT_CONFIG_CARD_EXPANDED: Boolean = true
+        const val DEFAULT_CONFIG_SECTION_EXPANDED: Boolean = false
         val DEFAULT_COLLAPSED_CANONICAL_ROOT_PATHS: Set<String> = emptySet()
         val DEFAULT_ORDERED_CANONICAL_ROOT_PATHS: List<String> = emptyList()
         private const val MAX_COLLAPSED_CANONICAL_ROOT_COUNT: Int = 64
@@ -166,11 +191,18 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             booleanPreferencesKey("record_quick_access_editor_visible")
         val PROMPT_BEFORE_UNCONFIGURED_ACTIVITY_RECORD =
             booleanPreferencesKey("prompt_before_unconfigured_activity_record")
+        val PAGE_TRANSITIONS_ENABLED = booleanPreferencesKey("page_transitions_enabled")
+        val PAGE_TRANSITION_STYLE = stringPreferencesKey("page_transition_style")
         val CONFIG_APPLICATION_PREFERENCES_EXPANDED =
             booleanPreferencesKey("config_application_preferences_expanded")
         val CONFIG_APPEARANCE_EXPANDED = booleanPreferencesKey("config_appearance_expanded")
+        val CONFIG_THEME_PALETTE_EXPANDED = booleanPreferencesKey("config_theme_palette_expanded")
         val CONFIG_INSIGHTS_SETTINGS_EXPANDED =
             booleanPreferencesKey("config_insights_settings_expanded")
+        val CONFIG_INSIGHTS_CHART_STYLE_EXPANDED =
+            booleanPreferencesKey("config_insights_chart_style_expanded")
+        val CONFIG_INSIGHTS_COMPARISON_EXPANDED =
+            booleanPreferencesKey("config_insights_comparison_expanded")
         val CONFIG_DATA_MANAGEMENT_EXPANDED = booleanPreferencesKey("config_data_management_expanded")
         val CONFIG_ABOUT_EXPANDED = booleanPreferencesKey("config_about_expanded")
         val RECORD_COLLAPSED_CANONICAL_ROOT_PATHS =
@@ -203,6 +235,10 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         val INSIGHTS_TIME_PARAMETERS_EXPANDED = booleanPreferencesKey("insights_time_parameters_expanded")
         val INSIGHTS_PIE_PALETTE_PRESET = stringPreferencesKey("insights_pie_palette_preset")
         val INSIGHTS_AVERAGE_DAY_BASIS = stringPreferencesKey("insights_average_day_basis")
+        val INSIGHTS_COMPARISON_COLOR_SCHEME =
+            stringPreferencesKey("insights_comparison_color_scheme")
+        val INSIGHTS_COMPARISON_INDICATOR_STYLE =
+            stringPreferencesKey("insights_comparison_indicator_style")
         val INSIGHTS_CHART_TREND_ROOT = stringPreferencesKey("insights_chart_trend_root")
         val INSIGHTS_HEATMAP_PALETTE_NAME = stringPreferencesKey("insights_heatmap_palette_name")
         val INSIGHTS_STATUSES_DAY = stringPreferencesKey("insights_statuses_day")
@@ -333,8 +369,15 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             ] ?: DEFAULT_CONFIG_CARD_EXPANDED,
             appearanceExpanded = preferences[PreferencesKeys.CONFIG_APPEARANCE_EXPANDED]
                 ?: DEFAULT_CONFIG_CARD_EXPANDED,
+            themePaletteExpanded = preferences[PreferencesKeys.CONFIG_THEME_PALETTE_EXPANDED]
+                ?: DEFAULT_CONFIG_SECTION_EXPANDED,
             insightsSettingsExpanded = preferences[PreferencesKeys.CONFIG_INSIGHTS_SETTINGS_EXPANDED]
                 ?: DEFAULT_CONFIG_CARD_EXPANDED,
+            insightsChartStyleExpanded = preferences[
+                PreferencesKeys.CONFIG_INSIGHTS_CHART_STYLE_EXPANDED
+            ] ?: DEFAULT_CONFIG_SECTION_EXPANDED,
+            insightsComparisonExpanded = preferences[PreferencesKeys.CONFIG_INSIGHTS_COMPARISON_EXPANDED]
+                ?: DEFAULT_CONFIG_SECTION_EXPANDED,
             dataManagementExpanded = preferences[PreferencesKeys.CONFIG_DATA_MANAGEMENT_EXPANDED]
                 ?: DEFAULT_CONFIG_CARD_EXPANDED,
             aboutExpanded = preferences[PreferencesKeys.CONFIG_ABOUT_EXPANDED]
@@ -348,7 +391,11 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
                 ConfigCard.APPLICATION_PREFERENCES ->
                     PreferencesKeys.CONFIG_APPLICATION_PREFERENCES_EXPANDED
                 ConfigCard.APPEARANCE -> PreferencesKeys.CONFIG_APPEARANCE_EXPANDED
+                ConfigCard.THEME_PALETTE -> PreferencesKeys.CONFIG_THEME_PALETTE_EXPANDED
                 ConfigCard.INSIGHTS_SETTINGS -> PreferencesKeys.CONFIG_INSIGHTS_SETTINGS_EXPANDED
+                ConfigCard.INSIGHTS_CHART_STYLE ->
+                    PreferencesKeys.CONFIG_INSIGHTS_CHART_STYLE_EXPANDED
+                ConfigCard.INSIGHTS_COMPARISON -> PreferencesKeys.CONFIG_INSIGHTS_COMPARISON_EXPANDED
                 ConfigCard.DATA_MANAGEMENT -> PreferencesKeys.CONFIG_DATA_MANAGEMENT_EXPANDED
                 ConfigCard.ABOUT -> PreferencesKeys.CONFIG_ABOUT_EXPANDED
             }] = value
@@ -401,6 +448,38 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
                     ?: DEFAULT_INSIGHTS_AVERAGE_DAY_BASIS.name
             )
         }.getOrDefault(DEFAULT_INSIGHTS_AVERAGE_DAY_BASIS)
+    }
+
+    val pageTransitionsEnabled: Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.PAGE_TRANSITIONS_ENABLED]
+            ?: DEFAULT_PAGE_TRANSITIONS_ENABLED
+    }
+
+    val pageTransitionStyle: Flow<PageTransitionStyle> = dataStore.data.map { preferences ->
+        val rawValue = preferences[PreferencesKeys.PAGE_TRANSITION_STYLE]
+            ?: DEFAULT_PAGE_TRANSITION_STYLE.name
+        runCatching { PageTransitionStyle.valueOf(rawValue) }
+            .getOrDefault(DEFAULT_PAGE_TRANSITION_STYLE)
+    }
+
+    val insightsComparisonColorScheme: Flow<InsightsComparisonColorScheme> = dataStore.data.map {
+            preferences ->
+        runCatching {
+            InsightsComparisonColorScheme.valueOf(
+                preferences[PreferencesKeys.INSIGHTS_COMPARISON_COLOR_SCHEME]
+                    ?: DEFAULT_INSIGHTS_COMPARISON_COLOR_SCHEME.name
+            )
+        }.getOrDefault(DEFAULT_INSIGHTS_COMPARISON_COLOR_SCHEME)
+    }
+
+    val insightsComparisonIndicatorStyle: Flow<InsightsComparisonIndicatorStyle> = dataStore.data.map {
+            preferences ->
+        runCatching {
+            InsightsComparisonIndicatorStyle.valueOf(
+                preferences[PreferencesKeys.INSIGHTS_COMPARISON_INDICATOR_STYLE]
+                    ?: DEFAULT_INSIGHTS_COMPARISON_INDICATOR_STYLE.name
+            )
+        }.getOrDefault(DEFAULT_INSIGHTS_COMPARISON_INDICATOR_STYLE)
     }
 
     suspend fun setAppLanguage(language: AppLanguage) {
@@ -604,6 +683,30 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
     suspend fun setInsightsAverageDayBasis(value: InsightsAverageDayBasis) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.INSIGHTS_AVERAGE_DAY_BASIS] = value.name
+        }
+    }
+
+    suspend fun setPageTransitionsEnabled(value: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.PAGE_TRANSITIONS_ENABLED] = value
+        }
+    }
+
+    suspend fun setPageTransitionStyle(value: PageTransitionStyle) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.PAGE_TRANSITION_STYLE] = value.name
+        }
+    }
+
+    suspend fun setInsightsComparisonColorScheme(value: InsightsComparisonColorScheme) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.INSIGHTS_COMPARISON_COLOR_SCHEME] = value.name
+        }
+    }
+
+    suspend fun setInsightsComparisonIndicatorStyle(value: InsightsComparisonIndicatorStyle) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.INSIGHTS_COMPARISON_INDICATOR_STYLE] = value.name
         }
     }
 

@@ -43,7 +43,7 @@ class QueryInsightsTreePipelineTest {
     }
 
     @Test
-    fun selectingTree_automaticallyLoadsTheCurrentInsightsDate() = runTest {
+    fun selectingHierarchy_automaticallyLoadsTheCurrentInsightsDate() = runTest {
         val fakeQueryGateway = FakeTreeQueryGateway()
         val viewModel = QueryInsightsViewModel(
             insightsGateway = FakeTreeInsightsGateway(),
@@ -54,7 +54,7 @@ class QueryInsightsTreePipelineTest {
             )
         )
 
-        viewModel.onParameterSectionChange(InsightsParameterSection.ACTIVITY_HIERARCHY)
+        viewModel.onResultDisplayModeChange(InsightsResultDisplayMode.HIERARCHY)
         advanceUntilIdle()
 
         val request = fakeQueryGateway.lastTreeRequest
@@ -65,7 +65,23 @@ class QueryInsightsTreePipelineTest {
     }
 
     @Test
-    fun selectingTreeAgain_rehydratesMissingResult() = runTest {
+    fun selectingHierarchy_loadsTheCurrentActivityTree() = runTest {
+        val fakeQueryGateway = FakeTreeQueryGateway()
+        val viewModel = QueryInsightsViewModel(
+            insightsGateway = FakeTreeInsightsGateway(),
+            queryGateway = fakeQueryGateway
+        )
+
+        viewModel.onResultDisplayModeChange(InsightsResultDisplayMode.HIERARCHY)
+        advanceUntilIdle()
+
+        assertEquals(InsightsResultDisplayMode.HIERARCHY, viewModel.uiState.resultDisplayMode)
+        assertEquals(DataTreePeriod.DAY, fakeQueryGateway.lastTreeRequest?.period)
+        assertTrue(viewModel.uiState.activeResult is QueryResult.Tree)
+    }
+
+    @Test
+    fun selectingHierarchyAgain_rehydratesMissingResult() = runTest {
         val fakeQueryGateway = FakeTreeQueryGateway().apply {
             treeResult = TreeQueryResult(
                 ok = false,
@@ -78,7 +94,7 @@ class QueryInsightsTreePipelineTest {
             queryGateway = fakeQueryGateway
         )
 
-        viewModel.onParameterSectionChange(InsightsParameterSection.ACTIVITY_HIERARCHY)
+        viewModel.onResultDisplayModeChange(InsightsResultDisplayMode.HIERARCHY)
         advanceUntilIdle()
         assertTrue(viewModel.uiState.activeResult == null)
 
@@ -88,9 +104,9 @@ class QueryInsightsTreePipelineTest {
             nodes = listOf(TreeNode(name = "study", path = "study")),
             message = "ok"
         )
-        // The selected section has not changed, but its result is still missing.
+        // The selected display mode has not changed, but its result is still missing.
         // This is the state that can occur after a theme-driven recomposition.
-        viewModel.onParameterSectionChange(InsightsParameterSection.ACTIVITY_HIERARCHY)
+        viewModel.onResultDisplayModeChange(InsightsResultDisplayMode.HIERARCHY)
         advanceUntilIdle()
 
         assertTrue(viewModel.uiState.activeResult is QueryResult.Tree)
@@ -105,7 +121,7 @@ class QueryInsightsTreePipelineTest {
             queryGateway = fakeQueryGateway
         )
 
-        viewModel.onParameterSectionChange(InsightsParameterSection.ACTIVITY_HIERARCHY)
+        viewModel.onResultDisplayModeChange(InsightsResultDisplayMode.HIERARCHY)
         advanceUntilIdle()
         viewModel.onTreeLevelChange(1)
         advanceUntilIdle()
@@ -121,14 +137,14 @@ class QueryInsightsTreePipelineTest {
     }
 
     @Test
-    fun changingInsightsMode_whileTreeSelected_reloadsTreeForNewPeriod() = runTest {
+    fun changingInsightsMode_whileHierarchySelected_reloadsTreeForNewPeriod() = runTest {
         val fakeQueryGateway = FakeTreeQueryGateway()
         val viewModel = QueryInsightsViewModel(
             insightsGateway = FakeTreeInsightsGateway(),
             queryGateway = fakeQueryGateway
         )
 
-        viewModel.onParameterSectionChange(InsightsParameterSection.ACTIVITY_HIERARCHY)
+        viewModel.onResultDisplayModeChange(InsightsResultDisplayMode.HIERARCHY)
         advanceUntilIdle()
         viewModel.onTreeLevelChange(1)
         advanceUntilIdle()
@@ -143,7 +159,7 @@ class QueryInsightsTreePipelineTest {
     }
 
     @Test
-    fun switchingAwayFromTree_resolvesMarkdownOrActivitiesInsteadOfTree() {
+    fun hierarchyMode_resolvesTreeWhileDetailsResolvesMarkdownOrActivities() {
         val markdown = QueryResult.Insights(text = "markdown")
         val tree = QueryResult.Tree(
             period = DataTreePeriod.DAY,
@@ -157,15 +173,30 @@ class QueryInsightsTreePipelineTest {
 
         assertEquals(
             markdown,
-            resolveDisplayResult(state, DataTreePeriod.DAY, InsightsParameterSection.DAY)
+            resolveDisplayResult(
+                state,
+                DataTreePeriod.DAY,
+                InsightsResultDisplayMode.DETAILS,
+                InsightsParameterSection.DAY
+            )
         )
         assertEquals(
             markdown,
-            resolveDisplayResult(state, DataTreePeriod.DAY, InsightsParameterSection.ACTIVITIES)
+            resolveDisplayResult(
+                state,
+                DataTreePeriod.DAY,
+                InsightsResultDisplayMode.DETAILS,
+                InsightsParameterSection.ACTIVITIES
+            )
         )
         assertEquals(
             tree,
-            resolveDisplayResult(state, DataTreePeriod.DAY, InsightsParameterSection.ACTIVITY_HIERARCHY)
+            resolveDisplayResult(
+                state,
+                DataTreePeriod.DAY,
+                InsightsResultDisplayMode.HIERARCHY,
+                InsightsParameterSection.DAY
+            )
         )
     }
 }
