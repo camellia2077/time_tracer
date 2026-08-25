@@ -438,6 +438,7 @@ private fun TxtEditorRouteContent(args: TracerTabRouteArgs) {
         canonicalCatalogRoots = args.recordUiState.canonicalCatalogRoots,
         isCanonicalCatalogLoading = args.recordUiState.isCanonicalCatalogLoading,
         canonicalCatalogStatusText = args.recordUiState.canonicalCatalogStatusText,
+        onCanonicalCatalogRequested = args.recordViewModel::loadCanonicalCatalogForExternalSelection,
         collapsedCanonicalRootPaths = args.recordUiState.collapsedCanonicalRootPaths,
         orderedCanonicalRootPaths = args.recordUiState.orderedCanonicalRootPaths,
         onCollapsedCanonicalRootPathsChange = args.recordViewModel::updateCollapsedCanonicalRootPaths,
@@ -460,8 +461,6 @@ private fun TxtEditorRouteContent(args: TracerTabRouteArgs) {
         onDayMarkerPersist = args.recordViewModel::onTxtDayMarkerChange,
         onSaveHistoryFile = args.recordViewModel::saveHistoryFileAndSync,
         onSaveHistoryRepresentationOnly = args.recordViewModel::saveHistoryFileRepresentationOnly,
-        initialOutputMode = args.recordUiState.txtOutputMode,
-        onOutputModePersist = args.recordViewModel::onTxtOutputModeChange,
         embeddedInScrollableParent = true,
         inlineStatusText = args.recordUiState.statusText,
         onCreateCurrentMonthTxt = args.recordViewModel::createCurrentMonthTxt

@@ -386,7 +386,7 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
     }
 
     fun loadCanonicalCatalogForExternalSelection() {
-        if (uiState.canonicalCatalogRoots.isNotEmpty() || uiState.isCanonicalCatalogLoading) {
+        if (uiState.canonicalCatalogRoots.isNotEmpty() || canonicalCatalogLoadJob?.isActive == true) {
             return
         }
         canonicalCatalogLoadJob?.cancel()

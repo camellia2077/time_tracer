@@ -16,15 +16,15 @@
     <string name="insights_parameter_section_timeline">タイムライン</string>
     <string name="insights_parameter_section_activity">アクティビティ</string>
     <string name="insights_parameter_section_markdown">テキスト</string>
-    <string name="insights_title_insights_date">分析日付</string>
-    <string name="insights_title_insights_day">分析日</string>
-    <string name="insights_title_insights_month">分析月</string>
-    <string name="insights_title_insights_week">分析週</string>
+    <string name="insights_title_insights_date">日付</string>
+    <string name="insights_title_insights_day">日</string>
+    <string name="insights_title_insights_month">月</string>
+    <string name="insights_title_insights_week">週</string>
     <string name="insights_label_select_week">週を選択</string>
-    <string name="insights_label_insights_year">分析年 (YYYY)</string>
+    <string name="insights_label_insights_year">年</string>
     <string name="insights_title_start_date">開始日</string>
     <string name="insights_title_end_date">終了日</string>
-    <string name="insights_label_recent_days">最近日数 (N)</string>
+    <string name="insights_label_recent_days">最近日数</string>
     <string name="insights_activities_period_selector_title">アクティビティ期間</string>
     <string name="insights_activities_period_selector_sheet_title">%1$sを選択</string>
     <string name="insights_action_cancel">キャンセル</string>
@@ -140,10 +140,10 @@
     <string name="insights_title_section_day">%1$s 日</string>
     <string name="insights_title_section_month">%1$s 月</string>
     <string name="insights_title_section_week">%1$s 週</string>
-    <string name="insights_label_section_year">%1$s 年 (YYYY)</string>
+    <string name="insights_label_section_year">%1$s 年</string>
     <string name="insights_title_section_start_date">%1$s 開始日</string>
     <string name="insights_title_section_end_date">%1$s 終了日</string>
-    <string name="insights_label_section_recent_days">%1$s 最近日数 (N)</string>
+    <string name="insights_label_section_recent_days">%1$s 最近日数</string>
 
     <string name="insights_cd_collapse">折りたたむ</string>
     <string name="insights_cd_expand">展開</string>

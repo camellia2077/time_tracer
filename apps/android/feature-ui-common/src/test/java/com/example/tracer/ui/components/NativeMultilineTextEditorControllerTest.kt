@@ -15,4 +15,15 @@ class NativeMultilineTextEditorControllerTest {
         assertEquals(2, controller.undoRequestCount)
         assertEquals(1, controller.redoRequestCount)
     }
+
+    @Test
+    fun requestSelection_recordsRangeAndAdvancesCounter() {
+        val controller = NativeMultilineTextEditorController()
+
+        controller.requestSelection(start = 12, end = 17)
+
+        assertEquals(1, controller.selectionRequestCount)
+        assertEquals(12, controller.requestedSelectionStart)
+        assertEquals(17, controller.requestedSelectionEnd)
+    }
 }

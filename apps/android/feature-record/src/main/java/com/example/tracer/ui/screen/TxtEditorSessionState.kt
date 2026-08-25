@@ -40,9 +40,6 @@ internal data class TxtEditorSessionState(
     val allDraftState: TxtDraftSessionState = TxtDraftSessionState(),
     val dayDraftState: TxtDraftSessionState = TxtDraftSessionState(),
     val lastSyncedAllDraftState: TxtDraftSessionState = TxtDraftSessionState(),
-    // TXT representation switching is intentionally session-only. Canonical is the
-    // safe default and should be restored whenever the selected file/month changes.
-    val activityNameTargetMode: TxtActivityNameTargetMode = TxtActivityNameTargetMode.CANONICAL,
     val selectionContextKey: String = ""
 )
 
@@ -56,15 +53,7 @@ internal object TxtEditorSessionReducer {
         selectedMonth: String
     ): TxtEditorSessionState {
         val contextKey = "$selectedHistoryFile@$selectedMonth"
-        val contextChanged = state.selectionContextKey != contextKey
-        val nextState = state.copy(
-            activityNameTargetMode = if (contextChanged) {
-                TxtActivityNameTargetMode.CANONICAL
-            } else {
-                state.activityNameTargetMode
-            },
-            selectionContextKey = contextKey
-        )
+        val nextState = state.copy(selectionContextKey = contextKey)
         if (selectedHistoryFile.isBlank()) {
             return nextState.copy(
                 autoDayMarkerLoadedKey = "",
@@ -72,8 +61,7 @@ internal object TxtEditorSessionReducer {
                 isEditorContentVisible = false,
                 allDraftState = TxtDraftSessionState(),
                 dayDraftState = TxtDraftSessionState(),
-                lastSyncedAllDraftState = TxtDraftSessionState(),
-                activityNameTargetMode = TxtActivityNameTargetMode.CANONICAL
+                lastSyncedAllDraftState = TxtDraftSessionState()
             )
         }
         return nextState
@@ -157,11 +145,6 @@ internal object TxtEditorSessionReducer {
         state: TxtEditorSessionState,
         value: TxtOutputMode
     ): TxtEditorSessionState = state.copy(outputMode = value)
-
-    fun updateActivityNameTargetMode(
-        state: TxtEditorSessionState,
-        value: TxtActivityNameTargetMode
-    ): TxtEditorSessionState = state.copy(activityNameTargetMode = value)
 
     fun isCurrentSelection(
         state: TxtEditorSessionState,

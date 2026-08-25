@@ -86,6 +86,191 @@ internal class TxtEditorRuntimeCoordinator(
         onMergedMonthContent: (String) -> Unit,
         onSaveHistoryFile: () -> Unit
     ): Boolean {
+        return applyDayEditAndPersist(
+            monthContent = monthContent,
+            dayMarker = dayMarker,
+            selectedMonth = selectedMonth,
+            dayRemark = dayRemark,
+            events = events,
+            onMergedMonthContent = onMergedMonthContent,
+            onSaveHistoryFile = onSaveHistoryFile
+        ).ok
+    }
+
+    suspend fun replaceDayActivityToken(
+        monthContent: String,
+        dayMarker: String,
+        selectedMonth: String,
+        dayRemark: String,
+        events: List<TxtDayEditEvent>,
+        sourceActivityToken: String,
+        targetActivityToken: String,
+        onMergedMonthContent: (String) -> Unit,
+        onSaveHistoryFile: () -> Unit
+    ): TxtDayActivityReplacementResult {
+        if (sourceActivityToken.isBlank()) {
+            return TxtDayActivityReplacementResult(
+                ok = false,
+                replacedEventCount = 0,
+                message = "source activity is required."
+            )
+        }
+        if (targetActivityToken.isBlank()) {
+            return TxtDayActivityReplacementResult(
+                ok = false,
+                replacedEventCount = 0,
+                message = "replacement activity is required."
+            )
+        }
+        if (sourceActivityToken == targetActivityToken) {
+            return TxtDayActivityReplacementResult(
+                ok = false,
+                replacedEventCount = 0,
+                message = "source and replacement activities are identical."
+            )
+        }
+
+        val replacedEventCount = events.count { it.activityToken == sourceActivityToken }
+        if (replacedEventCount == 0) {
+            return TxtDayActivityReplacementResult(
+                ok = false,
+                replacedEventCount = 0,
+                message = "selected activity is not present in this day."
+            )
+        }
+
+        val replacedEvents = events.map { event ->
+            if (event.activityToken == sourceActivityToken) {
+                event.copy(activityToken = targetActivityToken)
+            } else {
+                event
+            }
+        }
+        val applied = applyDayEditAndPersist(
+            monthContent = monthContent,
+            dayMarker = dayMarker,
+            selectedMonth = selectedMonth,
+            dayRemark = dayRemark,
+            events = replacedEvents,
+            onMergedMonthContent = onMergedMonthContent,
+            onSaveHistoryFile = onSaveHistoryFile
+        )
+        return TxtDayActivityReplacementResult(
+            ok = applied.ok,
+            replacedEventCount = if (applied.ok) replacedEventCount else 0,
+            message = applied.message
+        )
+    }
+
+    suspend fun prepareMonthActivityEdits(
+        monthContent: String,
+        selectedMonth: String
+    ): TxtMonthActivityEditsResult {
+        val dayMarkers = monthContent.lineSequence()
+            .mapNotNull { line -> MONTH_DAY_MARKER.matchEntire(line)?.groupValues?.get(1) }
+            .toList()
+        val dayEdits = mutableListOf<TxtMonthDayEdit>()
+        for (dayMarker in dayMarkers) {
+            val resolved = resolveDayEdit(
+                monthContent = monthContent,
+                dayMarker = dayMarker,
+                selectedMonth = selectedMonth
+            )
+            if (!resolved.ok) {
+                return TxtMonthActivityEditsResult(
+                    ok = false,
+                    snapshot = null,
+                    message = resolved.message
+                )
+            }
+            if (resolved.found && resolved.canSave) {
+                dayEdits += TxtMonthDayEdit(
+                    dayMarker = resolved.normalizedDayMarker,
+                    dayRemark = resolved.dayRemark,
+                    events = resolved.events
+                )
+            }
+        }
+        return TxtMonthActivityEditsResult(
+            ok = true,
+            snapshot = TxtMonthActivityEditSnapshot(
+                monthContent = monthContent,
+                selectedMonth = selectedMonth,
+                dayEdits = dayEdits
+            ),
+            message = ""
+        )
+    }
+
+    suspend fun replaceMonthActivityToken(
+        snapshot: TxtMonthActivityEditSnapshot,
+        sourceActivityToken: String,
+        targetActivityToken: String,
+        onMergedMonthContent: (String) -> Unit,
+        onSaveHistoryFile: () -> Unit
+    ): TxtMonthActivityReplacementResult {
+        if (sourceActivityToken.isBlank()) {
+            return TxtMonthActivityReplacementResult(false, 0, "source activity is required.")
+        }
+        if (targetActivityToken.isBlank()) {
+            return TxtMonthActivityReplacementResult(false, 0, "replacement activity is required.")
+        }
+        if (sourceActivityToken == targetActivityToken) {
+            return TxtMonthActivityReplacementResult(
+                false,
+                0,
+                "source and replacement activities are identical."
+            )
+        }
+
+        val replacedEventCount = snapshot.dayEdits.sumOf { dayEdit ->
+            dayEdit.events.count { it.activityToken == sourceActivityToken }
+        }
+        if (replacedEventCount == 0) {
+            return TxtMonthActivityReplacementResult(
+                false,
+                0,
+                "selected activity is not present in this month."
+            )
+        }
+
+        var updatedMonthContent = snapshot.monthContent
+        for (dayEdit in snapshot.dayEdits) {
+            if (dayEdit.events.none { it.activityToken == sourceActivityToken }) {
+                continue
+            }
+            val applied = txtStorageGateway.applyTxtDayEdit(
+                content = updatedMonthContent,
+                dayMarker = dayEdit.dayMarker,
+                selectedMonth = snapshot.selectedMonth,
+                dayRemark = dayEdit.dayRemark,
+                events = dayEdit.events.map { event ->
+                    if (event.activityToken == sourceActivityToken) {
+                        event.copy(activityToken = targetActivityToken)
+                    } else {
+                        event
+                    }
+                }
+            )
+            if (!applied.ok) {
+                return TxtMonthActivityReplacementResult(false, 0, applied.message)
+            }
+            updatedMonthContent = applied.updatedContent
+        }
+        onMergedMonthContent(updatedMonthContent)
+        onSaveHistoryFile()
+        return TxtMonthActivityReplacementResult(true, replacedEventCount, "")
+    }
+
+    private suspend fun applyDayEditAndPersist(
+        monthContent: String,
+        dayMarker: String,
+        selectedMonth: String,
+        dayRemark: String,
+        events: List<TxtDayEditEvent>,
+        onMergedMonthContent: (String) -> Unit,
+        onSaveHistoryFile: () -> Unit
+    ): TxtDayEditApplyResult {
         val applied = txtStorageGateway.applyTxtDayEdit(
             content = monthContent,
             dayMarker = dayMarker,
@@ -94,11 +279,11 @@ internal class TxtEditorRuntimeCoordinator(
             events = events
         )
         if (!applied.ok) {
-            return false
+            return applied
         }
         onMergedMonthContent(applied.updatedContent)
         onSaveHistoryFile()
-        return true
+        return applied
     }
 
     suspend fun convertActivityNames(
@@ -272,6 +457,38 @@ internal data class TxtEditableDayBlockResult(
     val monthContent: String,
     val canEdit: Boolean
 )
+
+internal data class TxtDayActivityReplacementResult(
+    val ok: Boolean,
+    val replacedEventCount: Int,
+    val message: String
+)
+
+internal data class TxtMonthDayEdit(
+    val dayMarker: String,
+    val dayRemark: String,
+    val events: List<TxtDayEditEvent>
+)
+
+internal data class TxtMonthActivityEditSnapshot(
+    val monthContent: String,
+    val selectedMonth: String,
+    val dayEdits: List<TxtMonthDayEdit>
+)
+
+internal data class TxtMonthActivityEditsResult(
+    val ok: Boolean,
+    val snapshot: TxtMonthActivityEditSnapshot?,
+    val message: String
+)
+
+internal data class TxtMonthActivityReplacementResult(
+    val ok: Boolean,
+    val replacedEventCount: Int,
+    val message: String
+)
+
+private val MONTH_DAY_MARKER = Regex("d(\\d{4})")
 
 internal data class OpenDayPreparationStrategy(
     val monthContent: String,

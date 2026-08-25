@@ -13,15 +13,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -34,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
 data class CalendarAvailability(
@@ -109,25 +104,12 @@ fun CalendarYearMonthPickerSheet(
                 style = MaterialTheme.typography.bodySmall
             )
 
-            Box(modifier = Modifier.fillMaxWidth()) {
-                OutlinedButton(
-                    onClick = { yearExpanded = true },
-                    enabled = availability.years.isNotEmpty(),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "$yearTitle: ${pickerYear.ifBlank { yearPlaceholder }}",
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
-                    }
-                }
+            OutlinedPickerField(
+                value = "$yearTitle: ${pickerYear.ifBlank { yearPlaceholder }}",
+                enabled = availability.years.isNotEmpty(),
+                pickerContentDescription = yearTitle,
+                onOpen = { yearExpanded = true }
+            ) {
                 DropdownMenu(
                     expanded = yearExpanded,
                     onDismissRequest = { yearExpanded = false }

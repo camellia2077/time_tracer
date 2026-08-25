@@ -3,9 +3,13 @@ package com.example.tracer
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -16,10 +20,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,7 +34,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.example.tracer.feature.record.R
+import kotlinx.coroutines.launch
 
 @Composable
 internal fun TxtStructuredDayEditor(
@@ -168,7 +177,7 @@ internal fun TxtStructuredDayEditor(
         )
     }
     choosingActivityIndex?.let { index ->
-        RecordCanonicalCatalogScreen(
+        CanonicalActivityPickerScreen(
             isLoading = catalogLoading,
             roots = roots,
             statusText = catalogStatusText,
@@ -254,6 +263,462 @@ internal fun TxtStructuredDayEditor(
         )
     }
 }
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+internal fun TxtDayActivityFindReplace(
+    visible: Boolean,
+    events: List<TxtDayEditEvent>,
+    dayRemark: String,
+    roots: List<CanonicalPathNode>,
+    catalogLoading: Boolean,
+    catalogStatusText: String,
+    collapsedRootPaths: Set<String>,
+    orderedRootPaths: List<String>,
+    onCollapsedRootPathsChange: (Set<String>) -> Unit,
+    onOrderedRootPathsChange: (List<String>) -> Unit,
+    onCanonicalCatalogRequested: () -> Unit = {},
+    onDismiss: () -> Unit,
+    onReplaceActivity: suspend (
+        sourceActivityToken: String,
+        targetActivityToken: String,
+        dayRemark: String,
+        events: List<TxtDayEditEvent>
+    ) -> TxtDayActivityReplacementResult
+) {
+    if (!visible) {
+        return
+    }
+    var stage by remember { mutableStateOf(TxtDayActivityReplaceStage.FIND_SOURCE) }
+    var sourceActivityToken by remember { mutableStateOf<String?>(null) }
+    var targetActivityToken by remember { mutableStateOf<String?>(null) }
+    var replacementInProgress by remember { mutableStateOf(false) }
+    var replacementError by remember { mutableStateOf("") }
+    val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
+    val activityOccurrences = remember(events, roots) {
+        buildTxtDayActivitySearchOccurrences(events, roots)
+    }
+    LaunchedEffect(stage, roots) {
+        if (stage == TxtDayActivityReplaceStage.SELECT_TARGET && roots.isEmpty()) {
+            onCanonicalCatalogRequested()
+        }
+    }
+    when (stage) {
+        TxtDayActivityReplaceStage.FIND_SOURCE -> TxtDayActivitySourcePage(
+            occurrences = activityOccurrences,
+            onDismiss = onDismiss,
+            onSelect = { selectedActivityToken ->
+                sourceActivityToken = selectedActivityToken
+                stage = TxtDayActivityReplaceStage.SELECT_TARGET
+            }
+        )
+
+        TxtDayActivityReplaceStage.SELECT_TARGET -> CanonicalActivityPickerScreen(
+            isLoading = catalogLoading && roots.isEmpty(),
+            roots = roots,
+            statusText = catalogStatusText,
+            displayMode = RecordFrequentOutputMode.CANONICAL,
+            target = CanonicalBrowserTarget.TXT_DAY_EDIT,
+            collapsedRootPaths = collapsedRootPaths,
+            orderedRootPaths = orderedRootPaths,
+            onDismissRequest = onDismiss,
+            onDisplayModeChange = {},
+            onCollapsedRootPathsChange = onCollapsedRootPathsChange,
+            onOrderedRootPathsChange = onOrderedRootPathsChange,
+            onCanonicalEntryClick = { entry ->
+                targetActivityToken = entry.canonicalPath
+                stage = TxtDayActivityReplaceStage.CONFIRM
+            }
+        )
+
+        TxtDayActivityReplaceStage.CONFIRM -> {
+            val occurrenceCount = activityOccurrences
+                .firstOrNull { it.activityToken == sourceActivityToken }
+                ?.occurrenceCount ?: 0
+            AlertDialog(
+                onDismissRequest = {
+                    if (!replacementInProgress) {
+                        onDismiss()
+                    }
+                },
+                title = { Text(stringResource(R.string.txt_day_edit_find_replace_confirm_title)) },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            stringResource(
+                                R.string.txt_day_edit_find_replace_confirm_message,
+                                occurrenceCount,
+                                sourceActivityToken.orEmpty(),
+                                targetActivityToken.orEmpty()
+                            )
+                        )
+                        if (replacementError.isNotBlank()) {
+                            Text(
+                                text = replacementError,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(
+                        enabled = !replacementInProgress &&
+                            sourceActivityToken != null &&
+                            targetActivityToken != null,
+                        onClick = {
+                            coroutineScope.launch {
+                                replacementInProgress = true
+                                val replacement = onReplaceActivity(
+                                    requireNotNull(sourceActivityToken),
+                                    requireNotNull(targetActivityToken),
+                                    dayRemark,
+                                    events
+                                )
+                                replacementInProgress = false
+                                if (replacement.ok) {
+                                    onDismiss()
+                                } else {
+                                    replacementError = replacement.message
+                                }
+                            }
+                        }
+                    ) {
+                        Text(stringResource(R.string.txt_day_edit_find_replace_action))
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        enabled = !replacementInProgress,
+                        onClick = onDismiss
+                    ) {
+                        Text(stringResource(R.string.txt_action_close))
+                    }
+                }
+            )
+        }
+    }
+}
+
+private enum class TxtDayActivityReplaceStage {
+    FIND_SOURCE,
+    SELECT_TARGET,
+    CONFIRM
+}
+
+@Composable
+private fun TxtDayActivitySourcePage(
+    occurrences: List<TxtDayActivitySearchOccurrence>,
+    searchLabelRes: Int = R.string.txt_day_edit_find_replace_search_label,
+    sourceHintRes: Int = R.string.txt_day_edit_find_replace_source_hint,
+    noMatchesRes: Int = R.string.txt_day_edit_find_replace_no_matches,
+    onDismiss: () -> Unit,
+    onSelect: (String) -> Unit
+) {
+    var query by remember { mutableStateOf("") }
+    val matchedOccurrences = remember(query, occurrences) {
+        occurrences.filter { occurrence ->
+            occurrence.searchTokens.any { token ->
+                token.contains(query, ignoreCase = true)
+            }
+        }
+    }
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.surface
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.txt_day_edit_find_replace_source_title),
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                    IconButton(onClick = onDismiss) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = stringResource(R.string.txt_action_close)
+                        )
+                    }
+                }
+                OutlinedTextField(
+                    value = query,
+                    onValueChange = { query = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(searchLabelRes)) },
+                    singleLine = true
+                )
+                if (query.isBlank()) {
+                    Text(
+                        text = stringResource(sourceHintRes),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                } else if (matchedOccurrences.isEmpty()) {
+                    Text(
+                        text = stringResource(noMatchesRes),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                matchedOccurrences.forEach { occurrence ->
+                    OutlinedCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { onSelect(occurrence.activityToken) }
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp).fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = occurrence.activityToken,
+                                modifier = Modifier.weight(1f),
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                            Text(
+                                text = stringResource(
+                                    R.string.txt_day_edit_find_replace_occurrences,
+                                    occurrence.occurrenceCount
+                                ),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+internal fun TxtMonthActivityFindReplace(
+    visible: Boolean,
+    roots: List<CanonicalPathNode>,
+    catalogLoading: Boolean,
+    catalogStatusText: String,
+    collapsedRootPaths: Set<String>,
+    orderedRootPaths: List<String>,
+    onCollapsedRootPathsChange: (Set<String>) -> Unit,
+    onOrderedRootPathsChange: (List<String>) -> Unit,
+    onCanonicalCatalogRequested: () -> Unit = {},
+    onLoad: suspend () -> TxtMonthActivityEditsResult,
+    onDismiss: () -> Unit,
+    onReplaceActivity: suspend (
+        TxtMonthActivityEditSnapshot,
+        String,
+        String
+    ) -> TxtMonthActivityReplacementResult
+) {
+    if (!visible) {
+        return
+    }
+    var snapshot by remember { mutableStateOf<TxtMonthActivityEditSnapshot?>(null) }
+    var loadError by remember { mutableStateOf("") }
+    var stage by remember { mutableStateOf(TxtDayActivityReplaceStage.FIND_SOURCE) }
+    var sourceActivityToken by remember { mutableStateOf<String?>(null) }
+    var targetActivityToken by remember { mutableStateOf<String?>(null) }
+    var replacementInProgress by remember { mutableStateOf(false) }
+    var replacementError by remember { mutableStateOf("") }
+    val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        val loaded = onLoad()
+        snapshot = loaded.snapshot
+        loadError = if (loaded.ok) "" else loaded.message
+    }
+
+    if (snapshot == null) {
+        Dialog(onDismissRequest = onDismiss) {
+            Surface {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.txt_day_edit_find_replace_source_title),
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                    Text(
+                        text = loadError.ifBlank {
+                            stringResource(R.string.record_hint_loading)
+                        },
+                        color = if (loadError.isBlank()) {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        } else {
+                            MaterialTheme.colorScheme.error
+                        }
+                    )
+                    if (loadError.isNotBlank()) {
+                        TextButton(onClick = onDismiss) {
+                            Text(stringResource(R.string.txt_action_close))
+                        }
+                    }
+                }
+            }
+        }
+        return
+    }
+
+    val activityOccurrences = remember(snapshot, roots) {
+        buildTxtDayActivitySearchOccurrences(
+            events = requireNotNull(snapshot).dayEdits.flatMap(TxtMonthDayEdit::events),
+            roots = roots
+        )
+    }
+    LaunchedEffect(stage, roots) {
+        if (stage == TxtDayActivityReplaceStage.SELECT_TARGET && roots.isEmpty()) {
+            onCanonicalCatalogRequested()
+        }
+    }
+    when (stage) {
+        TxtDayActivityReplaceStage.FIND_SOURCE -> TxtDayActivitySourcePage(
+            occurrences = activityOccurrences,
+            searchLabelRes = R.string.txt_month_edit_find_replace_search_label,
+            sourceHintRes = R.string.txt_month_edit_find_replace_source_hint,
+            noMatchesRes = R.string.txt_month_edit_find_replace_no_matches,
+            onDismiss = onDismiss,
+            onSelect = { selectedActivityToken ->
+                sourceActivityToken = selectedActivityToken
+                stage = TxtDayActivityReplaceStage.SELECT_TARGET
+            }
+        )
+
+        TxtDayActivityReplaceStage.SELECT_TARGET -> CanonicalActivityPickerScreen(
+            isLoading = catalogLoading && roots.isEmpty(),
+            roots = roots,
+            statusText = catalogStatusText,
+            displayMode = RecordFrequentOutputMode.CANONICAL,
+            target = CanonicalBrowserTarget.TXT_DAY_EDIT,
+            collapsedRootPaths = collapsedRootPaths,
+            orderedRootPaths = orderedRootPaths,
+            onDismissRequest = onDismiss,
+            onDisplayModeChange = {},
+            onCollapsedRootPathsChange = onCollapsedRootPathsChange,
+            onOrderedRootPathsChange = onOrderedRootPathsChange,
+            onCanonicalEntryClick = { entry ->
+                targetActivityToken = entry.canonicalPath
+                stage = TxtDayActivityReplaceStage.CONFIRM
+            }
+        )
+
+        TxtDayActivityReplaceStage.CONFIRM -> {
+            val occurrenceCount = activityOccurrences
+                .firstOrNull { it.activityToken == sourceActivityToken }
+                ?.occurrenceCount ?: 0
+            AlertDialog(
+                onDismissRequest = {
+                    if (!replacementInProgress) {
+                        onDismiss()
+                    }
+                },
+                title = { Text(stringResource(R.string.txt_day_edit_find_replace_confirm_title)) },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            stringResource(
+                                R.string.txt_month_edit_find_replace_confirm_message,
+                                occurrenceCount,
+                                sourceActivityToken.orEmpty(),
+                                targetActivityToken.orEmpty()
+                            )
+                        )
+                        if (replacementError.isNotBlank()) {
+                            Text(
+                                text = replacementError,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(
+                        enabled = !replacementInProgress &&
+                            sourceActivityToken != null &&
+                            targetActivityToken != null,
+                        onClick = {
+                            coroutineScope.launch {
+                                replacementInProgress = true
+                                val replacement = onReplaceActivity(
+                                    requireNotNull(snapshot),
+                                    requireNotNull(sourceActivityToken),
+                                    requireNotNull(targetActivityToken)
+                                )
+                                replacementInProgress = false
+                                if (replacement.ok) {
+                                    onDismiss()
+                                } else {
+                                    replacementError = replacement.message
+                                }
+                            }
+                        }
+                    ) {
+                        Text(stringResource(R.string.txt_day_edit_find_replace_action))
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        enabled = !replacementInProgress,
+                        onClick = onDismiss
+                    ) {
+                        Text(stringResource(R.string.txt_action_close))
+                    }
+                }
+            )
+        }
+    }
+}
+
+internal data class TxtDayActivitySearchOccurrence(
+    val activityToken: String,
+    val occurrenceCount: Int,
+    val searchTokens: Set<String>
+)
+
+internal fun buildTxtDayActivitySearchOccurrences(
+    events: List<TxtDayEditEvent>,
+    roots: List<CanonicalPathNode>
+): List<TxtDayActivitySearchOccurrence> {
+    val occurrenceCounts = linkedMapOf<String, Int>()
+    events.forEach { event ->
+        occurrenceCounts[event.activityToken] = (occurrenceCounts[event.activityToken] ?: 0) + 1
+    }
+    val catalogEntries = roots.flatMap(::flattenCanonicalCatalogEntries)
+    return occurrenceCounts.map { (activityToken, occurrenceCount) ->
+        val searchTokens = linkedSetOf(activityToken)
+        catalogEntries
+            .filter { entry ->
+                entry.canonicalPath == activityToken || entry.aliases.contains(activityToken)
+            }
+            .forEach { entry ->
+                searchTokens += entry.canonicalPath
+                searchTokens += entry.aliases.filter(String::isNotBlank)
+            }
+        TxtDayActivitySearchOccurrence(
+            activityToken = activityToken,
+            occurrenceCount = occurrenceCount,
+            searchTokens = searchTokens
+        )
+    }
+}
+
+private fun flattenCanonicalCatalogEntries(root: CanonicalPathNode): List<CanonicalCatalogEntry> =
+    root.entries + root.children.flatMap(::flattenCanonicalCatalogEntries)
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)

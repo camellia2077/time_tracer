@@ -23,7 +23,6 @@ import com.example.tracer.feature.insights.R
 import com.example.tracer.ui.components.CalendarDatePickerSheet
 import com.example.tracer.ui.components.CalendarAvailability
 import com.example.tracer.ui.components.CalendarWeekPickerSheet
-import com.example.tracer.ui.components.SegmentedDateInput
 import com.example.tracer.ui.components.TracerOutlinedTextFieldDefaults
 import com.example.tracer.ui.components.filterDigits
 import com.example.tracer.ui.components.mergeDateDigits
@@ -99,44 +98,50 @@ internal fun InsightsTemporalInputFields(
 
         DataTreePeriod.RANGE -> {
             val (startYear, startMonth, startDay) = splitDateDigits(insightsRangeStartDate)
-            SegmentedDateInput(
+            InsightsDateSelectionInput(
                 title = labels.rangeStartTitle,
-                year = startYear,
-                month = startMonth,
-                day = startDay,
+                insightsDate = insightsRangeStartDate,
+                monthTitle = labels.monthTitle,
                 keyboardOptions = keyboardOptions,
-                onYearChange = { nextYear ->
+                calendarAvailability = calendarAvailability,
+                onMonthChange = { nextYearMonth ->
+                    val (nextYear, nextMonth) = splitYearMonthDigits(nextYearMonth)
                     onInsightsRangeStartDateChange(
-                        mergeDateDigits(nextYear, startMonth, startDay)
-                    )
-                },
-                onMonthChange = { nextMonth ->
-                    onInsightsRangeStartDateChange(
-                        mergeDateDigits(startYear, nextMonth, startDay)
+                        mergeDateDigits(nextYear, nextMonth, startDay)
                     )
                 },
                 onDayChange = { nextDay ->
                     onInsightsRangeStartDateChange(
                         mergeDateDigits(startYear, startMonth, nextDay)
                     )
+                },
+                onDayPicked = { pickedDate ->
+                    onInsightsRangeStartDateChange(
+                        mergePickedInsightsDay(startYear, startMonth, pickedDate)
+                    )
                 }
             )
 
             val (endYear, endMonth, endDay) = splitDateDigits(insightsRangeEndDate)
-            SegmentedDateInput(
+            InsightsDateSelectionInput(
                 title = labels.rangeEndTitle,
-                year = endYear,
-                month = endMonth,
-                day = endDay,
+                insightsDate = insightsRangeEndDate,
+                monthTitle = labels.monthTitle,
                 keyboardOptions = keyboardOptions,
-                onYearChange = { nextYear ->
-                    onInsightsRangeEndDateChange(mergeDateDigits(nextYear, endMonth, endDay))
-                },
-                onMonthChange = { nextMonth ->
-                    onInsightsRangeEndDateChange(mergeDateDigits(endYear, nextMonth, endDay))
+                calendarAvailability = calendarAvailability,
+                onMonthChange = { nextYearMonth ->
+                    val (nextYear, nextMonth) = splitYearMonthDigits(nextYearMonth)
+                    onInsightsRangeEndDateChange(
+                        mergeDateDigits(nextYear, nextMonth, endDay)
+                    )
                 },
                 onDayChange = { nextDay ->
                     onInsightsRangeEndDateChange(mergeDateDigits(endYear, endMonth, nextDay))
+                },
+                onDayPicked = { pickedDate ->
+                    onInsightsRangeEndDateChange(
+                        mergePickedInsightsDay(endYear, endMonth, pickedDate)
+                    )
                 }
             )
         }

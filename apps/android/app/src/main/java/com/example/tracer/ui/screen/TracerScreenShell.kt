@@ -30,6 +30,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,6 +42,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.tracer.ui.components.FullscreenOverlayHost
+import com.example.tracer.ui.components.LocalFullscreenOverlayHost
 
 internal val ScreenOuterPadding: Dp = 16.dp
 
@@ -62,7 +65,9 @@ internal fun TracerBottomNavShell(
     content: @Composable (PaddingValues) -> Unit
 ) {
     val bottomNavSafePadding = bottomNavSafePadding()
-    Box(modifier = Modifier.fillMaxSize()) {
+    val fullscreenOverlayHost = remember { FullscreenOverlayHost() }
+    CompositionLocalProvider(LocalFullscreenOverlayHost provides fullscreenOverlayHost) {
+        Box(modifier = Modifier.fillMaxSize()) {
         // Do not reserve the floating navigation's footprint here. A bottom padding on this
         // full-screen content container leaves the root Surface exposed as a white/dark strip
         // below the navigation. Vertically scrolling tabs add that space inside their scroll
@@ -126,6 +131,8 @@ internal fun TracerBottomNavShell(
             onTabSelected = onTabSelected,
             bottomPadding = bottomNavSafePadding
         )
+            fullscreenOverlayHost.content?.invoke()
+        }
     }
 }
 

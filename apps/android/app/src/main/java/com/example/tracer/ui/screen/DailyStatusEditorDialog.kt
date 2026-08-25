@@ -237,7 +237,7 @@ internal fun DailyStatusEditorDialog(
     }
 
     if (parentPickerStatusId != null && recordUiState.isCanonicalCatalogVisible) {
-        RecordCanonicalCatalogScreen(
+        CanonicalActivityPickerScreen(
             isLoading = recordUiState.isCanonicalCatalogLoading,
             roots = recordUiState.canonicalCatalogRoots,
             statusText = recordUiState.canonicalCatalogStatusText,

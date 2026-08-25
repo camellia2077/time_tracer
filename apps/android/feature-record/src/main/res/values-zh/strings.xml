@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="txt_label_editor_file">编辑器：%1$s</string>
-    <string name="txt_mode_all">全部</string>
+    <string name="txt_mode_all">当月</string>
     <string name="txt_mode_day">单日</string>
-    <string name="txt_mode_alias">Alias</string>
-    <string name="txt_mode_canonical">Canonical</string>
     <string name="txt_label_content">内容</string>
     <string name="txt_label_day_content_with_date">单日内容 %1$s</string>
     <string name="txt_label_day_content">单日内容</string>
@@ -20,7 +18,7 @@
     <string name="txt_cd_prev_day">前一天</string>
     <string name="txt_cd_next_day">后一天</string>
     <string name="txt_label_select_file">选择文件</string>
-    <string name="txt_action_refresh_list">刷新列表</string>
+    <string name="txt_editor_reload_txt_data">重新加载 TXT 数据</string>
     <string name="txt_sheet_select_year_month">选择年月</string>
     <string name="txt_sheet_current_month">当前：%1$s</string>
     <string name="txt_sheet_current_month_unselected">未选择</string>
@@ -176,7 +174,37 @@
     <string name="txt_day_edit_day_remark">日备注</string>
     <string name="txt_day_edit_day_remark_title">修改日备注</string>
     <string name="txt_day_edit_activity_remark_title">修改活动备注</string>
-    <string name="txt_day_edit_save">保存当天修改</string>
-    <string name="txt_day_view_structured">结构化</string>
-    <string name="txt_day_view_raw">原始 TXT</string>
+    <string name="txt_day_edit_save">保存</string>
+    <string name="txt_day_edit_find_replace">查找并替换活动</string>
+    <string name="txt_day_edit_find_replace_action">替换</string>
+    <string name="txt_day_edit_find_replace_source_title">查找活动</string>
+    <string name="txt_day_edit_find_replace_source_hint">可按记录名称、别名或 canonical 名称搜索。</string>
+    <string name="txt_day_edit_find_replace_search_label">搜索当天活动</string>
+    <string name="txt_day_edit_find_replace_no_matches">当天没有匹配的活动。</string>
+    <string name="txt_day_edit_find_replace_occurrences">%1$d 条记录</string>
+    <string name="txt_day_edit_find_replace_confirm_title">替换活动？</string>
+    <string name="txt_day_edit_find_replace_confirm_message">将 %2$s 的 %1$d 条记录替换为 %3$s？</string>
+    <string name="txt_day_edit_find_replace_success">已替换 %1$d 条活动记录。</string>
+    <string name="txt_month_edit_find_replace">查找并替换活动</string>
+    <string name="txt_month_edit_find_replace_search_label">搜索当月活动</string>
+    <string name="txt_month_edit_find_replace_source_hint">可按当月记录名称、别名或 canonical 名称搜索。</string>
+    <string name="txt_month_edit_find_replace_no_matches">当月没有匹配的活动。</string>
+    <string name="txt_month_edit_find_replace_confirm_message">将当月 %2$s 的 %1$d 条记录替换为 %3$s？</string>
+    <string name="txt_month_activity_name_tools">活动名称工具</string>
+    <string name="txt_month_activity_name_tools_description">转换当前月内所有可映射的活动名称。</string>
+    <string name="txt_month_convert_aliases_to_canonical">将 alias 转为 canonical 名称</string>
+    <string name="txt_month_convert_canonical_to_aliases">将 canonical 名称转为 alias</string>
+    <string name="txt_month_convert_action">转换</string>
+    <string name="txt_month_activity_name_convert_confirm_title">转换活动名称？</string>
+    <string name="txt_month_activity_name_convert_confirm_message">“%1$s”会改写当前月内所有可映射的活动名称。</string>
+    <string name="txt_editor_more_edits">更多编辑</string>
+    <string name="txt_raw_editor_open_day">打开当天原始 TXT</string>
+    <string name="txt_raw_editor_open_month">打开当月原始 TXT</string>
+    <string name="txt_raw_editor_jump_to_date">跳转日期</string>
+    <string name="txt_raw_editor_day_not_found">%1$s 没有 TXT 记录。</string>
+    <string name="txt_raw_editor_day_title">当天原始 TXT</string>
+    <string name="txt_raw_editor_month_title">当月原始 TXT</string>
+    <string name="txt_raw_editor_discard">放弃</string>
+    <string name="txt_raw_editor_discard_confirm_title">放弃修改？</string>
+    <string name="txt_raw_editor_discard_confirm_message">未保存的原始 TXT 修改将被放弃。</string>
 </resources>

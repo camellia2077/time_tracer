@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import android.util.Log
 import com.example.tracer.feature.record.R
 import com.example.tracer.ui.components.CalendarAvailability
+import com.example.tracer.ui.components.LocalFullscreenOverlayHost
 import java.time.Clock
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -47,6 +48,7 @@ fun TxtEditorSection(
     canonicalCatalogRoots: List<CanonicalPathNode> = emptyList(),
     isCanonicalCatalogLoading: Boolean = false,
     canonicalCatalogStatusText: String = "",
+    onCanonicalCatalogRequested: () -> Unit = {},
     collapsedCanonicalRootPaths: Set<String> = emptySet(),
     orderedCanonicalRootPaths: List<String> = emptyList(),
     onCollapsedCanonicalRootPathsChange: (Set<String>) -> Unit = {},
@@ -69,8 +71,6 @@ fun TxtEditorSection(
     onDayMarkerPersist: (String) -> Unit = {},
     onSaveHistoryFile: () -> Unit,
     onSaveHistoryRepresentationOnly: suspend (String) -> TxtFileContentResult,
-    initialOutputMode: TxtOutputMode = TxtOutputMode.DAY,
-    onOutputModePersist: (TxtOutputMode) -> Unit = {},
     bottomContentPadding: Dp = 0.dp,
     embeddedInScrollableParent: Boolean = false,
     inlineStatusText: String,
@@ -81,7 +81,7 @@ fun TxtEditorSection(
             TXT_TAB_LOG_TAG,
             "compose enter selectedFile=$selectedHistoryFile selectedMonth=$selectedMonth " +
                 "inspectionCount=${inspectionEntries.size} historyLoaded=$txtHistoryLoaded " +
-                "outputMode=$initialOutputMode initialMarker=$initialDayMarker"
+                "outputMode=DAY initialMarker=$initialDayMarker"
         )
     }
     val sessionController = remember(selectedHistoryFile, selectedMonth) {
@@ -91,7 +91,7 @@ fun TxtEditorSection(
         )
         TxtEditorSessionController(
             initialState = TxtEditorSessionState(
-                outputMode = initialOutputMode,
+                outputMode = TxtOutputMode.DAY,
                 // Keep the first frame empty when no marker has been restored yet. The runtime
                 // loads the logical-day marker asynchronously; using 0101 here makes the UI
                 // visibly jump from Jan 1 to the resolved target date on every tab re-entry.
@@ -149,18 +149,18 @@ fun TxtEditorSection(
         ?.takeIf { availableMonthValues.contains(it) }
         ?: availableMonthValues.lastOrNull().orEmpty()
 
-    LaunchedEffect(selectedHistoryFile, selectedMonth, initialOutputMode) {
+    LaunchedEffect(selectedHistoryFile, selectedMonth) {
         Log.d(
             TXT_TAB_LOG_TAG,
             "selection sync start file=$selectedHistoryFile month=$selectedMonth " +
-                "mode=$initialOutputMode source=${selectedHistoryContent.txtDebugSignature()} " +
+                "mode=DAY source=${selectedHistoryContent.txtDebugSignature()} " +
                 "editable=${editableHistoryContent.txtDebugSignature()}"
         )
         sessionController.syncSelectionContext(
             selectedHistoryFile = selectedHistoryFile,
             selectedMonth = selectedMonth
         )
-        sessionController.updateOutputMode(initialOutputMode)
+        sessionController.updateOutputMode(TxtOutputMode.DAY)
         Log.d(
             TXT_TAB_LOG_TAG,
             "selection sync complete key=${sessionController.state.selectionContextKey} " +
@@ -168,6 +168,7 @@ fun TxtEditorSection(
                 "dayDraft=${sessionController.state.dayDraftState.draftText.txtDebugSignature()}"
         )
     }
+    val rawEditorOverlayHost = LocalFullscreenOverlayHost.current
 
     LaunchedEffect(selectedHistoryFile, selectedHistoryContent, editableHistoryContent) {
         if (selectedHistoryFile.isNotBlank()) {
@@ -406,8 +407,7 @@ fun TxtEditorSection(
                 availableYears = availableYears,
                 selectedYear = selectedYear,
                 selectedMonthValue = selectedMonthValue,
-                monthsByYear = monthsByYear,
-                onRefreshHistory = onRefreshHistory
+                monthsByYear = monthsByYear
             )
 
             Column(
@@ -432,86 +432,61 @@ fun TxtEditorSection(
                     TxtEditorContentCard(
                         selectedHistoryFile = selectedHistoryFile,
                         currentDay = currentDay,
-                        outputMode = sessionState.outputMode,
-                        onOutputModeChange = { nextMode ->
-                            Log.d(
-                                TXT_TAB_LOG_TAG,
-                                "output mode changed from=${sessionState.outputMode} to=$nextMode"
-                            )
-                            if (nextMode == TxtOutputMode.DAY && sessionState.outputMode != TxtOutputMode.DAY) {
-                                coroutineScope.launch {
-                                    val normalizedDayMarker = runtimeCoordinator.loadDefaultDayMarker(
-                                        selectedMonth = selectedMonth,
-                                        logicalDayTarget = logicalDayTarget
-                                    )
-                                    sessionController.applyAutoDayMarker(
+                        onConvertActivityNames = { targetMode ->
+                            coroutineScope.launch {
+                                val conversion = runtimeCoordinator.convertActivityNames(
+                                    content = sessionController.currentMonthContent(
+                                        editableHistoryContent
+                                    ),
+                                    targetMode = targetMode
+                                )
+                                if (!sessionController.isCurrentSelection(
                                         selectedHistoryFile = selectedHistoryFile,
-                                        selectedMonth = selectedMonth,
-                                        logicalDayTarget = logicalDayTarget,
-                                        normalizedDayMarker = normalizedDayMarker
+                                        selectedMonth = selectedMonth
                                     )
+                                ) {
+                                    return@launch
                                 }
-                            }
-                            sessionController.updateOutputMode(nextMode)
-                            onOutputModePersist(nextMode)
-                        },
-                        activityNameTargetMode = sessionState.activityNameTargetMode,
-                        onActivityNameTargetModeChange = { targetMode ->
-                            sessionController.updateActivityNameTargetMode(targetMode)
-                            if (sessionState.outputMode == TxtOutputMode.ALL) {
-                                coroutineScope.launch {
-                                    val conversion = runtimeCoordinator.convertActivityNames(
-                                        content = sessionController.currentMonthContent(
-                                            editableHistoryContent
-                                        ),
-                                        targetMode = targetMode
+                                if (conversion.ok) {
+                                    val saveResult = onSaveHistoryRepresentationOnly(
+                                        conversion.convertedContent
                                     )
-                                    if (!sessionController.isCurrentSelection(
-                                            selectedHistoryFile = selectedHistoryFile,
-                                            selectedMonth = selectedMonth
-                                        )
-                                    ) {
-                                        return@launch
-                                    }
-                                    if (conversion.ok) {
-                                        val saveResult = onSaveHistoryRepresentationOnly(
+                                    if (saveResult.ok) {
+                                        val persistedContent = saveResult.content.ifBlank {
                                             conversion.convertedContent
-                                        )
-                                        if (saveResult.ok) {
-                                            val persistedContent = saveResult.content.ifBlank {
-                                                conversion.convertedContent
-                                            }
-                                            sessionController.updateAllDraft(persistedContent)
-                                            sessionController.syncExternalMonthDraft(
-                                                selectedHistoryContent = persistedContent,
-                                                editableHistoryContent = persistedContent
-                                            )
-                                            activityNameConversionStatus = ""
-                                        } else {
-                                            activityNameConversionStatus = saveResult.message
                                         }
+                                        sessionController.updateAllDraft(persistedContent)
+                                        sessionController.syncExternalMonthDraft(
+                                            selectedHistoryContent = persistedContent,
+                                            editableHistoryContent = persistedContent
+                                        )
+                                        activityNameConversionStatus = ""
                                     } else {
-                                        activityNameConversionStatus = conversion.message
+                                        activityNameConversionStatus = saveResult.message
                                     }
+                                } else {
+                                    activityNameConversionStatus = conversion.message
                                 }
                             }
                         },
                         dayBlockEditorState = resolvedDayBlockState,
-                        dayMarkerInput = sessionState.dayMarkerInput,
                         inlineStatusText = activityNameConversionStatus.ifBlank { filteredInlineStatusText },
-                        editorText = editorUiState.editorText,
-                        hasUnsavedChanges = editorUiState.hasUnsavedChanges,
-                        canEditDay = canEditDay,
-                        canIngest = editorUiState.canIngest,
-                        onEditorTextChange = { nextValue ->
-                            sessionController.onEditorTextChange(nextValue)
-                        },
-                        onIngest = {
-                            coroutineScope.launch {
-                                runtimeCoordinator.ingestCurrentEditor(
+                        onCanonicalCatalogRequested = onCanonicalCatalogRequested,
+                        onReloadTxtData = onRefreshHistory,
+                        onOpenRawEditor = { rawOutputMode ->
+                            sessionController.updateOutputMode(rawOutputMode)
+                            sessionController.openEditor(resolvedDayBlockState.dayBody)
+                            requireNotNull(rawEditorOverlayHost).show {
+                                TxtRawEditorRoute(
+                                    overlayHost = requireNotNull(rawEditorOverlayHost),
                                     sessionController = sessionController,
+                                    runtimeCoordinator = runtimeCoordinator,
+                                    rawOutputMode = rawOutputMode,
+                                    selectedMonth = selectedMonth,
+                                    selectedDay = currentDay,
                                     canEditDay = canEditDay,
                                     dayMarker = normalizedDayMarkerInput,
+                                    resolvedDayBody = resolvedDayBlockState.dayBody,
                                     onMergedMonthContent = onEditableHistoryContentChange,
                                     onSaveHistoryFile = onSaveHistoryFile
                                 )
@@ -539,6 +514,45 @@ fun TxtEditorSection(
                                     onSaveHistoryFile = onSaveHistoryFile
                                 )
                             }
+                        },
+                        onStructuredDayActivityReplace = {
+                                sourceActivityToken,
+                                targetActivityToken,
+                                dayRemark,
+                                events ->
+                            runtimeCoordinator.replaceDayActivityToken(
+                                monthContent = sessionController.currentMonthContent(
+                                    editableHistoryContent
+                                ),
+                                dayMarker = normalizedDayMarkerInput,
+                                selectedMonth = selectedMonth,
+                                dayRemark = dayRemark,
+                                events = events,
+                                sourceActivityToken = sourceActivityToken,
+                                targetActivityToken = targetActivityToken,
+                                onMergedMonthContent = onEditableHistoryContentChange,
+                                onSaveHistoryFile = onSaveHistoryFile
+                            )
+                        },
+                        onPrepareMonthActivityEdits = {
+                            runtimeCoordinator.prepareMonthActivityEdits(
+                                monthContent = sessionController.currentMonthContent(
+                                    editableHistoryContent
+                                ),
+                                selectedMonth = selectedMonth
+                            )
+                        },
+                        onReplaceMonthActivity = {
+                                snapshot,
+                                sourceActivityToken,
+                                targetActivityToken ->
+                            runtimeCoordinator.replaceMonthActivityToken(
+                                snapshot = snapshot,
+                                sourceActivityToken = sourceActivityToken,
+                                targetActivityToken = targetActivityToken,
+                                onMergedMonthContent = onEditableHistoryContentChange,
+                                onSaveHistoryFile = onSaveHistoryFile
+                            )
                         }
                     )
                 } else {
@@ -547,6 +561,59 @@ fun TxtEditorSection(
             }
         }
     }
+}
+
+@Composable
+private fun TxtRawEditorRoute(
+    overlayHost: com.example.tracer.ui.components.FullscreenOverlayHost,
+    sessionController: TxtEditorSessionController,
+    runtimeCoordinator: TxtEditorRuntimeCoordinator,
+    rawOutputMode: TxtOutputMode,
+    selectedMonth: String,
+    selectedDay: LocalDate?,
+    canEditDay: Boolean,
+    dayMarker: String,
+    resolvedDayBody: String,
+    onMergedMonthContent: (String) -> Unit,
+    onSaveHistoryFile: () -> Unit
+) {
+    val editorUiState = sessionController.deriveEditorUiState(canEditDay)
+    val coroutineScope = rememberCoroutineScope()
+    TxtRawEditorFullScreen(
+        outputMode = rawOutputMode,
+        selectedMonth = selectedMonth,
+        selectedDay = selectedDay,
+        value = editorUiState.editorText,
+        hasUnsavedChanges = editorUiState.hasUnsavedChanges,
+        canSave = editorUiState.canIngest,
+        readOnly = rawOutputMode == TxtOutputMode.DAY && !canEditDay,
+        onValueChange = sessionController::onEditorTextChange,
+        onSave = {
+            coroutineScope.launch {
+                if (runtimeCoordinator.ingestCurrentEditor(
+                        sessionController = sessionController,
+                        canEditDay = canEditDay,
+                        dayMarker = dayMarker,
+                        onMergedMonthContent = onMergedMonthContent,
+                        onSaveHistoryFile = onSaveHistoryFile
+                    )
+                ) {
+                    sessionController.updateOutputMode(TxtOutputMode.DAY)
+                    overlayHost.dismiss()
+                }
+            }
+        },
+        onDiscard = {
+            sessionController.closeEditorSession(
+                resolvedDayBody = resolvedDayBody,
+                onDiscardAllDraft = {
+                    onMergedMonthContent(sessionController.state.allDraftState.baselineText)
+                }
+            )
+            sessionController.updateOutputMode(TxtOutputMode.DAY)
+            overlayHost.dismiss()
+        }
+    )
 }
 
 /** Diagnostic-only content identifier: enough to trace state propagation without logging TXT. */

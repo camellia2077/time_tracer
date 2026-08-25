@@ -86,10 +86,6 @@ internal class TxtEditorSessionController(
         state = TxtEditorSessionReducer.updateOutputMode(state, value)
     }
 
-    fun updateActivityNameTargetMode(value: TxtActivityNameTargetMode) {
-        state = TxtEditorSessionReducer.updateActivityNameTargetMode(state, value)
-    }
-
     fun isCurrentSelection(selectedHistoryFile: String, selectedMonth: String): Boolean =
         TxtEditorSessionReducer.isCurrentSelection(state, selectedHistoryFile, selectedMonth)
 

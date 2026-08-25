@@ -69,6 +69,9 @@ class NativeMultilineTextEditorController {
     // a new request and the arrow buttons appear broken.
     internal var undoRequestCount by mutableStateOf(0)
     internal var redoRequestCount by mutableStateOf(0)
+    internal var selectionRequestCount by mutableStateOf(0)
+    internal var requestedSelectionStart: Int = 0
+    internal var requestedSelectionEnd: Int = 0
 
     fun requestUndo() {
         undoRequestCount += 1
@@ -76,6 +79,12 @@ class NativeMultilineTextEditorController {
 
     fun requestRedo() {
         redoRequestCount += 1
+    }
+
+    fun requestSelection(start: Int, end: Int = start) {
+        requestedSelectionStart = start
+        requestedSelectionEnd = end
+        selectionRequestCount += 1
     }
 }
 
@@ -313,6 +322,7 @@ private class NativeMultilineEditorState {
     var isProgrammaticUpdate: Boolean = false
     var lastProcessedUndoRequestCount: Int = 0
     var lastProcessedRedoRequestCount: Int = 0
+    var lastProcessedSelectionRequestCount: Int = 0
     lateinit var historyState: NativeMultilineEditHistory
 }
 
@@ -434,6 +444,28 @@ fun NativeMultilineTextEditor(
 
                 val historyController = currentController
                 if (historyController != null) {
+                    if (
+                        viewState.lastProcessedSelectionRequestCount !=
+                            historyController.selectionRequestCount
+                    ) {
+                        viewState.lastProcessedSelectionRequestCount =
+                            historyController.selectionRequestCount
+                        applyProgrammaticSelection(
+                            editText = editText,
+                            viewState = viewState,
+                            selectionStart = historyController.requestedSelectionStart,
+                            selectionEnd = historyController.requestedSelectionEnd
+                        )
+                        editText.post {
+                            val layout = editText.layout ?: return@post
+                            val line = layout.getLineForOffset(editText.selectionStart)
+                            val scrollY = (layout.getLineTop(line) - editText.height / 3)
+                                .coerceAtLeast(0)
+                            editText.scrollTo(editText.scrollX, scrollY)
+                        }
+                        syncControllerState(historyController, viewState.historyState)
+                        return@AndroidView
+                    }
                     if (viewState.lastProcessedUndoRequestCount != historyController.undoRequestCount) {
                         viewState.lastProcessedUndoRequestCount = historyController.undoRequestCount
                         val undoneSnapshot = viewState.historyState.undo()
@@ -497,6 +529,25 @@ private fun applyProgrammaticText(
         maxOf(safeSelectionStart, safeSelectionEnd)
     )
     viewState.isProgrammaticUpdate = false
+}
+
+private fun applyProgrammaticSelection(
+    editText: EditText,
+    viewState: NativeMultilineEditorState,
+    selectionStart: Int,
+    selectionEnd: Int
+) {
+    val textLength = editText.length()
+    val safeSelectionStart = selectionStart.coerceIn(0, textLength)
+    val safeSelectionEnd = selectionEnd.coerceIn(0, textLength)
+    viewState.isProgrammaticUpdate = true
+    editText.requestFocus()
+    editText.setSelection(
+        minOf(safeSelectionStart, safeSelectionEnd),
+        maxOf(safeSelectionStart, safeSelectionEnd)
+    )
+    viewState.isProgrammaticUpdate = false
+    viewState.historyState.onSelectionChanged(safeSelectionStart, safeSelectionEnd)
 }
 
 private fun syncControllerState(

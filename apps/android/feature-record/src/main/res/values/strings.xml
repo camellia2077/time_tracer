@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="txt_label_editor_file">Editor: %1$s</string>
-    <string name="txt_mode_all">ALL</string>
+    <string name="txt_mode_all">Month</string>
     <string name="txt_mode_day">DAY</string>
-    <string name="txt_mode_alias">Alias</string>
-    <string name="txt_mode_canonical">Canonical</string>
     <string name="txt_label_content">Content</string>
     <string name="txt_label_day_content_with_date">DAY Content %1$s</string>
     <string name="txt_label_day_content">DAY Content</string>
@@ -20,7 +18,7 @@
     <string name="txt_cd_prev_day">Previous Day</string>
     <string name="txt_cd_next_day">Next Day</string>
     <string name="txt_label_select_file">Select File</string>
-    <string name="txt_action_refresh_list">Refresh List</string>
+    <string name="txt_editor_reload_txt_data">Reload TXT data</string>
     <string name="txt_sheet_select_year_month">Select Year &amp; Month</string>
     <string name="txt_sheet_current_month">Current: %1$s</string>
     <string name="txt_sheet_current_month_unselected">Not selected</string>
@@ -177,7 +175,37 @@
     <string name="txt_day_edit_day_remark">Day remark</string>
     <string name="txt_day_edit_day_remark_title">Edit day remark</string>
     <string name="txt_day_edit_activity_remark_title">Edit activity remark</string>
-    <string name="txt_day_edit_save">Save day changes</string>
-    <string name="txt_day_view_structured">Structured</string>
-    <string name="txt_day_view_raw">Raw TXT</string>
+    <string name="txt_day_edit_save">Save</string>
+    <string name="txt_day_edit_find_replace">Find and replace activity</string>
+    <string name="txt_day_edit_find_replace_action">Replace</string>
+    <string name="txt_day_edit_find_replace_source_title">Find activity</string>
+    <string name="txt_day_edit_find_replace_source_hint">Search by the recorded name, alias, or canonical name.</string>
+    <string name="txt_day_edit_find_replace_search_label">Search current day activities</string>
+    <string name="txt_day_edit_find_replace_no_matches">No matching activities in this day.</string>
+    <string name="txt_day_edit_find_replace_occurrences">%1$d occurrences</string>
+    <string name="txt_day_edit_find_replace_confirm_title">Replace activities?</string>
+    <string name="txt_day_edit_find_replace_confirm_message">Replace %1$d occurrences of %2$s with %3$s?</string>
+    <string name="txt_day_edit_find_replace_success">Replaced %1$d activities.</string>
+    <string name="txt_month_edit_find_replace">Find and replace activity</string>
+    <string name="txt_month_edit_find_replace_search_label">Search current month activities</string>
+    <string name="txt_month_edit_find_replace_source_hint">Search by the recorded name, alias, or canonical name in this month.</string>
+    <string name="txt_month_edit_find_replace_no_matches">No matching activities in this month.</string>
+    <string name="txt_month_edit_find_replace_confirm_message">Replace %1$d occurrences in this month of %2$s with %3$s?</string>
+    <string name="txt_month_activity_name_tools">Activity name tools</string>
+    <string name="txt_month_activity_name_tools_description">Convert every mappable activity name in the current month.</string>
+    <string name="txt_month_convert_aliases_to_canonical">Convert aliases to canonical names</string>
+    <string name="txt_month_convert_canonical_to_aliases">Convert canonical names to aliases</string>
+    <string name="txt_month_convert_action">Convert</string>
+    <string name="txt_month_activity_name_convert_confirm_title">Convert activity names?</string>
+    <string name="txt_month_activity_name_convert_confirm_message">%1$s will rewrite all mappable activity names in the current month.</string>
+    <string name="txt_editor_more_edits">More edits</string>
+    <string name="txt_raw_editor_open_day">Open raw day TXT</string>
+    <string name="txt_raw_editor_open_month">Open raw month TXT</string>
+    <string name="txt_raw_editor_jump_to_date">Jump to date</string>
+    <string name="txt_raw_editor_day_not_found">No TXT entry for %1$s.</string>
+    <string name="txt_raw_editor_day_title">Raw day TXT</string>
+    <string name="txt_raw_editor_month_title">Raw month TXT</string>
+    <string name="txt_raw_editor_discard">Discard</string>
+    <string name="txt_raw_editor_discard_confirm_title">Discard changes?</string>
+    <string name="txt_raw_editor_discard_confirm_message">Your unsaved raw TXT edits will be discarded.</string>
 </resources>

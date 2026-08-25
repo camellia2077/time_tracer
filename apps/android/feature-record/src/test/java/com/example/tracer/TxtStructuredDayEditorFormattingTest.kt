@@ -1,6 +1,7 @@
 package com.example.tracer
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TxtStructuredDayEditorFormattingTest {
@@ -33,5 +34,36 @@ class TxtStructuredDayEditorFormattingTest {
         )
 
         assertEquals("06:24:30 – 08:04:03", formatTxtDayEventTime(event))
+    }
+
+    @Test
+    fun buildTxtDayActivitySearchOccurrences_matchesCanonicalAndAliasForEitherAuthoredForm() {
+        val roots = listOf(
+            CanonicalPathNode(
+                name = "study",
+                path = "study",
+                entries = listOf(
+                    CanonicalCatalogEntry(
+                        canonicalLeaf = "math",
+                        canonicalPath = "study_math",
+                        sourceFilePath = "study.toml",
+                        aliases = listOf("数学")
+                    )
+                )
+            )
+        )
+        val occurrences = buildTxtDayActivitySearchOccurrences(
+            events = listOf(
+                TxtDayEditEvent(false, "", "09:00:00", "数学", ""),
+                TxtDayEditEvent(false, "", "10:00:00", "study_math", "")
+            ),
+            roots = roots
+        )
+
+        assertEquals(2, occurrences.size)
+        occurrences.forEach { occurrence ->
+            assertTrue(occurrence.searchTokens.contains("数学"))
+            assertTrue(occurrence.searchTokens.contains("study_math"))
+        }
     }
 }

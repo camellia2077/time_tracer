@@ -79,19 +79,18 @@ fun RecordCanonicalCatalogScreen(
     roots: List<CanonicalPathNode>,
     statusText: String,
     displayMode: RecordFrequentOutputMode,
-    target: CanonicalBrowserTarget? = null,
-    source: CanonicalCatalogSource = CanonicalCatalogSource.TREE,
-    onSourceChange: (CanonicalCatalogSource) -> Unit = {},
-    isFrequentActivitiesLoading: Boolean = false,
-    frequentActivities: List<RecordFrequentActivity> = emptyList(),
-    frequentLookbackDays: Int = 7,
-    frequentTopN: Int = 5,
-    onFrequentActivitiesRequested: () -> Unit = {},
-    onFrequentLookbackDaysChange: (String) -> Unit = {},
-    onFrequentTopNChange: (String) -> Unit = {},
-    onFrequentActivityClick: (String) -> Boolean = { false },
-    onTreeRequested: () -> Unit = {},
-    categoriesContent: @Composable () -> Unit = {},
+    source: CanonicalCatalogSource,
+    onSourceChange: (CanonicalCatalogSource) -> Unit,
+    isFrequentActivitiesLoading: Boolean,
+    frequentActivities: List<RecordFrequentActivity>,
+    frequentLookbackDays: Int,
+    frequentTopN: Int,
+    onFrequentActivitiesRequested: () -> Unit,
+    onFrequentLookbackDaysChange: (String) -> Unit,
+    onFrequentTopNChange: (String) -> Unit,
+    onFrequentActivityClick: (String) -> Boolean,
+    onTreeRequested: () -> Unit,
+    categoriesContent: @Composable () -> Unit,
     collapsedRootPaths: Set<String>,
     orderedRootPaths: List<String>,
     onDismissRequest: () -> Unit,
@@ -101,7 +100,6 @@ fun RecordCanonicalCatalogScreen(
     onCanonicalEntryClick: (CanonicalCatalogEntry) -> Unit,
     onCanonicalParentClick: (String) -> Unit = {}
 ) {
-    val isRecordInputTarget = target == CanonicalBrowserTarget.RECORD_INPUT
     var frequentLookbackDaysInput by remember(frequentLookbackDays) {
         mutableStateOf(frequentLookbackDays.toString())
     }
@@ -129,15 +127,7 @@ fun RecordCanonicalCatalogScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = stringResource(
-                                if (target == CanonicalBrowserTarget.QUICK_ACCESS) {
-                                    R.string.record_canonical_catalog_quick_access_title
-                                } else if (target == CanonicalBrowserTarget.INSIGHTS_STATUS_PARENT) {
-                                    R.string.record_canonical_catalog_parent_title
-                                } else {
-                                    R.string.record_canonical_catalog_title
-                                }
-                            ),
+                            text = stringResource(R.string.record_canonical_catalog_title),
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -148,7 +138,6 @@ fun RecordCanonicalCatalogScreen(
                             )
                         }
                     }
-                        if (isRecordInputTarget) {
                         PrimaryTabRow(selectedTabIndex = source.ordinal) {
                             Tab(
                                 selected = source == CanonicalCatalogSource.TREE,
@@ -174,7 +163,6 @@ fun RecordCanonicalCatalogScreen(
                                 text = { Text(stringResource(R.string.record_canonical_catalog_source_categories)) }
                             )
                         }
-                    }
                     if (source != CanonicalCatalogSource.CATEGORIES) Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -244,11 +232,10 @@ fun RecordCanonicalCatalogScreen(
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        if (isRecordInputTarget) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
                                 OutlinedTextField(
                                     value = frequentLookbackDaysInput,
                                     onValueChange = { rawValue ->
@@ -279,7 +266,6 @@ fun RecordCanonicalCatalogScreen(
                                         keyboardType = KeyboardType.Number
                                     )
                                 )
-                            }
                         }
                     }
                 }
@@ -290,12 +276,12 @@ fun RecordCanonicalCatalogScreen(
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState())
                 ) {
-                    if (source == CanonicalCatalogSource.TREE) RecordCanonicalCatalogSection(
+                    if (source == CanonicalCatalogSource.TREE) CanonicalActivityTree(
                         isLoading = isLoading,
                         roots = roots,
                         statusText = statusText,
                         displayMode = displayMode,
-                        target = target,
+                        target = CanonicalBrowserTarget.RECORD_INPUT,
                         collapsedRootPaths = collapsedRootPaths,
                         orderedRootPaths = orderedRootPaths,
                         onCollapsedRootPathsChange = onCollapsedRootPathsChange,

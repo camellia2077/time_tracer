@@ -209,38 +209,55 @@ fun RecordSection(
     }
 
     if (isCanonicalCatalogVisible) {
-        RecordCanonicalCatalogScreen(
-            isLoading = isCanonicalCatalogLoading,
-            roots = canonicalCatalogRoots,
-            statusText = canonicalCatalogStatusText,
-            displayMode = canonicalCatalogDisplayMode,
-            target = canonicalBrowserTarget,
-            source = canonicalCatalogSource,
-            onSourceChange = onCanonicalCatalogSourceChange,
-            isFrequentActivitiesLoading = isFrequentActivitiesLoading,
-            frequentActivities = frequentActivities,
-            frequentLookbackDays = frequentLookbackDays,
-            frequentTopN = frequentTopN,
-            onFrequentActivitiesRequested = onFrequentActivitiesRequested,
-            onFrequentLookbackDaysChange = onFrequentLookbackDaysChange,
-            onFrequentTopNChange = onFrequentTopNChange,
-            onFrequentActivityClick = onFrequentActivityClick,
-            onTreeRequested = onTreeRequested,
-            categoriesContent = categoriesContent,
-            collapsedRootPaths = collapsedCanonicalRootPaths,
-            orderedRootPaths = orderedCanonicalRootPaths,
-            onDismissRequest = onDismissCanonicalCatalog,
-            onDisplayModeChange = onCanonicalCatalogDisplayModeChange,
-            onCollapsedRootPathsChange = onCollapsedCanonicalRootPathsChange,
-            onOrderedRootPathsChange = onOrderedCanonicalRootPathsChange,
-            onCanonicalEntryClick = { entry ->
-                canonicalBrowserTarget?.let { target ->
-                    if (onCanonicalCatalogEntryClick(target, entry)) {
-                        onDismissCanonicalCatalog()
-                    }
+        val onEntrySelected: (CanonicalCatalogEntry) -> Unit = { entry ->
+            canonicalBrowserTarget?.let { target ->
+                if (onCanonicalCatalogEntryClick(target, entry)) {
+                    onDismissCanonicalCatalog()
                 }
             }
-        )
+        }
+        if (canonicalBrowserTarget == CanonicalBrowserTarget.RECORD_INPUT) {
+            RecordCanonicalCatalogScreen(
+                isLoading = isCanonicalCatalogLoading,
+                roots = canonicalCatalogRoots,
+                statusText = canonicalCatalogStatusText,
+                displayMode = canonicalCatalogDisplayMode,
+                source = canonicalCatalogSource,
+                onSourceChange = onCanonicalCatalogSourceChange,
+                isFrequentActivitiesLoading = isFrequentActivitiesLoading,
+                frequentActivities = frequentActivities,
+                frequentLookbackDays = frequentLookbackDays,
+                frequentTopN = frequentTopN,
+                onFrequentActivitiesRequested = onFrequentActivitiesRequested,
+                onFrequentLookbackDaysChange = onFrequentLookbackDaysChange,
+                onFrequentTopNChange = onFrequentTopNChange,
+                onFrequentActivityClick = onFrequentActivityClick,
+                onTreeRequested = onTreeRequested,
+                categoriesContent = categoriesContent,
+                collapsedRootPaths = collapsedCanonicalRootPaths,
+                orderedRootPaths = orderedCanonicalRootPaths,
+                onDismissRequest = onDismissCanonicalCatalog,
+                onDisplayModeChange = onCanonicalCatalogDisplayModeChange,
+                onCollapsedRootPathsChange = onCollapsedCanonicalRootPathsChange,
+                onOrderedRootPathsChange = onOrderedCanonicalRootPathsChange,
+                onCanonicalEntryClick = onEntrySelected
+            )
+        } else {
+            CanonicalActivityPickerScreen(
+                isLoading = isCanonicalCatalogLoading,
+                roots = canonicalCatalogRoots,
+                statusText = canonicalCatalogStatusText,
+                displayMode = canonicalCatalogDisplayMode,
+                target = canonicalBrowserTarget,
+                collapsedRootPaths = collapsedCanonicalRootPaths,
+                orderedRootPaths = orderedCanonicalRootPaths,
+                onDismissRequest = onDismissCanonicalCatalog,
+                onDisplayModeChange = onCanonicalCatalogDisplayModeChange,
+                onCollapsedRootPathsChange = onCollapsedCanonicalRootPathsChange,
+                onOrderedRootPathsChange = onOrderedCanonicalRootPathsChange,
+                onCanonicalEntryClick = onEntrySelected
+            )
+        }
     }
 
     if (isTxtPreviewVisible) {

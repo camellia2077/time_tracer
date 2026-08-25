@@ -18,7 +18,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -46,10 +45,6 @@ import com.example.tracer.ui.components.CalendarYearMonthPickerSheet
 import java.time.DayOfWeek
 import java.time.LocalDate
 
-// Match the visual footprint of the month row's Refresh action so the second
-// day row keeps the same centered navigation geometry as the first row.
-private val NavigationActionSlotWidth = 112.dp
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun TxtMonthNavigationCard(
@@ -64,8 +59,7 @@ internal fun TxtMonthNavigationCard(
     availableYears: List<String>,
     selectedYear: String,
     selectedMonthValue: String,
-    monthsByYear: Map<String, List<String>>,
-    onRefreshHistory: () -> Unit
+    monthsByYear: Map<String, List<String>>
 ) {
     var monthPickerVisible by remember { mutableStateOf(false) }
     var dayPickerVisible by remember { mutableStateOf(false) }
@@ -119,12 +113,6 @@ internal fun TxtMonthNavigationCard(
                     Icon(Icons.Filled.DateRange, contentDescription = null)
                 }
 
-                TextButton(onClick = onRefreshHistory) {
-                    Icon(Icons.Filled.Refresh, contentDescription = null)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(stringResource(R.string.txt_action_refresh_list))
-                }
-
                 IconButton(onClick = onOpenNextMonth) {
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowForward,
@@ -162,10 +150,6 @@ internal fun TxtMonthNavigationCard(
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
                 }
-
-                Spacer(
-                    modifier = Modifier.width(NavigationActionSlotWidth)
-                )
 
                 IconButton(
                     onClick = onOpenNextDay,

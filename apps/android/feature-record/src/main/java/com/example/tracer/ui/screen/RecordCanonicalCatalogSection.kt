@@ -67,7 +67,7 @@ import kotlin.math.abs
 
 
 @Composable
-internal fun RecordCanonicalCatalogSection(
+internal fun CanonicalActivityTree(
     isLoading: Boolean,
     roots: List<CanonicalPathNode>,
     statusText: String,
@@ -285,6 +285,140 @@ internal fun RecordCanonicalCatalogSection(
                     text = stringResource(R.string.record_canonical_catalog_empty),
                     style = MaterialTheme.typography.bodySmall
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun CanonicalActivityPickerScreen(
+    isLoading: Boolean,
+    roots: List<CanonicalPathNode>,
+    statusText: String,
+    displayMode: RecordFrequentOutputMode,
+    target: CanonicalBrowserTarget? = null,
+    collapsedRootPaths: Set<String>,
+    orderedRootPaths: List<String>,
+    onDismissRequest: () -> Unit,
+    onDisplayModeChange: (RecordFrequentOutputMode) -> Unit,
+    onCollapsedRootPathsChange: (Set<String>) -> Unit,
+    onOrderedRootPathsChange: (List<String>) -> Unit,
+    onCanonicalEntryClick: (CanonicalCatalogEntry) -> Unit,
+    onCanonicalParentClick: (String) -> Unit = {}
+) {
+    Dialog(
+        onDismissRequest = onDismissRequest,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.surface
+        ) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(
+                            if (target == CanonicalBrowserTarget.QUICK_ACCESS) {
+                                R.string.record_canonical_catalog_quick_access_title
+                            } else if (target == CanonicalBrowserTarget.INSIGHTS_STATUS_PARENT) {
+                                R.string.record_canonical_catalog_parent_title
+                            } else {
+                                R.string.record_canonical_catalog_title
+                            }
+                        ),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    IconButton(onClick = onDismissRequest) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = stringResource(R.string.txt_action_close)
+                        )
+                    }
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    if (displayMode == RecordFrequentOutputMode.CANONICAL) {
+                        FilledIconButton(onClick = {}) {
+                            Icon(
+                                imageVector = Icons.Default.Code,
+                                contentDescription = stringResource(
+                                    R.string.record_cd_canonical_catalog_display_canonical_selected
+                                )
+                            )
+                        }
+                    } else {
+                        OutlinedIconButton(
+                            onClick = {
+                                onDisplayModeChange(RecordFrequentOutputMode.CANONICAL)
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Code,
+                                contentDescription = stringResource(
+                                    R.string.record_cd_canonical_catalog_display_switch_to_canonical
+                                )
+                            )
+                        }
+                    }
+                    if (displayMode == RecordFrequentOutputMode.ALIAS) {
+                        FilledIconButton(onClick = {}) {
+                            Icon(
+                                imageVector = Icons.Default.Translate,
+                                contentDescription = stringResource(
+                                    R.string.record_cd_canonical_catalog_display_alias_selected
+                                )
+                            )
+                        }
+                    } else {
+                        OutlinedIconButton(
+                            onClick = {
+                                onDisplayModeChange(RecordFrequentOutputMode.ALIAS)
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Translate,
+                                contentDescription = stringResource(
+                                    R.string.record_cd_canonical_catalog_display_switch_to_alias
+                                )
+                            )
+                        }
+                    }
+                }
+                HorizontalDivider(modifier = Modifier.padding(top = 12.dp))
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    CanonicalActivityTree(
+                        isLoading = isLoading,
+                        roots = roots,
+                        statusText = statusText,
+                        displayMode = displayMode,
+                        target = target,
+                        collapsedRootPaths = collapsedRootPaths,
+                        orderedRootPaths = orderedRootPaths,
+                        onCollapsedRootPathsChange = onCollapsedRootPathsChange,
+                        onOrderedRootPathsChange = onOrderedRootPathsChange,
+                        onCanonicalEntryClick = onCanonicalEntryClick,
+                        onCanonicalParentClick = onCanonicalParentClick,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 24.dp)
+                    )
+                }
             }
         }
     }

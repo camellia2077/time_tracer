@@ -3,21 +3,22 @@ package com.example.tracer
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.outlined.FindReplace
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -30,7 +31,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.record.R
-import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
 import java.time.LocalDate
 
 
@@ -38,19 +38,12 @@ import java.time.LocalDate
 internal fun TxtEditorContentCard(
     selectedHistoryFile: String,
     currentDay: LocalDate?,
-    outputMode: TxtOutputMode,
-    onOutputModeChange: (TxtOutputMode) -> Unit,
-    activityNameTargetMode: TxtActivityNameTargetMode,
-    onActivityNameTargetModeChange: (TxtActivityNameTargetMode) -> Unit,
+    onConvertActivityNames: (TxtActivityNameTargetMode) -> Unit,
     dayBlockEditorState: TxtDayBlockResolveResult,
-    dayMarkerInput: String,
     inlineStatusText: String,
-    editorText: String,
-    hasUnsavedChanges: Boolean,
-    canEditDay: Boolean,
-    canIngest: Boolean,
-    onEditorTextChange: (String) -> Unit,
-    onIngest: () -> Unit,
+    onCanonicalCatalogRequested: () -> Unit = {},
+    onReloadTxtData: () -> Unit,
+    onOpenRawEditor: (TxtOutputMode) -> Unit,
     structuredDayEdit: TxtDayEditResolveResult? = null,
     canonicalCatalogRoots: List<CanonicalPathNode> = emptyList(),
     isCanonicalCatalogLoading: Boolean = false,
@@ -59,26 +52,52 @@ internal fun TxtEditorContentCard(
     orderedCanonicalRootPaths: List<String> = emptyList(),
     onCollapsedCanonicalRootPathsChange: (Set<String>) -> Unit = {},
     onOrderedCanonicalRootPathsChange: (List<String>) -> Unit = {},
-    onStructuredDayEditApply: (String, List<TxtDayEditEvent>) -> Unit = { _, _ -> }
+    onStructuredDayEditApply: (String, List<TxtDayEditEvent>) -> Unit = { _, _ -> },
+    onStructuredDayActivityReplace: suspend (
+        String,
+        String,
+        String,
+        List<TxtDayEditEvent>
+    ) -> TxtDayActivityReplacementResult = { _, _, _, _ ->
+        TxtDayActivityReplacementResult(
+            ok = false,
+            replacedEventCount = 0,
+            message = "TXT activity replacement is unavailable."
+        )
+    },
+    onPrepareMonthActivityEdits: suspend () -> TxtMonthActivityEditsResult = {
+        TxtMonthActivityEditsResult(false, null, "TXT activity replacement is unavailable.")
+    },
+    onReplaceMonthActivity: suspend (
+        TxtMonthActivityEditSnapshot,
+        String,
+        String
+    ) -> TxtMonthActivityReplacementResult = { _, _, _ ->
+        TxtMonthActivityReplacementResult(false, 0, "TXT activity replacement is unavailable.")
+    }
 ) {
     val canShowStructuredDay =
         structuredDayEdit?.ok == true && structuredDayEdit.found && structuredDayEdit.canSave
-    var dayViewMode by remember(
+    var findReplaceVisible by remember(
         selectedHistoryFile,
         dayBlockEditorState.normalizedDayMarker
     ) {
-        // The async Structured resolve is unavailable on the first frame. Keep the
-        // default selection stable so that its arrival does not animate Raw -> Structured.
-        mutableStateOf(TxtDayViewMode.STRUCTURED)
+        mutableStateOf(false)
     }
-    val dayContentIsoDate = dayBlockEditorState.dayContentIsoDate
+    var monthFindReplaceVisible by remember(selectedHistoryFile) {
+        mutableStateOf(false)
+    }
+    var moreEditsVisible by remember(selectedHistoryFile) {
+        mutableStateOf(false)
+    }
+    var activityNameToolsVisible by remember(selectedHistoryFile) {
+        mutableStateOf(false)
+    }
+    var pendingActivityNameConversion by remember(selectedHistoryFile) {
+        mutableStateOf<TxtActivityNameTargetMode?>(null)
+    }
     val currentDayText = currentDay?.let { formatEditorCurrentDayText(it) }
-    val dayMarkerText = dayBlockEditorState.normalizedDayMarker.ifBlank { dayMarkerInput }
-    val isStructuredDayLoading =
-        outputMode == TxtOutputMode.DAY &&
-            dayViewMode == TxtDayViewMode.STRUCTURED &&
-            canEditDay &&
-            structuredDayEdit == null
+    val isStructuredDayLoading = dayBlockEditorState.canSave && structuredDayEdit == null
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -90,82 +109,25 @@ internal fun TxtEditorContentCard(
                 color = MaterialTheme.colorScheme.primary
             )
 
-            val outputModes = TxtOutputMode.entries
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                outputModes.forEachIndexed { index, mode ->
-                    SegmentedButton(
-                        shape = SegmentedButtonDefaults.itemShape(index = index, count = outputModes.size),
-                        onClick = { onOutputModeChange(mode) },
-                        selected = outputMode == mode,
-                        colors = TracerSegmentedButtonDefaults.colors(),
-                        modifier = Modifier.weight(1f),
-                        label = {
-                            Text(
-                                text = when (mode) {
-                                    TxtOutputMode.ALL -> stringResource(R.string.txt_mode_all)
-                                    TxtOutputMode.DAY -> stringResource(R.string.txt_mode_day)
-                                }
-                            )
-                        }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                if (canShowStructuredDay) {
+                    TextButton(onClick = { findReplaceVisible = true }) {
+                        Icon(
+                            imageVector = Icons.Outlined.FindReplace,
+                            contentDescription = null
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(stringResource(R.string.txt_day_edit_find_replace))
+                    }
+                }
+                IconButton(onClick = { moreEditsVisible = true }) {
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = stringResource(R.string.txt_editor_more_edits)
                     )
-                }
-            }
-            if (outputMode == TxtOutputMode.DAY) {
-                val dayViewModes = TxtDayViewMode.entries
-                SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                    dayViewModes.forEachIndexed { index, mode ->
-                        SegmentedButton(
-                            shape = SegmentedButtonDefaults.itemShape(
-                                index = index,
-                                count = dayViewModes.size
-                            ),
-                            onClick = { dayViewMode = mode },
-                            selected = dayViewMode == mode,
-                            enabled = mode != TxtDayViewMode.STRUCTURED ||
-                                canShowStructuredDay ||
-                                isStructuredDayLoading,
-                            colors = TracerSegmentedButtonDefaults.colors(),
-                            modifier = Modifier.weight(1f),
-                            label = {
-                                Text(
-                                    when (mode) {
-                                        TxtDayViewMode.STRUCTURED ->
-                                            stringResource(R.string.txt_day_view_structured)
-                                        TxtDayViewMode.RAW ->
-                                            stringResource(R.string.txt_day_view_raw)
-                                    }
-                                )
-                            }
-                        )
-                    }
-                }
-            }
-
-            if (outputMode == TxtOutputMode.ALL) {
-                val activityNameModes = TxtActivityNameTargetMode.entries
-                SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                    activityNameModes.forEachIndexed { index, mode ->
-                        SegmentedButton(
-                            shape = SegmentedButtonDefaults.itemShape(
-                                index = index,
-                                count = activityNameModes.size
-                            ),
-                            onClick = { onActivityNameTargetModeChange(mode) },
-                            selected = activityNameTargetMode == mode,
-                            colors = TracerSegmentedButtonDefaults.colors(),
-                            modifier = Modifier.weight(1f),
-                            label = {
-                                Text(
-                                    text = when (mode) {
-                                        TxtActivityNameTargetMode.ALIAS ->
-                                            stringResource(R.string.txt_mode_alias)
-                                        TxtActivityNameTargetMode.CANONICAL ->
-                                            stringResource(R.string.txt_mode_canonical)
-                                    }
-                                )
-                            }
-                        )
-                    }
                 }
             }
 
@@ -203,11 +165,7 @@ internal fun TxtEditorContentCard(
 
             if (isStructuredDayLoading) {
                 TxtStructuredDayLoading()
-            } else if (
-                outputMode == TxtOutputMode.DAY &&
-                    dayViewMode == TxtDayViewMode.STRUCTURED &&
-                    canShowStructuredDay
-            ) {
+            } else if (canShowStructuredDay) {
                 TxtStructuredDayEditor(
                     result = structuredDayEdit,
                     roots = canonicalCatalogRoots,
@@ -219,22 +177,210 @@ internal fun TxtEditorContentCard(
                     onOrderedRootPathsChange = onOrderedCanonicalRootPathsChange,
                     onApply = onStructuredDayEditApply
                 )
-            } else {
-                TxtEditorInlineContent(
-                    value = editorText,
-                    outputMode = outputMode,
-                    currentDayText = currentDayText,
-                    dayMarkerText = dayMarkerText,
-                    dayContentIsoDate = dayContentIsoDate,
-                    hasUnsavedChanges = hasUnsavedChanges,
-                    canEditDay = canEditDay,
-                    canIngest = canIngest,
-                    onEditorTextChange = onEditorTextChange,
-                    onIngest = onIngest
+            }
+            TxtDayActivityFindReplace(
+                visible = findReplaceVisible,
+                events = structuredDayEdit?.events.orEmpty(),
+                dayRemark = structuredDayEdit?.dayRemark.orEmpty(),
+                roots = canonicalCatalogRoots,
+                catalogLoading = isCanonicalCatalogLoading,
+                catalogStatusText = canonicalCatalogStatusText,
+                collapsedRootPaths = collapsedCanonicalRootPaths,
+                orderedRootPaths = orderedCanonicalRootPaths,
+                onCollapsedRootPathsChange = onCollapsedCanonicalRootPathsChange,
+                onOrderedRootPathsChange = onOrderedCanonicalRootPathsChange,
+                onCanonicalCatalogRequested = onCanonicalCatalogRequested,
+                onDismiss = { findReplaceVisible = false },
+                onReplaceActivity = onStructuredDayActivityReplace
+            )
+            TxtMonthActivityFindReplace(
+                visible = monthFindReplaceVisible,
+                roots = canonicalCatalogRoots,
+                catalogLoading = isCanonicalCatalogLoading,
+                catalogStatusText = canonicalCatalogStatusText,
+                collapsedRootPaths = collapsedCanonicalRootPaths,
+                orderedRootPaths = orderedCanonicalRootPaths,
+                onCollapsedRootPathsChange = onCollapsedCanonicalRootPathsChange,
+                onOrderedRootPathsChange = onOrderedCanonicalRootPathsChange,
+                onCanonicalCatalogRequested = onCanonicalCatalogRequested,
+                onLoad = onPrepareMonthActivityEdits,
+                onDismiss = { monthFindReplaceVisible = false },
+                onReplaceActivity = onReplaceMonthActivity
+            )
+            if (moreEditsVisible) {
+                TxtMoreEditsSheet(
+                    onDismiss = { moreEditsVisible = false },
+                    onOpenDayRawEditor = {
+                        moreEditsVisible = false
+                        onOpenRawEditor(TxtOutputMode.DAY)
+                    },
+                    onOpenMonthRawEditor = {
+                        moreEditsVisible = false
+                        onOpenRawEditor(TxtOutputMode.ALL)
+                    },
+                    onOpenMonthFindReplace = {
+                        moreEditsVisible = false
+                        monthFindReplaceVisible = true
+                    },
+                    onReloadTxtData = {
+                        moreEditsVisible = false
+                        onReloadTxtData()
+                    },
+                    onOpenActivityNameTools = {
+                        moreEditsVisible = false
+                        activityNameToolsVisible = true
+                    }
+                )
+            }
+            if (activityNameToolsVisible) {
+                TxtActivityNameToolsSheet(
+                    onDismiss = { activityNameToolsVisible = false },
+                    onSelectTargetMode = { targetMode ->
+                        activityNameToolsVisible = false
+                        pendingActivityNameConversion = targetMode
+                    }
+                )
+            }
+            pendingActivityNameConversion?.let { targetMode ->
+                TxtActivityNameConversionConfirmDialog(
+                    targetMode = targetMode,
+                    onDismiss = { pendingActivityNameConversion = null },
+                    onConfirm = {
+                        pendingActivityNameConversion = null
+                        onConvertActivityNames(targetMode)
+                    }
                 )
             }
         }
     }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun TxtMoreEditsSheet(
+    onDismiss: () -> Unit,
+    onOpenDayRawEditor: () -> Unit,
+    onOpenMonthRawEditor: () -> Unit,
+    onOpenMonthFindReplace: () -> Unit,
+    onReloadTxtData: () -> Unit,
+    onOpenActivityNameTools: () -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+        Column(
+            modifier = Modifier.padding(start = 24.dp, top = 8.dp, end = 24.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.txt_editor_more_edits),
+                style = MaterialTheme.typography.headlineSmall
+            )
+            TextButton(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onOpenMonthFindReplace
+            ) {
+                Text(stringResource(R.string.txt_month_edit_find_replace))
+            }
+            TextButton(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onReloadTxtData
+            ) {
+                Text(stringResource(R.string.txt_editor_reload_txt_data))
+            }
+            TextButton(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onOpenActivityNameTools
+            ) {
+                Text(stringResource(R.string.txt_month_activity_name_tools))
+            }
+            TextButton(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onOpenDayRawEditor
+            ) {
+                Text(stringResource(R.string.txt_raw_editor_open_day))
+            }
+            TextButton(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onOpenMonthRawEditor
+            ) {
+                Text(stringResource(R.string.txt_raw_editor_open_month))
+            }
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun TxtActivityNameToolsSheet(
+    onDismiss: () -> Unit,
+    onSelectTargetMode: (TxtActivityNameTargetMode) -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+        Column(
+            modifier = Modifier.padding(start = 24.dp, top = 8.dp, end = 24.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.txt_month_activity_name_tools),
+                style = MaterialTheme.typography.headlineSmall
+            )
+            Text(
+                text = stringResource(R.string.txt_month_activity_name_tools_description),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            TextButton(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { onSelectTargetMode(TxtActivityNameTargetMode.CANONICAL) }
+            ) {
+                Text(stringResource(R.string.txt_month_convert_aliases_to_canonical))
+            }
+            TextButton(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { onSelectTargetMode(TxtActivityNameTargetMode.ALIAS) }
+            ) {
+                Text(stringResource(R.string.txt_month_convert_canonical_to_aliases))
+            }
+        }
+    }
+}
+
+@Composable
+private fun TxtActivityNameConversionConfirmDialog(
+    targetMode: TxtActivityNameTargetMode,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    val conversionName = stringResource(
+        when (targetMode) {
+            TxtActivityNameTargetMode.CANONICAL ->
+                R.string.txt_month_convert_aliases_to_canonical
+            TxtActivityNameTargetMode.ALIAS ->
+                R.string.txt_month_convert_canonical_to_aliases
+        }
+    )
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.txt_month_activity_name_convert_confirm_title)) },
+        text = {
+            Text(
+                stringResource(
+                    R.string.txt_month_activity_name_convert_confirm_message,
+                    conversionName
+                )
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(stringResource(R.string.txt_month_convert_action))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.txt_action_close))
+            }
+        }
+    )
 }
 
 @Composable
@@ -253,9 +399,4 @@ private fun TxtStructuredDayLoading() {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
-}
-
-private enum class TxtDayViewMode {
-    STRUCTURED,
-    RAW
 }

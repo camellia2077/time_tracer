@@ -10,10 +10,14 @@ internal data class InsightsDayPickerState(
 )
 
 internal fun resolveInsightsDayPickerState(
-    year: String,
-    month: String,
-    day: String
+    insightsDate: String
 ): InsightsDayPickerState? {
+    if (insightsDate.length != 8) {
+        return null
+    }
+    val year = insightsDate.substring(0, 4)
+    val month = insightsDate.substring(4, 6)
+    val day = insightsDate.substring(6, 8)
     val displayMonth = parseInsightsDisplayMonth(year = year, month = month) ?: return null
     val selectedDate = parseInsightsSelectedDate(
         displayMonth = displayMonth,

@@ -11,9 +11,7 @@ class InsightsDayPickerStateTest {
     @Test
     fun resolveInsightsDayPickerState_returnsDisplayMonthWhenYearMonthIsValid() {
         val state = resolveInsightsDayPickerState(
-            year = "2026",
-            month = "04",
-            day = "12"
+            insightsDate = "20260412"
         )
 
         assertNotNull(state)
@@ -24,9 +22,7 @@ class InsightsDayPickerStateTest {
     @Test
     fun resolveInsightsDayPickerState_returnsNullWhenYearMonthIsIncomplete() {
         val state = resolveInsightsDayPickerState(
-            year = "2026",
-            month = "",
-            day = "12"
+            insightsDate = "2026"
         )
 
         assertNull(state)
@@ -35,9 +31,7 @@ class InsightsDayPickerStateTest {
     @Test
     fun resolveInsightsDayPickerState_keepsPickerEnabledWhenDayIsInvalid() {
         val state = resolveInsightsDayPickerState(
-            year = "2026",
-            month = "04",
-            day = "99"
+            insightsDate = "20260499"
         )
 
         assertNotNull(state)

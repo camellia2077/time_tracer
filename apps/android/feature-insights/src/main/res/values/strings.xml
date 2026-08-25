@@ -16,15 +16,15 @@
     <string name="insights_parameter_section_timeline">Timeline</string>
     <string name="insights_parameter_section_activity">Activities</string>
     <string name="insights_parameter_section_markdown">Text</string>
-    <string name="insights_title_insights_date">Insights Date</string>
-    <string name="insights_title_insights_day">Insights Day</string>
-    <string name="insights_title_insights_month">Insights Month</string>
-    <string name="insights_title_insights_week">Insights Week</string>
+    <string name="insights_title_insights_date">Date</string>
+    <string name="insights_title_insights_day">Day</string>
+    <string name="insights_title_insights_month">Month</string>
+    <string name="insights_title_insights_week">Week</string>
     <string name="insights_label_select_week">Select Week</string>
-    <string name="insights_label_insights_year">Insights Year (YYYY)</string>
+    <string name="insights_label_insights_year">Year</string>
     <string name="insights_title_start_date">Start Date</string>
     <string name="insights_title_end_date">End Date</string>
-    <string name="insights_label_recent_days">Recent Days (N)</string>
+    <string name="insights_label_recent_days">Recent Days</string>
     <string name="insights_activities_period_selector_title">Activity period</string>
     <string name="insights_activities_period_selector_sheet_title">Select %1$s</string>
     <string name="insights_action_cancel">Cancel</string>
@@ -140,10 +140,10 @@
     <string name="insights_title_section_day">%1$s Day</string>
     <string name="insights_title_section_month">%1$s Month</string>
     <string name="insights_title_section_week">%1$s Week</string>
-    <string name="insights_label_section_year">%1$s Year (YYYY)</string>
+    <string name="insights_label_section_year">%1$s Year</string>
     <string name="insights_title_section_start_date">%1$s Start Date</string>
     <string name="insights_title_section_end_date">%1$s End Date</string>
-    <string name="insights_label_section_recent_days">%1$s Recent Days (N)</string>
+    <string name="insights_label_section_recent_days">%1$s Recent Days</string>
 
     <string name="insights_cd_collapse">Collapse</string>
     <string name="insights_cd_expand">Expand</string>

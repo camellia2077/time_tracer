@@ -1,193 +1,261 @@
 package com.example.tracer
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import android.view.View
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.record.R
+import com.example.tracer.ui.components.CalendarDatePickerSheet
 import com.example.tracer.ui.components.NativeMultilineTextEditor
 import com.example.tracer.ui.components.NativeMultilineTextEditorController
 import com.example.tracer.ui.components.filterDigits
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 @Composable
-internal fun TxtEditorInlineContent(
-    value: String,
+internal fun TxtRawEditorFullScreen(
     outputMode: TxtOutputMode,
-    currentDayText: String?,
-    dayMarkerText: String,
-    dayContentIsoDate: String?,
+    selectedMonth: String,
+    selectedDay: LocalDate?,
+    value: String,
     hasUnsavedChanges: Boolean,
-    canEditDay: Boolean,
-    canIngest: Boolean,
-    onEditorTextChange: (String) -> Unit,
-    onIngest: () -> Unit
+    canSave: Boolean,
+    readOnly: Boolean,
+    onValueChange: (String) -> Unit,
+    onSave: () -> Unit,
+    onDiscard: () -> Unit
 ) {
-    // Undo/redo history is scoped to the selected file and month. Moving to another file or
-    // month creates a new editor instance and therefore a new history.
+    var discardConfirmationVisible by remember { mutableStateOf(false) }
+    var datePickerVisible by remember { mutableStateOf(false) }
+    var jumpStatusText by remember { mutableStateOf("") }
     val editorController = remember { NativeMultilineTextEditorController() }
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val rawMonth = remember(selectedMonth) {
+        runCatching { YearMonth.parse(selectedMonth) }.getOrNull()
+    }
+    fun requestDiscard() {
+        if (hasUnsavedChanges) {
+            discardConfirmationVisible = true
+        } else {
+            onDiscard()
+        }
+    }
 
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        TxtEditorInlineHeader(
-            title = if (outputMode == TxtOutputMode.DAY) {
-                if (dayContentIsoDate != null) {
-                    stringResource(R.string.txt_label_day_content_with_date, dayContentIsoDate)
-                } else {
-                    stringResource(R.string.txt_label_day_content)
-                }
-            } else {
-                stringResource(R.string.txt_label_content)
-            },
-            subtitle = if (outputMode == TxtOutputMode.DAY) currentDayText else null,
-            meta = if (outputMode == TxtOutputMode.DAY) {
-                stringResource(R.string.record_txt_preview_day_marker, dayMarkerText)
-            } else {
-                null
-            },
-            canUndo = editorController.canUndo,
-            canRedo = editorController.canRedo,
-            onUndo = editorController::requestUndo,
-            onRedo = editorController::requestRedo,
-            hasUnsavedChanges = hasUnsavedChanges,
-            canIngest = canIngest,
-            onIngest = onIngest
-        )
-
-        NativeMultilineTextEditor(
-            value = value,
-            onValueChange = onEditorTextChange,
+    val surfaceColor = MaterialTheme.colorScheme.surface
+    RawEditorSystemBars(surfaceColor)
+    androidx.compose.material3.Surface(modifier = Modifier.fillMaxSize(), color = surfaceColor) {
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 360.dp, max = 560.dp),
-            minLines = if (outputMode == TxtOutputMode.DAY) 18 else 12,
-            monospace = true,
-            controller = editorController,
-            readOnly = outputMode == TxtOutputMode.DAY && !canEditDay
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(
+                                if (outputMode == TxtOutputMode.DAY) {
+                                    R.string.txt_raw_editor_day_title
+                                } else {
+                                    R.string.txt_raw_editor_month_title
+                                }
+                            ),
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                        Text(
+                            text = if (hasUnsavedChanges) {
+                                stringResource(R.string.txt_status_unsaved)
+                            } else {
+                                stringResource(R.string.txt_status_saved)
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    if (outputMode == TxtOutputMode.ALL && rawMonth != null) {
+                        TextButton(onClick = { datePickerVisible = true }) {
+                            Text(stringResource(R.string.txt_raw_editor_jump_to_date))
+                        }
+                    }
+                    TextButton(onClick = ::requestDiscard) {
+                        Text(stringResource(R.string.txt_action_close))
+                    }
+                }
+                if (jumpStatusText.isNotBlank()) {
+                    Text(
+                        text = jumpStatusText,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+                NativeMultilineTextEditor(
+                    value = value,
+                    onValueChange = onValueChange,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    minLines = 24,
+                    monospace = true,
+                    controller = editorController,
+                    readOnly = readOnly
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextButton(onClick = ::requestDiscard) {
+                        Text(stringResource(R.string.txt_raw_editor_discard))
+                    }
+                    Spacer(modifier = Modifier.widthIn(min = 8.dp))
+                    Button(onClick = onSave, enabled = canSave) {
+                        Text(stringResource(R.string.txt_cd_ingest))
+                    }
+                }
+        }
+    }
+    if (datePickerVisible && rawMonth != null) {
+        CalendarDatePickerSheet(
+            displayMonth = rawMonth,
+            selectedDate = selectedDay?.takeIf { YearMonth.from(it) == rawMonth },
+            onDateSelected = { date ->
+                datePickerVisible = false
+                val markerOffset = findRawMonthDayMarkerOffset(value, date)
+                if (markerOffset < 0) {
+                    jumpStatusText = context.getString(
+                        R.string.txt_raw_editor_day_not_found,
+                        date.toString()
+                    )
+                } else {
+                    jumpStatusText = ""
+                    val markerEnd = markerOffset + 5
+                    editorController.requestSelection(markerOffset, markerEnd)
+                    coroutineScope.launch {
+                        delay(800)
+                        editorController.requestSelection(markerOffset)
+                    }
+                }
+            },
+            onDismissRequest = { datePickerVisible = false },
+            allowAdjacentMonthSelection = false,
+            firstDayOfWeek = DayOfWeek.MONDAY
+        )
+    }
+    if (discardConfirmationVisible) {
+        AlertDialog(
+            onDismissRequest = { discardConfirmationVisible = false },
+            title = { Text(stringResource(R.string.txt_raw_editor_discard_confirm_title)) },
+            text = { Text(stringResource(R.string.txt_raw_editor_discard_confirm_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    discardConfirmationVisible = false
+                    onDiscard()
+                }) {
+                    Text(stringResource(R.string.txt_raw_editor_discard))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { discardConfirmationVisible = false }) {
+                    Text(stringResource(R.string.txt_action_close))
+                }
+            }
         )
     }
 }
 
 @Composable
-private fun TxtEditorInlineHeader(
-    title: String,
-    subtitle: String?,
-    meta: String?,
-    canUndo: Boolean,
-    canRedo: Boolean,
-    onUndo: () -> Unit,
-    onRedo: () -> Unit,
-    hasUnsavedChanges: Boolean,
-    canIngest: Boolean,
-    onIngest: () -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.Top
-    ) {
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-            if (subtitle != null) {
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+private fun RawEditorSystemBars(color: Color) {
+    val view = LocalView.current
+    DisposableEffect(view, color) {
+        val activity = view.context.findActivity()
+        val window = activity?.window
+        if (window == null) {
+            onDispose {}
+        } else {
+            val decorView = window.decorView
+            val originalStatusBarColor = window.statusBarColor
+            val originalNavigationBarColor = window.navigationBarColor
+            val originalSystemUiVisibility = decorView.systemUiVisibility
+            val lightSystemBars = color.luminance() > 0.5f
+            window.statusBarColor = color.toArgb()
+            window.navigationBarColor = color.toArgb()
+            decorView.systemUiVisibility = if (lightSystemBars) {
+                originalSystemUiVisibility or
+                    View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or
+                    View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+            } else {
+                originalSystemUiVisibility and
+                    View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv() and
+                    View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
             }
-            if (meta != null) {
-                Text(
-                    text = meta,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
-
-        Column(
-            horizontalAlignment = Alignment.End,
-            verticalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = onUndo,
-                    enabled = canUndo
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.txt_cd_undo)
-                    )
-                }
-                IconButton(
-                    onClick = onRedo,
-                    enabled = canRedo
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                        contentDescription = stringResource(R.string.txt_cd_redo)
-                    )
-                }
-            }
-            Text(
-                text = if (hasUnsavedChanges) {
-                    stringResource(R.string.txt_status_unsaved)
-                } else {
-                    stringResource(R.string.txt_status_saved)
-                },
-                style = MaterialTheme.typography.labelSmall,
-                color = if (hasUnsavedChanges) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                }
-            )
-            Button(
-                onClick = onIngest,
-                enabled = canIngest,
-                modifier = Modifier.widthIn(min = 88.dp)
-            ) {
-                Text(stringResource(R.string.txt_cd_ingest))
+            onDispose {
+                window.statusBarColor = originalStatusBarColor
+                window.navigationBarColor = originalNavigationBarColor
+                decorView.systemUiVisibility = originalSystemUiVisibility
             }
         }
     }
+}
+
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
 }
 
 internal fun splitDayMarkerDigits(value: String): Pair<String, String> {
     val digits = filterDigits(value, 4)
     return Pair(digits.take(2), digits.drop(2).take(2))
+}
+
+internal fun findRawMonthDayMarkerOffset(value: String, date: LocalDate): Int {
+    val marker = "d${formatDayMarker(date)}"
+    return Regex("(?m)^${Regex.escape(marker)}\\r?$")
+        .find(value)
+        ?.range
+        ?.first
+        ?: -1
 }
 
 @Composable

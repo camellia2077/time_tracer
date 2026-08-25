@@ -1,24 +1,17 @@
 package com.example.tracer
 
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import android.util.Log
 import com.example.tracer.feature.insights.R
 import com.example.tracer.ui.components.CalendarAvailability
 import com.example.tracer.ui.components.CalendarYearMonthPickerSheet
+import com.example.tracer.ui.components.OutlinedPickerField
 import com.example.tracer.ui.components.splitYearMonthDigits
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,30 +31,20 @@ internal fun InsightsYearMonthPickerInput(
         insightsMonth
     }
 
-    Text(
-        text = title,
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant
-    )
-    OutlinedButton(
-        onClick = {
-            Log.d(
-                "InsightsCalendar",
-                "month picker open selected=$displayInsightsMonth years=${availability.years} " +
-                    "monthsByYear=${availability.monthsByYear}"
-            )
-            visible = true
-        },
-        enabled = availability.years.isNotEmpty(),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text(
-            text = displayInsightsMonth,
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary
+    val openPicker = {
+        Log.d(
+            "InsightsCalendar",
+            "month picker open selected=$displayInsightsMonth years=${availability.years} " +
+                "monthsByYear=${availability.monthsByYear}"
         )
-        Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
+        visible = true
     }
+    OutlinedPickerField(
+        title = title,
+        value = displayInsightsMonth,
+        enabled = availability.years.isNotEmpty(),
+        onOpen = openPicker
+    )
 
     if (visible) {
         CalendarYearMonthPickerSheet(

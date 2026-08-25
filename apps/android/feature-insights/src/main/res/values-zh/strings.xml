@@ -16,15 +16,15 @@
     <string name="insights_parameter_section_timeline">时间线</string>
     <string name="insights_parameter_section_activity">活动</string>
     <string name="insights_parameter_section_markdown">文本</string>
-    <string name="insights_title_insights_date">分析日期</string>
-    <string name="insights_title_insights_day">分析日</string>
-    <string name="insights_title_insights_month">分析月份</string>
-    <string name="insights_title_insights_week">分析周</string>
+    <string name="insights_title_insights_date">日期</string>
+    <string name="insights_title_insights_day">日</string>
+    <string name="insights_title_insights_month">月份</string>
+    <string name="insights_title_insights_week">周</string>
     <string name="insights_label_select_week">选择周</string>
-    <string name="insights_label_insights_year">分析年份 (YYYY)</string>
+    <string name="insights_label_insights_year">年份</string>
     <string name="insights_title_start_date">开始日期</string>
     <string name="insights_title_end_date">结束日期</string>
-    <string name="insights_label_recent_days">最近天数 (N)</string>
+    <string name="insights_label_recent_days">最近天数</string>
     <string name="insights_activities_period_selector_title">活动周期</string>
     <string name="insights_activities_period_selector_sheet_title">选择%1$s</string>
     <string name="insights_action_cancel">取消</string>
@@ -140,10 +140,10 @@
     <string name="insights_title_section_day">%1$s日期</string>
     <string name="insights_title_section_month">%1$s月份</string>
     <string name="insights_title_section_week">%1$s周</string>
-    <string name="insights_label_section_year">%1$s年份 (YYYY)</string>
+    <string name="insights_label_section_year">%1$s年份</string>
     <string name="insights_title_section_start_date">%1$s开始日期</string>
     <string name="insights_title_section_end_date">%1$s结束日期</string>
-    <string name="insights_label_section_recent_days">%1$s最近天数 (N)</string>
+    <string name="insights_label_section_recent_days">%1$s最近天数</string>
 
     <string name="insights_cd_collapse">收起</string>
     <string name="insights_cd_expand">展开</string>
