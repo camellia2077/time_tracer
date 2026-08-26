@@ -364,6 +364,36 @@ void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
               }),
       "describe_activity_hierarchy should return the core hierarchy snapshot");
 
+  const json kSearchActivityHierarchy = ParseResponse(
+      api.runtime_txt(runtime,
+                      json{{"action", "search_activity_hierarchy"},
+                           {"toml_content", kActivityHierarchyToml},
+                           {"query", "跑步机"}}
+                          .dump()
+                          .c_str()),
+      "search activity hierarchy");
+  Require(
+      kSearchActivityHierarchy.value("ok", false) &&
+          kSearchActivityHierarchy.at("hierarchy").at("nodes").size() == 1 &&
+          kSearchActivityHierarchy.at("hierarchy").at("nodes")[0]
+                  .at("children")[0]
+                  .at("children")[0]
+                  .value("canonical_key", std::string{}) == "treadmill",
+      "search_activity_hierarchy should keep matching aliases and ancestors");
+
+  const json kSearchCanonicalPath = ParseResponse(
+      api.runtime_txt(runtime,
+                      json{{"action", "search_activity_hierarchy"},
+                           {"toml_content", kActivityHierarchyToml},
+                           {"query", "exercise_cardio_treadmill"}}
+                          .dump()
+                          .c_str()),
+      "search activity hierarchy canonical path");
+  Require(
+      kSearchCanonicalPath.value("ok", false) &&
+          kSearchCanonicalPath.at("hierarchy").at("nodes").size() == 1,
+      "search_activity_hierarchy should match a complete canonical path");
+
   const json kRenderActivityHierarchyText = ParseResponse(
       api.runtime_txt(runtime,
                       json{{"action", "render_activity_hierarchy_text"},

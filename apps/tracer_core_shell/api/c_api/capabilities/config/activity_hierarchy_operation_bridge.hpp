@@ -25,6 +25,9 @@ namespace tracer_core::shell::config_bridge {
 [[nodiscard]] auto DescribeActivityHierarchyJson(const nlohmann::json& payload)
     -> nlohmann::json;
 
+[[nodiscard]] auto SearchActivityHierarchyJson(const nlohmann::json& payload)
+    -> nlohmann::json;
+
 [[nodiscard]] auto ValidateActivityHierarchyDocumentsJson(
     const nlohmann::json& payload) -> nlohmann::json;
 

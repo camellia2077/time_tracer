@@ -30,6 +30,9 @@ class IRuntimeActivityQueryRepository {
   [[nodiscard]] virtual auto TryGetLatestActivityTailAtOrBeforeDate(
       std::string_view date) const
       -> std::optional<ActivityTailQueryResult> = 0;
+  // "Latest" follows the persisted logical-day activity sequence. It must not
+  // sort by a natural-day timestamp because a logical day can continue after
+  // midnight.
   [[nodiscard]] virtual auto TryGetLatestActivityRecordOnDate(
       std::string_view date) const -> std::optional<LatestActivityRecord> = 0;
 };

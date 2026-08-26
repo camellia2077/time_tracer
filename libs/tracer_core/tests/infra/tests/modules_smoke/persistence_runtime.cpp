@@ -83,6 +83,12 @@ auto RunPersistenceRuntimeSmokeImpl() -> int {
                 .year = 2026,
                 .month = 2,
                 .activity_count = 2},
+        DayData{.date = "2026-02-03",
+                .remark = "",
+                .getup_time = std::nullopt,
+                .year = 2026,
+                .month = 2,
+                .activity_count = 2},
     });
     writer.InsertRecords({
         TimeRecordInternal{.kind = ActivityRecordKind::kEndOnly,
@@ -115,6 +121,29 @@ auto RunPersistenceRuntimeSmokeImpl() -> int {
                            .duration_seconds = 3600,
                            .remark = std::nullopt,
                            .date = "2026-02-02"},
+        // The logical day continues after midnight. Natural-day timestamps
+        // would put this activity before the preceding 23:00 one, but its
+        // higher logical_id makes it the final activity of this logical day.
+        TimeRecordInternal{.kind = ActivityRecordKind::kInterval,
+                           .logical_id = 30,
+                           .start_timestamp = 1770098400,
+                           .end_timestamp = 1770102000,
+                           .start_time_str = "22:00:00",
+                           .end_time_str = "23:00:00",
+                           .project_path = "evening",
+                           .duration_seconds = 3600,
+                           .remark = std::nullopt,
+                           .date = "2026-02-03"},
+        TimeRecordInternal{.kind = ActivityRecordKind::kInterval,
+                           .logical_id = 31,
+                           .start_timestamp = 1770022800,
+                           .end_timestamp = 1770026400,
+                           .start_time_str = "01:00:00",
+                           .end_time_str = "02:00:00",
+                           .project_path = "after_midnight",
+                           .duration_seconds = 3600,
+                           .remark = std::nullopt,
+                           .date = "2026-02-03"},
     });
 
     const auto previous_tail =
@@ -142,6 +171,16 @@ auto RunPersistenceRuntimeSmokeImpl() -> int {
         latest_record->end_time != "12:00:00" ||
         latest_record->duration_seconds != 3600) {
       return 34;
+    }
+
+    const auto latest_cross_midnight_record =
+        ingest_runtime_repository.TryGetLatestActivityRecordOnDate(
+            "2026-02-03");
+    if (!latest_cross_midnight_record.has_value() ||
+        latest_cross_midnight_record->activity != "after_midnight" ||
+        latest_cross_midnight_record->start_time != "01:00:00" ||
+        latest_cross_midnight_record->end_time != "02:00:00") {
+      return 35;
     }
   } catch (...) {
     return 30;

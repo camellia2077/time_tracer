@@ -284,6 +284,13 @@ auto DescribeActivityHierarchyJson(const nlohmann::json& payload)
                             RequireStringField(payload, "toml_content")))}};
 }
 
+auto SearchActivityHierarchyJson(const nlohmann::json& payload)
+    -> nlohmann::json {
+  return {{"hierarchy", ToJson(config::SearchActivityHierarchy(
+                            RequireStringField(payload, "toml_content"),
+                            RequireStringField(payload, "query")))}};
+}
+
 auto ValidateActivityHierarchyDocumentsJson(const nlohmann::json& payload)
     -> nlohmann::json {
   const auto documents_it = payload.find("documents");

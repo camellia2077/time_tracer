@@ -23,6 +23,7 @@ using tracer_core::core::c_api::internal::RequireRuntime;
 using tracer_core::core::c_api::internal::ToRequestJsonView;
 using tracer_core::shell::config_bridge::ApplyActivityHierarchyOperationJson;
 using tracer_core::shell::config_bridge::DescribeActivityHierarchyJson;
+using tracer_core::shell::config_bridge::SearchActivityHierarchyJson;
 using tracer_core::shell::config_bridge::
     MoveActivityHierarchyLeafBetweenDocumentsJson;
 using tracer_core::shell::config_bridge::
@@ -401,6 +402,16 @@ extern "C" TT_CORE_API auto tracer_core_runtime_config_json(
       }
     }
 
+    if (action == "search_activity_hierarchy") {
+      try {
+        return BuildTxtSuccessResponse(
+            [&]() { return SearchActivityHierarchyJson(payload); });
+      } catch (const std::exception& error) {
+        return BuildFailureResponse(
+            error.what(), "config.activity_hierarchy.failed", "config", {});
+      }
+    }
+
     if (action == "validate_activity_hierarchy_documents") {
       try {
         return BuildTxtSuccessResponse(
@@ -438,7 +449,8 @@ extern "C" TT_CORE_API auto tracer_core_runtime_config_json(
          "alias_activity_names|apply_activity_hierarchy_operation|move_"
          "activity_hierarchy_leaf_between_documents|move_activity_hierarchy_"
          "node_between_documents|rewrite_activity_hierarchy_document|describe_"
-         "activity_hierarchy|validate_activity_hierarchy_documents|render_"
+         "activity_hierarchy|search_activity_hierarchy|validate_activity_"
+         "hierarchy_documents|render_"
          "activity_hierarchy_text."});
   } catch (const std::exception& error) {
     return BuildFailureResponse(error.what());

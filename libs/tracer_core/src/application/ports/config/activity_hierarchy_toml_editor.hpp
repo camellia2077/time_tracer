@@ -126,6 +126,13 @@ auto RewriteActivityHierarchyDocument(std::string_view original_toml_content,
 auto DescribeActivityHierarchy(std::string_view toml_content)
     -> ActivityHierarchySnapshot;
 
+// Returns the Core-validated hierarchy filtered by a case-insensitive
+// contains match against canonical keys/paths and aliases. Ancestor groups are
+// retained so presentation clients can render matching nodes in context.
+auto SearchActivityHierarchy(std::string_view toml_content,
+                             std::string_view query)
+    -> ActivityHierarchySnapshot;
+
 // Validates each supplied canonical document and rejects alias keys duplicated
 // across the document set. This is in-memory only; callers retain ownership of
 // file reads and persistence.

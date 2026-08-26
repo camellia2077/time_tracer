@@ -182,7 +182,7 @@ auto SqliteIngestRuntimeRepository::TryGetLatestActivityRecordOnDate(
 
   const std::string sql = std::format(
       "SELECT {0}, {1}, {2}, {3}, \"{4}\", {5}, {6} FROM {7} "
-      "WHERE {0} = ?1 ORDER BY {6} DESC, {8} DESC LIMIT 1;",
+      "WHERE {0} = ?1 ORDER BY {8} DESC LIMIT 1;",
       schema::time_records::db::kDate,
       schema::time_records::db::kProjectPathSnapshot,
       schema::time_records::db::kRecordKind, schema::time_records::db::kStart,

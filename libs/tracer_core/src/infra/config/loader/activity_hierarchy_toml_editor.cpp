@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cctype>
 #include <map>
+#include <optional>
 #include <sstream>
 #include <stdexcept>
 #include <string_view>
@@ -15,6 +16,10 @@ namespace config = tracer::core::application::config;
 namespace {
 
 using Replacement = config::AliasCanonicalReplacement;
+
+struct NormalizedSearchQuery {
+  std::string_view value;
+};
 
 struct Match {
   std::string canonical;
@@ -375,6 +380,65 @@ auto DescribeNode(const tracer::core::infrastructure::config::loader::detail::
     snapshot.children.push_back(DescribeNode(child, path));
   }
   return snapshot;
+}
+
+[[nodiscard]] auto LowerAsciiCopy(std::string_view value) -> std::string {
+  std::string result(value);
+  std::ranges::transform(result, result.begin(), [](unsigned char character) {
+    return static_cast<char>(std::tolower(character));
+  });
+  return result;
+}
+
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+[[nodiscard]] auto BuildSearchableCanonicalPath(std::string_view parent,
+                                                std::string_view relative_path)
+    -> std::string {
+  std::string canonical_path(parent);
+  if (!canonical_path.empty() && !relative_path.empty()) {
+    canonical_path += '_';
+  }
+  for (const char kCharacter : relative_path) {
+    canonical_path += kCharacter == '.' ? '_' : kCharacter;
+  }
+  return canonical_path;
+}
+
+[[nodiscard]] auto MatchesSearchQuery(
+    const config::ActivityHierarchyNodeSnapshot& node, std::string_view parent,
+    NormalizedSearchQuery normalized_query) -> bool {
+  const std::string kCanonicalPath =
+      BuildSearchableCanonicalPath(parent, node.path);
+  const auto kContainsQuery = [normalized_query](std::string_view value) {
+    return LowerAsciiCopy(value).find(normalized_query.value) !=
+           std::string::npos;
+  };
+  if (kContainsQuery(node.canonical_key) || kContainsQuery(node.path) ||
+      kContainsQuery(kCanonicalPath)) {
+    return true;
+  }
+  return std::ranges::any_of(node.aliases, kContainsQuery);
+}
+
+[[nodiscard]] auto FilterNodeForSearch(
+    const config::ActivityHierarchyNodeSnapshot& node, std::string_view parent,
+    std::string_view normalized_query)
+    -> std::optional<config::ActivityHierarchyNodeSnapshot> {
+  config::ActivityHierarchyNodeSnapshot filtered = node;
+  filtered.children.clear();
+  for (const auto& child : node.children) {
+    if (const auto kFilteredChild =
+            FilterNodeForSearch(child, parent, normalized_query);
+        kFilteredChild.has_value()) {
+      filtered.children.push_back(*kFilteredChild);
+    }
+  }
+  if (MatchesSearchQuery(node, parent,
+                         NormalizedSearchQuery{normalized_query}) ||
+      !filtered.children.empty()) {
+    return filtered;
+  }
+  return std::nullopt;
 }
 
 auto CollectRenamedCanonicalReplacements(
@@ -1093,6 +1157,28 @@ auto DescribeActivityHierarchy(std::string_view toml_content)
   for (const auto& node : kDocument.nodes) {
     snapshot.nodes.push_back(DescribeNode(node, {}));
   }
+  return snapshot;
+}
+
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+auto SearchActivityHierarchy(std::string_view toml_content,
+                             std::string_view query)
+    -> ActivityHierarchySnapshot {
+  ActivityHierarchySnapshot snapshot = DescribeActivityHierarchy(toml_content);
+  const std::string kNormalizedQuery = LowerAsciiCopy(query);
+  if (kNormalizedQuery.empty()) {
+    return snapshot;
+  }
+
+  std::vector<ActivityHierarchyNodeSnapshot> matching_nodes;
+  for (const auto& node : snapshot.nodes) {
+    if (const auto kFilteredNode =
+            FilterNodeForSearch(node, snapshot.parent, kNormalizedQuery);
+        kFilteredNode.has_value()) {
+      matching_nodes.push_back(*kFilteredNode);
+    }
+  }
+  snapshot.nodes = std::move(matching_nodes);
   return snapshot;
 }
 
