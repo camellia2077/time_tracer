@@ -15,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
@@ -69,7 +70,7 @@ class NativeMultilineTextEditorController {
     // a new request and the arrow buttons appear broken.
     internal var undoRequestCount by mutableStateOf(0)
     internal var redoRequestCount by mutableStateOf(0)
-    internal var selectionRequestCount by mutableStateOf(0)
+    internal var selectionRequestCount by mutableIntStateOf(0)
     internal var requestedSelectionStart: Int = 0
     internal var requestedSelectionEnd: Int = 0
 

@@ -88,6 +88,9 @@ internal fun InsightsChartResultContent(
     onChartVisualModeChange: (InsightsChartVisualMode) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    if (chartSemanticMode == InsightsChartSemanticMode.HIERARCHY) {
+        return
+    }
     val normalizedSemanticMode = chartSemanticMode.normalizeForInsightsMode(insightsMode)
     val normalizedRoots = remember(trendChartRoots) { trendChartRoots.distinct() }
     val chartRootTree = remember(trendChartRenderModel, normalizedRoots) {
@@ -129,7 +132,6 @@ internal fun InsightsChartResultContent(
     val chartTotalDurationSeconds = trendChartRenderModel?.totalDurationSeconds ?: 0L
     val chartAverageDurationPerOccurrenceSeconds =
         trendChartRenderModel?.averageDurationPerOccurrenceSeconds ?: 0L
-    val chartModeDurationSeconds = trendChartRenderModel?.modeDurationSeconds
     val chartMedianDurationSeconds = trendChartRenderModel?.medianDurationSeconds
     val chartMinimumDurationSeconds = trendChartRenderModel?.minimumDurationSeconds
     val chartMaximumDurationSeconds = trendChartRenderModel?.maximumDurationSeconds
@@ -160,7 +162,7 @@ internal fun InsightsChartResultContent(
     val effectiveCompositionVisualMode = compositionVisualMode
 
     if (rootPickerVisible) {
-        InsightsChartRootPickerDialog(
+        InsightsChartRootPickerPage(
             rootNodes = chartRootTree,
             selectedPath = trendChartSelectedRoot,
             onPathSelected = { path ->
@@ -210,7 +212,6 @@ internal fun InsightsChartResultContent(
                 chartTotalDurationSeconds = chartTotalDurationSeconds,
                 chartAverageDurationPerOccurrenceSeconds =
                     chartAverageDurationPerOccurrenceSeconds,
-                chartModeDurationSeconds = chartModeDurationSeconds,
                 chartMedianDurationSeconds = chartMedianDurationSeconds,
                 chartMinimumDurationSeconds = chartMinimumDurationSeconds,
                 chartMaximumDurationSeconds = chartMaximumDurationSeconds,
@@ -252,10 +253,13 @@ private fun List<InsightsChartPoint>.sortedChartPoints(): List<InsightsChartPoin
 
 @Composable
 internal fun InsightsChartSemanticModeSelector(
+    insightsMode: InsightsMode,
     chartSemanticMode: InsightsChartSemanticMode,
     onChartSemanticModeChange: (InsightsChartSemanticMode) -> Unit
 ) {
-    val modes = InsightsChartSemanticMode.entries
+    val modes = InsightsChartSemanticMode.entries.filter { mode ->
+        insightsMode != InsightsMode.DAY || mode != InsightsChartSemanticMode.TREND
+    }
     SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
         modes.forEachIndexed { index, item ->
             val selected = chartSemanticMode == item

@@ -1,21 +1,13 @@
 package com.example.tracer
 
 import android.util.Log
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material3.Icon
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -41,48 +33,31 @@ internal fun CompositionSliceLegend(
     colors: List<androidx.compose.ui.graphics.Color>,
     parentPath: List<String>,
     nodes: List<TreeNode>,
-    valueLabel: (Long) -> String,
     showAverage: Boolean,
-    showAverageRecords: Boolean,
     showFrequency: Boolean,
     onSliceSelected: (Int) -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(6.dp)
+        verticalArrangement = Arrangement.spacedBy(0.dp)
     ) {
         slices.forEachIndexed { index, slice ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 48.dp)
-                    .clickable { onSliceSelected(index) }
-                    .padding(horizontal = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(10.dp)
-                        .background(
-                            color = colors.getOrElse(index) { androidx.compose.ui.graphics.Color.Gray },
-                            shape = CircleShape
-                        )
+            val hasChildren = nodes.firstOrNull { it.name == slice.root }
+                ?.children
+                ?.isNotEmpty() == true
+            CompositionLegendRow(
+                slice = slice,
+                showAverage = showAverage,
+                showFrequency = showFrequency,
+                label = (parentPath + slice.root).joinToString(" › "),
+                color = colors.getOrElse(index) { androidx.compose.ui.graphics.Color.Gray },
+                hasChildren = hasChildren,
+                onClick = { onSliceSelected(index) }
+            )
+            if (index < slices.lastIndex) {
+                HorizontalDivider(
+                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
                 )
-                CompositionLegendRow(
-                    slice = slice,
-                    showAverage = showAverage,
-                    showFrequency = showFrequency,
-                    label = (parentPath + slice.root).joinToString(" › "),
-                    modifier = Modifier.weight(1f).padding(start = 8.dp)
-                )
-                if (nodes.firstOrNull { it.name == slice.root }?.children?.isNotEmpty() == true) {
-                    Icon(
-                        imageVector = Icons.Filled.ChevronRight,
-                        contentDescription = null,
-                        modifier = Modifier.padding(start = 4.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
             }
         }
     }

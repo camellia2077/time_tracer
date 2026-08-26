@@ -55,7 +55,7 @@ internal class RuntimeActivityHierarchyAutoRegistrar(
             return ActivityHierarchyAutoRegistrationResult(false, files.message)
         }
 
-        val catalog = catalogQuery.listCanonicalCatalog()
+        val catalog = catalogQuery.listCanonicalCatalog("")
         if (catalog.ok && catalog.entries.any { entry ->
                 entry.canonicalLeaf == activityName ||
                     entry.canonicalPath == activityName ||

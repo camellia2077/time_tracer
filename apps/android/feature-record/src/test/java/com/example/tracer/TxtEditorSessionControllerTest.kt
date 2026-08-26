@@ -146,4 +146,28 @@ class TxtEditorSessionControllerTest {
         assertTrue(controller.state.dayDraftState.hasUnsavedChanges)
     }
 
+    @Test
+    fun switchingOutputModes_preservesEachRawTxtDraft() {
+        val controller = TxtEditorSessionController()
+        controller.syncExternalMonthDraft(
+            selectedHistoryContent = "saved-month",
+            editableHistoryContent = "saved-month"
+        )
+        controller.syncResolvedDayBody("0900study\n")
+
+        controller.updateOutputMode(TxtOutputMode.DAY)
+        controller.onEditorTextChange("0900study\n1000break\n")
+        controller.updateOutputMode(TxtOutputMode.ALL)
+        controller.onEditorTextChange("edited-month")
+
+        assertEquals("edited-month", controller.deriveEditorUiState(canEditDay = true).editorText)
+
+        controller.updateOutputMode(TxtOutputMode.DAY)
+
+        assertEquals(
+            "0900study\n1000break\n",
+            controller.deriveEditorUiState(canEditDay = true).editorText
+        )
+    }
+
 }

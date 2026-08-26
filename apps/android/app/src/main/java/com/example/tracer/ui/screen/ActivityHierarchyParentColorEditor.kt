@@ -26,7 +26,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -40,8 +39,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 
 @Composable
 internal fun ActivityHierarchyParentColorEditor(
@@ -128,11 +125,7 @@ private fun ParentColorPaletteScreen(
             family.colors.any { it.hex.equals(currentColor, ignoreCase = true) }
         } ?: ParentColorFamilies.first())
     }
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
+    FullscreenPage(onDismissRequest = onDismiss) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -238,7 +231,6 @@ private fun ParentColorPaletteScreen(
                     }
                 }
             }
-        }
     }
 }
 

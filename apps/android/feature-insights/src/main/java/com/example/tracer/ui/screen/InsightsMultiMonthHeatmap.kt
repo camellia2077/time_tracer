@@ -18,7 +18,6 @@ import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,8 +26,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.insights.R
@@ -88,46 +85,41 @@ internal fun InsightsMultiMonthHeatmap(
     }
 
     if (isFullscreen) {
-        Dialog(
-            onDismissRequest = { isFullscreen = false },
-            properties = DialogProperties(usePlatformDefaultWidth = false)
-        ) {
-            Surface(modifier = Modifier.fillMaxSize()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+        FullscreenPage(onDismissRequest = { isFullscreen = false }) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = stringResource(R.string.insights_chart_heatmap_multi_month_hint),
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.weight(1f)
-                        )
-                        IconButton(onClick = { isFullscreen = false }) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = stringResource(R.string.insights_cd_collapse)
-                            )
-                        }
-                    }
-                    YearHeatmapMonthGrid(
-                        months = months,
-                        formatter = formatter,
-                        points = points,
-                        selectedIndex = selectedIndex,
-                        heatmapTomlConfig = heatmapTomlConfig,
-                        heatmapStylePreference = heatmapStylePreference,
-                        isAppDarkThemeActive = isAppDarkThemeActive,
-                        onPointSelected = onPointSelected,
-                        horizontalLandscape = true,
+                    Text(
+                        text = stringResource(R.string.insights_chart_heatmap_multi_month_hint),
+                        style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.weight(1f)
                     )
+                    IconButton(onClick = { isFullscreen = false }) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = stringResource(R.string.insights_cd_collapse)
+                        )
+                    }
                 }
+                YearHeatmapMonthGrid(
+                    months = months,
+                    formatter = formatter,
+                    points = points,
+                    selectedIndex = selectedIndex,
+                    heatmapTomlConfig = heatmapTomlConfig,
+                    heatmapStylePreference = heatmapStylePreference,
+                    isAppDarkThemeActive = isAppDarkThemeActive,
+                    onPointSelected = onPointSelected,
+                    horizontalLandscape = true,
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
     }

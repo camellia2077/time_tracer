@@ -355,10 +355,12 @@ class QueryInsightsViewModel(
     }
 
     internal fun refreshCurrentResult() {
-        if (uiState.resultDisplayMode == InsightsResultDisplayMode.CHART) {
-            refreshCurrentChart()
-        } else if (uiState.resultDisplayMode == InsightsResultDisplayMode.HIERARCHY) {
+        if (uiState.resultDisplayMode == InsightsResultDisplayMode.CHART &&
+            uiState.chartSemanticMode == InsightsChartSemanticMode.HIERARCHY
+        ) {
             loadTree(uiState.insightsMode.toDataTreePeriod(), uiState.treeLevel)
+        } else if (uiState.resultDisplayMode == InsightsResultDisplayMode.CHART) {
+            refreshCurrentChart()
         } else {
             insightsCurrentSelection()
         }
@@ -383,6 +385,7 @@ class QueryInsightsViewModel(
         val nextState = uiState.transform()
             .invalidateChartState()
         val shouldReloadChart = nextState.resultDisplayMode == InsightsResultDisplayMode.CHART &&
+            nextState.chartSemanticMode != InsightsChartSemanticMode.HIERARCHY &&
             !nextState.isChartLoading()
         uiState = nextState
         logChart("insights parameters applied; reloadChart=$shouldReloadChart ${chartSelection()}")
@@ -392,7 +395,9 @@ class QueryInsightsViewModel(
             loadChart()
         }
         if (autoInsights && hasValidInsightsParameters(nextState)) {
-            if (nextState.resultDisplayMode == InsightsResultDisplayMode.HIERARCHY) {
+            if (nextState.resultDisplayMode == InsightsResultDisplayMode.CHART &&
+                nextState.chartSemanticMode == InsightsChartSemanticMode.HIERARCHY
+            ) {
                 loadTree(nextState.insightsMode.toDataTreePeriod(), nextState.treeLevel)
             } else {
                 insightsCurrentSelection()
@@ -423,6 +428,7 @@ class QueryInsightsViewModel(
         when (chartSemanticMode.normalizeForInsightsMode(insightsMode)) {
             InsightsChartSemanticMode.TREND -> trendChartLoading
             InsightsChartSemanticMode.COMPOSITION -> compositionChartLoading
+            InsightsChartSemanticMode.HIERARCHY -> false
         }
 
     internal fun invalidateInFlightChartRequests(reason: String) {

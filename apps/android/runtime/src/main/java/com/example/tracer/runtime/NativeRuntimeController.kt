@@ -49,10 +49,18 @@ class NativeRuntimeController(
         responseCodec = responseCodec,
         statusCodec = ingestSyncStatusCodec
     )
+    private val aliasHierarchyService = RuntimeActivityHierarchyService(
+        initializeRuntimeInternal = coreAdapter::initializeRuntimeInternal,
+        nativeConfig = runtimeBridge::nativeConfig,
+        codec = txtRuntimeCodec
+    )
     private val queryDelegate = RuntimeQueryDelegate(
         queryTranslator = queryTranslator,
         executeNativeDataQuery = coreAdapter::executeNativeDataQuery,
         ensureConfigTomlStorage = runtimeSession::ensureConfigTomlStorage,
+        searchActivityHierarchy = { tomlContent, query ->
+            aliasHierarchyService.search(tomlContent, query)
+        },
         diagnosticsRecorder = diagnosticsRecorder,
         nextOperationId = operationIdGenerator::next
     )
@@ -84,16 +92,12 @@ class NativeRuntimeController(
         responseCodec = responseCodec,
         txtCodec = txtRuntimeCodec
     )
-    private val aliasHierarchyService = RuntimeActivityHierarchyService(
-        initializeRuntimeInternal = coreAdapter::initializeRuntimeInternal,
-        nativeConfig = runtimeBridge::nativeConfig,
-        codec = txtRuntimeCodec
-    )
     private val activityHierarchyAutoRegistrar = RuntimeActivityHierarchyAutoRegistrar(
         context = context,
         ensureConfigTomlStorage = runtimeSession::ensureConfigTomlStorage,
         catalogQuery = RuntimeCanonicalCatalogQueryDelegate(
-            ensureConfigTomlStorage = runtimeSession::ensureConfigTomlStorage
+            ensureConfigTomlStorage = runtimeSession::ensureConfigTomlStorage,
+            searchActivityHierarchy = aliasHierarchyService::search
         ),
         loadWakeKeywords = queryDelegate::listWakeKeywords,
         hierarchyService = aliasHierarchyService
@@ -512,8 +516,8 @@ class NativeRuntimeController(
     override suspend fun listActivityHierarchyLeafMappings(): ActivityHierarchyLeafMappingListResult =
         queryService.listActivityHierarchyLeafMappings()
 
-    override suspend fun listCanonicalCatalog(): CanonicalCatalogResult =
-        queryService.listCanonicalCatalog()
+    override suspend fun listCanonicalCatalog(searchQuery: String): CanonicalCatalogResult =
+        queryService.listCanonicalCatalog(searchQuery)
 
     override suspend fun listActivityHierarchyLeafKeys(): ActivityMappingNamesResult =
         queryService.listActivityHierarchyLeafKeys()

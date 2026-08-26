@@ -21,6 +21,7 @@ enum class InsightsParameterSection {
 internal fun QueryInsightsParameterCards(
     insightsMode: InsightsMode,
     resultDisplayMode: InsightsResultDisplayMode,
+    selectedChartSemanticMode: InsightsChartSemanticMode,
     analysisPeriod: DataTreePeriod,
     selectedSection: InsightsParameterSection,
     treeMaxAvailableDepth: Int,
@@ -60,8 +61,11 @@ internal fun QueryInsightsParameterCards(
         )
     }
 
-    when (resultDisplayMode) {
-        InsightsResultDisplayMode.HIERARCHY -> TreeParametersCard(
+    val showHierarchyParameters = resultDisplayMode == InsightsResultDisplayMode.CHART &&
+        selectedChartSemanticMode == InsightsChartSemanticMode.HIERARCHY
+
+    if (showHierarchyParameters) {
+        TreeParametersCard(
             analysisPeriod = analysisPeriod,
             maxAvailableDepth = treeMaxAvailableDepth,
             treeLevel = treeLevel,
@@ -85,74 +89,52 @@ internal fun QueryInsightsParameterCards(
             expanded = timeParametersExpanded,
             onExpandedChange = onTimeParametersExpandedChange
         )
-
-        InsightsResultDisplayMode.DETAILS,
-        InsightsResultDisplayMode.CHART -> {
-            val contentSection = if (resultDisplayMode == InsightsResultDisplayMode.DETAILS) {
-                selectedSection
-            } else {
-                InsightsParameterSection.DAY
-            }
-            when (contentSection) {
-                InsightsParameterSection.DAY -> InsightsParametersCard(
-            insightsMode = insightsMode,
-            keyboardOptions = keyboardOptions,
-            insightsDate = insightsDate,
-            onInsightsDateChange = onInsightsDateChange,
-            insightsMonth = insightsMonth,
-            onInsightsMonthChange = onInsightsMonthChange,
-            calendarAvailability = calendarAvailability,
-            insightsYear = insightsYear,
-            onInsightsYearChange = onInsightsYearChange,
-            insightsWeek = insightsWeek,
-            onInsightsWeekChange = onInsightsWeekChange,
-            insightsRangeStartDate = insightsRangeStartDate,
-            onInsightsRangeStartDateChange = onInsightsRangeStartDateChange,
-            insightsRangeEndDate = insightsRangeEndDate,
-            onInsightsRangeEndDateChange = onInsightsRangeEndDateChange,
-            insightsRecentDays = insightsRecentDays,
-            onInsightsRecentDaysChange = onInsightsRecentDaysChange,
-            expanded = timeParametersExpanded,
-            onExpandedChange = onTimeParametersExpandedChange
-        )
-
-                InsightsParameterSection.ACTIVITIES -> if (
-            insightsMode in setOf(InsightsMode.DAY, InsightsMode.WEEK, InsightsMode.MONTH, InsightsMode.YEAR)
-        ) {
-            InsightsActivitiesPeriodSelector(
-                insightsMode = insightsMode,
-                keyboardOptions = keyboardOptions,
-                insightsDate = insightsDate,
-                insightsMonth = insightsMonth,
-                calendarAvailability = calendarAvailability,
-                insightsYear = insightsYear,
-                insightsWeek = insightsWeek,
-                onPeriodConfirmed = onInsightsActivityPeriodConfirmed
-            )
-        } else InsightsParametersCard(
-            insightsMode = insightsMode,
-            keyboardOptions = keyboardOptions,
-            insightsDate = insightsDate,
-            onInsightsDateChange = onInsightsDateChange,
-            insightsMonth = insightsMonth,
-            onInsightsMonthChange = onInsightsMonthChange,
-            calendarAvailability = calendarAvailability,
-            insightsYear = insightsYear,
-            onInsightsYearChange = onInsightsYearChange,
-            insightsWeek = insightsWeek,
-            onInsightsWeekChange = onInsightsWeekChange,
-            insightsRangeStartDate = insightsRangeStartDate,
-            onInsightsRangeStartDateChange = onInsightsRangeStartDateChange,
-            insightsRangeEndDate = insightsRangeEndDate,
-            onInsightsRangeEndDateChange = onInsightsRangeEndDateChange,
-            insightsRecentDays = insightsRecentDays,
-            onInsightsRecentDaysChange = onInsightsRecentDaysChange,
-            expanded = timeParametersExpanded,
-            onExpandedChange = onTimeParametersExpandedChange
-                )
-            }
-        }
+        return
     }
+
+    val contentSection = if (resultDisplayMode == InsightsResultDisplayMode.DETAILS) {
+        selectedSection
+    } else {
+        InsightsParameterSection.DAY
+    }
+
+    if (contentSection == InsightsParameterSection.ACTIVITIES &&
+        insightsMode in setOf(InsightsMode.DAY, InsightsMode.WEEK, InsightsMode.MONTH, InsightsMode.YEAR)
+    ) {
+        InsightsActivitiesPeriodSelector(
+            insightsMode = insightsMode,
+            keyboardOptions = keyboardOptions,
+            insightsDate = insightsDate,
+            insightsMonth = insightsMonth,
+            calendarAvailability = calendarAvailability,
+            insightsYear = insightsYear,
+            insightsWeek = insightsWeek,
+            onPeriodConfirmed = onInsightsActivityPeriodConfirmed
+        )
+        return
+    }
+
+    InsightsParametersCard(
+        insightsMode = insightsMode,
+        keyboardOptions = keyboardOptions,
+        insightsDate = insightsDate,
+        onInsightsDateChange = onInsightsDateChange,
+        insightsMonth = insightsMonth,
+        onInsightsMonthChange = onInsightsMonthChange,
+        calendarAvailability = calendarAvailability,
+        insightsYear = insightsYear,
+        onInsightsYearChange = onInsightsYearChange,
+        insightsWeek = insightsWeek,
+        onInsightsWeekChange = onInsightsWeekChange,
+        insightsRangeStartDate = insightsRangeStartDate,
+        onInsightsRangeStartDateChange = onInsightsRangeStartDateChange,
+        insightsRangeEndDate = insightsRangeEndDate,
+        onInsightsRangeEndDateChange = onInsightsRangeEndDateChange,
+        insightsRecentDays = insightsRecentDays,
+        onInsightsRecentDaysChange = onInsightsRecentDaysChange,
+        expanded = timeParametersExpanded,
+        onExpandedChange = onTimeParametersExpandedChange
+    )
 }
 
 @Composable

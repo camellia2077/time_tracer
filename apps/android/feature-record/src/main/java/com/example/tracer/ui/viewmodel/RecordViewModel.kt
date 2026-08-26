@@ -106,6 +106,7 @@ data class RecordUiState(
     val frequentActivities: List<RecordFrequentActivity> = emptyList(),
     val canonicalCatalogRoots: List<CanonicalPathNode> = emptyList(),
     val canonicalCatalogStatusText: String = "",
+    val canonicalCatalogSearchQuery: String = "",
     val lastRecordedActivityHierarchyLeaf: String = "",
     val lastRecordedDuration: String = "",
     val latestActivityRecord: LatestActivityRecord? = null,
@@ -538,6 +539,21 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
                 "ui.record_interval.result status=${uiState.statusText.lineSequence().firstOrNull()}"
             )
             persistRecordInputState()
+        }
+    }
+
+    fun updateCanonicalCatalogSearchQuery(value: String) {
+        canonicalCatalogLoadJob?.cancel()
+        val requestedQuery = value
+        uiState = uiState.copy(
+            canonicalCatalogSearchQuery = requestedQuery,
+            isCanonicalCatalogLoading = true
+        )
+        canonicalCatalogLoadJob = viewModelScope.launch {
+            val loadedState = intentHandler.loadCanonicalCatalog(uiState)
+            if (uiState.canonicalCatalogSearchQuery == requestedQuery) {
+                uiState = loadedState
+            }
         }
     }
 

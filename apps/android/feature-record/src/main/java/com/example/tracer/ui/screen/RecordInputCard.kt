@@ -44,7 +44,6 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -62,8 +61,6 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -598,17 +595,10 @@ private fun ElapsedFullScreenDialog(
     val ringTrackColor = MaterialTheme.colorScheme.surfaceVariant
     val ringProgressColor = MaterialTheme.colorScheme.primary
     val minuteProgressColor = MaterialTheme.colorScheme.secondary
-    Dialog(
+    FullscreenPage(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(
-            usePlatformDefaultWidth = false,
-            decorFitsSystemWindows = false
-        )
+        backgroundColor = MaterialTheme.colorScheme.background
     ) {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -714,7 +704,6 @@ private fun ElapsedFullScreenDialog(
                     }
                 }
             }
-        }
     }
 }
 

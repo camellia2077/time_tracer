@@ -20,8 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.tracer.feature.insights.R
-import androidx.compose.ui.res.stringResource
 
 @Composable
 internal fun InsightsCompositionBarChart(
@@ -29,9 +27,7 @@ internal fun InsightsCompositionBarChart(
     palettePreset: InsightsPiePalettePreset,
     selectedIndex: Int,
     onItemSelected: (Int) -> Unit,
-    valueLabel: (Long) -> String = ::formatDurationHoursMinutes,
     showAverage: Boolean = true,
-    showAverageRecords: Boolean = false,
     showFrequency: Boolean = false,
     modifier: Modifier = Modifier
 ) {
@@ -64,7 +60,6 @@ internal fun InsightsCompositionBarChart(
             } else {
                 MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.18f)
             }
-
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -79,7 +74,7 @@ internal fun InsightsCompositionBarChart(
                     .padding(horizontal = 12.dp, vertical = 10.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                CompositionLegendRow(
+                CompositionBarLegendRow(
                     slice = slice,
                     showAverage = showAverage,
                     showFrequency = showFrequency

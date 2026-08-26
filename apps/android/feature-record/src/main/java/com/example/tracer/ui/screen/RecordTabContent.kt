@@ -241,6 +241,8 @@ fun RecordTabContent(
         },
         onFrequentActivitiesRequested = recordViewModel::loadFrequentActivities,
         onTreeRequested = recordViewModel::openCanonicalCatalog,
+        canonicalCatalogSearchQuery = recordUiState.canonicalCatalogSearchQuery,
+        onCanonicalCatalogSearchQueryChange = recordViewModel::updateCanonicalCatalogSearchQuery,
         onFrequentActivityClick = { activity ->
             recordViewModel.applyFrequentActivity(activity)
             true

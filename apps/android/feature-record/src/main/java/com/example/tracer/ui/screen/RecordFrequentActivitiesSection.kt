@@ -32,7 +32,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -58,8 +57,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.zIndex
 import com.example.tracer.feature.record.R
 import java.time.Clock
@@ -186,14 +183,7 @@ internal fun RecordFrequentActivitiesSheet(
     var topNInput by remember(frequentTopN) {
         mutableStateOf(frequentTopN.toString())
     }
-    Dialog(
-        onDismissRequest = onDismissRequest,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.surface
-        ) {
+    FullscreenPage(onDismissRequest = onDismissRequest) {
             Column(modifier = Modifier.fillMaxSize()) {
                 Column(
                     modifier = Modifier
@@ -404,6 +394,5 @@ internal fun RecordFrequentActivitiesSheet(
                     )
                 }
             }
-        }
     }
 }

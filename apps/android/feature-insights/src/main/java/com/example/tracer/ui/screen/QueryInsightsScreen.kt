@@ -73,10 +73,9 @@ internal fun QueryInsightsSection(
                 onModeChange = onResultDisplayModeChange,
                 modifier = Modifier.fillMaxWidth()
             )
-            if (resultDisplayMode == InsightsResultDisplayMode.CHART &&
-                insightsMode != InsightsMode.DAY
-            ) {
+            if (resultDisplayMode == InsightsResultDisplayMode.CHART) {
                 InsightsChartSemanticModeSelector(
+                    insightsMode = insightsMode,
                     chartSemanticMode = chartSemanticMode,
                     onChartSemanticModeChange = onChartSemanticModeChange
                 )
@@ -85,6 +84,7 @@ internal fun QueryInsightsSection(
             QueryInsightsParameterCards(
                 insightsMode = insightsMode,
                 resultDisplayMode = resultDisplayMode,
+                selectedChartSemanticMode = chartSemanticMode,
                 analysisPeriod = analysisPeriod,
                 selectedSection = selectedParameterSection,
                 treeMaxAvailableDepth = treeMaxAvailableDepth,

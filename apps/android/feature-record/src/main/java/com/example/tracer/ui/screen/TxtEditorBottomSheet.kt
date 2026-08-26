@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.view.View
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,6 +18,8 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Button
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -31,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
@@ -57,6 +61,7 @@ internal fun TxtRawEditorFullScreen(
     canSave: Boolean,
     readOnly: Boolean,
     onValueChange: (String) -> Unit,
+    onOutputModeChange: (TxtOutputMode) -> Unit,
     onSave: () -> Unit,
     onDiscard: () -> Unit
 ) {
@@ -66,6 +71,10 @@ internal fun TxtRawEditorFullScreen(
     val editorController = remember { NativeMultilineTextEditorController() }
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
+    val configuration = LocalConfiguration.current
+    val resources = remember(context, configuration) {
+        context.createConfigurationContext(configuration).resources
+    }
     val rawMonth = remember(selectedMonth) {
         runCatching { YearMonth.parse(selectedMonth) }.getOrNull()
     }
@@ -76,6 +85,10 @@ internal fun TxtRawEditorFullScreen(
             onDiscard()
         }
     }
+
+    // This full-screen overlay is hosted outside the app's regular navigation stack.
+    // Consume system Back here so it follows the same discard-and-return path as Close.
+    BackHandler(onBack = ::requestDiscard)
 
     val surfaceColor = MaterialTheme.colorScheme.surface
     RawEditorSystemBars(surfaceColor)
@@ -122,6 +135,20 @@ internal fun TxtRawEditorFullScreen(
                         Text(stringResource(R.string.txt_action_close))
                     }
                 }
+                PrimaryTabRow(
+                    selectedTabIndex = if (outputMode == TxtOutputMode.DAY) 0 else 1
+                ) {
+                    Tab(
+                        selected = outputMode == TxtOutputMode.DAY,
+                        onClick = { onOutputModeChange(TxtOutputMode.DAY) },
+                        text = { Text(stringResource(R.string.txt_raw_editor_tab_day)) }
+                    )
+                    Tab(
+                        selected = outputMode == TxtOutputMode.ALL,
+                        onClick = { onOutputModeChange(TxtOutputMode.ALL) },
+                        text = { Text(stringResource(R.string.txt_raw_editor_tab_month)) }
+                    )
+                }
                 if (jumpStatusText.isNotBlank()) {
                     Text(
                         text = jumpStatusText,
@@ -163,7 +190,7 @@ internal fun TxtRawEditorFullScreen(
                 datePickerVisible = false
                 val markerOffset = findRawMonthDayMarkerOffset(value, date)
                 if (markerOffset < 0) {
-                    jumpStatusText = context.getString(
+                    jumpStatusText = resources.getString(
                         R.string.txt_raw_editor_day_not_found,
                         date.toString()
                     )

@@ -4,9 +4,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 internal class RuntimeCanonicalCatalogQueryDelegate(
-    private val ensureConfigTomlStorage: () -> ConfigTomlStorage
+    private val ensureConfigTomlStorage: () -> ConfigTomlStorage,
+    private val searchActivityHierarchy: suspend (String, String) -> ActivityHierarchyDescribeResult
 ) {
-    suspend fun listCanonicalCatalog(): CanonicalCatalogResult =
+    suspend fun listCanonicalCatalog(searchQuery: String): CanonicalCatalogResult =
         withContext(Dispatchers.IO) {
             try {
                 val storage = ensureConfigTomlStorage()
@@ -35,31 +36,26 @@ internal class RuntimeCanonicalCatalogQueryDelegate(
                     )
                 }
 
-                val documents = buildList {
+                val documents = buildList<Pair<String, ActivityHierarchySnapshot>> {
                     for (entry in aliasFiles) {
                         val readResult = storage.readTomlFile(entry.relativePath)
                         if (!readResult.ok) {
-                            return@withContext CanonicalCatalogResult(
-                                ok = false,
-                                roots = emptyList(),
-                                entries = emptyList(),
-                                message = "Canonical catalog query failed: ${readResult.message}"
+                            return@withContext canonicalCatalogFailure(readResult.message)
+                        }
+                        val searchResult = searchActivityHierarchy(readResult.content, searchQuery)
+                        if (!searchResult.ok) {
+                            return@withContext canonicalCatalogFailure(
+                                "${entry.displayName}: ${searchResult.message}"
                             )
                         }
-
-                        val parseResult = RuntimeCanonicalCatalogParser.parse(readResult.content)
-                        val document = parseResult.document
-                            ?: return@withContext CanonicalCatalogResult(
-                                ok = false,
-                                roots = emptyList(),
-                                entries = emptyList(),
-                                message = "Canonical catalog query failed for ${entry.displayName}: ${parseResult.errorMessage}"
+                        val hierarchy = searchResult.hierarchy
+                            ?: return@withContext canonicalCatalogFailure(
+                                "${entry.displayName}: ${searchResult.message}"
                             )
-                        add(readResult.filePath to document)
+                        add(readResult.filePath to hierarchy)
                     }
                 }
-
-                RuntimeCanonicalCatalogBuilder.build(documents)
+                RuntimeCanonicalCatalogBuilder.buildFromSnapshots(documents)
             } catch (error: Exception) {
                 CanonicalCatalogResult(
                     ok = false,
@@ -70,3 +66,11 @@ internal class RuntimeCanonicalCatalogQueryDelegate(
             }
         }
 }
+
+private fun canonicalCatalogFailure(message: String): CanonicalCatalogResult =
+    CanonicalCatalogResult(
+        ok = false,
+        roots = emptyList(),
+        entries = emptyList(),
+        message = "Canonical catalog query failed: $message"
+    )

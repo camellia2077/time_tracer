@@ -139,7 +139,9 @@ internal class QueryInsightsUseCases(
     ): QueryInsightsUiState {
         val semanticMode = currentState.chartSemanticMode
             .normalizeForInsightsMode(currentState.insightsMode)
-        return if (semanticMode == InsightsChartSemanticMode.COMPOSITION) {
+        return if (semanticMode == InsightsChartSemanticMode.HIERARCHY) {
+            currentState
+        } else if (semanticMode == InsightsChartSemanticMode.COMPOSITION) {
             compositionUseCase.execute(
                 currentState = currentState,
                 emit = emit

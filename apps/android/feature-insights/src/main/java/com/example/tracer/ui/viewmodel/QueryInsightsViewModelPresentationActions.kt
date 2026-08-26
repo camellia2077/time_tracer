@@ -35,7 +35,9 @@ fun QueryInsightsViewModel.onInsightsModeChange(mode: InsightsMode) {
             chartSemanticMode = preferredChartSemanticMode.normalizeForInsightsMode(mode)
         ).clearPeriodComparison()
     })
-    if (uiState.resultDisplayMode == InsightsResultDisplayMode.HIERARCHY) {
+    if (uiState.resultDisplayMode == InsightsResultDisplayMode.CHART &&
+        uiState.chartSemanticMode == InsightsChartSemanticMode.HIERARCHY
+    ) {
         loadTree(mode.toDataTreePeriod(), uiState.treeLevel)
     }
 }
@@ -181,10 +183,12 @@ fun QueryInsightsViewModel.applyPersistedInsightsPresentation(
     )
     // Generate only for the fully restored selection. This makes the first result match
     // the screen the user actually persisted, rather than an intermediate default state.
-    if (resultDisplayMode == InsightsResultDisplayMode.CHART) {
-        refreshCurrentChart()
-    } else if (resultDisplayMode == InsightsResultDisplayMode.HIERARCHY) {
+    if (resultDisplayMode == InsightsResultDisplayMode.CHART &&
+        normalizedChartSemanticMode == InsightsChartSemanticMode.HIERARCHY
+    ) {
         loadTree(insightsMode.toDataTreePeriod(), uiState.treeLevel)
+    } else if (resultDisplayMode == InsightsResultDisplayMode.CHART) {
+        refreshCurrentChart()
     } else {
         insightsCurrentSelection()
     }
@@ -202,25 +206,28 @@ fun QueryInsightsViewModel.applyInsightsAverageDayBasis(value: InsightsAverageDa
 
 fun QueryInsightsViewModel.onResultDisplayModeChange(mode: InsightsResultDisplayMode) {
     invalidateInFlightChartRequests("display mode -> $mode")
-    val normalizedState = if (mode == InsightsResultDisplayMode.CHART) {
+    val normalizedMode = mode
+    val normalizedState = if (normalizedMode == InsightsResultDisplayMode.CHART) {
         uiState.copy(
-            resultDisplayMode = mode,
+            resultDisplayMode = normalizedMode,
             chartSemanticMode = uiState.preferredChartSemanticMode
-                .normalizeForInsightsMode(uiState.insightsMode)
+                .normalizeForInsightsMode(uiState.insightsMode),
         )
     } else {
-        uiState.copy(resultDisplayMode = mode)
+        uiState.copy(resultDisplayMode = normalizedMode)
     }
     // Display changes can cancel an in-flight chart. Reset its loading state as well as
     // advancing the generation; otherwise returning to Chart could incorrectly believe a
     // cancelled request is still loading and never issue the replacement query.
     uiState = normalizedState.invalidateChartState()
     logChart("display mode applied; ${chartSelection()}")
-    if (mode == InsightsResultDisplayMode.CHART) {
-        refreshCurrentChart()
-    } else if (mode == InsightsResultDisplayMode.HIERARCHY) {
+    if (normalizedMode == InsightsResultDisplayMode.CHART &&
+        uiState.chartSemanticMode == InsightsChartSemanticMode.HIERARCHY
+    ) {
         loadTree(uiState.insightsMode.toDataTreePeriod(), uiState.treeLevel)
-    } else if (mode == InsightsResultDisplayMode.DETAILS) {
+    } else if (normalizedMode == InsightsResultDisplayMode.CHART) {
+        refreshCurrentChart()
+    } else if (normalizedMode == InsightsResultDisplayMode.DETAILS) {
         // Switching from Chart to Text can happen after the insights mode has already
         // changed. Re-query the current period here so Week/Month/etc. does not wait for
         // a later tab visit or another parameter change to populate the Markdown result.
@@ -252,7 +259,11 @@ fun QueryInsightsViewModel.onChartSemanticModeChange(mode: InsightsChartSemantic
         preferredChartSemanticMode = mode
     ).invalidateChartState()
     logChart("chart semantic applied; requested=$mode normalized=$normalizedMode ${chartSelection()}")
-    if (uiState.resultDisplayMode == InsightsResultDisplayMode.CHART) {
+    if (uiState.resultDisplayMode == InsightsResultDisplayMode.CHART &&
+        normalizedMode == InsightsChartSemanticMode.HIERARCHY
+    ) {
+        loadTree(uiState.insightsMode.toDataTreePeriod(), uiState.treeLevel)
+    } else if (uiState.resultDisplayMode == InsightsResultDisplayMode.CHART) {
         loadChart()
     }
 }

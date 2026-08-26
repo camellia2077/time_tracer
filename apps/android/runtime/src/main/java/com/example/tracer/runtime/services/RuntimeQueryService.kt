@@ -44,8 +44,8 @@ internal class RuntimeQueryService(
     suspend fun listActivityHierarchyLeafMappings(): ActivityHierarchyLeafMappingListResult =
         queryDelegate.listActivityHierarchyLeafMappings()
 
-    suspend fun listCanonicalCatalog(): CanonicalCatalogResult =
-        queryDelegate.listCanonicalCatalog()
+    suspend fun listCanonicalCatalog(searchQuery: String): CanonicalCatalogResult =
+        queryDelegate.listCanonicalCatalog(searchQuery)
 
     suspend fun listActivityHierarchyLeafKeys(): ActivityMappingNamesResult =
         queryDelegate.listActivityHierarchyLeafKeys()

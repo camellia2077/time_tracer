@@ -69,8 +69,7 @@ internal fun InsightsPeriodComparisonState.selectionOrNull(): InsightsPeriodSele
 
 enum class InsightsResultDisplayMode {
     DETAILS,
-    CHART,
-    HIERARCHY
+    CHART
 }
 
 data class QueryInsightsUiState(

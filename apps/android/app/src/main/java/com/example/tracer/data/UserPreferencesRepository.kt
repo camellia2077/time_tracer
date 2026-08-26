@@ -1,4 +1,4 @@
-@file:Suppress("TooManyFunctions")
+@file:Suppress("LargeClass", "TooManyFunctions")
 
 package com.example.tracer.data
 

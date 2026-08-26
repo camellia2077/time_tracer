@@ -331,11 +331,22 @@ copied into the current day.
 
 The `Last` activity summary in Record Input is loaded through the read-only
 core/runtime `latest_activity_record` query rather than being treated as a
-session-only UI result. Core selects the latest persisted record for the
-selected logical day and returns its activity plus start and end boundaries.
+session-only UI result. Core selects the final record in the persisted logical
+day activity sequence and returns its activity plus start and end boundaries.
+This preserves the correct order when the logical day continues after
+midnight; natural-day timestamps are not used to reorder that sequence.
 For a point/end-only record, the missing start boundary is displayed as `—`.
 The summary refreshes when Record Input starts, when the logical day changes,
 and after a successful record operation.
+
+### 7.3 Activity Tree Search
+
+The Activities Tree search box uses Core's read-only
+`search_activity_hierarchy` operation for each active hierarchy TOML document.
+It performs a case-insensitive contains match across canonical keys/paths and
+aliases, returning only matching nodes plus their ancestor groups. Android
+renders that Core-filtered tree and does not implement TOML matching or
+filtering semantics locally.
 
 ## 8. Android Vs Core Responsibility Boundary
 

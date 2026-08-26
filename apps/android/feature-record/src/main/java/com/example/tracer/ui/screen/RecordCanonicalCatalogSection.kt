@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Translate
@@ -32,7 +33,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -58,8 +58,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.zIndex
 import com.example.tracer.feature.record.R
 import java.time.Clock
@@ -79,6 +77,7 @@ internal fun CanonicalActivityTree(
     onOrderedRootPathsChange: (List<String>) -> Unit,
     onCanonicalEntryClick: (CanonicalCatalogEntry) -> Unit,
     onCanonicalParentClick: (String) -> Unit,
+    onOpenFullscreen: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val parentSelectionEnabled = target == CanonicalBrowserTarget.INSIGHTS_STATUS_PARENT
@@ -158,19 +157,35 @@ internal fun CanonicalActivityTree(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(
-            text = stringResource(
-                if (target == CanonicalBrowserTarget.QUICK_ACCESS) {
-                    R.string.record_canonical_catalog_quick_access_title
-                } else if (target == CanonicalBrowserTarget.INSIGHTS_STATUS_PARENT) {
-                    R.string.record_canonical_catalog_parent_title
-                } else {
-                    R.string.record_canonical_catalog_title
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(
+                    if (target == CanonicalBrowserTarget.QUICK_ACCESS) {
+                        R.string.record_canonical_catalog_quick_access_title
+                    } else if (target == CanonicalBrowserTarget.INSIGHTS_STATUS_PARENT) {
+                        R.string.record_canonical_catalog_parent_title
+                    } else {
+                        R.string.record_canonical_catalog_title
+                    }
+                ),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+            if (onOpenFullscreen != null) {
+                IconButton(onClick = onOpenFullscreen) {
+                    Icon(
+                        imageVector = Icons.Default.Fullscreen,
+                        contentDescription = stringResource(
+                            R.string.record_cd_open_activity_tree_fullscreen
+                        )
+                    )
                 }
-            ),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary
-        )
+            }
+        }
         Text(
             text = stringResource(
                 if (target == CanonicalBrowserTarget.QUICK_ACCESS) {
@@ -186,12 +201,7 @@ internal fun CanonicalActivityTree(
         )
 
         when {
-            isLoading -> {
-                Text(
-                    text = stringResource(R.string.record_canonical_catalog_loading),
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
+            isLoading -> Unit
 
             orderedRoots.isNotEmpty() -> {
                 orderedRoots.forEachIndexed { index, root ->
@@ -306,14 +316,7 @@ fun CanonicalActivityPickerScreen(
     onCanonicalEntryClick: (CanonicalCatalogEntry) -> Unit,
     onCanonicalParentClick: (String) -> Unit = {}
 ) {
-    Dialog(
-        onDismissRequest = onDismissRequest,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.surface
-        ) {
+    FullscreenPage(onDismissRequest = onDismissRequest) {
             Column(modifier = Modifier.fillMaxSize()) {
                 Row(
                     modifier = Modifier
@@ -420,7 +423,6 @@ fun CanonicalActivityPickerScreen(
                     )
                 }
             }
-        }
     }
 }
 

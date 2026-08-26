@@ -22,11 +22,13 @@ class DebugCommandReceiver : BroadcastReceiver() {
                 .rebuildDatabase()
         }
         val succeeded = result.initialized && result.operationOk
-        Log.i(
-            "TracerDebugCommand",
-            "rebuild database initialized=${result.initialized} " +
-                "operationOk=${result.operationOk} response=${result.rawResponse}"
-        )
+        if (BuildConfig.DEBUG) {
+            Log.i(
+                "TracerDebugCommand",
+                "rebuild database initialized=${result.initialized} " +
+                    "operationOk=${result.operationOk} response=${result.rawResponse}"
+            )
+        }
         setResultCode(if (succeeded) 0 else 1)
         setResultData(result.rawResponse)
     }

@@ -40,6 +40,9 @@ class RuntimeQueryDelegateDiagnosticsTest {
                 }
             },
             ensureConfigTomlStorage = { error("config storage not expected in this test") },
+            searchActivityHierarchy = { _, _ ->
+                error("activity hierarchy search not expected in this test")
+            },
             diagnosticsRecorder = recorder,
             nextOperationId = { "generated-$it" }
         )

@@ -60,8 +60,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.zIndex
 import com.example.tracer.feature.record.R
 import java.time.Clock
@@ -90,6 +88,8 @@ fun RecordCanonicalCatalogScreen(
     onFrequentTopNChange: (String) -> Unit,
     onFrequentActivityClick: (String) -> Boolean,
     onTreeRequested: () -> Unit,
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
     categoriesContent: @Composable () -> Unit,
     collapsedRootPaths: Set<String>,
     orderedRootPaths: List<String>,
@@ -100,27 +100,21 @@ fun RecordCanonicalCatalogScreen(
     onCanonicalEntryClick: (CanonicalCatalogEntry) -> Unit,
     onCanonicalParentClick: (String) -> Unit = {}
 ) {
+    var isTreeFullscreen by remember { mutableStateOf(false) }
     var frequentLookbackDaysInput by remember(frequentLookbackDays) {
         mutableStateOf(frequentLookbackDays.toString())
     }
     var frequentTopNInput by remember(frequentTopN) {
         mutableStateOf(frequentTopN.toString())
     }
-    Dialog(
-        onDismissRequest = onDismissRequest,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.surface
-        ) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
+    FullscreenPage(onDismissRequest = onDismissRequest) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -138,7 +132,7 @@ fun RecordCanonicalCatalogScreen(
                             )
                         }
                     }
-                        PrimaryTabRow(selectedTabIndex = source.ordinal) {
+                    PrimaryTabRow(selectedTabIndex = source.ordinal) {
                             Tab(
                                 selected = source == CanonicalCatalogSource.TREE,
                                 onClick = {
@@ -162,11 +156,22 @@ fun RecordCanonicalCatalogScreen(
                                 },
                                 text = { Text(stringResource(R.string.record_canonical_catalog_source_categories)) }
                             )
-                        }
-                    if (source != CanonicalCatalogSource.CATEGORIES) Row(
+                    }
+                    if (source == CanonicalCatalogSource.TREE) Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = onSearchQueryChange,
+                            label = { Text(stringResource(R.string.record_canonical_catalog_search_label)) },
+                            singleLine = true,
+                            shape = MaterialTheme.shapes.small,
+                            modifier = Modifier
+                                .weight(1f)
+                                .testTag("record_canonical_catalog_search")
+                        )
                         if (displayMode == RecordFrequentOutputMode.CANONICAL) {
                             FilledIconButton(onClick = {}) {
                                 Icon(
@@ -214,19 +219,58 @@ fun RecordCanonicalCatalogScreen(
                             }
                         }
                     }
-                    if (source == CanonicalCatalogSource.TREE) {
-                        Text(
-                            text = stringResource(
-                                if (displayMode == RecordFrequentOutputMode.CANONICAL) {
-                                    R.string.record_canonical_catalog_display_mode_canonical
-                                } else {
-                                    R.string.record_canonical_catalog_display_mode_alias
+                    if (source == CanonicalCatalogSource.FREQUENT) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            if (displayMode == RecordFrequentOutputMode.CANONICAL) {
+                                FilledIconButton(onClick = {}) {
+                                    Icon(
+                                        imageVector = Icons.Default.Code,
+                                        contentDescription = stringResource(
+                                            R.string.record_cd_canonical_catalog_display_canonical_selected
+                                        )
+                                    )
                                 }
-                            ),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    } else if (source == CanonicalCatalogSource.FREQUENT) {
+                            } else {
+                                OutlinedIconButton(
+                                    onClick = {
+                                        onDisplayModeChange(RecordFrequentOutputMode.CANONICAL)
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Code,
+                                        contentDescription = stringResource(
+                                            R.string.record_cd_canonical_catalog_display_switch_to_canonical
+                                        )
+                                    )
+                                }
+                            }
+                            if (displayMode == RecordFrequentOutputMode.ALIAS) {
+                                FilledIconButton(onClick = {}) {
+                                    Icon(
+                                        imageVector = Icons.Default.Translate,
+                                        contentDescription = stringResource(
+                                            R.string.record_cd_canonical_catalog_display_alias_selected
+                                        )
+                                    )
+                                }
+                            } else {
+                                OutlinedIconButton(
+                                    onClick = {
+                                        onDisplayModeChange(RecordFrequentOutputMode.ALIAS)
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Translate,
+                                        contentDescription = stringResource(
+                                            R.string.record_cd_canonical_catalog_display_switch_to_alias
+                                        )
+                                    )
+                                }
+                            }
+                        }
                         Text(
                             text = stringResource(R.string.record_canonical_catalog_frequent_description),
                             style = MaterialTheme.typography.bodyMedium,
@@ -288,6 +332,7 @@ fun RecordCanonicalCatalogScreen(
                         onOrderedRootPathsChange = onOrderedRootPathsChange,
                         onCanonicalEntryClick = onCanonicalEntryClick,
                         onCanonicalParentClick = onCanonicalParentClick,
+                        onOpenFullscreen = { isTreeFullscreen = true },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 24.dp)
@@ -302,6 +347,31 @@ fun RecordCanonicalCatalogScreen(
                             .padding(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 24.dp)
                     ) else categoriesContent()
                 }
+        }
+    }
+    if (isTreeFullscreen) {
+        FullscreenPage(onDismissRequest = { isTreeFullscreen = false }) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                CanonicalActivityTree(
+                    isLoading = isLoading,
+                    roots = roots,
+                    statusText = statusText,
+                    displayMode = displayMode,
+                    target = CanonicalBrowserTarget.RECORD_INPUT,
+                    collapsedRootPaths = collapsedRootPaths,
+                    orderedRootPaths = orderedRootPaths,
+                    onCollapsedRootPathsChange = onCollapsedRootPathsChange,
+                    onOrderedRootPathsChange = onOrderedRootPathsChange,
+                    onCanonicalEntryClick = onCanonicalEntryClick,
+                    onCanonicalParentClick = onCanonicalParentClick,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp)
+                )
             }
         }
     }

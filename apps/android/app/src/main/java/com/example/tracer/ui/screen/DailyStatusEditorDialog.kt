@@ -19,7 +19,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -33,7 +32,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.example.tracer.data.DailyStatusConfig
 import com.example.tracer.data.DailyStatusConfigStore
 import com.example.tracer.data.DailyStatusDefinition
@@ -100,11 +98,7 @@ internal fun DailyStatusEditorDialog(
         editingId = null
     }
 
-    Dialog(
-        onDismissRequest = onDismissRequest,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
+    FullscreenPage(onDismissRequest = onDismissRequest) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -210,7 +204,6 @@ internal fun DailyStatusEditorDialog(
                     )
                 }
             }
-        }
     }
 
     val editing = editingId?.let { id -> config.statuses.firstOrNull { it.id == id } }

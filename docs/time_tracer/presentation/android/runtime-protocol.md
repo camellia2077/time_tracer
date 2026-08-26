@@ -150,14 +150,23 @@ Current status:
   draft's start time, but the query never changes the draft or persisted data.
 - The `latest_activity_record` data query is also read-only. Android sends the
   selected logical date through `from_date` and requests `semantic_json`;
-  Core returns the latest persisted record for that exact date with
+  Core returns the final record in that exact date's persisted logical-day
+  activity sequence with
   `activity`, `record_kind`, `start_time`, `end_time`, and `duration_seconds`.
+  This ordering is not derived from natural-day timestamps, so activities after
+  midnight remain later than the preceding evening activity in the same
+  logical day.
   The time fields use ISO local time `HH:mm:ss`; only the TXT persistence
   boundary uses compact `HHMMSS`.
 - Activity hierarchy responses use Core's presentation-neutral node model:
   each node carries canonical_key, canonical path, kind, aliases, and children.
   Android consumes kind internally and keeps the existing presentation adapter;
   the UI does not add canonical or alias text.
+- `search_activity_hierarchy` is a read-only Config runtime action. Android
+  supplies one canonical TOML document plus `query`; Core returns its
+  validated, case-insensitive contains-match hierarchy. Canonical keys/paths
+  and aliases participate in matching, while ancestor groups are retained for
+  tree context.
 - Quick Access is an alias-only `user/quick_access.toml` document. Android owns
   file existence checks, directory creation, and physical reads/writes through
   `ConfigTomlStorage`; Core only parses existing TOML content or renders new

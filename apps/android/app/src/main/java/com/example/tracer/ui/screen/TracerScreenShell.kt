@@ -67,71 +67,73 @@ internal fun TracerBottomNavShell(
     val bottomNavSafePadding = bottomNavSafePadding()
     val fullscreenOverlayHost = remember { FullscreenOverlayHost() }
     CompositionLocalProvider(LocalFullscreenOverlayHost provides fullscreenOverlayHost) {
-        Box(modifier = Modifier.fillMaxSize()) {
-        // Do not reserve the floating navigation's footprint here. A bottom padding on this
-        // full-screen content container leaves the root Surface exposed as a white/dark strip
-        // below the navigation. Vertically scrolling tabs add that space inside their scroll
-        // content instead; see tracerTabContentModifier.
-        content(WindowInsets.statusBars.asPaddingValues())
+        FullscreenPageHost {
+            Box(modifier = Modifier.fillMaxSize()) {
+                // Do not reserve the floating navigation's footprint here. A bottom padding on this
+                // full-screen content container leaves the root Surface exposed as a white/dark strip
+                // below the navigation. Vertically scrolling tabs add that space inside their scroll
+                // content instead; see tracerTabContentModifier.
+                content(WindowInsets.statusBars.asPaddingValues())
 
-        SnackbarHost(
-            hostState = snackbarHostState,
-            snackbar = { data ->
-                val visuals = data.visuals as? TracerSnackbarVisuals
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.large,
-                    color = MaterialTheme.colorScheme.inverseSurface,
-                    contentColor = MaterialTheme.colorScheme.inverseOnSurface,
-                    tonalElevation = 6.dp,
-                    shadowElevation = 6.dp
-                ) {
-                    // Render the snackbar as two explicit text slots when supporting text is
-                    // available. This keeps Record success visually stable across Material
-                    // versions and avoids relying on embedded newline behavior in a single Text.
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(2.dp),
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)
-                    ) {
-                        Text(
-                            text = data.visuals.message,
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                color = MaterialTheme.colorScheme.inverseOnSurface,
-                                fontSize = 18.sp,
-                                lineHeight = 24.sp
-                            )
-                        )
-                        if (!visuals?.supportingText.isNullOrBlank()) {
-                            Text(
-                                text = visuals.supportingText.orEmpty(),
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    color = MaterialTheme.colorScheme.inverseOnSurface,
-                                    fontSize = 16.sp,
-                                    lineHeight = 22.sp
+                SnackbarHost(
+                    hostState = snackbarHostState,
+                    snackbar = { data ->
+                        val visuals = data.visuals as? TracerSnackbarVisuals
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = MaterialTheme.shapes.large,
+                            color = MaterialTheme.colorScheme.inverseSurface,
+                            contentColor = MaterialTheme.colorScheme.inverseOnSurface,
+                            tonalElevation = 6.dp,
+                            shadowElevation = 6.dp
+                        ) {
+                            // Render the snackbar as two explicit text slots when supporting text is
+                            // available. This keeps Record success visually stable across Material
+                            // versions and avoids relying on embedded newline behavior in a single Text.
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(2.dp),
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)
+                            ) {
+                                Text(
+                                    text = data.visuals.message,
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        color = MaterialTheme.colorScheme.inverseOnSurface,
+                                        fontSize = 18.sp,
+                                        lineHeight = 24.sp
+                                    )
                                 )
-                            )
+                                if (!visuals?.supportingText.isNullOrBlank()) {
+                                    Text(
+                                        text = visuals.supportingText.orEmpty(),
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            color = MaterialTheme.colorScheme.inverseOnSurface,
+                                            fontSize = 16.sp,
+                                            lineHeight = 22.sp
+                                        )
+                                    )
+                                }
+                            }
                         }
-                    }
-                }
-            },
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .padding(
-                    start = FloatingBottomNavHorizontalPadding,
-                    end = FloatingBottomNavHorizontalPadding,
-                    bottom = FloatingBottomNavHeight +
-                        bottomNavSafePadding +
-                        FloatingBottomNavSnackbarGap
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .padding(
+                            start = FloatingBottomNavHorizontalPadding,
+                            end = FloatingBottomNavHorizontalPadding,
+                            bottom = FloatingBottomNavHeight +
+                                bottomNavSafePadding +
+                                FloatingBottomNavSnackbarGap
+                        )
                 )
-        )
 
-        TracerFloatingBottomNavigation(
-            selectedTab = selectedTab,
-            onTabSelected = onTabSelected,
-            bottomPadding = bottomNavSafePadding
-        )
-            fullscreenOverlayHost.content?.invoke()
+                TracerFloatingBottomNavigation(
+                    selectedTab = selectedTab,
+                    onTabSelected = onTabSelected,
+                    bottomPadding = bottomNavSafePadding
+                )
+                fullscreenOverlayHost.content?.invoke()
+            }
         }
     }
 }

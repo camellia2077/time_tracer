@@ -54,7 +54,8 @@ class QueryInsightsTreePipelineTest {
             )
         )
 
-        viewModel.onResultDisplayModeChange(InsightsResultDisplayMode.HIERARCHY)
+        viewModel.onResultDisplayModeChange(InsightsResultDisplayMode.CHART)
+        viewModel.onChartSemanticModeChange(InsightsChartSemanticMode.HIERARCHY)
         advanceUntilIdle()
 
         val request = fakeQueryGateway.lastTreeRequest
@@ -72,10 +73,12 @@ class QueryInsightsTreePipelineTest {
             queryGateway = fakeQueryGateway
         )
 
-        viewModel.onResultDisplayModeChange(InsightsResultDisplayMode.HIERARCHY)
+        viewModel.onResultDisplayModeChange(InsightsResultDisplayMode.CHART)
+        viewModel.onChartSemanticModeChange(InsightsChartSemanticMode.HIERARCHY)
         advanceUntilIdle()
 
-        assertEquals(InsightsResultDisplayMode.HIERARCHY, viewModel.uiState.resultDisplayMode)
+        assertEquals(InsightsResultDisplayMode.CHART, viewModel.uiState.resultDisplayMode)
+        assertEquals(InsightsChartSemanticMode.HIERARCHY, viewModel.uiState.chartSemanticMode)
         assertEquals(DataTreePeriod.DAY, fakeQueryGateway.lastTreeRequest?.period)
         assertTrue(viewModel.uiState.activeResult is QueryResult.Tree)
     }
@@ -94,7 +97,8 @@ class QueryInsightsTreePipelineTest {
             queryGateway = fakeQueryGateway
         )
 
-        viewModel.onResultDisplayModeChange(InsightsResultDisplayMode.HIERARCHY)
+        viewModel.onResultDisplayModeChange(InsightsResultDisplayMode.CHART)
+        viewModel.onChartSemanticModeChange(InsightsChartSemanticMode.HIERARCHY)
         advanceUntilIdle()
         assertTrue(viewModel.uiState.activeResult == null)
 
@@ -106,11 +110,30 @@ class QueryInsightsTreePipelineTest {
         )
         // The selected display mode has not changed, but its result is still missing.
         // This is the state that can occur after a theme-driven recomposition.
-        viewModel.onResultDisplayModeChange(InsightsResultDisplayMode.HIERARCHY)
+        viewModel.onResultDisplayModeChange(InsightsResultDisplayMode.CHART)
+        viewModel.onChartSemanticModeChange(InsightsChartSemanticMode.HIERARCHY)
         advanceUntilIdle()
 
         assertTrue(viewModel.uiState.activeResult is QueryResult.Tree)
         assertEquals(2, fakeQueryGateway.treeRequestCount)
+    }
+
+    @Test
+    fun selectingHierarchyAsChartSubview_loadsTheCurrentActivityTree() = runTest {
+        val fakeQueryGateway = FakeTreeQueryGateway()
+        val viewModel = QueryInsightsViewModel(
+            insightsGateway = FakeTreeInsightsGateway(),
+            queryGateway = fakeQueryGateway
+        )
+
+        viewModel.onResultDisplayModeChange(InsightsResultDisplayMode.CHART)
+        viewModel.onChartSemanticModeChange(InsightsChartSemanticMode.HIERARCHY)
+        advanceUntilIdle()
+
+        assertEquals(InsightsResultDisplayMode.CHART, viewModel.uiState.resultDisplayMode)
+        assertEquals(InsightsChartSemanticMode.HIERARCHY, viewModel.uiState.chartSemanticMode)
+        assertEquals(DataTreePeriod.DAY, fakeQueryGateway.lastTreeRequest?.period)
+        assertTrue(viewModel.uiState.activeResult is QueryResult.Tree)
     }
 
     @Test
@@ -121,7 +144,8 @@ class QueryInsightsTreePipelineTest {
             queryGateway = fakeQueryGateway
         )
 
-        viewModel.onResultDisplayModeChange(InsightsResultDisplayMode.HIERARCHY)
+        viewModel.onResultDisplayModeChange(InsightsResultDisplayMode.CHART)
+        viewModel.onChartSemanticModeChange(InsightsChartSemanticMode.HIERARCHY)
         advanceUntilIdle()
         viewModel.onTreeLevelChange(1)
         advanceUntilIdle()
@@ -144,7 +168,8 @@ class QueryInsightsTreePipelineTest {
             queryGateway = fakeQueryGateway
         )
 
-        viewModel.onResultDisplayModeChange(InsightsResultDisplayMode.HIERARCHY)
+        viewModel.onResultDisplayModeChange(InsightsResultDisplayMode.CHART)
+        viewModel.onChartSemanticModeChange(InsightsChartSemanticMode.HIERARCHY)
         advanceUntilIdle()
         viewModel.onTreeLevelChange(1)
         advanceUntilIdle()
@@ -168,6 +193,7 @@ class QueryInsightsTreePipelineTest {
         )
         val state = initialQueryInsightsUiState().copy(
             activeResult = tree,
+            chartSemanticMode = InsightsChartSemanticMode.HIERARCHY,
             insightsResultsByPeriod = mapOf(DataTreePeriod.DAY to markdown)
         )
 
@@ -194,7 +220,7 @@ class QueryInsightsTreePipelineTest {
             resolveDisplayResult(
                 state,
                 DataTreePeriod.DAY,
-                InsightsResultDisplayMode.HIERARCHY,
+                InsightsResultDisplayMode.CHART,
                 InsightsParameterSection.DAY
             )
         )

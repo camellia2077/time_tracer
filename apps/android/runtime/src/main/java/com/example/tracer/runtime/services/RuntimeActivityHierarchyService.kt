@@ -29,7 +29,23 @@ internal class RuntimeActivityHierarchyService(
             .toString()))
     }
 
-    suspend fun describe(tomlContent: String): ActivityHierarchyDescribeResult = withContext(Dispatchers.IO) {
+    suspend fun describe(tomlContent: String): ActivityHierarchyDescribeResult =
+        loadHierarchy(tomlContent, "describe_activity_hierarchy")
+
+    suspend fun search(
+        tomlContent: String,
+        query: String
+    ): ActivityHierarchyDescribeResult = loadHierarchy(
+        tomlContent = tomlContent,
+        action = "search_activity_hierarchy",
+        query = query
+    )
+
+    private suspend fun loadHierarchy(
+        tomlContent: String,
+        action: String,
+        query: String? = null
+    ): ActivityHierarchyDescribeResult = withContext(Dispatchers.IO) {
         val initialized = initializeRuntimeInternal()
         if (!initialized.operationOk) {
             return@withContext ActivityHierarchyDescribeResult(
@@ -38,8 +54,9 @@ internal class RuntimeActivityHierarchyService(
             )
         }
         val payload = JSONObject()
-            .put("action", "describe_activity_hierarchy")
+            .put("action", action)
             .put("toml_content", tomlContent)
+        query?.let { payload.put("query", it) }
         codec.parseActivityHierarchyDescribe(nativeConfig(payload.toString()))
     }
 

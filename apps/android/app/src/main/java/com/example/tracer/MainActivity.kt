@@ -96,11 +96,15 @@ class MainActivity : ComponentActivity() {
     private fun applySystemTaskLabel() {
         val appLabel = getString(R.string.app_name)
         title = appLabel
-        setTaskDescription(
+        val taskDescription = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ActivityManager.TaskDescription.Builder()
                 .setLabel(appLabel)
                 .build()
-        )
+        } else {
+            @Suppress("DEPRECATION")
+            ActivityManager.TaskDescription(appLabel)
+        }
+        setTaskDescription(taskDescription)
     }
 
     private fun applyAppLanguage(language: AppLanguage) {

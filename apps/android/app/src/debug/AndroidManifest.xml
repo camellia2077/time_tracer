@@ -3,6 +3,7 @@
     <application>
         <receiver
             android:name=".DebugCommandReceiver"
+            android:permission="android.permission.DUMP"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.example.tracer.action.REBUILD_DATABASE" />

@@ -21,7 +21,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -33,29 +32,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.example.tracer.feature.insights.R
 
 @Composable
-internal fun InsightsChartRootPickerDialog(
+internal fun InsightsChartRootPickerPage(
     rootNodes: List<TreeNode>,
     selectedPath: String,
     onPathSelected: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
-    Dialog(
+    FullscreenPage(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+        backgroundColor = MaterialTheme.colorScheme.background
     ) {
-        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-            InsightsChartRootPickerScreen(
-                rootNodes = rootNodes,
-                selectedPath = selectedPath,
-                onPathSelected = onPathSelected,
-                onDismiss = onDismiss
-            )
-        }
+        InsightsChartRootPickerScreen(
+            rootNodes = rootNodes,
+            selectedPath = selectedPath,
+            onPathSelected = onPathSelected,
+            onDismiss = onDismiss
+        )
     }
 }
 

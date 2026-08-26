@@ -17,7 +17,11 @@ Describe the user-visible insights, query, and chart presentation behavior.
 ## Behavior Summary
 
 - Insights results support text-oriented and chart-oriented presentation.
-- The top-level result selector exposes `Details | Chart | Hierarchy`. Details
+- The top-level result selector exposes `Details | Chart`. Chart contains the
+  secondary views `Trend | Composition | Hierarchy`. Details
+  display preferences are intentionally not backward-compatible: a legacy
+  persisted `HIERARCHY` result value is treated as unknown and falls back to
+  the default `Details` view.
   exposes `Activities | Text`.
   Activities opens with a time-independent overview (total time, active days,
   record count, active-day average, and each parent activity's duration/share),
@@ -36,8 +40,8 @@ Describe the user-visible insights, query, and chart presentation behavior.
   months then days for multi-month windows. Its rows reuse the Day timeline's
   record presentation, but use fixed-height rails to represent order rather
   than duration; Text remains the full Markdown report. Hierarchy is the
-  Core-provided full activity tree, kept separate from Chart so exact values
-  and tree depth remain a structure-oriented workflow.
+  Core-provided full activity tree, presented as a Chart subview while keeping
+  exact values and tree depth as a structure-oriented workflow.
   The period overview's total duration and record count come from Core's
   `ActivityAggregate`; Android does not rebuild them by summing `activity_days`.
 - Chart behavior is driven by query/insights UI state, not by app-level route logic.

@@ -492,11 +492,15 @@ class RecordUseCasesTest {
         )
 
         val result = useCases.loadCanonicalCatalog(
-            state = RecordUiState(isCanonicalCatalogLoading = true)
+            state = RecordUiState(
+                isCanonicalCatalogLoading = true,
+                statusText = "stale status"
+            )
         )
 
         assertEquals(false, result.isCanonicalCatalogLoading)
         assertEquals(true, result.isCanonicalCatalogVisible)
+        assertEquals("", result.statusText)
         assertEquals(
             listOf("study", "study/math"),
             result.canonicalCatalogRoots.first().let { root ->
@@ -1409,7 +1413,7 @@ private class FakeQueryGateway(
     override suspend fun listActivityHierarchyLeafMappings(): ActivityHierarchyLeafMappingListResult =
         aliasMappingsResult
 
-    override suspend fun listCanonicalCatalog(): CanonicalCatalogResult =
+    override suspend fun listCanonicalCatalog(searchQuery: String): CanonicalCatalogResult =
         canonicalCatalogResult
 }
 

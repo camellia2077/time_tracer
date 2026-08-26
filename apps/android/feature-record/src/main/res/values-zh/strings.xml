@@ -1,16 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="txt_label_editor_file">编辑器：%1$s</string>
-    <string name="txt_mode_all">当月</string>
-    <string name="txt_mode_day">单日</string>
-    <string name="txt_label_content">内容</string>
-    <string name="txt_label_day_content_with_date">单日内容 %1$s</string>
-    <string name="txt_label_day_content">单日内容</string>
 
     <string name="txt_cd_ingest">写入</string>
     <string name="txt_action_close">关闭</string>
-    <string name="txt_cd_undo">撤销</string>
-    <string name="txt_cd_redo">重做</string>
     <string name="txt_status_unsaved">已修改</string>
     <string name="txt_status_saved">已保存</string>
     <string name="txt_cd_prev_month">上个月</string>
@@ -117,15 +110,14 @@
     <string name="record_canonical_catalog_description">按路径浏览 canonical 活动，点击即可填入输入框。</string>
     <string name="record_canonical_catalog_quick_access_title">添加快捷活动</string>
     <string name="record_canonical_catalog_quick_access_description">按活动树浏览，点击后将活动添加到快捷入口。</string>
-    <string name="record_canonical_catalog_loading">正在加载 canonical 目录...</string>
     <string name="record_canonical_catalog_empty">当前没有可用的 canonical 路径。</string>
     <string name="record_canonical_catalog_source_tree">活动树</string>
+    <string name="record_canonical_catalog_search_label">搜索活动</string>
+    <string name="record_cd_open_activity_tree_fullscreen">全屏查看活动树</string>
     <string name="record_canonical_catalog_source_frequent">常用</string>
     <string name="record_canonical_catalog_source_categories">分类</string>
     <string name="record_canonical_catalog_frequent_description">根据近期记录中最常使用的活动排序。</string>
     <string name="record_hint_no_frequent_activities">暂时没有常用活动。</string>
-    <string name="record_canonical_catalog_display_mode_canonical">浏览显示：规范 token</string>
-    <string name="record_canonical_catalog_display_mode_alias">浏览显示：alias token</string>
     <string name="record_frequent_output_mode_canonical">常用显示：规范 token</string>
     <string name="record_frequent_output_mode_alias">常用显示：alias token</string>
     <string name="record_frequent_target_logical_day">逻辑日：%1$s</string>
@@ -175,21 +167,25 @@
     <string name="txt_day_edit_day_remark_title">修改日备注</string>
     <string name="txt_day_edit_activity_remark_title">修改活动备注</string>
     <string name="txt_day_edit_save">保存</string>
-    <string name="txt_day_edit_find_replace">查找并替换活动</string>
     <string name="txt_day_edit_find_replace_action">替换</string>
     <string name="txt_day_edit_find_replace_source_title">查找活动</string>
     <string name="txt_day_edit_find_replace_source_hint">可按记录名称、别名或 canonical 名称搜索。</string>
     <string name="txt_day_edit_find_replace_search_label">搜索当天活动</string>
     <string name="txt_day_edit_find_replace_no_matches">当天没有匹配的活动。</string>
-    <string name="txt_day_edit_find_replace_occurrences">%1$d 条记录</string>
+    <plurals name="txt_day_edit_find_replace_occurrences">
+        <item quantity="other">%1$d 条记录</item>
+    </plurals>
     <string name="txt_day_edit_find_replace_confirm_title">替换活动？</string>
-    <string name="txt_day_edit_find_replace_confirm_message">将 %2$s 的 %1$d 条记录替换为 %3$s？</string>
-    <string name="txt_day_edit_find_replace_success">已替换 %1$d 条活动记录。</string>
+    <plurals name="txt_day_edit_find_replace_confirm_message">
+        <item quantity="other">将 %2$s 的 %1$d 条记录替换为 %3$s？</item>
+    </plurals>
     <string name="txt_month_edit_find_replace">查找并替换活动</string>
     <string name="txt_month_edit_find_replace_search_label">搜索当月活动</string>
     <string name="txt_month_edit_find_replace_source_hint">可按当月记录名称、别名或 canonical 名称搜索。</string>
     <string name="txt_month_edit_find_replace_no_matches">当月没有匹配的活动。</string>
-    <string name="txt_month_edit_find_replace_confirm_message">将当月 %2$s 的 %1$d 条记录替换为 %3$s？</string>
+    <plurals name="txt_month_edit_find_replace_confirm_message">
+        <item quantity="other">将当月 %2$s 的 %1$d 条记录替换为 %3$s？</item>
+    </plurals>
     <string name="txt_month_activity_name_tools">活动名称工具</string>
     <string name="txt_month_activity_name_tools_description">转换当前月内所有可映射的活动名称。</string>
     <string name="txt_month_convert_aliases_to_canonical">将 alias 转为 canonical 名称</string>
@@ -198,8 +194,9 @@
     <string name="txt_month_activity_name_convert_confirm_title">转换活动名称？</string>
     <string name="txt_month_activity_name_convert_confirm_message">“%1$s”会改写当前月内所有可映射的活动名称。</string>
     <string name="txt_editor_more_edits">更多编辑</string>
-    <string name="txt_raw_editor_open_day">打开当天原始 TXT</string>
-    <string name="txt_raw_editor_open_month">打开当月原始 TXT</string>
+    <string name="txt_raw_editor_open">打开原始 TXT</string>
+    <string name="txt_raw_editor_tab_day">当天</string>
+    <string name="txt_raw_editor_tab_month">当月</string>
     <string name="txt_raw_editor_jump_to_date">跳转日期</string>
     <string name="txt_raw_editor_day_not_found">%1$s 没有 TXT 记录。</string>
     <string name="txt_raw_editor_day_title">当天原始 TXT</string>

@@ -338,13 +338,16 @@ class RecordUseCases(
     }
 
     suspend fun loadCanonicalCatalog(state: RecordUiState): RecordUiState {
-        val canonicalCatalogResult = queryGateway.listCanonicalCatalog()
+        val canonicalCatalogResult = queryGateway.listCanonicalCatalog(
+            state.canonicalCatalogSearchQuery
+        )
         return if (canonicalCatalogResult.ok) {
             state.copy(
                 canonicalCatalogRoots = canonicalCatalogResult.roots,
                 canonicalCatalogStatusText = "",
                 isCanonicalCatalogVisible = true,
-                isCanonicalCatalogLoading = false
+                isCanonicalCatalogLoading = false,
+                statusText = ""
             )
         } else {
             state.copy(

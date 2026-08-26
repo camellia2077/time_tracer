@@ -481,7 +481,6 @@ fun TxtEditorSection(
                                     overlayHost = requireNotNull(rawEditorOverlayHost),
                                     sessionController = sessionController,
                                     runtimeCoordinator = runtimeCoordinator,
-                                    rawOutputMode = rawOutputMode,
                                     selectedMonth = selectedMonth,
                                     selectedDay = currentDay,
                                     canEditDay = canEditDay,
@@ -568,7 +567,6 @@ private fun TxtRawEditorRoute(
     overlayHost: com.example.tracer.ui.components.FullscreenOverlayHost,
     sessionController: TxtEditorSessionController,
     runtimeCoordinator: TxtEditorRuntimeCoordinator,
-    rawOutputMode: TxtOutputMode,
     selectedMonth: String,
     selectedDay: LocalDate?,
     canEditDay: Boolean,
@@ -577,16 +575,18 @@ private fun TxtRawEditorRoute(
     onMergedMonthContent: (String) -> Unit,
     onSaveHistoryFile: () -> Unit
 ) {
+    val outputMode = sessionController.state.outputMode
     val editorUiState = sessionController.deriveEditorUiState(canEditDay)
     val coroutineScope = rememberCoroutineScope()
     TxtRawEditorFullScreen(
-        outputMode = rawOutputMode,
+        outputMode = outputMode,
         selectedMonth = selectedMonth,
         selectedDay = selectedDay,
         value = editorUiState.editorText,
         hasUnsavedChanges = editorUiState.hasUnsavedChanges,
         canSave = editorUiState.canIngest,
-        readOnly = rawOutputMode == TxtOutputMode.DAY && !canEditDay,
+        readOnly = outputMode == TxtOutputMode.DAY && !canEditDay,
+        onOutputModeChange = sessionController::updateOutputMode,
         onValueChange = sessionController::onEditorTextChange,
         onSave = {
             coroutineScope.launch {

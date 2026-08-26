@@ -192,7 +192,6 @@ dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(project(":contract"))
     implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.tomlj)
     testImplementation(libs.junit)
     testImplementation(libs.org.json)
 }

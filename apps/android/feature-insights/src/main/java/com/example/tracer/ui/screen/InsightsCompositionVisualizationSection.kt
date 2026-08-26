@@ -116,12 +116,6 @@ internal fun InsightsCompositionVisualizationSection(
             )
         }
     }
-    val compositionValueLabel: (Long) -> String = { value ->
-        when (compositionMeasure) {
-            InsightsCompositionMeasure.DURATION -> formatDurationHoursMinutes(value)
-            InsightsCompositionMeasure.FREQUENCY -> formatFrequencyCount(value)
-        }
-    }
     val treemapValueLabel: (Long) -> String = { value ->
         when (compositionMeasure) {
             InsightsCompositionMeasure.DURATION -> formatTreemapDurationHoursMinutes(value)
@@ -217,9 +211,7 @@ internal fun InsightsCompositionVisualizationSection(
                 palettePreset = piePalettePreset,
                 selectedIndex = selectedItemIndex,
                 onItemSelected = onVisibleSliceSelected,
-                valueLabel = compositionValueLabel,
                 showAverage = insightsMode != InsightsMode.DAY,
-                showAverageRecords = compositionMeasure == InsightsCompositionMeasure.FREQUENCY,
                 showFrequency = compositionMeasure == InsightsCompositionMeasure.FREQUENCY,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -247,9 +239,7 @@ internal fun InsightsCompositionVisualizationSection(
                 colors = treemapLegendColors,
                 parentPath = drilldownPath,
                 nodes = drilldownNodes,
-                valueLabel = treemapValueLabel,
                 showAverage = insightsMode != InsightsMode.DAY,
-                showAverageRecords = compositionMeasure == InsightsCompositionMeasure.FREQUENCY,
                 showFrequency = compositionMeasure == InsightsCompositionMeasure.FREQUENCY,
                 onSliceSelected = onVisibleSliceSelected
             )
@@ -272,9 +262,7 @@ internal fun InsightsCompositionVisualizationSection(
                 colors = pieSliceColors,
                 parentPath = drilldownPath,
                 nodes = drilldownNodes,
-                valueLabel = compositionValueLabel,
                 showAverage = insightsMode != InsightsMode.DAY,
-                showAverageRecords = compositionMeasure == InsightsCompositionMeasure.FREQUENCY,
                 showFrequency = compositionMeasure == InsightsCompositionMeasure.FREQUENCY,
                 onSliceSelected = onVisibleSliceSelected
             )

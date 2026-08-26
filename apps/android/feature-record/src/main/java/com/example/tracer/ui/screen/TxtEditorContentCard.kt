@@ -3,12 +3,9 @@ package com.example.tracer
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.FindReplace
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.CircularProgressIndicator
@@ -78,13 +75,7 @@ internal fun TxtEditorContentCard(
 ) {
     val canShowStructuredDay =
         structuredDayEdit?.ok == true && structuredDayEdit.found && structuredDayEdit.canSave
-    var findReplaceVisible by remember(
-        selectedHistoryFile,
-        dayBlockEditorState.normalizedDayMarker
-    ) {
-        mutableStateOf(false)
-    }
-    var monthFindReplaceVisible by remember(selectedHistoryFile) {
+    var findReplaceVisible by remember(selectedHistoryFile) {
         mutableStateOf(false)
     }
     var moreEditsVisible by remember(selectedHistoryFile) {
@@ -113,16 +104,6 @@ internal fun TxtEditorContentCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                if (canShowStructuredDay) {
-                    TextButton(onClick = { findReplaceVisible = true }) {
-                        Icon(
-                            imageVector = Icons.Outlined.FindReplace,
-                            contentDescription = null
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(R.string.txt_day_edit_find_replace))
-                    }
-                }
                 IconButton(onClick = { moreEditsVisible = true }) {
                     Icon(
                         imageVector = Icons.Default.MoreVert,
@@ -178,7 +159,7 @@ internal fun TxtEditorContentCard(
                     onApply = onStructuredDayEditApply
                 )
             }
-            TxtDayActivityFindReplace(
+            TxtActivityFindReplace(
                 visible = findReplaceVisible,
                 events = structuredDayEdit?.events.orEmpty(),
                 dayRemark = structuredDayEdit?.dayRemark.orEmpty(),
@@ -191,36 +172,20 @@ internal fun TxtEditorContentCard(
                 onOrderedRootPathsChange = onOrderedCanonicalRootPathsChange,
                 onCanonicalCatalogRequested = onCanonicalCatalogRequested,
                 onDismiss = { findReplaceVisible = false },
-                onReplaceActivity = onStructuredDayActivityReplace
-            )
-            TxtMonthActivityFindReplace(
-                visible = monthFindReplaceVisible,
-                roots = canonicalCatalogRoots,
-                catalogLoading = isCanonicalCatalogLoading,
-                catalogStatusText = canonicalCatalogStatusText,
-                collapsedRootPaths = collapsedCanonicalRootPaths,
-                orderedRootPaths = orderedCanonicalRootPaths,
-                onCollapsedRootPathsChange = onCollapsedCanonicalRootPathsChange,
-                onOrderedRootPathsChange = onOrderedCanonicalRootPathsChange,
-                onCanonicalCatalogRequested = onCanonicalCatalogRequested,
-                onLoad = onPrepareMonthActivityEdits,
-                onDismiss = { monthFindReplaceVisible = false },
-                onReplaceActivity = onReplaceMonthActivity
+                onReplaceDayActivity = onStructuredDayActivityReplace,
+                onLoadMonthActivities = onPrepareMonthActivityEdits,
+                onReplaceMonthActivity = onReplaceMonthActivity
             )
             if (moreEditsVisible) {
                 TxtMoreEditsSheet(
                     onDismiss = { moreEditsVisible = false },
-                    onOpenDayRawEditor = {
+                    onOpenRawEditor = {
                         moreEditsVisible = false
                         onOpenRawEditor(TxtOutputMode.DAY)
                     },
-                    onOpenMonthRawEditor = {
-                        moreEditsVisible = false
-                        onOpenRawEditor(TxtOutputMode.ALL)
-                    },
                     onOpenMonthFindReplace = {
                         moreEditsVisible = false
-                        monthFindReplaceVisible = true
+                        findReplaceVisible = true
                     },
                     onReloadTxtData = {
                         moreEditsVisible = false
@@ -259,8 +224,7 @@ internal fun TxtEditorContentCard(
 @OptIn(ExperimentalMaterial3Api::class)
 private fun TxtMoreEditsSheet(
     onDismiss: () -> Unit,
-    onOpenDayRawEditor: () -> Unit,
-    onOpenMonthRawEditor: () -> Unit,
+    onOpenRawEditor: () -> Unit,
     onOpenMonthFindReplace: () -> Unit,
     onReloadTxtData: () -> Unit,
     onOpenActivityNameTools: () -> Unit
@@ -295,15 +259,9 @@ private fun TxtMoreEditsSheet(
             }
             TextButton(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = onOpenDayRawEditor
+                onClick = onOpenRawEditor
             ) {
-                Text(stringResource(R.string.txt_raw_editor_open_day))
-            }
-            TextButton(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = onOpenMonthRawEditor
-            ) {
-                Text(stringResource(R.string.txt_raw_editor_open_month))
+                Text(stringResource(R.string.txt_raw_editor_open))
             }
         }
     }

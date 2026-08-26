@@ -365,7 +365,8 @@ fun TracerScreen(
         }
     }
 
-    TracerScreenContent(
+    FullscreenPageHost {
+        TracerScreenContent(
         selectedTab = selectedTab,
         snackbarHostState = snackbarHostState,
         onCoordinatorEvent = actions.onCoordinatorEvent,
@@ -502,20 +503,21 @@ fun TracerScreen(
         selectedTracerSecurityLevel = exportActions.selectedTracerSecurityLevel,
         onTracerSecurityLevelChange = exportActions.onTracerSecurityLevelChange,
         onCopyDiagnosticsPayload = actions.onCopyDiagnosticsPayload,
-        onEditDailyStatuses = { isDailyStatusEditorVisible = true }
-    )
-
-    if (isDailyStatusEditorVisible) {
-        DailyStatusEditorDialog(
-            userPreferencesRepository = userPreferencesRepository,
-            runtimeInitializer = runtimeInitializer,
-            insightsMode = queryUiState.insightsMode,
-            statusValues = queryUiState.statusValues,
-            recordUiState = recordUiState,
-            recordViewModel = recordViewModel,
-            onConfigSaved = queryInsightsViewModel::insightsCurrentSelection,
-            onDismissRequest = { isDailyStatusEditorVisible = false }
+            onEditDailyStatuses = { isDailyStatusEditorVisible = true }
         )
+
+        if (isDailyStatusEditorVisible) {
+            DailyStatusEditorDialog(
+                userPreferencesRepository = userPreferencesRepository,
+                runtimeInitializer = runtimeInitializer,
+                insightsMode = queryUiState.insightsMode,
+                statusValues = queryUiState.statusValues,
+                recordUiState = recordUiState,
+                recordViewModel = recordViewModel,
+                onConfigSaved = queryInsightsViewModel::insightsCurrentSelection,
+                onDismissRequest = { isDailyStatusEditorVisible = false }
+            )
+        }
     }
 }
 

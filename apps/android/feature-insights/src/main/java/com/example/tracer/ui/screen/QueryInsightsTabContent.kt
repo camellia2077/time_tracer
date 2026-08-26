@@ -274,7 +274,9 @@ internal fun resolveDisplayResult(
     resultDisplayMode: InsightsResultDisplayMode,
     selectedSection: InsightsParameterSection
 ): QueryResult? {
-    if (resultDisplayMode == InsightsResultDisplayMode.HIERARCHY) {
+    if (resultDisplayMode == InsightsResultDisplayMode.CHART &&
+        uiState.chartSemanticMode == InsightsChartSemanticMode.HIERARCHY
+    ) {
         return uiState.activeResult as? QueryResult.Tree
     }
     return when (selectedSection) {
@@ -288,7 +290,9 @@ private fun resolveDisplayInsightsSummary(
     selectedPeriod: DataTreePeriod,
     resultDisplayMode: InsightsResultDisplayMode
 ): InsightsSummary? {
-    if (resultDisplayMode == InsightsResultDisplayMode.HIERARCHY) {
+    if (resultDisplayMode == InsightsResultDisplayMode.CHART &&
+        uiState.chartSemanticMode == InsightsChartSemanticMode.HIERARCHY
+    ) {
         return null
     }
     return uiState.insightsResultsByPeriod[selectedPeriod]?.summary
@@ -300,7 +304,9 @@ private fun resolveDisplayInsightsError(
     selectedPeriod: DataTreePeriod,
     resultDisplayMode: InsightsResultDisplayMode
 ): String {
-    return if (resultDisplayMode == InsightsResultDisplayMode.HIERARCHY) {
+    return if (resultDisplayMode == InsightsResultDisplayMode.CHART &&
+        uiState.chartSemanticMode == InsightsChartSemanticMode.HIERARCHY
+    ) {
         ""
     } else {
         uiState.insightsErrorsByPeriod[selectedPeriod].orEmpty()

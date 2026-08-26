@@ -1,10 +1,13 @@
 package com.example.tracer
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
@@ -36,7 +39,6 @@ internal fun InsightsChartVisualizationSection(
     chartTotalOccurrenceCount: Long,
     chartTotalDurationSeconds: Long,
     chartAverageDurationPerOccurrenceSeconds: Long,
-    chartModeDurationSeconds: Double?,
     chartMedianDurationSeconds: Double?,
     chartMinimumDurationSeconds: Double?,
     chartMaximumDurationSeconds: Double?,
@@ -191,6 +193,12 @@ internal fun InsightsChartVisualizationSection(
         }
     }
 
+    if (effectiveChartVisualMode == InsightsChartVisualMode.LINE ||
+        effectiveChartVisualMode == InsightsChartVisualMode.BAR
+    ) {
+        InsightsChartDateAxisLabels(points = sortedChartPoints)
+    }
+
     InsightsChartVisualizationSummary(
         sortedChartPoints = sortedChartPoints,
         recordedPoints = rawSortedChartPoints,
@@ -202,14 +210,28 @@ internal fun InsightsChartVisualizationSection(
         chartTotalDurationSeconds = chartTotalDurationSeconds,
         chartAverageDurationPerOccurrenceSeconds =
             chartAverageDurationPerOccurrenceSeconds,
-        chartModeDurationSeconds = chartModeDurationSeconds,
         chartMedianDurationSeconds = chartMedianDurationSeconds,
         chartMinimumDurationSeconds = chartMinimumDurationSeconds,
         chartMaximumDurationSeconds = chartMaximumDurationSeconds,
         chartLowerQuartileDurationSeconds = chartLowerQuartileDurationSeconds,
         chartUpperQuartileDurationSeconds = chartUpperQuartileDurationSeconds,
         chartCoefficientOfVariation = chartCoefficientOfVariation,
-        chartMeanAbsoluteDeviationSeconds = chartMeanAbsoluteDeviationSeconds,
-        chartVisualMode = effectiveChartVisualMode
+        chartMeanAbsoluteDeviationSeconds = chartMeanAbsoluteDeviationSeconds
     )
+}
+
+@Composable
+private fun InsightsChartDateAxisLabels(points: List<InsightsChartPoint>) {
+    val start = points.firstOrNull()?.date?.toMonthDayLabel().orEmpty()
+    val middle = points.getOrNull(points.size / 2)?.date?.toMonthDayLabel().orEmpty()
+    val end = points.lastOrNull()?.date?.toMonthDayLabel().orEmpty()
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text = start, style = MaterialTheme.typography.labelSmall)
+        Text(text = middle, style = MaterialTheme.typography.labelSmall)
+        Text(text = end, style = MaterialTheme.typography.labelSmall)
+    }
 }

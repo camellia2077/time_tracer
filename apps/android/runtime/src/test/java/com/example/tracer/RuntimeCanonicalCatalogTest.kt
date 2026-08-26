@@ -10,47 +10,21 @@ import java.nio.file.Files
 
 class RuntimeCanonicalCatalogTest {
     @Test
-    fun canonicalCatalogParser_parsesNestedAliasGroups() {
-        val parseResult = RuntimeCanonicalCatalogParser.parse(
-            """
-                parent = "study"
-
-                [canonical.math]
-                "calculus-overview" = ["高等数学"]
-
-                [canonical.math.calculus]
-                "double-integral" = ["高等数学二重积分"]
-            """.trimIndent()
+    fun canonicalCatalogBuilder_buildsNestedCoreSnapshots() {
+        val catalog = RuntimeCanonicalCatalogBuilder.buildFromSnapshots(
+            listOf(
+                "online.toml" to hierarchy(
+                    parent = "recreation",
+                    nodes = listOf(
+                        groupNode(
+                            canonicalKey = "online",
+                            aliases = listOf("上网"),
+                            children = listOf(leafNode("bilibili", "哔哩哔哩"))
+                        )
+                    )
+                )
+            )
         )
-
-        val document = requireNotNull(parseResult.document)
-        assertEquals("study", document.parent)
-        val mathGroup = document.nodes.single() as CanonicalAliasGroup
-        assertEquals("math", mathGroup.name)
-        assertEquals("calculus-overview", (mathGroup.nodes[0] as CanonicalAliasEntry).canonicalLeaf)
-        val calculusGroup = mathGroup.nodes[1] as CanonicalAliasGroup
-        assertEquals("calculus", calculusGroup.name)
-        assertEquals(
-            "double-integral",
-            (calculusGroup.nodes.single() as CanonicalAliasEntry).canonicalLeaf
-        )
-    }
-
-    @Test
-    fun canonicalCatalogParser_supportsRecordableGroupAliases() {
-        val parseResult = RuntimeCanonicalCatalogParser.parse(
-            """
-                parent = "recreation"
-
-                [canonical.online]
-                group_aliases = ["上网"]
-                "bilibili" = ["哔哩哔哩"]
-            """.trimIndent()
-        )
-
-        val online = requireNotNull(parseResult.document).nodes.single() as CanonicalAliasGroup
-        assertEquals(listOf("上网"), online.groupAliases)
-        val catalog = RuntimeCanonicalCatalogBuilder.build(listOf("online.toml" to requireNotNull(parseResult.document)))
         assertEquals(listOf("recreation_online", "recreation_online_bilibili"), catalog.entries.map { it.canonicalPath })
         assertEquals(listOf("上网"), catalog.entries.first().aliases)
     }
@@ -85,8 +59,34 @@ class RuntimeCanonicalCatalogTest {
             )
 
             val result = RuntimeCanonicalCatalogQueryDelegate(
-                ensureConfigTomlStorage = { ConfigTomlStorage(root.absolutePath) }
-            ).listCanonicalCatalog()
+                ensureConfigTomlStorage = { ConfigTomlStorage(root.absolutePath) },
+                searchActivityHierarchy = { content, _ ->
+                    when {
+                        content.contains("parent = \"meal\"") -> hierarchyResult(
+                            "meal",
+                            listOf(leafNode("dining", "meal", "吃饭"), leafNode("breakfast", "早餐"))
+                        )
+
+                        content.contains("parent = \"study\"") -> hierarchyResult(
+                            "study",
+                            listOf(
+                                groupNode(
+                                    canonicalKey = "math",
+                                    children = listOf(
+                                        leafNode("calculus-overview", "高等数学"),
+                                        groupNode(
+                                            canonicalKey = "calculus",
+                                            children = listOf(leafNode("double-integral", "高等数学二重积分"))
+                                        )
+                                    )
+                                )
+                            )
+                        )
+
+                        else -> ActivityHierarchyDescribeResult(ok = false, message = "unexpected test TOML")
+                    }
+                }
+            ).listCanonicalCatalog("")
 
             assertTrue(result.ok)
             assertEquals(4, result.entries.size)
@@ -144,14 +144,94 @@ class RuntimeCanonicalCatalogTest {
             )
 
             val result = RuntimeCanonicalCatalogQueryDelegate(
-                ensureConfigTomlStorage = { ConfigTomlStorage(root.absolutePath) }
-            ).listCanonicalCatalog()
+                ensureConfigTomlStorage = { ConfigTomlStorage(root.absolutePath) },
+                searchActivityHierarchy = { _, _ ->
+                    hierarchyResult("other", listOf(leafNode("looking-for", "找东西")))
+                }
+            ).listCanonicalCatalog("")
 
             assertTrue(result.ok)
             assertEquals(listOf("other_looking-for"), result.entries.map { it.canonicalPath })
         } finally {
             root.deleteRecursively()
         }
+    }
+
+    @Test
+    fun listCanonicalCatalog_searchUsesCoreFilteredHierarchy() = runBlocking {
+        val root = Files.createTempDirectory("runtime-canonical-catalog-search").toFile()
+        try {
+            writeAliasToml(
+                root = root,
+                relativePath = "user/activity_hierarchy/exercise.toml",
+                content = "parent = \"exercise\"\n"
+            )
+
+            var receivedQuery = ""
+            val result = RuntimeCanonicalCatalogQueryDelegate(
+                ensureConfigTomlStorage = { ConfigTomlStorage(root.absolutePath) },
+                searchActivityHierarchy = { _, query ->
+                    receivedQuery = query
+                    ActivityHierarchyDescribeResult(
+                        ok = true,
+                        hierarchy = ActivityHierarchySnapshot(
+                            parent = "exercise",
+                            nodes = listOf(
+                                ActivityHierarchyNode(
+                                    canonicalKey = "cardio",
+                                    path = "cardio",
+                                    kind = ActivityHierarchyNodeKind.GROUP,
+                                    aliases = emptyList(),
+                                    children = listOf(
+                                        ActivityHierarchyNode(
+                                            canonicalKey = "treadmill",
+                                            path = "cardio.treadmill",
+                                            kind = ActivityHierarchyNodeKind.LEAF,
+                                            aliases = listOf("跑步机"),
+                                            children = emptyList()
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                }
+            ).listCanonicalCatalog("跑步机")
+
+            assertEquals("跑步机", receivedQuery)
+            assertTrue(result.ok)
+            assertEquals(listOf("exercise_cardio_treadmill"), result.entries.map { it.canonicalPath })
+            assertEquals(listOf("跑步机"), result.entries.single().aliases)
+        } finally {
+            root.deleteRecursively()
+        }
+    }
+
+    @Test
+    fun canonicalCatalogBuilder_skipsParentsWithNoSearchMatches() {
+        val matchingLeaf = ActivityHierarchyNode(
+            canonicalKey = "treadmill",
+            path = "treadmill",
+            kind = ActivityHierarchyNodeKind.LEAF,
+            aliases = listOf("跑步机"),
+            children = emptyList()
+        )
+
+        val result = RuntimeCanonicalCatalogBuilder.buildFromSnapshots(
+            listOf(
+                "exercise.toml" to ActivityHierarchySnapshot(
+                    parent = "exercise",
+                    nodes = listOf(matchingLeaf)
+                ),
+                "study.toml" to ActivityHierarchySnapshot(
+                    parent = "study",
+                    nodes = emptyList()
+                )
+            )
+        )
+
+        assertEquals(listOf("exercise"), result.roots.map { it.path })
+        assertEquals(listOf("exercise_treadmill"), result.entries.map { it.canonicalPath })
     }
 
     @Test
@@ -168,8 +248,11 @@ class RuntimeCanonicalCatalogTest {
             )
 
             val result = RuntimeCanonicalCatalogQueryDelegate(
-                ensureConfigTomlStorage = { ConfigTomlStorage(root.absolutePath) }
-            ).listCanonicalCatalog()
+                ensureConfigTomlStorage = { ConfigTomlStorage(root.absolutePath) },
+                searchActivityHierarchy = { _, _ ->
+                    ActivityHierarchyDescribeResult(ok = false, message = "invalid hierarchy")
+                }
+            ).listCanonicalCatalog("")
 
             assertFalse(result.ok)
             assertTrue(result.message.contains("broken.toml"))
@@ -184,4 +267,37 @@ class RuntimeCanonicalCatalogTest {
             writeText(content)
         }
     }
+
+    private fun hierarchyResult(
+        parent: String,
+        nodes: List<ActivityHierarchyNode>
+    ): ActivityHierarchyDescribeResult = ActivityHierarchyDescribeResult(
+        ok = true,
+        hierarchy = hierarchy(parent, nodes)
+    )
+
+    private fun hierarchy(
+        parent: String,
+        nodes: List<ActivityHierarchyNode>
+    ) = ActivityHierarchySnapshot(parent = parent, nodes = nodes)
+
+    private fun leafNode(canonicalKey: String, vararg aliases: String) = ActivityHierarchyNode(
+        canonicalKey = canonicalKey,
+        path = canonicalKey,
+        kind = ActivityHierarchyNodeKind.LEAF,
+        aliases = aliases.toList(),
+        children = emptyList()
+    )
+
+    private fun groupNode(
+        canonicalKey: String,
+        aliases: List<String> = emptyList(),
+        children: List<ActivityHierarchyNode>
+    ) = ActivityHierarchyNode(
+        canonicalKey = canonicalKey,
+        path = canonicalKey,
+        kind = ActivityHierarchyNodeKind.GROUP,
+        aliases = aliases,
+        children = children
+    )
 }

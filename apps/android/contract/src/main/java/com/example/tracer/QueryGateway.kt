@@ -46,7 +46,7 @@ interface QueryGateway {
             entries = emptyList(),
             message = "Activity alias mappings query not implemented."
         )
-    suspend fun listCanonicalCatalog(): CanonicalCatalogResult =
+    suspend fun listCanonicalCatalog(searchQuery: String): CanonicalCatalogResult =
         CanonicalCatalogResult(
             ok = false,
             roots = emptyList(),

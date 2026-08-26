@@ -99,7 +99,14 @@ internal fun QueryInsightsResultDisplay(
                     color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                InsightsChartResultContent(
+                if (chartSemanticMode == InsightsChartSemanticMode.HIERARCHY &&
+                    activeResult is QueryResult.Tree
+                ) {
+                    QueryInsightsTreeResultContent(
+                        result = activeResult,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                } else InsightsChartResultContent(
                     chartSemanticMode = chartSemanticMode,
                     chartVisualMode = chartVisualMode,
                     compositionVisualMode = compositionVisualMode,

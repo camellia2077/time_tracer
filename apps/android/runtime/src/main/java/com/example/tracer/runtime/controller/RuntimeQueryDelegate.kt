@@ -13,6 +13,7 @@ internal class RuntimeQueryDelegate(
         onRuntimePaths: ((RuntimePaths) -> Unit)?
     ) -> NativeCallResult,
     private val ensureConfigTomlStorage: () -> ConfigTomlStorage,
+    private val searchActivityHierarchy: suspend (String, String) -> ActivityHierarchyDescribeResult,
     private val diagnosticsRecorder: RuntimeDiagnosticsRecorder? = null,
     private val nextOperationId: ((String) -> String)? = null
 ) {
@@ -24,7 +25,8 @@ internal class RuntimeQueryDelegate(
         runDataQuery = dataDelegate::runDataQuery
     )
     private val canonicalCatalogDelegate = RuntimeCanonicalCatalogQueryDelegate(
-        ensureConfigTomlStorage = ensureConfigTomlStorage
+        ensureConfigTomlStorage = ensureConfigTomlStorage,
+        searchActivityHierarchy = searchActivityHierarchy
     )
 
     suspend fun queryFrequentActivities(
@@ -304,8 +306,8 @@ internal class RuntimeQueryDelegate(
     suspend fun listActivityHierarchyLeafMappings(): ActivityHierarchyLeafMappingListResult =
         mappingDelegate.listActivityHierarchyLeafMappings()
 
-    suspend fun listCanonicalCatalog(): CanonicalCatalogResult =
-        canonicalCatalogDelegate.listCanonicalCatalog()
+    suspend fun listCanonicalCatalog(searchQuery: String): CanonicalCatalogResult =
+        canonicalCatalogDelegate.listCanonicalCatalog(searchQuery)
 
     suspend fun listActivityHierarchyLeafKeys(): ActivityMappingNamesResult =
         mappingDelegate.listActivityHierarchyLeafKeys()

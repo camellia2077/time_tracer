@@ -224,7 +224,7 @@ internal object RecordStateReducer {
             canonicalBrowserTarget = target,
             isCanonicalCatalogLoading = true,
             canonicalCatalogStatusText = "",
-            statusText = "Loading canonical catalog..."
+            statusText = ""
         )
 
     fun applyFrequentActivity(state: RecordUiState, activityName: String): RecordUiState =

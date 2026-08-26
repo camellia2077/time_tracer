@@ -22,12 +22,12 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun OutlinedPickerField(
     value: String,
+    onOpen: () -> Unit,
+    modifier: Modifier = Modifier,
     title: String? = null,
     placeholder: String? = null,
     enabled: Boolean = true,
     pickerContentDescription: String = title ?: value,
-    onOpen: () -> Unit,
-    modifier: Modifier = Modifier,
     content: (@Composable () -> Unit)? = null
 ) {
     Column(

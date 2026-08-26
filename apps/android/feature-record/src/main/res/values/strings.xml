@@ -1,16 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="txt_label_editor_file">Editor: %1$s</string>
-    <string name="txt_mode_all">Month</string>
-    <string name="txt_mode_day">DAY</string>
-    <string name="txt_label_content">Content</string>
-    <string name="txt_label_day_content_with_date">DAY Content %1$s</string>
-    <string name="txt_label_day_content">DAY Content</string>
 
     <string name="txt_cd_ingest">Ingest</string>
     <string name="txt_action_close">Close</string>
-    <string name="txt_cd_undo">Undo</string>
-    <string name="txt_cd_redo">Redo</string>
     <string name="txt_status_unsaved">Unsaved</string>
     <string name="txt_status_saved">Saved</string>
     <string name="txt_cd_prev_month">Previous Month</string>
@@ -120,15 +113,14 @@
     <string name="record_canonical_catalog_parent_title">Select activity parent</string>
     <string name="record_canonical_catalog_parent_description">Select a group node. The Daily status will be true when activity exists under this parent.</string>
     <string name="record_action_select_parent">Use as parent</string>
-    <string name="record_canonical_catalog_loading">Loading canonical catalog...</string>
     <string name="record_canonical_catalog_empty">No canonical paths are available.</string>
     <string name="record_canonical_catalog_source_tree">Activity tree</string>
+    <string name="record_canonical_catalog_search_label">Search activities</string>
+    <string name="record_cd_open_activity_tree_fullscreen">Open activity tree full screen</string>
     <string name="record_canonical_catalog_source_frequent">Frequent</string>
     <string name="record_canonical_catalog_source_categories">Categories</string>
     <string name="record_canonical_catalog_frequent_description">Your most frequent activities from recent records.</string>
     <string name="record_hint_no_frequent_activities">No frequent activities are available yet.</string>
-    <string name="record_canonical_catalog_display_mode_canonical">Browser display: canonical token</string>
-    <string name="record_canonical_catalog_display_mode_alias">Browser display: alias token</string>
     <string name="record_frequent_output_mode_canonical">Frequent output: canonical token</string>
     <string name="record_frequent_output_mode_alias">Frequent output: alias token</string>
     <string name="record_frequent_target_logical_day">Logical Day: %1$s</string>
@@ -176,21 +168,28 @@
     <string name="txt_day_edit_day_remark_title">Edit day remark</string>
     <string name="txt_day_edit_activity_remark_title">Edit activity remark</string>
     <string name="txt_day_edit_save">Save</string>
-    <string name="txt_day_edit_find_replace">Find and replace activity</string>
     <string name="txt_day_edit_find_replace_action">Replace</string>
     <string name="txt_day_edit_find_replace_source_title">Find activity</string>
     <string name="txt_day_edit_find_replace_source_hint">Search by the recorded name, alias, or canonical name.</string>
     <string name="txt_day_edit_find_replace_search_label">Search current day activities</string>
     <string name="txt_day_edit_find_replace_no_matches">No matching activities in this day.</string>
-    <string name="txt_day_edit_find_replace_occurrences">%1$d occurrences</string>
+    <plurals name="txt_day_edit_find_replace_occurrences">
+        <item quantity="one">%1$d occurrence</item>
+        <item quantity="other">%1$d occurrences</item>
+    </plurals>
     <string name="txt_day_edit_find_replace_confirm_title">Replace activities?</string>
-    <string name="txt_day_edit_find_replace_confirm_message">Replace %1$d occurrences of %2$s with %3$s?</string>
-    <string name="txt_day_edit_find_replace_success">Replaced %1$d activities.</string>
+    <plurals name="txt_day_edit_find_replace_confirm_message">
+        <item quantity="one">Replace %1$d occurrence of %2$s with %3$s?</item>
+        <item quantity="other">Replace %1$d occurrences of %2$s with %3$s?</item>
+    </plurals>
     <string name="txt_month_edit_find_replace">Find and replace activity</string>
     <string name="txt_month_edit_find_replace_search_label">Search current month activities</string>
     <string name="txt_month_edit_find_replace_source_hint">Search by the recorded name, alias, or canonical name in this month.</string>
     <string name="txt_month_edit_find_replace_no_matches">No matching activities in this month.</string>
-    <string name="txt_month_edit_find_replace_confirm_message">Replace %1$d occurrences in this month of %2$s with %3$s?</string>
+    <plurals name="txt_month_edit_find_replace_confirm_message">
+        <item quantity="one">Replace %1$d occurrence in this month of %2$s with %3$s?</item>
+        <item quantity="other">Replace %1$d occurrences in this month of %2$s with %3$s?</item>
+    </plurals>
     <string name="txt_month_activity_name_tools">Activity name tools</string>
     <string name="txt_month_activity_name_tools_description">Convert every mappable activity name in the current month.</string>
     <string name="txt_month_convert_aliases_to_canonical">Convert aliases to canonical names</string>
@@ -199,8 +198,9 @@
     <string name="txt_month_activity_name_convert_confirm_title">Convert activity names?</string>
     <string name="txt_month_activity_name_convert_confirm_message">%1$s will rewrite all mappable activity names in the current month.</string>
     <string name="txt_editor_more_edits">More edits</string>
-    <string name="txt_raw_editor_open_day">Open raw day TXT</string>
-    <string name="txt_raw_editor_open_month">Open raw month TXT</string>
+    <string name="txt_raw_editor_open">Open raw TXT</string>
+    <string name="txt_raw_editor_tab_day">Day</string>
+    <string name="txt_raw_editor_tab_month">Month</string>
     <string name="txt_raw_editor_jump_to_date">Jump to date</string>
     <string name="txt_raw_editor_day_not_found">No TXT entry for %1$s.</string>
     <string name="txt_raw_editor_day_title">Raw day TXT</string>

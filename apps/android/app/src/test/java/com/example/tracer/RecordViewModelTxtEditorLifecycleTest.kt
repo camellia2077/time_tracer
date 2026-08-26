@@ -248,6 +248,6 @@ private class TxtEditorLifecycleFakeRuntime(
     override suspend fun listActivityHierarchyLeafMappings(): ActivityHierarchyLeafMappingListResult =
         ActivityHierarchyLeafMappingListResult(ok = true, entries = aliasMappings, message = "ok")
 
-    override suspend fun listCanonicalCatalog(): CanonicalCatalogResult =
+    override suspend fun listCanonicalCatalog(searchQuery: String): CanonicalCatalogResult =
         CanonicalCatalogResult(ok = true, roots = emptyList(), entries = emptyList(), message = "ok")
 }

@@ -20,7 +20,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
+import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -32,10 +33,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.example.tracer.feature.record.R
 import kotlinx.coroutines.launch
 
@@ -266,6 +266,58 @@ internal fun TxtStructuredDayEditor(
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
+internal fun TxtActivityFindReplace(
+    visible: Boolean,
+    events: List<TxtDayEditEvent>,
+    dayRemark: String,
+    roots: List<CanonicalPathNode>,
+    catalogLoading: Boolean,
+    catalogStatusText: String,
+    collapsedRootPaths: Set<String>,
+    orderedRootPaths: List<String>,
+    onCollapsedRootPathsChange: (Set<String>) -> Unit,
+    onOrderedRootPathsChange: (List<String>) -> Unit,
+    onCanonicalCatalogRequested: () -> Unit = {},
+    onDismiss: () -> Unit,
+    onReplaceDayActivity: suspend (String, String, String, List<TxtDayEditEvent>) ->
+        TxtDayActivityReplacementResult,
+    onLoadMonthActivities: suspend () -> TxtMonthActivityEditsResult,
+    onReplaceMonthActivity: suspend (TxtMonthActivityEditSnapshot, String, String) ->
+        TxtMonthActivityReplacementResult
+) {
+    if (!visible) return
+
+    var scope by remember { mutableStateOf(TxtActivityFindReplaceScope.DAY) }
+    val onScopeChange = { value: TxtActivityFindReplaceScope -> scope = value }
+    if (scope == TxtActivityFindReplaceScope.DAY) {
+        TxtDayActivityFindReplace(
+            visible = true, events = events, dayRemark = dayRemark, roots = roots,
+            catalogLoading = catalogLoading, catalogStatusText = catalogStatusText,
+            collapsedRootPaths = collapsedRootPaths, orderedRootPaths = orderedRootPaths,
+            onCollapsedRootPathsChange = onCollapsedRootPathsChange,
+            onOrderedRootPathsChange = onOrderedRootPathsChange,
+            onCanonicalCatalogRequested = onCanonicalCatalogRequested,
+            onScopeChange = onScopeChange, onDismiss = onDismiss,
+            onReplaceActivity = onReplaceDayActivity
+        )
+    } else {
+        TxtMonthActivityFindReplace(
+            visible = true, roots = roots, catalogLoading = catalogLoading,
+            catalogStatusText = catalogStatusText, collapsedRootPaths = collapsedRootPaths,
+            orderedRootPaths = orderedRootPaths,
+            onCollapsedRootPathsChange = onCollapsedRootPathsChange,
+            onOrderedRootPathsChange = onOrderedRootPathsChange,
+            onCanonicalCatalogRequested = onCanonicalCatalogRequested,
+            onScopeChange = onScopeChange, onLoad = onLoadMonthActivities,
+            onDismiss = onDismiss, onReplaceActivity = onReplaceMonthActivity
+        )
+    }
+}
+
+internal enum class TxtActivityFindReplaceScope { DAY, MONTH }
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
 internal fun TxtDayActivityFindReplace(
     visible: Boolean,
     events: List<TxtDayEditEvent>,
@@ -278,6 +330,7 @@ internal fun TxtDayActivityFindReplace(
     onCollapsedRootPathsChange: (Set<String>) -> Unit,
     onOrderedRootPathsChange: (List<String>) -> Unit,
     onCanonicalCatalogRequested: () -> Unit = {},
+    onScopeChange: (TxtActivityFindReplaceScope) -> Unit,
     onDismiss: () -> Unit,
     onReplaceActivity: suspend (
         sourceActivityToken: String,
@@ -306,6 +359,8 @@ internal fun TxtDayActivityFindReplace(
     when (stage) {
         TxtDayActivityReplaceStage.FIND_SOURCE -> TxtDayActivitySourcePage(
             occurrences = activityOccurrences,
+            scope = TxtActivityFindReplaceScope.DAY,
+            onScopeChange = onScopeChange,
             onDismiss = onDismiss,
             onSelect = { selectedActivityToken ->
                 sourceActivityToken = selectedActivityToken
@@ -345,8 +400,9 @@ internal fun TxtDayActivityFindReplace(
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(
-                            stringResource(
-                                R.string.txt_day_edit_find_replace_confirm_message,
+                            pluralStringResource(
+                                R.plurals.txt_day_edit_find_replace_confirm_message,
+                                occurrenceCount,
                                 occurrenceCount,
                                 sourceActivityToken.orEmpty(),
                                 targetActivityToken.orEmpty()
@@ -409,9 +465,13 @@ private enum class TxtDayActivityReplaceStage {
 @Composable
 private fun TxtDayActivitySourcePage(
     occurrences: List<TxtDayActivitySearchOccurrence>,
+    scope: TxtActivityFindReplaceScope,
+    onScopeChange: (TxtActivityFindReplaceScope) -> Unit,
     searchLabelRes: Int = R.string.txt_day_edit_find_replace_search_label,
     sourceHintRes: Int = R.string.txt_day_edit_find_replace_source_hint,
     noMatchesRes: Int = R.string.txt_day_edit_find_replace_no_matches,
+    statusMessage: String = "",
+    isStatusError: Boolean = false,
     onDismiss: () -> Unit,
     onSelect: (String) -> Unit
 ) {
@@ -423,14 +483,7 @@ private fun TxtDayActivitySourcePage(
             }
         }
     }
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.surface
-        ) {
+    FullscreenPage(onDismissRequest = onDismiss) {
             Column(
                 modifier = Modifier
                     .padding(24.dp)
@@ -453,6 +506,18 @@ private fun TxtDayActivitySourcePage(
                         )
                     }
                 }
+                PrimaryTabRow(selectedTabIndex = scope.ordinal) {
+                    Tab(
+                        selected = scope == TxtActivityFindReplaceScope.DAY,
+                        onClick = { onScopeChange(TxtActivityFindReplaceScope.DAY) },
+                        text = { Text(stringResource(R.string.txt_raw_editor_tab_day)) }
+                    )
+                    Tab(
+                        selected = scope == TxtActivityFindReplaceScope.MONTH,
+                        onClick = { onScopeChange(TxtActivityFindReplaceScope.MONTH) },
+                        text = { Text(stringResource(R.string.txt_raw_editor_tab_month)) }
+                    )
+                }
                 OutlinedTextField(
                     value = query,
                     onValueChange = { query = it },
@@ -462,9 +527,17 @@ private fun TxtDayActivitySourcePage(
                 )
                 if (query.isBlank()) {
                     Text(
-                        text = stringResource(sourceHintRes),
+                        text = if (statusMessage.isBlank()) {
+                            stringResource(sourceHintRes)
+                        } else {
+                            statusMessage
+                        },
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = if (isStatusError) {
+                            MaterialTheme.colorScheme.error
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        }
                     )
                 } else if (matchedOccurrences.isEmpty()) {
                     Text(
@@ -489,8 +562,9 @@ private fun TxtDayActivitySourcePage(
                                 style = MaterialTheme.typography.bodyLarge
                             )
                             Text(
-                                text = stringResource(
-                                    R.string.txt_day_edit_find_replace_occurrences,
+                                text = pluralStringResource(
+                                    R.plurals.txt_day_edit_find_replace_occurrences,
+                                    occurrence.occurrenceCount,
                                     occurrence.occurrenceCount
                                 ),
                                 style = MaterialTheme.typography.bodySmall,
@@ -500,7 +574,6 @@ private fun TxtDayActivitySourcePage(
                     }
                 }
             }
-        }
     }
 }
 
@@ -516,6 +589,7 @@ internal fun TxtMonthActivityFindReplace(
     onCollapsedRootPathsChange: (Set<String>) -> Unit,
     onOrderedRootPathsChange: (List<String>) -> Unit,
     onCanonicalCatalogRequested: () -> Unit = {},
+    onScopeChange: (TxtActivityFindReplaceScope) -> Unit,
     onLoad: suspend () -> TxtMonthActivityEditsResult,
     onDismiss: () -> Unit,
     onReplaceActivity: suspend (
@@ -543,34 +617,22 @@ internal fun TxtMonthActivityFindReplace(
     }
 
     if (snapshot == null) {
-        Dialog(onDismissRequest = onDismiss) {
-            Surface {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.txt_day_edit_find_replace_source_title),
-                        style = MaterialTheme.typography.headlineSmall
-                    )
-                    Text(
-                        text = loadError.ifBlank {
-                            stringResource(R.string.record_hint_loading)
-                        },
-                        color = if (loadError.isBlank()) {
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        } else {
-                            MaterialTheme.colorScheme.error
-                        }
-                    )
-                    if (loadError.isNotBlank()) {
-                        TextButton(onClick = onDismiss) {
-                            Text(stringResource(R.string.txt_action_close))
-                        }
-                    }
-                }
-            }
-        }
+        TxtDayActivitySourcePage(
+            occurrences = emptyList(),
+            scope = TxtActivityFindReplaceScope.MONTH,
+            onScopeChange = onScopeChange,
+            searchLabelRes = R.string.txt_month_edit_find_replace_search_label,
+            sourceHintRes = R.string.txt_month_edit_find_replace_source_hint,
+            noMatchesRes = R.string.txt_month_edit_find_replace_no_matches,
+            statusMessage = if (loadError.isBlank()) {
+                stringResource(R.string.record_hint_loading)
+            } else {
+                loadError
+            },
+            isStatusError = loadError.isNotBlank(),
+            onDismiss = onDismiss,
+            onSelect = {}
+        )
         return
     }
 
@@ -588,6 +650,8 @@ internal fun TxtMonthActivityFindReplace(
     when (stage) {
         TxtDayActivityReplaceStage.FIND_SOURCE -> TxtDayActivitySourcePage(
             occurrences = activityOccurrences,
+            scope = TxtActivityFindReplaceScope.MONTH,
+            onScopeChange = onScopeChange,
             searchLabelRes = R.string.txt_month_edit_find_replace_search_label,
             sourceHintRes = R.string.txt_month_edit_find_replace_source_hint,
             noMatchesRes = R.string.txt_month_edit_find_replace_no_matches,
@@ -630,8 +694,9 @@ internal fun TxtMonthActivityFindReplace(
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(
-                            stringResource(
-                                R.string.txt_month_edit_find_replace_confirm_message,
+                            pluralStringResource(
+                                R.plurals.txt_month_edit_find_replace_confirm_message,
+                                occurrenceCount,
                                 occurrenceCount,
                                 sourceActivityToken.orEmpty(),
                                 targetActivityToken.orEmpty()
