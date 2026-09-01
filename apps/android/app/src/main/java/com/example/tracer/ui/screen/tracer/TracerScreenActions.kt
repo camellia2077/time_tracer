@@ -23,8 +23,8 @@ internal data class TracerScreenActions(
     val onPersistRecordFrequentOutputMode: (RecordFrequentOutputMode) -> Unit,
     val onPersistRecordFrequentTopN: (Int) -> Unit,
     val onPersistPromptBeforeUnconfiguredActivityRecord: (Boolean) -> Unit,
-    val onPersistPageTransitionsEnabled: (Boolean) -> Unit,
     val onPersistPageTransitionStyle: (com.example.tracer.data.PageTransitionStyle) -> Unit,
+    val onPersistTimeDisplayMode: (com.example.tracer.data.TimeDisplayMode) -> Unit,
     val onPersistConfigCardExpanded: (com.example.tracer.data.ConfigCard, Boolean) -> Unit
 )
 
@@ -44,8 +44,8 @@ private data class TracerScreenPreferenceActions(
     val onPersistRecordFrequentOutputMode: (RecordFrequentOutputMode) -> Unit,
     val onPersistRecordFrequentTopN: (Int) -> Unit,
     val onPersistPromptBeforeUnconfiguredActivityRecord: (Boolean) -> Unit,
-    val onPersistPageTransitionsEnabled: (Boolean) -> Unit,
     val onPersistPageTransitionStyle: (com.example.tracer.data.PageTransitionStyle) -> Unit,
+    val onPersistTimeDisplayMode: (com.example.tracer.data.TimeDisplayMode) -> Unit,
     val onPersistConfigCardExpanded: (com.example.tracer.data.ConfigCard, Boolean) -> Unit
 )
 
@@ -100,8 +100,8 @@ internal fun rememberTracerScreenActions(
         onPersistRecordFrequentTopN = preferenceActions.onPersistRecordFrequentTopN,
         onPersistPromptBeforeUnconfiguredActivityRecord =
             preferenceActions.onPersistPromptBeforeUnconfiguredActivityRecord,
-        onPersistPageTransitionsEnabled = preferenceActions.onPersistPageTransitionsEnabled,
         onPersistPageTransitionStyle = preferenceActions.onPersistPageTransitionStyle,
+        onPersistTimeDisplayMode = preferenceActions.onPersistTimeDisplayMode,
         onPersistConfigCardExpanded = preferenceActions.onPersistConfigCardExpanded
     )
 }
@@ -202,14 +202,14 @@ private fun rememberTracerScreenPreferenceActions(
                 userPreferencesRepository.setPromptBeforeUnconfiguredActivityRecord(value)
             }
         },
-        onPersistPageTransitionsEnabled = { value ->
-            coroutineScope.launch {
-                userPreferencesRepository.setPageTransitionsEnabled(value)
-            }
-        },
         onPersistPageTransitionStyle = { value ->
             coroutineScope.launch {
                 userPreferencesRepository.setPageTransitionStyle(value)
+            }
+        },
+        onPersistTimeDisplayMode = { value ->
+            coroutineScope.launch {
+                userPreferencesRepository.setTimeDisplayMode(value)
             }
         },
         onPersistConfigCardExpanded = { card, value ->

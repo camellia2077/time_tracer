@@ -12,6 +12,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -69,10 +73,10 @@ internal fun TracerScreenContent(
     onPersistConfigCardExpanded: (com.example.tracer.data.ConfigCard, Boolean) -> Unit,
     promptBeforeUnconfiguredActivityRecord: Boolean,
     onPromptBeforeUnconfiguredActivityRecordChange: (Boolean) -> Unit,
-    pageTransitionsEnabled: Boolean,
-    onPageTransitionsEnabledChange: (Boolean) -> Unit,
     pageTransitionStyle: com.example.tracer.data.PageTransitionStyle,
     onPageTransitionStyleChange: (com.example.tracer.data.PageTransitionStyle) -> Unit,
+    is12HourTime: Boolean,
+    onPersistTimeDisplayMode: (com.example.tracer.data.TimeDisplayMode) -> Unit,
     validAuthorableEventTokens: Set<String>,
     onPersistRecordQuickActivities: (List<String>) -> Unit,
     onClearQuickAccessCache: () -> Unit,
@@ -97,6 +101,7 @@ internal fun TracerScreenContent(
     onEditDailyStatuses: () -> Unit
 ) {
     val tabStateHolder = rememberSaveableStateHolder()
+    var pageTransitionOptionsExpanded by rememberSaveable { mutableStateOf(false) }
     TracerBottomNavShell(
         selectedTab = selectedTab,
         onTabSelected = { nextTab ->
@@ -163,10 +168,14 @@ internal fun TracerScreenContent(
                 promptBeforeUnconfiguredActivityRecord = promptBeforeUnconfiguredActivityRecord,
                 onPromptBeforeUnconfiguredActivityRecordChange =
                     onPromptBeforeUnconfiguredActivityRecordChange,
-                pageTransitionsEnabled = pageTransitionsEnabled,
-                onPageTransitionsEnabledChange = onPageTransitionsEnabledChange,
                 pageTransitionStyle = pageTransitionStyle,
                 onPageTransitionStyleChange = onPageTransitionStyleChange,
+                pageTransitionOptionsExpanded = pageTransitionOptionsExpanded,
+                onPageTransitionOptionsExpandedChange = { value ->
+                    pageTransitionOptionsExpanded = value
+                },
+                is12HourTime = is12HourTime,
+                onPersistTimeDisplayMode = onPersistTimeDisplayMode,
                 validAuthorableEventTokens = validAuthorableEventTokens,
                 onPersistRecordQuickActivities = onPersistRecordQuickActivities,
                 onClearQuickAccessCache = onClearQuickAccessCache,
@@ -197,7 +206,7 @@ internal fun TracerScreenContent(
                 }
             }
         }
-        if (!pageTransitionsEnabled) {
+        if (pageTransitionStyle == com.example.tracer.data.PageTransitionStyle.NONE) {
             // Compose only the selected route, as the pre-animation implementation did. Keeping
             // it out of AnimatedContent prevents transient outgoing-content frames from flashing.
             renderTabContent(selectedTab)
@@ -206,6 +215,7 @@ internal fun TracerScreenContent(
                 targetState = selectedTab,
                 transitionSpec = {
                     when (pageTransitionStyle) {
+                        com.example.tracer.data.PageTransitionStyle.NONE -> error("Handled above")
                         com.example.tracer.data.PageTransitionStyle.FADE -> {
                             fadeIn(animationSpec = tween(durationMillis = 140, delayMillis = 40))
                                 .togetherWith(fadeOut(animationSpec = tween(durationMillis = 100)))

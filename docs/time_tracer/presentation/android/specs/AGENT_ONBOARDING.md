@@ -41,7 +41,7 @@ Open only when needed:
 1. `apps/android/app`
    - composition root, screen-level coordination, cross-feature wiring
 2. `apps/android/feature-data`
-   - Data management UI and actions, rendered from Config
+  - Data management UI and actions, rendered from Settings
 3. `apps/android/feature-record`
    - Record and TXT editor UI state
 4. `apps/android/feature-insights`

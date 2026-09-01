@@ -202,7 +202,7 @@ val releaseAboutLibrariesAssetsRoot = generatedAboutLibrariesAssetsRoot("release
 
 android {
     namespace = "com.example.tracer"
-    compileSdk = 36
+    compileSdk = 37
     ndkVersion = "29.0.14206865"
 
     androidResources {
@@ -224,7 +224,7 @@ android {
     defaultConfig {
         applicationId = "com.example.tracer"
         minSdk = 29
-        targetSdk = 36
+        targetSdk = 37
         versionCode = androidAppVersionCode
         versionName = androidAppVersionName
         buildConfigField("String", "TRACER_CORE_VERSION", "\"$tracerCoreVersion\"")
@@ -270,11 +270,26 @@ android {
         explainIssues = true
         textReport = true
         htmlReport = true
-        xmlReport = false
+        xmlReport = true
     }
 
     testOptions {
-        unitTests.isIncludeAndroidResources = true
+        unitTests {
+            isIncludeAndroidResources = true
+            all {
+                it.jvmArgs(
+                    "--add-opens=java.base/java.lang=ALL-UNNAMED",
+                    "--add-opens=java.base/java.util=ALL-UNNAMED",
+                    "--add-opens=java.base/java.io=ALL-UNNAMED",
+                    "--add-opens=java.base/java.net=ALL-UNNAMED",
+                    "--add-opens=java.base/java.security=ALL-UNNAMED",
+                    "--add-opens=java.base/java.text=ALL-UNNAMED",
+                    "--add-opens=java.base/jdk.internal.access=ALL-UNNAMED",
+                    "--add-opens=java.desktop/java.awt.font=ALL-UNNAMED",
+                    "--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+                )
+            }
+        }
     }
 }
 

@@ -32,7 +32,7 @@ The floating bottom navigation is ordered left to right as:
 - `Files` — browse and edit parsed TXT record files.
 - `Insights` — query and visualize recorded activity data.
 - `Record` — create activity records and manage record-side authoring flows.
-- `Config` — edit app configuration and access data-management actions.
+- `Settings` — manage app settings and access data-management actions.
 
 The tab registry and shell contract are owned by `TracerTabs`; tab-specific
 presentation and state remain in the corresponding feature or app-owned route.
@@ -52,6 +52,10 @@ presentation and state remain in the corresponding feature or app-owned route.
   - `docs/time_tracer/presentation/android/ui/color-system.md`
 - Insights semantic colors:
   - `docs/time_tracer/presentation/android/ui/insights/README.md`
+
+The color-system page defines the app-wide Material 3 role semantics; the
+Insights page records the component-level mapping for hierarchy, progress,
+duration, and chart selection states.
 
 ## Runtime / Contract Reference
 

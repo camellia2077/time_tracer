@@ -35,6 +35,7 @@ import java.time.LocalDate
 internal fun TxtEditorContentCard(
     selectedHistoryFile: String,
     currentDay: LocalDate?,
+    use12HourTime: Boolean = false,
     onConvertActivityNames: (TxtActivityNameTargetMode) -> Unit,
     dayBlockEditorState: TxtDayBlockResolveResult,
     inlineStatusText: String,
@@ -149,6 +150,7 @@ internal fun TxtEditorContentCard(
             } else if (canShowStructuredDay) {
                 TxtStructuredDayEditor(
                     result = structuredDayEdit,
+                    use12HourTime = use12HourTime,
                     roots = canonicalCatalogRoots,
                     catalogLoading = isCanonicalCatalogLoading,
                     catalogStatusText = canonicalCatalogStatusText,

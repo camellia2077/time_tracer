@@ -94,7 +94,7 @@ internal fun List<TreeNode>.toInsightsCompositionSlices(
         }
         InsightsCompositionSlice(
             root = node.name,
-            durationSeconds = value,
+            measureValue = value,
             percent = if (totalValue > 0L) {
                 value.toFloat() * 100f / totalValue.toFloat()
             } else {
@@ -109,7 +109,7 @@ internal fun List<TreeNode>.toInsightsCompositionSlices(
             averageOccurrenceRatio = node.averageOccurrenceRatio
         )
     }.sortedWith(
-        compareByDescending<InsightsCompositionSlice> { it.durationSeconds }
+        compareByDescending<InsightsCompositionSlice> { it.measureValue }
             .thenBy { it.root }
     )
 }

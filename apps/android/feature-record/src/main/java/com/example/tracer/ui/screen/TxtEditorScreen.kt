@@ -45,6 +45,7 @@ private const val TXT_TAB_LOG_TAG = "TxtTab"
 @Composable
 fun TxtEditorSection(
     txtStorageGateway: TxtStorageGateway,
+    use12HourTime: Boolean = false,
     canonicalCatalogRoots: List<CanonicalPathNode> = emptyList(),
     isCanonicalCatalogLoading: Boolean = false,
     canonicalCatalogStatusText: String = "",
@@ -432,6 +433,7 @@ fun TxtEditorSection(
                     TxtEditorContentCard(
                         selectedHistoryFile = selectedHistoryFile,
                         currentDay = currentDay,
+                        use12HourTime = use12HourTime,
                         onConvertActivityNames = { targetMode ->
                             coroutineScope.launch {
                                 val conversion = runtimeCoordinator.convertActivityNames(

@@ -190,11 +190,11 @@ fun TracerScreen(
             initial = com.example.tracer.data.UserPreferencesRepository
                 .DEFAULT_PROMPT_BEFORE_UNCONFIGURED_ACTIVITY_RECORD
         )
-    val pageTransitionsEnabled by userPreferencesRepository.pageTransitionsEnabled.collectAsState(
-        initial = com.example.tracer.data.UserPreferencesRepository.DEFAULT_PAGE_TRANSITIONS_ENABLED
-    )
     val pageTransitionStyle by userPreferencesRepository.pageTransitionStyle.collectAsState(
         initial = com.example.tracer.data.UserPreferencesRepository.DEFAULT_PAGE_TRANSITION_STYLE
+    )
+    val timeDisplayMode by userPreferencesRepository.timeDisplayMode.collectAsState(
+        initial = com.example.tracer.data.UserPreferencesRepository.DEFAULT_TIME_DISPLAY_MODE
     )
     val insightsHeatmapState = rememberTracerScreenInsightsHeatmapState(
         selectedTab = selectedTab,
@@ -227,7 +227,8 @@ fun TracerScreen(
         insightsPiePalettePreset,
         insightsComparisonColorScheme,
         insightsComparisonIndicatorStyle,
-        configCardExpansionPreferences
+        configCardExpansionPreferences,
+        timeDisplayMode
     ).all { it != null }
     if (!preferencesAreReady) {
         return
@@ -469,10 +470,10 @@ fun TracerScreen(
         promptBeforeUnconfiguredActivityRecord = promptBeforeUnconfiguredActivityRecord,
         onPromptBeforeUnconfiguredActivityRecordChange =
             actions.onPersistPromptBeforeUnconfiguredActivityRecord,
-        pageTransitionsEnabled = pageTransitionsEnabled,
-        onPageTransitionsEnabledChange = actions.onPersistPageTransitionsEnabled,
         pageTransitionStyle = pageTransitionStyle,
         onPageTransitionStyleChange = actions.onPersistPageTransitionStyle,
+        is12HourTime = timeDisplayMode == com.example.tracer.data.TimeDisplayMode.TWELVE_HOUR,
+        onPersistTimeDisplayMode = actions.onPersistTimeDisplayMode,
         validAuthorableEventTokens = validAuthorableEventTokens,
         onPersistRecordQuickActivities = actions.onPersistRecordQuickActivities,
         onClearQuickAccessCache = quickActivitiesPreferenceGateway::clearCachedQuickActivities,

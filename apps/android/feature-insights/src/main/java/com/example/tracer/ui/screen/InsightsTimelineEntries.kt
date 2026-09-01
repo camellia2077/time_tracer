@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.semantics
 import com.example.tracer.feature.insights.R
 import androidx.compose.ui.semantics.testTag
+import com.example.tracer.ui.components.formatDisplayClockTime
 
 private const val ParentColorIndicatorTestTag = "insights-parent-color-indicator"
 
@@ -57,7 +58,8 @@ internal fun ActivityTimelineItem.toInsightsTimelineEntry(): InsightsTimelineEnt
 internal fun InsightsTimelineEntryRow(
     entry: InsightsTimelineEntry,
     onEditRemark: ((ActivityTimelineItem) -> Unit)? = null,
-    layout: InsightsTimelineLayout = InsightsTimelineLayout.DURATION_SCALED
+    layout: InsightsTimelineLayout = InsightsTimelineLayout.DURATION_SCALED,
+    is12HourTime: Boolean
 ) {
     val activity = entry.activity
     val height = timelineEntryHeight(entry, layout)
@@ -75,7 +77,7 @@ internal fun InsightsTimelineEntryRow(
             color = activity.parentColor?.toTimelineParentColor(),
             height = height
         )
-        TimelineEntryTimes(entry, height)
+        TimelineEntryTimes(entry, height, is12HourTime)
         TimelineEntryRail(entry, height, colors)
         ActivityTimelineCard(
             activity = activity,
@@ -93,7 +95,8 @@ internal fun InsightsTimelineRecordList(
     activities: List<ActivityTimelineItem>,
     layout: InsightsTimelineLayout,
     onEditRemark: ((ActivityTimelineItem) -> Unit)? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    is12HourTime: Boolean
 ) {
     Column(
         modifier = modifier,
@@ -103,7 +106,8 @@ internal fun InsightsTimelineRecordList(
             InsightsTimelineEntryRow(
                 entry = activity.toInsightsTimelineEntry(),
                 onEditRemark = onEditRemark,
-                layout = layout
+                layout = layout,
+                is12HourTime = is12HourTime
             )
         }
     }
@@ -174,7 +178,7 @@ private fun timelineEntryHeight(entry: InsightsTimelineEntry, layout: InsightsTi
     }
 
 @Composable
-private fun TimelineEntryTimes(entry: InsightsTimelineEntry, height: Dp) {
+private fun TimelineEntryTimes(entry: InsightsTimelineEntry, height: Dp, is12HourTime: Boolean) {
     val activity = entry.activity
     Column(
         modifier = Modifier
@@ -185,13 +189,15 @@ private fun TimelineEntryTimes(entry: InsightsTimelineEntry, height: Dp) {
     ) {
         when (entry) {
             is InsightsTimelineEntry.Interval -> {
-                Text(
-                    text = activity.startTime,
+                DisplayClockTime(
+                    value = activity.startTime,
+                    is12HourTime = is12HourTime,
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Text(
-                    text = activity.endTime,
+                DisplayClockTime(
+                    value = activity.endTime,
+                    is12HourTime = is12HourTime,
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -201,16 +207,86 @@ private fun TimelineEntryTimes(entry: InsightsTimelineEntry, height: Dp) {
                 // timestamp aligned with the bottom/end marker instead of
                 // implying a start event at the top of the timeline row.
                 Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = stringResource(
-                        R.string.insights_activity_timeline_end_only_time,
-                        activity.endTime
-                    ),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+                if (is12HourTime) {
+                    DisplayEndOnlyClockTime(activity.endTime)
+                } else {
+                    Text(
+                        text = stringResource(
+                            R.string.insights_activity_timeline_end_only_time,
+                            formatDisplayClockTime(activity.endTime, false)
+                        ),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun DisplayClockTime(
+    value: String,
+    is12HourTime: Boolean,
+    style: androidx.compose.ui.text.TextStyle,
+    color: Color
+) {
+    if (!is12HourTime) {
+        Text(
+            text = formatDisplayClockTime(value, false),
+            style = style,
+            color = color
+        )
+        return
+    }
+
+    val (clock, period) = splitTwelveHourClockTime(value)
+    Column(horizontalAlignment = Alignment.End) {
+        Text(text = clock, style = style, color = color)
+        if (period != null) {
+            Text(
+                text = period,
+                style = MaterialTheme.typography.labelSmall,
+                color = color
+            )
+        }
+    }
+}
+
+@Composable
+private fun DisplayEndOnlyClockTime(value: String) {
+    val (clock, period) = splitTwelveHourClockTime(value)
+    Column(horizontalAlignment = Alignment.End) {
+        Text(
+            text = stringResource(R.string.insights_activity_timeline_end_only_time, clock),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        if (period != null) {
+            Text(
+                text = period,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+    }
+}
+
+private data class TwelveHourClockTimeParts(
+    val clock: String,
+    val period: String?
+)
+
+private fun splitTwelveHourClockTime(value: String): TwelveHourClockTimeParts {
+    val formatted = formatDisplayClockTime(value, use12Hour = true)
+    val separatorIndex = formatted.lastIndexOf(' ')
+    return if (separatorIndex >= 0) {
+        TwelveHourClockTimeParts(
+            clock = formatted.substring(0, separatorIndex),
+            period = formatted.substring(separatorIndex + 1)
+        )
+    } else {
+        TwelveHourClockTimeParts(clock = formatted, period = null)
     }
 }
 

@@ -76,6 +76,7 @@ internal fun QueryInsightsResultDisplay(
     onChartRootChange: (String) -> Unit,
     onChartShowAverageLineChange: (Boolean) -> Unit,
     onChartVisualModeChange: (InsightsChartVisualMode) -> Unit,
+    is12HourTime: Boolean,
     onUpdateActivityRemark: suspend (ActivityTimelineItem, String) -> RecordActionResult = { _, _ ->
         RecordActionResult(ok = false, message = "Activity remark editing is unavailable.")
     },
@@ -187,7 +188,8 @@ internal fun QueryInsightsResultDisplay(
                             onPeriodComparisonToggle = onPeriodComparisonToggle,
                             onComparisonPeriodSelected = onComparisonPeriodSelected,
                             onUpdateActivityRemark = onUpdateActivityRemark,
-                            onUpdateDayRemark = onUpdateDayRemark
+                            onUpdateDayRemark = onUpdateDayRemark,
+                            is12HourTime = is12HourTime
                         )
                     } else {
                         InsightsPeriodActivityBrowser(
@@ -204,7 +206,8 @@ internal fun QueryInsightsResultDisplay(
                             onSelectedViewChange = onPeriodActivitiesViewChange,
                             onPeriodComparisonToggle = onPeriodComparisonToggle,
                             onComparisonPeriodSelected = onComparisonPeriodSelected,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            is12HourTime = is12HourTime
                         )
                     }
                 } else {

@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.example.tracer.feature.data"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 24

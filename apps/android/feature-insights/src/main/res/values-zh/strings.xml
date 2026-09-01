@@ -69,7 +69,7 @@
     <string name="insights_chart_measure_frequency">记录次数</string>
     <string name="insights_chart_visual_heatmap">热力图</string>
     <string name="insights_chart_pie_drilldown_hint">点击包含下级活动的扇区或图例行，打开对应活动层级。</string>
-    <string name="insights_chart_pie_drilldown_path">当前层级：%1$s</string>
+    <string name="insights_chart_pie_drilldown_path_label">当前层级</string>
     <string name="insights_chart_pie_drilldown_back">返回 %1$s</string>
     <string name="insights_chart_bar_drilldown_hint">点击包含下级活动的条目，打开下一个活动层级。</string>
     <string name="insights_chart_composition_treemap_hint">点击矩形块或图例行查看活动、活动时长和占比；点击包含下级活动的内容可继续查看下一层。</string>

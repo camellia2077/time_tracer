@@ -6,7 +6,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -14,8 +16,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.Icon
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -166,42 +171,82 @@ internal fun InsightsCompositionVisualizationSection(
     )
 
     if (drilldownPath.isNotEmpty()) {
-        Text(
-            text = stringResource(
-                R.string.insights_chart_pie_drilldown_path,
-                drilldownPath.joinToString(" › ")
-            ),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.primary
-        )
-        TextButton(
-            onClick = {
-                drilldownPath = drilldownPath.dropLast(1)
-                onItemSelected(-1)
-            }
+        Spacer(modifier = Modifier.height(8.dp))
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
             Text(
-                text = stringResource(
-                    R.string.insights_chart_pie_drilldown_back,
-                    drilldownPath.last()
-                )
+                text = stringResource(R.string.insights_chart_pie_drilldown_path_label),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                drilldownPath.forEachIndexed { index, segment ->
+                    TextButton(
+                        onClick = {
+                            drilldownPath = drilldownPath.take(index + 1)
+                            onItemSelected(-1)
+                        },
+                        contentPadding = PaddingValues(horizontal = 1.dp, vertical = 0.dp)
+                    ) {
+                        Text(
+                            text = segment,
+                            style = MaterialTheme.typography.bodyMedium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                    if (index < drilldownPath.lastIndex) {
+                        Icon(
+                            imageVector = Icons.Filled.ChevronRight,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+            OutlinedButton(
+                onClick = {
+                    drilldownPath = drilldownPath.dropLast(1)
+                    onItemSelected(-1)
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.ArrowBack,
+                    contentDescription = null
+                )
+                Text(
+                    text = stringResource(
+                        R.string.insights_chart_pie_drilldown_back,
+                        drilldownPath.last()
+                    )
+                )
+            }
         }
     }
+
+    HorizontalDivider(
+        modifier = Modifier.padding(vertical = 4.dp),
+        color = MaterialTheme.colorScheme.outlineVariant
+    )
 
     Text(
         text = when (compositionMeasure) {
             InsightsCompositionMeasure.DURATION -> stringResource(
                 R.string.insights_chart_total_duration,
-                formatDurationHoursMinutes(visibleSlices.sumOf { it.durationSeconds })
+                formatDurationHoursMinutes(visibleSlices.sumOf { it.measureValue })
             )
             InsightsCompositionMeasure.FREQUENCY -> stringResource(
                 R.string.insights_chart_total_frequency,
-                visibleSlices.sumOf { it.durationSeconds }
+                visibleSlices.sumOf { it.measureValue }
             )
         },
         style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.primary
+        color = MaterialTheme.colorScheme.onSurfaceVariant
     )
 
     when (effectiveVisualMode) {
@@ -209,7 +254,6 @@ internal fun InsightsCompositionVisualizationSection(
             InsightsCompositionBarChart(
                 slices = visibleSlices,
                 palettePreset = piePalettePreset,
-                selectedIndex = selectedItemIndex,
                 onItemSelected = onVisibleSliceSelected,
                 showAverage = insightsMode != InsightsMode.DAY,
                 showFrequency = compositionMeasure == InsightsCompositionMeasure.FREQUENCY,

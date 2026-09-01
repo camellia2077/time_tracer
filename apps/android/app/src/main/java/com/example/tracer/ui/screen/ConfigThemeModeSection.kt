@@ -24,7 +24,7 @@ internal fun ThemeModeSection(
 ) {
     Text(
         text = stringResource(R.string.config_title_theme_mode),
-        style = MaterialTheme.typography.bodyMedium,
+        style = MaterialTheme.typography.titleMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant
     )
 

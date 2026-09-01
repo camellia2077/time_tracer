@@ -58,7 +58,8 @@ internal fun InsightsPeriodActivityBrowser(
     onSelectedViewChange: (InsightsActivityView) -> Unit,
     onPeriodComparisonToggle: () -> Unit = {},
     onComparisonPeriodSelected: (InsightsPeriodSelection) -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    is12HourTime: Boolean
 ) {
     Column(
         modifier = modifier,
@@ -95,7 +96,10 @@ internal fun InsightsPeriodActivityBrowser(
                 onComparisonPeriodSelected = onComparisonPeriodSelected
             )
         } else {
-            InsightsPeriodActivityRecords(activityDays = activityDays)
+            InsightsPeriodActivityRecords(
+                activityDays = activityDays,
+                is12HourTime = is12HourTime
+            )
         }
     }
 }
@@ -381,24 +385,35 @@ private fun PeriodActivityMetric(
 }
 
 @Composable
-private fun InsightsPeriodActivityRecords(activityDays: List<StructuredDailyInsights>) {
+private fun InsightsPeriodActivityRecords(
+    activityDays: List<StructuredDailyInsights>,
+    is12HourTime: Boolean
+) {
     val daysByMonth = remember(activityDays) {
         sortPeriodActivityDaysChronologically(activityDays)
             .groupBy { day -> day.date.substringBeforeLast('-', day.date) }
     }
     if (daysByMonth.size == 1) {
         daysByMonth.values.single().forEach { day ->
-            InsightsPeriodActivityDay(day = day)
+            InsightsPeriodActivityDay(day = day, is12HourTime = is12HourTime)
         }
     } else {
         daysByMonth.forEach { (month, days) ->
-            InsightsPeriodActivityMonth(month = month, days = days)
+            InsightsPeriodActivityMonth(
+                month = month,
+                days = days,
+                is12HourTime = is12HourTime
+            )
         }
     }
 }
 
 @Composable
-private fun InsightsPeriodActivityMonth(month: String, days: List<StructuredDailyInsights>) {
+private fun InsightsPeriodActivityMonth(
+    month: String,
+    days: List<StructuredDailyInsights>,
+    is12HourTime: Boolean
+) {
     var expanded by remember(month) { mutableStateOf(false) }
     val totalDuration = days.sumOf { it.totalDurationSeconds }
     val recordCount = days.sumOf { it.activities.size }
@@ -413,12 +428,14 @@ private fun InsightsPeriodActivityMonth(month: String, days: List<StructuredDail
             recordCount
         )
     ) {
-        days.forEach { day -> InsightsPeriodActivityDay(day = day) }
+        days.forEach { day ->
+            InsightsPeriodActivityDay(day = day, is12HourTime = is12HourTime)
+        }
     }
 }
 
 @Composable
-private fun InsightsPeriodActivityDay(day: StructuredDailyInsights) {
+private fun InsightsPeriodActivityDay(day: StructuredDailyInsights, is12HourTime: Boolean) {
     var expanded by remember(day.date) { mutableStateOf(false) }
     InsightsTimelineExpandableGroup(
         expanded = expanded,
@@ -432,7 +449,8 @@ private fun InsightsPeriodActivityDay(day: StructuredDailyInsights) {
     ) {
         InsightsTimelineRecordList(
             activities = day.activities,
-            layout = InsightsTimelineLayout.FIXED
+            layout = InsightsTimelineLayout.FIXED,
+            is12HourTime = is12HourTime
         )
     }
 }

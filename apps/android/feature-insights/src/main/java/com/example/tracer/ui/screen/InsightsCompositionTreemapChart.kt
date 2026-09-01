@@ -135,8 +135,8 @@ internal fun computeTreemapRects(
     if (slices.isEmpty() || widthPx <= 0f || heightPx <= 0f) {
         return emptyList()
     }
-    val indexedSlices = slices.withIndex().filter { it.value.durationSeconds > 0L }
-    val totalDuration = indexedSlices.sumOf { it.value.durationSeconds }.toFloat()
+    val indexedSlices = slices.withIndex().filter { it.value.measureValue > 0L }
+    val totalDuration = indexedSlices.sumOf { it.value.measureValue }.toFloat()
     if (totalDuration <= 0f) {
         return emptyList()
     }
@@ -155,7 +155,7 @@ internal fun resolveTreemapColors(
     val colorsByIndex = mutableMapOf<Int, Color>()
     layout
         .sortedWith(
-            compareByDescending<TreemapNodeRect> { it.slice.durationSeconds }
+            compareByDescending<TreemapNodeRect> { it.slice.measureValue }
                 .thenBy { it.index }
         )
         .forEachIndexed { rank, node ->
@@ -220,8 +220,8 @@ private fun rankedTreemap(
     val second = indexedSlices[1]
     val third = indexedSlices[2]
     val tail = indexedSlices.drop(3)
-    val firstRatio = (first.value.durationSeconds.toFloat() / totalDuration).coerceIn(0f, 1f)
-    val remainingTotal = (totalDuration - first.value.durationSeconds.toFloat()).coerceAtLeast(0f)
+    val firstRatio = (first.value.measureValue.toFloat() / totalDuration).coerceIn(0f, 1f)
+    val remainingTotal = (totalDuration - first.value.measureValue.toFloat()).coerceAtLeast(0f)
     if (remainingTotal <= 0f) {
         return sliceDiceTreemap(
             indexedSlices = indexedSlices,
@@ -250,9 +250,9 @@ private fun layoutLandscapeRankedTreemap(
     val firstRight = bounds.left + bounds.width * firstRatio
     val remainder = Rect(firstRight, bounds.top, bounds.right, bounds.bottom)
     val secondBottom = remainder.top + remainder.height *
-        (second.value.durationSeconds.toFloat() / remainingTotal).coerceIn(0f, 1f)
+        (second.value.measureValue.toFloat() / remainingTotal).coerceIn(0f, 1f)
     val thirdBottom = secondBottom + remainder.height *
-        (third.value.durationSeconds.toFloat() / remainingTotal).coerceIn(0f, 1f)
+        (third.value.measureValue.toFloat() / remainingTotal).coerceIn(0f, 1f)
     val secondBounds = Rect(remainder.left, remainder.top, remainder.right, secondBottom)
     val thirdBounds = Rect(remainder.left, secondBottom, remainder.right, thirdBottom)
     val tailBounds = Rect(remainder.left, thirdBottom, remainder.right, remainder.bottom)
@@ -275,9 +275,9 @@ private fun layoutPortraitRankedTreemap(
     val firstBottom = bounds.top + bounds.height * firstRatio
     val remainder = Rect(bounds.left, firstBottom, bounds.right, bounds.bottom)
     val secondRight = remainder.left + remainder.width *
-        (second.value.durationSeconds.toFloat() / remainingTotal).coerceIn(0f, 1f)
+        (second.value.measureValue.toFloat() / remainingTotal).coerceIn(0f, 1f)
     val thirdRight = secondRight + remainder.width *
-        (third.value.durationSeconds.toFloat() / remainingTotal).coerceIn(0f, 1f)
+        (third.value.measureValue.toFloat() / remainingTotal).coerceIn(0f, 1f)
     val secondBounds = Rect(remainder.left, remainder.top, secondRight, remainder.bottom)
     val thirdBounds = Rect(secondRight, remainder.top, thirdRight, remainder.bottom)
     val tailBounds = Rect(thirdRight, remainder.top, remainder.right, remainder.bottom)
@@ -298,7 +298,7 @@ private fun layoutTreemapTail(
     return sliceDiceTreemap(
         indexedSlices = tail,
         bounds = bounds,
-        totalDuration = tail.sumOf { it.value.durationSeconds }.toFloat(),
+        totalDuration = tail.sumOf { it.value.measureValue }.toFloat(),
         vertical = bounds.width >= bounds.height
     )
 }
@@ -325,7 +325,7 @@ private fun sliceDiceTreemap(
 
     val head = indexedSlices.first()
     val tail = indexedSlices.drop(1)
-    val ratio = head.value.durationSeconds.toFloat() / totalDuration
+    val ratio = head.value.measureValue.toFloat() / totalDuration
     return if (vertical) {
         val splitWidth = bounds.width * ratio.coerceIn(0f, 1f)
         val headBounds = Rect(bounds.left, bounds.top, bounds.left + splitWidth, bounds.bottom)
@@ -339,7 +339,7 @@ private fun sliceDiceTreemap(
         ) + sliceDiceTreemap(
             indexedSlices = tail,
             bounds = tailBounds,
-            totalDuration = max(totalDuration - head.value.durationSeconds.toFloat(), 0f),
+        totalDuration = max(totalDuration - head.value.measureValue.toFloat(), 0f),
             vertical = !vertical
         )
     } else {
@@ -355,7 +355,7 @@ private fun sliceDiceTreemap(
         ) + sliceDiceTreemap(
             indexedSlices = tail,
             bounds = tailBounds,
-            totalDuration = max(totalDuration - head.value.durationSeconds.toFloat(), 0f),
+        totalDuration = max(totalDuration - head.value.measureValue.toFloat(), 0f),
             vertical = !vertical
         )
     }
@@ -406,7 +406,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawTreemapLabel(
             drawText(title, bounds.left + paddingX, titleY, labelPaint)
             if (showDuration) {
                 val subtitle = ellipsizeForWidth(
-                    text = valueLabel(slice.durationSeconds),
+                    text = valueLabel(slice.measureValue),
                     paint = detailPaint,
                     maxWidthPx = availableTextWidth
                 )

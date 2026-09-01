@@ -37,6 +37,23 @@ class TxtStructuredDayEditorFormattingTest {
     }
 
     @Test
+    fun formatTxtDayEventTime_usesTwelveHourDisplayWithoutChangingStoredTime() {
+        val event = TxtDayEditEvent(
+            isInterval = true,
+            startTime = "00:24:30",
+            endTime = "13:04:03",
+            activityToken = "study",
+            remark = ""
+        )
+
+        assertEquals(
+            "12:24:30 AM – 1:04:03 PM",
+            formatTxtDayEventTime(event, use12HourTime = true)
+        )
+        assertEquals("00:24:30 – 13:04:03", event.startTime + " – " + event.endTime)
+    }
+
+    @Test
     fun buildTxtDayActivitySearchOccurrences_matchesCanonicalAndAliasForEitherAuthoredForm() {
         val roots = listOf(
             CanonicalPathNode(

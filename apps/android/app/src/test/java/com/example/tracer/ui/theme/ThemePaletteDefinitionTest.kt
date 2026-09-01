@@ -46,24 +46,40 @@ class ThemePaletteDefinitionTest {
             ThemePalette.Indigo.definition().insightsLight.treeProgress
         )
         assertEquals(
-            Color(0xFFD97706),
-            ThemePalette.GraphiteAmber.definition().insightsLight.treeProgress
+            Color(0xFFA855F7),
+            ThemePalette.Purple.definition().insightsLight.treeProgress
         )
         assertEquals(
-            Color(0xFF0D9488),
-            ThemePalette.Teal.definition().insightsLight.treeProgress
+            Color(0xFF71717A),
+            ThemePalette.Grey.definition().insightsLight.treeProgress
+        )
+        assertEquals(
+            Color(0xFF16A34A),
+            ThemePalette.Green.definition().insightsLight.treeProgress
         )
         assertEquals(
             Color(0xFF60A5FA),
             ThemePalette.Indigo.definition().insightsDark.treeProgress
         )
         assertEquals(
-            Color(0xFFFBBF24),
-            ThemePalette.GraphiteAmber.definition().insightsDark.treeProgress
+            Color(0xFFC084FC),
+            ThemePalette.Purple.definition().insightsDark.treeProgress
         )
         assertEquals(
-            Color(0xFF2DD4BF),
-            ThemePalette.Teal.definition().insightsDark.treeProgress
+            Color(0xFFA1A1AA),
+            ThemePalette.Grey.definition().insightsDark.treeProgress
+        )
+        assertEquals(
+            Color(0xFF4ADE80),
+            ThemePalette.Green.definition().insightsDark.treeProgress
+        )
+        assertEquals(
+            Color(0xFF3B82F6),
+            ThemePalette.Blue.definition().insightsLight.treeProgress
+        )
+        assertEquals(
+            Color(0xFF60A5FA),
+            ThemePalette.Blue.definition().insightsDark.treeProgress
         )
         assertEquals(
             Color(0xFFC78C25),
@@ -98,8 +114,8 @@ class ThemePaletteDefinitionTest {
             ThemePalette.Rose.definition().insightsLight.treeProgress
         )
         assertEquals(
-            Color(0xFFD97706),
-            ThemePalette.Amber.definition().insightsLight.treeProgress
+            Color(0xFFEAB308),
+            ThemePalette.Yellow.definition().insightsLight.treeProgress
         )
         assertEquals(
             Color(0xFF4EA5D9),

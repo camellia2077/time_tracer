@@ -13,27 +13,15 @@ class RecordInputContentTest {
     }
 
     @Test
-    fun elapsedMinuteProgress_snapsToCurrentPhaseAfterForegroundResume() {
-        assertEquals(
-            true,
-            shouldSnapElapsedMinuteProgress(
-                needsForegroundResync = true,
-                currentPosition = 12f,
-                targetPosition = 15f
-            )
-        )
+    fun elapsedMinuteProgress_includesSubsecondPhase() {
+        assertEquals(0.5f, minuteCycleProgressForElapsedMillis(30_000L))
+        assertEquals(0.5005f, minuteCycleProgressForElapsedMillis(30_030L))
     }
 
     @Test
-    fun elapsedMinuteProgress_keepsAnimatingForVisibleTimerUpdates() {
-        assertEquals(
-            false,
-            shouldSnapElapsedMinuteProgress(
-                needsForegroundResync = false,
-                currentPosition = 12f,
-                targetPosition = 12.016667f
-            )
-        )
+    fun elapsedMinuteProgress_wrapsAtTheNextMinute() {
+        assertEquals(0f, minuteCycleProgressForElapsedMillis(60_000L))
+        assertEquals(0.5f, minuteCycleProgressForElapsedMillis(90_000L))
     }
 
     @Test

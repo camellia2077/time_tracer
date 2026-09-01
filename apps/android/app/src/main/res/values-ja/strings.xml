@@ -8,7 +8,7 @@
     <string name="tracer_tab_insights">分析</string>
     <string name="tracer_tab_record">記録</string>
     <string name="tracer_tab_files">ファイル</string>
-    <string name="tracer_tab_config">設定</string>
+    <string name="tracer_tab_settings">設定</string>
 
 
     <string name="tracer_export_all_tracer_canceled">圧縮ファイルのエクスポートをキャンセルしました。</string>
@@ -90,18 +90,24 @@
     <string name="config_title_insights_settings">分析の表示</string>
     <string name="config_title_theme_mode">テーマモード</string>
     <string name="config_title_theme_palette">テーマ配色</string>
+    <string name="config_theme_palette_group_light_dark">ライト・ダークモード対応テーマ</string>
+    <string name="config_theme_palette_group_fixed_appearance">固定外観テーマ</string>
     <string name="config_theme_palette_indigo">インディゴ</string>
-    <string name="config_theme_palette_graphite">グラファイト</string>
-    <string name="config_theme_palette_teal">ティール</string>
+    <string name="config_theme_palette_purple">パープル</string>
+    <string name="config_theme_palette_grey">グレー</string>
+    <string name="config_theme_palette_green">グリーン</string>
+    <string name="config_theme_palette_blue">ブルー</string>
     <string name="config_theme_palette_orange">オレンジ</string>
+    <string name="config_theme_palette_yellow">イエロー</string>
     <string name="config_theme_palette_rose">ローズ</string>
-    <string name="config_theme_palette_amber">アンバー</string>
     <string name="config_theme_palette_parchment">羊皮紙</string>
     <string name="config_theme_palette_snowfield">スノーフィールド</string>
     <string name="config_theme_palette_blueprint">青写真</string>
     <string name="config_theme_palette_newsprint">新聞紙</string>
     <string name="config_theme_palette_ink_wash">水墨</string>
     <string name="config_theme_palette_kraft">クラフト紙</string>
+    <string name="config_theme_palette_linen">リネン</string>
+    <string name="config_theme_palette_mint">ミント</string>
     <string name="config_theme_mode_system">システム</string>
     <string name="config_theme_mode_light">ライト</string>
     <string name="config_theme_mode_dark">ダーク</string>
@@ -112,6 +118,9 @@
     <string name="config_language_chinese">中文</string>
     <string name="config_language_english">English</string>
     <string name="config_language_japanese">日本語</string>
+    <string name="config_label_time_display">時刻表示</string>
+    <string name="config_time_display_24_hour">24時間制</string>
+    <string name="config_time_display_12_hour">12時間制 AM/PM</string>
     <string name="config_label_prompt_unconfigured_activity">未設定のアクティビティを記録するときに確認</string>
     <string name="config_summary_prompt_unconfigured_activity">新しいアクティビティを既定のリストへ保存する前に確認します。</string>
     <string name="config_preference_enabled">オン</string>
@@ -119,12 +128,10 @@
     <string name="config_action_unconfigured_activity_details">有効にするとどうなりますか？</string>
     <string name="config_description_prompt_unconfigured_activity">有効にすると、未設定のアクティビティを記録して既定のアクティビティ TOML に追加する前に確認します。</string>
     <string name="config_cd_show_unconfigured_activity_prompt">未設定アクティビティの確認説明を表示</string>
-    <string name="config_label_enable_page_transitions">画面切り替えを有効にする</string>
-    <string name="config_summary_enable_page_transitions">メイン画面の切り替え時にアニメーションを表示します。</string>
     <string name="config_title_page_transition">画面切り替え効果</string>
     <string name="config_page_transition_fade">すばやいフェード</string>
     <string name="config_page_transition_slide">控えめな横スライド</string>
-    <string name="config_page_transition_disabled">オフ</string>
+    <string name="config_page_transition_none">アニメーションなし</string>
     <string name="config_cd_hide_unconfigured_activity_prompt">未設定アクティビティの確認説明を非表示</string>
     <string name="config_title_insights_chart_style">分析チャートのスタイル</string>
     <string name="config_label_insights_breakdown_palette">内訳チャート配色</string>
@@ -155,10 +162,12 @@
     <string name="config_insights_comparison_example_increase">+1時間20分  +25%</string>
     <string name="config_insights_comparison_example_decrease">-35分  -12%</string>
 
-    <string name="config_title_dark_theme_style">ダークテーマスタイル</string>
-    <string name="config_dark_theme_style_tinted">Tinted</string>
-    <string name="config_dark_theme_style_grey">グレー</string>
-    <string name="config_dark_theme_style_black">ブラック</string>
+    <string name="config_title_dark_surface_style">ダークサーフェススタイル</string>
+    <string name="config_dark_surface_style_neutral">ニュートラル</string>
+    <string name="config_dark_surface_style_black">ブラック</string>
+    <string name="config_title_light_surface_style">ライトサーフェススタイル</string>
+    <string name="config_light_surface_style_neutral">ニュートラル</string>
+    <string name="config_light_surface_style_elevated">強調</string>
 
     <string name="config_title_configuration_files">設定ファイル</string>
     <string name="config_action_refresh_list">一覧を更新</string>

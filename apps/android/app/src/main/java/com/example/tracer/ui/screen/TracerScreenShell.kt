@@ -166,7 +166,7 @@ private fun BoxScope.TracerFloatingBottomNavigation(
         shape = FloatingBottomNavShape,
         color = navContainerColor,
         tonalElevation = 0.dp,
-        shadowElevation = 6.dp
+        shadowElevation = 2.dp
     ) {
         Box(
             modifier = Modifier

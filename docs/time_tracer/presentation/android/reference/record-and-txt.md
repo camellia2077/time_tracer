@@ -43,8 +43,8 @@ Describe the user-visible behavior of record creation and TXT editing flows.
 - Unsaved draft handling
   - `TXT` editor changes do not write files until explicit `Ingest`
 - leaving the Files tab discards the current editing session if `Ingest` has not happened
-- leaving the Config page also discards the unsaved month draft that backs file persistence
-  - `Config` keeps its own in-memory per-file drafts and is documented separately
+- leaving the Settings page also discards the unsaved month draft that backs file persistence
+  - `Settings` keeps its own in-memory per-file drafts and is documented separately
 
 ## Core Flow
 

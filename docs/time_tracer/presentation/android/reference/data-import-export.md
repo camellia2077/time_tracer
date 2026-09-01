@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Capture the user-visible behavior and core data flow for Config > Data Management import and export actions.
+Capture the user-visible behavior and core data flow for Settings > Data Management import and export actions.
 
 ## When To Open
 
@@ -16,12 +16,12 @@ Capture the user-visible behavior and core data flow for Config > Data Managemen
 
 ## Behavior Summary
 
-- `Import TXT Folder` (from Config > Data Management)
+- `Import TXT Folder` (from Settings > Data Management)
   - selects one folder
   - recursively imports `.txt` files
   - stages each TXT in app cache
   - replaces matching managed months through ingest
-- `Import TOML Folder` (from Config > Data Management)
+- `Import TOML Folder` (from Settings > Data Management)
   - selects one folder
   - recursively imports `.toml` files
   - preserves selected-folder-relative paths under the imported `config/` root
@@ -29,7 +29,7 @@ Capture the user-visible behavior and core data flow for Config > Data Managemen
     validation/migration
   - imports mutable TOML under `config/user/`; `config/program/` is not required
     in the selected folder because it is presentation-owned runtime data
-- `Import Single TRACER` (from Config > Data Management)
+- `Import Single TRACER` (from Settings > Data Management)
   - selects one `.zip` file
   - stages it in app cache
   - requests a passphrase
@@ -39,14 +39,14 @@ Capture the user-visible behavior and core data flow for Config > Data Managemen
     builds an effective canonical TXT view, runs TXT structure validation,
     then runs TXT logic validation with the imported converter config before
     replacing managed files and rebuilding the database
-- `Export Complete Exchange Package` (from Config > Data Management)
+- `Export Complete Exchange Package` (from Settings > Data Management)
   - selects a destination tree
   - collects managed TXT payloads in memory
   - packages the active converter main TOML and activity-hierarchy TOML under
     `config/user/`
   - requests a passphrase
   - exports one complete encrypted standard `.zip` package through a native fd sink
-- `Export Current TXT ZIP` (from Config > Data Management)
+- `Export Current TXT ZIP` (from Settings > Data Management)
   - selects a destination tree
   - writes one unencrypted `.zip`
   - writes TXT under `txt/`

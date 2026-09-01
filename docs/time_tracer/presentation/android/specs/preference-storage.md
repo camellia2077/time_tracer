@@ -33,9 +33,9 @@ Do not store UI preferences in the runtime SQLite database.
   - theme palette
   - the selected UI and Insights color systems are defined in `../ui/color-system.md` and `../ui/insights/README.md`; the selected palette is user-persisted
 - App language and motion:
-  - whether page transitions are enabled
-  - selected page-transition style (quick fade or light horizontal slide)
-- Config-page expansion state:
+  - selected page transition (no animation, quick fade, or light horizontal slide)
+  - time display mode (24-hour or 12-hour AM/PM)
+- Settings-page expansion state:
   - top-level cards
   - Theme Palette, Insights chart style, and Activity comparison subsections
 - Record assistance preferences:

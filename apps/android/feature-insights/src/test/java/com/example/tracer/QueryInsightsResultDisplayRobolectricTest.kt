@@ -53,16 +53,17 @@ class QueryInsightsResultDisplayRobolectricTest {
 
         renderInsightsResultDisplay(
             activeResult = QueryResult.Insights(
-                text = "## Recent Insights\n\nrecent-md-marker",
+                text = "## Recent Insights\n\n09:00:00",
                 summary = windowSummary
             ),
             insightsSummary = windowSummary,
-            insightsMode = InsightsMode.RECENT
+            insightsMode = InsightsMode.RECENT,
+            is12HourTime = true
         )
 
         composeRule.onNodeWithText(emptyWindowTitle).assertIsDisplayed()
         composeRule.onNodeWithText(emptyWindowBody).assertIsDisplayed()
-        composeRule.onNodeWithText("recent-md-marker").assertIsDisplayed()
+        composeRule.onNodeWithText("09:00:00").assertIsDisplayed()
         composeRule.onNodeWithContentDescription(
             context.getString(R.string.insights_cd_copy_markdown)
         ).assertIsDisplayed()
@@ -162,6 +163,33 @@ class QueryInsightsResultDisplayRobolectricTest {
         composeRule.onAllNodesWithText("整理错题").assertCountEquals(1)
         composeRule.onAllNodesWithTag("insights-parent-color-indicator")
             .assertCountEquals(1)
+    }
+
+    @Test
+    fun insightsResult_dayActivityRecords_useConfiguredTwelveHourDisplay() {
+        renderInsightsResultDisplay(
+            activeResult = QueryResult.Insights(text = "# Day Insights\n\nmd-marker"),
+            dayTimeline = StructuredDailyInsights(
+                date = "2026-02-14",
+                totalDurationSeconds = 3_600,
+                activities = listOf(
+                    ActivityTimelineItem(
+                        startTime = "00:00:00",
+                        endTime = "17:40:30",
+                        activityName = "study",
+                        durationSeconds = 3_600
+                    )
+                )
+            ),
+            parameterSection = InsightsParameterSection.ACTIVITIES,
+            insightsMode = InsightsMode.DAY,
+            is12HourTime = true
+        )
+
+        composeRule.onNodeWithText("12:00:00").assertIsDisplayed()
+        composeRule.onNodeWithText("5:40:30").assertIsDisplayed()
+        composeRule.onNodeWithText("AM").assertIsDisplayed()
+        composeRule.onNodeWithText("PM").assertIsDisplayed()
     }
 
     @Test
@@ -446,7 +474,8 @@ class QueryInsightsResultDisplayRobolectricTest {
         periodActivityProjectTree: List<StructuredInsightsProjectNode> = emptyList(),
         periodComparison: InsightsPeriodComparisonState = InsightsPeriodComparisonState.Hidden,
         parameterSection: InsightsParameterSection = InsightsParameterSection.DAY,
-        insightsMode: InsightsMode
+        insightsMode: InsightsMode,
+        is12HourTime: Boolean = false
     ) {
         composeRule.setContent {
             MaterialTheme {
@@ -495,7 +524,8 @@ class QueryInsightsResultDisplayRobolectricTest {
                     onChartShowAverageLineChange = {},
                     onChartVisualModeChange = {},
                     onChartPeriodComparisonToggle = {},
-                    onChartComparisonPeriodSelected = {}
+                    onChartComparisonPeriodSelected = {},
+                    is12HourTime = is12HourTime
                 )
             }
         }

@@ -52,7 +52,7 @@ internal fun resolveAdjacentPieSliceColors(
     // Ties keep their input order, making equal slices deterministic as well.
     val rankBySliceIndex = IntArray(slices.size)
     slices.indices
-        .sortedWith(compareByDescending<Int> { slices[it].durationSeconds }.thenBy { it })
+        .sortedWith(compareByDescending<Int> { slices[it].measureValue }.thenBy { it })
         .forEachIndexed { rank, sliceIndex -> rankBySliceIndex[sliceIndex] = rank }
     return buildList {
         slices.forEachIndexed { index, slice ->

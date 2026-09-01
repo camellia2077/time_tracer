@@ -28,7 +28,7 @@ internal enum class TracerTab {
     INSIGHTS,
     RECORD,
     FILES,
-    CONFIG
+    SETTINGS
 }
 
 internal val DefaultTracerTab: TracerTab = TracerTab.RECORD
@@ -95,10 +95,12 @@ internal data class TracerTabRouteArgs(
     val onPersistConfigCardExpanded: (com.example.tracer.data.ConfigCard, Boolean) -> Unit,
     val promptBeforeUnconfiguredActivityRecord: Boolean,
     val onPromptBeforeUnconfiguredActivityRecordChange: (Boolean) -> Unit,
-    val pageTransitionsEnabled: Boolean,
-    val onPageTransitionsEnabledChange: (Boolean) -> Unit,
     val pageTransitionStyle: com.example.tracer.data.PageTransitionStyle,
     val onPageTransitionStyleChange: (com.example.tracer.data.PageTransitionStyle) -> Unit,
+    val pageTransitionOptionsExpanded: Boolean,
+    val onPageTransitionOptionsExpandedChange: (Boolean) -> Unit,
+    val onPersistTimeDisplayMode: (com.example.tracer.data.TimeDisplayMode) -> Unit,
+    val is12HourTime: Boolean,
     val validAuthorableEventTokens: Set<String>,
     val onPersistRecordQuickActivities: (List<String>) -> Unit,
     val onClearQuickAccessCache: () -> Unit,
@@ -208,8 +210,9 @@ internal object TracerTabRegistry {
                     onHeatmapPaletteNameChange = args.onInsightsHeatmapPaletteNameChange,
                     heatmapApplyMessage = args.insightsHeatmapApplyMessage,
                     isAppDarkThemeActive = args.isAppDarkThemeActive,
+                    is12HourTime = args.is12HourTime,
                     onEditDailyStatuses = args.onEditDailyStatuses,
-                    bottomContentPadding = floatingBottomNavScrollPadding()
+                    bottomContentPadding = floatingBottomNavScrollPadding() + ScreenOuterPadding
                 )
             }
         ),
@@ -223,7 +226,7 @@ internal object TracerTabRegistry {
             ),
             scrollBehavior = TracerTabScrollBehavior.VERTICAL,
             // Do not clear logical-day override on tab leave.
-            // Yesterday/today is shared session state across Record and the Config-embedded TXT
+            // Yesterday/today is shared session state across Record and the Settings-embedded TXT
             // editor so users keep one target-day intent while switching views.
             onEnter = { args ->
                 refreshRecordMappingValidation(args)
@@ -237,6 +240,7 @@ internal object TracerTabRegistry {
                     recordUiState = args.recordUiState,
                     recordViewModel = args.recordViewModel,
                     txtStorageGateway = args.txtStorageGateway,
+                    is12HourTime = args.is12HourTime,
                     promptBeforeUnconfiguredActivityRecord = args.promptBeforeUnconfiguredActivityRecord,
                     validAuthorableEventTokens = args.validAuthorableEventTokens,
                     onPersistQuickActivities = args.onPersistRecordQuickActivities,
@@ -283,11 +287,11 @@ internal object TracerTabRegistry {
         ),
         TracerTabEntry(
             meta = TabMeta(
-                id = TracerTab.CONFIG,
-                titleRes = R.string.tracer_tab_config,
+                id = TracerTab.SETTINGS,
+                titleRes = R.string.tracer_tab_settings,
                 selectedIcon = Icons.Filled.Settings,
                 unselectedIcon = Icons.Outlined.Settings,
-                testTag = "tab_config"
+                testTag = "tab_settings"
             ),
             scrollBehavior = TracerTabScrollBehavior.VERTICAL,
             onEnter = { args ->
@@ -300,7 +304,7 @@ internal object TracerTabRegistry {
                     modifier = modifier,
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    ConfigSection(
+                    SettingsSection(
                         themeConfig = args.themeConfig,
                         onCopyDiagnosticsPayload = args.onCopyDiagnosticsPayload,
                         onThemeEvent = args.onThemeEvent,
@@ -319,13 +323,20 @@ internal object TracerTabRegistry {
                             args.promptBeforeUnconfiguredActivityRecord,
                         onPromptBeforeUnconfiguredActivityRecordChange =
                             args.onPromptBeforeUnconfiguredActivityRecordChange,
-                        pageTransitionsEnabled = args.pageTransitionsEnabled,
-                        onPageTransitionsEnabledChange = args.onPageTransitionsEnabledChange,
                         pageTransitionStyle = args.pageTransitionStyle,
                         onPageTransitionStyleChange = args.onPageTransitionStyleChange,
+                        pageTransitionOptionsExpanded = args.pageTransitionOptionsExpanded,
+                        onPageTransitionOptionsExpandedChange =
+                            args.onPageTransitionOptionsExpandedChange,
+                        timeDisplayMode = if (args.is12HourTime) {
+                            com.example.tracer.data.TimeDisplayMode.TWELVE_HOUR
+                        } else {
+                            com.example.tracer.data.TimeDisplayMode.TWENTY_FOUR_HOUR
+                        },
+                        onTimeDisplayModeChange = args.onPersistTimeDisplayMode,
                         cardExpansionPreferences = args.configCardExpansionPreferences,
                         onConfigCardExpandedChange = args.onPersistConfigCardExpanded,
-                        extraContent = {
+                        content = {
                             DataManagementRouteContent(args)
                         }
                     )
@@ -342,7 +353,7 @@ internal object TracerTabRegistry {
         TracerTab.FILES,
         TracerTab.INSIGHTS,
         TracerTab.RECORD,
-        TracerTab.CONFIG
+        TracerTab.SETTINGS
     ).map(entryByTab::getValue)
 
     fun entry(tab: TracerTab): TracerTabEntry = entryByTab.getValue(tab)
@@ -435,6 +446,7 @@ private fun DataManagementRouteContent(args: TracerTabRouteArgs) {
 private fun TxtEditorRouteContent(args: TracerTabRouteArgs) {
     TxtEditorSection(
         txtStorageGateway = args.txtStorageGateway,
+        use12HourTime = args.is12HourTime,
         canonicalCatalogRoots = args.recordUiState.canonicalCatalogRoots,
         isCanonicalCatalogLoading = args.recordUiState.isCanonicalCatalogLoading,
         canonicalCatalogStatusText = args.recordUiState.canonicalCatalogStatusText,

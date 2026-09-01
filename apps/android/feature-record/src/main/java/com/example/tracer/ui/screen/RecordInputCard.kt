@@ -66,10 +66,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.tween
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -83,6 +80,8 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 import com.example.tracer.feature.record.R
 import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
+import com.example.tracer.ui.components.formatDisplayClockTime
+import com.example.tracer.ui.components.formatDisplayClockTimeWithoutSeconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -110,7 +109,8 @@ internal fun RecordInputCard(
     onStopIntervalRecording: () -> Unit,
     onDiscardIntervalDraft: () -> Unit,
     onUsePreviousActivityEndTime: () -> Unit = {},
-    onRecordNow: () -> Unit
+    onRecordNow: () -> Unit,
+    is12HourTime: Boolean
 ) {
     var activityNameInputValue by remember {
         mutableStateOf(TextFieldValue(recordContent))
@@ -177,8 +177,8 @@ internal fun RecordInputCard(
                 Text(
                     text = stringResource(
                         R.string.record_latest_activity_times,
-                        formatLatestRecordBoundary(latestActivityRecord.startTime),
-                        formatLatestRecordBoundary(latestActivityRecord.endTime),
+                        formatLatestRecordBoundary(latestActivityRecord.startTime, is12HourTime),
+                        formatLatestRecordBoundary(latestActivityRecord.endTime, is12HourTime),
                         formatExactDuration(latestActivityRecord.durationSeconds)
                     ),
                     style = MaterialTheme.typography.bodyMedium,
@@ -279,6 +279,7 @@ internal fun RecordInputCard(
                     if (isElapsedFullScreenVisible) {
                         ElapsedFullScreenDialog(
                             elapsedSeconds = elapsedSeconds,
+                            intervalStartedAtEpochMs = intervalStartedAtEpochMs,
                             activityName = recordContent.trim(),
                             onDismiss = { isElapsedFullScreenVisible = false }
                         )
@@ -321,7 +322,7 @@ internal fun RecordInputCard(
                                     Text(
                                         text = stringResource(
                                             R.string.record_previous_activity_tail,
-                                            formatIsoClockTime(tail.endTime)
+                                            formatDisplayClockTime(tail.endTime, is12HourTime)
                                         ),
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -333,7 +334,7 @@ internal fun RecordInputCard(
                                         Text(
                                             stringResource(
                                                 R.string.record_action_use_previous_activity_end,
-                                                formatIsoClockTime(tail.endTime)
+                                                formatDisplayClockTime(tail.endTime, is12HourTime)
                                             )
                                         )
                                     }
@@ -532,12 +533,17 @@ internal fun RecordInputCard(
     }
 }
 
-private fun formatLatestRecordBoundary(value: String): String =
-    if (value.isBlank()) "—" else formatIsoClockTime(value).take(5)
+private fun formatLatestRecordBoundary(value: String, is12HourTime: Boolean): String =
+    if (value.isBlank()) {
+        "—"
+    } else {
+        formatDisplayClockTimeWithoutSeconds(value, is12HourTime)
+    }
 
 @Composable
 private fun ElapsedFullScreenDialog(
     elapsedSeconds: Long,
+    intervalStartedAtEpochMs: Long,
     activityName: String,
     onDismiss: () -> Unit
 ) {
@@ -546,9 +552,9 @@ private fun ElapsedFullScreenDialog(
     // completed minutes and completes hourly, while the inner arc advances continuously
     // through the current minute.
     val hourCycleProgress = hourCycleProgressForElapsedSeconds(safeElapsedSeconds)
-    val minuteCyclePosition = safeElapsedSeconds.toFloat() / 60f
-    val animatedMinutePosition = remember { Animatable(minuteCyclePosition) }
-    var needsMinuteProgressResync by remember { mutableStateOf(false) }
+    var continuousElapsedMillis by remember(intervalStartedAtEpochMs) {
+        mutableStateOf(elapsedMillisSince(intervalStartedAtEpochMs, System.currentTimeMillis()))
+    }
     val lifecycleOwner = LocalLifecycleOwner.current
     var isTimerUiActive by remember(lifecycleOwner) {
         mutableStateOf(
@@ -558,10 +564,7 @@ private fun ElapsedFullScreenDialog(
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
-                Lifecycle.Event.ON_STOP -> {
-                    isTimerUiActive = false
-                    needsMinuteProgressResync = true
-                }
+                Lifecycle.Event.ON_STOP -> isTimerUiActive = false
 
                 Lifecycle.Event.ON_START -> isTimerUiActive = true
                 else -> Unit
@@ -570,25 +573,21 @@ private fun ElapsedFullScreenDialog(
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
-    LaunchedEffect(minuteCyclePosition) {
-        val shouldResyncMinuteProgress = shouldSnapElapsedMinuteProgress(
-                needsForegroundResync = needsMinuteProgressResync,
-                currentPosition = animatedMinutePosition.value,
-                targetPosition = minuteCyclePosition
+    LaunchedEffect(intervalStartedAtEpochMs, isTimerUiActive) {
+        // Advance from the original start timestamp on every Compose frame.  The parent only
+        // updates elapsedSeconds once a second, which is sufficient for the label but causes a
+        // visibly stepped minute ring.
+        do {
+            continuousElapsedMillis = elapsedMillisSince(
+                intervalStartedAtEpochMs,
+                System.currentTimeMillis()
             )
-        if (!isTimerUiActive || shouldResyncMinuteProgress) {
-            // Time advanced while the UI was not visible.  Show the current phase immediately
-            // instead of replaying the elapsed minutes as a fast-forward animation.
-            animatedMinutePosition.snapTo(minuteCyclePosition)
-            if (isTimerUiActive && shouldResyncMinuteProgress) {
-                needsMinuteProgressResync = false
-            }
-        } else {
-            // Keep an unbounded phase so a completed minute flows directly into the next one.
-            // Only the drawing phase is wrapped; the animation itself never jumps backwards.
-            animatedMinutePosition.animateTo(
-                targetValue = minuteCyclePosition,
-                animationSpec = tween(durationMillis = 1000, easing = LinearEasing)
+            withFrameNanos { }
+        } while (isTimerUiActive)
+        if (!isTimerUiActive) {
+            continuousElapsedMillis = elapsedMillisSince(
+                intervalStartedAtEpochMs,
+                System.currentTimeMillis()
             )
         }
     }
@@ -680,7 +679,9 @@ private fun ElapsedFullScreenDialog(
                             drawArc(
                                 color = minuteProgressColor,
                                 startAngle = -90f,
-                                sweepAngle = 360f * (animatedMinutePosition.value % 1f),
+                                sweepAngle = 360f * minuteCycleProgressForElapsedMillis(
+                                    continuousElapsedMillis
+                                ),
                                 useCenter = false,
                                 topLeft = Offset(innerInset, innerInset),
                                 size = innerSize,
@@ -707,11 +708,15 @@ private fun ElapsedFullScreenDialog(
     }
 }
 
-internal fun shouldSnapElapsedMinuteProgress(
-    needsForegroundResync: Boolean,
-    currentPosition: Float,
-    targetPosition: Float
-): Boolean = needsForegroundResync && currentPosition != targetPosition
+internal fun minuteCycleProgressForElapsedMillis(elapsedMillis: Long): Float =
+    (elapsedMillis.coerceAtLeast(0L) % 60_000L).toFloat() / 60_000f
+
+private fun elapsedMillisSince(startedAtEpochMs: Long, currentTimeMillis: Long): Long =
+    if (startedAtEpochMs > 0L) {
+        (currentTimeMillis - startedAtEpochMs).coerceAtLeast(0L)
+    } else {
+        0L
+    }
 
 internal fun hourCycleProgressForElapsedSeconds(elapsedSeconds: Long): Float {
     val safeElapsedSeconds = elapsedSeconds.coerceAtLeast(0L)

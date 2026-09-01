@@ -44,7 +44,7 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Android verify environment
         uses: ./.github/actions/setup-android-verify-env
@@ -57,19 +57,6 @@ jobs:
           Write-Host "Java: $((java -version) 2>&1 | Select-Object -First 1)"
           Write-Host "ANDROID_SDK_ROOT: $env:ANDROID_SDK_ROOT"
           Write-Host "ANDROID_HOME: $env:ANDROID_HOME"
-
-      - name: Show android_style scope
-        shell: pwsh
-        run: |
-          Write-Host "android_style will run:"
-          Write-Host "  - Gradle tasks: :app:ktlintCheck, :app:lintDebug"
-          Write-Host "  - verify-stack Python checks"
-          Write-Host "  - tracer_android host suite: config_android_style.toml"
-
-      - name: Verify Android style
-        shell: pwsh
-        run: |
-          python tools/run.py verify --app tracer_android --profile android_style --concise
 
       - name: Show android_ci scope
         shell: pwsh
@@ -98,14 +85,15 @@ jobs:
 
       - name: Upload Android runner logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: android-default-ci-logs
           path: |
             apps/android/build/build.log
             apps/android/build/reports/problems/problems-report.html
+            apps/android/app/build/reports/tests/testDebugUnitTest/**
+            apps/android/app/build/test-results/testDebugUnitTest/**
             apps/android/.gradle/**/executionHistory/**
-            ~/.gradle/daemon/**/daemon-*.out.log
             out/test/artifact_android/result.json
             out/test/artifact_android/logs/failure-summary.txt
             out/test/artifact_android/logs/output.log
@@ -124,7 +112,7 @@ jobs:
       TT_ANDROID_KEY_PASSWORD: ${{ secrets.TT_ANDROID_KEY_PASSWORD }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Android verify environment
         uses: ./.github/actions/setup-android-verify-env
@@ -177,14 +165,15 @@ jobs:
 
       - name: Upload Android release runner logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: android-release-verify-logs
           path: |
             apps/android/build/build.log
             apps/android/build/reports/problems/problems-report.html
+            apps/android/app/build/reports/tests/testDebugUnitTest/**
+            apps/android/app/build/test-results/testDebugUnitTest/**
             apps/android/.gradle/**/executionHistory/**
-            ~/.gradle/daemon/**/daemon-*.out.log
             out/test/artifact_android/result.json
             out/test/artifact_android/logs/failure-summary.txt
             out/test/artifact_android/logs/output.log

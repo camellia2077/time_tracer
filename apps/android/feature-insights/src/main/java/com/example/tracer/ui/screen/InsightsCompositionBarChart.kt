@@ -14,18 +14,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
 @Composable
 internal fun InsightsCompositionBarChart(
     slices: List<InsightsCompositionSlice>,
     palettePreset: InsightsPiePalettePreset,
-    selectedIndex: Int,
     onItemSelected: (Int) -> Unit,
     showAverage: Boolean = true,
     showFrequency: Boolean = false,
@@ -35,39 +32,20 @@ internal fun InsightsCompositionBarChart(
         slices = slices,
         palettePreset = palettePreset
     )
-    val maxDurationSeconds = remember(slices) {
-        slices.maxOfOrNull { it.durationSeconds.coerceAtLeast(0L) } ?: 0L
-    }
-
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         slices.forEachIndexed { index, slice ->
-            val isSelected = index == selectedIndex
-            val barFraction = if (maxDurationSeconds > 0L) {
-                slice.durationSeconds.coerceAtLeast(0L).toFloat() / maxDurationSeconds.toFloat()
-            } else {
-                0f
-            }
-            val rowBorderColor = if (isSelected) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                MaterialTheme.colorScheme.outlineVariant
-            }
-            val rowBackgroundColor = if (isSelected) {
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.28f)
-            } else {
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.18f)
-            }
+            val barFraction = (slice.percent / 100f).coerceIn(0f, 1f)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(MaterialTheme.shapes.medium)
-                    .background(rowBackgroundColor)
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.18f))
                     .border(
-                        width = if (isSelected) 1.5.dp else 1.dp,
-                        color = rowBorderColor,
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline,
                         shape = MaterialTheme.shapes.medium
                     )
                     .clickable { onItemSelected(index) }
@@ -88,7 +66,7 @@ internal fun InsightsCompositionBarChart(
                 ) {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth(barFraction.coerceIn(0f, 1f))
+                            .fillMaxWidth(barFraction)
                             .height(12.dp)
                             .clip(RoundedCornerShape(999.dp))
                             .background(

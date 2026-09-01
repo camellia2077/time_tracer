@@ -5,7 +5,7 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import com.example.tracer.data.DarkThemeStyle
+import com.example.tracer.data.DarkSurfaceStyle
 import com.example.tracer.data.ThemeConfig
 import com.example.tracer.data.ThemeMode
 import com.example.tracer.ui.theme.TracerTheme
@@ -26,7 +26,7 @@ class TracerBottomNavigationRobolectricTest {
             TracerTheme(
                 themeConfig = ThemeConfig(
                     themeMode = ThemeMode.Light,
-                    darkThemeStyle = DarkThemeStyle.Tinted
+                    darkSurfaceStyle = DarkSurfaceStyle.Neutral
                 )
             ) {
                 TracerBottomNavShell(

@@ -31,7 +31,8 @@ fun RecordTabContent(
     onPersistFrequentLookbackDays: (Int) -> Unit,
     onPersistFrequentOutputMode: (RecordFrequentOutputMode) -> Unit,
     onPersistFrequentTopN: (Int) -> Unit,
-    categoriesContent: @Composable () -> Unit
+    categoriesContent: @Composable () -> Unit,
+    is12HourTime: Boolean
 ) {
     val configuration = LocalConfiguration.current
     val locale = remember(configuration) {
@@ -139,6 +140,7 @@ fun RecordTabContent(
         onIntervalEndChange = recordViewModel::onIntervalEndChange,
         intervalStartedAtEpochMs = recordUiState.intervalStartedAtEpochMs,
         attributionDateIso = recordUiState.attributionDateIso,
+        is12HourTime = is12HourTime,
         quickActivities = recordUiState.quickActivities,
         availableActivityNames = remember(validAuthorableEventTokens) {
             validAuthorableEventTokens.toList().sorted()

@@ -8,7 +8,7 @@
     <string name="tracer_tab_insights">分析</string>
     <string name="tracer_tab_record">记录</string>
     <string name="tracer_tab_files">文件</string>
-    <string name="tracer_tab_config">配置</string>
+    <string name="tracer_tab_settings">设置</string>
 
 
     <string name="tracer_export_all_tracer_canceled">已取消压缩包导出。</string>
@@ -90,18 +90,24 @@
     <string name="config_title_insights_settings">分析展示</string>
     <string name="config_title_theme_mode">主题模式</string>
     <string name="config_title_theme_palette">主题配色</string>
+    <string name="config_theme_palette_group_light_dark">支持明暗模式的主题</string>
+    <string name="config_theme_palette_group_fixed_appearance">固定外观主题</string>
     <string name="config_theme_palette_indigo">靛蓝</string>
-    <string name="config_theme_palette_graphite">石墨灰</string>
-    <string name="config_theme_palette_teal">青绿</string>
+    <string name="config_theme_palette_purple">紫色</string>
+    <string name="config_theme_palette_grey">灰色</string>
+    <string name="config_theme_palette_green">绿色</string>
+    <string name="config_theme_palette_blue">蓝色</string>
     <string name="config_theme_palette_orange">橙色</string>
+    <string name="config_theme_palette_yellow">黄色</string>
     <string name="config_theme_palette_rose">玫瑰</string>
-    <string name="config_theme_palette_amber">琥珀</string>
     <string name="config_theme_palette_parchment">羊皮纸</string>
     <string name="config_theme_palette_snowfield">雪原</string>
     <string name="config_theme_palette_blueprint">蓝图</string>
     <string name="config_theme_palette_newsprint">新闻纸</string>
     <string name="config_theme_palette_ink_wash">水墨</string>
     <string name="config_theme_palette_kraft">牛皮纸</string>
+    <string name="config_theme_palette_linen">亚麻</string>
+    <string name="config_theme_palette_mint">薄荷绿</string>
     <string name="config_theme_mode_system">跟随系统</string>
     <string name="config_theme_mode_light">浅色</string>
     <string name="config_theme_mode_dark">深色</string>
@@ -112,6 +118,9 @@
     <string name="config_language_chinese">中文</string>
     <string name="config_language_english">English</string>
     <string name="config_language_japanese">日本語</string>
+    <string name="config_label_time_display">时间显示</string>
+    <string name="config_time_display_24_hour">24 小时制</string>
+    <string name="config_time_display_12_hour">12 小时制 AM/PM</string>
     <string name="config_label_prompt_unconfigured_activity">记录未配置活动时提示</string>
     <string name="config_summary_prompt_unconfigured_activity">将新活动保存到默认列表前先确认。</string>
     <string name="config_preference_enabled">已开启</string>
@@ -119,12 +128,10 @@
     <string name="config_action_unconfigured_activity_details">开启后会发生什么？</string>
     <string name="config_description_prompt_unconfigured_activity">开启后，记录未配置的活动前先确认；确认后会继续记录，并将活动加入默认活动 TOML。</string>
     <string name="config_cd_show_unconfigured_activity_prompt">显示未配置活动提示说明</string>
-    <string name="config_label_enable_page_transitions">启用页面切换效果</string>
-    <string name="config_summary_enable_page_transitions">在主页面切换时显示动画。</string>
     <string name="config_title_page_transition">页面切换效果</string>
     <string name="config_page_transition_fade">快速淡入淡出</string>
     <string name="config_page_transition_slide">轻微左右滑动</string>
-    <string name="config_page_transition_disabled">已关闭</string>
+    <string name="config_page_transition_none">无动画</string>
     <string name="config_cd_hide_unconfigured_activity_prompt">隐藏未配置活动提示说明</string>
     <string name="config_title_insights_chart_style">分析图表样式</string>
     <string name="config_label_insights_breakdown_palette">分布图配色</string>
@@ -155,10 +162,12 @@
     <string name="config_insights_comparison_example_increase">+1小时20分  +25%</string>
     <string name="config_insights_comparison_example_decrease">-35分  -12%</string>
 
-    <string name="config_title_dark_theme_style">深色主题风格</string>
-    <string name="config_dark_theme_style_tinted">色调</string>
-    <string name="config_dark_theme_style_grey">灰阶</string>
-    <string name="config_dark_theme_style_black">纯黑</string>
+    <string name="config_title_dark_surface_style">深色表面风格</string>
+    <string name="config_dark_surface_style_neutral">中性灰阶</string>
+    <string name="config_dark_surface_style_black">纯黑</string>
+    <string name="config_title_light_surface_style">浅色表面风格</string>
+    <string name="config_light_surface_style_neutral">中性灰阶</string>
+    <string name="config_light_surface_style_elevated">凸显层级</string>
 
     <string name="config_title_configuration_files">配置文件</string>
     <string name="config_action_refresh_list">刷新列表</string>

@@ -51,6 +51,7 @@ fun QueryInsightsTabContent(
     onHeatmapPaletteNameChange: (String) -> Unit,
     heatmapApplyMessage: String,
     isAppDarkThemeActive: Boolean,
+    is12HourTime: Boolean,
     onEditDailyStatuses: () -> Unit = {},
     bottomContentPadding: Dp = 0.dp
 ) {
@@ -253,6 +254,7 @@ fun QueryInsightsTabContent(
                 onHeatmapPaletteNameChange = onHeatmapPaletteNameChange,
                 heatmapApplyMessage = heatmapApplyMessage,
                 isAppDarkThemeActive = isAppDarkThemeActive,
+                is12HourTime = is12HourTime,
                 onCompositionVisualModeChange = queryInsightsViewModel::onCompositionVisualModeChange,
                 onChartRootChange = { root ->
                     queryInsightsViewModel.onChartRootChange(root)

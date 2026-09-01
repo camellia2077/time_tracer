@@ -23,8 +23,7 @@ internal fun Modifier.tracerTabContentModifier(
         .padding(innerPadding)
         .padding(
             start = ScreenOuterPadding,
-            end = ScreenOuterPadding,
-            bottom = bottomOuterPadding
+            end = ScreenOuterPadding
         )
     val selectedEntry = TracerTabRegistry.entry(selectedTab)
     return if (selectedEntry.scrollBehavior == TracerTabScrollBehavior.VERTICAL) {
@@ -34,7 +33,7 @@ internal fun Modifier.tracerTabContentModifier(
         // leaves a permanently visible root-Surface strip below the bar.
         baseModifier
             .verticalScroll(rememberScrollState())
-            .padding(bottom = floatingBottomNavScrollPadding())
+            .padding(bottom = floatingBottomNavScrollPadding() + bottomOuterPadding)
     } else {
         baseModifier
     }
@@ -92,10 +91,12 @@ internal fun TracerTabRouteContent(
     onPersistConfigCardExpanded: (com.example.tracer.data.ConfigCard, Boolean) -> Unit,
     promptBeforeUnconfiguredActivityRecord: Boolean,
     onPromptBeforeUnconfiguredActivityRecordChange: (Boolean) -> Unit,
-    pageTransitionsEnabled: Boolean,
-    onPageTransitionsEnabledChange: (Boolean) -> Unit,
     pageTransitionStyle: com.example.tracer.data.PageTransitionStyle,
     onPageTransitionStyleChange: (com.example.tracer.data.PageTransitionStyle) -> Unit,
+    pageTransitionOptionsExpanded: Boolean,
+    onPageTransitionOptionsExpandedChange: (Boolean) -> Unit,
+    is12HourTime: Boolean,
+    onPersistTimeDisplayMode: (com.example.tracer.data.TimeDisplayMode) -> Unit,
     validAuthorableEventTokens: Set<String>,
     onPersistRecordQuickActivities: (List<String>) -> Unit,
     onClearQuickAccessCache: () -> Unit,
@@ -169,10 +170,12 @@ internal fun TracerTabRouteContent(
         promptBeforeUnconfiguredActivityRecord = promptBeforeUnconfiguredActivityRecord,
         onPromptBeforeUnconfiguredActivityRecordChange =
             onPromptBeforeUnconfiguredActivityRecordChange,
-        pageTransitionsEnabled = pageTransitionsEnabled,
-        onPageTransitionsEnabledChange = onPageTransitionsEnabledChange,
         pageTransitionStyle = pageTransitionStyle,
         onPageTransitionStyleChange = onPageTransitionStyleChange,
+        pageTransitionOptionsExpanded = pageTransitionOptionsExpanded,
+        onPageTransitionOptionsExpandedChange = onPageTransitionOptionsExpandedChange,
+        is12HourTime = is12HourTime,
+        onPersistTimeDisplayMode = onPersistTimeDisplayMode,
         validAuthorableEventTokens = validAuthorableEventTokens,
         onPersistRecordQuickActivities = onPersistRecordQuickActivities,
         onClearQuickAccessCache = onClearQuickAccessCache,

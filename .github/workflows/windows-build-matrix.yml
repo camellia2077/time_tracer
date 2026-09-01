@@ -25,7 +25,7 @@ jobs:
       capability_reason: ${{ steps.capability.outputs.capability_reason }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -70,7 +70,7 @@ jobs:
       matrix: ${{ steps.generate.outputs.matrix }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup shared Python repo tools
         uses: ./.github/actions/setup-python-repo-tools
@@ -96,7 +96,7 @@ jobs:
       matrix: ${{ fromJson(needs.detect-changes.outputs.capability_matrix) }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup shared Windows verify environment
         uses: ./.github/actions/setup-windows-verify-env
@@ -131,7 +131,7 @@ jobs:
 
       - name: Checkout
         if: needs.detect-changes.outputs.run_heavy_verify == 'true'
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup shared Windows verify environment
         if: needs.detect-changes.outputs.run_heavy_verify == 'true'
@@ -165,7 +165,7 @@ jobs:
 
       - name: Upload markdown audit report
         if: always() && needs.detect-changes.outputs.run_heavy_verify == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: report-md-golden-byte-audit-${{ matrix.job_name }}
           path: temp/report-md-golden-byte-audit.md

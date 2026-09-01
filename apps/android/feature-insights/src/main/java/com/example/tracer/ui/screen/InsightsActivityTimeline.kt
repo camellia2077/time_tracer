@@ -46,7 +46,8 @@ internal fun InsightsActivityTimeline(
     onComparisonPeriodSelected: (InsightsPeriodSelection) -> Unit = {},
     modifier: Modifier = Modifier,
     onUpdateActivityRemark: suspend (ActivityTimelineItem, String) -> RecordActionResult,
-    onUpdateDayRemark: suspend (String) -> RecordActionResult
+    onUpdateDayRemark: suspend (String) -> RecordActionResult,
+    is12HourTime: Boolean
 ) {
     val colors = insightsSemanticColors()
     var editingActivity by remember { mutableStateOf<ActivityTimelineItem?>(null) }
@@ -129,7 +130,8 @@ internal fun InsightsActivityTimeline(
                         editingActivity = activity
                         draftRemark = activity.remark.orEmpty()
                         editError = ""
-                    }
+                    },
+                    is12HourTime = is12HourTime
                 )
             }
         }

@@ -21,7 +21,7 @@ Describe stable Android module boundaries and dependency direction.
   - composition root, screen-level orchestration, cross-feature wiring, and the
     activity-hierarchy editor host used by Record's Categories source
 - `feature-data`
-  - Data management presentation rendered from the Config route
+  - Data management presentation rendered from the Settings route
 - `feature-record`
   - Record/TXT presentation, shared record-side UI state, and TXT editor session orchestration
 - `feature-ui-common`
@@ -53,7 +53,7 @@ App-side tests should follow the same rule and avoid implementing `RuntimeGatewa
   - `Files` — browse and edit parsed TXT record files.
   - `Insights` — query and visualize recorded activity data.
   - `Record` — create activity records and manage record-side authoring flows.
-  - `Config` — edit app configuration and access data-management actions.
+  - `Settings` — manage app settings and access data-management actions.
 - App-local route helpers under `ui/screen/tracer` may own:
   - action wiring
   - route-local state

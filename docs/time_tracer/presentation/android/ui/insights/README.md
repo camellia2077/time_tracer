@@ -30,7 +30,46 @@ Define semantic colors for Timeline, Tree, and Insights visualizations.
 | Comparison decrease | `#CF222E` | `#F85149` | Negative period-over-period changes; always paired with a down arrow and explicit text |
 | Comparison neutral | `#57606A` | `#8C959F` | Unchanged values; always paired with a neutral icon and explicit text |
 
-The Config tab's **Insights display** section lets users choose the color pair
+## Material 3 Role Mapping
+
+Insights keeps semantic names separate from Material 3 role names, but the
+selected palette currently supplies them through this mapping:
+
+| Material 3 role | Insights semantic role | Visible usage |
+| --- | --- | --- |
+| `primary` | Tree hierarchy | Activity names, root/child hierarchy, and expand/collapse markers |
+| `secondary` | Tree progress | Hierarchy progress fill and percentage label |
+| `tertiary` | Secondary analytical emphasis | Timeline duration text, chart reference lines, selected chart bars/points, and selected Heatmap cell outline |
+| `outlineVariant` | Timeline track | Unfilled timeline/chart tracks and structural chart lines |
+| `surfaceVariant` | Gap / low-emphasis surface | Empty or low-emphasis regions between activity content |
+
+The mapping is implemented by `ThemeColorTokens.toInsightsColorTokens()`.
+Changing a palette's `tertiary` therefore changes duration and chart-selection
+emphasis, but does not change the Tree progress bar. Tree progress follows
+`secondary`.
+
+The following are current examples of `tertiary` usage, not an exhaustive
+component list:
+
+- Records: duration text.
+- Bar Chart: average line and selected current-period bar.
+- Line Chart: average line and selected point.
+- Heatmap: selected cell outline.
+
+When a vertical Bar Chart has period comparison enabled, the comparison
+period's bars are intentionally rendered with `primary` at lower opacity
+(`0.35`) while current-period bars use `primary` at higher opacity (`0.75`).
+Those comparison bars do not use `tertiary`; `tertiary` remains available for
+the average line and selected current-period bar.
+
+These uses represent secondary analytical emphasis, reference information, or
+focus/selection states rather than status colors. A future use should follow
+the same meaning. It should remain visually distinct from the hierarchy
+(`primary`), Tree progress (`secondary`), neutral surfaces, and supporting
+text. If a new component uses this role, document its example here and verify
+that its Light and Dark values remain readable on the active surface.
+
+The Settings tab's **Insights display** section lets users choose the color pair
 used by Activities Overview comparisons: green/red (default), red/green, theme
 accent with neutral-gray decrease (`#9CA3AF`), or blue/orange (`#2563EB` /
 `#F97316`). This setting changes only the increase/decrease colors; localized
@@ -77,12 +116,12 @@ The Tree progress bar represents a node's share of the total Tree duration. It i
 
 Insights roles follow the selected UI palette while keeping the same semantic responsibilities:
 
-| Semantic role | Indigo light | Indigo dark | Graphite light | Graphite dark | Teal light | Teal dark | Orange light | Orange dark | Rose light | Rose dark | Amber light | Amber dark | Parchment fixed | Snowfield fixed | Blueprint fixed | Newsprint fixed | Ink Wash fixed | Kraft fixed |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Tree hierarchy and activity | `#4F46E5` | `#818CF8` | `#3F3F46` | `#D4D4D8` | `#0F766E` | `#5EEAD4` | `#C2410C` | `#FDBA74` | `#BE123C` | `#FDA4AF` | `#B45309` | `#FCD34D` | `#9E1B1B` | `#4C566A` | `#8FD3FF` | `#30343B` | `#263238` | `#3E3025` |
-| Tree progress and percentage | `#2563EB` | `#60A5FA` | `#D97706` | `#FBBF24` | `#0D9488` | `#2DD4BF` | `#EA580C` | `#FB923C` | `#E11D48` | `#FB7185` | `#D97706` | `#FBBF24` | `#C78C25` | `#2E3440` | `#4EA5D9` | `#A33F3F` | `#B23A2B` | `#9A5B2F` |
-| Timeline duration | `#0284C7` | `#38BDF8` | `#D97706` | `#FBBF24` | `#0D9488` | `#2DD4BF` | `#F97316` | `#FDBA74` | `#F43F5E` | `#FDA4AF` | `#F59E0B` | `#FCD34D` | `#C78C25` | `#4C566A` | `#B7E3FF` | `#6A7078` | `#7B5E57` | `#526B45` |
-| Track | `#E2E8F0` | `#334155` | `#E4E4E7` | `#3F3F46` | `#CCFBF1` | `#134E4A` | `#E2E8F0` | `#334155` | `#E2E8F0` | `#334155` | `#E2E8F0` | `#334155` | `#D7B987` | `#C8D0DC` | `#2C5C78` | `#C7BFB1` | `#C9C6BC` | `#B18A59` |
+| Semantic role | Indigo light | Indigo dark | Grey light | Grey dark | Green light | Green dark | Orange light | Orange dark | Rose light | Rose dark | Yellow light | Yellow dark | Parchment fixed | Snowfield fixed | Blueprint fixed | Newsprint fixed | Ink Wash fixed | Kraft fixed | Linen fixed |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Tree hierarchy and activity | `#4F46E5` | `#818CF8` | `#3F3F46` | `#D4D4D8` | `#15803D` | `#86EFAC` | `#C2410C` | `#FDBA74` | `#BE123C` | `#FDA4AF` | `#CA8A04` | `#FDE68A` | `#9E1B1B` | `#4C566A` | `#8FD3FF` | `#30343B` | `#263238` | `#3E3025` | `#5B5147` |
+| Tree progress and percentage | `#2563EB` | `#60A5FA` | `#71717A` | `#A1A1AA` | `#16A34A` | `#4ADE80` | `#EA580C` | `#FB923C` | `#E11D48` | `#FB7185` | `#EAB308` | `#FACC15` | `#C78C25` | `#2E3440` | `#4EA5D9` | `#A33F3F` | `#B23A2B` | `#9A5B2F` | `#8B6F52` |
+| Timeline duration | `#0284C7` | `#38BDF8` | `#4ADE80` | `#BBF7D0` | `#F97316` | `#FDBA74` | `#F43F5E` | `#FDA4AF` | `#FACC15` | `#FEF08A` | `#C78C25` | `#4C566A` | `#B7E3FF` | `#6A7078` | `#7B5E57` | `#526B45` |
+| Track | `#E2E8F0` | `#334155` | `#E4E4E7` | `#3F3F46` | `#E2E8F0` | `#365C43` | `#E2E8F0` | `#334155` | `#E2E8F0` | `#334155` | `#E2E8F0` | `#334155` | `#D7B987` | `#C8D0DC` | `#2C5C78` | `#C7BFB1` | `#C9C6BC` | `#B18A59` | `#C9BFB2` |
 | Comparison increase | `#1A7F37` | `#3FB950` | `#1A7F37` | `#3FB950` | `#1A7F37` | `#3FB950` | `#1A7F37` | `#3FB950` | `#1A7F37` | `#3FB950` | `#1A7F37` | `#3FB950` | `#1A7F37` | `#1A7F37` | `#1A7F37` | `#1A7F37` | `#1A7F37` | `#1A7F37` |
 | Comparison decrease | `#CF222E` | `#F85149` | `#CF222E` | `#F85149` | `#CF222E` | `#F85149` | `#CF222E` | `#F85149` | `#CF222E` | `#F85149` | `#CF222E` | `#F85149` | `#CF222E` | `#CF222E` | `#CF222E` | `#CF222E` | `#CF222E` | `#CF222E` |
 | Comparison neutral | `#57606A` | `#8C959F` | `#57606A` | `#8C959F` | `#57606A` | `#8C959F` | `#57606A` | `#8C959F` | `#57606A` | `#8C959F` | `#57606A` | `#8C959F` | `#57606A` | `#57606A` | `#57606A` | `#57606A` | `#57606A` | `#57606A` |

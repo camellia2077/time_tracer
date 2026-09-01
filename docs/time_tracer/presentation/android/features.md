@@ -22,8 +22,8 @@ Point to the active Android behavior reference pages.
   - `docs/time_tracer/presentation/android/reference/record-and-txt.md`
 - Insights and chart presentation:
   - `docs/time_tracer/presentation/android/reference/insights-presentation.md`
-- Config editing and diagnostics:
-  - `docs/time_tracer/presentation/android/reference/config-and-diagnostics.md`
+- Settings and diagnostics:
+  - `docs/time_tracer/presentation/android/reference/settings-and-diagnostics.md`
 
 ## Open Next
 

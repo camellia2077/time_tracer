@@ -4,7 +4,7 @@ plugins {
 
 android {
     namespace = "com.example.tracer.contract"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 24

@@ -29,7 +29,8 @@ class ThemeViewModel(private val repository: UserPreferencesRepository) : ViewMo
         viewModelScope.launch {
             when (event) {
                 is ThemeEvent.SetMode -> repository.setThemeMode(event.mode)
-                is ThemeEvent.SetDarkStyle -> repository.setDarkThemeStyle(event.style)
+                is ThemeEvent.SetDarkSurfaceStyle -> repository.setDarkSurfaceStyle(event.style)
+                is ThemeEvent.SetLightSurfaceStyle -> repository.setLightSurfaceStyle(event.style)
                 is ThemeEvent.SetPalette -> repository.setThemePalette(event.palette)
             }
         }

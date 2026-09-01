@@ -13,37 +13,37 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import com.example.tracer.data.DarkThemeStyle
+import com.example.tracer.data.DarkSurfaceStyle
 
 @Composable
-internal fun DarkThemeStyleSection(
-    selectedDarkThemeStyle: DarkThemeStyle,
-    onSetDarkThemeStyle: (DarkThemeStyle) -> Unit
+internal fun DarkSurfaceStyleSection(
+    selectedDarkSurfaceStyle: DarkSurfaceStyle,
+    onSetDarkSurfaceStyle: (DarkSurfaceStyle) -> Unit
 ) {
     Text(
-        text = stringResource(R.string.config_title_dark_theme_style),
-        style = MaterialTheme.typography.bodyMedium,
+        text = stringResource(R.string.config_title_dark_surface_style),
+        style = MaterialTheme.typography.titleMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant
     )
 
     var isExpanded by rememberSaveable { mutableStateOf(false) }
-    val darkThemeStyles = DarkThemeStyle.entries
+    val darkSurfaceStyles = DarkSurfaceStyle.entries
     ExpandableSettingsButton(
-        text = darkThemeStyleLabel(selectedDarkThemeStyle),
+        text = darkSurfaceStyleLabel(selectedDarkSurfaceStyle),
         expanded = isExpanded,
         onClick = { isExpanded = !isExpanded }
     )
     if (isExpanded) {
         SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-            darkThemeStyles.forEachIndexed { index, style ->
+            darkSurfaceStyles.forEachIndexed { index, style ->
                 SegmentedButton(
-                    shape = SegmentedButtonDefaults.itemShape(index = index, count = darkThemeStyles.size),
-                    onClick = { onSetDarkThemeStyle(style) },
-                    selected = selectedDarkThemeStyle == style,
+                    shape = SegmentedButtonDefaults.itemShape(index = index, count = darkSurfaceStyles.size),
+                    onClick = { onSetDarkSurfaceStyle(style) },
+                    selected = selectedDarkSurfaceStyle == style,
                     modifier = Modifier.weight(1f),
                     label = {
                         Text(
-                            text = darkThemeStyleLabel(style),
+                            text = darkSurfaceStyleLabel(style),
                             style = MaterialTheme.typography.labelSmall
                         )
                     }
@@ -54,8 +54,7 @@ internal fun DarkThemeStyleSection(
 }
 
 @Composable
-private fun darkThemeStyleLabel(style: DarkThemeStyle): String = when (style) {
-    DarkThemeStyle.Tinted -> stringResource(R.string.config_dark_theme_style_tinted)
-    DarkThemeStyle.Neutral -> stringResource(R.string.config_dark_theme_style_grey)
-    DarkThemeStyle.Black -> stringResource(R.string.config_dark_theme_style_black)
+private fun darkSurfaceStyleLabel(style: DarkSurfaceStyle): String = when (style) {
+    DarkSurfaceStyle.Neutral -> stringResource(R.string.config_dark_surface_style_neutral)
+    DarkSurfaceStyle.Black -> stringResource(R.string.config_dark_surface_style_black)
 }

@@ -3,7 +3,7 @@ package com.example.tracer
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
-import com.example.tracer.data.DarkThemeStyle
+import com.example.tracer.data.DarkSurfaceStyle
 import com.example.tracer.data.ThemeConfig
 import com.example.tracer.data.ThemeMode
 import com.example.tracer.data.ThemePalette
@@ -48,7 +48,7 @@ class ConfigThemePaletteSectionRobolectricTest {
         val themeConfig = ThemeConfig(
             themeMode = ThemeMode.Light,
             palette = ThemePalette.Indigo,
-            darkThemeStyle = DarkThemeStyle.Tinted
+            darkSurfaceStyle = DarkSurfaceStyle.Neutral
         )
         composeRule.setContent {
             TracerTheme(themeConfig = themeConfig) {

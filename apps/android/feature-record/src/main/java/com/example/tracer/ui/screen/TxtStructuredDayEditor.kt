@@ -37,11 +37,13 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.record.R
+import com.example.tracer.ui.components.formatDisplayClockTime
 import kotlinx.coroutines.launch
 
 @Composable
 internal fun TxtStructuredDayEditor(
     result: TxtDayEditResolveResult,
+    use12HourTime: Boolean = false,
     roots: List<CanonicalPathNode>,
     catalogLoading: Boolean,
     catalogStatusText: String,
@@ -102,7 +104,7 @@ internal fun TxtStructuredDayEditor(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = formatTxtDayEventTime(event),
+                            text = formatTxtDayEventTime(event, use12HourTime),
                             style = MaterialTheme.typography.titleMedium
                         )
                         TextButton(onClick = { editingTimeIndex = index }) {
@@ -1041,8 +1043,14 @@ private const val SECONDS_PER_MINUTE = 60
 private const val SECONDS_PER_HOUR = 60 * SECONDS_PER_MINUTE
 private const val SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR
 
-internal fun formatTxtDayEventTime(event: TxtDayEditEvent): String {
-    fun format(value: String): String = formatIsoClockTime(value)
+internal fun formatTxtDayEventTime(
+    event: TxtDayEditEvent,
+    use12HourTime: Boolean = false
+): String {
+    fun format(value: String): String = formatDisplayClockTime(
+        formatIsoClockTime(value),
+        use12HourTime
+    )
     return if (event.isInterval) {
         "${format(event.startTime)} – ${format(event.endTime)}"
     } else {
