@@ -1,5 +1,5 @@
 [versions]
-agp = "9.0.1"
+agp = "9.1.1"
 kotlin = "2.3.10"
 coreKtx = "1.17.0"
 lifecycleRuntimeKtx = "2.10.0"
@@ -15,12 +15,12 @@ markdownRenderer = "0.39.2"
 ktlint = "14.0.1"
 detekt = "1.23.8"
 desugar = "2.1.5"
-datastore = "1.2.0"
+datastore = "1.2.1"
 coroutines = "1.10.2"
 tomlj = "1.1.1"
 json = "20251224"
 aboutLibraries = "14.0.0-b02"
-robolectric = "4.16"
+robolectric = "4.17-beta-1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

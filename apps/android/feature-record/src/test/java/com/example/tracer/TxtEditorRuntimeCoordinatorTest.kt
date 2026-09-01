@@ -171,7 +171,7 @@ class TxtEditorRuntimeCoordinatorTest {
             onSaveHistoryFile = { saveCalled = true }
         )
 
-        assertTrue(applied)
+        assertTrue(applied.ok)
         assertEquals("current-month", gateway.lastApplyContent)
         assertEquals("0417", gateway.lastApplyDayMarker)
         assertEquals("2026-04", gateway.lastApplySelectedMonth)
@@ -211,7 +211,7 @@ class TxtEditorRuntimeCoordinatorTest {
                 found = true,
                 isMarkerValid = true,
                 updatedContent = "updated-month",
-                message = "save+re-import -> 2026/2026-04.txt"
+                message = "Changes saved."
             )
         )
         val coordinator = TxtEditorRuntimeCoordinator(gateway, testClock())
@@ -232,7 +232,7 @@ class TxtEditorRuntimeCoordinatorTest {
 
         assertTrue(result.ok)
         assertEquals(2, result.replacedEventCount)
-        assertEquals("save+re-import -> 2026/2026-04.txt", result.message)
+        assertEquals("Changes saved.", result.message)
         assertEquals(
             listOf(
                 firstStudy.copy(activityToken = "study_math"),

@@ -40,16 +40,16 @@ class TracerTabRegistryTest {
                 TracerTab.FILES,
                 TracerTab.INSIGHTS,
                 TracerTab.RECORD,
-                TracerTab.CONFIG
+                TracerTab.SETTINGS
             ),
             ids
         )
     }
 
     @Test
-    fun config_status_uses_data_status() {
+    fun settings_status_uses_data_status() {
         val status = TracerTabRegistry.statusText(
-            tab = TracerTab.CONFIG,
+            tab = TracerTab.SETTINGS,
             args = TracerTabStatusArgs(
                 dataStatusText = "Database rebuilt from TXT.",
                 queryStatusText = "",

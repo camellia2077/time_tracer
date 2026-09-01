@@ -1,5 +1,6 @@
 package com.example.tracer
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,6 +39,7 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
@@ -56,14 +58,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalHapticFeedback
-import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.distinctUntilChanged
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 import com.example.tracer.feature.record.R
 import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
 
@@ -90,20 +93,51 @@ internal fun WheelNumberPicker(
     key(values.first, values.last) {
         val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialIndex)
         val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
+        val visibleItemEmphasis by remember(listState, values) {
+            derivedStateOf {
+                val layoutInfo = listState.layoutInfo
+                val viewportCenterOffsetPx = wheelPickerViewportCenterOffset(
+                    viewportStartOffsetPx = layoutInfo.viewportStartOffset,
+                    viewportEndOffsetPx = layoutInfo.viewportEndOffset
+                )
+                layoutInfo.visibleItemsInfo.associate { itemInfo ->
+                    itemInfo.index to wheelPickerTextEmphasis(
+                        itemCenterOffsetPx = itemInfo.offset + itemInfo.size / 2,
+                        viewportCenterOffsetPx = viewportCenterOffsetPx,
+                        itemHeightPx = itemInfo.size
+                    )
+                }
+            }
+        }
 
         LaunchedEffect(value) {
             val target = value.coerceIn(values.first, values.last) - values.first
-            if (listState.firstVisibleItemIndex != target) {
-                listState.animateScrollToItem(target)
+            if (wheelPickerNeedsPositionReset(
+                    firstVisibleItemIndex = listState.firstVisibleItemIndex,
+                    firstVisibleItemScrollOffset = listState.firstVisibleItemScrollOffset,
+                    targetIndex = target
+                )
+            ) {
+                // A programmatic time update can leave the same item index with a non-zero
+                // scroll offset. Reset both parts of the LazyList position synchronously so
+                // repeated "Use current time" updates never render a value between rows.
+                listState.scrollToItem(target)
             }
         }
         LaunchedEffect(listState) {
-            snapshotFlow { listState.firstVisibleItemIndex }
-                .drop(1)
-                .collect { index ->
-                    if (index in 0 until currentValues.count()) {
-                        currentHapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                        currentOnValueChange(currentValues.elementAt(index))
+            var hasScrolledSinceLastSettle = false
+            snapshotFlow { listState.isScrollInProgress }
+                .distinctUntilChanged()
+                .collect { isScrolling ->
+                    if (isScrolling) {
+                        hasScrolledSinceLastSettle = true
+                    } else if (hasScrolledSinceLastSettle) {
+                        hasScrolledSinceLastSettle = false
+                        val index = listState.firstVisibleItemIndex
+                        if (index in 0 until currentValues.count()) {
+                            currentHapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                            currentOnValueChange(currentValues.elementAt(index))
+                        }
                     }
                 }
         }
@@ -127,23 +161,49 @@ internal fun WheelNumberPicker(
                 horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
             ) {
                 items(values.toList()) { number ->
+                    val emphasis = visibleItemEmphasis[number - values.first] ?: 0f
+                    val textColor by animateColorAsState(
+                        targetValue = lerp(
+                            start = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.16f),
+                            stop = MaterialTheme.colorScheme.onSurface,
+                            fraction = emphasis
+                        ),
+                        label = "wheelPickerTextColor"
+                    )
                     Text(
                         text = valueText(number),
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier
-                            .alpha(
-                                if (number == listState.firstVisibleItemIndex + values.first) {
-                                    1f
-                                } else {
-                                    0.38f
-                                }
-                            )
                             .height(itemHeight)
-                            .wrapContentHeight()
+                            .wrapContentHeight(),
+                        color = textColor
                     )
                 }
             }
         }
     }
 }
+
+internal fun wheelPickerNeedsPositionReset(
+    firstVisibleItemIndex: Int,
+    firstVisibleItemScrollOffset: Int,
+    targetIndex: Int
+): Boolean = firstVisibleItemIndex != targetIndex || firstVisibleItemScrollOffset != 0
+
+internal fun wheelPickerTextEmphasis(
+    itemCenterOffsetPx: Int,
+    viewportCenterOffsetPx: Int,
+    itemHeightPx: Int
+): Float {
+    if (itemHeightPx <= 0) {
+        return 0f
+    }
+    val distanceInRows = abs(itemCenterOffsetPx - viewportCenterOffsetPx).toFloat() / itemHeightPx
+    return 1f / (1f + distanceInRows * 1.65f)
+}
+
+internal fun wheelPickerViewportCenterOffset(
+    viewportStartOffsetPx: Int,
+    viewportEndOffsetPx: Int
+): Int = (viewportStartOffsetPx + viewportEndOffsetPx) / 2
 

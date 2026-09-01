@@ -267,15 +267,15 @@ class RuntimeRecordDelegateTest {
             )
 
             assertTrue(result.ok)
-            assertTrue(result.message.contains("save+re-import -> 2026/2026-03.txt"))
+            assertTrue(result.message.contains("Changes saved."))
             assertTrue(
                 result.message.contains(
-                    "Warning: this day currently has fewer than 2 authored events, so some intervals may not be computable yet."
+                    "Some time intervals for this day may not be available yet because it has fewer than two activities."
                 )
             )
             assertFalse(
                 result.message.contains(
-                    "Warning: possible overnight continuation; the first event of this day is not wake-related, so no sleep activity will be auto-generated."
+                    "This day starts with an activity other than waking up, so sleep time may not be calculated automatically."
                 )
             )
         } finally {
@@ -296,16 +296,16 @@ class RuntimeRecordDelegateTest {
             )
 
             assertTrue(result.ok)
-            assertTrue(result.message.contains("save+re-import -> 2026/2026-03.txt"))
+            assertTrue(result.message.contains("Changes saved."))
             assertTrue(
                 result.message.contains(
-                    "Warning: possible overnight continuation; the first event of this day is not wake-related, so no sleep activity will be auto-generated."
+                    "This day starts with an activity other than waking up, so sleep time may not be calculated automatically."
                 )
             )
             assertFalse(result.message.contains("Warning: overnight"))
             assertFalse(
                 result.message.contains(
-                    "Warning: this day currently has fewer than 2 authored events, so some intervals may not be computable yet."
+                    "Some time intervals for this day may not be available yet because it has fewer than two activities."
                 )
             )
         } finally {
@@ -326,7 +326,7 @@ class RuntimeRecordDelegateTest {
             )
 
             assertTrue(result.ok)
-            assertEquals("save+re-import -> 2026/2026-03.txt", result.message)
+            assertEquals("Changes saved.", result.message)
         } finally {
             root.deleteRecursively()
         }

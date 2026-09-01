@@ -106,7 +106,6 @@ class TestCapabilityBoundaryScan(TestCase):
             repo_root / "libs" / "tracer_core" / "src" / "infra" / "config",
             repo_root / "libs" / "tracer_core" / "src" / "infra" / "persistence",
             repo_root / "libs" / "tracer_core" / "src" / "infra" / "exchange",
-            repo_root / "libs" / "tracer_core" / "src" / "infra" / "crypto",
             repo_root / "libs" / "tracer_core" / "src" / "application" / "use_cases" / "pipeline_api.cpp",
             repo_root / "libs" / "tracer_core" / "src" / "application" / "use_cases" / "query_api.cpp",
             repo_root / "libs" / "tracer_core" / "src" / "application" / "use_cases" / "tracer_exchange_api.cpp",

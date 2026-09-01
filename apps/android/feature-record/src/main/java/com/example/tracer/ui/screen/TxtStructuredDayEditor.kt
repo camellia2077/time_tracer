@@ -30,6 +30,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,11 +38,15 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.record.R
+import com.example.tracer.ui.components.formatDisplayClockTime
+import java.time.Clock
+import java.time.ZonedDateTime
 import kotlinx.coroutines.launch
 
 @Composable
 internal fun TxtStructuredDayEditor(
     result: TxtDayEditResolveResult,
+    use12HourTime: Boolean = false,
     roots: List<CanonicalPathNode>,
     catalogLoading: Boolean,
     catalogStatusText: String,
@@ -49,7 +54,13 @@ internal fun TxtStructuredDayEditor(
     orderedRootPaths: List<String>,
     onCollapsedRootPathsChange: (Set<String>) -> Unit,
     onOrderedRootPathsChange: (List<String>) -> Unit,
-    onApply: (dayRemark: String, events: List<TxtDayEditEvent>) -> Unit
+    onApply: (dayRemark: String, events: List<TxtDayEditEvent>) -> Unit,
+    isCurrentLogicalDay: Boolean,
+    logicalDayClock: Clock,
+    onApplyTimeEdit: suspend (
+        dayRemark: String,
+        events: List<TxtDayEditEvent>
+    ) -> TxtDayEditApplyResult
 ) {
     var dayRemark by remember(result.normalizedDayMarker, result.dayRemark) {
         mutableStateOf(result.dayRemark)
@@ -102,7 +113,7 @@ internal fun TxtStructuredDayEditor(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = formatTxtDayEventTime(event),
+                            text = formatTxtDayEventTime(event, use12HourTime),
                             style = MaterialTheme.typography.titleMedium
                         )
                         TextButton(onClick = { editingTimeIndex = index }) {
@@ -167,12 +178,17 @@ internal fun TxtStructuredDayEditor(
             previousEndTimelineSeconds = event.previousEndTimelineSeconds,
             nextStartTimelineSeconds = event.nextStartTimelineSeconds,
             nextEventIsInterval = nextTimelineEvent?.isInterval == true,
+            canSetCurrentTime = isCurrentLogicalDay && index == events.lastIndex,
+            logicalDayClock = logicalDayClock,
             onDismiss = { editingTimeIndex = null },
             onApply = { edited ->
                 val updatedEvents = events.toMutableList().also { it[index] = edited }
-                events = updatedEvents
-                onApply(dayRemark, updatedEvents)
-                editingTimeIndex = null
+                val applied = onApplyTimeEdit(dayRemark, updatedEvents)
+                if (applied.ok) {
+                    events = updatedEvents
+                    editingTimeIndex = null
+                }
+                applied
             }
         )
     }
@@ -833,8 +849,10 @@ private fun TxtDayTimeEditSheet(
     previousEndTimelineSeconds: Int?,
     nextStartTimelineSeconds: Int?,
     nextEventIsInterval: Boolean,
+    canSetCurrentTime: Boolean,
+    logicalDayClock: Clock,
     onDismiss: () -> Unit,
-    onApply: (TxtDayEditEvent) -> Unit
+    onApply: suspend (TxtDayEditEvent) -> TxtDayEditApplyResult
 ) {
     var startTimeline by remember(event.startTimelineSeconds) {
         mutableStateOf(event.startTimelineSeconds ?: parseClockSeconds(event.startTime))
@@ -844,6 +862,8 @@ private fun TxtDayTimeEditSheet(
     }
     val lowerBoundary = previousEndTimelineSeconds
     val upperBoundary = nextStartTimelineSeconds
+    var errorMessage by remember { mutableStateOf("") }
+    val coroutineScope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -895,6 +915,24 @@ private fun TxtDayTimeEditSheet(
                 },
                 onValueChange = { endTimeline = it }
             )
+            if (canSetCurrentTime) {
+                TextButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {
+                        endTimeline = currentLogicalDayTimelineSeconds(logicalDayClock)
+                        errorMessage = ""
+                    }
+                ) {
+                    Text(stringResource(R.string.txt_day_edit_use_current_time))
+                }
+            }
+            if (errorMessage.isNotBlank()) {
+                Text(
+                    text = errorMessage,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
@@ -904,14 +942,17 @@ private fun TxtDayTimeEditSheet(
                 }
                 Button(
                     onClick = {
-                        onApply(
-                            event.copy(
-                                startTime = formatClockSeconds(startTimeline),
-                                endTime = formatClockSeconds(endTimeline),
-                                startTimelineSeconds = startTimeline,
-                                endTimelineSeconds = endTimeline
+                        coroutineScope.launch {
+                            val applied = onApply(
+                                event.copy(
+                                    startTime = formatClockSeconds(startTimeline),
+                                    endTime = formatClockSeconds(endTimeline),
+                                    startTimelineSeconds = startTimeline,
+                                    endTimelineSeconds = endTimeline
+                                )
                             )
-                        )
+                            errorMessage = applied.message.takeIf { !applied.ok }.orEmpty()
+                        }
                     }
                 ) {
                     Text(stringResource(R.string.txt_day_edit_save))
@@ -1037,12 +1078,28 @@ internal fun formatClockSeconds(value: Int): String {
     return "%02d:%02d:%02d".format(hour, minute, second)
 }
 
+internal fun currentLogicalDayTimelineSeconds(clock: Clock): Int {
+    val localTime = ZonedDateTime.now(clock).toLocalTime()
+    val seconds = localTime.toSecondOfDay()
+    return if (localTime.isBefore(RECORD_LOGICAL_DAY_CUTOFF)) {
+        seconds + SECONDS_PER_DAY
+    } else {
+        seconds
+    }
+}
+
 private const val SECONDS_PER_MINUTE = 60
 private const val SECONDS_PER_HOUR = 60 * SECONDS_PER_MINUTE
 private const val SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR
 
-internal fun formatTxtDayEventTime(event: TxtDayEditEvent): String {
-    fun format(value: String): String = formatIsoClockTime(value)
+internal fun formatTxtDayEventTime(
+    event: TxtDayEditEvent,
+    use12HourTime: Boolean = false
+): String {
+    fun format(value: String): String = formatDisplayClockTime(
+        formatIsoClockTime(value),
+        use12HourTime
+    )
     return if (event.isInterval) {
         "${format(event.startTime)} – ${format(event.endTime)}"
     } else {

@@ -49,6 +49,13 @@ Describe the user-visible insights, query, and chart presentation behavior.
   mode, median, typical daily range (P25-P75), relative variability (CV), and
   mean absolute deviation for the selected date range. Android parses and
   formats these values only; it does not recalculate chart statistics locally.
+- Heatmap selection preserves every cell's duration color. For Light/Dark Mode
+  Themes, the selected cell uses an outer outline chosen for contrast with the
+  resolved chart-card surface and an inner outline chosen for contrast with the
+  cell fill. Fixed Appearance Themes retain the single fill-contrast outline.
+  A short cell scale and outline-fade transition makes a changed selection
+  noticeable. Unselected cells are not dimmed, so selecting a date does not
+  distort the heatmap scale.
 - Tree/insights rendering prefers structured data where available and falls back only where the product still allows it.
 - The day timeline preserves Core record kinds. An `end_only` record counts as
   a timeline detail and active day, but is rendered as one localized end-time

@@ -158,6 +158,7 @@
     <string name="txt_day_edit_empty">当天没有活动。</string>
     <string name="txt_day_edit_time">修改时间</string>
     <string name="txt_day_edit_time_title">修改活动时间</string>
+    <string name="txt_day_edit_use_current_time">设为当前时间</string>
     <string name="txt_day_edit_activity">修改活动</string>
     <string name="txt_day_edit_delete_activity">删除活动</string>
     <string name="txt_day_edit_delete_activity_title">删除活动？</string>

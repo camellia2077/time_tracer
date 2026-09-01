@@ -26,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import com.example.tracer.ui.components.ExpandableSettingsButton
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -231,20 +232,13 @@ private fun ConfigBreakdownBarPreview(
 ) {
     val outlineColor = MaterialTheme.colorScheme.outlineVariant
     val trackColor = MaterialTheme.colorScheme.surfaceContainerHighest
-    val maxDurationSeconds = remember(slices) {
-        slices.maxOfOrNull { it.durationSeconds.coerceAtLeast(0L) } ?: 0L
-    }
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         slices.forEachIndexed { index, slice ->
             val isSelected = index == selectedIndex
-            val fillFraction = if (maxDurationSeconds > 0L) {
-                slice.durationSeconds.coerceAtLeast(0L).toFloat() / maxDurationSeconds.toFloat()
-            } else {
-                0f
-            }
+            val fillFraction = (slice.percent / 100f).coerceIn(0f, 1f)
             val barColor = resolveConfigBreakdownRankColor(
                 rank = index,
                 palettePreset = palettePreset
@@ -318,12 +312,12 @@ private fun rememberConfigPiePreviewSlices(): List<InsightsCompositionSlice> = r
     // Keep config preview data static so palette changes are easy to compare even when no
     // insights composition query has been loaded yet.
     listOf(
-        InsightsCompositionSlice(root = "study", durationSeconds = 12_600L, percent = 35f),
-        InsightsCompositionSlice(root = "sleep", durationSeconds = 9_000L, percent = 25f),
-        InsightsCompositionSlice(root = "exercise", durationSeconds = 5_400L, percent = 15f),
-        InsightsCompositionSlice(root = "meal", durationSeconds = 3_600L, percent = 10f),
-        InsightsCompositionSlice(root = "reading", durationSeconds = 2_880L, percent = 8f),
-        InsightsCompositionSlice(root = "Others", durationSeconds = 2_520L, percent = 7f)
+        InsightsCompositionSlice(root = "study", measureValue = 12_600L, percent = 35f),
+        InsightsCompositionSlice(root = "sleep", measureValue = 9_000L, percent = 25f),
+        InsightsCompositionSlice(root = "exercise", measureValue = 5_400L, percent = 15f),
+        InsightsCompositionSlice(root = "meal", measureValue = 3_600L, percent = 10f),
+        InsightsCompositionSlice(root = "reading", measureValue = 2_880L, percent = 8f),
+        InsightsCompositionSlice(root = "Others", measureValue = 2_520L, percent = 7f)
     )
 }
 

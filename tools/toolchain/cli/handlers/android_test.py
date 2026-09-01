@@ -1,8 +1,10 @@
 import argparse
+from pathlib import Path
 
 from ...commands.cmd_build.gradle import build_gradle
 from ...commands.shared.result_reporting import print_failure_report
 from ...core.context import Context
+from ...core.generated_paths import resolve_test_result_layout_for_app
 from ..model import CommandSpec, ParserDefaults
 
 
@@ -54,7 +56,28 @@ def _command_text(args: argparse.Namespace) -> str:
     return " ".join(parts)
 
 
+def _prepare_android_test_outputs(ctx: Context) -> tuple[Path, Path]:
+    layout = resolve_test_result_layout_for_app(ctx.repo_root, "tracer_android")
+    layout.logs_dir.mkdir(parents=True, exist_ok=True)
+    build_log_path = layout.output_full_log_path
+    attempt_one_log_path = build_log_path.with_name(
+        f"{build_log_path.stem}.attempt-1{build_log_path.suffix}"
+    )
+    for stale_path in (
+        layout.result_json_path,
+        layout.result_cases_json_path,
+        build_log_path,
+        attempt_one_log_path,
+    ):
+        try:
+            stale_path.unlink()
+        except FileNotFoundError:
+            pass
+    return layout.result_json_path, build_log_path
+
+
 def run(args: argparse.Namespace, ctx: Context) -> int:
+    _, build_log_path = _prepare_android_test_outputs(ctx)
     extra_args = [arg for arg in args.extra_args if arg != "--"]
     for pattern in args.test_patterns:
         extra_args.extend(["--tests", pattern])
@@ -68,6 +91,7 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         build_dir_name=None,
         profile_name=None,
         gradle_tasks_override=[task],
+        log_file=build_log_path,
         output_mode="quiet" if args.concise else "live",
     )
     if ret != 0:
@@ -79,6 +103,7 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
             app_name="tracer_android",
             repo_root=ctx.repo_root,
             stage="android-test",
+            build_log_path=build_log_path,
             fallback_key_error_hint="Android unit tests failed. See command output above.",
             include_result_json=False,
         )

@@ -82,6 +82,7 @@ internal fun InsightsChartResultContent(
     onHeatmapPaletteNameChange: (String) -> Unit,
     heatmapApplyMessage: String,
     isAppDarkThemeActive: Boolean,
+    adaptHeatmapSelectionToSurface: Boolean,
     onCompositionVisualModeChange: (InsightsCompositionVisualMode) -> Unit,
     onChartRootChange: (String) -> Unit,
     onChartShowAverageLineChange: (Boolean) -> Unit,
@@ -226,7 +227,8 @@ internal fun InsightsChartResultContent(
                 onHeatmapThemePolicyChange = onHeatmapThemePolicyChange,
                 onHeatmapPaletteNameChange = onHeatmapPaletteNameChange,
                 heatmapApplyMessage = heatmapApplyMessage,
-                isAppDarkThemeActive = isAppDarkThemeActive
+                isAppDarkThemeActive = isAppDarkThemeActive,
+                adaptHeatmapSelectionToSurface = adaptHeatmapSelectionToSurface
             )
         } else {
             InsightsCompositionVisualizationSection(

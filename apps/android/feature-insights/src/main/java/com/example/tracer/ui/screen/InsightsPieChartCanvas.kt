@@ -38,7 +38,7 @@ fun InsightsPieChart(
     modifier: Modifier = Modifier
 ) {
     val durationHours = remember(slices) {
-        slices.map { slice -> slice.durationSeconds.coerceAtLeast(0L) / 3600f }
+        slices.map { slice -> slice.measureValue.coerceAtLeast(0L) / 3600f }
     }
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
     val isDarkTheme = isSystemInDarkTheme()

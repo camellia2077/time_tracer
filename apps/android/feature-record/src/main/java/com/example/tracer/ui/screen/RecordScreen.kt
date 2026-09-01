@@ -14,12 +14,9 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
-import java.text.SimpleDateFormat
 import java.time.Clock
-import java.util.Date
-import java.util.Locale
+import com.example.tracer.ui.components.formatDisplayDateTime
 
-private val DISPLAY_TIME_FORMATTER = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
 private const val MAX_QUICK_ACTIVITY_COUNT = 12
 
 @Composable
@@ -103,10 +100,11 @@ fun RecordSection(
     onUsePreviousActivityEndTime: () -> Unit = {},
     onDismissTxtPreview: () -> Unit,
     onRecordNow: () -> Unit,
-    onRecordInterval: () -> Unit
+    onRecordInterval: () -> Unit,
+    is12HourTime: Boolean
 ) {
     var currentTimeMillis by remember { mutableStateOf(System.currentTimeMillis()) }
-    val currentTimeText = formatCurrentTime(currentTimeMillis)
+    val currentTimeText = formatDisplayDateTime(currentTimeMillis, use12Hour = is12HourTime)
     var quickActivitySearch by remember { mutableStateOf("") }
     val haptic = LocalHapticFeedback.current
 
@@ -166,6 +164,7 @@ fun RecordSection(
             intervalStartedAtEpochMs = intervalStartedAtEpochMs,
             attributionDateIso = attributionDateIso,
             currentTimeMillis = currentTimeMillis,
+            is12HourTime = is12HourTime,
             lastRecordedActivityHierarchyLeaf = lastRecordedActivityHierarchyLeaf,
             lastRecordedDuration = lastRecordedDuration,
             latestActivityRecord = latestActivityRecord,
@@ -278,6 +277,3 @@ fun RecordSection(
         )
     }
 }
-
-private fun formatCurrentTime(currentTimeMillis: Long): String =
-    DISPLAY_TIME_FORMATTER.format(Date(currentTimeMillis))

@@ -85,17 +85,15 @@ internal class TxtEditorRuntimeCoordinator(
         events: List<TxtDayEditEvent>,
         onMergedMonthContent: (String) -> Unit,
         onSaveHistoryFile: () -> Unit
-    ): Boolean {
-        return applyDayEditAndPersist(
-            monthContent = monthContent,
-            dayMarker = dayMarker,
-            selectedMonth = selectedMonth,
-            dayRemark = dayRemark,
-            events = events,
-            onMergedMonthContent = onMergedMonthContent,
-            onSaveHistoryFile = onSaveHistoryFile
-        ).ok
-    }
+    ): TxtDayEditApplyResult = applyDayEditAndPersist(
+        monthContent = monthContent,
+        dayMarker = dayMarker,
+        selectedMonth = selectedMonth,
+        dayRemark = dayRemark,
+        events = events,
+        onMergedMonthContent = onMergedMonthContent,
+        onSaveHistoryFile = onSaveHistoryFile
+    )
 
     suspend fun replaceDayActivityToken(
         monthContent: String,

@@ -19,12 +19,12 @@ Define the visual language and presentation rules for the Android UI.
 ## Sections
 
 - Common UI theme:
-  - `color-system.md`
+  - `color-system.md` — shared Material 3 roles, surfaces, and app-wide color semantics
 - Insights presentation:
-  - `insights/README.md`
+  - `insights/README.md` — Insights semantic mapping and component-level color usage
 
 ## Rules
 
 - Document formal colors with HEX values.
-- Color names such as Indigo, Slate, Teal, or Sky are implementation labels only; they are not the documentation contract.
+- Color names such as Indigo, Slate, Green, or Sky are implementation labels only; they are not the documentation contract.
 - Keep large surfaces neutral and reserve accent colors for interaction, hierarchy, activity, and progress.

@@ -20,6 +20,7 @@ internal class RuntimeRecordDelegate(
     private val ensureRuntimePaths: () -> RuntimePaths,
     private val ensureTextStorage: () -> TextStorage,
     private val rawRecordStore: InputRecordStore,
+    private val userMessages: RuntimeUserMessages = RuntimeUserMessages(),
     private val loadWakeKeywords: suspend () -> ActivityMappingNamesResult,
     private val ensureActivityHierarchyEntry: suspend (String) -> ActivityHierarchyAutoRegistrationResult = {
         ActivityHierarchyAutoRegistrationResult(ok = true)
@@ -94,6 +95,7 @@ internal class RuntimeRecordDelegate(
         ensureRuntimePaths = ensureRuntimePaths,
         ensureTextStorage = ensureTextStorage,
         rawRecordStore = rawRecordStore,
+        userMessages = userMessages,
         loadWakeKeywords = loadWakeKeywords,
         recordTranslator = recordTranslator,
         executeAfterInit = executeAfterInit,

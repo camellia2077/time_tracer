@@ -13,7 +13,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -45,6 +44,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.data.R
+import com.example.tracer.ui.components.ExpandableSettingsButton
 
 private enum class DestructiveAction {
     ClearTxt,
@@ -197,15 +197,20 @@ fun DataManagementSection(
                             null
                         }
                     )
-                    DataDisclosureRow(
-                        title = stringResource(R.string.data_title_compressed_archive),
-                        subtitle = stringResource(
-                            R.string.data_summary_compressed_archive,
-                            tracerSecurityLevelLabel(selectedTracerSecurityLevel)
-                        ),
-                        icon = Icons.Filled.Archive,
+                    ExpandableSettingsButton(
+                        text = stringResource(R.string.data_title_compressed_archive),
                         expanded = isArchiveExportExpanded,
-                        onClick = { isArchiveExportExpanded = !isArchiveExportExpanded }
+                        onClick = { isArchiveExportExpanded = !isArchiveExportExpanded },
+                        previewContent = {
+                            Text(
+                                text = stringResource(
+                                    R.string.data_summary_compressed_archive,
+                                    tracerSecurityLevelLabel(selectedTracerSecurityLevel)
+                                ),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     )
                     if (isArchiveExportExpanded) {
                         Box(modifier = Modifier.fillMaxWidth()) {

@@ -17,6 +17,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
@@ -149,6 +150,67 @@ internal fun resolveHeatmapColor(
         bucketIndex += 1
     }
     return paletteColors.last()
+}
+
+internal fun resolveHeatmapSelectionOutlineColor(fillColor: Color): Color =
+    if (fillColor.luminance() < 0.5f) Color.White else Color.Black
+
+internal data class HeatmapSelectionOutlineColors(
+    val surfaceContrast: Color,
+    val fillContrast: Color?
+)
+
+internal fun resolveHeatmapSelectionOutlineColors(
+    fillColor: Color,
+    surfaceColor: Color,
+    adaptToSurface: Boolean
+): HeatmapSelectionOutlineColors {
+    val fillContrast = resolveHeatmapSelectionOutlineColor(fillColor)
+    return if (adaptToSurface) {
+        HeatmapSelectionOutlineColors(
+            surfaceContrast = resolveHeatmapSurfaceOutlineColor(surfaceColor),
+            fillContrast = fillContrast
+        )
+    } else {
+        HeatmapSelectionOutlineColors(
+            surfaceContrast = fillContrast,
+            fillContrast = null
+        )
+    }
+}
+
+internal fun resolveHeatmapSurfaceOutlineColor(surfaceColor: Color): Color {
+    val surfaceLuminance = surfaceColor.luminance()
+    val blackContrastRatio = (surfaceLuminance + 0.05f) / 0.05f
+    val whiteContrastRatio = 1.05f / (surfaceLuminance + 0.05f)
+    return if (blackContrastRatio >= whiteContrastRatio) Color.Black else Color.White
+}
+
+internal fun resolveHeatmapSelectedCellRect(cellRect: Rect, animationProgress: Float): Rect {
+    val progress = animationProgress.coerceIn(0f, 1f)
+    val scale = 0.92f + 0.08f * progress
+    val insetX = cellRect.width * (1f - scale) / 2f
+    val insetY = cellRect.height * (1f - scale) / 2f
+    return Rect(
+        left = cellRect.left + insetX,
+        top = cellRect.top + insetY,
+        right = cellRect.right - insetX,
+        bottom = cellRect.bottom - insetY
+    )
+}
+
+internal fun resolveHeatmapSelectionOutlineRect(cellRect: Rect, strokeWidth: Float): Rect {
+    val inset = minOf(
+        strokeWidth.coerceAtLeast(0f) / 2f,
+        cellRect.width.coerceAtLeast(0f) / 2f,
+        cellRect.height.coerceAtLeast(0f) / 2f
+    )
+    return Rect(
+        left = cellRect.left + inset,
+        top = cellRect.top + inset,
+        right = cellRect.right - inset,
+        bottom = cellRect.bottom - inset
+    )
 }
 
 internal fun normalizeThresholds(rawThresholds: List<Double>): List<Double> {

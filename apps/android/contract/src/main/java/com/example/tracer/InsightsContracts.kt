@@ -157,7 +157,7 @@ data class InsightsCompositionQueryParams(
 
 data class InsightsCompositionSlice(
     val root: String,
-    val durationSeconds: Long,
+    val measureValue: Long,
     val percent: Float,
     val totalDurationSeconds: Long? = null,
     val occurrenceCount: Long? = null,

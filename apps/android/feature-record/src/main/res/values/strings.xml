@@ -159,6 +159,7 @@
     <string name="txt_day_edit_empty">No activities recorded for this day.</string>
     <string name="txt_day_edit_time">Edit time</string>
     <string name="txt_day_edit_time_title">Edit activity time</string>
+    <string name="txt_day_edit_use_current_time">Use current time</string>
     <string name="txt_day_edit_activity">Edit activity</string>
     <string name="txt_day_edit_delete_activity">Delete activity</string>
     <string name="txt_day_edit_delete_activity_title">Delete activity?</string>

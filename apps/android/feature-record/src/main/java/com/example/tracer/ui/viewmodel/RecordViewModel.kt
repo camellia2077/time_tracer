@@ -78,7 +78,6 @@ data class RecordUiState(
     // logical-day clock so tests do not inherit the host machine's default time-zone implicitly.
     val logicalDayTarget: RecordLogicalDayTarget = RecordLogicalDayTarget.TODAY,
     val logicalDayIsUserOverride: Boolean = false,
-    val txtDayMarker: String = "",
     val txtHistoryLoaded: Boolean = false,
     val historyFiles: List<String> = emptyList(),
     val txtInspectionEntries: List<TxtInspectionEntry> = emptyList(),
@@ -203,10 +202,6 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
     fun onTxtOutputModeChange(value: TxtOutputMode) {
         uiState = uiState.copy(txtOutputMode = value)
         persistRecordInputState()
-    }
-
-    fun onTxtDayMarkerChange(value: String) {
-        uiState = uiState.copy(txtDayMarker = value.filter { it.isDigit() }.take(4))
     }
 
     fun startIntervalRecording() {

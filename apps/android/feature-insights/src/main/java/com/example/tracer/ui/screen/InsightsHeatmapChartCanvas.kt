@@ -1,11 +1,14 @@
 package com.example.tracer
 
 import android.graphics.Color as AndroidColor
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,6 +56,7 @@ internal fun InsightsHeatmapChart(
     heatmapTomlConfig: InsightsHeatmapTomlConfig,
     heatmapStylePreference: InsightsHeatmapStylePreference,
     isAppDarkThemeActive: Boolean,
+    adaptSelectionToSurface: Boolean,
     onPointSelected: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -65,6 +69,19 @@ internal fun InsightsHeatmapChart(
     val cellSpacing = with(density) { 3.dp.toPx() }
     val cellCornerRadius = with(density) { 2.dp.toPx() }
     val cellBorderWidth = with(density) { 1.dp.toPx() }
+    val selectionProgress = remember { Animatable(0f) }
+
+    LaunchedEffect(selectedIndex) {
+        if (selectedIndex < 0) {
+            selectionProgress.snapTo(0f)
+        } else {
+            selectionProgress.snapTo(0f)
+            selectionProgress.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(durationMillis = 200)
+            )
+        }
+    }
 
     val isSystemDark = isSystemInDarkTheme()
     val resolvedThresholds = remember(heatmapTomlConfig.thresholdsHours) {
@@ -88,8 +105,8 @@ internal fun InsightsHeatmapChart(
             fallbackActiveColor = fallbackActiveColor
         )
     }
-    val selectedOutlineColor = MaterialTheme.colorScheme.tertiary
     val cellBorderColor = MaterialTheme.colorScheme.outlineVariant
+    val selectionSurfaceColor = MaterialTheme.colorScheme.surfaceContainerLow
     // The TOML palette defines colors[0] as the no-time bucket. Keep this
     // separate from positive-duration buckets so the base color remains
     // theme/palette driven even when the thresholds change.
@@ -136,9 +153,17 @@ internal fun InsightsHeatmapChart(
             return@Canvas
         }
 
-        val selectedStrokeWidth = 2f
+        val fixedSelectionStrokeWidth = with(density) { 2.dp.toPx() }
+        val surfaceSelectionStrokeWidth = with(density) { 3.dp.toPx() }
+        val fillSelectionStrokeWidth = with(density) { 1.dp.toPx() }
 
         plot.cells.forEach { cell ->
+            val isSelected = cell.pointIndex == selectedIndex && cell.pointIndex >= 0
+            val renderedRect = if (isSelected) {
+                resolveHeatmapSelectedCellRect(cell.rect, selectionProgress.value)
+            } else {
+                cell.rect
+            }
             val color = resolveHeatmapColor(
                 durationSeconds = cell.durationSeconds,
                 thresholdsHours = resolvedThresholds,
@@ -148,25 +173,69 @@ internal fun InsightsHeatmapChart(
             val cornerRadius = CornerRadius(cellCornerRadius, cellCornerRadius)
             drawRoundRect(
                 color = color,
-                topLeft = cell.rect.topLeft,
-                size = cell.rect.size,
+                topLeft = renderedRect.topLeft,
+                size = renderedRect.size,
                 cornerRadius = cornerRadius
             )
             drawRoundRect(
                 color = cellBorderColor,
-                topLeft = cell.rect.topLeft,
-                size = cell.rect.size,
+                topLeft = renderedRect.topLeft,
+                size = renderedRect.size,
                 cornerRadius = cornerRadius,
                 style = Stroke(width = cellBorderWidth)
             )
-            if (cell.pointIndex == selectedIndex && cell.pointIndex >= 0) {
-                drawRoundRect(
-                    color = selectedOutlineColor,
-                    topLeft = cell.rect.topLeft,
-                    size = cell.rect.size,
-                    cornerRadius = cornerRadius,
-                    style = Stroke(width = selectedStrokeWidth)
+            if (isSelected) {
+                val selectionColors = resolveHeatmapSelectionOutlineColors(
+                    fillColor = color,
+                    surfaceColor = selectionSurfaceColor,
+                    adaptToSurface = adaptSelectionToSurface
                 )
+                val selectionAlpha = 0.25f + 0.75f * selectionProgress.value
+                if (selectionColors.fillContrast == null) {
+                    val selectedRect = resolveHeatmapSelectionOutlineRect(
+                        cellRect = renderedRect,
+                        strokeWidth = fixedSelectionStrokeWidth
+                    )
+                    val selectedOutlineInset = fixedSelectionStrokeWidth / 2f
+                    drawRoundRect(
+                        color = selectionColors.surfaceContrast.copy(alpha = selectionAlpha),
+                        topLeft = selectedRect.topLeft,
+                        size = selectedRect.size,
+                        cornerRadius = CornerRadius(
+                            (cellCornerRadius - selectedOutlineInset).coerceAtLeast(0f),
+                            (cellCornerRadius - selectedOutlineInset).coerceAtLeast(0f)
+                        ),
+                        style = Stroke(width = fixedSelectionStrokeWidth)
+                    )
+                } else {
+                    drawRoundRect(
+                        color = selectionColors.surfaceContrast.copy(alpha = selectionAlpha),
+                        topLeft = renderedRect.topLeft,
+                        size = renderedRect.size,
+                        cornerRadius = cornerRadius,
+                        style = Stroke(width = surfaceSelectionStrokeWidth)
+                    )
+
+                    val innerInset = surfaceSelectionStrokeWidth
+                    val innerRect = Rect(
+                        left = renderedRect.left + innerInset,
+                        top = renderedRect.top + innerInset,
+                        right = renderedRect.right - innerInset,
+                        bottom = renderedRect.bottom - innerInset
+                    )
+                    if (innerRect.width > 0f && innerRect.height > 0f) {
+                        drawRoundRect(
+                            color = selectionColors.fillContrast.copy(alpha = selectionAlpha),
+                            topLeft = innerRect.topLeft,
+                            size = innerRect.size,
+                            cornerRadius = CornerRadius(
+                                (cellCornerRadius - innerInset).coerceAtLeast(0f),
+                                (cellCornerRadius - innerInset).coerceAtLeast(0f)
+                            ),
+                            style = Stroke(width = fillSelectionStrokeWidth)
+                        )
+                    }
+                }
             }
         }
     }

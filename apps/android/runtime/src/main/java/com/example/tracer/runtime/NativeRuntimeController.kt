@@ -12,7 +12,8 @@ class NativeRuntimeController(
 ) : RuntimeGateway {
     // RuntimeGateway is the aggregate contract that composes all domain gateways.
     private val runtimeEnvironment = RuntimeEnvironment(context)
-    private val inputRecordStore = InputRecordStore()
+    private val userMessages = RuntimeUserMessages(context)
+    private val inputRecordStore = InputRecordStore(userMessages)
     private val runtimeSession = RuntimeSession(runtimeEnvironment, inputRecordStore)
     private val runtimeBridge = NativeRuntimeBridge()
     private val nativeInit: (RuntimePaths) -> String = { paths ->
@@ -106,6 +107,7 @@ class NativeRuntimeController(
         ensureRuntimePaths = runtimeSession::ensureRuntimePaths,
         ensureTextStorage = runtimeSession::ensureTextStorage,
         rawRecordStore = inputRecordStore,
+        userMessages = userMessages,
         loadWakeKeywords = queryDelegate::listWakeKeywords,
         ensureActivityHierarchyEntry = activityHierarchyAutoRegistrar::ensureRegistered,
         defaultTxtDayMarker = txtDayBlockService::defaultTxtDayMarker,

@@ -10,6 +10,7 @@ internal class RuntimeTxtSaveAndSyncFlow(
     private val ensureRuntimePaths: () -> RuntimePaths,
     private val ensureTextStorage: () -> TextStorage,
     private val rawRecordStore: InputRecordStore,
+    private val userMessages: RuntimeUserMessages = RuntimeUserMessages(),
     private val loadWakeKeywords: suspend () -> ActivityMappingNamesResult,
     private val recordTranslator: NativeRecordTranslator,
     private val executeAfterInit: (
@@ -84,6 +85,9 @@ internal class RuntimeTxtSaveAndSyncFlow(
                     )
                 }
 
+                val previousContent = storage.readTxtFile(canonicalRelativePath)
+                    .takeIf { it.ok }
+                    ?.content
                 val saveResult = storage.writeTxtFile(
                     relativePath = canonicalRelativePath,
                     content = canonicalContent
@@ -117,8 +121,9 @@ internal class RuntimeTxtSaveAndSyncFlow(
                 RecordActionResult(
                     ok = true,
                     message = buildSaveSuccessMessage(
-                        baseMessage = "save+re-import -> ${saveResult.filePath}",
-                        canonicalContent = canonicalContent
+                        baseMessage = userMessages.changesSaved,
+                        canonicalContent = canonicalContent,
+                        previousContent = previousContent
                     ),
                     operationId = syncResult.operationId
                 )
@@ -133,7 +138,11 @@ internal class RuntimeTxtSaveAndSyncFlow(
         return recordTranslator.extractStageFailure(result, stage)
     }
 
-    private suspend fun buildSaveSuccessMessage(baseMessage: String, canonicalContent: String): String {
+    private suspend fun buildSaveSuccessMessage(
+        baseMessage: String,
+        canonicalContent: String,
+        previousContent: String?
+    ): String {
         val wakeKeywordsResult = try {
             loadWakeKeywords()
         } catch (_: Exception) {
@@ -144,7 +153,8 @@ internal class RuntimeTxtSaveAndSyncFlow(
         } else {
             emptySet()
         }
-        val warning = rawRecordStore.resolveCompletenessWarningForMonthContent(
+        val warning = rawRecordStore.resolveCompletenessWarningForChangedDays(
+            previousContent = previousContent,
             content = canonicalContent,
             wakeKeywords = normalizedWakeKeywords
         )

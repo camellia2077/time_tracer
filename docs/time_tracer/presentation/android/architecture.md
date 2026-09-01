@@ -21,7 +21,7 @@ Provide a thin overview of the Android documentation and code layering.
 - `contract`
   - stable gateway interfaces and shared models
 - `feature-data`
-  - Data management presentation rendered from the Config route
+  - Data management presentation rendered from the Settings route
 - `feature-record`
   - Record and TXT presentation
 - `feature-insights`

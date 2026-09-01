@@ -13,7 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.example.tracer.data.DarkThemeStyle
+import com.example.tracer.data.DarkSurfaceStyle
 import com.example.tracer.data.ThemeConfig
 import com.example.tracer.data.ThemeMode
 import com.example.tracer.data.ThemePalette
@@ -28,6 +28,12 @@ internal fun AppearanceSettingsCard(
     expanded: Boolean = true,
     onToggleExpanded: () -> Unit = {}
 ) {
+    val isSystemDark = isSystemInDarkTheme()
+    val isDarkActive = themeConfig.palette.supportsLightDarkMode && (
+        themeConfig.themeMode == ThemeMode.Dark ||
+            (themeConfig.themeMode == ThemeMode.System && isSystemDark)
+        )
+
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -50,21 +56,27 @@ internal fun AppearanceSettingsCard(
                 ThemePaletteSection(
                     selectedThemePalette = themeConfig.palette,
                     onSetThemePalette = { onThemeEvent(ThemeEvent.SetPalette(it)) },
+                    isDarkMode = isDarkActive,
                     expanded = themePaletteExpanded,
                     onToggleExpanded = {
                         onThemePaletteExpandedChange(!themePaletteExpanded)
                     }
                 )
 
-                val isSystemDark = isSystemInDarkTheme()
-                val isDarkActive = themeConfig.palette.supportsLightDarkMode && (
-                    themeConfig.themeMode == ThemeMode.Dark ||
-                        (themeConfig.themeMode == ThemeMode.System && isSystemDark)
-                    )
                 if (isDarkActive) {
                     HorizontalDivider()
-                    DarkThemeStyleSection(themeConfig.darkThemeStyle) {
-                        onThemeEvent(ThemeEvent.SetDarkStyle(it))
+                    DarkSurfaceStyleSection(themeConfig.darkSurfaceStyle) {
+                        onThemeEvent(ThemeEvent.SetDarkSurfaceStyle(it))
+                    }
+                } else {
+                    if (themeConfig.palette.supportsLightDarkMode) {
+                        HorizontalDivider()
+                        LightSurfaceStyleSection(
+                            selectedLightSurfaceStyle = themeConfig.lightSurfaceStyle,
+                            onSetLightSurfaceStyle = {
+                                onThemeEvent(ThemeEvent.SetLightSurfaceStyle(it))
+                            }
+                        )
                     }
                 }
             }

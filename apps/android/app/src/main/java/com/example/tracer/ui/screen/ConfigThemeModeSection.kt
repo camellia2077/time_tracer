@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.example.tracer.data.ThemeMode
 import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
+import com.example.tracer.ui.components.ExpandableSettingsButton
 
 @Composable
 internal fun ThemeModeSection(
@@ -24,7 +25,7 @@ internal fun ThemeModeSection(
 ) {
     Text(
         text = stringResource(R.string.config_title_theme_mode),
-        style = MaterialTheme.typography.bodyMedium,
+        style = MaterialTheme.typography.titleMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant
     )
 

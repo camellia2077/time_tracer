@@ -22,6 +22,10 @@
 5. Android 模块定向单测：
    - `python tools/run.py android-test --module feature-insights --tests com.example.tracer.QueryInsightsResultDisplayRobolectricTest`
 
+Android 定向单测每次运行都会清理旧的 `artifact_android` 结果文件，并将本次
+Gradle 输出写入 `out/test/artifact_android/logs/output.full.log`。只有日志明确显示
+Kotlin 中间产物锁定或复用异常时，工具链才会清理 `built_in_kotlinc` 并重试一次。
+
 ## 2. 目录分工
 
 1. `tools/test.py`

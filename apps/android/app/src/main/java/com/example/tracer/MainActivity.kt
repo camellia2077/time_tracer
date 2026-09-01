@@ -2,6 +2,7 @@ package com.example.tracer
 
 import android.app.ActivityManager
 import android.app.LocaleManager
+import android.graphics.Color as AndroidColor
 import android.os.Build
 import android.os.LocaleList
 import android.os.Bundle
@@ -10,10 +11,16 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.Modifier
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tracer.data.AppLanguage
 import com.example.tracer.data.InsightsPiePaletteTomlLoader
@@ -22,6 +29,8 @@ import com.example.tracer.ui.viewmodel.ThemeViewModel
 import com.example.tracer.ui.viewmodel.ThemeViewModelFactory
 
 import androidx.activity.enableEdgeToEdge
+
+private const val DARK_SYSTEM_BAR_ICON_LUMINANCE_THRESHOLD = 0.5f
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,6 +65,7 @@ class MainActivity : ComponentActivity() {
                 // Force unwrapping is safe here because of the null check
                 val currentTheme = themeConfig!!
                 TracerTheme(themeConfig = currentTheme) {
+                    SynchronizeSystemBarsWithTheme()
                     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                         TracerScreen(
                             runtimeInitializer = runtimeInitializer,
@@ -137,3 +147,26 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
+@Composable
+private fun MainActivity.SynchronizeSystemBarsWithTheme() {
+    val view = LocalView.current
+    val background = MaterialTheme.colorScheme.background
+    val useDarkSystemBarIcons = shouldUseDarkSystemBarIcons(background)
+
+    SideEffect {
+        window.statusBarColor = AndroidColor.TRANSPARENT
+        window.navigationBarColor = AndroidColor.TRANSPARENT
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window.isStatusBarContrastEnforced = false
+            window.isNavigationBarContrastEnforced = false
+        }
+        WindowCompat.getInsetsController(window, view).apply {
+            isAppearanceLightStatusBars = useDarkSystemBarIcons
+            isAppearanceLightNavigationBars = useDarkSystemBarIcons
+        }
+    }
+}
+
+internal fun shouldUseDarkSystemBarIcons(background: Color): Boolean =
+    background.luminance() > DARK_SYSTEM_BAR_ICON_LUMINANCE_THRESHOLD

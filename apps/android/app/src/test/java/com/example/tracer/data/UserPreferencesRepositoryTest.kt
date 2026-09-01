@@ -1,6 +1,8 @@
 package com.example.tracer.data
 
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.emptyPreferences
 import com.example.tracer.PersistedRecordInputDraft
 import com.example.tracer.RecordAuthoringMode
 import com.example.tracer.RecordLogicalDayTarget
@@ -15,21 +17,19 @@ import com.example.tracer.InsightsPiePalettePreset
 import com.example.tracer.InsightsResultDisplayMode
 import com.example.tracer.InsightsMode
 import com.example.tracer.InsightsActivityView
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import java.io.File
-import kotlin.io.path.createTempDirectory
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class UserPreferencesRepositoryTest {
     @Test
     fun appLanguage_defaultsToSystem_andPersistsSelection() = runTest {
-        val repository = buildRepository(
-            testName = "persist_app_language",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         assertEquals(AppLanguage.System, repository.appLanguage.first())
 
@@ -40,10 +40,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun promptBeforeUnconfiguredActivityRecord_defaultsOff_andPersistsSelection() = runTest {
-        val repository = buildRepository(
-            testName = "persist_unconfigured_activity_warning",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         assertEquals(
             UserPreferencesRepository.DEFAULT_PROMPT_BEFORE_UNCONFIGURED_ACTIVITY_RECORD,
@@ -57,10 +54,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun recordFrequentPreferences_usesEmptyQuickActivities_whenQuickActivitiesNotConfigured() = runTest {
-        val repository = buildRepository(
-            testName = "missing_quick_activities",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         val preferences = repository.recordFrequentPreferences.first()
 
@@ -83,34 +77,36 @@ class UserPreferencesRepositoryTest {
     }
 
     @Test
-    fun pageTransitionPreferences_defaultToEnabledQuickFade_andPersistSelections() = runTest {
-        val repository = buildRepository(
-            testName = "persist_page_transition_preferences",
-            scope = backgroundScope
-        )
+    fun pageTransitionPreferences_defaultToQuickFade_andPersistSelections() = runTest {
+        val repository = buildRepository()
 
-        assertEquals(
-            UserPreferencesRepository.DEFAULT_PAGE_TRANSITIONS_ENABLED,
-            repository.pageTransitionsEnabled.first()
-        )
         assertEquals(
             UserPreferencesRepository.DEFAULT_PAGE_TRANSITION_STYLE,
             repository.pageTransitionStyle.first()
         )
 
-        repository.setPageTransitionsEnabled(false)
-        repository.setPageTransitionStyle(PageTransitionStyle.SLIDE)
+        repository.setPageTransitionStyle(PageTransitionStyle.NONE)
 
-        assertEquals(false, repository.pageTransitionsEnabled.first())
-        assertEquals(PageTransitionStyle.SLIDE, repository.pageTransitionStyle.first())
+        assertEquals(PageTransitionStyle.NONE, repository.pageTransitionStyle.first())
+    }
+
+    @Test
+    fun timeDisplayMode_defaultsToTwentyFourHour_andPersistsSelection() = runTest {
+        val repository = buildRepository()
+
+        assertEquals(
+            UserPreferencesRepository.DEFAULT_TIME_DISPLAY_MODE,
+            repository.timeDisplayMode.first()
+        )
+
+        repository.setTimeDisplayMode(TimeDisplayMode.TWELVE_HOUR)
+
+        assertEquals(TimeDisplayMode.TWELVE_HOUR, repository.timeDisplayMode.first())
     }
 
     @Test
     fun recordFrequentPreferences_persistsZeroLookbackDaysAndTopN() = runTest {
-        val repository = buildRepository(
-            testName = "persist_zero_frequent_preferences",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         repository.setRecordFrequentLookbackDays(0)
         repository.setRecordFrequentTopN(0)
@@ -122,10 +118,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun setRecordQuickActivities_emptyList_keepsQuickActivitiesEmpty() = runTest {
-        val repository = buildRepository(
-            testName = "empty_quick_activities",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         repository.setRecordQuickActivities(emptyList())
         val preferences = repository.recordFrequentPreferences.first()
@@ -135,10 +128,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun setRecordQuickActivities_blankValues_keepsQuickActivitiesEmpty() = runTest {
-        val repository = buildRepository(
-            testName = "blank_quick_activities",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         repository.setRecordQuickActivities(listOf(" ", ""))
         val preferences = repository.recordFrequentPreferences.first()
@@ -148,10 +138,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun insightsPiePalettePreset_defaultsToVivid() = runTest {
-        val repository = buildRepository(
-            testName = "default_pie_palette",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         assertEquals(
             InsightsPiePalettePreset.VIVID,
@@ -161,10 +148,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun setInsightsPiePalettePreset_persistsSelection() = runTest {
-        val repository = buildRepository(
-            testName = "persist_pie_palette",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         repository.setInsightsPiePalettePreset(InsightsPiePalettePreset.EDITORIAL)
 
@@ -176,10 +160,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun insightsComparisonColorScheme_defaultsAndPersistsSelection() = runTest {
-        val repository = buildRepository(
-            testName = "persist_comparison_color_scheme",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         assertEquals(
             InsightsComparisonColorScheme.GREEN_RED,
@@ -196,10 +177,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun insightsComparisonIndicatorStyle_defaultsAndPersistsSelection() = runTest {
-        val repository = buildRepository(
-            testName = "persist_comparison_indicator_style",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         assertEquals(
             InsightsComparisonIndicatorStyle.ARROWS,
@@ -216,10 +194,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun setRecordLastAuthoringMode_persistsSelection() = runTest {
-        val repository = buildRepository(
-            testName = "persist_record_authoring_mode",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         repository.setRecordLastAuthoringMode(RecordAuthoringMode.INTERVAL)
 
@@ -231,10 +206,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun setRecordLastTxtOutputMode_persistsSelection() = runTest {
-        val repository = buildRepository(
-            testName = "persist_record_txt_output_mode",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         repository.setRecordLastTxtOutputMode(TxtOutputMode.DAY)
 
@@ -246,10 +218,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun recordPersistedInput_defaultsToInterval_whenModeHasNotBeenSelected() = runTest {
-        val repository = buildRepository(
-            testName = "default_record_authoring_mode",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         assertEquals(
             RecordAuthoringMode.INTERVAL,
@@ -263,10 +232,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun setRecordFrequentOutputMode_persistsSelection() = runTest {
-        val repository = buildRepository(
-            testName = "persist_record_frequent_output_mode",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         repository.setRecordFrequentOutputMode(RecordFrequentOutputMode.ALIAS)
 
@@ -278,10 +244,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun insightsChartSemanticMode_defaultsToBreakdown_andPersistsSelection() = runTest {
-        val repository = buildRepository(
-            testName = "persist_chart_semantic_mode",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         assertEquals(
             InsightsChartSemanticMode.COMPOSITION,
@@ -298,10 +261,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun insightsHeatmapPaletteName_persistsSelection() = runTest {
-        val repository = buildRepository(
-            testName = "persist_heatmap_palette",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         repository.setInsightsHeatmapPaletteName("BLUE_LIGHT")
 
@@ -310,10 +270,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun statusConfigs_areStoredIndependentlyForEachInsightsMode() = runTest {
-        val repository = buildRepository(
-            testName = "persist_daily_statuses",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
         val expected = DailyStatusConfig(
             statuses = listOf(
                 DailyStatusDefinition("study__math", "Study\tMath", "study/math")
@@ -334,10 +291,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun insightsChartTrendRoot_defaultsToAllActivities_andPersistsSelection() = runTest {
-        val repository = buildRepository(
-            testName = "persist_chart_trend_root",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         assertEquals("", repository.insightsChartTrendRoot.first())
 
@@ -348,10 +302,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun insightsResultDisplayMode_isStoredIndependentlyForEachInsightsMode() = runTest {
-        val repository = buildRepository(
-            testName = "persist_insights_result_display_mode",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         assertEquals(InsightsResultDisplayMode.DETAILS, repository.insightsResultDisplayMode.first())
 
@@ -370,10 +321,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun insightsParameterSection_defaultsToDay_andPersistsSelection() = runTest {
-        val repository = buildRepository(
-            testName = "persist_insights_parameter_section",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         assertEquals(InsightsParameterSection.DAY, repository.insightsParameterSection.first())
 
@@ -384,10 +332,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun setRecordCanonicalCatalogSource_persistsSelection() = runTest {
-        val repository = buildRepository(
-            testName = "persist_record_canonical_catalog_source",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         repository.setRecordCanonicalCatalogSource(CanonicalCatalogSource.CATEGORIES)
 
@@ -399,10 +344,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun insightsActivitiesView_defaultsAndPersistsDayAndPeriodSelectionsIndependently() = runTest {
-        val repository = buildRepository(
-            testName = "persist_insights_activities_view",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         assertEquals(InsightsActivityView.RECORDS, repository.insightsDayActivitiesView.first())
         assertEquals(InsightsActivityView.OVERVIEW, repository.insightsPeriodActivitiesView.first())
@@ -416,10 +358,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun insightsTimeParametersExpanded_defaultsExpanded_andPersistsCollapsedState() = runTest {
-        val repository = buildRepository(
-            testName = "persist_insights_time_parameters_expanded",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         assertEquals(true, repository.insightsTimeParametersExpanded.first())
 
@@ -430,10 +369,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun recordQuickAccessCardExpanded_defaultsExpanded_andPersistsCollapsedState() = runTest {
-        val repository = buildRepository(
-            testName = "persist_record_quick_access_card_expanded",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         assertEquals(
             true,
@@ -450,10 +386,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun configCardExpansionPreferences_defaultExpanded_andPersistEachCardIndependently() = runTest {
-        val repository = buildRepository(
-            testName = "persist_config_card_expansion",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         assertEquals(
             true,
@@ -479,10 +412,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun setRecordCanonicalCatalogDisplayMode_persistsSelection() = runTest {
-        val repository = buildRepository(
-            testName = "persist_record_canonical_catalog_display_mode",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         repository.setRecordCanonicalCatalogDisplayMode(RecordFrequentOutputMode.ALIAS)
 
@@ -494,10 +424,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun recordFrequentPreferences_defaultsCollapsedCanonicalRootPathsToEmpty() = runTest {
-        val repository = buildRepository(
-            testName = "default_collapsed_canonical_roots",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         assertEquals(
             emptySet<String>(),
@@ -507,10 +434,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun setRecordCollapsedCanonicalRootPaths_persistsNormalizedRoots() = runTest {
-        val repository = buildRepository(
-            testName = "persist_collapsed_canonical_roots",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         repository.setRecordCollapsedCanonicalRootPaths(
             setOf("study", " study/math ", "", "study")
@@ -524,10 +448,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun recordFrequentPreferences_defaultsOrderedCanonicalRootPathsToEmpty() = runTest {
-        val repository = buildRepository(
-            testName = "default_ordered_canonical_roots",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         assertEquals(
             emptyList<String>(),
@@ -537,10 +458,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun setRecordOrderedCanonicalRootPaths_persistsNormalizedOrder() = runTest {
-        val repository = buildRepository(
-            testName = "persist_ordered_canonical_roots",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         repository.setRecordOrderedCanonicalRootPaths(
             listOf("study", " study/math ", "", "study")
@@ -554,10 +472,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun saveRecordDraft_persistsDraftFieldsAndLogicalDay() = runTest {
-        val repository = buildRepository(
-            testName = "persist_record_draft",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         repository.saveRecordDraft(
             PersistedRecordInputDraft(
@@ -581,10 +496,7 @@ class UserPreferencesRepositoryTest {
 
     @Test
     fun clearRecordDraft_removesPersistedDraftButKeepsMode() = runTest {
-        val repository = buildRepository(
-            testName = "clear_record_draft",
-            scope = backgroundScope
-        )
+        val repository = buildRepository()
 
         repository.setRecordLastAuthoringMode(RecordAuthoringMode.INTERVAL)
         repository.saveRecordDraft(
@@ -601,18 +513,19 @@ class UserPreferencesRepositoryTest {
         assertEquals(null, persisted.draft)
     }
 
-    private fun buildRepository(testName: String, scope: CoroutineScope): UserPreferencesRepository {
-        val tempDir = createTempDirectory(prefix = "user_prefs_$testName").toFile().apply {
-            deleteOnExit()
-        }
-        // Use a not-yet-created file inside a unique temp directory. This avoids
-        // Windows-specific file locking issues from handing DataStore a pre-created
-        // temp file that may still be held by the test process/runtime.
-        val prefsFile = File(tempDir, "settings.preferences_pb")
-        val dataStore = PreferenceDataStoreFactory.create(
-            scope = scope,
-            produceFile = { prefsFile }
-        )
-        return UserPreferencesRepository(dataStore)
+    private fun buildRepository(): UserPreferencesRepository {
+        return UserPreferencesRepository(InMemoryPreferencesDataStore())
     }
+}
+
+private class InMemoryPreferencesDataStore : DataStore<Preferences> {
+    private val state = MutableStateFlow<Preferences>(emptyPreferences())
+    private val mutex = Mutex()
+
+    override val data: Flow<Preferences> = state
+
+    override suspend fun updateData(transform: suspend (Preferences) -> Preferences): Preferences =
+        mutex.withLock {
+            transform(state.value).also { state.value = it }
+        }
 }

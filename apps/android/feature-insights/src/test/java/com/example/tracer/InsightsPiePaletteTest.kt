@@ -9,11 +9,11 @@ class InsightsPiePaletteTest {
     @Test
     fun resolvePieSliceColor_keepsRootColorStable() {
         val first = resolvePieSliceColor(
-            InsightsCompositionSlice(root = "study", durationSeconds = 3600L, percent = 50f),
+            InsightsCompositionSlice(root = "study", measureValue = 3600L, percent = 50f),
             InsightsPiePalettePreset.SOFT
         )
         val second = resolvePieSliceColor(
-            InsightsCompositionSlice(root = "study", durationSeconds = 1800L, percent = 25f),
+            InsightsCompositionSlice(root = "study", measureValue = 1800L, percent = 25f),
             InsightsPiePalettePreset.SOFT
         )
 
@@ -23,7 +23,7 @@ class InsightsPiePaletteTest {
     @Test
     fun resolvePieSliceColor_reservesNeutralGrayForOthers() {
         val color = resolvePieSliceColor(
-            InsightsCompositionSlice(root = "Others", durationSeconds = 900L, percent = 10f),
+            InsightsCompositionSlice(root = "Others", measureValue = 900L, percent = 10f),
             InsightsPiePalettePreset.SOFT
         )
 
@@ -31,7 +31,7 @@ class InsightsPiePaletteTest {
         assertNotEquals(
             color,
             resolvePieSliceColor(
-                InsightsCompositionSlice(root = "study", durationSeconds = 3600L, percent = 50f),
+                InsightsCompositionSlice(root = "study", measureValue = 3600L, percent = 50f),
                 InsightsPiePalettePreset.SOFT
             )
         )
@@ -43,7 +43,7 @@ class InsightsPiePaletteTest {
             slices = List(4) {
                 InsightsCompositionSlice(
                     root = "same-name",
-                    durationSeconds = 900L,
+                    measureValue = 900L,
                     percent = 25f
                 )
             },
@@ -60,17 +60,17 @@ class InsightsPiePaletteTest {
     fun resolveAdjacentPieSliceColors_assignsColorsByWeightRankInsteadOfName() {
         val first = resolveAdjacentPieSliceColors(
             slices = listOf(
-                InsightsCompositionSlice(root = "study", durationSeconds = 900L, percent = 15f),
-                InsightsCompositionSlice(root = "sleep", durationSeconds = 3_600L, percent = 60f),
-                InsightsCompositionSlice(root = "meal", durationSeconds = 1_500L, percent = 25f)
+                InsightsCompositionSlice(root = "study", measureValue = 900L, percent = 15f),
+                InsightsCompositionSlice(root = "sleep", measureValue = 3_600L, percent = 60f),
+                InsightsCompositionSlice(root = "meal", measureValue = 1_500L, percent = 25f)
             ),
             palettePreset = InsightsPiePalettePreset.SOFT
         )
         val second = resolveAdjacentPieSliceColors(
             slices = listOf(
-                InsightsCompositionSlice(root = "alpha", durationSeconds = 900L, percent = 15f),
-                InsightsCompositionSlice(root = "beta", durationSeconds = 3_600L, percent = 60f),
-                InsightsCompositionSlice(root = "gamma", durationSeconds = 1_500L, percent = 25f)
+                InsightsCompositionSlice(root = "alpha", measureValue = 900L, percent = 15f),
+                InsightsCompositionSlice(root = "beta", measureValue = 3_600L, percent = 60f),
+                InsightsCompositionSlice(root = "gamma", measureValue = 1_500L, percent = 25f)
             ),
             palettePreset = InsightsPiePalettePreset.SOFT
         )

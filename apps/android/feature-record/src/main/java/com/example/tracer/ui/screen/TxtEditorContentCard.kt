@@ -35,6 +35,7 @@ import java.time.LocalDate
 internal fun TxtEditorContentCard(
     selectedHistoryFile: String,
     currentDay: LocalDate?,
+    use12HourTime: Boolean = false,
     onConvertActivityNames: (TxtActivityNameTargetMode) -> Unit,
     dayBlockEditorState: TxtDayBlockResolveResult,
     inlineStatusText: String,
@@ -50,6 +51,12 @@ internal fun TxtEditorContentCard(
     onCollapsedCanonicalRootPathsChange: (Set<String>) -> Unit = {},
     onOrderedCanonicalRootPathsChange: (List<String>) -> Unit = {},
     onStructuredDayEditApply: (String, List<TxtDayEditEvent>) -> Unit = { _, _ -> },
+    isCurrentLogicalDay: Boolean,
+    logicalDayClock: java.time.Clock,
+    onStructuredDayTimeEditApply: suspend (
+        String,
+        List<TxtDayEditEvent>
+    ) -> TxtDayEditApplyResult,
     onStructuredDayActivityReplace: suspend (
         String,
         String,
@@ -149,6 +156,7 @@ internal fun TxtEditorContentCard(
             } else if (canShowStructuredDay) {
                 TxtStructuredDayEditor(
                     result = structuredDayEdit,
+                    use12HourTime = use12HourTime,
                     roots = canonicalCatalogRoots,
                     catalogLoading = isCanonicalCatalogLoading,
                     catalogStatusText = canonicalCatalogStatusText,
@@ -156,7 +164,10 @@ internal fun TxtEditorContentCard(
                     orderedRootPaths = orderedCanonicalRootPaths,
                     onCollapsedRootPathsChange = onCollapsedCanonicalRootPathsChange,
                     onOrderedRootPathsChange = onOrderedCanonicalRootPathsChange,
-                    onApply = onStructuredDayEditApply
+                    onApply = onStructuredDayEditApply,
+                    isCurrentLogicalDay = isCurrentLogicalDay,
+                    logicalDayClock = logicalDayClock,
+                    onApplyTimeEdit = onStructuredDayTimeEditApply
                 )
             }
             TxtActivityFindReplace(

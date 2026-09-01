@@ -218,7 +218,11 @@ class TestAndroidTestCommand(TestCase):
             extra_args=["--", "--stacktrace"],
         )
 
-        with patch.object(android_test, "build_gradle", return_value=0) as build_mock:
+        with patch.object(
+            android_test,
+            "_prepare_android_test_outputs",
+            return_value=(Path("out/test/result.json"), Path("out/test/android-test.log")),
+        ), patch.object(android_test, "build_gradle", return_value=0) as build_mock:
             result = android_test.run(args, _FakeContext(Path("."), Path(".")))
 
         self.assertEqual(result, 0)
@@ -238,3 +242,7 @@ class TestAndroidTestCommand(TestCase):
             ],
         )
         self.assertEqual(build_mock.call_args.kwargs["output_mode"], "quiet")
+        self.assertEqual(
+            build_mock.call_args.kwargs["log_file"],
+            Path("out/test/android-test.log"),
+        )

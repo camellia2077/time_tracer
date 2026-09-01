@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="runtime_txt_changes_saved">更改已保存。</string>
+    <string name="runtime_txt_incomplete_day_warning">当天活动少于两个，因此部分时间区间可能暂时无法计算。</string>
+    <string name="runtime_txt_overnight_continuation_warning">当天的第一项活动不是起床活动，因此无法自动计算睡眠时间。</string>
+</resources>

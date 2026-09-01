@@ -30,6 +30,8 @@ Describe the user-visible behavior of record creation and TXT editing flows.
   - uses Android native `EditText`-backed multiline editing instead of the older Compose `OutlinedTextField` path
   - displays the selected TXT content inline in the Files tab, with `Undo`, `Redo`, and `Ingest` actions
 - `DAY` editing
+  - starts each Files session at today in the current month; selected days stay local to the editor session and are not restored on re-entry
+  - uses Core default-day selection when browsing other months
   - resolves the current day through shared Core structured-day APIs
   - shows point and interval events as editable cards; structured cards support
     time changes, selecting a canonical activity from the Record tree, and editing
@@ -43,8 +45,8 @@ Describe the user-visible behavior of record creation and TXT editing flows.
 - Unsaved draft handling
   - `TXT` editor changes do not write files until explicit `Ingest`
 - leaving the Files tab discards the current editing session if `Ingest` has not happened
-- leaving the Config page also discards the unsaved month draft that backs file persistence
-  - `Config` keeps its own in-memory per-file drafts and is documented separately
+- leaving the Settings page also discards the unsaved month draft that backs file persistence
+  - `Settings` keeps its own in-memory per-file drafts and is documented separately
 
 ## Core Flow
 

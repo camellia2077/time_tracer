@@ -128,7 +128,7 @@ android {
         getByName("main").assets.srcDir(timeTracerGeneratedAssetsRoot.get().asFile)
     }
 
-    compileSdk = 36
+    compileSdk = 37
     ndkVersion = "29.0.14206865"
 
     defaultConfig {

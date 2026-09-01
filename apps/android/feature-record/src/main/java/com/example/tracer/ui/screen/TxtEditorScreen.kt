@@ -45,6 +45,7 @@ private const val TXT_TAB_LOG_TAG = "TxtTab"
 @Composable
 fun TxtEditorSection(
     txtStorageGateway: TxtStorageGateway,
+    use12HourTime: Boolean = false,
     canonicalCatalogRoots: List<CanonicalPathNode> = emptyList(),
     isCanonicalCatalogLoading: Boolean = false,
     canonicalCatalogStatusText: String = "",
@@ -58,7 +59,6 @@ fun TxtEditorSection(
     selectedMonth: String,
     logicalDayTarget: RecordLogicalDayTarget,
     txtHistoryLoaded: Boolean = false,
-    initialDayMarker: String = "",
     logicalDayClock: Clock,
     onOpenPreviousMonth: () -> Unit,
     onOpenNextMonth: () -> Unit,
@@ -68,7 +68,6 @@ fun TxtEditorSection(
     onRefreshHistory: () -> Unit,
     editableHistoryContent: String,
     onEditableHistoryContentChange: (String) -> Unit,
-    onDayMarkerPersist: (String) -> Unit = {},
     onSaveHistoryFile: () -> Unit,
     onSaveHistoryRepresentationOnly: suspend (String) -> TxtFileContentResult,
     bottomContentPadding: Dp = 0.dp,
@@ -81,20 +80,18 @@ fun TxtEditorSection(
             TXT_TAB_LOG_TAG,
             "compose enter selectedFile=$selectedHistoryFile selectedMonth=$selectedMonth " +
                 "inspectionCount=${inspectionEntries.size} historyLoaded=$txtHistoryLoaded " +
-                "outputMode=DAY initialMarker=$initialDayMarker"
+                "outputMode=DAY"
         )
     }
     val sessionController = remember(selectedHistoryFile, selectedMonth) {
         val normalizedInitialDayMarker = initialDayMarkerForSelectedMonth(
-            initialDayMarker = initialDayMarker,
+            clock = logicalDayClock,
             selectedMonth = selectedMonth
         )
         TxtEditorSessionController(
             initialState = TxtEditorSessionState(
                 outputMode = TxtOutputMode.DAY,
-                // Keep the first frame empty when no marker has been restored yet. The runtime
-                // loads the logical-day marker asynchronously; using 0101 here makes the UI
-                // visibly jump from Jan 1 to the resolved target date on every tab re-entry.
+                // Seed today immediately; other months obtain their default marker from Core.
                 dayMarkerInput = normalizedInitialDayMarker,
                 autoDayMarkerLoadedKey = if (normalizedInitialDayMarker.isBlank()) {
                     ""
@@ -115,7 +112,6 @@ fun TxtEditorSection(
     fun updateDayMarkerInput(value: String) {
         sessionController.updateDayMarkerInput(value)
         Log.d(TXT_TAB_LOG_TAG, "day marker input changed value=${sessionController.state.dayMarkerInput}")
-        onDayMarkerPersist(sessionController.state.dayMarkerInput)
     }
     var activityNameConversionStatus by remember(selectedHistoryFile, selectedMonth) {
         mutableStateOf("")
@@ -203,9 +199,6 @@ fun TxtEditorSection(
             logicalDayTarget = logicalDayTarget,
             sessionController = sessionController
         )
-        if (selectedHistoryFile.isNotBlank()) {
-            onDayMarkerPersist(sessionController.state.dayMarkerInput)
-        }
         Log.d(
             TXT_TAB_LOG_TAG,
             "auto marker load complete selectedFile=$selectedHistoryFile selectedMonth=$selectedMonth " +
@@ -301,6 +294,10 @@ fun TxtEditorSection(
             resolvedIsoDate = resolvedDayBlockState.dayContentIsoDate
         )
     }
+    val isCurrentLogicalDay = currentDay == resolveLogicalDayDateForInstant(
+        epochMillis = logicalDayClock.millis(),
+        zoneId = logicalDayClock.zone
+    )
     val filteredInlineStatusText = remember(inlineStatusText) {
         if (inlineStatusText.startsWith("open month ->")) {
             ""
@@ -432,6 +429,7 @@ fun TxtEditorSection(
                     TxtEditorContentCard(
                         selectedHistoryFile = selectedHistoryFile,
                         currentDay = currentDay,
+                        use12HourTime = use12HourTime,
                         onConvertActivityNames = { targetMode ->
                             coroutineScope.launch {
                                 val conversion = runtimeCoordinator.convertActivityNames(
@@ -513,6 +511,21 @@ fun TxtEditorSection(
                                     onSaveHistoryFile = onSaveHistoryFile
                                 )
                             }
+                        },
+                        isCurrentLogicalDay = isCurrentLogicalDay,
+                        logicalDayClock = logicalDayClock,
+                        onStructuredDayTimeEditApply = { dayRemark, events ->
+                            runtimeCoordinator.applyDayEdit(
+                                monthContent = sessionController.currentMonthContent(
+                                    editableHistoryContent
+                                ),
+                                dayMarker = normalizedDayMarkerInput,
+                                selectedMonth = selectedMonth,
+                                dayRemark = dayRemark,
+                                events = events,
+                                onMergedMonthContent = onEditableHistoryContentChange,
+                                onSaveHistoryFile = onSaveHistoryFile
+                            )
                         },
                         onStructuredDayActivityReplace = {
                                 sourceActivityToken,
@@ -625,18 +638,15 @@ private fun String.txtDebugSignature(): String {
     return "len=$length,sha256=$digest"
 }
 
-/**
- * The persisted marker is only a MMDD value. Do not reuse it for another
- * month: doing so marks a stale day as already loaded and prevents the
- * runtime from selecting the selected month's default day.
- */
+/** Start each Files session at today's date when viewing the current month. */
 internal fun initialDayMarkerForSelectedMonth(
-    initialDayMarker: String,
+    clock: Clock,
     selectedMonth: String
 ): String {
-    val normalizedMarker = initialDayMarker.filter { it.isDigit() }.take(4)
-    val selectedMonthDigits = selectedMonth.takeLast(2)
-    return normalizedMarker.takeIf {
-        it.length == 4 && selectedMonthDigits.length == 2 && it.take(2) == selectedMonthDigits
-    }.orEmpty()
+    val today = LocalDate.now(clock)
+    return if (selectedMonth == today.format(DateTimeFormatter.ofPattern("yyyy-MM"))) {
+        today.format(DateTimeFormatter.ofPattern("MMdd"))
+    } else {
+        ""
+    }
 }

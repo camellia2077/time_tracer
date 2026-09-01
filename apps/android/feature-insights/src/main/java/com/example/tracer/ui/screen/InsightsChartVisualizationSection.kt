@@ -1,6 +1,7 @@
 package com.example.tracer
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -53,7 +54,8 @@ internal fun InsightsChartVisualizationSection(
     onHeatmapThemePolicyChange: (InsightsHeatmapThemePolicy) -> Unit,
     onHeatmapPaletteNameChange: (String) -> Unit,
     heatmapApplyMessage: String,
-    isAppDarkThemeActive: Boolean
+    isAppDarkThemeActive: Boolean,
+    adaptHeatmapSelectionToSurface: Boolean
 ) {
     if (chartError.isNotBlank()) {
         Text(
@@ -105,31 +107,33 @@ internal fun InsightsChartVisualizationSection(
         onChartVisualModeChange = onChartVisualModeChange
     )
 
-    InsightsChartVisualizationHintSection(
-        chartVisualMode = effectiveChartVisualMode,
-        chartShowAverageLine = chartShowAverageLine,
-        onChartShowAverageLineChange = onChartShowAverageLineChange,
-        heatmapTomlConfig = heatmapTomlConfig,
-        heatmapStylePreference = heatmapStylePreference,
-        onHeatmapThemePolicyChange = onHeatmapThemePolicyChange,
-        onHeatmapPaletteNameChange = onHeatmapPaletteNameChange,
-        heatmapApplyMessage = heatmapApplyMessage
-    )
-
     val comparisonVisible = insightsMode != InsightsMode.YEAR &&
         effectiveChartVisualMode in setOf(
             InsightsChartVisualMode.LINE,
             InsightsChartVisualMode.BAR
         )
-    if (comparisonVisible) {
-        InsightsPeriodComparisonControl(
-            periodComparison = periodComparison,
-            canComparePreviousPeriod = canComparePreviousPeriod,
-            insightsMode = insightsMode,
-            calendarAvailability = calendarAvailability,
-            onPeriodComparisonToggle = onPeriodComparisonToggle,
-            onComparisonPeriodSelected = onComparisonPeriodSelected
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        InsightsChartVisualizationHintSection(
+            chartVisualMode = effectiveChartVisualMode,
+            chartShowAverageLine = chartShowAverageLine,
+            onChartShowAverageLineChange = onChartShowAverageLineChange,
+            heatmapTomlConfig = heatmapTomlConfig,
+            heatmapStylePreference = heatmapStylePreference,
+            onHeatmapThemePolicyChange = onHeatmapThemePolicyChange,
+            onHeatmapPaletteNameChange = onHeatmapPaletteNameChange,
+            heatmapApplyMessage = heatmapApplyMessage
         )
+
+        if (comparisonVisible) {
+            InsightsPeriodComparisonControl(
+                periodComparison = periodComparison,
+                canComparePreviousPeriod = canComparePreviousPeriod,
+                insightsMode = insightsMode,
+                calendarAvailability = calendarAvailability,
+                onPeriodComparisonToggle = onPeriodComparisonToggle,
+                onComparisonPeriodSelected = onComparisonPeriodSelected
+            )
+        }
     }
 
     when (effectiveChartVisualMode) {
@@ -171,6 +175,7 @@ internal fun InsightsChartVisualizationSection(
                 heatmapTomlConfig = heatmapTomlConfig,
                 heatmapStylePreference = heatmapStylePreference,
                 isAppDarkThemeActive = isAppDarkThemeActive,
+                adaptSelectionToSurface = adaptHeatmapSelectionToSurface,
                 onPointSelected = onPointSelected,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -187,6 +192,7 @@ internal fun InsightsChartVisualizationSection(
                 heatmapTomlConfig = heatmapTomlConfig,
                 heatmapStylePreference = heatmapStylePreference,
                 isAppDarkThemeActive = isAppDarkThemeActive,
+                adaptSelectionToSurface = adaptHeatmapSelectionToSurface,
                 onPointSelected = onPointSelected,
                 modifier = Modifier.fillMaxWidth()
             )

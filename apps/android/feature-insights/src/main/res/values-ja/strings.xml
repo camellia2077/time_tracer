@@ -69,7 +69,7 @@
     <string name="insights_chart_measure_frequency">記録回数</string>
     <string name="insights_chart_visual_heatmap">ヒートマップ</string>
     <string name="insights_chart_pie_drilldown_hint">下位の活動がある扇形または凡例の行をタップして、その活動階層を開きます。</string>
-    <string name="insights_chart_pie_drilldown_path">現在の階層: %1$s</string>
+    <string name="insights_chart_pie_drilldown_path_label">現在の階層</string>
     <string name="insights_chart_pie_drilldown_back">%1$s に戻る</string>
     <string name="insights_chart_bar_drilldown_hint">下位の活動がある行をタップして、次の活動階層を開きます。</string>
     <string name="insights_chart_composition_treemap_hint">タイルまたは凡例の行をタップして活動、記録時間、割合を表示します。下位の活動がある項目をタップすると、次の階層に進みます。</string>

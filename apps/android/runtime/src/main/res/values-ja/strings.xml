@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="runtime_txt_changes_saved">変更を保存しました。</string>
+    <string name="runtime_txt_incomplete_day_warning">この日の活動が2件未満のため、一部の時間区間はまだ利用できない場合があります。</string>
+    <string name="runtime_txt_overnight_continuation_warning">この日は起床に関連しない活動から始まっているため、睡眠時間を自動計算できない場合があります。</string>
+</resources>

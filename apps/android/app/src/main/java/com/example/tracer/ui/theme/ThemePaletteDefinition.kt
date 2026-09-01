@@ -3,20 +3,51 @@ package com.example.tracer.ui.theme
 import androidx.compose.ui.graphics.Color
 import com.example.tracer.data.ThemePalette
 
+// Switchable palettes share neutral canvases while retaining their theme accents.
+private val COMMON_LIGHT_BACKGROUND = Color(0xFFF4F4F5)
+private val COMMON_LIGHT_TAB_CONTAINER = Slate50
+private val COMMON_DARK_BACKGROUND = Color(0xFF1C1B1F)
+
+// Dark containers are intentionally more separated from the page background.
+private val COMMON_DARK_SURFACE = Color(0xFF1C1B1F)
+private val COMMON_DARK_SURFACE_VARIANT = Color(0xFF49454F)
+private val COMMON_DARK_SURFACE_CONTAINER_LOWEST = Color(0xFF0F0D13)
+private val COMMON_DARK_SURFACE_CONTAINER_LOW = Color(0xFF2B2930)
+private val COMMON_DARK_SURFACE_CONTAINER = Color(0xFF36343B)
+private val COMMON_DARK_SURFACE_CONTAINER_HIGH = Color(0xFF3F3D44)
+private val COMMON_DARK_SURFACE_CONTAINER_HIGHEST = Color(0xFF49454F)
+
+private fun ThemeColorTokens.withSwitchableLightSurface(): ThemeColorTokens = copy(
+    background = COMMON_LIGHT_BACKGROUND,
+    surface = Color.White,
+    surfaceContainer = COMMON_LIGHT_TAB_CONTAINER
+)
+
+private fun ThemeColorTokens.withSwitchableDarkSurface(): ThemeColorTokens = copy(
+    background = COMMON_DARK_BACKGROUND,
+    surface = COMMON_DARK_SURFACE,
+    surfaceVariant = COMMON_DARK_SURFACE_VARIANT,
+    surfaceContainerLowest = COMMON_DARK_SURFACE_CONTAINER_LOWEST,
+    surfaceContainerLow = COMMON_DARK_SURFACE_CONTAINER_LOW,
+    surfaceContainer = COMMON_DARK_SURFACE_CONTAINER,
+    surfaceContainerHigh = COMMON_DARK_SURFACE_CONTAINER_HIGH,
+    surfaceContainerHighest = COMMON_DARK_SURFACE_CONTAINER_HIGHEST
+)
+
 private val IndigoLightTokens = ThemeColorTokens(
     primary = Indigo600,
     onPrimary = Color.White,
-    primaryContainer = Slate200,
-    onPrimaryContainer = Slate900,
+    primaryContainer = Color(0xFFE0E7FF),
+    onPrimaryContainer = Color(0xFF1E1B4B),
     secondary = Color(0xFF2563EB),
     onSecondary = Color.White,
     secondaryContainer = Slate200,
     onSecondaryContainer = Slate900,
     tertiary = Sky600,
     onTertiary = Color.White,
-    tertiaryContainer = Slate200,
+    tertiaryContainer = Color(0xFFBBF7D0),
     onTertiaryContainer = Slate900,
-    background = Slate100,
+    background = COMMON_LIGHT_BACKGROUND,
     onBackground = Slate900,
     surface = Color.White,
     onSurface = Slate900,
@@ -26,7 +57,7 @@ private val IndigoLightTokens = ThemeColorTokens(
     outlineVariant = Slate200,
     surfaceContainerLowest = Color.White,
     surfaceContainerLow = Color.White,
-    surfaceContainer = Slate50,
+    surfaceContainer = COMMON_LIGHT_TAB_CONTAINER,
     surfaceContainerHigh = Slate100,
     surfaceContainerHighest = Slate200
 )
@@ -34,8 +65,8 @@ private val IndigoLightTokens = ThemeColorTokens(
 private val IndigoDarkTokens = ThemeColorTokens(
     primary = Indigo400,
     onPrimary = Indigo900,
-    primaryContainer = Slate700,
-    onPrimaryContainer = Slate100,
+    primaryContainer = Color(0xFF3730A3),
+    onPrimaryContainer = Color(0xFFE0E7FF),
     secondary = Color(0xFF60A5FA),
     onSecondary = Slate950,
     secondaryContainer = Slate700,
@@ -44,27 +75,83 @@ private val IndigoDarkTokens = ThemeColorTokens(
     onTertiary = Slate900,
     tertiaryContainer = Slate700,
     onTertiaryContainer = Slate100,
-    background = Slate950,
+    background = COMMON_DARK_BACKGROUND,
     onBackground = Slate100,
-    surface = Slate900,
+    surface = COMMON_DARK_SURFACE,
     onSurface = Slate100,
-    surfaceVariant = Slate800,
+    surfaceVariant = COMMON_DARK_SURFACE_VARIANT,
     onSurfaceVariant = Slate300,
     outline = Slate500,
     outlineVariant = Slate700,
-    surfaceContainerLowest = Slate950,
-    surfaceContainerLow = Slate900,
-    surfaceContainer = Slate800,
-    surfaceContainerHigh = Slate700,
-    surfaceContainerHighest = Slate600
+    surfaceContainerLowest = COMMON_DARK_SURFACE_CONTAINER_LOWEST,
+    surfaceContainerLow = COMMON_DARK_SURFACE_CONTAINER_LOW,
+    surfaceContainer = COMMON_DARK_SURFACE_CONTAINER,
+    surfaceContainerHigh = COMMON_DARK_SURFACE_CONTAINER_HIGH,
+    surfaceContainerHighest = COMMON_DARK_SURFACE_CONTAINER_HIGHEST
 )
 
-private val GraphiteLightTokens = ThemeColorTokens(
+private val PurpleLightTokens = ThemeColorTokens(
+    primary = Color(0xFF7E22CE),
+    onPrimary = Color.White,
+    primaryContainer = Color(0xFFE9D5FF),
+    onPrimaryContainer = Color(0xFF3B0764),
+    secondary = Color(0xFFA855F7),
+    onSecondary = Slate950,
+    secondaryContainer = Color(0xFFF3E8FF),
+    onSecondaryContainer = Color(0xFF3B0764),
+    tertiary = Color(0xFFC084FC),
+    onTertiary = Slate950,
+    tertiaryContainer = Color(0xFFF3E8FF),
+    onTertiaryContainer = Color(0xFF3B0764),
+    background = COMMON_LIGHT_BACKGROUND,
+    onBackground = Slate900,
+    surface = Color.White,
+    onSurface = Slate900,
+    surfaceVariant = Color(0xFFF5F3FF),
+    onSurfaceVariant = Slate600,
+    outline = Slate300,
+    outlineVariant = Slate200,
+    surfaceContainerLowest = Color.White,
+    surfaceContainerLow = Color.White,
+    surfaceContainer = COMMON_LIGHT_TAB_CONTAINER,
+    surfaceContainerHigh = Slate100,
+    surfaceContainerHighest = Slate200
+)
+
+private val PurpleDarkTokens = ThemeColorTokens(
+    primary = Color(0xFFD8B4FE),
+    onPrimary = Slate950,
+    primaryContainer = Color(0xFF581C87),
+    onPrimaryContainer = Color(0xFFF3E8FF),
+    secondary = Color(0xFFC084FC),
+    onSecondary = Slate950,
+    secondaryContainer = Color(0xFF6B21A8),
+    onSecondaryContainer = Color(0xFFF3E8FF),
+    tertiary = Color(0xFFE9D5FF),
+    onTertiary = Slate950,
+    tertiaryContainer = Color(0xFF7E22CE),
+    onTertiaryContainer = Color(0xFFF3E8FF),
+    background = COMMON_DARK_BACKGROUND,
+    onBackground = Slate100,
+    surface = COMMON_DARK_SURFACE,
+    onSurface = Slate100,
+    surfaceVariant = COMMON_DARK_SURFACE_VARIANT,
+    onSurfaceVariant = Slate300,
+    outline = Slate500,
+    outlineVariant = Slate700,
+    surfaceContainerLowest = COMMON_DARK_SURFACE_CONTAINER_LOWEST,
+    surfaceContainerLow = COMMON_DARK_SURFACE_CONTAINER_LOW,
+    surfaceContainer = COMMON_DARK_SURFACE_CONTAINER,
+    surfaceContainerHigh = COMMON_DARK_SURFACE_CONTAINER_HIGH,
+    surfaceContainerHighest = COMMON_DARK_SURFACE_CONTAINER_HIGHEST
+)
+
+private val GreyLightTokens = ThemeColorTokens(
     primary = Color(0xFF3F3F46),
     onPrimary = Color.White,
     primaryContainer = Slate200,
     onPrimaryContainer = Slate900,
-    secondary = Color(0xFFD97706),
+    secondary = Color(0xFF71717A),
     onSecondary = Slate950,
     secondaryContainer = Slate200,
     onSecondaryContainer = Slate900,
@@ -72,7 +159,7 @@ private val GraphiteLightTokens = ThemeColorTokens(
     onTertiary = Slate950,
     tertiaryContainer = Slate200,
     onTertiaryContainer = Slate900,
-    background = Color(0xFFF4F4F5),
+    background = COMMON_LIGHT_BACKGROUND,
     onBackground = Slate900,
     surface = Color.White,
     onSurface = Slate900,
@@ -82,17 +169,17 @@ private val GraphiteLightTokens = ThemeColorTokens(
     outlineVariant = Slate200,
     surfaceContainerLowest = Color.White,
     surfaceContainerLow = Color.White,
-    surfaceContainer = Color(0xFFFAFAFA),
+    surfaceContainer = COMMON_LIGHT_TAB_CONTAINER,
     surfaceContainerHigh = Color(0xFFF4F4F5),
     surfaceContainerHighest = Color(0xFFE4E4E7)
 )
 
-private val GraphiteDarkTokens = ThemeColorTokens(
+private val GreyDarkTokens = ThemeColorTokens(
     primary = Color(0xFFD4D4D8),
     onPrimary = Slate900,
     primaryContainer = Color(0xFF3F3F46),
     onPrimaryContainer = Slate100,
-    secondary = Color(0xFFFBBF24),
+    secondary = Color(0xFFA1A1AA),
     onSecondary = Slate900,
     secondaryContainer = Color(0xFF3F3F46),
     onSecondaryContainer = Slate100,
@@ -100,75 +187,131 @@ private val GraphiteDarkTokens = ThemeColorTokens(
     onTertiary = Slate900,
     tertiaryContainer = Color(0xFF3F3F46),
     onTertiaryContainer = Slate100,
-    background = Color(0xFF09090B),
+    background = COMMON_DARK_BACKGROUND,
     onBackground = Slate100,
-    surface = Color(0xFF18181B),
+    surface = COMMON_DARK_SURFACE,
     onSurface = Slate100,
-    surfaceVariant = Color(0xFF27272A),
+    surfaceVariant = COMMON_DARK_SURFACE_VARIANT,
     onSurfaceVariant = Slate300,
     outline = Color(0xFF71717A),
     outlineVariant = Color(0xFF3F3F46),
-    surfaceContainerLowest = Color(0xFF09090B),
-    surfaceContainerLow = Color(0xFF18181B),
-    surfaceContainer = Color(0xFF27272A),
-    surfaceContainerHigh = Color(0xFF3F3F46),
-    surfaceContainerHighest = Color(0xFF52525B)
+    surfaceContainerLowest = COMMON_DARK_SURFACE_CONTAINER_LOWEST,
+    surfaceContainerLow = COMMON_DARK_SURFACE_CONTAINER_LOW,
+    surfaceContainer = COMMON_DARK_SURFACE_CONTAINER,
+    surfaceContainerHigh = COMMON_DARK_SURFACE_CONTAINER_HIGH,
+    surfaceContainerHighest = COMMON_DARK_SURFACE_CONTAINER_HIGHEST
 )
 
-private val TealLightTokens = ThemeColorTokens(
-    primary = Color(0xFF0F766E),
+private val GreenLightTokens = ThemeColorTokens(
+    primary = Color(0xFF15803D),
     onPrimary = Color.White,
-    primaryContainer = Slate200,
+    primaryContainer = Color(0xFFDCFCE7),
     onPrimaryContainer = Slate900,
-    secondary = Color(0xFF0D9488),
-    onSecondary = Slate950,
-    secondaryContainer = Slate200,
+    secondary = Color(0xFF16A34A),
+    onSecondary = Color.White,
+    secondaryContainer = Color(0xFFDCFCE7),
     onSecondaryContainer = Slate900,
-    tertiary = Color(0xFF0D9488),
+    tertiary = Color(0xFF4ADE80),
     onTertiary = Slate950,
-    tertiaryContainer = Slate200,
+    tertiaryContainer = Color(0xFFBBF7D0),
     onTertiaryContainer = Slate900,
-    background = Color(0xFFF0FDFA),
+    background = COMMON_LIGHT_BACKGROUND,
     onBackground = Slate900,
     surface = Color.White,
     onSurface = Slate900,
-    surfaceVariant = Color(0xFFF0FDFA),
+    surfaceVariant = Color(0xFFF0FDF4),
     onSurfaceVariant = Slate600,
     outline = Slate300,
     outlineVariant = Slate200,
     surfaceContainerLowest = Color.White,
     surfaceContainerLow = Color.White,
-    surfaceContainer = Color(0xFFF0FDFA),
-    surfaceContainerHigh = Color(0xFFCCFBF1),
-    surfaceContainerHighest = Color(0xFF99F6E4)
+    surfaceContainer = COMMON_LIGHT_TAB_CONTAINER,
+    surfaceContainerHigh = Color(0xFFDCFCE7),
+    surfaceContainerHighest = Slate200
 )
 
-private val TealDarkTokens = ThemeColorTokens(
-    primary = Color(0xFF5EEAD4),
+private val GreenDarkTokens = ThemeColorTokens(
+    primary = Color(0xFF86EFAC),
     onPrimary = Slate950,
-    primaryContainer = Color(0xFF134E4A),
+    primaryContainer = Color(0xFF14532D),
     onPrimaryContainer = Slate100,
-    secondary = Color(0xFF2DD4BF),
+    secondary = Color(0xFF4ADE80),
     onSecondary = Slate950,
-    secondaryContainer = Color(0xFF134E4A),
+    secondaryContainer = Color(0xFF166534),
     onSecondaryContainer = Slate100,
-    tertiary = Color(0xFF2DD4BF),
+    tertiary = Color(0xFFBBF7D0),
     onTertiary = Slate900,
-    tertiaryContainer = Color(0xFF134E4A),
+    tertiaryContainer = Color(0xFF166534),
     onTertiaryContainer = Slate100,
-    background = Color(0xFF042F2E),
+    background = COMMON_DARK_BACKGROUND,
     onBackground = Slate100,
-    surface = Color(0xFF0F3D3A),
+    surface = COMMON_DARK_SURFACE,
     onSurface = Slate100,
-    surfaceVariant = Color(0xFF134E4A),
+    surfaceVariant = COMMON_DARK_SURFACE_VARIANT,
     onSurfaceVariant = Slate300,
     outline = Slate500,
-    outlineVariant = Color(0xFF134E4A),
-    surfaceContainerLowest = Color(0xFF042F2E),
-    surfaceContainerLow = Color(0xFF0F3D3A),
-    surfaceContainer = Color(0xFF134E4A),
-    surfaceContainerHigh = Color(0xFF134E4A),
-    surfaceContainerHighest = Color(0xFF115E59)
+    outlineVariant = Color(0xFF365C43),
+    surfaceContainerLowest = COMMON_DARK_SURFACE_CONTAINER_LOWEST,
+    surfaceContainerLow = COMMON_DARK_SURFACE_CONTAINER_LOW,
+    surfaceContainer = COMMON_DARK_SURFACE_CONTAINER,
+    surfaceContainerHigh = COMMON_DARK_SURFACE_CONTAINER_HIGH,
+    surfaceContainerHighest = COMMON_DARK_SURFACE_CONTAINER_HIGHEST
+)
+
+private val BlueLightTokens = ThemeColorTokens(
+    primary = Color(0xFF1D4ED8),
+    onPrimary = Color.White,
+    primaryContainer = Color(0xFFDBEAFE),
+    onPrimaryContainer = Color(0xFF172554),
+    secondary = Color(0xFF3B82F6),
+    onSecondary = Color.White,
+    secondaryContainer = Color(0xFFDBEAFE),
+    onSecondaryContainer = Color(0xFF172554),
+    tertiary = Color(0xFF60A5FA),
+    onTertiary = Slate950,
+    tertiaryContainer = Color(0xFFE0F2FE),
+    onTertiaryContainer = Color(0xFF172554),
+    background = COMMON_LIGHT_BACKGROUND,
+    onBackground = Slate900,
+    surface = Color.White,
+    onSurface = Slate900,
+    surfaceVariant = Color(0xFFF1F5F9),
+    onSurfaceVariant = Slate600,
+    outline = Slate300,
+    outlineVariant = Slate200,
+    surfaceContainerLowest = Color.White,
+    surfaceContainerLow = Color.White,
+    surfaceContainer = COMMON_LIGHT_TAB_CONTAINER,
+    surfaceContainerHigh = Slate100,
+    surfaceContainerHighest = Slate200
+)
+
+private val BlueDarkTokens = ThemeColorTokens(
+    primary = Color(0xFF93C5FD),
+    onPrimary = Color(0xFF172554),
+    primaryContainer = Color(0xFF1E40AF),
+    onPrimaryContainer = Color(0xFFDBEAFE),
+    secondary = Color(0xFF60A5FA),
+    onSecondary = Color(0xFF172554),
+    secondaryContainer = Color(0xFF1D4ED8),
+    onSecondaryContainer = Color(0xFFDBEAFE),
+    tertiary = Color(0xFFBFDBFE),
+    onTertiary = Color(0xFF172554),
+    tertiaryContainer = Color(0xFF1E3A8A),
+    onTertiaryContainer = Color(0xFFDBEAFE),
+    background = COMMON_DARK_BACKGROUND,
+    onBackground = Slate100,
+    surface = COMMON_DARK_SURFACE,
+    onSurface = Slate100,
+    surfaceVariant = COMMON_DARK_SURFACE_VARIANT,
+    onSurfaceVariant = Slate300,
+    outline = Slate500,
+    outlineVariant = Slate700,
+    surfaceContainerLowest = COMMON_DARK_SURFACE_CONTAINER_LOWEST,
+    surfaceContainerLow = COMMON_DARK_SURFACE_CONTAINER_LOW,
+    surfaceContainer = COMMON_DARK_SURFACE_CONTAINER,
+    surfaceContainerHigh = COMMON_DARK_SURFACE_CONTAINER_HIGH,
+    surfaceContainerHighest = COMMON_DARK_SURFACE_CONTAINER_HIGHEST
 )
 
 // Orange and Rose use the same restrained Slate surface system as Indigo. Only
@@ -176,8 +319,8 @@ private val TealDarkTokens = ThemeColorTokens(
 private val OrangeLightTokens = ThemeColorTokens(
     primary = Color(0xFFC2410C),
     onPrimary = Color.White,
-    primaryContainer = Slate200,
-    onPrimaryContainer = Slate900,
+    primaryContainer = Color(0xFFFFEDD5),
+    onPrimaryContainer = Color(0xFF7C2D12),
     secondary = Color(0xFFEA580C),
     onSecondary = Color.White,
     secondaryContainer = Slate200,
@@ -186,7 +329,7 @@ private val OrangeLightTokens = ThemeColorTokens(
     onTertiary = Color.White,
     tertiaryContainer = Slate200,
     onTertiaryContainer = Slate900,
-    background = Slate100,
+    background = COMMON_LIGHT_BACKGROUND,
     onBackground = Slate900,
     surface = Color.White,
     onSurface = Slate900,
@@ -196,7 +339,7 @@ private val OrangeLightTokens = ThemeColorTokens(
     outlineVariant = Slate200,
     surfaceContainerLowest = Color.White,
     surfaceContainerLow = Color.White,
-    surfaceContainer = Slate50,
+    surfaceContainer = COMMON_LIGHT_TAB_CONTAINER,
     surfaceContainerHigh = Slate100,
     surfaceContainerHighest = Slate200
 )
@@ -204,8 +347,8 @@ private val OrangeLightTokens = ThemeColorTokens(
 private val OrangeDarkTokens = ThemeColorTokens(
     primary = Color(0xFFFDBA74),
     onPrimary = Slate950,
-    primaryContainer = Slate700,
-    onPrimaryContainer = Slate100,
+    primaryContainer = Color(0xFF9A3412),
+    onPrimaryContainer = Color(0xFFFFEDD5),
     secondary = Color(0xFFFB923C),
     onSecondary = Slate950,
     secondaryContainer = Slate700,
@@ -214,26 +357,26 @@ private val OrangeDarkTokens = ThemeColorTokens(
     onTertiary = Slate950,
     tertiaryContainer = Slate700,
     onTertiaryContainer = Slate100,
-    background = Slate950,
+    background = COMMON_DARK_BACKGROUND,
     onBackground = Slate100,
-    surface = Slate900,
+    surface = COMMON_DARK_SURFACE,
     onSurface = Slate100,
-    surfaceVariant = Slate800,
+    surfaceVariant = COMMON_DARK_SURFACE_VARIANT,
     onSurfaceVariant = Slate300,
     outline = Slate500,
     outlineVariant = Slate700,
-    surfaceContainerLowest = Slate950,
-    surfaceContainerLow = Slate900,
-    surfaceContainer = Slate800,
-    surfaceContainerHigh = Slate700,
-    surfaceContainerHighest = Slate600
+    surfaceContainerLowest = COMMON_DARK_SURFACE_CONTAINER_LOWEST,
+    surfaceContainerLow = COMMON_DARK_SURFACE_CONTAINER_LOW,
+    surfaceContainer = COMMON_DARK_SURFACE_CONTAINER,
+    surfaceContainerHigh = COMMON_DARK_SURFACE_CONTAINER_HIGH,
+    surfaceContainerHighest = COMMON_DARK_SURFACE_CONTAINER_HIGHEST
 )
 
 private val RoseLightTokens = ThemeColorTokens(
     primary = Color(0xFFBE123C),
     onPrimary = Color.White,
-    primaryContainer = Slate200,
-    onPrimaryContainer = Slate900,
+    primaryContainer = Color(0xFFFFE4E6),
+    onPrimaryContainer = Color(0xFF881337),
     secondary = Color(0xFFE11D48),
     onSecondary = Color.White,
     secondaryContainer = Slate200,
@@ -242,7 +385,7 @@ private val RoseLightTokens = ThemeColorTokens(
     onTertiary = Color.White,
     tertiaryContainer = Slate200,
     onTertiaryContainer = Slate900,
-    background = Slate100,
+    background = COMMON_LIGHT_BACKGROUND,
     onBackground = Slate900,
     surface = Color.White,
     onSurface = Slate900,
@@ -252,7 +395,7 @@ private val RoseLightTokens = ThemeColorTokens(
     outlineVariant = Slate200,
     surfaceContainerLowest = Color.White,
     surfaceContainerLow = Color.White,
-    surfaceContainer = Slate50,
+    surfaceContainer = COMMON_LIGHT_TAB_CONTAINER,
     surfaceContainerHigh = Slate100,
     surfaceContainerHighest = Slate200
 )
@@ -260,8 +403,8 @@ private val RoseLightTokens = ThemeColorTokens(
 private val RoseDarkTokens = ThemeColorTokens(
     primary = Color(0xFFFDA4AF),
     onPrimary = Slate950,
-    primaryContainer = Slate700,
-    onPrimaryContainer = Slate100,
+    primaryContainer = Color(0xFF9F1239),
+    onPrimaryContainer = Color(0xFFFFE4E6),
     secondary = Color(0xFFFB7185),
     onSecondary = Slate950,
     secondaryContainer = Slate700,
@@ -270,35 +413,35 @@ private val RoseDarkTokens = ThemeColorTokens(
     onTertiary = Slate950,
     tertiaryContainer = Slate700,
     onTertiaryContainer = Slate100,
-    background = Slate950,
+    background = COMMON_DARK_BACKGROUND,
     onBackground = Slate100,
-    surface = Slate900,
+    surface = COMMON_DARK_SURFACE,
     onSurface = Slate100,
-    surfaceVariant = Slate800,
+    surfaceVariant = COMMON_DARK_SURFACE_VARIANT,
     onSurfaceVariant = Slate300,
     outline = Slate500,
     outlineVariant = Slate700,
-    surfaceContainerLowest = Slate950,
-    surfaceContainerLow = Slate900,
-    surfaceContainer = Slate800,
-    surfaceContainerHigh = Slate700,
-    surfaceContainerHighest = Slate600
+    surfaceContainerLowest = COMMON_DARK_SURFACE_CONTAINER_LOWEST,
+    surfaceContainerLow = COMMON_DARK_SURFACE_CONTAINER_LOW,
+    surfaceContainer = COMMON_DARK_SURFACE_CONTAINER,
+    surfaceContainerHigh = COMMON_DARK_SURFACE_CONTAINER_HIGH,
+    surfaceContainerHighest = COMMON_DARK_SURFACE_CONTAINER_HIGHEST
 )
 
-private val AmberLightTokens = ThemeColorTokens(
-    primary = Color(0xFFB45309),
-    onPrimary = Color.White,
-    primaryContainer = Slate200,
-    onPrimaryContainer = Slate900,
-    secondary = Color(0xFFD97706),
-    onSecondary = Color.White,
-    secondaryContainer = Slate200,
-    onSecondaryContainer = Slate900,
-    tertiary = Color(0xFFF59E0B),
+private val YellowLightTokens = ThemeColorTokens(
+    primary = Color(0xFFCA8A04),
+    onPrimary = Slate950,
+    primaryContainer = Color(0xFFFEF3C7),
+    onPrimaryContainer = Color(0xFF422006),
+    secondary = Color(0xFFEAB308),
+    onSecondary = Slate950,
+    secondaryContainer = Color(0xFFFEF9C3),
+    onSecondaryContainer = Color(0xFF422006),
+    tertiary = Color(0xFFFACC15),
     onTertiary = Slate950,
-    tertiaryContainer = Slate200,
-    onTertiaryContainer = Slate900,
-    background = Slate100,
+    tertiaryContainer = Color(0xFFFEF08A),
+    onTertiaryContainer = Color(0xFF422006),
+    background = COMMON_LIGHT_BACKGROUND,
     onBackground = Slate900,
     surface = Color.White,
     onSurface = Slate900,
@@ -308,37 +451,37 @@ private val AmberLightTokens = ThemeColorTokens(
     outlineVariant = Slate200,
     surfaceContainerLowest = Color.White,
     surfaceContainerLow = Color.White,
-    surfaceContainer = Slate50,
+    surfaceContainer = COMMON_LIGHT_TAB_CONTAINER,
     surfaceContainerHigh = Slate100,
     surfaceContainerHighest = Slate200
 )
 
-private val AmberDarkTokens = ThemeColorTokens(
-    primary = Color(0xFFFCD34D),
+private val YellowDarkTokens = ThemeColorTokens(
+    primary = Color(0xFFFDE68A),
     onPrimary = Slate950,
-    primaryContainer = Slate700,
-    onPrimaryContainer = Slate100,
-    secondary = Color(0xFFFBBF24),
+    primaryContainer = Color(0xFF713F12),
+    onPrimaryContainer = Color(0xFFFEF3C7),
+    secondary = Color(0xFFFACC15),
     onSecondary = Slate950,
-    secondaryContainer = Slate700,
-    onSecondaryContainer = Slate100,
-    tertiary = Color(0xFFFCD34D),
+    secondaryContainer = Color(0xFF854D0E),
+    onSecondaryContainer = Color(0xFFFEF3C7),
+    tertiary = Color(0xFFFEF08A),
     onTertiary = Slate950,
-    tertiaryContainer = Slate700,
-    onTertiaryContainer = Slate100,
-    background = Slate950,
+    tertiaryContainer = Color(0xFFA16207),
+    onTertiaryContainer = Color(0xFFFEF3C7),
+    background = COMMON_DARK_BACKGROUND,
     onBackground = Slate100,
-    surface = Slate900,
+    surface = COMMON_DARK_SURFACE,
     onSurface = Slate100,
-    surfaceVariant = Slate800,
+    surfaceVariant = COMMON_DARK_SURFACE_VARIANT,
     onSurfaceVariant = Slate300,
     outline = Slate500,
     outlineVariant = Slate700,
-    surfaceContainerLowest = Slate950,
-    surfaceContainerLow = Slate900,
-    surfaceContainer = Slate800,
-    surfaceContainerHigh = Slate700,
-    surfaceContainerHighest = Slate600
+    surfaceContainerLowest = COMMON_DARK_SURFACE_CONTAINER_LOWEST,
+    surfaceContainerLow = COMMON_DARK_SURFACE_CONTAINER_LOW,
+    surfaceContainer = COMMON_DARK_SURFACE_CONTAINER,
+    surfaceContainerHigh = COMMON_DARK_SURFACE_CONTAINER_HIGH,
+    surfaceContainerHighest = COMMON_DARK_SURFACE_CONTAINER_HIGHEST
 )
 
 private val ParchmentTokens = ThemeColorTokens(
@@ -509,10 +652,66 @@ private val KraftTokens = ThemeColorTokens(
     surfaceContainerHighest = Color(0xFFB18A59)
 )
 
+private val LinenTokens = ThemeColorTokens(
+    primary = Color(0xFF5B5147),
+    onPrimary = Color.White,
+    primaryContainer = Color(0xFFE4DDD3),
+    onPrimaryContainer = Color(0xFF2D2823),
+    secondary = Color(0xFF8B6F52),
+    onSecondary = Color.White,
+    secondaryContainer = Color(0xFFE8D9C8),
+    onSecondaryContainer = Color(0xFF34271B),
+    tertiary = Color(0xFF65705F),
+    onTertiary = Color.White,
+    tertiaryContainer = Color(0xFFDCE5D7),
+    onTertiaryContainer = Color(0xFF20281E),
+    background = Color(0xFFE7E1D8),
+    onBackground = Color(0xFF302A25),
+    surface = Color(0xFFF7F3EC),
+    onSurface = Color(0xFF302A25),
+    surfaceVariant = Color(0xFFDDD5C9),
+    onSurfaceVariant = Color(0xFF6B6259),
+    outline = Color(0xFFA69B8E),
+    outlineVariant = Color(0xFFC9BFB2),
+    surfaceContainerLowest = Color(0xFFFCF9F4),
+    surfaceContainerLow = Color(0xFFF7F3EC),
+    surfaceContainer = Color(0xFFEDE7DE),
+    surfaceContainerHigh = Color(0xFFE2DBD1),
+    surfaceContainerHighest = Color(0xFFD5CCC0)
+)
+
+private val MintTokens = ThemeColorTokens(
+    primary = Color(0xFF247A57),
+    onPrimary = Color.White,
+    primaryContainer = Color(0xFFCBEAD8),
+    onPrimaryContainer = Color(0xFF073B25),
+    secondary = Color(0xFF3B8D6E),
+    onSecondary = Color.White,
+    secondaryContainer = Color(0xFFD5EEE1),
+    onSecondaryContainer = Color(0xFF123B2A),
+    tertiary = Color(0xFF5B7F6B),
+    onTertiary = Color.White,
+    tertiaryContainer = Color(0xFFD8E8DD),
+    onTertiaryContainer = Color(0xFF1D3326),
+    background = Color(0xFFE8F5EE),
+    onBackground = Color(0xFF1E3027),
+    surface = Color(0xFFF7FCF9),
+    onSurface = Color(0xFF1E3027),
+    surfaceVariant = Color(0xFFD4EBDD),
+    onSurfaceVariant = Color(0xFF4F6B5B),
+    outline = Color(0xFF8EAA9A),
+    outlineVariant = Color(0xFFBBD5C5),
+    surfaceContainerLowest = Color(0xFFFCFFFD),
+    surfaceContainerLow = Color(0xFFF7FCF9),
+    surfaceContainer = Color(0xFFEFF8F2),
+    surfaceContainerHigh = Color(0xFFE1F1E7),
+    surfaceContainerHighest = Color(0xFFD4EBDD)
+)
+
 internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
     ThemePalette.Indigo -> ThemePaletteDefinition(
-        light = IndigoLightTokens,
-        dark = IndigoDarkTokens,
+        light = IndigoLightTokens.withSwitchableLightSurface(),
+        dark = IndigoDarkTokens.withSwitchableDarkSurface(),
         preview = ThemePreviewColors(
             primary = IndigoLightTokens.primary,
             accent = IndigoLightTokens.secondary,
@@ -521,31 +720,53 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
         insightsLight = IndigoLightTokens.toInsightsColorTokens(),
         insightsDark = IndigoDarkTokens.toInsightsColorTokens()
     )
-    ThemePalette.GraphiteAmber -> ThemePaletteDefinition(
-        light = GraphiteLightTokens,
-        dark = GraphiteDarkTokens,
+    ThemePalette.Purple -> ThemePaletteDefinition(
+        light = PurpleLightTokens.withSwitchableLightSurface(),
+        dark = PurpleDarkTokens.withSwitchableDarkSurface(),
         preview = ThemePreviewColors(
-            primary = GraphiteLightTokens.primary,
-            accent = GraphiteLightTokens.secondary,
-            surface = GraphiteLightTokens.background
+            primary = PurpleLightTokens.primary,
+            accent = PurpleLightTokens.secondary,
+            surface = PurpleLightTokens.background
         ),
-        insightsLight = GraphiteLightTokens.toInsightsColorTokens(),
-        insightsDark = GraphiteDarkTokens.toInsightsColorTokens()
+        insightsLight = PurpleLightTokens.toInsightsColorTokens(),
+        insightsDark = PurpleDarkTokens.toInsightsColorTokens()
     )
-    ThemePalette.Teal -> ThemePaletteDefinition(
-        light = TealLightTokens,
-        dark = TealDarkTokens,
+    ThemePalette.Grey -> ThemePaletteDefinition(
+        light = GreyLightTokens.withSwitchableLightSurface(),
+        dark = GreyDarkTokens.withSwitchableDarkSurface(),
         preview = ThemePreviewColors(
-            primary = TealLightTokens.primary,
-            accent = TealLightTokens.secondary,
-            surface = TealLightTokens.background
+            primary = GreyLightTokens.primary,
+            accent = GreyLightTokens.secondary,
+            surface = GreyLightTokens.background
         ),
-        insightsLight = TealLightTokens.toInsightsColorTokens(),
-        insightsDark = TealDarkTokens.toInsightsColorTokens()
+        insightsLight = GreyLightTokens.toInsightsColorTokens(),
+        insightsDark = GreyDarkTokens.toInsightsColorTokens()
+    )
+    ThemePalette.Green -> ThemePaletteDefinition(
+        light = GreenLightTokens.withSwitchableLightSurface(),
+        dark = GreenDarkTokens.withSwitchableDarkSurface(),
+        preview = ThemePreviewColors(
+            primary = GreenLightTokens.primary,
+            accent = GreenLightTokens.secondary,
+            surface = GreenLightTokens.background
+        ),
+        insightsLight = GreenLightTokens.toInsightsColorTokens(),
+        insightsDark = GreenDarkTokens.toInsightsColorTokens()
+    )
+    ThemePalette.Blue -> ThemePaletteDefinition(
+        light = BlueLightTokens.withSwitchableLightSurface(),
+        dark = BlueDarkTokens.withSwitchableDarkSurface(),
+        preview = ThemePreviewColors(
+            primary = BlueLightTokens.primary,
+            accent = BlueLightTokens.secondary,
+            surface = BlueLightTokens.background
+        ),
+        insightsLight = BlueLightTokens.toInsightsColorTokens(),
+        insightsDark = BlueDarkTokens.toInsightsColorTokens()
     )
     ThemePalette.Orange -> ThemePaletteDefinition(
-        light = OrangeLightTokens,
-        dark = OrangeDarkTokens,
+        light = OrangeLightTokens.withSwitchableLightSurface(),
+        dark = OrangeDarkTokens.withSwitchableDarkSurface(),
         preview = ThemePreviewColors(
             primary = OrangeLightTokens.primary,
             accent = OrangeLightTokens.secondary,
@@ -555,8 +776,8 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
         insightsDark = OrangeDarkTokens.toInsightsColorTokens()
     )
     ThemePalette.Rose -> ThemePaletteDefinition(
-        light = RoseLightTokens,
-        dark = RoseDarkTokens,
+        light = RoseLightTokens.withSwitchableLightSurface(),
+        dark = RoseDarkTokens.withSwitchableDarkSurface(),
         preview = ThemePreviewColors(
             primary = RoseLightTokens.primary,
             accent = RoseLightTokens.secondary,
@@ -565,16 +786,16 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
         insightsLight = RoseLightTokens.toInsightsColorTokens(),
         insightsDark = RoseDarkTokens.toInsightsColorTokens()
     )
-    ThemePalette.Amber -> ThemePaletteDefinition(
-        light = AmberLightTokens,
-        dark = AmberDarkTokens,
+    ThemePalette.Yellow -> ThemePaletteDefinition(
+        light = YellowLightTokens.withSwitchableLightSurface(),
+        dark = YellowDarkTokens.withSwitchableDarkSurface(),
         preview = ThemePreviewColors(
-            primary = AmberLightTokens.primary,
-            accent = AmberLightTokens.secondary,
-            surface = AmberLightTokens.background
+            primary = YellowLightTokens.primary,
+            accent = YellowLightTokens.secondary,
+            surface = YellowLightTokens.background
         ),
-        insightsLight = AmberLightTokens.toInsightsColorTokens(),
-        insightsDark = AmberDarkTokens.toInsightsColorTokens()
+        insightsLight = YellowLightTokens.toInsightsColorTokens(),
+        insightsDark = YellowDarkTokens.toInsightsColorTokens()
     )
     ThemePalette.Parchment -> ThemePaletteDefinition(
         light = ParchmentTokens,
@@ -644,5 +865,27 @@ internal fun ThemePalette.definition(): ThemePaletteDefinition = when (this) {
         ),
         insightsLight = KraftTokens.toInsightsColorTokens(),
         insightsDark = KraftTokens.toInsightsColorTokens()
+    )
+    ThemePalette.Linen -> ThemePaletteDefinition(
+        light = LinenTokens,
+        dark = LinenTokens,
+        preview = ThemePreviewColors(
+            primary = LinenTokens.primary,
+            accent = LinenTokens.tertiary,
+            surface = LinenTokens.background
+        ),
+        insightsLight = LinenTokens.toInsightsColorTokens(),
+        insightsDark = LinenTokens.toInsightsColorTokens()
+    )
+    ThemePalette.Mint -> ThemePaletteDefinition(
+        light = MintTokens,
+        dark = MintTokens,
+        preview = ThemePreviewColors(
+            primary = MintTokens.primary,
+            accent = MintTokens.tertiary,
+            surface = MintTokens.background
+        ),
+        insightsLight = MintTokens.toInsightsColorTokens(),
+        insightsDark = MintTokens.toInsightsColorTokens()
     )
 }

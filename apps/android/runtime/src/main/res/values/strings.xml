@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="runtime_txt_changes_saved">Changes saved.</string>
+    <string name="runtime_txt_incomplete_day_warning">Some time intervals for this day may not be available yet because it has fewer than two activities.</string>
+    <string name="runtime_txt_overnight_continuation_warning">This day starts with an activity other than waking up, so sleep time may not be calculated automatically.</string>
+</resources>

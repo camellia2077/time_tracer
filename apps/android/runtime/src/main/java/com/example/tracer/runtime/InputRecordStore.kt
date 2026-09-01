@@ -11,7 +11,9 @@ import java.util.Locale
 private const val FIRST_MONTH = 1
 private const val LAST_MONTH = 12
 
-internal class InputRecordStore {
+internal class InputRecordStore(
+    private val userMessages: RuntimeUserMessages = RuntimeUserMessages()
+) {
     private val appMonthFileFormatter = SimpleDateFormat("yyyy-MM", Locale.US)
     private val dayMarkerFormatter = SimpleDateFormat("MMdd", Locale.US)
     private val isoTimeFormatter = SimpleDateFormat("HH:mm:ss", Locale.US)
@@ -162,13 +164,37 @@ internal class InputRecordStore {
                     normalizedWakeKeywords = normalizedWakeKeywords
                 )
             ) {
-                WarningKind.OVERNIGHT_CONTINUATION -> return OVERNIGHT_CONTINUATION_WARNING
+                WarningKind.OVERNIGHT_CONTINUATION -> return userMessages.overnightContinuationWarning
                 WarningKind.INCOMPLETE_DAY -> hasIncompleteDay = true
                 WarningKind.NONE -> Unit
             }
         }
 
-        return if (hasIncompleteDay) INCOMPLETE_DAY_WARNING else null
+        return if (hasIncompleteDay) userMessages.incompleteDayWarning else null
+    }
+
+    fun resolveCompletenessWarningForChangedDays(
+        previousContent: String?,
+        content: String,
+        wakeKeywords: Set<String> = emptySet()
+    ): String? {
+        if (previousContent == null) {
+            return resolveCompletenessWarningForMonthContent(content, wakeKeywords)
+        }
+
+        val previousBlocks = dayBlocksByMarker(previousContent)
+        val currentBlocks = dayBlocksByMarker(content)
+        for ((dayMarker, currentBlock) in currentBlocks) {
+            if (previousBlocks[dayMarker] == currentBlock) {
+                continue
+            }
+            resolveCompletenessWarningForDayContent(
+                content = currentBlock,
+                dayMarker = dayMarker,
+                wakeKeywords = wakeKeywords
+            )?.let { return it }
+        }
+        return null
     }
 
     fun resolveCompletenessWarningForDayContent(
@@ -196,8 +222,8 @@ internal class InputRecordStore {
                 normalizedWakeKeywords = normalizedWakeKeywords
             )
         ) {
-            WarningKind.OVERNIGHT_CONTINUATION -> OVERNIGHT_CONTINUATION_WARNING
-            WarningKind.INCOMPLETE_DAY -> INCOMPLETE_DAY_WARNING
+            WarningKind.OVERNIGHT_CONTINUATION -> userMessages.overnightContinuationWarning
+            WarningKind.INCOMPLETE_DAY -> userMessages.incompleteDayWarning
             WarningKind.NONE -> null
         }
     }
@@ -205,6 +231,17 @@ internal class InputRecordStore {
     // Keep Android/runtime APIs on MMDD for day identity; add the TXT-only "d"
     // prefix only when matching the raw month-file day-block header.
     private fun buildDayMarkerLine(dayMarker: String): String = "d$dayMarker"
+
+    private fun dayBlocksByMarker(content: String): Map<String, String> {
+        val lines = content.lineSequence().toList()
+        return lines.indices
+            .filter { parsing.isDayMarker(lines[it]) }
+            .associate { blockStart ->
+                val dayMarker = lines[blockStart].trim().removePrefix("d")
+                val blockEnd = parsing.findDayBlockEnd(lines, blockStart)
+                dayMarker to lines.subList(blockStart, blockEnd).joinToString("\n")
+            }
+    }
 
     private fun buildRawEventLine(isoTime: String, activity: String, remark: String): String {
         return persistence.buildRawEventLine(isoTime, activity, remark)
@@ -290,8 +327,8 @@ internal class InputRecordStore {
 
     internal companion object {
         const val INCOMPLETE_DAY_WARNING =
-            "Warning: this day currently has fewer than 2 authored events, so some intervals may not be computable yet."
+            "Some time intervals for this day may not be available yet because it has fewer than two activities."
         const val OVERNIGHT_CONTINUATION_WARNING =
-            "Warning: possible overnight continuation; the first event of this day is not wake-related, so no sleep activity will be auto-generated."
+            "This day starts with an activity other than waking up, so sleep time may not be calculated automatically."
     }
 }

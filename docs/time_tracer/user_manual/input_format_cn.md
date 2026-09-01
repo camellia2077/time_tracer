@@ -114,8 +114,8 @@
 - **每天少于 2 条 authored events 不再是硬性错误**。
 - 这类情况表示“当天记录暂未补全”，仍然可以保存、继续追加、继续导入。
 - `Record Input` 与 `TXT save+sync` 可能提示：
-  - `Warning: this day currently has fewer than 2 authored events, so some intervals may not be computable yet.`
-  - `Warning: possible overnight continuation; the first event of this day is not wake-related, so no sleep activity will be auto-generated.`
+  - `Some time intervals for this day may not be available yet because it has fewer than two activities.`
+  - `This day starts with an activity other than waking up, so sleep time may not be calculated automatically.`
 - 第二条 warning 只在“当天不完整且首条 authored event 不是 wake”时出现，并替代第一条泛化提示。
 
 引入区间事件后，这里的口径需要进一步理解为：

@@ -1,5 +1,8 @@
 package com.example.tracer
 
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneOffset
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -8,6 +11,20 @@ class TxtStructuredDayEditorFormattingTest {
     @Test
     fun formatClockSeconds_returnsIsoTimeForStructuredDayEditRequest() {
         assertEquals("06:24:30", formatClockSeconds(6 * 3_600 + 24 * 60 + 30))
+    }
+
+    @Test
+    fun currentLogicalDayTimelineSeconds_mapsPreCutoffTimeToThePreviousLogicalDayAxis() {
+        val clock = Clock.fixed(Instant.parse("2026-04-17T01:02:03Z"), ZoneOffset.UTC)
+
+        assertEquals(25 * 3_600 + 2 * 60 + 3, currentLogicalDayTimelineSeconds(clock))
+    }
+
+    @Test
+    fun currentLogicalDayTimelineSeconds_keepsPostCutoffTimeOnTheSameDayAxis() {
+        val clock = Clock.fixed(Instant.parse("2026-04-17T06:02:03Z"), ZoneOffset.UTC)
+
+        assertEquals(6 * 3_600 + 2 * 60 + 3, currentLogicalDayTimelineSeconds(clock))
     }
 
     @Test
@@ -34,6 +51,23 @@ class TxtStructuredDayEditorFormattingTest {
         )
 
         assertEquals("06:24:30 – 08:04:03", formatTxtDayEventTime(event))
+    }
+
+    @Test
+    fun formatTxtDayEventTime_usesTwelveHourDisplayWithoutChangingStoredTime() {
+        val event = TxtDayEditEvent(
+            isInterval = true,
+            startTime = "00:24:30",
+            endTime = "13:04:03",
+            activityToken = "study",
+            remark = ""
+        )
+
+        assertEquals(
+            "12:24:30 AM – 1:04:03 PM",
+            formatTxtDayEventTime(event, use12HourTime = true)
+        )
+        assertEquals("00:24:30 – 13:04:03", event.startTime + " – " + event.endTime)
     }
 
     @Test

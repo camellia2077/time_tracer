@@ -42,6 +42,7 @@ internal fun InsightsMultiMonthHeatmap(
     heatmapTomlConfig: InsightsHeatmapTomlConfig,
     heatmapStylePreference: InsightsHeatmapStylePreference,
     isAppDarkThemeActive: Boolean,
+    adaptSelectionToSurface: Boolean,
     onPointSelected: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -80,6 +81,7 @@ internal fun InsightsMultiMonthHeatmap(
             heatmapTomlConfig = heatmapTomlConfig,
             heatmapStylePreference = heatmapStylePreference,
             isAppDarkThemeActive = isAppDarkThemeActive,
+            adaptSelectionToSurface = adaptSelectionToSurface,
             onPointSelected = onPointSelected
         )
     }
@@ -116,6 +118,7 @@ internal fun InsightsMultiMonthHeatmap(
                     heatmapTomlConfig = heatmapTomlConfig,
                     heatmapStylePreference = heatmapStylePreference,
                     isAppDarkThemeActive = isAppDarkThemeActive,
+                    adaptSelectionToSurface = adaptSelectionToSurface,
                     onPointSelected = onPointSelected,
                     horizontalLandscape = true,
                     modifier = Modifier.weight(1f)
@@ -134,6 +137,7 @@ private fun YearHeatmapMonthGrid(
     heatmapTomlConfig: InsightsHeatmapTomlConfig,
     heatmapStylePreference: InsightsHeatmapStylePreference,
     isAppDarkThemeActive: Boolean,
+    adaptSelectionToSurface: Boolean,
     onPointSelected: (Int) -> Unit,
     horizontalLandscape: Boolean = false,
     modifier: Modifier = Modifier
@@ -160,6 +164,7 @@ private fun YearHeatmapMonthGrid(
                         heatmapTomlConfig = heatmapTomlConfig,
                         heatmapStylePreference = heatmapStylePreference,
                         isAppDarkThemeActive = isAppDarkThemeActive,
+                        adaptSelectionToSurface = adaptSelectionToSurface,
                         onPointSelected = onPointSelected,
                         title = formatter.format(month),
                         modifier = Modifier.width(cardWidth)
@@ -189,6 +194,7 @@ private fun YearHeatmapMonthGrid(
                                 heatmapTomlConfig = heatmapTomlConfig,
                                 heatmapStylePreference = heatmapStylePreference,
                                 isAppDarkThemeActive = isAppDarkThemeActive,
+                                adaptSelectionToSurface = adaptSelectionToSurface,
                                 onPointSelected = onPointSelected,
                                 title = formatter.format(month),
                                 modifier = Modifier.weight(1f)
@@ -212,6 +218,7 @@ private fun MonthHeatmapCard(
     heatmapTomlConfig: InsightsHeatmapTomlConfig,
     heatmapStylePreference: InsightsHeatmapStylePreference,
     isAppDarkThemeActive: Boolean,
+    adaptSelectionToSurface: Boolean,
     onPointSelected: (Int) -> Unit,
     title: String,
     modifier: Modifier = Modifier
@@ -230,6 +237,7 @@ private fun MonthHeatmapCard(
             heatmapTomlConfig = heatmapTomlConfig,
             heatmapStylePreference = heatmapStylePreference,
             isAppDarkThemeActive = isAppDarkThemeActive,
+            adaptSelectionToSurface = adaptSelectionToSurface,
             onPointSelected = onPointSelected,
             modifier = Modifier
                 .fillMaxWidth()

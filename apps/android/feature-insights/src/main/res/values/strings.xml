@@ -69,7 +69,7 @@
     <string name="insights_chart_measure_frequency">Number of records</string>
     <string name="insights_chart_visual_heatmap">Heatmap</string>
     <string name="insights_chart_pie_drilldown_hint">Tap a slice or legend row with sub-activities to open that activity level.</string>
-    <string name="insights_chart_pie_drilldown_path">Current level: %1$s</string>
+    <string name="insights_chart_pie_drilldown_path_label">Current level</string>
     <string name="insights_chart_pie_drilldown_back">Back to %1$s</string>
     <string name="insights_chart_bar_drilldown_hint">Tap a row with sub-activities to open the next activity level.</string>
     <string name="insights_chart_composition_treemap_hint">Tap a tile or legend row to view its activity, time spent, and share. Tap one with sub-activities to drill down.</string>

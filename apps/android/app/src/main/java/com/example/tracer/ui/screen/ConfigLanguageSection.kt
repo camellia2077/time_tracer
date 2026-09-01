@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.tracer.data.AppLanguage
+import com.example.tracer.ui.components.ExpandableSettingsButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

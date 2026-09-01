@@ -158,6 +158,7 @@
     <string name="txt_day_edit_empty">この日に記録された活動はありません。</string>
     <string name="txt_day_edit_time">時刻を編集</string>
     <string name="txt_day_edit_time_title">活動時刻を編集</string>
+    <string name="txt_day_edit_use_current_time">現在時刻を使用</string>
     <string name="txt_day_edit_activity">活動を編集</string>
     <string name="txt_day_edit_delete_activity">活動を削除</string>
     <string name="txt_day_edit_delete_activity_title">活動を削除しますか？</string>

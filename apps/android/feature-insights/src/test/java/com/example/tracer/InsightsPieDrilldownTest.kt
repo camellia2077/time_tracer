@@ -57,7 +57,7 @@ class InsightsPieDrilldownTest {
         val slices = nodes.toInsightsCompositionSlices(InsightsCompositionMeasure.FREQUENCY)
 
         assertEquals(listOf("sleep", "study"), slices.map(InsightsCompositionSlice::root))
-        assertEquals(listOf(6L, 2L), slices.map(InsightsCompositionSlice::durationSeconds))
+        assertEquals(listOf(6L, 2L), slices.map(InsightsCompositionSlice::measureValue))
         assertEquals(75f, slices.first().percent)
     }
 

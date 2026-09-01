@@ -45,13 +45,17 @@ enum class ThemeMode {
     System, Light, Dark
 }
 
-enum class DarkThemeStyle {
-    Tinted, Neutral, Black
+enum class DarkSurfaceStyle {
+    Neutral, Black
+}
+
+enum class LightSurfaceStyle {
+    Neutral, Elevated
 }
 
 enum class ThemePalette(val supportsLightDarkMode: Boolean) {
-    Indigo(true), GraphiteAmber(true), Teal(true), Orange(true), Rose(true), Amber(true),
-    Parchment(false), Snowfield(false), Blueprint(false), Newsprint(false), InkWash(false), Kraft(false)
+    Rose(true), Orange(true), Yellow(true), Green(true), Blue(true), Indigo(true), Purple(true), Grey(true),
+    Parchment(false), Kraft(false), Linen(false), Newsprint(false), InkWash(false), Blueprint(false), Snowfield(false), Mint(false)
 }
 
 enum class AppLanguage {
@@ -62,13 +66,20 @@ enum class AppLanguage {
 }
 
 enum class PageTransitionStyle {
+    NONE,
     FADE,
     SLIDE
 }
 
+enum class TimeDisplayMode {
+    TWENTY_FOUR_HOUR,
+    TWELVE_HOUR
+}
+
 data class ThemeConfig(
     val themeMode: ThemeMode,
-    val darkThemeStyle: DarkThemeStyle = DarkThemeStyle.Tinted,
+    val darkSurfaceStyle: DarkSurfaceStyle = DarkSurfaceStyle.Neutral,
+    val lightSurfaceStyle: LightSurfaceStyle = LightSurfaceStyle.Neutral,
     val palette: ThemePalette = ThemePalette.Indigo
 )
 
@@ -160,8 +171,8 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         const val DEFAULT_RECORD_QUICK_ACCESS_EDITOR_VISIBLE: Boolean = false
         const val DEFAULT_RECORD_QUICK_ACCESS_CARD_EXPANDED: Boolean = true
         const val DEFAULT_PROMPT_BEFORE_UNCONFIGURED_ACTIVITY_RECORD: Boolean = false
-        const val DEFAULT_PAGE_TRANSITIONS_ENABLED: Boolean = true
         val DEFAULT_PAGE_TRANSITION_STYLE: PageTransitionStyle = PageTransitionStyle.FADE
+        val DEFAULT_TIME_DISPLAY_MODE: TimeDisplayMode = TimeDisplayMode.TWENTY_FOUR_HOUR
         const val DEFAULT_CONFIG_CARD_EXPANDED: Boolean = true
         const val DEFAULT_CONFIG_SECTION_EXPANDED: Boolean = false
         val DEFAULT_COLLAPSED_CANONICAL_ROOT_PATHS: Set<String> = emptySet()
@@ -174,7 +185,8 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
 
     private object PreferencesKeys {
         val THEME_MODE = stringPreferencesKey("theme_mode")
-        val DARK_THEME_STYLE = stringPreferencesKey("dark_theme_style")
+        val DARK_SURFACE_STYLE = stringPreferencesKey("dark_surface_style")
+        val LIGHT_SURFACE_STYLE = stringPreferencesKey("light_surface_style")
         val THEME_PALETTE = stringPreferencesKey("theme_palette")
         val APP_LANGUAGE = stringPreferencesKey("app_language")
         val RECORD_FREQUENT_LOOKBACK_DAYS = intPreferencesKey("record_frequent_lookback_days")
@@ -191,8 +203,8 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             booleanPreferencesKey("record_quick_access_editor_visible")
         val PROMPT_BEFORE_UNCONFIGURED_ACTIVITY_RECORD =
             booleanPreferencesKey("prompt_before_unconfigured_activity_record")
-        val PAGE_TRANSITIONS_ENABLED = booleanPreferencesKey("page_transitions_enabled")
         val PAGE_TRANSITION_STYLE = stringPreferencesKey("page_transition_style")
+        val TIME_DISPLAY_MODE = stringPreferencesKey("time_display_mode")
         val CONFIG_APPLICATION_PREFERENCES_EXPANDED =
             booleanPreferencesKey("config_application_preferences_expanded")
         val CONFIG_APPEARANCE_EXPANDED = booleanPreferencesKey("config_appearance_expanded")
@@ -251,13 +263,16 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
 
     val themeConfig: Flow<ThemeConfig> = dataStore.data.map { preferences ->
         val modeName = preferences[PreferencesKeys.THEME_MODE] ?: ThemeMode.System.name
-        val darkThemeStyleName = preferences[PreferencesKeys.DARK_THEME_STYLE] ?: DarkThemeStyle.Tinted.name
+        val darkSurfaceStyleName = preferences[PreferencesKeys.DARK_SURFACE_STYLE] ?: DarkSurfaceStyle.Neutral.name
+        val lightSurfaceStyleName = preferences[PreferencesKeys.LIGHT_SURFACE_STYLE] ?: LightSurfaceStyle.Neutral.name
         val paletteName = preferences[PreferencesKeys.THEME_PALETTE] ?: ThemePalette.Indigo.name
         
         ThemeConfig(
             themeMode = runCatching { ThemeMode.valueOf(modeName) }.getOrDefault(ThemeMode.System),
-            darkThemeStyle = runCatching { DarkThemeStyle.valueOf(darkThemeStyleName) }
-                .getOrDefault(DarkThemeStyle.Tinted),
+            darkSurfaceStyle = runCatching { DarkSurfaceStyle.valueOf(darkSurfaceStyleName) }
+                .getOrDefault(DarkSurfaceStyle.Neutral),
+            lightSurfaceStyle = runCatching { LightSurfaceStyle.valueOf(lightSurfaceStyleName) }
+                .getOrDefault(LightSurfaceStyle.Neutral),
             palette = runCatching { ThemePalette.valueOf(paletteName) }
                 .getOrDefault(ThemePalette.Indigo)
         )
@@ -408,9 +423,9 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         }
     }
 
-    suspend fun setDarkThemeStyle(style: DarkThemeStyle) {
+    suspend fun setDarkSurfaceStyle(style: DarkSurfaceStyle) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.DARK_THEME_STYLE] = style.name
+            preferences[PreferencesKeys.DARK_SURFACE_STYLE] = style.name
         }
     }
 
@@ -450,9 +465,10 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         }.getOrDefault(DEFAULT_INSIGHTS_AVERAGE_DAY_BASIS)
     }
 
-    val pageTransitionsEnabled: Flow<Boolean> = dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.PAGE_TRANSITIONS_ENABLED]
-            ?: DEFAULT_PAGE_TRANSITIONS_ENABLED
+    suspend fun setLightSurfaceStyle(style: LightSurfaceStyle) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.LIGHT_SURFACE_STYLE] = style.name
+        }
     }
 
     val pageTransitionStyle: Flow<PageTransitionStyle> = dataStore.data.map { preferences ->
@@ -460,6 +476,13 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             ?: DEFAULT_PAGE_TRANSITION_STYLE.name
         runCatching { PageTransitionStyle.valueOf(rawValue) }
             .getOrDefault(DEFAULT_PAGE_TRANSITION_STYLE)
+    }
+
+    val timeDisplayMode: Flow<TimeDisplayMode> = dataStore.data.map { preferences ->
+        val rawValue = preferences[PreferencesKeys.TIME_DISPLAY_MODE]
+            ?: DEFAULT_TIME_DISPLAY_MODE.name
+        runCatching { TimeDisplayMode.valueOf(rawValue) }
+            .getOrDefault(DEFAULT_TIME_DISPLAY_MODE)
     }
 
     val insightsComparisonColorScheme: Flow<InsightsComparisonColorScheme> = dataStore.data.map {
@@ -686,15 +709,15 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         }
     }
 
-    suspend fun setPageTransitionsEnabled(value: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.PAGE_TRANSITIONS_ENABLED] = value
-        }
-    }
-
     suspend fun setPageTransitionStyle(value: PageTransitionStyle) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.PAGE_TRANSITION_STYLE] = value.name
+        }
+    }
+
+    suspend fun setTimeDisplayMode(value: TimeDisplayMode) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.TIME_DISPLAY_MODE] = value.name
         }
     }
 

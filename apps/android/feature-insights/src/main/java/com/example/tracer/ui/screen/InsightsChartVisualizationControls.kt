@@ -111,8 +111,8 @@ private fun AverageLineToggleRow(
     ) {
         Text(
             text = stringResource(R.string.insights_chart_toggle_average_line),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurface
         )
         Switch(
             checked = checked,

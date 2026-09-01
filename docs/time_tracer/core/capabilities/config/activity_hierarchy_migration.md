@@ -134,7 +134,7 @@ For a category with an existing `group_aliases` member:
   plan; it still goes through the migration service so TOML/TXT/database state
   is committed consistently.
 
-The Config UI exposes record-name editing only for categories that already have
+The Settings UI exposes record-name editing only for categories that already have
 one or more category record names. It exposes adding a record name from the
 same category edit menu.
 

@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.example.tracer.feature.data"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 24
@@ -25,6 +25,7 @@ android {
 dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(project(":contract"))
+    implementation(project(":feature-ui-common"))
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
 

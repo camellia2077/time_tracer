@@ -78,7 +78,7 @@ private enum class ConfigAboutDestination {
 }
 
 @Composable
-internal fun ConfigSection(
+internal fun SettingsSection(
     themeConfig: com.example.tracer.data.ThemeConfig,
     onCopyDiagnosticsPayload: () -> Unit,
     onThemeEvent: (com.example.tracer.ui.viewmodel.ThemeEvent) -> Unit,
@@ -92,15 +92,17 @@ internal fun ConfigSection(
     onInsightsAverageDayBasisChange: (InsightsAverageDayBasis) -> Unit,
     appLanguage: com.example.tracer.data.AppLanguage,
     onSetAppLanguage: (com.example.tracer.data.AppLanguage) -> Unit,
+    timeDisplayMode: com.example.tracer.data.TimeDisplayMode,
+    onTimeDisplayModeChange: (com.example.tracer.data.TimeDisplayMode) -> Unit,
     promptBeforeUnconfiguredActivityRecord: Boolean,
     onPromptBeforeUnconfiguredActivityRecordChange: (Boolean) -> Unit,
-    pageTransitionsEnabled: Boolean,
-    onPageTransitionsEnabledChange: (Boolean) -> Unit,
     pageTransitionStyle: com.example.tracer.data.PageTransitionStyle,
     onPageTransitionStyleChange: (com.example.tracer.data.PageTransitionStyle) -> Unit,
+    pageTransitionOptionsExpanded: Boolean,
+    onPageTransitionOptionsExpandedChange: (Boolean) -> Unit,
     cardExpansionPreferences: ConfigCardExpansionPreferences,
     onConfigCardExpandedChange: (ConfigCard, Boolean) -> Unit,
-    extraContent: @Composable () -> Unit = {}
+    content: @Composable () -> Unit = {}
 ) {
     var aboutDestination by rememberSaveable { mutableStateOf<ConfigAboutDestination?>(null) }
 
@@ -123,16 +125,18 @@ internal fun ConfigSection(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        ConfigApplicationPreferencesCard(
+        SettingsApplicationPreferencesCard(
             appLanguage = appLanguage,
             onSetAppLanguage = onSetAppLanguage,
+            timeDisplayMode = timeDisplayMode,
+            onTimeDisplayModeChange = onTimeDisplayModeChange,
             promptBeforeUnconfiguredActivityRecord = promptBeforeUnconfiguredActivityRecord,
             onPromptBeforeUnconfiguredActivityRecordChange =
                 onPromptBeforeUnconfiguredActivityRecordChange,
-            pageTransitionsEnabled = pageTransitionsEnabled,
-            onPageTransitionsEnabledChange = onPageTransitionsEnabledChange,
             pageTransitionStyle = pageTransitionStyle,
             onPageTransitionStyleChange = onPageTransitionStyleChange,
+            pageTransitionOptionsExpanded = pageTransitionOptionsExpanded,
+            onPageTransitionOptionsExpandedChange = onPageTransitionOptionsExpandedChange,
             expanded = cardExpansionPreferences.applicationPreferencesExpanded,
             onToggleExpanded = {
                 onConfigCardExpandedChange(
@@ -179,7 +183,7 @@ internal fun ConfigSection(
             }
         )
 
-        extraContent()
+        content()
 
         ConfigAboutCard(
             onOpenProjectDetails = {

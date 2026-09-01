@@ -14,6 +14,14 @@ _ANDROID_STABLE_GRADLE_ARGS = (
     "--console=plain",
 )
 
+_ANDROID_KOTLINC_RETRY_MARKERS = (
+    "built_in_kotlinc",
+    "intermediate reuse",
+    "intermediates locked",
+    "file is locked",
+    "being used by another process",
+)
+
 
 def _apply_android_gradle_guardrails(gradle_args: list[str]) -> list[str]:
     guarded = list(gradle_args)
@@ -46,6 +54,26 @@ def _clear_android_built_in_kotlinc_dirs(app_dir: Path) -> int:
             continue
         cleared += 1
     return cleared
+
+
+def _should_retry_android_kotlinc_failure(log_file: Path | None) -> bool:
+    if log_file is None or not log_file.is_file():
+        return False
+    try:
+        log_text = log_file.read_text(encoding="utf-8", errors="replace").lower()
+    except OSError:
+        return False
+    return any(marker in log_text for marker in _ANDROID_KOTLINC_RETRY_MARKERS)
+
+
+def _preserve_android_gradle_attempt(log_file: Path | None) -> None:
+    if log_file is None or not log_file.is_file():
+        return
+    attempt_one = log_file.with_name(f"{log_file.stem}.attempt-1{log_file.suffix}")
+    try:
+        shutil.copy2(log_file, attempt_one)
+    except OSError as error:
+        print(f"--- build: failed to preserve first Android Gradle attempt: {error}")
 
 
 def _android_install_requires_device(gradle_tasks: list[str]) -> bool:
@@ -189,6 +217,9 @@ def build_gradle(
             if build_ret == 0 or app_name != "tracer_android":
                 return build_ret
 
+            if not _should_retry_android_kotlinc_failure(log_file):
+                return build_ret
+
             cleared_dirs = _clear_android_built_in_kotlinc_dirs(app_dir)
             if cleared_dirs <= 0:
                 return build_ret
@@ -198,6 +229,7 @@ def build_gradle(
                 f"cleared {cleared_dirs} `built_in_kotlinc` director"
                 f"{'y' if cleared_dirs == 1 else 'ies'} and retrying once."
             )
+            _preserve_android_gradle_attempt(log_file)
             return effective_run_command(
                 gradle_cmd,
                 cwd=app_dir,

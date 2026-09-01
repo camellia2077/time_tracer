@@ -72,12 +72,12 @@ Start here:
 - `apps/android/feature-insights/src/main/java/com/example/tracer/ui/screen/InsightsTimelineEntries.kt`
 - `apps/android/feature-insights/src/main/java/com/example/tracer/ui/screen/InsightsChartResultContent.kt`
 
-### Config, diagnostics, or app appearance
+### Settings, diagnostics, or app appearance
 
 Start here:
 
 - `apps/android/app/src/main/java/com/example/tracer/data/InsightsHeatmapTomlLoader.kt`
-- `apps/android/app/src/main/java/com/example/tracer/ui/screen/ConfigScreen.kt`
+- `apps/android/app/src/main/java/com/example/tracer/ui/screen/SettingsScreen.kt`
 
 If the task is specifically about activity-hierarchy TOML editing behavior, then also open:
 
