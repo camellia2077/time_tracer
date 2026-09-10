@@ -264,13 +264,6 @@ void ValidateWakeKeywordPosition(
     }
 
     if (raw_event.kind == RawEventKind::Interval) {
-      diagnostics.push_back(
-          {.severity = DiagnosticSeverity::kError,
-           .code = "wake.keyword.interval_not_allowed",
-           .message = "In file for date " + day.date +
-                      ": Wake keyword activity '" + raw_event.description +
-                      "' cannot be authored as an interval event.",
-           .source_span = raw_event.source_span});
       continue;
     }
 
@@ -320,12 +313,6 @@ auto AnalyzeMixedTimeline(const DailyLog& day,
             {.event_index = index,
              .code = MixedTimelineIssueCode::kMissingIntervalStart});
         continue;
-      }
-
-      if (wake_keywords.contains(raw_event.description)) {
-        analysis.issues.push_back(
-            {.event_index = index,
-             .code = MixedTimelineIssueCode::kWakeIntervalNotAllowed});
       }
 
       const std::optional<int> kStartMinutes =

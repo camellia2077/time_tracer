@@ -1,3 +1,7 @@
+parent = "sleep"
+
+[canonical]
+"night" = ["riseup"]
+
 [sleep_inference]
-wake_keywords = ["riseup"]
 sleep_project_path = "sleep_night"

@@ -35,12 +35,16 @@ auto QueryLatestActivityTail(sqlite3* db_connection, std::string_view date,
                              const bool include_requested_date)
     -> std::optional<tracer_core::application::ports::ActivityTailQueryResult> {
   const char* const kDateComparator = include_requested_date ? "<=" : "<";
+  // `date` is the logical-day bucket. Within that bucket, logical_id is the
+  // authored activity order; end_timestamp is a civil-time ordering and can
+  // move backwards for a cross-midnight activity.
   const std::string sql = std::format(
       "SELECT {0}, \"{1}\" FROM {2} WHERE {0} {3} ?1 "
-      "ORDER BY {0} DESC, {4} DESC LIMIT 1;",
+      "ORDER BY {0} DESC, {5} DESC LIMIT 1;",
       schema::time_records::db::kDate, schema::time_records::db::kEnd,
       schema::time_records::db::kTable, kDateComparator,
-      schema::time_records::db::kEndTimestamp);
+      schema::time_records::db::kEndTimestamp,
+      schema::time_records::db::kLogicalId);
   sqlite3_stmt* statement = nullptr;
   if (sqlite3_prepare_v2(db_connection, sql.c_str(), -1, &statement, nullptr) !=
       SQLITE_OK) {

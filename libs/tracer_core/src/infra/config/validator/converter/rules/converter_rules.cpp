@@ -34,15 +34,22 @@ auto ValidateMainStrictAlias(const toml::table& main_tbl) -> bool {
   const toml::table* sleep_inference_tbl =
       main_tbl["sleep_inference"].as_table();
   if (sleep_inference_tbl == nullptr ||
-      !sleep_inference_tbl->get_as<toml::array>("wake_keywords") ||
       !sleep_inference_tbl->get("sleep_project_path") ||
       !sleep_inference_tbl->get("sleep_project_path")
            ->value<std::string>()
            .has_value()) {
     modports::EmitError(
-        "[Validator] Error: 'sleep_inference' must contain 'wake_keywords' and "
-        "a string "
+        "[Validator] Error: 'sleep_inference' must contain a string "
         "'sleep_project_path'.");
+    return false;
+  }
+  if (!main_tbl.get("parent") ||
+      !main_tbl.get("parent")->value<std::string>().has_value() ||
+      main_tbl.get("parent")->value<std::string>()->empty() ||
+      !main_tbl["canonical"].is_table()) {
+    modports::EmitError(
+        "[Validator] Error: behavior config must also contain `parent` and "
+        "a `canonical` table.");
     return false;
   }
   if (main_tbl.contains("top_parent_mapping") &&

@@ -45,6 +45,7 @@ auto BuildTestConfig() -> ConverterConfig {
   config.text_mapping["英语单词"] = "study_english_words";
   config.text_mapping["english_words_alias"] = "study_english_words";
   config.text_mapping["英语写作"] = "study_english_writing";
+  config.text_mapping["wake"] = "sleep_night";
   config.sleep_inference.wake_keywords = {"wake"};
   return config;
 }
@@ -81,14 +82,16 @@ auto TestNameConversionIsIdempotent(TestState& state) -> void {
                             ActivityNameMappingDirection::kAliasToCanonical) ==
           "unknown_activity",
       "Unknown activity names should remain unchanged.");
-  Expect(
-      state,
-      converter.ConvertName(
-          "wake", ActivityNameMappingDirection::kAliasToCanonical) == "wake" &&
-          converter.ConvertName(
-              "wake", ActivityNameMappingDirection::kCanonicalToAlias) ==
-              "wake",
-      "Wake keywords should remain structural TXT tokens.");
+  Expect(state,
+         converter.ConvertName(
+             "wake", ActivityNameMappingDirection::kAliasToCanonical) ==
+             "sleep_night",
+         "Wake aliases should resolve through the canonical activity mapping.");
+  Expect(state,
+         converter.ConvertName(
+             "sleep_night", ActivityNameMappingDirection::kCanonicalToAlias) ==
+             "wake",
+         "Canonical wake activity should resolve through its alias mapping.");
 }
 
 auto TestSingleMonthFixture(TestState& state) -> void {

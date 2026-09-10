@@ -7,11 +7,13 @@ module;
 #include <filesystem>
 #include <initializer_list>
 #include <stdexcept>
-#include <string_view>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "domain/types/converter_config.hpp"
 #include "infra/config/loader/alias_mapping_index_utils.hpp"
+#include "infra/config/loader/behavior_canonical_utils.hpp"
 #include "infra/config/validator/converter/rules/converter_rules.hpp"
 
 module tracer.core.infrastructure.config.loader.converter_config_loader;
@@ -33,6 +35,14 @@ auto BuildTextMappingsFromAlias(toml::table& main_tbl,
   for (const auto& entry : definition.expanded_entries) {
     text_mappings.insert(entry.alias_key, entry.canonical_value);
   }
+  const auto* canonical = main_tbl["canonical"].as_table();
+  if (canonical == nullptr) {
+    throw std::runtime_error("Behavior config must contain a `canonical` table.");
+  }
+  std::vector<std::string> ignored_wake_keywords;
+  modalias::PopulateBehaviorCanonicalMappings(
+      *canonical, *main_tbl["parent"].value<std::string>(), text_mappings,
+      ignored_wake_keywords);
   main_tbl.insert_or_assign("text_mappings", std::move(text_mappings));
 }
 
@@ -89,26 +99,6 @@ auto ConverterConfigLoader::ParseSleepInference(const toml::table& tbl,
     throw std::runtime_error(
         "Invalid converter config: 'sleep_inference' must be a table.");
   }
-
-  const toml::array* wake_keywords =
-      sleep_inference_tbl->get_as<toml::array>("wake_keywords");
-  if (wake_keywords == nullptr || wake_keywords->empty()) {
-    throw std::runtime_error(
-        "Invalid converter config: 'sleep_inference.wake_keywords' must be a "
-        "non-empty array.");
-  }
-  config.sleep_inference.wake_keywords.clear();
-  config.sleep_inference.wake_keywords.reserve(wake_keywords->size());
-  for (const auto& elem : *wake_keywords) {
-    const auto kValue = elem.value<std::string>();
-    if (!kValue || kValue->empty()) {
-      throw std::runtime_error(
-          "Invalid converter config: each item in "
-          "'sleep_inference.wake_keywords' must be a non-empty string.");
-    }
-    config.sleep_inference.wake_keywords.push_back(*kValue);
-  }
-
   const toml::node* sleep_project_node =
       sleep_inference_tbl->get("sleep_project_path");
   if (sleep_project_node == nullptr) {
@@ -160,6 +150,15 @@ auto ConverterConfigLoader::ParseMappings(const toml::table& tbl,
     config.top_parent_mapping.clear();
   }
   load_map("text_mappings", config.text_mapping);
+  const auto* canonical = tbl["canonical"].as_table();
+  if (canonical == nullptr) {
+    throw std::runtime_error("Behavior config must contain a `canonical` table.");
+  }
+  config.sleep_inference.wake_keywords.clear();
+  toml::table ignored_behavior_mappings;
+  modalias::PopulateBehaviorCanonicalMappings(
+      *canonical, *tbl["parent"].value<std::string>(),
+      ignored_behavior_mappings, config.sleep_inference.wake_keywords);
 }
 
 auto ConverterConfigLoader::LoadFromFile(const fs::path& main_config_path)

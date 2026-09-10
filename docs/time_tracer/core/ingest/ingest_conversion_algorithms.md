@@ -60,7 +60,8 @@ txt
    3. 备注统一使用 `//`；后续物理 `//` 行按当天上下文合并为真实 LF。
    4. 解析阶段应保留足够信息供后续转换为标准活动区间。
 5. 起床与续写识别
-   1. 描述命中 `wake_keywords` 时记录 `getupTime`。
+   1. 描述命中由 `behavior.toml` 顶层 `[canonical]` alias 自动生成的
+      `wake_keywords` 时记录 `getupTime`。
    2. 如果首事件不是 wake 且无 `getupTime`，标记 `isContinuation=true`（表示延续上一天）。
 
 源码定位：

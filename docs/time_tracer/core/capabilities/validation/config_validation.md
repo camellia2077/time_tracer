@@ -25,7 +25,8 @@ values become inputs to downstream TXT validation and pipeline behavior.
 
 TXT validation depends on config values such as:
 1. remark prefix
-2. wake keywords
+2. wake keywords derived from aliases in `behavior.toml`'s top-level
+   `[canonical]` table
 3. alias-derived valid activity keywords
 
 So a TXT file cannot be semantically validated against an invalid or partially

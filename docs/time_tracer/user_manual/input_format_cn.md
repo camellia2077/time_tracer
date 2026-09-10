@@ -93,7 +93,7 @@
 - **单个活动时长不得超过 16 小时**，除非事件备注包含 `@allow-long`。
 - **wake 相关活动只能是当天第一条语义活动**。
 - **作者态可输入活动名** 采用：
-  `authorable_event_tokens = alias_mapping.keys ∪ wake_keywords`。
+  `authorable_event_tokens = alias_mapping.keys ∪ wake_keywords`；其中 `wake_keywords` 由 `behavior.toml` 顶层 `[canonical]` 中的 alias 自动生成。
   也就是说，wake 词本身也属于可直接输入的合法 token。
 
 ### 4.2 目标区间语义

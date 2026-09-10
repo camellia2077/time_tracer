@@ -21,7 +21,7 @@ struct PreviousMonthFileCandidate {
 struct ActivityTailCandidate {
   std::string date;
   std::string end_time;
-  long long end_timestamp = 0;
+  long long logical_id = 0;
 };
 
 [[nodiscard]] auto ToLowerAsciiCopy(std::string value) -> std::string {
@@ -227,8 +227,11 @@ struct ActivityTailCandidate {
   if (candidate.date != best.date) {
     return candidate.date > best.date;
   }
-  if (candidate.end_timestamp != best.end_timestamp) {
-    return candidate.end_timestamp > best.end_timestamp;
+  // logical_id preserves authored order within a logical day. A
+  // cross-midnight activity can have a later civil end_timestamp while still
+  // being earlier than a later authored activity in the same logical day.
+  if (candidate.logical_id != best.logical_id) {
+    return candidate.logical_id > best.logical_id;
   }
   return candidate.end_time > best.end_time;
 }
@@ -252,7 +255,7 @@ struct ActivityTailCandidate {
         ActivityTailCandidate candidate{
             .date = day.date,
             .end_time = activity.end_time_str,
-            .end_timestamp = activity.end_timestamp,
+            .logical_id = activity.logical_id,
         };
         if (!best.has_value() || IsBetterTailCandidate(candidate, *best)) {
           best = std::move(candidate);

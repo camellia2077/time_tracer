@@ -162,6 +162,15 @@ auto RunPersistenceRuntimeSmokeImpl() -> int {
       return 33;
     }
 
+    const auto cross_midnight_tail =
+        ingest_runtime_repository.TryGetLatestActivityTailAtOrBeforeDate(
+            "2026-02-03");
+    if (!cross_midnight_tail.has_value() ||
+        cross_midnight_tail->date != "2026-02-03" ||
+        cross_midnight_tail->end_time != "02:00:00") {
+      return 35;
+    }
+
     const auto latest_record =
         ingest_runtime_repository.TryGetLatestActivityRecordOnDate(
             "2026-02-02");

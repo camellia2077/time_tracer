@@ -88,7 +88,7 @@ last_activity_end - first_activity_start
 
 ### 3.1 `wake_keywords` 的职责
 
-`sleep_inference.wake_keywords` 只负责一件事：
+Core 会把 `behavior.toml` 顶层 `[canonical]` 中的所有 alias 自动构造成内部 `wake_keywords` 集合；这个集合只负责一件事：
 
 > 识别“这一天的第一个语义活动是否是起床锚点”
 
@@ -149,7 +149,7 @@ sleep_project_path = "sleep_night"
 sleep_project_path = "sleep_overnight"
 ```
 
-只要 `wake_keywords` 与 `getupTime` 规则不变：
+只要 behavior `[canonical]` 中的 wake alias 与 `getupTime` 规则不变：
 
 - `wake_anchor` 语义就不应该发生变化
 

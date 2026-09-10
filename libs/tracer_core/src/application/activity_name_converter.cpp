@@ -47,12 +47,6 @@ constexpr std::string_view kRemarkDelimiter = "//";
 
 ActivityNameTextConverter::ActivityNameTextConverter(
     const ConverterConfig& config) {
-  for (const auto& wake_keyword : config.sleep_inference.wake_keywords) {
-    if (!wake_keyword.empty()) {
-      wake_keywords_.insert(wake_keyword);
-    }
-  }
-
   for (const auto& [alias, canonical] : config.text_mapping) {
     if (alias.empty() || canonical.empty()) {
       continue;
@@ -60,12 +54,6 @@ ActivityNameTextConverter::ActivityNameTextConverter(
 
     aliases_.insert(alias);
     canonical_names_.insert(canonical);
-
-    const bool kIsWakeKeyword = wake_keywords_.contains(alias);
-    if (kIsWakeKeyword) {
-      wake_canonical_names_.insert(canonical);
-      continue;
-    }
 
     alias_to_canonical_.emplace(alias, canonical);
 
@@ -87,8 +75,7 @@ auto ActivityNameTextConverter::ConvertName(
   if (kDirection == ActivityNameMappingDirection::kAliasToCanonical) {
     // Canonical names take precedence when a token is present in both sides of
     // the mapping. This is what makes canonical input genuinely idempotent.
-    if (canonical_names_.contains(kOriginal) ||
-        wake_keywords_.contains(kOriginal)) {
+    if (canonical_names_.contains(kOriginal)) {
       return kOriginal;
     }
     const auto kMapping = alias_to_canonical_.find(kOriginal);
@@ -98,8 +85,7 @@ auto ActivityNameTextConverter::ConvertName(
   // An alias that is already present in the input remains untouched. This is
   // important for aliases such as a user-facing short name that also happens
   // to be a canonical value of another declaration.
-  if (aliases_.contains(kOriginal) ||
-      wake_canonical_names_.contains(kOriginal)) {
+  if (aliases_.contains(kOriginal)) {
     return kOriginal;
   }
   const auto kMapping = canonical_to_alias_.find(kOriginal);

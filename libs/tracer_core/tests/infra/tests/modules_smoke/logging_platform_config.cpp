@@ -138,7 +138,10 @@ auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int {
           kCopiedConfigRoot / "user" / "behavior.toml",
           std::unordered_map<std::filesystem::path, std::filesystem::path>{});
   const ConverterConfig kLoadedFileConfig = file_provider.LoadConverterConfig();
-  if (!kLoadedFileConfig.text_mapping.contains("wake")) {
+  if (!kLoadedFileConfig.text_mapping.contains("wake") ||
+      kLoadedFileConfig.text_mapping.at("wake") != "sleep_night" ||
+      kLoadedFileConfig.text_mapping.at("w") != "sleep_night" ||
+      kLoadedFileConfig.text_mapping.at("睡觉") != "sleep_day") {
     return 402;
   }
   if (kLoadedFileConfig.text_mapping.at("rest") != "rest_rest" ||

@@ -243,22 +243,27 @@ wake 语义只来源于运行时的：
 仓库中的 distribution 默认 seed 位于
 `config/user/behavior.toml`。
 
-中的：
+中的顶层 `[canonical]`：
 
 ```toml
+parent = "sleep"
+
+[canonical]
+"night" = ["wake", "w", "起床", "醒", "新的一天开始了"]
+
 [sleep_inference]
-wake_keywords = ["起床", "醒", "w", "wake", "新的一天开始了"]
+sleep_project_path = "sleep_night"
 ```
 
 这表示：
 
-1. 这些 token 在语义上表示“起床锚点”
-2. wake 判定只依赖 `wake_keywords`
-3. alias child files 不参与 wake 分类本身
+1. `[canonical]` 下的所有 alias 都表示“起床锚点”，Core 会自动构造内部的 `wake_keywords` 集合
+2. 不需要再单独维护 `sleep_inference.wake_keywords`
+3. 普通睡眠活动（例如 `失眠`、`睡觉`、`白天睡觉`）仍配置在 `activity_hierarchy/sleep.toml`，不会被当作 wake
 
 ### 7.2 作者态可输入集合
 
-虽然 wake 分类只看 `wake_keywords`，但作者态允许输入的 token 集合定义为：
+虽然 wake 分类只看由 behavior `[canonical]` 自动得到的 `wake_keywords`，但作者态允许输入的 token 集合定义为：
 
 `authorable_event_tokens = alias_files.keys ∪ wake_keywords`
 

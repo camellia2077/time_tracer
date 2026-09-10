@@ -126,7 +126,8 @@ auto ActivityMapper::MapActivities(DailyLog& day) -> void {
 
 [[nodiscard]] auto ActivityMapper::IsWakeEvent(const RawEvent& raw_event) const
     -> bool {
-  return std::ranges::find(wake_keywords_, raw_event.description) !=
+  return raw_event.kind == RawEventKind::Point &&
+         std::ranges::find(wake_keywords_, raw_event.description) !=
          wake_keywords_.end();
 }
 

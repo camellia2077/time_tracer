@@ -266,7 +266,7 @@ auto TextParser::ProcessEventContext(DailyLog& current_day,
   const bool kIsFirstSemanticEvent =
       current_day.getupTime.empty() && current_day.rawEvents.empty();
 
-  if (is_wake) {
+  if (is_wake && input.kind == RawEventKind::Point) {
     // Wake keywords define the day's getup time, not a sleep activity.
     if (input.kind == RawEventKind::Point && kIsFirstSemanticEvent) {
       current_day.getupTime = std::string(input.end_time_iso);

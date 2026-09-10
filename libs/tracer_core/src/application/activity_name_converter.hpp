@@ -18,8 +18,8 @@ enum class ActivityNameMappingDirection {
 // Canonical-to-alias conversion is intentionally deterministic: when several
 // aliases point to the same canonical name, the lexicographically smallest
 // alias is selected. Names that already belong to the requested representation
-// are returned unchanged. Wake keywords are structural TXT tokens, so they are
-// never rewritten by this converter.
+// are returned unchanged. Wake aliases use the same mapping as every other
+// authored activity name; wake semantics are resolved separately by Core.
 class ActivityNameTextConverter {
  public:
   explicit ActivityNameTextConverter(const ConverterConfig& config);
@@ -64,8 +64,6 @@ class ActivityNameTextConverter {
   std::unordered_map<std::string, std::string> canonical_to_alias_;
   std::unordered_set<std::string> aliases_;
   std::unordered_set<std::string> canonical_names_;
-  std::unordered_set<std::string> wake_keywords_;
-  std::unordered_set<std::string> wake_canonical_names_;
 };
 
 #endif  // APPLICATION_ACTIVITY_NAME_CONVERTER_H_
