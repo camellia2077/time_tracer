@@ -68,6 +68,39 @@ internal class ActivityHierarchyEditorViewModel(
         }
     }
 
+    fun updateAliasSearchQuery(value: String) {
+        uiState = uiState.copy(
+            aliasSearchQuery = value,
+            aliasSearchDocument = null
+        )
+    }
+
+    fun refreshAliasSearch(query: String = uiState.aliasSearchQuery) {
+        if (query.isBlank()) {
+            if (uiState.aliasSearchDocument != null) {
+                uiState = uiState.copy(aliasSearchDocument = null)
+            }
+            return
+        }
+        val requestedQuery = query
+        val requestedContent = uiState.selectedFileContent
+        if (requestedContent.isBlank()) return
+        viewModelScope.launch {
+            val result = activityHierarchyGateway.searchActivityHierarchy(
+                tomlContent = requestedContent,
+                query = requestedQuery
+            )
+            if (uiState.aliasSearchQuery != requestedQuery ||
+                uiState.selectedFileContent != requestedContent
+            ) {
+                return@launch
+            }
+            uiState = uiState.copy(
+                aliasSearchDocument = result.hierarchy?.toActivityHierarchyDocument()
+            )
+        }
+    }
+
     fun onAliasAdvancedTomlChange(value: String) = aliasEditor.onAliasAdvancedTomlChange(value)
 
     fun selectAliasEditorMode(mode: AliasEditorMode) = aliasEditor.selectAliasEditorMode(mode)

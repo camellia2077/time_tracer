@@ -3,6 +3,12 @@ package com.example.tracer
 interface ActivityHierarchyGateway {
     suspend fun describeActivityHierarchy(tomlContent: String): ActivityHierarchyDescribeResult
 
+    /** Core-owned case-insensitive contains search that retains ancestor groups. */
+    suspend fun searchActivityHierarchy(
+        tomlContent: String,
+        query: String
+    ): ActivityHierarchyDescribeResult = describeActivityHierarchy(tomlContent)
+
     suspend fun validateActivityHierarchyDocuments(
         documents: List<ActivityHierarchyDocumentInput>
     ): ActivityHierarchyValidationResult

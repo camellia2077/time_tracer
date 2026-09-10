@@ -653,6 +653,11 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
     fun saveHistoryFileAndSync() {
         viewModelScope.launch {
             uiState = intentHandler.saveHistoryFileAndSync(uiState)
+            // Files edits, including deleting the latest activity, replace the month in the
+            // database after the TXT save completes. Refresh the Record suggestions only after
+            // that sync has finished so latest_activity_record cannot keep showing the deleted
+            // activity.
+            refreshActivityQueries()
         }
     }
 

@@ -190,6 +190,7 @@
 
     <string name="config_title_editor_file">编辑器：%1$s</string>
     <string name="config_title_editor_categories">分类</string>
+    <string name="config_alias_search_label">搜索活动</string>
     <string name="config_title_editor_category">分类：%1$s</string>
     <string name="config_label_toml_content">TOML 内容</string>
     <string name="config_label_advanced_content">高级内容</string>

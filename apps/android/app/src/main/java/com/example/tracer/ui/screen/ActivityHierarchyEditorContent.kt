@@ -12,12 +12,16 @@ internal fun ActivityHierarchyEditorContent(
     LaunchedEffect(Unit) {
         viewModel.openActivityCategories()
     }
+    LaunchedEffect(state.selectedFileContent, state.aliasSearchQuery) {
+        viewModel.refreshAliasSearch()
+    }
     ActivityHierarchyEditorCard(
         aliasFiles = state.aliasFiles.filter { it.relativePath.startsWith("user/activity_hierarchy/") },
         selectedFileDisplayName = state.selectedFileDisplayName.removePrefix("user/activity_hierarchy/"),
         selectedFileContent = state.selectedFileContent,
         mode = state.aliasEditorMode,
-        document = state.aliasDocumentDraft,
+        document = state.aliasSearchDocument ?: state.aliasDocumentDraft,
+        searchQuery = state.aliasSearchQuery,
         movePlan = state.aliasEntryMovePlan,
         moveDestinations = state.aliasEntryMoveDestinations,
         moveDestinationsLoading = state.aliasEntryMoveDestinationsLoading,
@@ -48,6 +52,7 @@ internal fun ActivityHierarchyEditorContent(
         onPreviewGroupMove = viewModel::previewAliasGroupMove,
         onConfirmMovePlan = viewModel::confirmAliasEntryMovePlan,
         onDiscardMovePlan = viewModel::discardAliasEntryMovePlan,
-        onSave = viewModel::saveCurrentFile
+        onSave = viewModel::saveCurrentFile,
+        onSearchQueryChange = viewModel::updateAliasSearchQuery
     )
 }

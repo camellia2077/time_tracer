@@ -30,8 +30,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SuggestionChip
@@ -54,7 +54,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -62,6 +61,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.example.tracer.feature.record.R
+import com.example.tracer.ui.components.ActivitySearchField
 import java.time.Clock
 import kotlin.math.abs
 
@@ -162,15 +162,12 @@ fun RecordCanonicalCatalogScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        OutlinedTextField(
+                        ActivitySearchField(
                             value = searchQuery,
                             onValueChange = onSearchQueryChange,
-                            label = { Text(stringResource(R.string.record_canonical_catalog_search_label)) },
-                            singleLine = true,
-                            shape = MaterialTheme.shapes.small,
-                            modifier = Modifier
-                                .weight(1f)
-                                .testTag("record_canonical_catalog_search")
+                            label = stringResource(R.string.record_canonical_catalog_search_label),
+                            testTag = "record_canonical_catalog_search",
+                            modifier = Modifier.weight(1f)
                         )
                         if (displayMode == RecordFrequentOutputMode.CANONICAL) {
                             FilledIconButton(onClick = {}) {

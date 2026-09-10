@@ -190,6 +190,7 @@
 
     <string name="config_title_editor_file">エディタ: %1$s</string>
     <string name="config_title_editor_categories">カテゴリ</string>
+    <string name="config_alias_search_label">アクティビティを検索</string>
     <string name="config_title_editor_category">カテゴリ: %1$s</string>
     <string name="config_label_toml_content">TOML 内容</string>
     <string name="config_label_advanced_content">高度な内容</string>

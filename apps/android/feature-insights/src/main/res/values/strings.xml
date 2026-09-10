@@ -144,7 +144,6 @@
     <string name="insights_period_activities_comparison_neutral">No change (%1$s)</string>
     <string name="insights_day_remark_label">Day remark</string>
     <string name="insights_edit_day_remark">Edit day remark</string>
-    <string name="insights_save_day_remark">Save</string>
     <string name="insights_cancel_day_remark">Cancel</string>
     <string name="insights_activity_timeline_empty">No activities recorded for this day.</string>
     <string name="insights_activity_timeline_end_only_time">As of %1$s</string>

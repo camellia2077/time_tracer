@@ -14,6 +14,8 @@ internal data class ActivityHierarchyEditorState(
     val selectedFileContent: String = "",
     val aliasEditorMode: AliasEditorMode = AliasEditorMode.STRUCTURED,
     val aliasDocumentDraft: ActivityHierarchyDocument? = null,
+    val aliasSearchQuery: String = "",
+    val aliasSearchDocument: ActivityHierarchyDocument? = null,
     val aliasBaselineDocument: ActivityHierarchyDocument? = null,
     val aliasParentOptions: List<String> = emptyList(),
     val aliasAdvancedTomlDraft: String = "",

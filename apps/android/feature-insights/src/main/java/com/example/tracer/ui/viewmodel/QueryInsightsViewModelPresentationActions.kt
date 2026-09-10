@@ -67,17 +67,6 @@ fun QueryInsightsViewModel.onInsightsWeekChange(value: String) {
     }, autoInsights = true)
 }
 
-internal fun QueryInsightsViewModel.onInsightsActivityPeriodConfirmed(selection: InsightsPeriodSelection) {
-    updateInsightsParams({
-        copy(
-            insightsDate = digitsOnly(selection.date, 8),
-            insightsMonth = digitsOnly(selection.month, 6),
-            insightsYear = digitsOnly(selection.year, 4),
-            insightsWeek = digitsOnly(selection.week, 6)
-        )
-    }, autoInsights = true)
-}
-
 fun QueryInsightsViewModel.onInsightsRecentDaysChange(value: String) {
     updateInsightsParams({
         copy(insightsRecentDays = value.filter { it.isDigit() })

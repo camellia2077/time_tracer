@@ -70,9 +70,7 @@
     <string name="record_action_start_interval">タイマーを開始</string>
     <string name="record_action_stop_interval">タイマーを停止</string>
     <string name="record_action_discard_interval">破棄</string>
-    <string name="record_interval_draft_title">区間を確認</string>
     <string name="record_interval_attribution_date">記録日: %1$s</string>
-    <string name="record_previous_activity_tail">前回の記録は %1$s に終了</string>
     <string name="record_action_use_previous_activity_end">開始時刻を %1$s に変更</string>
     <string name="record_interval_elapsed">経過 %1$s</string>
     <string name="record_interval_elapsed_fullscreen_title">経過時間</string>

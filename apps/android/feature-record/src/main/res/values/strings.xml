@@ -70,9 +70,7 @@
     <string name="record_action_start_interval">Start timer</string>
     <string name="record_action_stop_interval">Stop timer</string>
     <string name="record_action_discard_interval">Discard</string>
-    <string name="record_interval_draft_title">Review interval</string>
     <string name="record_interval_attribution_date">Record date: %1$s</string>
-    <string name="record_previous_activity_tail">Previous record ends at %1$s</string>
     <string name="record_action_use_previous_activity_end">Use %1$s as start time</string>
     <string name="record_interval_duration">Duration: %1$s</string>
     <string name="record_interval_elapsed">Elapsed %1$s</string>

@@ -70,9 +70,7 @@
     <string name="record_action_start_interval">开始计时</string>
     <string name="record_action_stop_interval">结束计时</string>
     <string name="record_action_discard_interval">放弃</string>
-    <string name="record_interval_draft_title">确认区间</string>
     <string name="record_interval_attribution_date">记录日期：%1$s</string>
-    <string name="record_previous_activity_tail">上一条记录结束于 %1$s</string>
     <string name="record_action_use_previous_activity_end">将开始时间改为 %1$s</string>
     <string name="record_interval_elapsed">已持续 %1$s</string>
     <string name="record_interval_elapsed_fullscreen_title">已持续</string>

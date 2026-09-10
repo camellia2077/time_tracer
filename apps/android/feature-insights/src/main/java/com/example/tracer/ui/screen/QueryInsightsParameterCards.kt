@@ -42,7 +42,6 @@ internal fun QueryInsightsParameterCards(
     onInsightsRangeEndDateChange: (String) -> Unit,
     insightsRecentDays: String,
     onInsightsRecentDaysChange: (String) -> Unit,
-    onInsightsActivityPeriodConfirmed: (InsightsPeriodSelection) -> Unit = {},
     timeParametersExpanded: Boolean,
     onTimeParametersExpandedChange: (Boolean) -> Unit,
     onSelectedSectionChange: (InsightsParameterSection) -> Unit,
@@ -88,28 +87,6 @@ internal fun QueryInsightsParameterCards(
             onTreeLevelChange = onTreeLevelChange,
             expanded = timeParametersExpanded,
             onExpandedChange = onTimeParametersExpandedChange
-        )
-        return
-    }
-
-    val contentSection = if (resultDisplayMode == InsightsResultDisplayMode.DETAILS) {
-        selectedSection
-    } else {
-        InsightsParameterSection.DAY
-    }
-
-    if (contentSection == InsightsParameterSection.ACTIVITIES &&
-        insightsMode in setOf(InsightsMode.DAY, InsightsMode.WEEK, InsightsMode.MONTH, InsightsMode.YEAR)
-    ) {
-        InsightsActivitiesPeriodSelector(
-            insightsMode = insightsMode,
-            keyboardOptions = keyboardOptions,
-            insightsDate = insightsDate,
-            insightsMonth = insightsMonth,
-            calendarAvailability = calendarAvailability,
-            insightsYear = insightsYear,
-            insightsWeek = insightsWeek,
-            onPeriodConfirmed = onInsightsActivityPeriodConfirmed
         )
         return
     }

@@ -25,12 +25,13 @@ Describe the user-visible insights, query, and chart presentation behavior.
   exposes `Activities | Text`.
   Activities opens with a time-independent overview (total time, active days,
   record count, active-day average, and each parent activity's duration/share),
-  and for Day, Week, Month, and Year exposes a compact calendar period row.
-  The row opens a bottom sheet with a temporary selection; only `Done` applies
-  it and requests the selected same-kind period. Enabling comparison reveals a
-  calendar control on the next row; its bottom sheet selects the independent
-  same-kind comparison period. The Activities period row continues to control
-  only the current displayed content. The comparison keeps the current activity
+  and for Day, Week, Month, and Year exposes the shared collapsible `Date
+  selection` card used by Chart. Its date control opens the same picker sheet
+  directly, with the relevant month/day or week choices visible without an
+  intermediate period sheet. Enabling comparison reveals a calendar control on
+  the next row; its bottom sheet selects the independent same-kind comparison
+  period. The Activities date card continues to control only the current
+  displayed content. The comparison keeps the current activity
   tree as the displayed scope and marks a zero-baseline increase as new rather
   than fabricating a percentage. It then offers a `Records` drill-down. Its
   aggregate hierarchy comes directly

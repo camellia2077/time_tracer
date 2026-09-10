@@ -8,6 +8,8 @@ internal fun clearSelectedConfigFile(
         selectedFilePath = "",
         selectedFileDisplayName = "",
         selectedFileContent = "",
+        aliasSearchQuery = "",
+        aliasSearchDocument = null,
         aliasDocumentDraft = null,
         aliasBaselineDocument = null,
         aliasParentOptions = emptyList(),
@@ -32,6 +34,12 @@ internal fun applyLoadedConfigFile(
         selectedFilePath = filePath,
         selectedFileDisplayName = selectedEntry?.displayName ?: filePath,
         selectedFileContent = content,
+        aliasSearchQuery = if (state.selectedFilePath == filePath) {
+            state.aliasSearchQuery
+        } else {
+            ""
+        },
+        aliasSearchDocument = null,
         aliasEntryMovePlan = null,
         statusText = statusText
     )

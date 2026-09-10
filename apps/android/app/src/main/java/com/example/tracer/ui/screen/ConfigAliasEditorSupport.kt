@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.tracer.ui.components.NativeMultilineTextEditor
+import com.example.tracer.ui.components.ActivitySearchField
 import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
 import kotlinx.coroutines.delay
 
@@ -106,6 +107,8 @@ internal fun AliasEntryMovePlanPreview(
 internal fun AliasStructuredEditorContent(
     document: ActivityHierarchyDocument,
     layer: AliasStructuredLayer,
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
     onNavigateToBreadcrumb: (String?) -> Unit,
     onNavigateToGroup: (String) -> Unit,
     onRequestAddCurrentGroup: () -> Unit,
@@ -113,6 +116,13 @@ internal fun AliasStructuredEditorContent(
     onRequestEditGroup: (ActivityHierarchyGroup) -> Unit,
     onRequestEditEntry: (ActivityHierarchyLeaf) -> Unit
 ) {
+    ActivitySearchField(
+        value = searchQuery,
+        onValueChange = onSearchQueryChange,
+        label = stringResource(R.string.config_alias_search_label),
+        testTag = "config_alias_activity_search"
+    )
+
     AliasPathBar(
         rootLabel = document.parent.ifBlank {
             stringResource(R.string.config_alias_path_root)

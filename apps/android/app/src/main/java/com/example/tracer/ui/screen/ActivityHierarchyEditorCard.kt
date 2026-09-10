@@ -49,6 +49,7 @@ internal fun ActivityHierarchyEditorCard(
     moveDestinations: List<AliasEntryMoveDestinationDocument>,
     moveDestinationsLoading: Boolean,
     advancedTomlDraft: String,
+    searchQuery: String,
     errorMessage: String,
     onCreateAliasTomlFile: (String) -> Unit,
     onSelectAliasFile: (String) -> Unit,
@@ -75,7 +76,8 @@ internal fun ActivityHierarchyEditorCard(
     onPreviewGroupMove: (groupId: String, target: AliasEntryMoveTarget) -> Unit,
     onConfirmMovePlan: () -> Unit,
     onDiscardMovePlan: () -> Unit,
-    onSave: () -> Unit
+    onSave: () -> Unit,
+    onSearchQueryChange: (String) -> Unit
 ) {
     var dialogState by remember { mutableStateOf<AliasEditorDialogState?>(null) }
     var showDeleteAliasTomlDialog by remember { mutableStateOf(false) }
@@ -242,6 +244,8 @@ internal fun ActivityHierarchyEditorCard(
                         AliasStructuredEditorContent(
                             document = document,
                             layer = layer,
+                            searchQuery = searchQuery,
+                            onSearchQueryChange = onSearchQueryChange,
                             onNavigateToBreadcrumb = { groupId ->
                                 currentPathGroupIds = if (groupId == null) {
                                     emptyList()

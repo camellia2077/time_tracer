@@ -291,15 +291,16 @@ internal fun RecordInputCard(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = stringResource(R.string.record_interval_draft_title),
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Text(
                                 text = stringResource(
                                     R.string.record_interval_summary,
-                                    formatIsoClockTime(intervalStart),
-                                    formatIsoClockTime(intervalEnd),
+                                    formatDisplayClockTime(
+                                        formatIsoClockTime(intervalStart),
+                                        is12HourTime
+                                    ),
+                                    formatDisplayClockTime(
+                                        formatIsoClockTime(intervalEnd),
+                                        is12HourTime
+                                    ),
                                     formatDurationSummary(intervalDurationSeconds(intervalStart, intervalEnd))
                                 ),
                                 style = MaterialTheme.typography.bodyLarge,
@@ -315,18 +316,12 @@ internal fun RecordInputCard(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
-                            previousActivityTail?.let { tail ->
-                                Column(
-                                    verticalArrangement = Arrangement.spacedBy(2.dp)
-                                ) {
-                                    Text(
-                                        text = stringResource(
-                                            R.string.record_previous_activity_tail,
-                                            formatDisplayClockTime(tail.endTime, is12HourTime)
-                                        ),
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
+                            previousActivityTail
+                                ?.takeIf { tail ->
+                                    formatIsoClockTime(intervalStart) !=
+                                        formatIsoClockTime(tail.endTime)
+                                }
+                                ?.let { tail ->
                                     TextButton(
                                         onClick = onUsePreviousActivityEndTime,
                                         modifier = Modifier.height(40.dp)
@@ -339,7 +334,6 @@ internal fun RecordInputCard(
                                         )
                                     }
                                 }
-                            }
                         }
                         IconButton(
                             onClick = { isIntervalTimeEditorVisible = true }

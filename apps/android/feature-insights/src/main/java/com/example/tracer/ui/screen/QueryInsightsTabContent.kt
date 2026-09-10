@@ -177,7 +177,6 @@ fun QueryInsightsTabContent(
                 onInsightsRangeEndDateChange = queryInsightsViewModel::onInsightsRangeEndDateChange,
                 insightsRecentDays = queryUiState.insightsRecentDays,
                 onInsightsRecentDaysChange = queryInsightsViewModel::onInsightsRecentDaysChange,
-                onInsightsActivityPeriodConfirmed = queryInsightsViewModel::onInsightsActivityPeriodConfirmed,
                 resultDisplayMode = displayedResultDisplayMode,
                 onResultDisplayModeChange = { mode ->
                     queryInsightsViewModel.onResultDisplayModeChange(mode)

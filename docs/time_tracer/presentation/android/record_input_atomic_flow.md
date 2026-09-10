@@ -337,7 +337,9 @@ This preserves the correct order when the logical day continues after
 midnight; natural-day timestamps are not used to reorder that sequence.
 For a point/end-only record, the missing start boundary is displayed as `—`.
 The summary refreshes when Record Input starts, when the logical day changes,
-and after a successful record operation.
+after a successful record operation, and after a successful Files/TXT edit has
+been synced back into the database. This includes deleting the current latest
+activity, in which case the preceding activity becomes the new `Last` record.
 
 ### 7.3 Activity Tree Search
 

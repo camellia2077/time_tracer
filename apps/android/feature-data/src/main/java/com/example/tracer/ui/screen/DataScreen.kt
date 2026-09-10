@@ -104,7 +104,7 @@ fun DataManagementSection(
                 Text(
                     text = stringResource(R.string.data_title_data_management),
                     style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.primary
                 )
                 IconButton(onClick = onToggleExpanded) {
                     Icon(
@@ -359,7 +359,7 @@ private fun DataSectionTitle(@androidx.annotation.StringRes titleRes: Int) {
     Text(
         text = stringResource(titleRes),
         style = MaterialTheme.typography.titleMedium,
-        color = MaterialTheme.colorScheme.onSurface
+        color = MaterialTheme.colorScheme.primary
     )
 }
 

@@ -193,6 +193,7 @@
 
     <string name="config_title_editor_file">Editor: %1$s</string>
     <string name="config_title_editor_categories">Categories</string>
+    <string name="config_alias_search_label">Search activities</string>
     <string name="config_title_editor_category">Category: %1$s</string>
     <string name="config_label_toml_content">TOML Content</string>
     <string name="config_label_advanced_content">Advanced Content</string>

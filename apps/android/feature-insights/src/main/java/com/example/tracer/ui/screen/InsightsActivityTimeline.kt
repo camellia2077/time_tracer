@@ -27,6 +27,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.insights.R
 import com.example.tracer.ui.components.CalendarAvailability
+import com.example.tracer.ui.components.FullscreenTextEditor
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 
@@ -57,6 +60,8 @@ internal fun InsightsActivityTimeline(
     var editingDayRemark by remember { mutableStateOf(false) }
     var dayRemarkDraft by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
+    var dayRemarkSaveGeneration by remember { mutableStateOf(0) }
+    var dayRemarkSaveJob by remember { mutableStateOf<Job?>(null) }
 
 
     Column(modifier = modifier.fillMaxWidth()) {
@@ -168,29 +173,32 @@ internal fun InsightsActivityTimeline(
     }
 
     if (editingDayRemark) {
-        InsightsRemarkEditSheet(
+        FullscreenTextEditor(
             title = stringResource(R.string.insights_edit_day_remark),
-            remark = dayRemarkDraft,
             label = stringResource(R.string.insights_day_remark_label),
-            saveLabel = stringResource(R.string.insights_save_day_remark),
-            cancelLabel = stringResource(R.string.insights_cancel_day_remark),
-            error = editError,
+            text = dayRemarkDraft,
+            closeContentDescription = stringResource(R.string.insights_cancel_day_remark),
             saving = saving,
-            onRemarkChange = { dayRemarkDraft = it },
-            onDismiss = { editingDayRemark = false },
-            onSave = {
-                saving = true
+            error = editError,
+            onTextChange = { value ->
+                dayRemarkDraft = value
                 editError = ""
-                scope.launch {
-                    val result = onUpdateDayRemark(dayRemarkDraft)
-                    saving = false
-                    if (result.ok) {
-                        editingDayRemark = false
-                    } else {
-                        editError = result.message.ifBlank { "Day remark update failed." }
+                dayRemarkSaveGeneration += 1
+                val generation = dayRemarkSaveGeneration
+                dayRemarkSaveJob?.cancel()
+                dayRemarkSaveJob = scope.launch {
+                    delay(250)
+                    saving = true
+                    val result = onUpdateDayRemark(value)
+                    if (generation == dayRemarkSaveGeneration) {
+                        saving = false
+                        if (!result.ok) {
+                            editError = result.message.ifBlank { "Day remark update failed." }
+                        }
                     }
                 }
-            }
+            },
+            onDismiss = { editingDayRemark = false }
         )
     }
 }

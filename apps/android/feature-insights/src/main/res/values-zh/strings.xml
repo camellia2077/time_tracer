@@ -143,7 +143,6 @@
     <string name="insights_period_activities_comparison_neutral">无变化（%1$s）</string>
     <string name="insights_day_remark_label">日备注</string>
     <string name="insights_edit_day_remark">编辑日备注</string>
-    <string name="insights_save_day_remark">保存</string>
     <string name="insights_cancel_day_remark">取消</string>
     <string name="insights_activity_timeline_empty">这一天没有记录活动。</string>
     <string name="insights_activity_timeline_end_only_time">截至 %1$s</string>

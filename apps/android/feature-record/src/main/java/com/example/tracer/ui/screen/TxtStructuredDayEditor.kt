@@ -38,6 +38,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.record.R
+import com.example.tracer.ui.components.FullscreenTextEditor
 import com.example.tracer.ui.components.formatDisplayClockTime
 import java.time.Clock
 import java.time.ZonedDateTime
@@ -178,6 +179,7 @@ internal fun TxtStructuredDayEditor(
             previousEndTimelineSeconds = event.previousEndTimelineSeconds,
             nextStartTimelineSeconds = event.nextStartTimelineSeconds,
             nextEventIsInterval = nextTimelineEvent?.isInterval == true,
+            use12HourTime = use12HourTime,
             canSetCurrentTime = isCurrentLogicalDay && index == events.lastIndex,
             logicalDayClock = logicalDayClock,
             onDismiss = { editingTimeIndex = null },
@@ -216,20 +218,19 @@ internal fun TxtStructuredDayEditor(
         )
     }
     if (editingDayRemark) {
-        TxtDayRemarkEditSheet(
+        TxtDayRemarkEditScreen(
             title = stringResource(R.string.txt_day_edit_day_remark_title),
             initialRemark = dayRemark,
             onDismiss = { editingDayRemark = false },
             onApply = { editedRemark ->
                 dayRemark = editedRemark
-                onApply(dayRemark, events)
-                editingDayRemark = false
+                onApply(editedRemark, events)
             }
         )
     }
     editingActivityRemarkIndex?.let { index ->
         val event = events.getOrNull(index) ?: return@let
-        TxtDayRemarkEditSheet(
+        TxtActivityRemarkEditSheet(
             title = stringResource(R.string.txt_day_edit_activity_remark_title),
             initialRemark = event.remark,
             onDismiss = { editingActivityRemarkIndex = null },
@@ -803,7 +804,27 @@ private fun flattenCanonicalCatalogEntries(root: CanonicalPathNode): List<Canoni
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-private fun TxtDayRemarkEditSheet(
+private fun TxtDayRemarkEditScreen(
+    title: String,
+    initialRemark: String,
+    onDismiss: () -> Unit,
+    onApply: (String) -> Unit
+) {
+    FullscreenTextEditor(
+        title = title,
+        label = stringResource(R.string.txt_day_edit_day_remark),
+        text = initialRemark,
+        closeContentDescription = stringResource(R.string.txt_action_close),
+        saving = false,
+        error = "",
+        onTextChange = onApply,
+        onDismiss = onDismiss
+    )
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun TxtActivityRemarkEditSheet(
     title: String,
     initialRemark: String,
     onDismiss: () -> Unit,
@@ -849,6 +870,7 @@ private fun TxtDayTimeEditSheet(
     previousEndTimelineSeconds: Int?,
     nextStartTimelineSeconds: Int?,
     nextEventIsInterval: Boolean,
+    use12HourTime: Boolean,
     canSetCurrentTime: Boolean,
     logicalDayClock: Clock,
     onDismiss: () -> Unit,
@@ -890,6 +912,34 @@ private fun TxtDayTimeEditSheet(
                     ),
                     onValueChange = { startTimeline = it }
                 )
+                previousEndTimelineSeconds
+                    ?.takeIf { previousEnd ->
+                        canUsePreviousEndAsIntervalStart(
+                            isInterval = event.isInterval,
+                            previousEndTimelineSeconds = previousEnd,
+                            startTimelineSeconds = startTimeline,
+                            endTimelineSeconds = endTimeline
+                        )
+                    }
+                    ?.let { previousEnd ->
+                        TextButton(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = {
+                                startTimeline = previousEnd
+                                errorMessage = ""
+                            }
+                        ) {
+                            Text(
+                                stringResource(
+                                    R.string.record_action_use_previous_activity_end,
+                                    formatDisplayClockTime(
+                                        formatClockSeconds(previousEnd),
+                                        use12HourTime
+                                    )
+                                )
+                            )
+                        }
+                    }
             }
             Text(
                 text = if (event.isInterval) {
@@ -1077,6 +1127,16 @@ internal fun formatClockSeconds(value: Int): String {
     // boundary. Core validates them, then serializes Raw TXT as HHMMSS.
     return "%02d:%02d:%02d".format(hour, minute, second)
 }
+
+internal fun canUsePreviousEndAsIntervalStart(
+    isInterval: Boolean,
+    previousEndTimelineSeconds: Int?,
+    startTimelineSeconds: Int,
+    endTimelineSeconds: Int
+): Boolean = previousEndTimelineSeconds != null &&
+    isInterval &&
+    previousEndTimelineSeconds < endTimelineSeconds &&
+    previousEndTimelineSeconds != startTimelineSeconds
 
 internal fun currentLogicalDayTimelineSeconds(clock: Clock): Int {
     val localTime = ZonedDateTime.now(clock).toLocalTime()

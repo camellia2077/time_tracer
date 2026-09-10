@@ -71,6 +71,54 @@ class TxtStructuredDayEditorFormattingTest {
     }
 
     @Test
+    fun canUsePreviousEndAsIntervalStart_acceptsAnEarlierSameDayBoundary() {
+        assertTrue(
+            canUsePreviousEndAsIntervalStart(
+                isInterval = true,
+                previousEndTimelineSeconds = 9 * 3_600,
+                startTimelineSeconds = 9 * 3_600 + 5 * 60,
+                endTimelineSeconds = 10 * 3_600
+            )
+        )
+    }
+
+    @Test
+    fun canUsePreviousEndAsIntervalStart_rejectsNoBoundaryChangeOrInvalidRange() {
+        assertTrue(
+            !canUsePreviousEndAsIntervalStart(
+                isInterval = true,
+                previousEndTimelineSeconds = null,
+                startTimelineSeconds = 9 * 3_600 + 5 * 60,
+                endTimelineSeconds = 10 * 3_600
+            )
+        )
+        assertTrue(
+            !canUsePreviousEndAsIntervalStart(
+                isInterval = true,
+                previousEndTimelineSeconds = 9 * 3_600,
+                startTimelineSeconds = 9 * 3_600,
+                endTimelineSeconds = 10 * 3_600
+            )
+        )
+        assertTrue(
+            !canUsePreviousEndAsIntervalStart(
+                isInterval = true,
+                previousEndTimelineSeconds = 10 * 3_600,
+                startTimelineSeconds = 9 * 3_600,
+                endTimelineSeconds = 10 * 3_600
+            )
+        )
+        assertTrue(
+            !canUsePreviousEndAsIntervalStart(
+                isInterval = false,
+                previousEndTimelineSeconds = 9 * 3_600,
+                startTimelineSeconds = 9 * 3_600 + 5 * 60,
+                endTimelineSeconds = 10 * 3_600
+            )
+        )
+    }
+
+    @Test
     fun buildTxtDayActivitySearchOccurrences_matchesCanonicalAndAliasForEitherAuthoredForm() {
         val roots = listOf(
             CanonicalPathNode(

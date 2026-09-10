@@ -379,6 +379,11 @@ class NativeRuntimeController(
         tomlContent: String
     ): ActivityHierarchyDescribeResult = aliasHierarchyService.describe(tomlContent)
 
+    override suspend fun searchActivityHierarchy(
+        tomlContent: String,
+        query: String
+    ): ActivityHierarchyDescribeResult = aliasHierarchyService.search(tomlContent, query)
+
     override suspend fun validateActivityHierarchyDocuments(
         documents: List<ActivityHierarchyDocumentInput>
     ): ActivityHierarchyValidationResult = aliasHierarchyService.validate(documents)
