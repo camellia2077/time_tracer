@@ -107,13 +107,13 @@ Default exclusions:
 1. Focused pipeline change:
 
 ```powershell
-python tools/run.py verify --app tracer_core_shell --profile cap_pipeline --concise
+python tools/run.py verify --app tracer_core_shell --profile cap_pipeline --scope libs --concise
 ```
 
 2. Shell/runtime integration:
 
 ```powershell
-python tools/run.py verify --app tracer_core_shell --profile fast --concise
+python tools/run.py verify --app tracer_core_shell --profile fast --scope libs --scope cli --concise
 ```
 
 3. If the change touches more than one capability, combine explicit paths or

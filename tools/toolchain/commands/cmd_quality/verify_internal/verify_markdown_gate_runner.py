@@ -50,7 +50,7 @@ def run_insights_triplet_gates(
         golden_dir = repo_root / "test" / "golden" / "insights_triplet" / format_name / "v1"
         export_root = result_layout.artifacts_dir / "insights" / export_dir_name
         audit_output_path = (
-            quality_gates_root / "audits" / f"insights-triplet-{format_name}-byte-audit.md"
+            quality_gates_root / "audits" / f"insights-triplet-{format_name}-render-audit.md"
         )
 
         collect_cmd = [
@@ -89,6 +89,8 @@ def run_insights_triplet_gates(
             f"*.{extension}",
             "--output",
             str(audit_output_path),
+            "--normalize-ext",
+            ".tex,.typ",
             "--fail-on-diff",
         ]
         audit_ret = run_command_fn(

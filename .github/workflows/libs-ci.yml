@@ -1,0 +1,63 @@
+name: Libraries CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'libs/**'
+      - 'apps/tracer_core_shell/**'
+      - 'tools/**'
+      - 'test/**'
+      - 'config/**'
+      - '.github/actions/**'
+      - '.github/workflows/libs-ci.yml'
+  pull_request:
+    paths:
+      - 'libs/**'
+      - 'apps/tracer_core_shell/**'
+      - 'tools/**'
+      - 'test/**'
+      - 'config/**'
+      - '.github/actions/**'
+      - '.github/workflows/libs-ci.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: "0 2 * * 0"
+
+permissions:
+  contents: read
+
+jobs:
+  libs-core-verify:
+    name: libs-core-verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python repo tools
+        uses: ./.github/actions/setup-python-repo-tools
+
+      - name: Verify shared libs/core scope
+        shell: bash
+        run: |
+          python tools/run.py verify \
+            --app tracer_core_shell \
+            --profile libs_ci_no_pch \
+            --build-dir build_libs \
+            --scope libs \
+            --concise
+
+      - name: Upload libs diagnostics
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: libs-diagnostics
+          path: |
+            out/test/artifact_windows_cli/result.json
+            out/test/artifact_windows_cli/result_cases.json
+            out/test/artifact_windows_cli/logs/**
+            out/build/tracer_core_shell/build_libs/build.log
+          if-no-files-found: warn

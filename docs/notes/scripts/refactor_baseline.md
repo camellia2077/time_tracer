@@ -6,7 +6,7 @@
 
 1. `python tools/run.py self-test`
    - 结果：`PASS`（17/17）
-2. `python tools/run.py verify --app tracer_core --build-dir build_fast --concise`
+2. `python tools/run.py verify --app tracer_core --build-dir build_fast --scope libs --scope cli --concise`
    - 结果：`PASS`（tracer_windows_rust_cli suite: 124/124）
 3. `python tools/run.py verify --app log_generator --build-dir build_fast --concise`
    - 结果：`PASS`（log_generator suite: 2/2）

@@ -136,9 +136,9 @@
 ## 5. 推荐验证命令
 
 1. tracer_core_shell focused verify：
-   - `python tools/run.py verify --app tracer_core_shell --profile <capability_profile> --concise`
+   - `python tools/run.py verify --app tracer_core_shell --profile <capability_profile> --scope libs --concise`
 2. Shell full verify：
-   - `python tools/run.py verify --app tracer_core_shell --profile fast --concise`
+   - `python tools/run.py verify --app tracer_core_shell --profile fast --scope libs --scope cli --concise`
 3. Android edit/build verify：
    - `python tools/run.py build --app tracer_android --profile android_edit`
 4. Android CI 样式单元回归：

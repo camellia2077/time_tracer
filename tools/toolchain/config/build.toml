@@ -113,6 +113,15 @@ cmake_args = [
     "-D", "ENABLE_PCH=OFF",
 ]
 
+[build.profiles.libs_ci_no_pch]
+extends = "_fast_base"
+description = "Shared libs/core CI profile with tests enabled and PCH disabled."
+cmake_args = [
+    "-D", "BUILD_TESTING=ON",
+    "-D", "ENABLE_PCH=OFF",
+    "-D", "TT_TOML_HEADER_ONLY=ON",
+]
+
 [build.profiles.release_safe]
 description = "Release build with optimization, but LTO/FTO disabled for stability."
 build_dir = "build"

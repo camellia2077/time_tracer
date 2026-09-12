@@ -30,6 +30,7 @@ class TestVerifyCliHandler(TestCase):
             no_kill_build_procs=False,
             cmake_args=[],
             concise=False,
+            scope=["libs", "cli"],
             extra_args=[],
         )
 
@@ -59,3 +60,25 @@ class TestVerifyCliHandler(TestCase):
         self.assertEqual(result, 0)
         kwargs = mocked_command.return_value.execute.call_args.kwargs
         self.assertEqual(kwargs["profile_name"], ["android_style", "android_ci"])
+
+    def test_run_passes_repeated_verify_scopes(self):
+        args = self._base_args()
+        args.scope = ["libs", "cli"]
+
+        with patch("tools.toolchain.cli.handlers.quality.verify.VerifyCommand") as mocked_command:
+            mocked_command.return_value.execute.return_value = 0
+            result = verify_handler.run(args, self.ctx)
+
+        self.assertEqual(result, 0)
+        self.assertEqual(
+            mocked_command.return_value.execute.call_args.kwargs["scopes"],
+            ["libs", "cli"],
+        )
+
+    def test_run_rejects_core_verify_without_scope(self):
+        args = self._base_args()
+        args.scope = None
+
+        result = verify_handler.run(args, self.ctx)
+
+        self.assertEqual(result, 2)

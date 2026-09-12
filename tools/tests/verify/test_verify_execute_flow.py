@@ -73,6 +73,42 @@ class TestVerifyExecuteFlow(VerifyCommandTestBase):
         self.assertNotIn("--skip-configure", called_cmd)
         self.assertIn("--concise", called_cmd)
 
+    def test_execute_libs_scope_builds_core_without_cargo_cli(self):
+        class FakeBuildCommand:
+            build_calls = []
+
+            def __init__(self, _ctx):
+                pass
+
+            def build(self, **kwargs):
+                FakeBuildCommand.build_calls.append(kwargs)
+                return 0
+
+            def resolve_build_dir_name(self, **_kwargs):
+                return "build_libs"
+
+            def resolve_output_log_path(self, **_kwargs):
+                from pathlib import Path
+
+                return Path(__file__).resolve().parents[3] / "out" / "fake" / "build.log"
+
+        with (
+            patch("tools.toolchain.commands.cmd_quality.verify.BuildCommand", FakeBuildCommand),
+            patch.object(VerifyCommand, "run_unit_scope_checks", return_value=0),
+            patch.object(VerifyCommand, "run_artifact_scope_checks", return_value=0),
+        ):
+            result = self.execute_silently(
+                app_name="tracer_core_shell",
+                profile_name="libs_ci_no_pch",
+                build_dir_name="build_libs",
+                scopes=("libs",),
+                concise=True,
+            )
+
+        self.assertEqual(result, 0)
+        self.assertEqual(len(FakeBuildCommand.build_calls), 1)
+        self.assertEqual(FakeBuildCommand.build_calls[0]["app_name"], "tracer_core_shell")
+
     def test_execute_unmapped_app_writes_build_only_result_on_success(self):
         with (
             patch(

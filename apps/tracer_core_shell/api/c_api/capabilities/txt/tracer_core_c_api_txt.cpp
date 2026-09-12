@@ -1,5 +1,3 @@
-import tracer.core.application.use_cases.interface;
-
 #include <exception>
 #include <stdexcept>
 #include <string>
@@ -8,6 +6,9 @@ import tracer.core.application.use_cases.interface;
 #include <vector>
 
 #include "nlohmann/json.hpp"
+
+import tracer.core.application.use_cases.interface;
+
 #include "application/dto/pipeline_requests.hpp"
 #include "application/ports/config/activity_hierarchy_toml_editor.hpp"
 #include "application/ports/config/quick_access_toml_store.hpp"

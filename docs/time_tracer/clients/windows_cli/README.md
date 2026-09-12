@@ -50,7 +50,7 @@ canonical 解析、入库和报告业务逻辑。具体命令的 TOML、TXT、DB
 ## Validation
 
 ```powershell
-python tools/run.py verify --app tracer_core --concise
+python tools/run.py verify --app tracer_core --scope cli --concise
 ```
 
 如需显式构建 Windows runtime 和 Rust CLI：

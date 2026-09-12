@@ -21,14 +21,6 @@ name = "month_2026-05.md"
 source_relative_path = "month/2026-01.md"
 
 [[markdown.file_cases]]
-name = "week_2026-W05.md"
-source_relative_path = "week/2026-W05.md"
-
-[[markdown.file_cases]]
-name = "year_2025.md"
-source_relative_path = "year/2025.md"
-
-[[markdown.file_cases]]
 name = "range_2026-05-01_2026-05-31.md"
 source_relative_path = "range/2026-05-01_2026-05-31.md"
 

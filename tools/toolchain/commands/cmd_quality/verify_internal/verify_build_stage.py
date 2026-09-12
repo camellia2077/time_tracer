@@ -24,6 +24,7 @@ def execute_build_stage(
     profile_name: str | None,
     concise: bool,
     kill_build_procs: bool,
+    include_cli: bool = True,
     run_command_fn=None,
 ) -> tuple[int, str, str, object]:
     build_app_name = resolve_suite_build_app(app_name) or app_name
@@ -31,7 +32,11 @@ def execute_build_stage(
 
     # tracer_core/tracer_core_shell verify flow needs fresh core runtime
     # artifacts before building the Rust CLI shell.
-    if app_name in {"tracer_core", "tracer_core_shell"} and build_app_name == "tracer_windows_rust_cli":
+    if (
+        include_cli
+        and app_name in {"tracer_core", "tracer_core_shell"}
+        and build_app_name == "tracer_windows_rust_cli"
+    ):
         core_build_ret = build_cmd.build(
             app_name=app_name,
             tidy=tidy,
@@ -58,15 +63,16 @@ def execute_build_stage(
             )
             return int(core_build_ret), resolved_core_build_dir_name, app_name, core_log_path
 
+    final_build_app_name = build_app_name if include_cli else app_name
     build_ret = build_cmd.build(
-        app_name=build_app_name,
+        app_name=final_build_app_name,
         tidy=tidy,
         extra_args=extra_args,
         cmake_args=cmake_args,
         build_dir_name=build_dir_name,
         profile_name=profile_name,
         concise=concise,
-        runtime_platform=_resolve_runtime_platform(build_app_name),
+        runtime_platform=_resolve_runtime_platform(final_build_app_name),
         kill_build_procs=kill_build_procs,
         run_command_fn=run_command_fn,
     )
@@ -74,15 +80,15 @@ def execute_build_stage(
         tidy=tidy,
         build_dir_name=build_dir_name,
         profile_name=profile_name,
-        app_name=build_app_name,
+        app_name=final_build_app_name,
     )
     build_log_path = build_cmd.resolve_output_log_path(
-        app_name=build_app_name,
+        app_name=final_build_app_name,
         tidy=tidy,
         build_dir_name=build_dir_name,
         profile_name=profile_name,
     )
-    return int(build_ret), resolved_build_dir_name, build_app_name, build_log_path
+    return int(build_ret), resolved_build_dir_name, final_build_app_name, build_log_path
 
 
 def handle_post_build_state(

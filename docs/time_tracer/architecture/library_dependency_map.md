@@ -77,6 +77,6 @@ Open:
 ## Validation Shortcut
 
 1. Preferred library closeout:
-   - `python tools/run.py verify --app tracer_core_shell --profile fast --concise`
+   - `python tools/run.py verify --app tracer_core_shell --profile fast --scope libs --scope cli --concise`
 2. For a single clearly owned core capability, use its documented `cap_*`
    profile when it covers every affected producer and consumer.

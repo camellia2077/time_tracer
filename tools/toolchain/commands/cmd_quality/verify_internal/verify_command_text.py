@@ -12,6 +12,7 @@ def build_verify_command_text(
     tidy: bool,
     kill_build_procs: bool,
     cmake_args: list[str] | None,
+    scopes: Iterable[str] | None = None,
 ) -> str:
     cmd = ["python", "tools/run.py", "verify", "--app", app_name]
     if profile_name:
@@ -22,6 +23,8 @@ def build_verify_command_text(
                 cmd.extend(["--profile", str(selected_profile)])
     if build_dir_name:
         cmd.extend(["--build-dir", build_dir_name])
+    for scope in scopes or ():
+        cmd.extend(["--scope", str(scope)])
     if concise:
         cmd.append("--concise")
     if tidy:

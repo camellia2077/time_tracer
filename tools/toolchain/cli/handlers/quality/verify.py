@@ -17,6 +17,22 @@ from ...model import CommandSpec, ParserDefaults
 
 def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
     parser.add_argument("--tidy", action="store_true")
+    parser.add_argument(
+        "--scope",
+        action="append",
+        choices=("libs", "cli"),
+        default=None,
+        help="Verification scope; repeat to combine libs and cli.",
+    )
+    parser.add_argument(
+        "--test-platform",
+        choices=("auto", "windows", "ubuntu"),
+        default="auto",
+        help=(
+            "Test execution platform. `auto` uses WSL2 Ubuntu for Windows-only "
+            "`--scope libs`; use `windows` or `ubuntu` to override."
+        ),
+    )
     add_profile_arg_with_options(parser, defaults, allow_multiple=True)
     add_build_dir_arg(parser)
     add_kill_build_procs_args(parser)
@@ -38,6 +54,15 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
 
 
 def run(args: argparse.Namespace, ctx: Context) -> int:
+    if (
+        args.app in {"tracer_core", "tracer_core_shell", "tracer_windows_rust_cli"}
+        and not getattr(args, "scope", None)
+    ):
+        print_cli_error(
+            "Error: `verify` for core/CLI apps requires at least one explicit "
+            "`--scope libs` or `--scope cli`. Repeat `--scope` to combine them."
+        )
+        return 2
     kill_build_procs = bool(args.kill_build_procs and not args.no_kill_build_procs)
     normalized_profile = normalize_profile_selection(getattr(args, "profile", None))
     if isinstance(normalized_profile, list):
@@ -66,6 +91,7 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         profile_name=normalized_profile,
         concise=bool(args.concise),
         kill_build_procs=kill_build_procs,
+        scopes=getattr(args, "scope", None),
     )
 
 

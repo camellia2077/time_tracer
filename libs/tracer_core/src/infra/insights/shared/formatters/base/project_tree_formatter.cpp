@@ -60,7 +60,10 @@ auto ProjectTreeFormatter::FormatProjectTree(const ProjectTree& tree,
 
   std::ranges::sort(sorted_top_level,
                     [](const NodePair* lhs, const NodePair* rhs) -> bool {
-                      return lhs->second.duration > rhs->second.duration;
+                      if (lhs->second.duration != rhs->second.duration) {
+                        return lhs->second.duration > rhs->second.duration;
+                      }
+                      return lhs->first < rhs->first;
                     });
 
   for (const auto* pair_ptr : sorted_top_level) {
@@ -100,7 +103,10 @@ void ProjectTreeFormatter::GenerateSortedOutput(std::string& output,
   }
   std::ranges::sort(root_frame.sorted_children,
                     [](const ChildPair* lhs, const ChildPair* rhs) -> bool {
-                      return lhs->second.duration > rhs->second.duration;
+                      if (lhs->second.duration != rhs->second.duration) {
+                        return lhs->second.duration > rhs->second.duration;
+                      }
+                      return lhs->first < rhs->first;
                     });
   stack.push(std::move(root_frame));
 
@@ -140,7 +146,10 @@ void ProjectTreeFormatter::GenerateSortedOutput(std::string& output,
         std::ranges::sort(
             child_frame.sorted_children,
             [](const ChildPair* lhs, const ChildPair* rhs) -> bool {
-              return lhs->second.duration > rhs->second.duration;
+              if (lhs->second.duration != rhs->second.duration) {
+                return lhs->second.duration > rhs->second.duration;
+              }
+              return lhs->first < rhs->first;
             });
 
         stack.push(std::move(child_frame));

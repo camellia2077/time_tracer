@@ -24,6 +24,27 @@ from .verify_internal.verify_suite_runner import build_suite_test_command
 from .self_test import SelfTestCommand
 
 
+VERIFY_SCOPES = ("libs", "cli")
+
+
+def normalize_verify_scopes(scopes) -> tuple[str, ...]:
+    if scopes is None:
+        return VERIFY_SCOPES
+    normalized: list[str] = []
+    for scope in scopes:
+        value = str(scope).strip().lower()
+        if value not in VERIFY_SCOPES:
+            raise ValueError(
+                "unsupported verify scope "
+                f"`{scope}`; expected one of: {', '.join(VERIFY_SCOPES)}"
+            )
+        if value not in normalized:
+            normalized.append(value)
+    if not normalized:
+        raise ValueError("verify scopes cannot be empty")
+    return tuple(normalized)
+
+
 class VerifyCommand:
     def __init__(self, ctx: Context):
         self.ctx = ctx
@@ -38,6 +59,7 @@ class VerifyCommand:
         tidy: bool,
         kill_build_procs: bool,
         cmake_args: list[str] | None,
+        scopes=None,
     ) -> str:
         return build_verify_command_text(
             app_name=app_name,
@@ -47,6 +69,7 @@ class VerifyCommand:
             tidy=tidy,
             kill_build_procs=kill_build_procs,
             cmake_args=cmake_args,
+            scopes=scopes,
         )
 
     @staticmethod
@@ -107,9 +130,15 @@ class VerifyCommand:
         profile_name: str | None = None,
         concise: bool = False,
         kill_build_procs: bool = False,
+        scopes=None,
         run_command_fn=None,
     ) -> int:
-        if profile_name or app_name not in {"tracer_core", "tracer_core_shell"}:
+        normalized_scopes = normalize_verify_scopes(scopes)
+        if (
+            profile_name
+            or scopes is not None
+            or app_name not in {"tracer_core", "tracer_core_shell"}
+        ):
             return self._execute_single(
                 app_name=app_name,
                 tidy=tidy,
@@ -119,6 +148,7 @@ class VerifyCommand:
                 profile_name=profile_name,
                 concise=concise,
                 kill_build_procs=kill_build_procs,
+                scopes=normalized_scopes,
                 run_command_fn=run_command_fn,
                 skip_unit_checks=False,
             )
@@ -135,6 +165,7 @@ class VerifyCommand:
                 profile_name="fast",
                 concise=concise,
                 kill_build_procs=kill_build_procs,
+                scopes=normalized_scopes,
                 run_command_fn=run_command_fn,
                 skip_unit_checks=False,
             )
@@ -150,6 +181,7 @@ class VerifyCommand:
                 profile_name=inference.profiles[0],
                 concise=concise,
                 kill_build_procs=kill_build_procs,
+                scopes=normalized_scopes,
                 run_command_fn=run_command_fn,
                 skip_unit_checks=False,
             )
@@ -169,6 +201,7 @@ class VerifyCommand:
                     tidy=tidy,
                     kill_build_procs=kill_build_procs,
                     cmake_args=cmake_args,
+                    scopes=normalized_scopes,
                 ),
                 exit_code=unit_ret,
                 stage="verify-unit",
@@ -190,6 +223,7 @@ class VerifyCommand:
                 profile_name=inferred_profile,
                 concise=concise,
                 kill_build_procs=kill_build_procs,
+                scopes=normalized_scopes,
                 run_command_fn=run_command_fn,
                 skip_unit_checks=True,
             )
@@ -222,7 +256,10 @@ class VerifyCommand:
         kill_build_procs: bool = False,
         run_command_fn=None,
         skip_unit_checks: bool = False,
+        scopes=VERIFY_SCOPES,
     ) -> int:
+        normalized_scopes = normalize_verify_scopes(scopes)
+        include_cli = "cli" in normalized_scopes
         started_at = time.monotonic()
         verify_phases: list[dict[str, object]] = []
         effective_run_command = run_command if run_command_fn is None else run_command_fn
@@ -234,6 +271,7 @@ class VerifyCommand:
             tidy=tidy,
             kill_build_procs=kill_build_procs,
             cmake_args=cmake_args,
+            scopes=scopes,
         )
         if app_name == "tracer_android":
             self._print_android_verify_stage(
@@ -259,6 +297,7 @@ class VerifyCommand:
             profile_name=profile_name,
             concise=concise,
             kill_build_procs=kill_build_procs,
+            include_cli=include_cli,
             run_command_fn=effective_run_command,
         )
         if build_app_name != app_name:
@@ -288,7 +327,7 @@ class VerifyCommand:
         if early_exit is not None:
             return int(early_exit)
 
-        if not skip_unit_checks:
+        if not skip_unit_checks and "libs" in normalized_scopes:
             if app_name == "tracer_android":
                 self._print_android_verify_stage(
                     profile_name=profile_name,
@@ -332,6 +371,14 @@ class VerifyCommand:
                 status="passed",
                 exit_code=0,
             )
+        elif not skip_unit_checks:
+            self._record_verify_phase(
+                verify_phases,
+                name="verify_unit",
+                category="verify",
+                status="skipped",
+                exit_code=0,
+            )
 
         if app_name == "tracer_android":
             self._print_android_verify_stage(
@@ -346,6 +393,7 @@ class VerifyCommand:
             concise=concise,
             run_command_fn=effective_run_command,
             verify_phases=verify_phases,
+            scopes=normalized_scopes,
         )
         if not suite_name:
             self._write_build_only_result_json(
@@ -405,7 +453,9 @@ class VerifyCommand:
         concise: bool = False,
         run_command_fn=None,
         verify_phases: list[dict[str, object]] | None = None,
-        ) -> int:
+        scopes=VERIFY_SCOPES,
+    ) -> int:
+        normalized_scopes = normalize_verify_scopes(scopes)
         return self.run_tests(
             app_name=app_name,
             build_dir_name=build_dir_name,
@@ -414,6 +464,7 @@ class VerifyCommand:
             skip_suite_build=True,
             run_command_fn=run_command if run_command_fn is None else run_command_fn,
             verify_phases=verify_phases,
+            scopes=normalized_scopes,
         )
 
     def run_unit_scope_checks(self, run_command_fn=None) -> int:
@@ -433,19 +484,23 @@ class VerifyCommand:
         skip_suite_build: bool = False,
         run_command_fn=None,
         verify_phases: list[dict[str, object]] | None = None,
+        scopes=VERIFY_SCOPES,
     ) -> int:
-        test_cmd = build_suite_test_command(
-            app_name=app_name,
-            build_dir_name=build_dir_name,
-            profile_name=profile_name,
-            concise=concise,
-            skip_suite_build=skip_suite_build,
-            resolve_suite_name_fn=resolve_suite_name,
-            resolve_suite_runner_name_fn=resolve_suite_runner_name,
-            resolve_suite_bin_dir_fn=resolve_suite_bin_dir,
-            needs_suite_build_fn=needs_suite_build,
-            resolve_suite_config_override_fn=self._resolve_suite_config_override,
-        )
+        normalized_scopes = normalize_verify_scopes(scopes)
+        test_cmd = None
+        if "cli" in normalized_scopes:
+            test_cmd = build_suite_test_command(
+                app_name=app_name,
+                build_dir_name=build_dir_name,
+                profile_name=profile_name,
+                concise=concise,
+                skip_suite_build=skip_suite_build,
+                resolve_suite_name_fn=resolve_suite_name,
+                resolve_suite_runner_name_fn=resolve_suite_runner_name,
+                resolve_suite_bin_dir_fn=resolve_suite_bin_dir,
+                needs_suite_build_fn=needs_suite_build,
+                resolve_suite_config_override_fn=self._resolve_suite_config_override,
+            )
         effective_run_command = run_command if run_command_fn is None else run_command_fn
         if app_name == "tracer_android":
             if test_cmd is None:
@@ -476,6 +531,9 @@ class VerifyCommand:
                 normalize_ext=tuple(self.ctx.config.quality.gate_audit.normalize_ext),
             ),
             run_native_core_runtime_tests_fn=run_native_core_runtime_tests,
+            run_native="libs" in normalized_scopes,
+            run_host_blackbox="cli" in normalized_scopes,
+            run_quality_gates="cli" in normalized_scopes,
             record_phase_fn=(
                 None
                 if verify_phases is None

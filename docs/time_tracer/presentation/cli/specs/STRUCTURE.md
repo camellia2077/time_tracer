@@ -98,5 +98,5 @@
 
 ```powershell
 python tools/run.py build --app tracer_windows_rust_cli --build-dir build_fast --runtime-platform windows
-python tools/run.py verify --app tracer_core --build-dir build_fast --concise
+python tools/run.py verify --app tracer_core --build-dir build_fast --scope cli --concise
 ```

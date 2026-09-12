@@ -1,6 +1,12 @@
 name: Setup Windows Verify Env
 description: Prepare Python repo tools and the MSYS2 UCRT64 toolchain for Windows verify jobs.
 
+inputs:
+  msys2-update:
+    description: Run a full MSYS2 package database and package update.
+    required: false
+    default: 'false'
+
 runs:
   using: composite
   steps:
@@ -18,7 +24,8 @@ runs:
       uses: msys2/setup-msys2@v2
       with:
         msystem: UCRT64
-        update: true
+        update: ${{ inputs.msys2-update }}
+        cache: true
         install: >-
           mingw-w64-ucrt-x86_64-clang
           mingw-w64-ucrt-x86_64-cmake
@@ -26,6 +33,14 @@ runs:
           mingw-w64-ucrt-x86_64-gcc
           mingw-w64-ucrt-x86_64-ninja
           mingw-w64-ucrt-x86_64-nlohmann-json
+
+    - name: Record MSYS2 package versions
+      shell: pwsh
+      run: |
+        & 'C:\msys64\usr\bin\pacman.exe' -Q
+        if ($LASTEXITCODE -ne 0) {
+          throw "Failed to list installed MSYS2 packages (exit code $LASTEXITCODE)."
+        }
 
     - name: Add UCRT64 Bin To PATH
       shell: pwsh

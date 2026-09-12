@@ -15,7 +15,7 @@ option(TT_USE_BUNDLED_SQLITE
        "Use bundled sqlite amalgamation on Windows host builds"
        ${TT_WINDOWS_DEP_DEFAULT})
 option(TT_TOML_HEADER_ONLY
-       "Use tomlplusplus as header-only on Windows host builds"
+       "Use tomlplusplus as header-only on host builds"
        ${TT_WINDOWS_DEP_DEFAULT})
 option(TT_STATIC_MINGW_RUNTIME
        "Prefer static libgcc/libstdc++/winpthread on Windows MinGW builds"

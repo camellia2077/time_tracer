@@ -22,6 +22,15 @@
 5. Android 模块定向单测：
    - `python tools/run.py android-test --module feature-insights --tests com.example.tracer.QueryInsightsResultDisplayRobolectricTest`
 
+GitHub Actions 按验证边界拆分为三个独立 workflow：
+
+1. `android-ci.yml`：Android 构建与测试
+2. `libs-ci.yml`：Ubuntu 上的共享 libs/core 验证（`--scope libs`）
+3. `cli-ci.yml`：Windows CLI presentation 验证（`--scope cli`，包含 optimized/LTO matrix）
+
+libs 发生变化时，`libs-ci` 与 `cli-ci` 会同时触发；CLI workflow 会重新在 Windows
+工具链中编译其依赖的 libs，但不会重复执行 libs 测试。
+
 Android 定向单测每次运行都会清理旧的 `artifact_android` 结果文件，并将本次
 Gradle 输出写入 `out/test/artifact_android/logs/output.full.log`。只有日志明确显示
 Kotlin 中间产物锁定或复用异常时，工具链才会清理 `built_in_kotlinc` 并重试一次。
@@ -96,8 +105,13 @@ Kotlin 中间产物锁定或复用异常时，工具链才会清理 `built_in_ko
 
 ```bash
 # Windows CLI verify
-python tools/run.py verify --app tracer_core_shell --build-dir build_fast --concise
-python tools/run.py verify --app tracer_core_shell --profile fast --concise
+python tools/run.py verify --app tracer_core_shell --profile release_bundle_ci_no_pch --build-dir build_release --scope cli --concise
+
+# Shared libs/core verify (does not build or test the Windows Rust CLI)
+python tools/run.py verify --app tracer_core_shell --profile libs_ci_no_pch --build-dir build_libs --scope libs --concise
+
+# Compose both scopes explicitly when one environment should run the complete flow
+python tools/run.py verify --app tracer_core_shell --profile fast_ci_no_pch --scope libs --scope cli --concise
 
 # toolchain self-test
 python tools/run.py self-test
@@ -116,14 +130,42 @@ python tools/test.py runtime-guard --build-dir build_fast
 python tools/lint_suites.py --suite tracer_windows_rust_cli
 ```
 
+在 Windows 本机执行最后两条中的 `--scope libs` 时，`tools/run.py` 会自动将该验证转发到 WSL2 的 `Ubuntu` 发行版；默认使用独立的 `build_libs_ubuntu` 目录，避免与 Windows CMake cache 混用。Ubuntu 需要安装 `libsqlite3-dev` 等基础构建依赖。可通过 `TT_LIBS_WSL_DISTRO` 覆盖发行版名称，或设置 `TT_LIBS_UBUNTU_ACTIVE=1` 调试底层命令。
+
+也可以显式指定验证平台：`--test-platform auto|windows|ubuntu`。例如 `--test-platform windows` 强制使用 Windows，`--test-platform ubuntu` 强制使用 WSL2 Ubuntu（目前只支持 `--scope libs`）。
+
+### WSL2 Ubuntu 本机初始化
+
+Windows 本机要让 `--scope libs` 的 Ubuntu 路径可直接运行，先在 Ubuntu 终端执行一次：
+
+```bash
+sudo apt update
+sudo apt install -y clang cmake ninja-build git libsqlite3-dev python3-venv
+cd /mnt/c/code/time_tracer
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install -e .
+```
+
+项目 Python 工具依赖由仓库根目录的 `pyproject.toml` 声明，目前包括 `markdown-it-py` 和 `pylatexenc`。转发器会优先使用 `/mnt/c/code/time_tracer/.venv/bin/python`；没有该虚拟环境时才回退到 Ubuntu 的 `python3`。
+
+`nlohmann_json`、`libsodium`、`zstd` 等 C++ 依赖由 CMake 在配置阶段自动发现或下载，不需要另外安装。SQLite 使用 Ubuntu 的 `libsqlite3-dev`，因为它提供 CMake 所需的头文件和链接库。
+
+初始化后，从 Windows 仓库终端验证：
+
+```powershell
+python tools/run.py verify --app tracer_core_shell --profile libs_ci_no_pch --build-dir build_libs --scope libs --test-platform ubuntu --concise
+```
+
 ## 4. verify 行为约定
 
 1. `verify` 是项目统一验证入口。
-2. 对 `tracer_core_shell`：
-   - 会构建 Windows CLI 对应产物
-   - 会执行 Python unit/component checks
-   - 会执行 native smoke / runtime tests / suite checks
-   - 会产出 artifact 级质量门禁结果
+2. `verify` 支持两个可重复组合的执行范围：
+   - `--scope libs`：只构建 CMake core，并执行共享 Python verify-stack、native/core
+     语义与 contract 测试；不构建 Cargo CLI，不运行 CLI suite 或输出质量门禁。
+   - `--scope cli`：构建 CMake core 后继续构建链接它的 Windows Rust CLI，并执行 CLI
+     黑盒 suite 与输出质量门禁；不会重复执行 libs/native/共享 verify-stack 测试。
+   - core/CLI verify 必须显式传入至少一个 `--scope`；多个 `--scope` 会去重后按一个流程执行。
 3. focused capability profile 不只跑黑盒或 smoke，也会带 capability 对应的
    core semantics / C ABI contract 测试：
    - `cap_query`

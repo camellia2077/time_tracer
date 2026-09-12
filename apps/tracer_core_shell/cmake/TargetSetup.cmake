@@ -45,6 +45,16 @@ function(_setup_target_common TARGET_NAME)
     set(one_value_args PCH_HEADER)
     cmake_parse_arguments(STC "${options}" "${one_value_args}" "" ${ARGN})
 
+    # Static libraries may be linked into the shared C ABI library on Linux.
+    # Their objects must be position-independent or the final shared-library
+    # link fails with an R_X86_64_PC32 relocation error.
+    get_target_property(TT_TARGET_TYPE ${TARGET_NAME} TYPE)
+    if(TT_TARGET_TYPE STREQUAL "STATIC_LIBRARY")
+        set_target_properties(${TARGET_NAME} PROPERTIES
+            POSITION_INDEPENDENT_CODE ON
+        )
+    endif()
+
     set(TT_TRACER_CORE_APP_SOURCE_ROOT "${PROJECT_SOURCE_DIR}")
     set(TT_TRACER_CORE_LIB_SOURCE_ROOT "${PROJECT_SOURCE_DIR}/../../libs/tracer_core/src")
 

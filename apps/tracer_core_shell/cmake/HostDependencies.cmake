@@ -82,8 +82,8 @@ function(_tt_host_ensure_tomlplusplus)
         return()
     endif()
 
-    if(WIN32 AND TT_TOML_HEADER_ONLY)
-        message(STATUS "Windows host: using bundled tomlplusplus header-only.")
+    if(TT_TOML_HEADER_ONLY)
+        message(STATUS "Host: using bundled tomlplusplus header-only.")
         FetchContent_Declare(
             time_tracker_tomlplusplus
             URL "https://github.com/marzer/tomlplusplus/archive/refs/tags/v3.4.0.tar.gz"

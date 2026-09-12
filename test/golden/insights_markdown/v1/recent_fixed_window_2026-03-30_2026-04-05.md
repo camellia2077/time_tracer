@@ -42,9 +42,9 @@
       *Average: 0h 57m 27s/day · 1 times · 0.14 times/day*
     - writing: 1h 21m 36s (16.9%)
       *Average: 0h 11m 39s/day · 1 times · 0.14 times/day*
-    - words: 0h 0m 1s (0.0%)
-      *Average: 0h 0m/day · 1 times · 0.14 times/day*
     - listening: 0h 0m 1s (0.0%)
+      *Average: 0h 0m/day · 1 times · 0.14 times/day*
+    - words: 0h 0m 1s (0.0%)
       *Average: 0h 0m/day · 1 times · 0.14 times/day*
   - computer: 4h 35m 30s (13.8%)
     *Average: 0h 39m 21s/day · 2 times · 0.29 times/day*

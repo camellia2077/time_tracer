@@ -30,7 +30,7 @@ python tools/test.py -h
 ## 全局不变量
 
 - `libs/**`、Android、Windows CLI、C ABI host 和 log generator 共享同一套时间追踪业务语义；改动必须同步受影响的 contracts、tests、generated snapshots 和 documentation。
-- 使用 `pwsh` 作为默认 shell 入口；只有用户明确要求时才运行 `.sh` 工作流。
+- 可以使用 `pwsh` 作为 shell 入口。
 - 默认通过 `python tools/run.py ...` 构建和验证；除非局部规则允许或用户明确要求，不直接调用 CMake、Ninja、Gradle 或 native wrapper。
 - 不回退或覆盖无关的用户修改；重构与功能变更保持分离，除非重构是安全实现功能所必需的。
 - 临时文件放在仓库 `temp/`，除非用户指定其他位置。

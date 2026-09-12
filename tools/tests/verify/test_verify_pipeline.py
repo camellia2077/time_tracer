@@ -81,3 +81,76 @@ class TestVerifyPipeline(TestCase):
 
         self.assertEqual(result, 9)
         self.assertEqual(calls, ["native"])
+
+    def test_cli_scope_skips_native_and_quality_gates(self):
+        calls: list[str] = []
+
+        def fake_run_command(cmd, cwd=None, env=None):
+            _ = cwd, env
+            calls.append("suite")
+            self.assertEqual(cmd, ["python", "test_suite.py"])
+            return 0
+
+        def fake_markdown_gates(**kwargs):
+            _ = kwargs
+            calls.append("markdown")
+            return 0
+
+        def fake_native(**kwargs):
+            _ = kwargs
+            calls.append("native")
+            return 0
+
+        result = run_artifact_pipeline(
+            test_cmd=["python", "test_suite.py"],
+            app_name="tracer_core_shell",
+            build_dir_name="build_release",
+            profile_name="release_bundle_ci_no_pch",
+            repo_root=Path.cwd(),
+            setup_env_fn=lambda: {},
+            run_command_fn=fake_run_command,
+            run_insights_markdown_gates_fn=fake_markdown_gates,
+            run_native_core_runtime_tests_fn=fake_native,
+            run_native=False,
+            run_host_blackbox=True,
+            run_quality_gates=True,
+        )
+
+        self.assertEqual(result, 0)
+        self.assertEqual(calls, ["suite", "markdown"])
+
+    def test_libs_scope_skips_cli_suite_and_quality_gates(self):
+        calls: list[str] = []
+
+        def fake_run_command(cmd, cwd=None, env=None):
+            _ = cmd, cwd, env
+            calls.append("suite")
+            return 0
+
+        def fake_markdown_gates(**kwargs):
+            _ = kwargs
+            calls.append("markdown")
+            return 0
+
+        def fake_native(**kwargs):
+            _ = kwargs
+            calls.append("native")
+            return 0
+
+        result = run_artifact_pipeline(
+            test_cmd=None,
+            app_name="tracer_core_shell",
+            build_dir_name="build_libs",
+            profile_name="fast_ci_no_pch",
+            repo_root=Path.cwd(),
+            setup_env_fn=lambda: {},
+            run_command_fn=fake_run_command,
+            run_insights_markdown_gates_fn=fake_markdown_gates,
+            run_native_core_runtime_tests_fn=fake_native,
+            run_native=True,
+            run_host_blackbox=False,
+            run_quality_gates=False,
+        )
+
+        self.assertEqual(result, 0)
+        self.assertEqual(calls, ["native"])

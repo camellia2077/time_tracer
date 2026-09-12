@@ -110,8 +110,11 @@ python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle
 命令：
 
 ```bash
-# C++ 轨专用（显式 LTO 开关走 CMake）
-python tools/run.py verify --app tracer_core_shell --profile release_bundle_ci_no_pch --build-dir build_lto --concise --cmake-args=-DTT_ENABLE_LTO=ON
+# Windows CLI 轨：core 仍会先构建，因为 CLI 会链接 libs；CLI scope 不重复执行 libs 测试
+python tools/run.py verify --app tracer_core_shell --profile release_bundle_ci_no_pch --build-dir build_lto --scope cli --concise --cmake-args=-DTT_ENABLE_LTO=ON
+
+# 共享 libs/core 轨（可在 Linux/Ubuntu CI 上运行）
+python tools/run.py verify --app tracer_core_shell --profile libs_ci_no_pch --build-dir build_libs --scope libs --concise
 ```
 
 ## Rollback Playbook

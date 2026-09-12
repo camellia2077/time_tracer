@@ -1,6 +1,6 @@
 [English Version](README.en.md) | [中文版本](README.md)
 
-# Time Tracer ![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg) [![Windows Build Matrix](https://github.com/camellia2077/time_tracer/actions/workflows/windows-build-matrix.yml/badge.svg)](https://github.com/camellia2077/time_tracer/actions/workflows/windows-build-matrix.yml) [![Android CI](https://github.com/camellia2077/time_tracer/actions/workflows/android-ci.yml/badge.svg)](https://github.com/camellia2077/time_tracer/actions/workflows/android-ci.yml)
+# Time Tracer ![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg) [![Android CI](https://github.com/camellia2077/time_tracer/actions/workflows/android-ci.yml/badge.svg)](https://github.com/camellia2077/time_tracer/actions/workflows/android-ci.yml) [![Libraries CI](https://github.com/camellia2077/time_tracer/actions/workflows/libs-ci.yml/badge.svg)](https://github.com/camellia2077/time_tracer/actions/workflows/libs-ci.yml) [![Windows CLI CI](https://github.com/camellia2077/time_tracer/actions/workflows/cli-ci.yml/badge.svg)](https://github.com/camellia2077/time_tracer/actions/workflows/cli-ci.yml)
 
 <p align="center">
   <img src="ui/branding/master/time_tracer_brand_master_symbol.svg" alt="Time Tracer Logo" width="120" height="120">

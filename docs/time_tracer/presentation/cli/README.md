@@ -56,8 +56,8 @@
 
 1. 集成套件目录：`tools/suites/tracer_windows_rust_cli/`
 2. 推荐命令：
-   - `python tools/run.py verify --app tracer_core_shell --build-dir build_fast --concise`
-   - `python tools/run.py verify --app tracer_core --profile fast --concise`
+   - `python tools/run.py verify --app tracer_core_shell --build-dir build_fast --scope cli --concise`
+   - `python tools/run.py verify --app tracer_core --profile fast --scope cli --concise`
 3. 验收结果目录：`out/test/artifact_windows_cli/`
 4. 通过判定：`out/test/artifact_windows_cli/result.json` 中 `success=true`
 5. TXT day-block 黑盒场景：

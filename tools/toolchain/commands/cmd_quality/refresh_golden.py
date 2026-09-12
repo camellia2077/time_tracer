@@ -133,7 +133,7 @@ class RefreshGoldenCommand:
             current_dir = quality_gates_root / "insights_triplet_cases" / fmt / "current_v1"
             golden_dir = repo_root / "test" / "golden" / "insights_triplet" / fmt / "v1"
             export_root = result_layout.artifacts_dir / "insights" / export_dir_name
-            audit_output = quality_gates_root / "audits" / f"insights-triplet-{fmt}-byte-audit.md"
+            audit_output = quality_gates_root / "audits" / f"insights-triplet-{fmt}-render-audit.md"
 
             collect_cmd = [
                 os.sys.executable,
@@ -173,6 +173,8 @@ class RefreshGoldenCommand:
                 pattern,
                 "--output",
                 str(audit_output),
+                "--normalize-ext",
+                ".tex,.typ",
                 "--fail-on-diff",
             ]
             if run_command(audit_cmd, cwd=repo_root, env=env) != 0:
@@ -296,6 +298,7 @@ class RefreshGoldenCommand:
                 build_dir_name=resolved_build_dir,
                 profile_name=profile_name,
                 concise=concise,
+                scopes=("cli",),
             )
             if verify_ret != 0:
                 return verify_ret

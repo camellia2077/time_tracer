@@ -20,7 +20,7 @@
 
 ```bash
 # Python 工具链主入口
-python tools/run.py verify --app tracer_core_shell --profile fast --concise
+python tools/run.py verify --app tracer_core_shell --profile fast --scope libs --scope cli --concise
 
 # 开发辅助脚本示例
 python -m tools.devtools.loc_scanner --lang py tools test tools/scripts/devtools --under 120

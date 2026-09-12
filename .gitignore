@@ -11,6 +11,8 @@ out/
 temp/
 input/
 .ruff_cache/
+.venv/
+*.egg-info/
 
 *.png
 *.exe
@@ -22,6 +24,8 @@ input/
 !test/golden/report_triplet/**/v1/*.typ
 !test/golden/report_formatter_parity/**/v1/*.tex
 !test/golden/report_formatter_parity/**/v1/*.typ
+!test/golden/insights_triplet/**/v1/*.tex
+!test/golden/insights_triplet/**/v1/*.typ
 
 
 apps/tracer_android/runtime/src/main/assets/tracer_core/config/meta/sync_state.json

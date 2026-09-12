@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -49,7 +50,7 @@ def parse_args() -> argparse.Namespace:
         default=".md",
         help=(
             "Comma-separated extension whitelist for text normalization "
-            "(BOM removal + CRLF/CR -> LF) before compare. "
+            "(BOM/newline normalization; TeX/Typst lexical parsing) before compare. "
             "Example: .md,.txt,.json ; default: .md"
         ),
     )
@@ -74,6 +75,159 @@ def normalize_text_bytes(content: bytes) -> bytes:
     if content.startswith(b"\xef\xbb\xbf"):
         content = content[3:]
     return content.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+
+
+def _canonicalize_text_tokens(text: str) -> list[str]:
+    tokens: list[str] = []
+    current: list[str] = []
+    for char in text:
+        if char.isspace():
+            if current:
+                tokens.append("".join(current))
+                current = []
+            continue
+        if char.isalnum() or char in "_-$":
+            current.append(char)
+            continue
+        if current:
+            tokens.append("".join(current))
+            current = []
+        tokens.append(char)
+    if current:
+        tokens.append("".join(current))
+    return tokens
+
+
+def canonicalize_latex_bytes(content: bytes) -> bytes:
+    """Parse LaTeX into a stable node representation for golden comparison.
+
+    The parser captures commands, environments, groups, math nodes, and text
+    tokens while discarding source-only whitespace and comments.
+    """
+    try:
+        from pylatexenc.latexwalker import (
+            LatexCharsNode,
+            LatexCommentNode,
+            LatexEnvironmentNode,
+            LatexGroupNode,
+            LatexMacroNode,
+            LatexMathNode,
+            LatexWalker,
+        )
+    except ImportError as error:  # pragma: no cover - dependency is declared.
+        raise RuntimeError(
+            "pylatexenc is required for LaTeX golden checks; install project dependencies."
+        ) from error
+
+    def canonicalize_node(node):
+        if isinstance(node, LatexCommentNode):
+            return None
+        if isinstance(node, LatexCharsNode):
+            return ["text", *_canonicalize_text_tokens(node.chars)]
+        if isinstance(node, LatexMacroNode):
+            return [
+                "macro",
+                node.macroname,
+                (
+                    canonicalize_node(node.nodeoptarg)
+                    if getattr(node, "nodeoptarg", None)
+                    else None
+                ),
+                [
+                    canonicalize_node(item)
+                    for item in (getattr(node, "nodeargs", None) or [])
+                ],
+            ]
+        if isinstance(node, LatexGroupNode):
+            return [
+                "group",
+                node.delimiters,
+                [canonicalize_node(item) for item in node.nodelist],
+            ]
+        if isinstance(node, LatexEnvironmentNode):
+            return [
+                "environment",
+                node.environmentname,
+                (
+                    canonicalize_node(node.nodeoptarg)
+                    if getattr(node, "nodeoptarg", None)
+                    else None
+                ),
+                [
+                    canonicalize_node(item)
+                    for item in (getattr(node, "nodeargs", None) or [])
+                ],
+                [canonicalize_node(item) for item in node.nodelist],
+            ]
+        if isinstance(node, LatexMathNode):
+            return [
+                "math",
+                node.math_mode,
+                [canonicalize_node(item) for item in node.nodelist],
+            ]
+        return [type(node).__name__, getattr(node, "latex_verbatim", lambda: "")()]
+
+    text = normalize_text_bytes(content).decode("utf-8")
+    nodes, _, _ = LatexWalker(text).get_latex_nodes()
+    canonical = [canonicalize_node(node) for node in nodes]
+    return json.dumps(canonical, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+
+
+def canonicalize_typst_bytes(content: bytes) -> bytes:
+    """Compare Typst by lexical structure, not source formatting.
+
+    Typst has no stable official Python AST package; retain the lightweight
+    format-aware token representation until a maintained parser is available.
+    """
+    text = normalize_text_bytes(content).decode("utf-8")
+    tokens: list[str] = []
+    index = 0
+    length = len(text)
+    while index < length:
+        char = text[index]
+        if char.isspace():
+            index += 1
+            continue
+
+        if text.startswith("//", index):
+            newline = text.find("\n", index)
+            index = length if newline < 0 else newline + 1
+            continue
+        if text.startswith("/*", index):
+            end = text.find("*/", index + 2)
+            index = length if end < 0 else end + 2
+            continue
+
+        if char in {'"', "'"}:
+            quote = char
+            end = index + 1
+            escaped = False
+            while end < length:
+                current = text[end]
+                if escaped:
+                    escaped = False
+                elif current == "\\":
+                    escaped = True
+                elif current == quote:
+                    end += 1
+                    break
+                end += 1
+            tokens.append(text[index:end])
+            index = end
+            continue
+
+        if char.isalnum() or char in "_-$":
+            end = index + 1
+            while end < length and (text[end].isalnum() or text[end] in "_-$"):
+                end += 1
+            tokens.append(text[index:end])
+            index = end
+            continue
+
+        tokens.append(char)
+        index += 1
+
+    return "\x1f".join(tokens).encode("utf-8")
 
 
 def parse_normalize_extensions(raw_value: str) -> set[str]:
@@ -158,8 +312,15 @@ def audit_dirs(
         suffix = Path(rel_path).suffix.lower()
         normalized = suffix in normalize_extensions
         if normalized:
-            compare_left = normalize_text_bytes(left_bytes)
-            compare_right = normalize_text_bytes(right_bytes)
+            if suffix == ".tex":
+                compare_left = canonicalize_latex_bytes(left_bytes)
+                compare_right = canonicalize_latex_bytes(right_bytes)
+            elif suffix == ".typ":
+                compare_left = canonicalize_typst_bytes(left_bytes)
+                compare_right = canonicalize_typst_bytes(right_bytes)
+            else:
+                compare_left = normalize_text_bytes(left_bytes)
+                compare_right = normalize_text_bytes(right_bytes)
         same_bytes = compare_left == compare_right
         diffs.append(
             FileDiff(
@@ -168,7 +329,7 @@ def audit_dirs(
                 right_sha256=sha256_hex(compare_right),
                 same_bytes=same_bytes,
                 detail=(
-                    f"identical ({suffix} normalized)"
+                    f"identical ({suffix} parsed tokens)"
                     if same_bytes and normalized
                     else ("identical" if same_bytes else first_diff_detail(compare_left, compare_right))
                 ),

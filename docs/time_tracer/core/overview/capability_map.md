@@ -51,19 +51,19 @@ flowchart LR
 ## Verify First
 
 1. `pipeline`
-   - `python tools/run.py verify --app tracer_core_shell --profile cap_pipeline --concise`
+   - `python tools/run.py verify --app tracer_core_shell --profile cap_pipeline --scope libs --concise`
 2. `query`
-   - `python tools/run.py verify --app tracer_core_shell --profile cap_query --concise`
+   - `python tools/run.py verify --app tracer_core_shell --profile cap_query --scope libs --concise`
 3. `insights`
-   - `python tools/run.py verify --app tracer_core_shell --profile cap_insights --concise`
+   - `python tools/run.py verify --app tracer_core_shell --profile cap_insights --scope libs --concise`
 4. `exchange`
-   - `python tools/run.py verify --app tracer_core_shell --profile cap_exchange --concise`
+   - `python tools/run.py verify --app tracer_core_shell --profile cap_exchange --scope libs --concise`
 5. `config`
-   - `python tools/run.py verify --app tracer_core_shell --profile cap_config --concise`
+   - `python tools/run.py verify --app tracer_core_shell --profile cap_config --scope libs --concise`
 6. `persistence_write`
-   - `python tools/run.py verify --app tracer_core_shell --profile cap_persistence_write --concise`
+   - `python tools/run.py verify --app tracer_core_shell --profile cap_persistence_write --scope libs --concise`
 7. `persistence_runtime`
-   - `python tools/run.py verify --app tracer_core_shell --profile cap_persistence_runtime --concise`
+   - `python tools/run.py verify --app tracer_core_shell --profile cap_persistence_runtime --scope libs --concise`
 
 ## Read Next
 1. [module_boundaries.md](module_boundaries.md)

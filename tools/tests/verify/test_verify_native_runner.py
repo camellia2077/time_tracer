@@ -4,6 +4,7 @@ import io
 from contextlib import redirect_stdout
 from unittest import TestCase
 from unittest.mock import patch
+import os
 
 from tools.toolchain.commands.cmd_quality.verify_internal.verify_native_runner import (
     run_native_core_runtime_tests,
@@ -11,6 +12,10 @@ from tools.toolchain.commands.cmd_quality.verify_internal.verify_native_runner i
 
 
 class TestVerifyNativeRunner(TestCase):
+    @staticmethod
+    def _native_name(name: str) -> str:
+        return name + (".exe" if os.name == "nt" else "")
+
     def test_cap_query_runs_query_native_targets(self):
         commands: list[list[str]] = []
 
@@ -24,11 +29,11 @@ class TestVerifyNativeRunner(TestCase):
             bin_dir = repo_root / "bin"
             bin_dir.mkdir(parents=True, exist_ok=True)
             for name in (
-                "tt_query_api_tests.exe",
-                "tc_c_api_query_tests.exe",
-                "tc_app_query_mod_smoke_tests.exe",
-                "tc_query_infra_smoke_tests.exe",
-                "tt_android_runtime_query_tests.exe",
+                self._native_name("tt_query_api_tests"),
+                self._native_name("tc_c_api_query_tests"),
+                self._native_name("tc_app_query_mod_smoke_tests"),
+                self._native_name("tc_query_infra_smoke_tests"),
+                self._native_name("tt_android_runtime_query_tests"),
             ):
                 (bin_dir / name).write_text("", encoding="utf-8")
 
@@ -51,11 +56,11 @@ class TestVerifyNativeRunner(TestCase):
         self.assertEqual(
             executed,
             [
-                "tt_query_api_tests.exe",
-                "tc_c_api_query_tests.exe",
-                "tc_app_query_mod_smoke_tests.exe",
-                "tc_query_infra_smoke_tests.exe",
-                "tt_android_runtime_query_tests.exe",
+                self._native_name("tt_query_api_tests"),
+                self._native_name("tc_c_api_query_tests"),
+                self._native_name("tc_app_query_mod_smoke_tests"),
+                self._native_name("tc_query_infra_smoke_tests"),
+                self._native_name("tt_android_runtime_query_tests"),
             ],
         )
 
@@ -73,11 +78,11 @@ class TestVerifyNativeRunner(TestCase):
             bin_dir = repo_root / "bin"
             bin_dir.mkdir(parents=True, exist_ok=True)
             for name in (
-                "tt_query_api_tests.exe",
-                "tc_c_api_query_tests.exe",
-                "tc_app_query_mod_smoke_tests.exe",
-                "tc_query_infra_smoke_tests.exe",
-                "tt_android_runtime_query_tests.exe",
+                self._native_name("tt_query_api_tests"),
+                self._native_name("tc_c_api_query_tests"),
+                self._native_name("tc_app_query_mod_smoke_tests"),
+                self._native_name("tc_query_infra_smoke_tests"),
+                self._native_name("tt_android_runtime_query_tests"),
             ):
                 (bin_dir / name).write_text("", encoding="utf-8")
 
@@ -117,8 +122,8 @@ class TestVerifyNativeRunner(TestCase):
             bin_dir = repo_root / "bin"
             bin_dir.mkdir(parents=True, exist_ok=True)
             for name in (
-                "tc_config_infra_smoke_tests.exe",
-                "tt_android_runtime_config_tests.exe",
+                self._native_name("tc_config_infra_smoke_tests"),
+                self._native_name("tt_android_runtime_config_tests"),
             ):
                 (bin_dir / name).write_text("", encoding="utf-8")
 
@@ -141,8 +146,8 @@ class TestVerifyNativeRunner(TestCase):
         self.assertEqual(
             executed,
             [
-                "tc_config_infra_smoke_tests.exe",
-                "tt_android_runtime_config_tests.exe",
+                self._native_name("tc_config_infra_smoke_tests"),
+                self._native_name("tt_android_runtime_config_tests"),
             ],
         )
 
@@ -159,13 +164,13 @@ class TestVerifyNativeRunner(TestCase):
             bin_dir = repo_root / "bin"
             bin_dir.mkdir(parents=True, exist_ok=True)
             for name in (
-                "tc_c_api_smoke_tests.exe",
-                "tc_c_api_shell_aggregate_tests.exe",
-                "ttr_tests.exe",
-                "ttr_rt_codec_tests.exe",
-                "tt_aggregate_runtime_tests.exe",
-                "tc_app_aggregate_runtime_smoke_tests.exe",
-                "tt_android_runtime_shell_smoke_tests.exe",
+                self._native_name("tc_c_api_smoke_tests"),
+                self._native_name("tc_c_api_shell_aggregate_tests"),
+                self._native_name("ttr_tests"),
+                self._native_name("ttr_rt_codec_tests"),
+                self._native_name("tt_aggregate_runtime_tests"),
+                self._native_name("tc_app_aggregate_runtime_smoke_tests"),
+                self._native_name("tt_android_runtime_shell_smoke_tests"),
             ):
                 (bin_dir / name).write_text("", encoding="utf-8")
 
@@ -188,12 +193,12 @@ class TestVerifyNativeRunner(TestCase):
         self.assertEqual(
             executed,
             [
-                "tc_c_api_smoke_tests.exe",
-                "tc_c_api_shell_aggregate_tests.exe",
-                "ttr_tests.exe",
-                "ttr_rt_codec_tests.exe",
-                "tt_aggregate_runtime_tests.exe",
-                "tc_app_aggregate_runtime_smoke_tests.exe",
-                "tt_android_runtime_shell_smoke_tests.exe",
+                self._native_name("tc_c_api_smoke_tests"),
+                self._native_name("tc_c_api_shell_aggregate_tests"),
+                self._native_name("ttr_tests"),
+                self._native_name("ttr_rt_codec_tests"),
+                self._native_name("tt_aggregate_runtime_tests"),
+                self._native_name("tc_app_aggregate_runtime_smoke_tests"),
+                self._native_name("tt_android_runtime_shell_smoke_tests"),
             ],
         )

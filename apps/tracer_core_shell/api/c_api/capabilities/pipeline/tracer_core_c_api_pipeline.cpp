@@ -1,9 +1,10 @@
 // api/c_api/capabilities/pipeline/tracer_core_c_api_pipeline.cpp
-import tracer.core.application.use_cases.interface;
-
 #include <exception>
 
 #include "nlohmann/json.hpp"
+
+import tracer.core.application.use_cases.interface;
+
 #include "api/c_api/tracer_core_c_api.h"
 #include "api/c_api/runtime/tracer_core_c_api_internal.hpp"
 #include "application/dto/pipeline_requests.hpp"

@@ -1,0 +1,142 @@
+name: Windows CLI CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/cli/windows/**'
+      - 'apps/tracer_core_shell/**'
+      - 'libs/**'
+      - 'tools/**'
+      - 'test/**'
+      - 'config/**'
+      - '.github/actions/**'
+      - '.github/workflows/cli-ci.yml'
+  pull_request:
+    paths:
+      - 'apps/cli/windows/**'
+      - 'apps/tracer_core_shell/**'
+      - 'libs/**'
+      - 'tools/**'
+      - 'test/**'
+      - 'config/**'
+      - '.github/actions/**'
+      - '.github/workflows/cli-ci.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: "0 2 * * 0"
+
+permissions:
+  contents: read
+
+jobs:
+  prepare-cli-matrix:
+    name: prepare-cli-matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.generate.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup shared Python repo tools
+        uses: ./.github/actions/setup-python-repo-tools
+
+      - name: Generate CLI matrix from toolchain config
+        id: generate
+        shell: bash
+        run: |
+          MATRIX_JSON="$(python -m tools.toolchain.ci.windows_matrix --config tools/toolchain/config/build.toml)"
+          echo "matrix=${MATRIX_JSON}" >> "$GITHUB_OUTPUT"
+
+  cli-presentation-matrix:
+    needs:
+      - prepare-cli-matrix
+    name: cli-presentation-${{ matrix.job_name }}
+    runs-on: windows-latest
+    timeout-minutes: 60
+    continue-on-error: ${{ matrix.allow_failure }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare-cli-matrix.outputs.matrix) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup shared Windows verify environment
+        uses: ./.github/actions/setup-windows-verify-env
+        with:
+          msys2-update: ${{ github.event_name == 'schedule' && 'true' || 'false' }}
+
+      - name: Run Windows CLI verify
+        uses: ./.github/actions/run-windows-verify
+        with:
+          profile: ${{ matrix.profile }}
+          build-dir: ${{ matrix.build_dir }}
+          cmake-args: ${{ matrix.cmake_args }}
+          job-name: ${{ matrix.job_name }}
+          scope: cli
+
+      - name: Upload CLI presentation diagnostics
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: cli-presentation-diagnostics-${{ matrix.job_name }}
+          path: |
+            out/test/artifact_windows_cli/result.json
+            out/test/artifact_windows_cli/result_cases.json
+            out/test/artifact_windows_cli/logs/**
+            out/test/artifact_windows_cli/quality_gates/**
+            temp/verify-${{ matrix.job_name }}.log
+          if-no-files-found: warn
+
+  cli-diagnostics-archive:
+    needs:
+      - cli-presentation-matrix
+    name: cli-diagnostics-archive
+    timeout-minutes: 15
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Download CLI diagnostics
+        uses: actions/download-artifact@v7
+        with:
+          pattern: cli-presentation-diagnostics-*
+          path: cli-diagnostics
+          merge-multiple: false
+
+      - name: Upload combined CLI diagnostics
+        uses: actions/upload-artifact@v6
+        with:
+          name: cli-diagnostics
+          path: cli-diagnostics/*
+          if-no-files-found: error
+
+      - name: Remove matrix diagnostic artifacts
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const artifacts = await github.paginate(
+              github.rest.actions.listWorkflowRunArtifacts,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: context.runId,
+                per_page: 100,
+              },
+            );
+
+            for (const artifact of artifacts) {
+              if (artifact.name !== 'cli-diagnostics' &&
+                  (artifact.name.startsWith('cli-presentation-diagnostics-'))) {
+                await github.rest.actions.deleteArtifact({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  artifact_id: artifact.id,
+                });
+              }
+            }

@@ -15,9 +15,9 @@ Current phase:
 
 - Use `python tools/run.py -h` and `python tools/run.py <subcommand> -h` before trying new flag combinations.
 - Preferred daily validation:
-  - `python tools/run.py verify --app tracer_core_shell --build-dir build_fast --concise`
+  - `python tools/run.py verify --app tracer_core_shell --build-dir build_fast --scope libs --scope cli --concise`
 - Milestone / batch validation:
-  - `python tools/run.py verify --app tracer_core_shell --profile fast_ci_no_pch --build-dir build_fast --concise`
+  - `python tools/run.py verify --app tracer_core_shell --profile fast_ci_no_pch --build-dir build_fast --scope libs --scope cli --concise`
 - Result files:
   - `out/test/artifact_windows_cli/result.json`
   - `out/test/artifact_windows_cli/logs/output.log`

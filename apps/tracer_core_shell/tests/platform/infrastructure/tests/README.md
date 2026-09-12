@@ -50,5 +50,5 @@ When moving/adding test files, always update this file first.
 ## Validation Checklist
 
 1. `python tools/run.py build --app tracer_core --build-dir build_fast --concise`
-2. `python tools/run.py verify --app tracer_core --build-dir build_fast --concise`
+2. `python tools/run.py verify --app tracer_core --build-dir build_fast --scope libs --concise`
 3. `rg -n "infrastructure/tests/(android_runtime|data_query|insights_formatter|exchange)" apps/tracer_core_shell/tests/platform`

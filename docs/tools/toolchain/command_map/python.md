@@ -111,7 +111,7 @@ python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle
 
 # C++ 轨专用（clang-tidy / build verify）
 python tools/run.py build --app tracer_core --profile fast --concise
-python tools/run.py verify --app tracer_core --profile fast --concise
+python tools/run.py verify --app tracer_core --profile fast --scope libs --scope cli --concise
 python tools/run.py tidy --app tracer_core_shell -- --target tidy_all
 python tools/run.py tidy-source-step --task-log <resolved_task_json> --dry-run
 ```

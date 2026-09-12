@@ -1,0 +1,48 @@
+name: Run Windows Verify
+description: Run a Windows verify command and preserve its complete output.
+
+inputs:
+  profile:
+    description: Verify profile name.
+    required: true
+  build-dir:
+    description: Build directory name.
+    required: true
+  cmake-args:
+    description: Optional extra CMake argument passed through to tools/run.py.
+    required: false
+    default: ''
+  job-name:
+    description: Stable name used for the diagnostic log file.
+    required: true
+  scope:
+    description: Verify execution scope.
+    required: false
+    default: cli
+
+runs:
+  using: composite
+  steps:
+    - name: Verify tracer_core_shell
+      shell: pwsh
+      run: |
+        $log = "temp/verify-${{ inputs.job-name }}.log"
+        New-Item -ItemType Directory -Force -Path (Split-Path -Parent $log) | Out-Null
+        $verifyArgs = @(
+          'tools/run.py',
+          'verify',
+          '--app', 'tracer_core_shell',
+          '--profile', '${{ inputs.profile }}',
+          '--build-dir', '${{ inputs.build-dir }}',
+          '--scope', '${{ inputs.scope }}',
+          '--concise'
+        )
+        $cmakeArgs = '${{ inputs.cmake-args }}'
+        if ($cmakeArgs -ne '') {
+          $verifyArgs += $cmakeArgs
+        }
+        & python @verifyArgs 2>&1 | Tee-Object -FilePath $log
+        $exitCode = $LASTEXITCODE
+        if ($exitCode -ne 0) {
+          exit $exitCode
+        }

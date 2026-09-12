@@ -44,7 +44,7 @@ symbol loading, or ABI payload consumption.
 Required for Rust CLI code, config, suite, or behavior changes:
 
 ```powershell
-python tools/run.py verify --app tracer_core --concise
+python tools/run.py verify --app tracer_core --scope cli --concise
 ```
 
 When explicit release-bundle confirmation is required, preserve this order:

@@ -171,7 +171,7 @@ class InsightsMarkdownGateCommand:
             triplet_golden_dir = repo_root / "test" / "golden" / "insights_triplet" / fmt / "v1"
             export_dir = result_layout.artifacts_dir / "insights" / export_dir_name
             triplet_audit_output = (
-                quality_gates_root / "audits" / f"insights-triplet-{fmt}-byte-audit.md"
+                quality_gates_root / "audits" / f"insights-triplet-{fmt}-render-audit.md"
             )
 
             collect_triplet_cmd = [
@@ -214,6 +214,8 @@ class InsightsMarkdownGateCommand:
                 pattern,
                 "--output",
                 str(triplet_audit_output),
+                "--normalize-ext",
+                ".tex,.typ",
                 "--fail-on-diff",
             ]
             triplet_audit_ret = int(run_command(triplet_audit_cmd, cwd=repo_root, env=env))

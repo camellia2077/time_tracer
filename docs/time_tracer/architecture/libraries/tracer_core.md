@@ -251,5 +251,5 @@ module surface or a narrow port.
 For core validation, use the capability profiles `cap_pipeline`, `cap_query`,
 `cap_insights`, `cap_exchange`, `cap_config`, `cap_persistence_write`, and
 `cap_persistence_runtime`. Use
-`python tools/run.py verify --app tracer_core_shell --profile fast --concise`
+`python tools/run.py verify --app tracer_core_shell --profile fast --scope libs --scope cli --concise`
 for cross-boundary changes.

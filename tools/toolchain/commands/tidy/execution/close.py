@@ -115,6 +115,7 @@ class TidyCloseCommand:
                     profile_name=profile_name,
                     concise=concise,
                     kill_build_procs=kill_build_procs,
+                    scopes=("libs", "cli"),
                 )
                 if verify_ret != 0:
                     print("--- tidy-close: stage failed -> verify")

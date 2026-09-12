@@ -101,7 +101,7 @@ Every CLI refactoring proposal or implementation must record:
 Required validation for Rust CLI changes is:
 
 ```powershell
-python tools/run.py verify --app tracer_core --concise
+python tools/run.py verify --app tracer_core --scope cli --concise
 ```
 
 If Core/native code changes, rebuild Core before rebuilding the Rust CLI. For

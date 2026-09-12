@@ -251,6 +251,8 @@ class TestRunCliDispatchCoreBuildVerify(RunCliDispatchTestBase):
                 "verify",
                 "--app",
                 "tracer_core",
+                "--scope",
+                "libs",
                 "--profile",
                 "fast",
                 "--profile",
@@ -261,6 +263,20 @@ class TestRunCliDispatchCoreBuildVerify(RunCliDispatchTestBase):
 
         self.assertEqual(rc, 2)
         self.assertIn("supported only for Gradle-backed apps", stderr.getvalue())
+        self.assertEqual(stdout.getvalue(), "")
+
+    def test_verify_requires_explicit_scope_for_core_apps(self):
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        with patch.object(
+            sys,
+            "argv",
+            ["run.py", "verify", "--app", "tracer_core", "--profile", "fast"],
+        ), redirect_stdout(stdout), redirect_stderr(stderr):
+            rc = self.run_module.main()
+
+        self.assertEqual(rc, 2)
+        self.assertIn("requires at least one explicit `--scope libs`", stderr.getvalue())
         self.assertEqual(stdout.getvalue(), "")
 
     def test_verify_rejects_removed_quick_flag(self):

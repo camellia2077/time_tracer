@@ -131,10 +131,17 @@ def run_native_core_runtime_tests(
                 continue
             ran_any = True
             print(f"--- verify: running native core runtime test `{test_name}`")
+            env = setup_env_fn()
+            if os.name != "nt":
+                library_paths = [str(bin_dir)]
+                existing_library_path = env.get("LD_LIBRARY_PATH", "")
+                if existing_library_path:
+                    library_paths.append(existing_library_path)
+                env["LD_LIBRARY_PATH"] = os.pathsep.join(library_paths)
             ret = run_command_fn(
                 [str(executable)],
                 cwd=bin_dir,
-                env=setup_env_fn(),
+                env=env,
             )
             if ret != 0:
                 if record_phase_fn is not None:

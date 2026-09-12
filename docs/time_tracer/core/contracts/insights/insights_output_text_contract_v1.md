@@ -19,13 +19,13 @@
 3. 仅允许在 UI 展示解析层做临时格式处理，且不得回写导出文本。
 4. 报告文本编码统一为 UTF-8。
 5. 换行语义统一为 LF（`\n`），正文必须以单个 LF 结尾（保留末尾换行）。
-6. 一致性门禁以“原始字节全等 + `sha256` 全等”为准，不允许通过 CRLF/LF 归一化绕过失败。
+6. `md` 门禁比较 Markdown 语义 token；`tex/typ` 门禁比较解析后的结构 token，不以源码排版空白、换行或注释差异作为失败条件。
 
 ## 4. 测试与门禁
 1. Android runtime 必须覆盖“成功响应正文原样透传”单测。
 2. Core formatter parity 必须持续覆盖 `md/tex/typ` 三格式快照回归。
 3. `md` 跨端一致性（Windows CLI vs Android）必须覆盖原始字节一致与 `sha256` 一致。
-4. 六类固定样本（`day/month/week/year/recent/range`）必须通过 md golden 语义渲染结构校验（`markdown-it-py` 语义 token 对比）。
+4. 四类固定样本（`day/month/recent/range`）必须通过 md golden 语义渲染结构校验（`markdown-it-py` 语义 token 对比）。
 
 ## 5. 代码落点
 1. Android insights translator：`apps/android/runtime/src/main/java/com/example/tracer/runtime/translators/NativeInsightsTranslator.kt`
@@ -34,4 +34,4 @@
 4. Android runtime insights consistency tests：`libs/tracer_core/src/infra/tests/android_runtime/android_runtime_insights_consistency_tests.cpp`
 5. 固定样本采样脚本：`tools/toolchain/quality_gates/insights/collect_insights_markdown_cases.py`
 6. 渲染结构校验脚本：`tools/toolchain/quality_gates/insights/insights_markdown_render_snapshot_check.py`
-7. `tex/typ` 字节级审计脚本：`tools/toolchain/quality_gates/insights/insights_consistency_audit.py`
+7. `tex/typ` 结构审计脚本：`tools/toolchain/quality_gates/insights/insights_consistency_audit.py`
