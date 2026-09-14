@@ -11,9 +11,7 @@ internal fun clearSelectedConfigFile(
         aliasSearchQuery = "",
         aliasSearchDocument = null,
         aliasDocumentDraft = null,
-        aliasBaselineDocument = null,
         aliasParentOptions = emptyList(),
-        aliasAdvancedTomlDraft = "",
         aliasEntryMovePlan = null,
         aliasEditorErrorMessage = "",
         statusText = statusText
@@ -47,56 +45,21 @@ internal fun applyLoadedConfigFile(
     val documentError = coreErrorMessage.ifBlank {
         "Activity hierarchy runtime did not return a structured snapshot."
     }
-    val restoredAdvancedDraft = state.aliasAdvancedDraftsByFile[filePath] ?: content
-    val restoredStructuredDraft = state.aliasStructuredDraftsByFile[filePath]
-    val restoredMode = state.aliasEditorModeByFile[filePath]
-    // Re-opening a config file should restore the user's in-session draft instead of snapping
-    // back to the last saved content. The saved file remains the persistence source of truth; the
-    // caches here only keep the editor surface stable while users browse elsewhere.
-    return when {
-        restoredMode == AliasEditorMode.ADVANCED -> {
-            base.copy(
-                aliasEditorMode = AliasEditorMode.ADVANCED,
-                aliasDocumentDraft = restoredStructuredDraft ?: document,
-                aliasBaselineDocument = document,
-                aliasParentOptions = aliasParentOptions,
-                aliasAdvancedTomlDraft = restoredAdvancedDraft,
-                aliasEditorErrorMessage = ""
-            )
-        }
-        restoredStructuredDraft != null -> {
-            base.copy(
-                aliasEditorMode = AliasEditorMode.STRUCTURED,
-                aliasDocumentDraft = restoredStructuredDraft,
-                aliasBaselineDocument = document,
-                aliasParentOptions = aliasParentOptions,
-                aliasAdvancedTomlDraft = restoredAdvancedDraft,
-                aliasEditorErrorMessage = ""
-            )
-        }
-        document != null -> {
-            base.copy(
-                aliasEditorMode = AliasEditorMode.STRUCTURED,
-                aliasDocumentDraft = document,
-                aliasBaselineDocument = document,
-                aliasParentOptions = aliasParentOptions,
-                aliasAdvancedTomlDraft = restoredAdvancedDraft,
-                aliasEditorErrorMessage = ""
-            )
-        }
-        else -> {
-            // Fail open to raw TOML mode so users can recover malformed alias
-            // files instead of getting blocked by structured editor parsing.
-            base.copy(
-                aliasEditorMode = AliasEditorMode.ADVANCED,
-                aliasDocumentDraft = null,
-                aliasBaselineDocument = null,
-                aliasParentOptions = aliasParentOptions,
-                aliasAdvancedTomlDraft = restoredAdvancedDraft,
-                aliasEditorErrorMessage = documentError,
-                statusText = documentError
-            )
-        }
+    return if (document != null) {
+        base.copy(
+            aliasDocumentDraft = document,
+            aliasParentOptions = aliasParentOptions,
+            aliasEditorErrorMessage = ""
+        )
+    } else {
+        // The Android editor is structured-only. Keep the file content internal for
+        // Core operations, but never expose malformed TOML as a raw text editor.
+        base.copy(
+            aliasDocumentDraft = null,
+            aliasParentOptions = aliasParentOptions,
+            aliasEditorErrorMessage = documentError,
+            statusText = documentError
+        )
     }
 }
 

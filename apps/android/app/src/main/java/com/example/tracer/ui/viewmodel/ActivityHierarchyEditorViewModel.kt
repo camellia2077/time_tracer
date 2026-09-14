@@ -101,10 +101,6 @@ internal class ActivityHierarchyEditorViewModel(
         }
     }
 
-    fun onAliasAdvancedTomlChange(value: String) = aliasEditor.onAliasAdvancedTomlChange(value)
-
-    fun selectAliasEditorMode(mode: AliasEditorMode) = aliasEditor.selectAliasEditorMode(mode)
-
     fun updateAliasParent(value: String) = aliasEditor.updateAliasParent(value)
 
     fun renameAliasCategory(newName: String) = aliasEditor.renameAliasCategory(newName)
@@ -174,10 +170,6 @@ internal class ActivityHierarchyEditorViewModel(
     fun createAliasTomlFile(fileName: String) = saveCoordinator.createAliasTomlFile(fileName)
 
     fun deleteCurrentAliasTomlFile() = saveCoordinator.deleteCurrentAliasTomlFile()
-
-    fun saveCurrentFile() = saveCoordinator.saveCurrentFile()
-
-    fun discardUnsavedDraft() = saveCoordinator.discardUnsavedDraft()
 
     suspend fun applyImportedAliasToml(
         relativePath: String,

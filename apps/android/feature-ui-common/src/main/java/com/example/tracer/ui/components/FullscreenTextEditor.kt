@@ -1,7 +1,10 @@
 package com.example.tracer.ui.components
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -30,6 +33,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.example.tracer.fullscreenScrollContentPadding
+import com.example.tracer.fullscreenContentWindowInsets
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,6 +42,8 @@ fun FullscreenTextEditor(
     title: String,
     label: String,
     text: String,
+    showLabel: Boolean = true,
+    emptyTextHint: String? = label,
     closeContentDescription: String,
     saving: Boolean,
     error: String,
@@ -62,6 +69,9 @@ fun FullscreenTextEditor(
     ) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
+            contentWindowInsets = fullscreenContentWindowInsets().only(
+                WindowInsetsSides.Top + WindowInsetsSides.Horizontal
+            ),
             containerColor = MaterialTheme.colorScheme.surface,
             topBar = {
                 TopAppBar(
@@ -95,14 +105,17 @@ fun FullscreenTextEditor(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
+                    .consumeWindowInsets(innerPadding)
                     .imePadding()
-                    .padding(horizontal = 20.dp, vertical = 16.dp)
+                    .padding(start = 20.dp, end = 20.dp, top = 16.dp)
             ) {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                if (showLabel) {
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
                 BasicTextField(
                     value = text,
                     onValueChange = onTextChange,
@@ -117,11 +130,13 @@ fun FullscreenTextEditor(
                         .weight(1f)
                         .padding(top = 12.dp)
                         .verticalScroll(scrollState)
+                        .fullscreenScrollContentPadding()
+                        .padding(bottom = 16.dp)
                         .focusRequester(focusRequester),
                     decorationBox = { innerTextField ->
-                        if (text.isBlank()) {
+                        if (text.isBlank() && !emptyTextHint.isNullOrBlank()) {
                             Text(
-                                text = label,
+                                text = emptyTextHint,
                                 style = TextStyle(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontSize = 14.sp,
@@ -137,7 +152,7 @@ fun FullscreenTextEditor(
                         text = error,
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(top = 12.dp)
+                        modifier = Modifier.fullscreenScrollContentPadding().padding(top = 12.dp, bottom = 16.dp)
                     )
                 }
             }

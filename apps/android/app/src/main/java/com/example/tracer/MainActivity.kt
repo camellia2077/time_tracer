@@ -2,7 +2,6 @@ package com.example.tracer
 
 import android.app.ActivityManager
 import android.app.LocaleManager
-import android.graphics.Color as AndroidColor
 import android.os.Build
 import android.os.LocaleList
 import android.os.Bundle
@@ -155,10 +154,7 @@ private fun MainActivity.SynchronizeSystemBarsWithTheme() {
     val useDarkSystemBarIcons = shouldUseDarkSystemBarIcons(background)
 
     SideEffect {
-        window.statusBarColor = AndroidColor.TRANSPARENT
-        window.navigationBarColor = AndroidColor.TRANSPARENT
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            window.isStatusBarContrastEnforced = false
             window.isNavigationBarContrastEnforced = false
         }
         WindowCompat.getInsetsController(window, view).apply {

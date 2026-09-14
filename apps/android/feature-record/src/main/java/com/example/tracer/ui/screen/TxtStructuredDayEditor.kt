@@ -500,11 +500,13 @@ private fun TxtDayActivitySourcePage(
             }
         }
     }
-    FullscreenPage(onDismissRequest = onDismiss) {
+    FullscreenPage(onDismissRequest = onDismiss, scrollContentHandlesBottomInset = true) {
             Column(
                 modifier = Modifier
-                    .padding(24.dp)
-                    .verticalScroll(rememberScrollState()),
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .fullscreenScrollContentPadding()
+                    .padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Row(

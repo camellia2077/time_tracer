@@ -264,7 +264,9 @@ fun QueryInsightsTabContent(
                 onChartShowAverageLineChange = onChartShowAverageLineChange,
                 onChartVisualModeChange = onPreferredChartVisualModeChange,
                 onUpdateActivityRemark = queryInsightsViewModel::updateActivityRemark,
-                onUpdateDayRemark = queryInsightsViewModel::updateDayRemark,
+                dayRemarkAutoSaveError = queryInsightsViewModel.dayRemarkAutoSaveError,
+                onScheduleDayRemarkAutoSave = queryInsightsViewModel::scheduleDayRemarkAutoSave,
+                onFlushDayRemarkAutoSave = queryInsightsViewModel::flushDayRemarkAutoSave,
                 onEditDailyStatuses = onEditDailyStatuses
             )
         }

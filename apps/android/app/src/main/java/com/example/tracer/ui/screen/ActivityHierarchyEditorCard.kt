@@ -4,25 +4,21 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,25 +26,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.example.tracer.ui.components.NativeMultilineTextEditor
-import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
-import kotlinx.coroutines.delay
 
 
 @Composable
 internal fun ActivityHierarchyEditorCard(
     aliasFiles: List<ConfigTomlFileEntry>,
     selectedFileDisplayName: String,
-    selectedFileContent: String,
-    mode: AliasEditorMode,
     document: ActivityHierarchyDocument?,
     movePlan: AliasEntryMovePlan?,
     moveDestinations: List<AliasEntryMoveDestinationDocument>,
     moveDestinationsLoading: Boolean,
-    advancedTomlDraft: String,
     searchQuery: String,
     errorMessage: String,
     onCreateAliasTomlFile: (String) -> Unit,
@@ -56,9 +47,6 @@ internal fun ActivityHierarchyEditorCard(
     onDeleteAliasTomlFile: () -> Unit,
     onRenameCategory: (String) -> Unit,
     onSetParentColor: (String) -> Unit,
-    onSelectStructuredMode: () -> Unit,
-    onSelectAdvancedMode: () -> Unit,
-    onAdvancedTomlChange: (String) -> Unit,
     onAddGroup: (parentGroupId: String?, name: String) -> Unit,
     onDeleteGroup: (groupId: String) -> Unit,
     onRenameGroup: (groupId: String, name: String) -> Unit,
@@ -76,103 +64,140 @@ internal fun ActivityHierarchyEditorCard(
     onPreviewGroupMove: (groupId: String, target: AliasEntryMoveTarget) -> Unit,
     onConfirmMovePlan: () -> Unit,
     onDiscardMovePlan: () -> Unit,
-    onSave: () -> Unit,
     onSearchQueryChange: (String) -> Unit
 ) {
     var dialogState by remember { mutableStateOf<AliasEditorDialogState?>(null) }
+    var showCreateAliasTomlDialog by remember { mutableStateOf(false) }
     var showDeleteAliasTomlDialog by remember { mutableStateOf(false) }
     var showRenameCategoryDialog by remember { mutableStateOf(false) }
     var showAliasFileMenu by remember { mutableStateOf(false) }
+    var showCategoryActionsMenu by remember { mutableStateOf(false) }
     var parentColorDraft by remember(document?.parent, document?.color) {
         mutableStateOf(document?.color.orEmpty())
     }
     val categoryName = document?.parent
         ?.takeIf { it.isNotBlank() }
-        ?: selectedFileDisplayName.removeSuffix(".toml")
+        .orEmpty()
     var currentPathGroupIds by remember(selectedFileDisplayName) {
         mutableStateOf(emptyList<String>())
     }
-    LaunchedEffect(mode, selectedFileContent, advancedTomlDraft) {
-        val currentDraft = advancedTomlDraft
-        if (currentDraft.isBlank() || currentDraft == selectedFileContent) {
-            return@LaunchedEffect
-        }
-        delay(CONFIG_ALIAS_EDITOR_AUTO_SAVE_DELAY_MS)
-        val latestDraft = advancedTomlDraft
-        if (latestDraft.isNotBlank() && latestDraft != selectedFileContent) {
-            onSave()
-        }
-    }
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(2.dp)
-            ) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     text = stringResource(R.string.config_title_editor_categories),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1
                 )
-                Text(
-                    text = categoryName,
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    maxLines = 1
-                )
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    OutlinedButton(
-                        onClick = { showAliasFileMenu = true },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = selectedFileDisplayName,
-                            maxLines = 1
-                        )
-                    }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        Surface(
+                            onClick = { showAliasFileMenu = true },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = MaterialTheme.shapes.medium,
+                            color = MaterialTheme.colorScheme.surfaceVariant
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                val parentColor = previewParentColor(document?.color.orEmpty())
+                                Surface(
+                                    modifier = Modifier.size(12.dp),
+                                    shape = MaterialTheme.shapes.extraSmall,
+                                    color = parentColor ?: MaterialTheme.colorScheme.surfaceVariant,
+                                    border = androidx.compose.foundation.BorderStroke(
+                                        1.dp,
+                                        MaterialTheme.colorScheme.outline
+                                    )
+                                ) {}
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = categoryName,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        maxLines = 1
+                                    )
+                                }
+                                Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
+                            }
+                        }
                     DropdownMenu(
                         expanded = showAliasFileMenu,
                         onDismissRequest = { showAliasFileMenu = false }
                     ) {
                         aliasFiles.forEach { entry ->
                             DropdownMenuItem(
-                                text = { Text(entry.displayName) },
+                                text = { Text(entry.displayName.removeSuffix(".toml")) },
                                 onClick = {
                                     showAliasFileMenu = false
                                     onSelectAliasFile(entry.relativePath)
                                 }
                             )
-    }
-}
-            }
-
-            ActivityHierarchyFileControls(
-                onCreateAliasTomlFile = onCreateAliasTomlFile
-            )
-
-            Button(
-                onClick = { showRenameCategoryDialog = true },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.config_alias_action_rename_category))
-            }
-
-            OutlinedButton(
-                onClick = { showDeleteAliasTomlDialog = true },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.error
-                )
-            ) {
-                Icon(Icons.Filled.Delete, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(stringResource(R.string.config_action_delete_alias_mapping))
+                        }
+                        HorizontalDivider()
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.config_action_new_alias_mapping)) },
+                            leadingIcon = { Icon(Icons.Filled.Add, contentDescription = null) },
+                            onClick = {
+                                showAliasFileMenu = false
+                                showCreateAliasTomlDialog = true
+                            }
+                        )
+                    }
+                    }
+                    Box {
+                        IconButton(onClick = { showCategoryActionsMenu = true }) {
+                            Icon(
+                                imageVector = Icons.Filled.MoreVert,
+                                contentDescription = stringResource(R.string.config_alias_action_category_options)
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showCategoryActionsMenu,
+                            onDismissRequest = { showCategoryActionsMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = {
+                                    Text(stringResource(R.string.config_alias_action_rename_category))
+                                },
+                                onClick = {
+                                    showCategoryActionsMenu = false
+                                    showRenameCategoryDialog = true
+                                }
+                            )
+                            HorizontalDivider()
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        stringResource(R.string.config_action_delete_alias_mapping),
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Filled.Delete,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
+                                },
+                                onClick = {
+                                    showCategoryActionsMenu = false
+                                    showDeleteAliasTomlDialog = true
+                                }
+                            )
+                        }
+                    }
+                }
             }
 
             ActivityHierarchyParentColorEditor(
@@ -181,29 +206,6 @@ internal fun ActivityHierarchyEditorCard(
                 onDraftValueChange = { parentColorDraft = it },
                 onSaveColor = onSetParentColor
             )
-
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                val modes = listOf(
-                    AliasEditorMode.STRUCTURED to stringResource(R.string.config_alias_mode_structured),
-                    AliasEditorMode.ADVANCED to stringResource(R.string.config_alias_mode_advanced)
-                )
-                modes.forEachIndexed { index, (candidateMode, label) ->
-                    val selected = mode == candidateMode
-                    SegmentedButton(
-                        shape = SegmentedButtonDefaults.itemShape(index = index, count = modes.size),
-                        onClick = {
-                            when (candidateMode) {
-                                AliasEditorMode.STRUCTURED -> onSelectStructuredMode()
-                                AliasEditorMode.ADVANCED -> onSelectAdvancedMode()
-                            }
-                        },
-                        selected = selected,
-                        modifier = Modifier.weight(1f),
-                        colors = TracerSegmentedButtonDefaults.colors(),
-                        label = { Text(label) }
-                    )
-                }
-            }
 
             if (errorMessage.isNotBlank()) {
                 Text(
@@ -221,84 +223,71 @@ internal fun ActivityHierarchyEditorCard(
                 )
             }
 
-            when (mode) {
-                AliasEditorMode.STRUCTURED -> {
-                    if (document == null) {
-                        Text(
-                            text = stringResource(R.string.config_alias_structured_unavailable),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    } else {
-                        val layer = resolveAliasStructuredLayer(
-                            document = document,
-                            pathGroupIds = currentPathGroupIds
-                        )
-                        LaunchedEffect(layer.normalizedPathGroupIds) {
-                            // Keep local navigation path self-healing after tree mutations
-                            // (for example group delete/rename) by snapping to the nearest
-                            // still-valid ancestor path produced by layer resolution.
-                            if (layer.normalizedPathGroupIds != currentPathGroupIds) {
-                                currentPathGroupIds = layer.normalizedPathGroupIds
-                            }
-                        }
-                        AliasStructuredEditorContent(
-                            document = document,
-                            layer = layer,
-                            searchQuery = searchQuery,
-                            onSearchQueryChange = onSearchQueryChange,
-                            onNavigateToBreadcrumb = { groupId ->
-                                currentPathGroupIds = if (groupId == null) {
-                                    emptyList()
-                                } else {
-                                    val index = layer.breadcrumbs.indexOfFirst { it.groupId == groupId }
-                                    if (index >= 0) {
-                                        layer.normalizedPathGroupIds.take(index + 1)
-                                    } else {
-                                        currentPathGroupIds
-                                    }
-                                }
-                            },
-                            onNavigateToGroup = { groupId ->
-                                currentPathGroupIds = layer.normalizedPathGroupIds + groupId
-                            },
-                            onRequestAddCurrentGroup = {
-                                dialogState = AliasEditorDialogState.AddGroup(
-                                    parentGroupId = layer.currentParentGroupId
-                                )
-                            },
-                            onRequestAddCurrentEntry = {
-                                dialogState = AliasEditorDialogState.AddEntry(
-                                    parentGroupId = layer.currentParentGroupId
-                                )
-                            },
-                            onRequestEditGroup = { group ->
-                                dialogState = AliasEditorDialogState.GroupActions(group)
-                            },
-                            onRequestEditEntry = { entry ->
-                                dialogState = AliasEditorDialogState.EntryActions(entry)
-                            }
-                        )
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+            Text(
+                text = stringResource(R.string.config_alias_activities_title),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            if (document == null) {
+                Text(
+                    text = stringResource(R.string.config_alias_structured_unavailable),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            } else {
+                val layer = resolveAliasStructuredLayer(
+                    document = document,
+                    pathGroupIds = currentPathGroupIds
+                )
+                LaunchedEffect(layer.normalizedPathGroupIds) {
+                    // Keep local navigation path self-healing after tree mutations
+                    // (for example group delete/rename) by snapping to the nearest
+                    // still-valid ancestor path produced by layer resolution.
+                    if (layer.normalizedPathGroupIds != currentPathGroupIds) {
+                        currentPathGroupIds = layer.normalizedPathGroupIds
                     }
                 }
-
-                AliasEditorMode.ADVANCED -> {
-                    Text(
-                        text = stringResource(R.string.config_label_advanced_content),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    NativeMultilineTextEditor(
-                        value = advancedTomlDraft,
-                        onValueChange = onAdvancedTomlChange,
-                        modifier = Modifier.fillMaxWidth(),
-                        minLines = 12,
-                        monospace = true
-                    )
-                }
+                AliasStructuredEditorContent(
+                    document = document,
+                    layer = layer,
+                    searchQuery = searchQuery,
+                    onSearchQueryChange = onSearchQueryChange,
+                    onNavigateToBreadcrumb = { groupId ->
+                        currentPathGroupIds = if (groupId == null) {
+                            emptyList()
+                        } else {
+                            val index = layer.breadcrumbs.indexOfFirst { it.groupId == groupId }
+                            if (index >= 0) {
+                                layer.normalizedPathGroupIds.take(index + 1)
+                            } else {
+                                currentPathGroupIds
+                            }
+                        }
+                    },
+                    onNavigateToGroup = { groupId ->
+                        currentPathGroupIds = layer.normalizedPathGroupIds + groupId
+                    },
+                    onRequestAddCurrentGroup = {
+                        dialogState = AliasEditorDialogState.AddGroup(
+                            parentGroupId = layer.currentParentGroupId
+                        )
+                    },
+                    onRequestAddCurrentEntry = {
+                        dialogState = AliasEditorDialogState.AddEntry(
+                            parentGroupId = layer.currentParentGroupId
+                        )
+                    },
+                    onRequestEditGroup = { group ->
+                        dialogState = AliasEditorDialogState.GroupActions(group)
+                    },
+                    onRequestEditEntry = { entry ->
+                        dialogState = AliasEditorDialogState.EntryActions(entry)
+                    }
+                )
             }
 
         }
-    }
 
     when (val activeDialog = dialogState) {
         is AliasEditorDialogState.AddGroup -> {
@@ -469,7 +458,6 @@ internal fun ActivityHierarchyEditorCard(
         is AliasEditorDialogState.MergeEntry -> {
             AliasEntryMergeTargetDialog(
                 source = activeDialog.entry,
-                tomlDisplayName = selectedFileDisplayName,
                 document = document,
                 onDismiss = { dialogState = null },
                 onConfirm = { targetId ->
@@ -526,6 +514,16 @@ internal fun ActivityHierarchyEditorCard(
             onConfirm = { name ->
                 showRenameCategoryDialog = false
                 onRenameCategory(name)
+            }
+        )
+    }
+
+    if (showCreateAliasTomlDialog) {
+        ConfigTomlCreationDialog(
+            onDismiss = { showCreateAliasTomlDialog = false },
+            onConfirm = { fileName ->
+                showCreateAliasTomlDialog = false
+                onCreateAliasTomlFile(fileName)
             }
         )
     }

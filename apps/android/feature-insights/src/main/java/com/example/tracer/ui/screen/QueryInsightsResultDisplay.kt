@@ -81,9 +81,9 @@ internal fun QueryInsightsResultDisplay(
     onUpdateActivityRemark: suspend (ActivityTimelineItem, String) -> RecordActionResult = { _, _ ->
         RecordActionResult(ok = false, message = "Activity remark editing is unavailable.")
     },
-    onUpdateDayRemark: suspend (String) -> RecordActionResult = {
-        RecordActionResult(ok = false, message = "Day remark editing is unavailable.")
-    },
+    dayRemarkAutoSaveError: String = "",
+    onScheduleDayRemarkAutoSave: (String) -> Unit = {},
+    onFlushDayRemarkAutoSave: () -> Unit = {},
     onEditDailyStatuses: () -> Unit = {}
 ) {
     val clipboard = LocalClipboard.current
@@ -190,7 +190,9 @@ internal fun QueryInsightsResultDisplay(
                             onPeriodComparisonToggle = onPeriodComparisonToggle,
                             onComparisonPeriodSelected = onComparisonPeriodSelected,
                             onUpdateActivityRemark = onUpdateActivityRemark,
-                            onUpdateDayRemark = onUpdateDayRemark,
+                            dayRemarkAutoSaveError = dayRemarkAutoSaveError,
+                            onScheduleDayRemarkAutoSave = onScheduleDayRemarkAutoSave,
+                            onFlushDayRemarkAutoSave = onFlushDayRemarkAutoSave,
                             is12HourTime = is12HourTime
                         )
                     } else {

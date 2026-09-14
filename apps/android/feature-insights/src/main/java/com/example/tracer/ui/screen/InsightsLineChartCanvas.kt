@@ -23,6 +23,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalDensity
 
 @Composable
 internal fun InsightsLineChart(
@@ -55,6 +56,10 @@ internal fun InsightsLineChart(
         .maxOrNull()
         ?.coerceAtLeast(1f)
         ?: 1f
+    val density = LocalDensity.current
+    val chartLayout = remember(maxDurationHours, density) {
+        buildDurationChartLayout(maxDurationHours, density)
+    }
 
     Column(modifier = modifier) {
         Canvas(
@@ -76,6 +81,7 @@ internal fun InsightsLineChart(
                                 canvasSize.width.toFloat(),
                                 canvasSize.height.toFloat()
                             ),
+                            layout = chartLayout,
                             maxDurationHoursOverride = maxDurationHours
                         )
                         val nearestIndex = plot.offsets.indices.minByOrNull { index ->
@@ -100,11 +106,13 @@ internal fun InsightsLineChart(
             val plot = buildChartPlot(
                 durationHours = durationHours,
                 size = size,
+                layout = chartLayout,
                 maxDurationHoursOverride = maxDurationHours
             )
             val comparisonPlot = buildChartPlot(
                 durationHours = comparisonDurationHours,
                 size = size,
+                layout = chartLayout,
                 maxDurationHoursOverride = maxDurationHours
             )
 
@@ -120,7 +128,7 @@ internal fun InsightsLineChart(
             }
             drawDurationYAxisLabels(
                 maxDurationHours = maxDurationHours,
-                leftPadding = plot.leftPadding,
+                layout = chartLayout,
                 topPadding = plot.topPadding,
                 chartHeight = plot.chartHeight,
                 labelColor = axisLabelColor

@@ -18,7 +18,12 @@ Describe the user-visible Settings and diagnostics support behavior.
 
 - The Settings UI edits the local runtime config snapshot in app-private storage.
 - The Settings UI is for local browsing/editing and diagnostics support, not for package-style config exchange.
-- Alias raw TOML editing uses the shared Android native `EditText` multiline editor rather than Compose `OutlinedTextField`.
+- Activity categories use the structured hierarchy editor; Android does not expose
+  canonical activity-hierarchy TOML text to users.
+- The category editor groups category selection and management separately from
+  activity management. Users switch or create categories from the category selector;
+  rename and delete are available from its overflow menu. A category's display color
+  is edited beside its HEX value and is used by Insights indicators.
 - Unsaved config drafts stay in memory per file for the current app session and are written only after explicit `Save changes`.
 - Diagnostics payload copy is a support action, not a runtime behavior authoring surface.
 - Appearance, language, and Android-owned insights/chart settings are persisted

@@ -63,6 +63,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -547,7 +548,7 @@ private fun ElapsedFullScreenDialog(
     // through the current minute.
     val hourCycleProgress = hourCycleProgressForElapsedSeconds(safeElapsedSeconds)
     var continuousElapsedMillis by remember(intervalStartedAtEpochMs) {
-        mutableStateOf(elapsedMillisSince(intervalStartedAtEpochMs, System.currentTimeMillis()))
+        mutableLongStateOf(elapsedMillisSince(intervalStartedAtEpochMs, System.currentTimeMillis()))
     }
     val lifecycleOwner = LocalLifecycleOwner.current
     var isTimerUiActive by remember(lifecycleOwner) {

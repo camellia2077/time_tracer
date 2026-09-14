@@ -1,5 +1,7 @@
 package com.example.tracer
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -8,23 +10,21 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -53,52 +53,65 @@ internal fun ActivityHierarchyParentColorEditor(
     val preview = previewParentColor(normalizedDraft)
     var showPalette by remember { mutableStateOf(false) }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = stringResource(R.string.config_alias_display_color_title),
+            style = MaterialTheme.typography.titleSmall
+        )
+        Text(
+            text = stringResource(R.string.config_alias_display_color_description),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                    .background(preview ?: MaterialTheme.colorScheme.surfaceVariant)
+            )
             OutlinedTextField(
                 value = normalizedDraft,
                 onValueChange = { onDraftValueChange(normalizeParentColorInput(it)) },
                 modifier = Modifier.weight(1f),
                 label = { Text(stringResource(R.string.config_alias_parent_color_label)) },
-                supportingText = { Text(stringResource(R.string.config_alias_parent_color_hint)) },
+                placeholder = { Text("000000") },
                 singleLine = true,
-                prefix = { Text("#") }
+                prefix = { Text("#") },
+                trailingIcon = {
+                    IconButton(
+                        onClick = { onDraftValueChange("") },
+                        enabled = normalizedDraft.isNotEmpty()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = stringResource(
+                                R.string.config_alias_action_clear_parent_color
+                            )
+                        )
+                    }
+                }
             )
-            preview?.let { color ->
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant)
-                        .background(color)
-                )
-            }
             IconButton(
-                onClick = { onDraftValueChange("") },
-                enabled = normalizedDraft.isNotEmpty()
+                onClick = { showPalette = true }
             ) {
                 Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = stringResource(R.string.config_alias_action_clear_parent_color)
+                    imageVector = Icons.Default.ColorLens,
+                    contentDescription = stringResource(R.string.config_alias_action_choose_parent_color)
                 )
             }
-        }
-        OutlinedButton(onClick = { showPalette = true }, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.config_alias_action_choose_parent_color))
-        }
-        FilledTonalButton(
-            onClick = { onSaveColor(storedValue) },
-            enabled = !isSaved,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            if (isSaved) {
-                Icon(Icons.Default.Check, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(stringResource(R.string.config_alias_parent_color_saved))
-            } else {
-                Text(stringResource(R.string.config_alias_action_save_parent_color))
+            FilledTonalButton(
+                onClick = { onSaveColor(storedValue) },
+                enabled = !isSaved
+            ) {
+                if (isSaved) {
+                    Icon(Icons.Default.Check, contentDescription = null)
+                } else {
+                    Text(stringResource(R.string.config_alias_action_save_parent_color))
+                }
             }
         }
     }
@@ -125,112 +138,143 @@ private fun ParentColorPaletteScreen(
             family.colors.any { it.hex.equals(currentColor, ignoreCase = true) }
         } ?: ParentColorFamilies.first())
     }
-    FullscreenPage(onDismissRequest = onDismiss) {
+    FullscreenPage(onDismissRequest = onDismiss, scrollContentHandlesBottomInset = true) {
+        ParentColorPaletteContent(
+            currentColor = currentColor,
+            selectedFamily = selectedFamily,
+            onDismiss = onDismiss,
+            onFamilySelected = { selectedFamily = it },
+            onColorSelected = onColorSelected
+        )
+    }
+}
+
+@Composable
+private fun ParentColorPaletteContent(
+    currentColor: String,
+    selectedFamily: ParentColorFamily,
+    onDismiss: () -> Unit,
+    onFamilySelected: (ParentColorFamily) -> Unit,
+    onColorSelected: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .fullscreenScrollContentPadding()
+            .padding(horizontal = 24.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        ParentColorPaletteHeader(onDismiss)
+        ParentColorFamilyPicker(selectedFamily, onFamilySelected)
+        Text(
+            text = stringResource(
+                R.string.config_alias_parent_color_palette_label,
+                stringResource(selectedFamily.labelRes)
+            ),
+            style = MaterialTheme.typography.labelLarge
+        )
+        ParentColorSwatchGrid(currentColor, selectedFamily.colors, onColorSelected)
+    }
+}
+
+@Composable
+private fun ParentColorPaletteHeader(onDismiss: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = stringResource(R.string.config_alias_parent_color_palette_title),
+            style = MaterialTheme.typography.titleLarge
+        )
+        IconButton(onClick = onDismiss) {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = stringResource(R.string.config_alias_action_close_parent_color_picker)
+            )
+        }
+    }
+}
+
+@Composable
+private fun ParentColorFamilyPicker(
+    selectedFamily: ParentColorFamily,
+    onFamilySelected: (ParentColorFamily) -> Unit
+) {
+    Text(
+        text = stringResource(R.string.config_alias_parent_color_family_label),
+        style = MaterialTheme.typography.labelLarge
+    )
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        ParentColorFamilies.forEach { family ->
+            val categoryColor = family.categoryColor.hex.toComposeColorOrNull()
+            FilterChip(
+                onClick = { onFamilySelected(family) },
+                selected = selectedFamily == family,
+                label = { Text(stringResource(family.labelRes)) },
+                leadingIcon = categoryColor?.let { color ->
+                    {
+                        Box(
+                            modifier = Modifier
+                                .size(16.dp)
+                                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape)
+                                .background(color, CircleShape)
+                        )
+                    }
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun ParentColorSwatchGrid(
+    currentColor: String,
+    colors: List<CssNamedColor>,
+    onColorSelected: (String) -> Unit
+) {
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        colors.forEach { cssColor ->
+            val color = cssColor.hex.toComposeColorOrNull() ?: return@forEach
+            val selected = currentColor.equals(cssColor.hex, ignoreCase = true)
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 24.dp, vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = stringResource(R.string.config_alias_parent_color_palette_title),
-                        style = MaterialTheme.typography.titleLarge
+                    .border(
+                        width = if (selected) 2.dp else 1.dp,
+                        color = if (selected) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.outlineVariant,
+                        shape = MaterialTheme.shapes.medium
                     )
-                    IconButton(onClick = onDismiss) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = stringResource(
-                                R.string.config_alias_action_close_parent_color_picker
-                            )
+                    .clickable { onColorSelected(cssColor.hex) }
+                    .padding(12.dp)
+                    .semantics { contentDescription = "${cssColor.name} ${cssColor.hex}" }
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape)
+                            .background(color, CircleShape)
+                    )
+                    Column {
+                        Text(cssColor.name, style = MaterialTheme.typography.titleSmall)
+                        Text(
+                            cssColor.hex,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                    }
-                }
-                Text(
-                    text = stringResource(R.string.config_alias_parent_color_family_label),
-                    style = MaterialTheme.typography.labelLarge
-                )
-                FlowRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    ParentColorFamilies.forEach { family ->
-                        val categoryColor = family.categoryColor.hex.toComposeColorOrNull()
-                        FilterChip(
-                            onClick = { selectedFamily = family },
-                            selected = selectedFamily == family,
-                            label = { Text(stringResource(family.labelRes)) },
-                            leadingIcon = categoryColor?.let { color ->
-                                {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(16.dp)
-                                            .border(
-                                                1.dp,
-                                                MaterialTheme.colorScheme.outlineVariant,
-                                                CircleShape
-                                            )
-                                            .background(color, CircleShape)
-                                    )
-                                }
-                            }
-                        )
-                    }
-                }
-                Text(
-                    text = stringResource(
-                        R.string.config_alias_parent_color_palette_label,
-                        stringResource(selectedFamily.labelRes)
-                    ),
-                    style = MaterialTheme.typography.labelLarge
-                )
-                FlowRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    selectedFamily.colors.forEach { cssColor ->
-                        val color = cssColor.hex.toComposeColorOrNull() ?: return@forEach
-                        val selected = currentColor.equals(cssColor.hex, ignoreCase = true)
-                        Column(
-                            modifier = Modifier
-                                .border(
-                                    width = if (selected) 2.dp else 1.dp,
-                                    color = if (selected) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.outlineVariant,
-                                    shape = MaterialTheme.shapes.medium
-                                )
-                                .clickable { onColorSelected(cssColor.hex) }
-                                .padding(12.dp)
-                                .semantics { contentDescription = "${cssColor.name} ${cssColor.hex}" }
-                        ) {
-                            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .border(
-                                            1.dp,
-                                            MaterialTheme.colorScheme.outlineVariant,
-                                            CircleShape
-                                        )
-                                        .background(color, CircleShape)
-                                )
-                                Column {
-                                    Text(cssColor.name, style = MaterialTheme.typography.titleSmall)
-                                    Text(
-                                        cssColor.hex,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
                     }
                 }
             }
+        }
     }
 }
 

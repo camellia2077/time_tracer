@@ -28,8 +28,6 @@ import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.insights.R
 import com.example.tracer.ui.components.CalendarAvailability
 import com.example.tracer.ui.components.FullscreenTextEditor
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 
@@ -49,7 +47,9 @@ internal fun InsightsActivityTimeline(
     onComparisonPeriodSelected: (InsightsPeriodSelection) -> Unit = {},
     modifier: Modifier = Modifier,
     onUpdateActivityRemark: suspend (ActivityTimelineItem, String) -> RecordActionResult,
-    onUpdateDayRemark: suspend (String) -> RecordActionResult,
+    dayRemarkAutoSaveError: String,
+    onScheduleDayRemarkAutoSave: (String) -> Unit,
+    onFlushDayRemarkAutoSave: () -> Unit,
     is12HourTime: Boolean
 ) {
     val colors = insightsSemanticColors()
@@ -60,8 +60,6 @@ internal fun InsightsActivityTimeline(
     var editingDayRemark by remember { mutableStateOf(false) }
     var dayRemarkDraft by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
-    var dayRemarkSaveGeneration by remember { mutableStateOf(0) }
-    var dayRemarkSaveJob by remember { mutableStateOf<Job?>(null) }
 
 
     Column(modifier = modifier.fillMaxWidth()) {
@@ -177,28 +175,21 @@ internal fun InsightsActivityTimeline(
             title = stringResource(R.string.insights_edit_day_remark),
             label = stringResource(R.string.insights_day_remark_label),
             text = dayRemarkDraft,
+            showLabel = false,
+            emptyTextHint = null,
             closeContentDescription = stringResource(R.string.insights_cancel_day_remark),
-            saving = saving,
-            error = editError,
+            // Saving must stay invisible to preserve the native-notes editing experience:
+            // disabling a BasicTextField breaks its IME connection and closes the keyboard.
+            saving = false,
+            error = dayRemarkAutoSaveError,
             onTextChange = { value ->
                 dayRemarkDraft = value
-                editError = ""
-                dayRemarkSaveGeneration += 1
-                val generation = dayRemarkSaveGeneration
-                dayRemarkSaveJob?.cancel()
-                dayRemarkSaveJob = scope.launch {
-                    delay(250)
-                    saving = true
-                    val result = onUpdateDayRemark(value)
-                    if (generation == dayRemarkSaveGeneration) {
-                        saving = false
-                        if (!result.ok) {
-                            editError = result.message.ifBlank { "Day remark update failed." }
-                        }
-                    }
-                }
+                onScheduleDayRemarkAutoSave(value)
             },
-            onDismiss = { editingDayRemark = false }
+            onDismiss = {
+                onFlushDayRemarkAutoSave()
+                editingDayRemark = false
+            }
         )
     }
 }

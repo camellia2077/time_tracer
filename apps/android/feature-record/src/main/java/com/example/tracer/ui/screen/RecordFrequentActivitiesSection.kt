@@ -183,7 +183,7 @@ internal fun RecordFrequentActivitiesSheet(
     var topNInput by remember(frequentTopN) {
         mutableStateOf(frequentTopN.toString())
     }
-    FullscreenPage(onDismissRequest = onDismissRequest) {
+    FullscreenPage(onDismissRequest = onDismissRequest, scrollContentHandlesBottomInset = true) {
             Column(modifier = Modifier.fillMaxSize()) {
                 Column(
                     modifier = Modifier
@@ -372,6 +372,7 @@ internal fun RecordFrequentActivitiesSheet(
                         .weight(1f)
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState())
+                        .fullscreenScrollContentPadding()
                 ) {
                     RecordFrequentActivitiesSection(
                         frequentActivitiesVisible = true,

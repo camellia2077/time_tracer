@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -261,15 +262,14 @@ internal fun AliasEntryActionsDialog(
 @Composable
 internal fun AliasEntryMergeTargetDialog(
     source: ActivityHierarchyLeaf,
-    tomlDisplayName: String,
     document: ActivityHierarchyDocument?,
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit
 ) {
-    val targets = document?.allAliasEntries()
-        ?.filter { it.id != source.id }
+    val targets = document?.mergeTargetEntries(source.id)
         .orEmpty()
-    var selected by remember(targets) { mutableStateOf(targets.firstOrNull()) }
+    val targetIds = remember(targets) { targets.map { it.entry.id }.toSet() }
+    var selected by remember(targets) { mutableStateOf(targets.firstOrNull()?.entry) }
     ActivityHierarchyTargetSelectionDialog(
         subjectDescription = stringResource(
             R.string.config_alias_merge_message,
@@ -284,21 +284,88 @@ internal fun AliasEntryMergeTargetDialog(
         onDismiss = onDismiss,
         onConfirm = { selected?.let { onConfirm(it.id) } }
     ) {
+        AliasMergeTargetTree(
+            nodes = document?.nodes.orEmpty(),
+            sourceEntryId = source.id,
+            targetIds = targetIds,
+            selectedEntryId = selected?.id,
+            onSelect = { selected = it }
+        )
+    }
+}
+
+@Composable
+private fun AliasMergeTargetTree(
+    nodes: List<ActivityHierarchyDocumentNode>,
+    sourceEntryId: String,
+    targetIds: Set<String>,
+    selectedEntryId: String?,
+    onSelect: (ActivityHierarchyLeaf) -> Unit,
+    depth: Int = 0
+) {
+    nodes.forEach { node ->
+        when (node) {
+            is ActivityHierarchyGroup -> {
+                if (node.nodes.any { it.containsMergeTarget(sourceEntryId) }) {
+                    AliasMergeTargetFolderRow(
+                        label = node.name,
+                        depth = depth
+                    )
+                    AliasMergeTargetTree(
+                        nodes = node.nodes,
+                        sourceEntryId = sourceEntryId,
+                        targetIds = targetIds,
+                        selectedEntryId = selectedEntryId,
+                        onSelect = onSelect,
+                        depth = depth + 1
+                    )
+                }
+            }
+
+            is ActivityHierarchyLeaf -> {
+                if (node.id != sourceEntryId && node.id in targetIds) {
+                    AliasMoveTargetRow(
+                        label = node.canonicalLeaf,
+                        selected = selectedEntryId == node.id,
+                        depth = depth,
+                        expandable = false,
+                        expanded = false,
+                        onExpand = {},
+                        onSelect = { onSelect(node) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun ActivityHierarchyDocumentNode.containsMergeTarget(sourceEntryId: String): Boolean =
+    when (this) {
+        is ActivityHierarchyGroup -> nodes.any { it.containsMergeTarget(sourceEntryId) }
+        is ActivityHierarchyLeaf -> id != sourceEntryId
+    }
+
+@Composable
+private fun AliasMergeTargetFolderRow(
+    label: String,
+    depth: Int
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = (depth * 16).dp),
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Folder,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary
+        )
         Text(
-            text = tomlDisplayName,
+            text = label,
+            modifier = Modifier.padding(start = 8.dp),
             style = MaterialTheme.typography.titleSmall
         )
-        targets.forEach { target ->
-            AliasMoveTargetRow(
-                label = target.aliasKey,
-                selected = selected?.id == target.id,
-                depth = 0,
-                expandable = false,
-                expanded = false,
-                onExpand = {},
-                onSelect = { selected = target }
-            )
-        }
     }
 }
 

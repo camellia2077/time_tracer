@@ -1,10 +1,5 @@
 package com.example.tracer
 
-internal fun switchAliasEditorToAdvanced(state: ActivityHierarchyEditorState): ActivityHierarchyEditorState = state.copy(
-    aliasEditorMode = AliasEditorMode.ADVANCED,
-    aliasEditorErrorMessage = ""
-)
-
 internal suspend fun validateAliasKeyUniqueness(
     configGateway: ConfigGateway,
     activityHierarchyGateway: ActivityHierarchyGateway,

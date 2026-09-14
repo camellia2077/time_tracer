@@ -76,4 +76,41 @@ class ActivityHierarchyEditorCardNavigationTest {
         assertEquals(listOf("英语"), layer.currentEntries.map { it.aliasKey })
         assertEquals(null, layer.currentParentGroupId)
     }
+
+    @Test
+    fun merge_targets_use_canonical_names_and_retain_folder_paths() {
+        val source = ActivityHierarchyLeaf(
+            id = "source",
+            canonicalLeaf = "breakfast",
+            aliases = listOf("早餐")
+        )
+        val target = ActivityHierarchyLeaf(
+            id = "target",
+            canonicalLeaf = "lunch",
+            aliases = listOf("午饭")
+        )
+        val meal = ActivityHierarchyGroup(
+            id = "g-meal",
+            name = "meal",
+            nodes = listOf(source, target)
+        )
+        val rootTarget = ActivityHierarchyLeaf(
+            id = "root-target",
+            canonicalLeaf = "exercise",
+            aliases = listOf("运动")
+        )
+        val document = ActivityHierarchyDocument(
+            parent = "daily",
+            nodes = listOf(meal, rootTarget)
+        )
+
+        val targets = document.mergeTargetEntries(source.id)
+
+        assertEquals(
+            listOf("lunch", "exercise"),
+            targets.map { it.entry.canonicalLeaf }
+        )
+        assertEquals(listOf("meal"), targets.first().groupPath)
+        assertEquals(emptyList<String>(), targets.last().groupPath)
+    }
 }

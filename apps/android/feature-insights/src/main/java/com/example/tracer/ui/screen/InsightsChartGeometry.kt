@@ -7,38 +7,77 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import java.util.Locale
 import kotlin.math.atan2
 import kotlin.math.sqrt
 
 private const val CHART_GRID_LINE_COUNT = 4
 
+internal data class DurationChartLayout(
+    val leftPadding: Float,
+    val rightPadding: Float,
+    val topPadding: Float,
+    val bottomPadding: Float,
+    val yAxisLabelTextSize: Float,
+    val yAxisLabelGap: Float
+)
+
+internal fun buildDurationChartLayout(
+    maxDurationHours: Float,
+    density: Density
+): DurationChartLayout {
+    val labelTextSize = with(density) { 10.sp.toPx() }
+    val labels = durationYAxisLabels(maxDurationHours)
+    val widestLabel = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        textSize = labelTextSize
+    }.let { paint -> labels.maxOfOrNull(paint::measureText) ?: 0f }
+
+    return with(density) {
+        DurationChartLayout(
+            leftPadding = widestLabel + 8.dp.toPx() + 4.dp.toPx(),
+            rightPadding = 16.dp.toPx(),
+            topPadding = 16.dp.toPx(),
+            bottomPadding = 24.dp.toPx(),
+            yAxisLabelTextSize = labelTextSize,
+            yAxisLabelGap = 8.dp.toPx()
+        )
+    }
+}
+
+private fun durationYAxisLabels(maxDurationHours: Float): List<String> {
+    val safeMaxDurationHours = maxDurationHours.coerceAtLeast(1f)
+    return (0..CHART_GRID_LINE_COUNT).map { index ->
+        val durationHours = (
+            safeMaxDurationHours *
+                (CHART_GRID_LINE_COUNT - index) /
+                CHART_GRID_LINE_COUNT.toFloat()
+            )
+        String.format(Locale.ROOT, "%.1f", durationHours)
+    }
+}
+
 internal fun DrawScope.drawDurationYAxisLabels(
     maxDurationHours: Float,
-    leftPadding: Float,
+    layout: DurationChartLayout,
     topPadding: Float,
     chartHeight: Float,
     labelColor: Color
 ) {
     val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = labelColor.toArgb()
-        textSize = 10.dp.toPx()
+        textSize = layout.yAxisLabelTextSize
         textAlign = Paint.Align.RIGHT
     }
-    val labelX = leftPadding - 8.dp.toPx()
+    val labelX = layout.leftPadding - layout.yAxisLabelGap
     val verticalCenterOffset = -(textPaint.ascent() + textPaint.descent()) / 2f
-    val safeMaxDurationHours = maxDurationHours.coerceAtLeast(1f)
 
-    for (index in 0..CHART_GRID_LINE_COUNT) {
+    durationYAxisLabels(maxDurationHours).forEachIndexed { index, label ->
         val y = topPadding + (chartHeight * index / CHART_GRID_LINE_COUNT.toFloat())
-        val durationHours = (
-            safeMaxDurationHours *
-                (CHART_GRID_LINE_COUNT - index) /
-                CHART_GRID_LINE_COUNT.toFloat()
-            )
         drawContext.canvas.nativeCanvas.drawText(
-            String.format(Locale.ROOT, "%.1f", durationHours),
+            label,
             labelX,
             y + verticalCenterOffset,
             textPaint
@@ -53,6 +92,21 @@ internal data class ChartPlot(
     val chartWidth: Float,
     val chartHeight: Float
 )
+
+private data class DurationChartBounds(
+    val leftPadding: Float,
+    val topPadding: Float,
+    val chartWidth: Float,
+    val chartHeight: Float
+)
+
+private fun Size.durationChartBounds(layout: DurationChartLayout): DurationChartBounds =
+    DurationChartBounds(
+        leftPadding = layout.leftPadding,
+        topPadding = layout.topPadding,
+        chartWidth = (width - layout.leftPadding - layout.rightPadding).coerceAtLeast(1f),
+        chartHeight = (height - layout.topPadding - layout.bottomPadding).coerceAtLeast(1f)
+    )
 
 internal data class BarColumn(
     val topLeft: Offset,
@@ -92,22 +146,18 @@ internal data class PieChartPlot(
 internal fun buildChartPlot(
     durationHours: List<Float>,
     size: Size,
+    layout: DurationChartLayout,
     maxDurationHoursOverride: Float? = null
 ): ChartPlot {
-    val leftPadding = 80f
-    val rightPadding = 16f
-    val topPadding = 16f
-    val bottomPadding = 24f
-    val chartWidth = (size.width - leftPadding - rightPadding).coerceAtLeast(1f)
-    val chartHeight = (size.height - topPadding - bottomPadding).coerceAtLeast(1f)
+    val bounds = size.durationChartBounds(layout)
 
     if (durationHours.isEmpty()) {
         return ChartPlot(
             offsets = emptyList(),
-            leftPadding = leftPadding,
-            topPadding = topPadding,
-            chartWidth = chartWidth,
-            chartHeight = chartHeight
+            leftPadding = bounds.leftPadding,
+            topPadding = bounds.topPadding,
+            chartWidth = bounds.chartWidth,
+            chartHeight = bounds.chartHeight
         )
     }
 
@@ -115,55 +165,54 @@ internal fun buildChartPlot(
         ?.coerceAtLeast(1f) ?: 1f
     val offsets = durationHours.mapIndexed { index, value ->
         val x = if (durationHours.size == 1) {
-            leftPadding + chartWidth / 2f
+            bounds.leftPadding + bounds.chartWidth / 2f
         } else {
-            leftPadding + (chartWidth * index / (durationHours.size - 1).toFloat())
+            bounds.leftPadding + (bounds.chartWidth * index / (durationHours.size - 1).toFloat())
         }
         val normalized = (value / maxY).coerceIn(0f, 1f)
-        val y = topPadding + chartHeight * (1f - normalized)
+        val y = bounds.topPadding + bounds.chartHeight * (1f - normalized)
         Offset(x, y)
     }
     return ChartPlot(
         offsets = offsets,
-        leftPadding = leftPadding,
-        topPadding = topPadding,
-        chartWidth = chartWidth,
-        chartHeight = chartHeight
+        leftPadding = bounds.leftPadding,
+        topPadding = bounds.topPadding,
+        chartWidth = bounds.chartWidth,
+        chartHeight = bounds.chartHeight
     )
 }
 
-internal fun buildBarChartPlot(durationHours: List<Float>, size: Size): BarChartPlot {
-    val leftPadding = 80f
-    val rightPadding = 16f
-    val topPadding = 16f
-    val bottomPadding = 24f
-    val chartWidth = (size.width - leftPadding - rightPadding).coerceAtLeast(1f)
-    val chartHeight = (size.height - topPadding - bottomPadding).coerceAtLeast(1f)
+internal fun buildBarChartPlot(
+    durationHours: List<Float>,
+    size: Size,
+    layout: DurationChartLayout
+): BarChartPlot {
+    val bounds = size.durationChartBounds(layout)
 
     if (durationHours.isEmpty()) {
         return BarChartPlot(
             bars = emptyList(),
             centers = emptyList(),
-            leftPadding = leftPadding,
-            topPadding = topPadding,
-            chartWidth = chartWidth,
-            chartHeight = chartHeight
+            leftPadding = bounds.leftPadding,
+            topPadding = bounds.topPadding,
+            chartWidth = bounds.chartWidth,
+            chartHeight = bounds.chartHeight
         )
     }
 
     val maxY = durationHours.maxOrNull()?.coerceAtLeast(1f) ?: 1f
-    val slotWidth = chartWidth / durationHours.size.toFloat()
+    val slotWidth = bounds.chartWidth / durationHours.size.toFloat()
     val barWidth = (slotWidth * 0.7f).coerceAtLeast(2f).coerceAtMost(slotWidth * 0.9f)
 
     val bars = mutableListOf<BarColumn>()
     val centers = mutableListOf<Offset>()
     durationHours.forEachIndexed { index, value ->
         val normalized = (value / maxY).coerceIn(0f, 1f)
-        val rawHeight = chartHeight * normalized
+        val rawHeight = bounds.chartHeight * normalized
         val barHeight = if (value > 0f) rawHeight.coerceAtLeast(1f) else 0f
-        val slotStart = leftPadding + slotWidth * index
+        val slotStart = bounds.leftPadding + slotWidth * index
         val centerX = slotStart + slotWidth / 2f
-        val topY = topPadding + chartHeight - barHeight
+        val topY = bounds.topPadding + bounds.chartHeight - barHeight
         bars += BarColumn(
             topLeft = Offset(centerX - barWidth / 2f, topY),
             size = Size(barWidth, barHeight)
@@ -174,10 +223,10 @@ internal fun buildBarChartPlot(durationHours: List<Float>, size: Size): BarChart
     return BarChartPlot(
         bars = bars,
         centers = centers,
-        leftPadding = leftPadding,
-        topPadding = topPadding,
-        chartWidth = chartWidth,
-        chartHeight = chartHeight
+        leftPadding = bounds.leftPadding,
+        topPadding = bounds.topPadding,
+        chartWidth = bounds.chartWidth,
+        chartHeight = bounds.chartHeight
     )
 }
 
@@ -235,28 +284,24 @@ internal fun buildGroupedBarChartPlot(
     currentHours: List<Float>,
     comparisonHours: List<Float>,
     size: Size,
-    maxDurationHours: Float
+    maxDurationHours: Float,
+    layout: DurationChartLayout
 ): GroupedBarChartPlot {
-    val leftPadding = 80f
-    val rightPadding = 16f
-    val topPadding = 16f
-    val bottomPadding = 24f
-    val chartWidth = (size.width - leftPadding - rightPadding).coerceAtLeast(1f)
-    val chartHeight = (size.height - topPadding - bottomPadding).coerceAtLeast(1f)
+    val bounds = size.durationChartBounds(layout)
     val count = maxOf(currentHours.size, comparisonHours.size)
     if (count == 0) {
         return GroupedBarChartPlot(
             currentBars = emptyList(),
             comparisonBars = emptyList(),
             currentCenters = emptyList(),
-            leftPadding = leftPadding,
-            topPadding = topPadding,
-            chartWidth = chartWidth,
-            chartHeight = chartHeight
+            leftPadding = bounds.leftPadding,
+            topPadding = bounds.topPadding,
+            chartWidth = bounds.chartWidth,
+            chartHeight = bounds.chartHeight
         )
     }
 
-    val slotWidth = chartWidth / count.toFloat()
+    val slotWidth = bounds.chartWidth / count.toFloat()
     val comparisonBarWidth = (slotWidth * 0.82f).coerceAtLeast(2f)
     val currentBarWidth = (slotWidth * 0.56f).coerceAtLeast(2f)
     val safeMax = maxDurationHours.coerceAtLeast(1f)
@@ -268,18 +313,18 @@ internal fun buildGroupedBarChartPlot(
         val currentValue = currentHours.getOrElse(index) { 0f }.coerceAtLeast(0f)
         val comparisonValue = comparisonHours.getOrElse(index) { 0f }.coerceAtLeast(0f)
         val currentHeight = if (currentValue > 0f) {
-            chartHeight * (currentValue / safeMax).coerceIn(0f, 1f)
+            bounds.chartHeight * (currentValue / safeMax).coerceIn(0f, 1f)
         } else {
             0f
         }
         val comparisonHeight = if (comparisonValue > 0f) {
-            chartHeight * (comparisonValue / safeMax).coerceIn(0f, 1f)
+            bounds.chartHeight * (comparisonValue / safeMax).coerceIn(0f, 1f)
         } else {
             0f
         }
-        val currentTop = topPadding + chartHeight - currentHeight
-        val comparisonTop = topPadding + chartHeight - comparisonHeight
-        val slotCenter = leftPadding + slotWidth * index + slotWidth / 2f
+        val currentTop = bounds.topPadding + bounds.chartHeight - currentHeight
+        val comparisonTop = bounds.topPadding + bounds.chartHeight - comparisonHeight
+        val slotCenter = bounds.leftPadding + slotWidth * index + slotWidth / 2f
         val currentLeft = slotCenter - currentBarWidth / 2f
         val comparisonLeft = slotCenter - comparisonBarWidth / 2f
         currentBars += BarColumn(
@@ -290,17 +335,17 @@ internal fun buildGroupedBarChartPlot(
             topLeft = Offset(comparisonLeft, comparisonTop),
             size = Size(comparisonBarWidth, comparisonHeight)
         )
-        currentCenters += Offset(slotCenter, topPadding + chartHeight / 2f)
+        currentCenters += Offset(slotCenter, bounds.topPadding + bounds.chartHeight / 2f)
     }
 
     return GroupedBarChartPlot(
         currentBars = currentBars,
         comparisonBars = comparisonBars,
         currentCenters = currentCenters,
-        leftPadding = leftPadding,
-        topPadding = topPadding,
-        chartWidth = chartWidth,
-        chartHeight = chartHeight
+        leftPadding = bounds.leftPadding,
+        topPadding = bounds.topPadding,
+        chartWidth = bounds.chartWidth,
+        chartHeight = bounds.chartHeight
     )
 }
 

@@ -316,7 +316,7 @@ fun CanonicalActivityPickerScreen(
     onCanonicalEntryClick: (CanonicalCatalogEntry) -> Unit,
     onCanonicalParentClick: (String) -> Unit = {}
 ) {
-    FullscreenPage(onDismissRequest = onDismissRequest) {
+    FullscreenPage(onDismissRequest = onDismissRequest, scrollContentHandlesBottomInset = true) {
             Column(modifier = Modifier.fillMaxSize()) {
                 Row(
                     modifier = Modifier
@@ -404,6 +404,7 @@ fun CanonicalActivityPickerScreen(
                         .weight(1f)
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState())
+                        .fullscreenScrollContentPadding()
                 ) {
                     CanonicalActivityTree(
                         isLoading = isLoading,

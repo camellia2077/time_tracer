@@ -98,11 +98,11 @@ internal fun DailyStatusEditorDialog(
         editingId = null
     }
 
-    FullscreenPage(onDismissRequest = onDismissRequest) {
+    FullscreenPage(onDismissRequest = onDismissRequest, scrollContentHandlesBottomInset = true) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 24.dp, vertical = 16.dp),
+                    .padding(start = 24.dp, end = 24.dp, top = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Row(
@@ -123,13 +123,25 @@ internal fun DailyStatusEditorDialog(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                if (errorMessage.isNotBlank()) {
+                    Text(errorMessage, color = MaterialTheme.colorScheme.error)
+                }
+                if (isSaving) {
+                    Text(
+                        text = stringResource(R.string.insights_daily_status_saving),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 if (isLoading) {
                     Text(stringResource(R.string.insights_status_editor_loading, scopeLabel))
                 } else {
                     Column(
                         modifier = Modifier
                             .weight(1f)
-                            .verticalScroll(rememberScrollState()),
+                            .verticalScroll(rememberScrollState())
+                            .fullscreenScrollContentPadding()
+                            .padding(bottom = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         config.statuses.forEach { definition ->
@@ -192,16 +204,6 @@ internal fun DailyStatusEditorDialog(
                             Text(stringResource(R.string.insights_daily_status_add))
                         }
                     }
-                }
-                if (errorMessage.isNotBlank()) {
-                    Text(errorMessage, color = MaterialTheme.colorScheme.error)
-                }
-                if (isSaving) {
-                    Text(
-                        text = stringResource(R.string.insights_daily_status_saving),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
             }
     }

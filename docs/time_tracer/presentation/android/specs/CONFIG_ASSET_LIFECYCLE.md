@@ -63,11 +63,11 @@ Boundary rules:
   and `insights.toml` are neither packaged nor read from this directory.
   `config.toml`, `charts/**`, `meta/**`, and `insights/**` are program resources
   and are read-only in the Android UI.
-- The Settings tab exposes structured editing plus an advanced raw TOML mode for
-  the `alias` category. Alias files use the structured canonical-to-alias-list
-  editor; the advanced mode still serializes and validates the same strict TOML
-  shape. Chart and insights preferences live in Android `DataStore`, not under
-  the runtime config snapshot.
+- The Settings tab exposes structured editing for the `alias` category only;
+  Android does not expose canonical activity-hierarchy TOML text to users.
+  Alias files use the structured canonical-to-alias-list editor. Chart and
+  insights preferences live in Android `DataStore`, not under the runtime
+  config snapshot.
 
 ## Diagnostics and Support
 

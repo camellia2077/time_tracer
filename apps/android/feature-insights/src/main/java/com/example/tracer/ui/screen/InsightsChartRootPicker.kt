@@ -43,7 +43,8 @@ internal fun InsightsChartRootPickerPage(
 ) {
     FullscreenPage(
         onDismissRequest = onDismiss,
-        backgroundColor = MaterialTheme.colorScheme.background
+        backgroundColor = MaterialTheme.colorScheme.background,
+        scrollContentHandlesBottomInset = true
     ) {
         InsightsChartRootPickerScreen(
             rootNodes = rootNodes,
@@ -164,7 +165,10 @@ internal fun InsightsChartRootPickerScreen(
             }
         }
 
-        LazyColumn(modifier = Modifier.fillMaxWidth()) {
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth().weight(1f),
+            contentPadding = fullscreenScrollContentPaddingValues()
+        ) {
             items(currentNodes, key = { it.path }) { node ->
                 ListItem(
                     headlineContent = {

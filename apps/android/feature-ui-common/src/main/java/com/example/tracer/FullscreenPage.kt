@@ -2,9 +2,16 @@ package com.example.tracer
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.safeGestures
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -20,6 +27,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 
 private val LocalFullscreenPageHost = staticCompositionLocalOf<FullscreenPageHostState?> { null }
+
+// The home gesture region can be taller than the visible navigation bar. Keep full-screen
+// content clear of both, without adding side padding for Android's back gestures.
+@Composable
+internal fun fullscreenContentWindowInsets(): WindowInsets =
+    WindowInsets.safeDrawing.union(WindowInsets.safeGestures.only(WindowInsetsSides.Bottom))
+
+/** Apply AFTER verticalScroll so the inset belongs to the scrollable content, not its viewport. */
+@Composable
+fun Modifier.fullscreenScrollContentPadding(): Modifier =
+    windowInsetsPadding(fullscreenContentWindowInsets().only(WindowInsetsSides.Bottom))
+
+/** Use as LazyColumn contentPadding, never as padding on the list viewport. */
+@Composable
+fun fullscreenScrollContentPaddingValues(): PaddingValues =
+    fullscreenContentWindowInsets().only(WindowInsetsSides.Bottom).asPaddingValues()
 
 private class FullscreenPageEntry(
     val onDismissRequest: State<() -> Unit>,
@@ -72,22 +95,27 @@ fun FullscreenPageHost(content: @Composable () -> Unit) {
  *
  * When used outside the application shell (for example in a preview), it still renders as a
  * full-size surface, while production screens are always rendered by the shell host above.
+ *
+ * Scrolling pages set [scrollContentHandlesBottomInset] and apply [fullscreenScrollContentPadding]
+ * after verticalScroll (or [fullscreenScrollContentPaddingValues] as lazy-list contentPadding).
+ * This keeps the viewport edge-to-edge while the final item can scroll above system navigation.
  */
 @Composable
 fun FullscreenPage(
     onDismissRequest: () -> Unit,
     backgroundColor: Color = MaterialTheme.colorScheme.surface,
+    scrollContentHandlesBottomInset: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val hostState = LocalFullscreenPageHost.current
     if (hostState == null) {
-        FullscreenPageContainer(backgroundColor, content)
+        FullscreenPageContainer(backgroundColor, scrollContentHandlesBottomInset, content)
         return
     }
 
     val latestDismissRequest = rememberUpdatedState(onDismissRequest)
     val latestContent = rememberUpdatedState<@Composable () -> Unit> {
-        FullscreenPageContainer(backgroundColor, content)
+        FullscreenPageContainer(backgroundColor, scrollContentHandlesBottomInset, content)
     }
     val entry = remember {
         FullscreenPageEntry(
@@ -104,6 +132,7 @@ fun FullscreenPage(
 @Composable
 private fun FullscreenPageContainer(
     backgroundColor: Color = MaterialTheme.colorScheme.surface,
+    scrollContentHandlesBottomInset: Boolean,
     content: @Composable () -> Unit
 ) {
     Surface(
@@ -113,7 +142,15 @@ private fun FullscreenPageContainer(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .windowInsetsPadding(WindowInsets.safeDrawing)
+                .windowInsetsPadding(
+                    if (scrollContentHandlesBottomInset) {
+                        fullscreenContentWindowInsets()
+                            .only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+                            .union(WindowInsets.ime)
+                    } else {
+                        fullscreenContentWindowInsets()
+                    }
+                )
         ) {
             content()
         }

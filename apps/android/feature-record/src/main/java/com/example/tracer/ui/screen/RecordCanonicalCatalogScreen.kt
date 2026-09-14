@@ -25,7 +25,6 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -107,13 +106,13 @@ fun RecordCanonicalCatalogScreen(
     var frequentTopNInput by remember(frequentTopN) {
         mutableStateOf(frequentTopN.toString())
     }
-    FullscreenPage(onDismissRequest = onDismissRequest) {
+    FullscreenPage(onDismissRequest = onDismissRequest, scrollContentHandlesBottomInset = true) {
         Column(modifier = Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -310,12 +309,12 @@ fun RecordCanonicalCatalogScreen(
                         }
                     }
                 }
-                HorizontalDivider()
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState())
+                        .fullscreenScrollContentPadding()
                 ) {
                     if (source == CanonicalCatalogSource.TREE) CanonicalActivityTree(
                         isLoading = isLoading,
@@ -347,11 +346,12 @@ fun RecordCanonicalCatalogScreen(
         }
     }
     if (isTreeFullscreen) {
-        FullscreenPage(onDismissRequest = { isTreeFullscreen = false }) {
+        FullscreenPage(onDismissRequest = { isTreeFullscreen = false }, scrollContentHandlesBottomInset = true) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
+                    .fullscreenScrollContentPadding()
             ) {
                 CanonicalActivityTree(
                     isLoading = isLoading,

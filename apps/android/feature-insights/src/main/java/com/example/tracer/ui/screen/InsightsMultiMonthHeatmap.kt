@@ -87,11 +87,11 @@ internal fun InsightsMultiMonthHeatmap(
     }
 
     if (isFullscreen) {
-        FullscreenPage(onDismissRequest = { isFullscreen = false }) {
+        FullscreenPage(onDismissRequest = { isFullscreen = false }, scrollContentHandlesBottomInset = true) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
+                    .padding(start = 16.dp, end = 16.dp, top = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Row(
@@ -153,7 +153,9 @@ private fun YearHeatmapMonthGrid(
         if (useHorizontalLandscape) {
             val cardWidth = (maxHeight - 72.dp).coerceIn(160.dp, 260.dp)
             Row(
-                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                modifier = Modifier.horizontalScroll(rememberScrollState())
+                    .fullscreenScrollContentPadding()
+                    .padding(bottom = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 months.forEach { month ->
@@ -174,6 +176,8 @@ private fun YearHeatmapMonthGrid(
         } else {
             val gridModifier = if (horizontalLandscape) {
                 Modifier.verticalScroll(rememberScrollState())
+                    .fullscreenScrollContentPadding()
+                    .padding(bottom = 16.dp)
             } else {
                 Modifier
             }

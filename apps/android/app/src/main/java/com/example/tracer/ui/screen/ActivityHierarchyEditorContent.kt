@@ -18,23 +18,17 @@ internal fun ActivityHierarchyEditorContent(
     ActivityHierarchyEditorCard(
         aliasFiles = state.aliasFiles.filter { it.relativePath.startsWith("user/activity_hierarchy/") },
         selectedFileDisplayName = state.selectedFileDisplayName.removePrefix("user/activity_hierarchy/"),
-        selectedFileContent = state.selectedFileContent,
-        mode = state.aliasEditorMode,
         document = state.aliasSearchDocument ?: state.aliasDocumentDraft,
         searchQuery = state.aliasSearchQuery,
         movePlan = state.aliasEntryMovePlan,
         moveDestinations = state.aliasEntryMoveDestinations,
         moveDestinationsLoading = state.aliasEntryMoveDestinationsLoading,
-        advancedTomlDraft = state.aliasAdvancedTomlDraft,
         errorMessage = state.aliasEditorErrorMessage,
         onCreateAliasTomlFile = viewModel::createAliasTomlFile,
         onSelectAliasFile = viewModel::openFile,
         onDeleteAliasTomlFile = viewModel::deleteCurrentAliasTomlFile,
         onRenameCategory = viewModel::renameAliasCategory,
         onSetParentColor = viewModel::setAliasParentColor,
-        onSelectStructuredMode = { viewModel.selectAliasEditorMode(AliasEditorMode.STRUCTURED) },
-        onSelectAdvancedMode = { viewModel.selectAliasEditorMode(AliasEditorMode.ADVANCED) },
-        onAdvancedTomlChange = viewModel::onAliasAdvancedTomlChange,
         onAddGroup = viewModel::addAliasGroup,
         onDeleteGroup = viewModel::deleteAliasGroup,
         onRenameGroup = viewModel::renameAliasGroup,
@@ -52,7 +46,6 @@ internal fun ActivityHierarchyEditorContent(
         onPreviewGroupMove = viewModel::previewAliasGroupMove,
         onConfirmMovePlan = viewModel::confirmAliasEntryMovePlan,
         onDiscardMovePlan = viewModel::discardAliasEntryMovePlan,
-        onSave = viewModel::saveCurrentFile,
         onSearchQueryChange = viewModel::updateAliasSearchQuery
     )
 }

@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -52,10 +53,27 @@ internal fun AliasPathBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 12.dp, vertical = 4.dp)
+                .padding(start = 4.dp, end = 12.dp, top = 4.dp, bottom = 4.dp)
                 .heightIn(min = 48.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            TextButton(
+                onClick = { onNavigateToBreadcrumb(null) },
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Home,
+                    contentDescription = rootLabel,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            Icon(
+                imageVector = Icons.Filled.ChevronRight,
+                contentDescription = stringResource(R.string.config_alias_path_separator),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
             TextButton(
                 onClick = { onNavigateToBreadcrumb(null) },
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 4.dp)

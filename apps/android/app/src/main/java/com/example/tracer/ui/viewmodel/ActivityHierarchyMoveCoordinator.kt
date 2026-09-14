@@ -233,7 +233,7 @@ internal class ActivityHierarchyMoveCoordinator(
     }
 
     private fun currentContent(state: ActivityHierarchyEditorState): String =
-        state.aliasAdvancedTomlDraft.ifBlank { state.selectedFileContent }
+        state.selectedFileContent
 
     private suspend fun readDocuments(
         state: ActivityHierarchyEditorState,

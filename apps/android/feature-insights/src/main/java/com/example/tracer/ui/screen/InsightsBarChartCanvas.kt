@@ -17,6 +17,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 
@@ -37,6 +38,10 @@ internal fun InsightsBarChart(
     }
     val hasComparison = comparisonDurationHours.isNotEmpty()
     val maxDurationHours = (durationHours + comparisonDurationHours).maxOrNull()?.coerceAtLeast(1f) ?: 1f
+    val density = LocalDensity.current
+    val chartLayout = remember(maxDurationHours, density) {
+        buildDurationChartLayout(maxDurationHours, density)
+    }
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
     val currentColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.75f)
     val comparisonColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
@@ -57,9 +62,15 @@ internal fun InsightsBarChart(
                         if (durationHours.isEmpty() || canvasSize.width == 0 || canvasSize.height == 0) return@detectTapGestures
                         val size = Size(canvasSize.width.toFloat(), canvasSize.height.toFloat())
                         val centers = if (hasComparison) {
-                            buildGroupedBarChartPlot(durationHours, comparisonDurationHours, size, maxDurationHours).currentCenters
+                            buildGroupedBarChartPlot(
+                                durationHours,
+                                comparisonDurationHours,
+                                size,
+                                maxDurationHours,
+                                chartLayout
+                            ).currentCenters
                         } else {
-                            buildBarChartPlot(durationHours, size).centers
+                            buildBarChartPlot(durationHours, size, chartLayout).centers
                         }
                         val index = centers.indices.minByOrNull { i ->
                             val dx = centers[i].x - tapOffset.x
@@ -71,9 +82,19 @@ internal fun InsightsBarChart(
         ) {
             if (durationHours.isEmpty()) return@Canvas
             val groupedPlot = if (hasComparison) {
-                buildGroupedBarChartPlot(durationHours, comparisonDurationHours, size, maxDurationHours)
+                buildGroupedBarChartPlot(
+                    durationHours,
+                    comparisonDurationHours,
+                    size,
+                    maxDurationHours,
+                    chartLayout
+                )
             } else null
-            val barPlot = if (!hasComparison) buildBarChartPlot(durationHours, size) else null
+            val barPlot = if (!hasComparison) buildBarChartPlot(
+                durationHours,
+                size,
+                chartLayout
+            ) else null
             val left = if (groupedPlot != null) groupedPlot.leftPadding else barPlot!!.leftPadding
             val top = if (groupedPlot != null) groupedPlot.topPadding else barPlot!!.topPadding
             val width = if (groupedPlot != null) groupedPlot.chartWidth else barPlot!!.chartWidth
@@ -82,7 +103,7 @@ internal fun InsightsBarChart(
                 val y = top + height * index / 4f
                 drawLine(gridColor, Offset(left, y), Offset(left + width, y), 1f)
             }
-            drawDurationYAxisLabels(maxDurationHours, left, top, height, axisLabelColor)
+            drawDurationYAxisLabels(maxDurationHours, chartLayout, top, height, axisLabelColor)
 
             if (showAverageLine) {
                 val averageHours = resolveAverageDurationHours(durationHours, averageDurationSeconds)

@@ -1,8 +1,5 @@
 package com.example.tracer
 
-/** Presentation-only state rendered from the core hierarchy snapshot. */
-internal enum class AliasEditorMode { STRUCTURED, ADVANCED }
-
 internal enum class AliasMoveNodeKind {
     LEAF,
     GROUP
@@ -49,11 +46,28 @@ internal data class AliasEntryMoveTarget(
     val groupId: String? = null
 )
 
+internal data class AliasMergeTargetEntry(
+    val entry: ActivityHierarchyLeaf,
+    val groupPath: List<String>
+)
+
 internal fun ActivityHierarchyDocument.findAliasEntry(entryId: String): ActivityHierarchyLeaf? =
     nodes.entryLocations().firstOrNull { it.entry.id == entryId }?.entry
 
 internal fun ActivityHierarchyDocument.allAliasEntries(): List<ActivityHierarchyLeaf> =
     nodes.entryLocations().map { it.entry }
+
+internal fun ActivityHierarchyDocument.mergeTargetEntries(
+    sourceEntryId: String
+): List<AliasMergeTargetEntry> =
+    nodes.entryLocations()
+        .filter { it.entry.id != sourceEntryId }
+        .map { location ->
+            AliasMergeTargetEntry(
+                entry = location.entry,
+                groupPath = location.groups.map(ActivityHierarchyGroup::name)
+            )
+        }
 
 internal fun ActivityHierarchyDocument.findAliasGroup(groupId: String): ActivityHierarchyGroup? =
     nodes.groupLocations().firstOrNull { it.group.id == groupId }?.group

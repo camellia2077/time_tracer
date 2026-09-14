@@ -34,53 +34,6 @@ internal class ActivityHierarchyEditor(
         activityHierarchyGateway = activityHierarchyGateway
     )
 
-    fun onAliasAdvancedTomlChange(value: String) {
-        val selectedFile = uiState.selectedFilePath
-        val nextAdvancedDrafts = uiState.aliasAdvancedDraftsByFile.toMutableMap()
-        val nextModeByFile = uiState.aliasEditorModeByFile.toMutableMap()
-        if (selectedFile.isNotBlank()) {
-            if (value == uiState.selectedFileContent) {
-                nextAdvancedDrafts.remove(selectedFile)
-            } else {
-                nextAdvancedDrafts[selectedFile] = value
-            }
-            nextModeByFile[selectedFile] = AliasEditorMode.ADVANCED
-        }
-        uiState = uiState.copy(
-            aliasAdvancedTomlDraft = value,
-            aliasAdvancedDraftsByFile = nextAdvancedDrafts,
-            aliasEditorModeByFile = nextModeByFile
-        )
-    }
-
-    fun selectAliasEditorMode(mode: AliasEditorMode) {
-        if (!isAliasConfigFilePath(uiState.selectedFilePath) || uiState.aliasEditorMode == mode) {
-            return
-        }
-        if (mode == AliasEditorMode.ADVANCED) {
-            uiState = cacheAliasAdvancedMode(switchAliasEditorToAdvanced(uiState))
-            return
-        }
-        val rawToml = uiState.aliasAdvancedTomlDraft
-        viewModelScope.launch {
-            val result = activityHierarchyGateway.describeActivityHierarchy(rawToml)
-            val document = result.hierarchy?.toActivityHierarchyDocument()
-            if (!result.ok || document == null) {
-                val message = result.message.ifBlank { "Activity hierarchy validation failed." }
-                uiState = uiState.copy(aliasEditorErrorMessage = message, statusText = message)
-                return@launch
-            }
-            uiState = cacheAliasStructuredMode(uiState.copy(
-                aliasEditorMode = AliasEditorMode.STRUCTURED,
-                aliasDocumentDraft = document,
-                aliasParentOptions = normalizeAliasParentOptions(
-                    uiState.aliasParentOptions + document.parent
-                ),
-                aliasEditorErrorMessage = ""
-            ))
-        }
-    }
-
     fun updateAliasParent(value: String) {
         val normalizedValue = value.trim()
         if (normalizedValue.isEmpty() || !isAliasConfigFilePath(uiState.selectedFilePath)) {
@@ -133,7 +86,7 @@ internal class ActivityHierarchyEditor(
             uiState = uiState.copy(aliasEditorErrorMessage = "An activity category with this name already exists.")
             return
         }
-        val content = uiState.aliasAdvancedTomlDraft.ifBlank { uiState.selectedFileContent }
+        val content = uiState.selectedFileContent
         viewModelScope.launch {
             uiState = uiState.copy(autoSaveStatus = ActivityHierarchySaveStatus.SAVING)
             val outcome = activityHierarchyEditCoordinator.apply(
@@ -171,18 +124,6 @@ internal class ActivityHierarchyEditor(
                 selectedFileDisplayName = committedPath.removePrefix("user/activity_hierarchy/"),
                 selectedFileContent = applied.renderedToml,
                 aliasDocumentDraft = applied.document,
-                aliasBaselineDocument = applied.document,
-                aliasAdvancedTomlDraft = applied.renderedToml,
-                aliasStructuredDraftsByFile = uiState.aliasStructuredDraftsByFile
-                    .minus(selectedFile)
-                    .minus(committedPath),
-                aliasAdvancedDraftsByFile = uiState.aliasAdvancedDraftsByFile
-                    .minus(selectedFile)
-                    .minus(committedPath),
-                aliasEditorModeByFile = uiState.aliasEditorModeByFile
-                    .minus(selectedFile)
-                    .minus(committedPath)
-                    .plus(committedPath to AliasEditorMode.STRUCTURED),
                 aliasEntryMovePlan = null,
                 aliasEditorErrorMessage = "",
                 statusText = "Activity category renamed successfully.",
@@ -406,42 +347,5 @@ internal class ActivityHierarchyEditor(
             aliases = normalizedAliases
         ))
     }
-
-
-    private fun cacheAliasAdvancedMode(state: ActivityHierarchyEditorState): ActivityHierarchyEditorState {
-        val selectedFile = state.selectedFilePath
-        if (selectedFile.isBlank()) {
-            return state
-        }
-        val nextAdvancedDrafts = state.aliasAdvancedDraftsByFile.toMutableMap()
-        if (state.aliasAdvancedTomlDraft == state.selectedFileContent) {
-            nextAdvancedDrafts.remove(selectedFile)
-        } else {
-            nextAdvancedDrafts[selectedFile] = state.aliasAdvancedTomlDraft
-        }
-        return state.copy(
-            aliasAdvancedDraftsByFile = nextAdvancedDrafts,
-            aliasEditorModeByFile = state.aliasEditorModeByFile + (selectedFile to AliasEditorMode.ADVANCED)
-        )
-    }
-
-    private fun cacheAliasStructuredMode(state: ActivityHierarchyEditorState): ActivityHierarchyEditorState {
-        val selectedFile = state.selectedFilePath
-        val document = state.aliasDocumentDraft
-        if (selectedFile.isBlank() || document == null) {
-            return state
-        }
-        val nextStructuredDrafts = state.aliasStructuredDraftsByFile.toMutableMap()
-        if (state.aliasAdvancedTomlDraft == state.selectedFileContent) {
-            nextStructuredDrafts.remove(selectedFile)
-        } else {
-            nextStructuredDrafts[selectedFile] = document
-        }
-        return state.copy(
-            aliasStructuredDraftsByFile = nextStructuredDrafts,
-            aliasEditorModeByFile = state.aliasEditorModeByFile + (selectedFile to AliasEditorMode.STRUCTURED)
-        )
-    }
-
 }
 

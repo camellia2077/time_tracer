@@ -51,25 +51,8 @@ class ActivityHierarchyEditorViewModelTest {
 
         assertEquals("meal.toml", viewModel.uiState.selectedFileDisplayName)
         assertEquals("user/activity_hierarchy/meal.toml", viewModel.uiState.selectedFilePath)
-        assertEquals(AliasEditorMode.STRUCTURED, viewModel.uiState.aliasEditorMode)
         assertNotNull(viewModel.uiState.aliasDocumentDraft)
 
-    }
-
-    @Test
-    fun selecting_advanced_mode_uses_current_structured_draft() = runTest(dispatcher) {
-        val runtime = FakeConfigRuntime()
-        val viewModel = activityHierarchyEditor(runtime)
-        advanceUntilIdle()
-
-        // Parent updates are now async because selection can trigger file switch.
-        viewModel.updateAliasParent("meal-updated")
-        advanceUntilIdle()
-        viewModel.selectAliasEditorMode(AliasEditorMode.ADVANCED)
-
-        assertEquals(AliasEditorMode.ADVANCED, viewModel.uiState.aliasEditorMode)
-        assertTrue(viewModel.uiState.aliasAdvancedTomlDraft.contains("parent = \"meal-updated\""))
-        assertTrue(viewModel.uiState.aliasAdvancedTomlDraft.contains("[canonical.breakfast]"))
     }
 
     @Test
@@ -96,21 +79,6 @@ class ActivityHierarchyEditorViewModelTest {
         advanceUntilIdle()
 
         assertEquals(listOf("meal", "recreation"), viewModel.uiState.aliasParentOptions)
-    }
-
-    @Test
-    fun invalid_advanced_toml_blocks_return_to_structured_mode() = runTest(dispatcher) {
-        val runtime = FakeConfigRuntime()
-        val viewModel = activityHierarchyEditor(runtime)
-        advanceUntilIdle()
-
-        viewModel.selectAliasEditorMode(AliasEditorMode.ADVANCED)
-        viewModel.onAliasAdvancedTomlChange("parent =")
-        viewModel.selectAliasEditorMode(AliasEditorMode.STRUCTURED)
-        advanceUntilIdle()
-
-        assertEquals(AliasEditorMode.ADVANCED, viewModel.uiState.aliasEditorMode)
-        assertTrue(viewModel.uiState.aliasEditorErrorMessage.isNotBlank())
     }
 
     @Test
@@ -153,7 +121,6 @@ class ActivityHierarchyEditorViewModelTest {
             runtime.configContent("user/activity_hierarchy/study.toml")
         )
         assertEquals("user/activity_hierarchy/study.toml", viewModel.uiState.selectedFilePath)
-        assertEquals(AliasEditorMode.STRUCTURED, viewModel.uiState.aliasEditorMode)
         assertEquals("study", viewModel.uiState.aliasDocumentDraft?.parent)
     }
 
@@ -184,25 +151,6 @@ class ActivityHierarchyEditorViewModelTest {
     }
 
     @Test
-    fun switching_alias_files_restores_unsaved_advanced_draft_and_mode_when_returning() = runTest(dispatcher) {
-        val runtime = FakeConfigRuntime()
-        val viewModel = activityHierarchyEditor(runtime)
-        advanceUntilIdle()
-
-        viewModel.selectAliasEditorMode(AliasEditorMode.ADVANCED)
-        viewModel.onAliasAdvancedTomlChange("parent = \"meal\"\n\n[canonical.breakfast]\n\"draft\" = [\"早餐\"]")
-
-        viewModel.openFile("user/activity_hierarchy/recreation.toml")
-        advanceUntilIdle()
-        viewModel.openFile("user/activity_hierarchy/meal.toml")
-        advanceUntilIdle()
-
-        assertEquals("user/activity_hierarchy/meal.toml", viewModel.uiState.selectedFilePath)
-        assertEquals(AliasEditorMode.ADVANCED, viewModel.uiState.aliasEditorMode)
-        assertTrue(viewModel.uiState.aliasAdvancedTomlDraft.contains("\"draft\""))
-    }
-
-    @Test
     fun renaming_alias_updates_toml_and_matching_txt_files_without_sync() = runTest(dispatcher) {
         val runtime = FakeConfigRuntime()
         val quickActivitiesGateway = FakeQuickActivitiesPreferenceGateway(
@@ -225,9 +173,7 @@ class ActivityHierarchyEditorViewModelTest {
             canonicalLeaf = "breakfast",
             aliases = listOf("早饭")
         )
-        viewModel.saveCurrentFile()
         advanceUntilIdle()
-
         assertEquals("user/activity_hierarchy/meal.toml", runtime.lastMigrationRequest?.configRelativePath)
         assertEquals(
             AliasKeyReplacement("早餐", "早饭"),
@@ -318,7 +264,7 @@ class ActivityHierarchyEditorViewModelTest {
             .filterIsInstance<ActivityHierarchyGroup>()
             .first { it.name == "dinner" }
         val entry = breakfast.nodes.filterIsInstance<ActivityHierarchyLeaf>().single()
-        val originalToml = viewModel.uiState.aliasAdvancedTomlDraft
+        val originalToml = viewModel.uiState.selectedFileContent
 
         viewModel.previewAliasEntryMove(entry.id, dinner.id)
         advanceUntilIdle()
@@ -326,7 +272,7 @@ class ActivityHierarchyEditorViewModelTest {
         val plan = requireNotNull(viewModel.uiState.aliasEntryMovePlan)
         assertEquals("meal_breakfast_breakfast", plan.oldCanonical)
         assertEquals("meal_dinner_breakfast", plan.newCanonical)
-        assertEquals(originalToml, viewModel.uiState.aliasAdvancedTomlDraft)
+        assertEquals(originalToml, viewModel.uiState.selectedFileContent)
         assertTrue(runtime.saveCalls.isEmpty())
         assertTrue(runtime.savedTxtWrites.isEmpty())
     }

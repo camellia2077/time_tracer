@@ -16,6 +16,14 @@ Describe the user-visible behavior of record creation and TXT editing flows.
 
 ## Behavior Summary
 
+- Full-screen scrolling pages (including Activities and nested pickers) extend
+  their viewport to the bottom of the window. Navigation/gesture clearance belongs
+  at the end of the scrollable content, so there is no fixed blank strip clipping
+  cards above the gesture bar, and the last item can still scroll clear of it.
+  Full-screen text editors use the same trailing clearance and avoid the keyboard.
+  Non-scrolling full-screen content stays within the system safe area. This rule
+  also applies to Insights and Settings; the four main tabs retain their spacing.
+
 - `Record Activity`
   - is append-oriented
   - should not be used as a historical insertion tool

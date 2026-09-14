@@ -20,6 +20,7 @@ class QueryInsightsViewModel(
 ) : ViewModel() {
     private companion object {
         const val INSIGHTS_CHART_LOG_TAG = "TracerInsightsChart"
+        const val DAY_REMARK_AUTO_SAVE_DELAY_MS = 800L
     }
 
     var uiState by mutableStateOf(initialQueryInsightsUiState(clock))
@@ -34,6 +35,18 @@ class QueryInsightsViewModel(
     // only the newest query's state updates so a delayed request for the transient selection
     // cannot replace the chart selected by the user (or by the restored preferences).
     internal var chartRequestGeneration = 0L
+    var dayRemarkAutoSaveError by mutableStateOf("")
+        internal set
+    private val dayRemarkAutoSave = LatestValueAutoSaveCoordinator(
+        scope = viewModelScope,
+        debounceMillis = DAY_REMARK_AUTO_SAVE_DELAY_MS,
+        save = ::updateDayRemark,
+        onLatestSaveFinished = { result ->
+            dayRemarkAutoSaveError = if (result.ok) "" else result.message.ifBlank {
+                "Day remark update failed."
+            }
+        }
+    )
 
     private sealed interface QueryInsightsIntent {
         data object InsightsDay : QueryInsightsIntent
@@ -94,6 +107,15 @@ class QueryInsightsViewModel(
             uiState = uiState.updateLocalDayRemark(remark)
         }
         return result
+    }
+
+    fun scheduleDayRemarkAutoSave(remark: String) {
+        dayRemarkAutoSaveError = ""
+        dayRemarkAutoSave.schedule(remark)
+    }
+
+    fun flushDayRemarkAutoSave() {
+        dayRemarkAutoSave.flush()
     }
 
     private fun QueryInsightsUiState.updateLocalActivityRemark(

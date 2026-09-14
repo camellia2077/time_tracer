@@ -22,13 +22,9 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,13 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.example.tracer.ui.components.NativeMultilineTextEditor
 import com.example.tracer.ui.components.ActivitySearchField
-import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
-import kotlinx.coroutines.delay
-
-
-internal const val CONFIG_ALIAS_EDITOR_AUTO_SAVE_DELAY_MS = 600L
 
 @Composable
 internal fun AliasEntryMovePlanPreview(

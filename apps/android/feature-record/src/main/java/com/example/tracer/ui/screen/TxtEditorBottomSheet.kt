@@ -3,7 +3,6 @@ package com.example.tracer
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
-import android.view.View
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,12 +32,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
 import com.example.tracer.feature.record.R
 import com.example.tracer.ui.components.CalendarDatePickerSheet
 import com.example.tracer.ui.components.NativeMultilineTextEditor
@@ -240,26 +239,15 @@ private fun RawEditorSystemBars(color: Color) {
         if (window == null) {
             onDispose {}
         } else {
-            val decorView = window.decorView
-            val originalStatusBarColor = window.statusBarColor
-            val originalNavigationBarColor = window.navigationBarColor
-            val originalSystemUiVisibility = decorView.systemUiVisibility
+            val insetsController = WindowCompat.getInsetsController(window, view)
+            val originalLightStatusBars = insetsController.isAppearanceLightStatusBars
+            val originalLightNavigationBars = insetsController.isAppearanceLightNavigationBars
             val lightSystemBars = color.luminance() > 0.5f
-            window.statusBarColor = color.toArgb()
-            window.navigationBarColor = color.toArgb()
-            decorView.systemUiVisibility = if (lightSystemBars) {
-                originalSystemUiVisibility or
-                    View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or
-                    View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-            } else {
-                originalSystemUiVisibility and
-                    View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv() and
-                    View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
-            }
+            insetsController.isAppearanceLightStatusBars = lightSystemBars
+            insetsController.isAppearanceLightNavigationBars = lightSystemBars
             onDispose {
-                window.statusBarColor = originalStatusBarColor
-                window.navigationBarColor = originalNavigationBarColor
-                decorView.systemUiVisibility = originalSystemUiVisibility
+                insetsController.isAppearanceLightStatusBars = originalLightStatusBars
+                insetsController.isAppearanceLightNavigationBars = originalLightNavigationBars
             }
         }
     }
