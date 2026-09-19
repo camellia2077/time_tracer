@@ -14,7 +14,6 @@ internal data class TracerScreenActions(
     val onCopyDiagnosticsPayload: () -> Unit,
     val onPersistRecordQuickActivities: (List<String>) -> Unit,
     val onPersistRecordQuickAccessCardExpanded: (Boolean) -> Unit,
-    val onPersistRecordQuickAccessEditorVisibility: (Boolean) -> Unit,
     val onPersistRecordCanonicalCatalogDisplayMode: (RecordFrequentOutputMode) -> Unit,
     val onPersistRecordCanonicalCatalogSource: (CanonicalCatalogSource) -> Unit,
     val onPersistRecordCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
@@ -35,7 +34,6 @@ private data class TracerScreenDiagnosticsActions(
 private data class TracerScreenPreferenceActions(
     val onPersistRecordQuickActivities: (List<String>) -> Unit,
     val onPersistRecordQuickAccessCardExpanded: (Boolean) -> Unit,
-    val onPersistRecordQuickAccessEditorVisibility: (Boolean) -> Unit,
     val onPersistRecordCanonicalCatalogDisplayMode: (RecordFrequentOutputMode) -> Unit,
     val onPersistRecordCanonicalCatalogSource: (CanonicalCatalogSource) -> Unit,
     val onPersistRecordCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
@@ -87,7 +85,6 @@ internal fun rememberTracerScreenActions(
         onPersistRecordQuickActivities = preferenceActions.onPersistRecordQuickActivities,
         onPersistRecordQuickAccessCardExpanded =
             preferenceActions.onPersistRecordQuickAccessCardExpanded,
-        onPersistRecordQuickAccessEditorVisibility = preferenceActions.onPersistRecordQuickAccessEditorVisibility,
         onPersistRecordCanonicalCatalogDisplayMode =
             preferenceActions.onPersistRecordCanonicalCatalogDisplayMode,
         onPersistRecordCanonicalCatalogSource = preferenceActions.onPersistRecordCanonicalCatalogSource,
@@ -155,11 +152,6 @@ private fun rememberTracerScreenPreferenceActions(
         onPersistRecordQuickAccessCardExpanded = { value ->
             coroutineScope.launch {
                 userPreferencesRepository.setRecordQuickAccessCardExpanded(value)
-            }
-        },
-        onPersistRecordQuickAccessEditorVisibility = { value ->
-            coroutineScope.launch {
-                userPreferencesRepository.setRecordQuickAccessEditorVisible(value)
             }
         },
         onPersistRecordCanonicalCatalogDisplayMode = { value ->

@@ -25,6 +25,39 @@ class RecordInputContentTest {
     }
 
     @Test
+    fun minuteRollover_hasNoPreviousLapOnInitialStart() {
+        for (elapsed in listOf(-1L, 0L, 150L, 30_000L, 59_999L)) {
+            assertEquals(0f, minuteCycleRolloverAlpha(elapsed))
+        }
+    }
+
+    @Test
+    fun minuteRollover_keepsCompletedLapAtBoundaryThenFadesItOut() {
+        assertEquals(1f, minuteCycleRolloverAlpha(60_000L))
+        assertEquals(0.5f, minuteCycleRolloverAlpha(60_150L))
+        assertEquals(0f, minuteCycleRolloverAlpha(60_300L))
+        assertEquals(0f, minuteCycleRolloverAlpha(61_000L))
+    }
+
+    @Test
+    fun minuteRollover_newLapMovesDuringFadeWithoutHoldingOrSkippingTime() {
+        for (millis in 0L..300L step 16L) {
+            val elapsed = 60_000L + millis
+            assertEquals(millis / 60_000f, minuteCycleProgressForElapsedMillis(elapsed))
+        }
+    }
+
+    @Test
+    fun minuteRollover_samplesSamePhaseAfterSkippedLapsAndHourBoundary() {
+        for (start in listOf(120_000L, 3_600_000L, 7_200_000L)) {
+            assertEquals(1f, minuteCycleRolloverAlpha(start))
+            assertEquals(0.5f, minuteCycleRolloverAlpha(start + 150L))
+            assertEquals(0f, minuteCycleRolloverAlpha(start + 5_000L))
+            assertEquals(150f / 60_000f, minuteCycleProgressForElapsedMillis(start + 150L))
+        }
+    }
+
+    @Test
     fun syncActivityNameInputValue_movesCursorToEndWhenContentChangesExternally() {
         val updatedValue = syncActivityNameInputValue(
             currentValue = TextFieldValue(text = "draft", selection = TextRange.Zero),

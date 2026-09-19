@@ -167,20 +167,20 @@
     <string name="insights_status_query_composition_running">query data insights-composition 运行中...</string>
     <string name="insights_status_query_composition_result">query data insights-composition -&gt; OK=%1$s</string>
 
-    <string name="insights_result_title_insights">分析结果</string>
-    <string name="insights_result_title_insights_error">分析错误</string>
+    <string name="insights_result_title_insights">统计结果</string>
+    <string name="insights_result_title_insights_error">统计错误</string>
     <string name="insights_result_title_insights_missing_target">%1$s目标不存在</string>
-    <string name="insights_result_title_insights_no_data">%1$s没有记录</string>
+    <string name="insights_result_title_insights_no_data">暂无统计数据（%1$s）</string>
     <string name="insights_result_title_insights_window_summary">%1$s窗口摘要</string>
     <string name="insights_result_title_chart">图表结果</string>
-    <string name="insights_result_title_analysis_error">分析错误</string>
+    <string name="insights_result_title_analysis_error">统计错误</string>
     <string name="insights_result_title_tree">%1$s时间明细</string>
-    <string name="insights_summary_missing_target_body">所选%1$s目标没有对应的分析数据。</string>
-    <string name="insights_summary_no_data_body">此%1$s没有记录活动。</string>
+    <string name="insights_summary_missing_target_body">所选%1$s目标没有对应的统计数据。</string>
+    <string name="insights_summary_no_data_body">该%1$s暂无活动记录。</string>
     <string name="insights_summary_error_code">错误码：%1$s</string>
     <string name="insights_summary_error_category">分类：%1$s</string>
     <string name="insights_summary_hints">提示：%1$s</string>
-    <string name="insights_summary_window_has_records_body">该%1$s分析已返回结构化窗口元数据。</string>
+    <string name="insights_summary_window_has_records_body">该%1$s统计已返回结构化窗口元数据。</string>
     <string name="insights_summary_window_empty_body">所请求的%1$s窗口中没有记录。</string>
     <string name="insights_summary_window_range">窗口：%1$s 到 %2$s</string>
     <string name="insights_summary_requested_days">请求天数：%1$d</string>

@@ -5,13 +5,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.tracer.data.ActivityCategoryColorPreferenceWriter
 import kotlinx.coroutines.launch
 
 internal class ActivityHierarchyEditorViewModel(
     private val configGateway: ConfigGateway,
     private val quickActivitiesPreferenceGateway: QuickActivitiesPreferenceGateway,
     private val activityHierarchyGateway: ActivityHierarchyGateway,
-    private val activityHierarchyMigrationGateway: ActivityHierarchyMigrationGateway
+    private val activityHierarchyMigrationGateway: ActivityHierarchyMigrationGateway,
+    private val activityCategoryColorPreferenceWriter: ActivityCategoryColorPreferenceWriter
 ) : ViewModel() {
     private val configFileEditor = ActivityHierarchyFileEditor(
         configGateway = configGateway,
@@ -22,6 +24,7 @@ internal class ActivityHierarchyEditorViewModel(
         activityHierarchyGateway = activityHierarchyGateway,
         activityHierarchyMigrationGateway = activityHierarchyMigrationGateway,
         quickActivitiesPreferenceGateway = quickActivitiesPreferenceGateway,
+        activityCategoryColorPreferenceWriter = activityCategoryColorPreferenceWriter,
         configFileEditor = configFileEditor,
         scope = viewModelScope,
         readState = { uiState },
@@ -42,6 +45,7 @@ internal class ActivityHierarchyEditorViewModel(
         activityHierarchyGateway = activityHierarchyGateway,
         activityHierarchyMigrationGateway = activityHierarchyMigrationGateway,
         quickActivitiesPreferenceGateway = quickActivitiesPreferenceGateway,
+        activityCategoryColorPreferenceWriter = activityCategoryColorPreferenceWriter,
         configFileEditor = configFileEditor,
         scope = viewModelScope,
         readState = { uiState },

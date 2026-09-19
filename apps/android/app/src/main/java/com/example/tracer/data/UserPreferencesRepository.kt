@@ -91,7 +91,6 @@ data class RecordFrequentPreferences(
     val canonicalCatalogSource: CanonicalCatalogSource,
     val quickActivities: List<String>,
     val quickAccessCardExpanded: Boolean,
-    val quickAccessEditorVisible: Boolean,
     val collapsedCanonicalRootPaths: Set<String>,
     val orderedCanonicalRootPaths: List<String>
 )
@@ -129,7 +128,13 @@ data class ConfigCardExpansionPreferences(
     }
 }
 
-class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
+internal fun interface ActivityCategoryColorPreferenceWriter {
+    suspend fun setInsightsActivityCategoryColor(relativePath: String, color: String)
+}
+
+class UserPreferencesRepository(
+    private val dataStore: DataStore<Preferences>
+) : ActivityCategoryColorPreferenceWriter {
     companion object {
         const val DEFAULT_RECORD_FREQUENT_LOOKBACK_DAYS: Int = 7
         const val DEFAULT_RECORD_FREQUENT_TOP_N: Int = 5
@@ -168,7 +173,6 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         private const val MAX_RECORD_FREQUENT_TOP_N: Int = 20
         private const val MAX_RECORD_QUICK_ACTIVITY_COUNT: Int = 12
         private const val MAX_RECORD_QUICK_ACTIVITY_LENGTH: Int = 40
-        const val DEFAULT_RECORD_QUICK_ACCESS_EDITOR_VISIBLE: Boolean = false
         const val DEFAULT_RECORD_QUICK_ACCESS_CARD_EXPANDED: Boolean = true
         const val DEFAULT_PROMPT_BEFORE_UNCONFIGURED_ACTIVITY_RECORD: Boolean = false
         val DEFAULT_PAGE_TRANSITION_STYLE: PageTransitionStyle = PageTransitionStyle.FADE
@@ -199,8 +203,6 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         val RECORD_QUICK_ACTIVITIES = stringPreferencesKey("record_quick_activities")
         val RECORD_QUICK_ACCESS_CARD_EXPANDED =
             booleanPreferencesKey("record_quick_access_card_expanded")
-        val RECORD_QUICK_ACCESS_EDITOR_VISIBLE =
-            booleanPreferencesKey("record_quick_access_editor_visible")
         val PROMPT_BEFORE_UNCONFIGURED_ACTIVITY_RECORD =
             booleanPreferencesKey("prompt_before_unconfigured_activity_record")
         val PAGE_TRANSITION_STYLE = stringPreferencesKey("page_transition_style")
@@ -253,6 +255,8 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             stringPreferencesKey("insights_comparison_indicator_style")
         val INSIGHTS_CHART_TREND_ROOT = stringPreferencesKey("insights_chart_trend_root")
         val INSIGHTS_HEATMAP_PALETTE_NAME = stringPreferencesKey("insights_heatmap_palette_name")
+        val INSIGHTS_ACTIVITY_CATEGORY_COLORS =
+            stringPreferencesKey("insights_activity_category_colors")
         val INSIGHTS_STATUSES_DAY = stringPreferencesKey("insights_statuses_day")
         val INSIGHTS_STATUSES_WEEK = stringPreferencesKey("insights_statuses_week")
         val INSIGHTS_STATUSES_MONTH = stringPreferencesKey("insights_statuses_month")
@@ -306,8 +310,6 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             raw = preferences[PreferencesKeys.RECORD_QUICK_ACTIVITIES],
             hasStoredValue = hasStoredQuickActivities
         )
-        val quickAccessEditorVisible = preferences[PreferencesKeys.RECORD_QUICK_ACCESS_EDITOR_VISIBLE]
-            ?: DEFAULT_RECORD_QUICK_ACCESS_EDITOR_VISIBLE
         val quickAccessCardExpanded = preferences[PreferencesKeys.RECORD_QUICK_ACCESS_CARD_EXPANDED]
             ?: DEFAULT_RECORD_QUICK_ACCESS_CARD_EXPANDED
         val collapsedCanonicalRootPaths = parseCollapsedCanonicalRootPaths(
@@ -330,7 +332,6 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             }.getOrDefault(DEFAULT_RECORD_CANONICAL_CATALOG_SOURCE),
             quickActivities = quickActivities,
             quickAccessCardExpanded = quickAccessCardExpanded,
-            quickAccessEditorVisible = quickAccessEditorVisible,
             collapsedCanonicalRootPaths = collapsedCanonicalRootPaths,
             orderedCanonicalRootPaths = orderedCanonicalRootPaths
         )
@@ -443,6 +444,10 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
 
     val insightsHeatmapPaletteName: Flow<String> = dataStore.data.map { preferences ->
         preferences[PreferencesKeys.INSIGHTS_HEATMAP_PALETTE_NAME].orEmpty()
+    }
+
+    val insightsActivityCategoryColors: Flow<Map<String, String>> = dataStore.data.map { preferences ->
+        parseActivityCategoryColors(preferences[PreferencesKeys.INSIGHTS_ACTIVITY_CATEGORY_COLORS])
     }
 
     val insightsStatusConfigs: Flow<InsightsStatusConfigs> = dataStore.data.map { preferences ->
@@ -584,12 +589,6 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         }
     }
 
-    suspend fun setRecordQuickAccessEditorVisible(value: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.RECORD_QUICK_ACCESS_EDITOR_VISIBLE] = value
-        }
-    }
-
     suspend fun setRecordCollapsedCanonicalRootPaths(values: Set<String>) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.RECORD_COLLAPSED_CANONICAL_ROOT_PATHS] =
@@ -691,6 +690,28 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         }
     }
 
+    override suspend fun setInsightsActivityCategoryColor(relativePath: String, color: String) {
+        val normalizedPath = relativePath.trim()
+        if (normalizedPath.isEmpty()) return
+        dataStore.edit { preferences ->
+            val colors = parseActivityCategoryColors(
+                preferences[PreferencesKeys.INSIGHTS_ACTIVITY_CATEGORY_COLORS]
+            ).toMutableMap()
+            val normalizedColor = color.trim().uppercase()
+            if (normalizedColor.isEmpty()) {
+                colors.remove(normalizedPath)
+            } else {
+                colors[normalizedPath] = normalizedColor
+            }
+            if (colors.isEmpty()) {
+                preferences.remove(PreferencesKeys.INSIGHTS_ACTIVITY_CATEGORY_COLORS)
+            } else {
+                preferences[PreferencesKeys.INSIGHTS_ACTIVITY_CATEGORY_COLORS] =
+                    serializeActivityCategoryColors(colors)
+            }
+        }
+    }
+
     suspend fun setStatusConfig(mode: InsightsMode, value: DailyStatusConfig) {
         dataStore.edit { preferences ->
             preferences[mode.statusConfigKey()] =
@@ -773,6 +794,22 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
     private fun decodeDailyStatusPart(value: String): String = runCatching {
         String(Base64.getUrlDecoder().decode(value), StandardCharsets.UTF_8)
     }.getOrDefault("")
+
+    private fun parseActivityCategoryColors(raw: String?): Map<String, String> {
+        if (raw.isNullOrBlank()) return emptyMap()
+        return raw.lineSequence().mapNotNull { line ->
+            val separator = line.indexOf('\t')
+            if (separator <= 0 || separator == line.lastIndex) return@mapNotNull null
+            val path = line.substring(0, separator).trim()
+            val color = line.substring(separator + 1).trim().uppercase()
+            if (path.isEmpty() || color.isEmpty()) null else path to color
+        }.toMap()
+    }
+
+    private fun serializeActivityCategoryColors(colors: Map<String, String>): String =
+        colors.toSortedMap().entries.joinToString("\n") { (path, color) ->
+            "$path\t$color"
+        }
 
     private fun parseQuickActivities(raw: String?, hasStoredValue: Boolean): List<String> {
         // An unconfigured list must stay empty so the UI does not render placeholder activities

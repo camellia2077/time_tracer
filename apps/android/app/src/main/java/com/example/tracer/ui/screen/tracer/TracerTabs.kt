@@ -56,6 +56,7 @@ internal data class TracerTabRouteArgs(
     val themeConfig: ThemeConfig,
     val onThemeEvent: (ThemeEvent) -> Unit,
     val insightsPiePalettePreset: InsightsPiePalettePreset,
+    val insightsActivityCategoryColors: Map<String, String>,
     val onInsightsPiePalettePresetChange: (InsightsPiePalettePreset) -> Unit,
     val insightsComparisonColorScheme: InsightsComparisonColorScheme,
     val onInsightsComparisonColorSchemeChange: (InsightsComparisonColorScheme) -> Unit,
@@ -105,7 +106,6 @@ internal data class TracerTabRouteArgs(
     val onPersistRecordQuickActivities: (List<String>) -> Unit,
     val onClearQuickAccessCache: () -> Unit,
     val onPersistRecordQuickAccessCardExpanded: (Boolean) -> Unit,
-    val onPersistRecordQuickAccessEditorVisibility: (Boolean) -> Unit,
     val onPersistRecordCanonicalCatalogDisplayMode: (RecordFrequentOutputMode) -> Unit,
     val onPersistRecordCanonicalCatalogSource: (CanonicalCatalogSource) -> Unit,
     val onPersistRecordCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
@@ -201,6 +201,7 @@ internal object TracerTabRegistry {
                     preferredAverageDayBasis = args.insightsAverageDayBasis,
                     chartShowAverageLine = args.insightsChartShowAverageLine,
                     piePalettePreset = args.insightsPiePalettePreset,
+                    activityCategoryColors = args.insightsActivityCategoryColors,
                     comparisonColorScheme = args.insightsComparisonColorScheme,
                     comparisonIndicatorStyle = args.insightsComparisonIndicatorStyle,
                     onChartShowAverageLineChange = args.onInsightsChartShowAverageLineChange,
@@ -248,7 +249,6 @@ internal object TracerTabRegistry {
                     onPersistQuickActivities = args.onPersistRecordQuickActivities,
                     onPersistQuickAccessCardExpanded =
                         args.onPersistRecordQuickAccessCardExpanded,
-                    onPersistQuickAccessEditorVisibility = args.onPersistRecordQuickAccessEditorVisibility,
                     onPersistCanonicalCatalogDisplayMode =
                         args.onPersistRecordCanonicalCatalogDisplayMode,
                     onPersistCanonicalCatalogSource = args.onPersistRecordCanonicalCatalogSource,

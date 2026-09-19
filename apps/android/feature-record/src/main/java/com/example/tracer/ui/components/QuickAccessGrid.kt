@@ -14,6 +14,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Icon
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
@@ -363,12 +366,18 @@ private fun DeleteQuickAccessChip(
         modifier = modifier,
         label = {
             Text(
-                text = stringResource(
-                    R.string.record_chip_remove_activity,
-                    activity
-                ),
+                text = activity,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
+            )
+        },
+        trailingIcon = {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = stringResource(
+                    R.string.record_cd_remove_quick_access_activity,
+                    activity
+                )
             )
         },
         colors = InputChipDefaults.inputChipColors(

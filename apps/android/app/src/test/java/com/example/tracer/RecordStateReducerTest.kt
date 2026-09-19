@@ -53,14 +53,64 @@ class RecordStateReducerTest {
     }
 
     @Test
-    fun quickAccessCardExpansion_isIndependentFromEditState() {
+    fun quickAccessCardExpansion_isIndependentFromAddSheet() {
         val viewModel = buildRecordViewModel()
 
         viewModel.updateQuickAccessCardExpanded(false)
-        viewModel.updateQuickAccessEditorVisibility(true)
+        viewModel.updateQuickAccessAddSheetVisibility(true)
 
         assertFalse(viewModel.uiState.quickAccessCardExpanded)
-        assertTrue(viewModel.uiState.quickAccessEditorVisible)
+        assertTrue(viewModel.uiState.quickAccessAddSheetVisible)
+    }
+
+    @Test
+    fun quickAccessAddSheetAndManageMode_areMutuallyExclusive() {
+        val viewModel = buildRecordViewModel()
+
+        viewModel.updateQuickActivities(listOf("Work"))
+        viewModel.updateQuickAccessAddSheetVisibility(true)
+        viewModel.updateQuickAccessManageMode(true)
+
+        assertFalse(viewModel.uiState.quickAccessAddSheetVisible)
+        assertTrue(viewModel.uiState.quickAccessManageMode)
+
+        viewModel.updateQuickAccessAddSheetVisibility(true)
+        assertTrue(viewModel.uiState.quickAccessAddSheetVisible)
+        assertFalse(viewModel.uiState.quickAccessManageMode)
+    }
+
+    @Test
+    fun collapsingQuickAccessCard_closesTransientControls() {
+        val viewModel = buildRecordViewModel()
+
+        viewModel.updateQuickActivities(listOf("Work"))
+        viewModel.updateQuickAccessAddSheetVisibility(true)
+        viewModel.updateQuickAccessCardExpanded(false)
+
+        assertFalse(viewModel.uiState.quickAccessAddSheetVisible)
+        assertFalse(viewModel.uiState.quickAccessManageMode)
+
+        viewModel.updateQuickAccessCardExpanded(true)
+        viewModel.updateQuickAccessManageMode(true)
+        viewModel.updateQuickAccessCardExpanded(false)
+
+        assertFalse(viewModel.uiState.quickAccessAddSheetVisible)
+        assertFalse(viewModel.uiState.quickAccessManageMode)
+    }
+
+    @Test
+    fun quickAccessManageMode_requiresActivities_andStopsWhenLastActivityIsRemoved() {
+        val viewModel = buildRecordViewModel()
+
+        viewModel.updateQuickAccessManageMode(true)
+        assertFalse(viewModel.uiState.quickAccessManageMode)
+
+        viewModel.updateQuickActivities(listOf("Work"))
+        viewModel.updateQuickAccessManageMode(true)
+        assertTrue(viewModel.uiState.quickAccessManageMode)
+
+        viewModel.updateQuickActivities(emptyList())
+        assertFalse(viewModel.uiState.quickAccessManageMode)
     }
 
     @Test

@@ -74,6 +74,9 @@ internal class NativeRuntimeBridge {
         outputFd = outputFd
     )
 
+    fun nativeBuildTracerExchangeContentFromPayloadJson(requestJson: String): String =
+        NativeBridge.nativeBuildTracerExchangeContentFromPayloadJson(requestJson)
+
     fun nativeImportTracerExchange(
         inputPath: String,
         workRoot: String,

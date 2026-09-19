@@ -62,7 +62,7 @@ internal fun rememberTracerTomlFolderImportAction(
                 var successCount = 0
 
                 for ((index, document) in documents.withIndex()) {
-                    if (!isAndroidImportExportUserConfigTomlPath(document.relativePath)) {
+                    if (!isSupportedUserConfigTomlImportPath(document.relativePath)) {
                         continue
                     }
                     dataViewModel.setStatusText(
@@ -130,6 +130,13 @@ internal fun rememberTracerTomlFolderImportAction(
         dataViewModel.setStatusText(context.getString(R.string.tracer_import_select_toml_folder))
         importTomlFolderLauncher.launch(null)
     }
+}
+
+internal fun isSupportedUserConfigTomlImportPath(relativePath: String): Boolean {
+    val normalized = relativePath.replace('\\', '/').trim('/')
+    return normalized == "user/behavior.toml" ||
+        (normalized.startsWith("user/activity_hierarchy/") &&
+            normalized.endsWith(".toml", ignoreCase = true))
 }
 
 private fun readSelectedTreeTextDocument(

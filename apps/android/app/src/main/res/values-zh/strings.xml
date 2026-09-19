@@ -5,7 +5,7 @@
     <!-- Keep the product name fixed as "Tracer" in every locale. Do not localize or rename. -->
     <string name="app_name">Tracer</string>
 
-    <string name="tracer_tab_insights">分析</string>
+    <string name="tracer_tab_insights">统计</string>
     <string name="tracer_tab_record">记录</string>
     <string name="tracer_tab_files">文件</string>
     <string name="tracer_tab_settings">设置</string>
@@ -62,10 +62,10 @@
     <plurals name="tracer_import_confirm_payload_count">
         <item quantity="other">%1$d 个 TXT 文件</item>
     </plurals>
-    <string name="tracer_crypto_passphrase_encrypt_title">加密密码</string>
-    <string name="tracer_crypto_passphrase_decrypt_title">解密密码</string>
-    <string name="tracer_crypto_passphrase_hint">输入密码</string>
-    <string name="tracer_crypto_passphrase_confirm_hint">确认密码</string>
+    <string name="tracer_crypto_passphrase_encrypt_title">设置导出密码</string>
+    <string name="tracer_crypto_passphrase_decrypt_title">输入导出密码</string>
+    <string name="tracer_crypto_passphrase_hint">输入导出密码</string>
+    <string name="tracer_crypto_passphrase_confirm_hint">再次输入导出密码</string>
     <string name="tracer_crypto_passphrase_required">必须输入密码。</string>
     <string name="tracer_crypto_passphrase_mismatch">两次输入密码不一致。</string>
     <string name="tracer_diagnostics_prepare">正在准备诊断载荷...</string>
@@ -87,7 +87,7 @@
 
     <string name="config_title_app_preferences">应用偏好</string>
     <string name="config_title_appearance">外观</string>
-    <string name="config_title_insights_settings">分析展示</string>
+    <string name="config_title_insights_settings">统计展示</string>
     <string name="config_title_theme_mode">主题模式</string>
     <string name="config_title_theme_palette">主题配色</string>
     <string name="config_theme_palette_group_light_dark">支持明暗模式的主题</string>
@@ -133,7 +133,7 @@
     <string name="config_page_transition_slide">轻微左右滑动</string>
     <string name="config_page_transition_none">无动画</string>
     <string name="config_cd_hide_unconfigured_activity_prompt">隐藏未配置活动提示说明</string>
-    <string name="config_title_insights_chart_style">分析图表样式</string>
+    <string name="config_title_insights_chart_style">统计图表样式</string>
     <string name="config_label_insights_breakdown_palette">分布图配色</string>
     <string name="config_insights_breakdown_palette_current">分布图配色（当前：%1$s）</string>
     <string name="config_insights_breakdown_palette_tap_expand">分布图配色（点击展开）</string>
@@ -184,7 +184,7 @@
     <string name="config_category_alias">分类</string>
     <string name="config_category_charts">图表</string>
     <string name="config_category_meta">元信息</string>
-    <string name="config_category_insights">分析</string>
+    <string name="config_category_insights">统计</string>
     <string name="config_no_toml_files_in_category">%1$s 下暂无内容。</string>
     <string name="config_action_select_toml_file">选择项目</string>
 
@@ -202,8 +202,7 @@
     <string name="config_alias_parent_label">分类</string>
     <string name="config_alias_parent_color_label">分类颜色</string>
     <string name="config_alias_display_color_title">显示颜色</string>
-    <string name="config_alias_display_color_description">用于 Insights 中的分类标识。</string>
-    <string name="config_alias_parent_color_hint">输入最多 6 位 HEX 字符。# 会自动添加；未输入的位会以 0 预览。</string>
+    <string name="config_alias_display_color_description">用于统计中的分类标识。</string>
     <string name="config_alias_parent_color_palette_label">%1$s CSS 颜色</string>
     <string name="config_alias_parent_color_palette_title">选择分类颜色</string>
     <string name="config_alias_parent_color_family_label">色系</string>
@@ -220,7 +219,6 @@
     <string name="config_alias_action_close_parent_color_picker">关闭颜色选择器</string>
     <string name="config_alias_action_choose_parent_color">从色系中选择</string>
     <string name="config_alias_action_save_parent_color">保存</string>
-    <string name="config_alias_parent_color_saved">已保存</string>
     <string name="config_alias_action_clear_parent_color">清除分类颜色</string>
     <string name="config_alias_action_category_options">分类选项</string>
     <string name="config_alias_activities_title">活动</string>
@@ -306,7 +304,7 @@
     <string name="config_open_source_licenses_no_results">未找到匹配的库。</string>
     <string name="config_action_back">返回</string>
     <string name="config_action_copy_diagnostics">复制诊断载荷</string>
-    <string name="config_title_insights_average_day_basis">分析平均值的计算基准</string>
+    <string name="config_title_insights_average_day_basis">统计平均值的计算基准</string>
     <string name="config_insights_average_day_basis_description">选择计算平均值时使用的天数。</string>
     <string name="config_insights_average_day_basis_active">有活动记录的天数</string>
     <string name="config_insights_average_day_basis_calendar">筛选范围内的所有自然日</string>
@@ -317,7 +315,7 @@
     <string name="insights_status_scope_range">范围</string>
     <string name="insights_status_scope_recent">最近</string>
     <string name="insights_status_editor_title">%1$s状态</string>
-    <string name="insights_status_editor_description">选择用于计算%1$s分析状态字段的活动父级。</string>
+    <string name="insights_status_editor_description">选择用于计算%1$s统计状态字段的活动父级。</string>
     <string name="insights_status_editor_loading">正在加载%1$s状态配置…</string>
     <string name="insights_status_editor_empty">未配置%1$s状态。</string>
     <string name="insights_daily_status_saving">正在保存…</string>

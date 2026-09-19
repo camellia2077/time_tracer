@@ -37,6 +37,12 @@ interface TracerExchangeGateway {
         manifestIncluded = false
     )
 
+    suspend fun buildTracerExchangeContentFromPayload(
+        payloads: List<TracerExchangePayloadItem>,
+        logicalSourceRootName: String = "data",
+        dateCheckMode: Int = 0
+    ): TracerExchangeContentResult
+
     suspend fun importTracerExchange(
         inputPath: String,
         workRoot: String,

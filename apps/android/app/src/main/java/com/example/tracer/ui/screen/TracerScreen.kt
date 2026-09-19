@@ -111,13 +111,15 @@ fun TracerScreen(
             configGateway,
             activityHierarchyGateway,
             activityHierarchyMigrationGateway,
-            quickActivitiesPreferenceGateway
+            quickActivitiesPreferenceGateway,
+            userPreferencesRepository
         ) {
             ActivityHierarchyEditorViewModelFactory(
                 configGateway = configGateway,
                 activityHierarchyGateway = activityHierarchyGateway,
                 activityHierarchyMigrationGateway = activityHierarchyMigrationGateway,
-                quickActivitiesPreferenceGateway = quickActivitiesPreferenceGateway
+                quickActivitiesPreferenceGateway = quickActivitiesPreferenceGateway,
+                activityCategoryColorPreferenceWriter = userPreferencesRepository
             )
         }
     )
@@ -126,6 +128,9 @@ fun TracerScreen(
     val queryUiState = queryInsightsViewModel.uiState
     val recordUiState = recordViewModel.uiState
     val activityHierarchyEditorState = activityHierarchyEditorViewModel.uiState
+    val insightsActivityCategoryColors by userPreferencesRepository
+        .insightsActivityCategoryColors
+        .collectAsState(initial = emptyMap())
     val recordFrequentPreferences by userPreferencesRepository.recordFrequentPreferences.collectAsState(
         initial = com.example.tracer.data.RecordFrequentPreferences(
             lookbackDays = com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_FREQUENT_LOOKBACK_DAYS,
@@ -137,7 +142,6 @@ fun TracerScreen(
                 com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_CANONICAL_CATALOG_SOURCE,
             quickActivities = emptyList(),
             quickAccessCardExpanded = com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_QUICK_ACCESS_CARD_EXPANDED,
-            quickAccessEditorVisible = com.example.tracer.data.UserPreferencesRepository.DEFAULT_RECORD_QUICK_ACCESS_EDITOR_VISIBLE,
             collapsedCanonicalRootPaths = com.example.tracer.data.UserPreferencesRepository.DEFAULT_COLLAPSED_CANONICAL_ROOT_PATHS,
             orderedCanonicalRootPaths = com.example.tracer.data.UserPreferencesRepository.DEFAULT_ORDERED_CANONICAL_ROOT_PATHS
         )
@@ -295,7 +299,6 @@ fun TracerScreen(
         recordUiState = displayedRecordUiState,
         dataViewModel = dataViewModel,
         txtStorageGateway = txtStorageGateway,
-        configGateway = configGateway,
         tracerExchangeGateway = tracerExchangeGateway,
         recordViewModel = recordViewModel
     )
@@ -304,7 +307,7 @@ fun TracerScreen(
         coroutineScope = coroutineScope,
         recordViewModel = recordViewModel,
         dataViewModel = dataViewModel,
-        configGateway = configGateway,
+        tracerExchangeGateway = tracerExchangeGateway,
         activityHierarchyEditorViewModel = activityHierarchyEditorViewModel,
         onQuickAccessReload = {
             val importedQuickActivities = runCatching {
@@ -380,6 +383,7 @@ fun TracerScreen(
         themeConfig = themeConfig,
         onThemeEvent = onThemeEvent,
         insightsPiePalettePreset = loadedInsightsPiePalettePreset,
+        insightsActivityCategoryColors = insightsActivityCategoryColors,
         onInsightsPiePalettePresetChange = { value ->
             coroutineScope.launch {
                 userPreferencesRepository.setInsightsPiePalettePreset(value)
@@ -479,7 +483,6 @@ fun TracerScreen(
         onClearQuickAccessCache = quickActivitiesPreferenceGateway::clearCachedQuickActivities,
         onPersistRecordQuickAccessCardExpanded =
             actions.onPersistRecordQuickAccessCardExpanded,
-        onPersistRecordQuickAccessEditorVisibility = actions.onPersistRecordQuickAccessEditorVisibility,
         onPersistRecordCanonicalCatalogDisplayMode =
             actions.onPersistRecordCanonicalCatalogDisplayMode,
         onPersistRecordCanonicalCatalogSource = actions.onPersistRecordCanonicalCatalogSource,
@@ -493,7 +496,8 @@ fun TracerScreen(
         activityCategoriesContent = {
             ActivityHierarchyEditorContent(
                 state = activityHierarchyEditorState,
-                viewModel = activityHierarchyEditorViewModel
+                viewModel = activityHierarchyEditorViewModel,
+                categoryColors = insightsActivityCategoryColors
             )
         },
         onImportDataFolder = importDataFolderAction,

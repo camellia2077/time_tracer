@@ -93,9 +93,10 @@ data class RecordUiState(
     val historyDraftsByFile: Map<String, String> = emptyMap(),
     val quickActivities: List<String> = emptyList(),
     val actualTimeExpanded: Boolean = false,
-    // The card visibility and the activity-management controls are independent UI states.
+    // Card expansion is persisted; add/manage controls are transient UI states.
     val quickAccessCardExpanded: Boolean = true,
-    val quickAccessEditorVisible: Boolean = false,
+    val quickAccessAddSheetVisible: Boolean = false,
+    val quickAccessManageMode: Boolean = false,
     val frequentLookbackDays: Int = 7,
     val frequentTopN: Int = 5,
     val frequentOutputMode: RecordFrequentOutputMode = RecordFrequentOutputMode.CANONICAL,
@@ -341,10 +342,17 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
         uiState = intentHandler.updateQuickAccessCardExpanded(uiState, expanded)
     }
 
-    fun updateQuickAccessEditorVisibility(quickAccessEditorVisible: Boolean) {
-        uiState = intentHandler.updateQuickAccessEditorVisibility(
+    fun updateQuickAccessAddSheetVisibility(visible: Boolean) {
+        uiState = intentHandler.updateQuickAccessAddSheetVisibility(
             state = uiState,
-            quickAccessEditorVisible = quickAccessEditorVisible
+            visible = visible
+        )
+    }
+
+    fun updateQuickAccessManageMode(enabled: Boolean) {
+        uiState = intentHandler.updateQuickAccessManageMode(
+            state = uiState,
+            enabled = enabled
         )
     }
 

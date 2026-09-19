@@ -83,7 +83,10 @@ internal fun ActivityHierarchyParentColorEditor(
                 prefix = { Text("#") },
                 trailingIcon = {
                     IconButton(
-                        onClick = { onDraftValueChange("") },
+                        onClick = {
+                            onDraftValueChange("")
+                            onSaveColor("")
+                        },
                         enabled = normalizedDraft.isNotEmpty()
                     ) {
                         Icon(
@@ -121,6 +124,7 @@ internal fun ActivityHierarchyParentColorEditor(
             onDismiss = { showPalette = false },
             onColorSelected = {
                 onDraftValueChange(it)
+                onSaveColor(it)
                 showPalette = false
             }
         )

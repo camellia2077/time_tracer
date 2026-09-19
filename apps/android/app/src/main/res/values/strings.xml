@@ -65,10 +65,10 @@
         <item quantity="one">%1$d TXT file</item>
         <item quantity="other">%1$d TXT files</item>
     </plurals>
-    <string name="tracer_crypto_passphrase_encrypt_title">Encrypt Password</string>
-    <string name="tracer_crypto_passphrase_decrypt_title">Decrypt Password</string>
-    <string name="tracer_crypto_passphrase_hint">Enter password</string>
-    <string name="tracer_crypto_passphrase_confirm_hint">Confirm password</string>
+    <string name="tracer_crypto_passphrase_encrypt_title">Set Export Password</string>
+    <string name="tracer_crypto_passphrase_decrypt_title">Enter Export Password</string>
+    <string name="tracer_crypto_passphrase_hint">Enter export password</string>
+    <string name="tracer_crypto_passphrase_confirm_hint">Confirm export password</string>
     <string name="tracer_crypto_passphrase_required">Password is required.</string>
     <string name="tracer_crypto_passphrase_mismatch">Passwords do not match.</string>
     <string name="tracer_diagnostics_prepare">Preparing diagnostics payload...</string>
@@ -206,7 +206,6 @@
     <string name="config_alias_parent_color_label">Category color</string>
     <string name="config_alias_display_color_title">Display color</string>
     <string name="config_alias_display_color_description">Used for category indicators in Insights.</string>
-    <string name="config_alias_parent_color_hint">Enter up to 6 HEX digits. The # is added automatically; missing digits preview as 0.</string>
     <string name="config_alias_parent_color_palette_label">%1$s CSS colors</string>
     <string name="config_alias_parent_color_palette_title">Choose category color</string>
     <string name="config_alias_parent_color_family_label">Color family</string>
@@ -223,7 +222,6 @@
     <string name="config_alias_action_close_parent_color_picker">Close color picker</string>
     <string name="config_alias_action_choose_parent_color">Choose from color families</string>
     <string name="config_alias_action_save_parent_color">Save</string>
-    <string name="config_alias_parent_color_saved">Saved</string>
     <string name="config_alias_action_clear_parent_color">Clear category color</string>
     <string name="config_alias_action_category_options">Category options</string>
     <string name="config_alias_activities_title">Activities</string>

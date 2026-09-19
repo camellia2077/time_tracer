@@ -138,6 +138,10 @@ object NativeBridge {
         outputFd: Int
     ): String
 
+    external fun nativeBuildTracerExchangeContentFromPayloadJson(
+        requestJson: String
+    ): String
+
     external fun nativeImportTracerExchange(
         inputPath: String,
         workRoot: String,

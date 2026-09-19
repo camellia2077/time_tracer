@@ -319,7 +319,6 @@ internal class NativeTxtRuntimeCodec {
 
     private fun parseHierarchy(snapshot: JSONObject): ActivityHierarchySnapshot = ActivityHierarchySnapshot(
         parent = snapshot.optString("parent", ""),
-        color = snapshot.optString("color", "").trim().ifBlank { null },
         nodes = parseHierarchyNodes(snapshot.optJSONArray("nodes"))
     )
 

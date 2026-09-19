@@ -1,5 +1,6 @@
 package com.example.tracer
 
+import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -30,7 +31,7 @@ internal class RuntimeTracerExchangeImportService(
                 message = "import tracer exchange failed: workRoot must not be empty."
             )
         }
-        if (safePassphrase.isBlank()) {
+        if (safePassphrase.isBlank() && !File(safeInput).isDirectory) {
             return@withContext RuntimeTracerExchangeResults.importFailure(
                 message = "import tracer exchange failed: passphrase must not be empty."
             )
@@ -42,43 +43,7 @@ internal class RuntimeTracerExchangeImportService(
                 safeWorkRoot,
                 safePassphrase
             )
-            val payload = responseCodec.parse(rawResponse)
-            val content = RuntimeTracerExchangeResults.parseContentObject(payload.content)
-            if (!payload.ok) {
-                return@runCatching TracerExchangeImportResult(
-                    ok = false,
-                    message = payload.errorMessage.ifBlank {
-                        "import tracer exchange failed."
-                    },
-                    sourceRootName = content.optString("source_root_name"),
-                    payloadFileCount = content.optInt("payload_file_count", 0),
-                    replacedMonthCount = content.optInt("replaced_month_count", 0),
-                    preservedMonthCount = content.optInt("preserved_month_count", 0),
-                    rebuiltMonthCount = content.optInt("rebuilt_month_count", 0),
-                    textRootUpdated = content.optBoolean("text_root_updated", false),
-                    configApplied = content.optBoolean("config_applied", false),
-                    databaseRebuilt = content.optBoolean("database_rebuilt", false),
-                    retainedFailureRoot = content.optString("retained_failure_root"),
-                    backupRetainedRoot = content.optString("backup_retained_root"),
-                    backupCleanupError = content.optString("backup_cleanup_error")
-                )
-            }
-
-            TracerExchangeImportResult(
-                ok = true,
-                message = "import tracer exchange completed: ${content.optString("source_root_name")}",
-                sourceRootName = content.optString("source_root_name"),
-                payloadFileCount = content.optInt("payload_file_count", 0),
-                replacedMonthCount = content.optInt("replaced_month_count", 0),
-                preservedMonthCount = content.optInt("preserved_month_count", 0),
-                rebuiltMonthCount = content.optInt("rebuilt_month_count", 0),
-                textRootUpdated = content.optBoolean("text_root_updated", false),
-                configApplied = content.optBoolean("config_applied", false),
-                databaseRebuilt = content.optBoolean("database_rebuilt", false),
-                retainedFailureRoot = content.optString("retained_failure_root"),
-                backupRetainedRoot = content.optString("backup_retained_root"),
-                backupCleanupError = content.optString("backup_cleanup_error")
-            )
+            mapImportResponse(rawResponse)
         }.getOrElse { error ->
             RuntimeTracerExchangeResults.importFailure(
                 message = formatNativeFailure(
@@ -87,5 +52,30 @@ internal class RuntimeTracerExchangeImportService(
                 )
             )
         }
+    }
+
+    private fun mapImportResponse(rawResponse: String): TracerExchangeImportResult {
+        val payload = responseCodec.parse(rawResponse)
+        val content = RuntimeTracerExchangeResults.parseContentObject(payload.content)
+        val sourceRootName = content.optString("source_root_name")
+        return TracerExchangeImportResult(
+            ok = payload.ok,
+            message = if (payload.ok) {
+                "import tracer exchange completed: $sourceRootName"
+            } else {
+                payload.errorMessage.ifBlank { "import tracer exchange failed." }
+            },
+            sourceRootName = sourceRootName,
+            payloadFileCount = content.optInt("payload_file_count", 0),
+            replacedMonthCount = content.optInt("replaced_month_count", 0),
+            preservedMonthCount = content.optInt("preserved_month_count", 0),
+            rebuiltMonthCount = content.optInt("rebuilt_month_count", 0),
+            textRootUpdated = content.optBoolean("text_root_updated", false),
+            configApplied = content.optBoolean("config_applied", false),
+            databaseRebuilt = content.optBoolean("database_rebuilt", false),
+            retainedFailureRoot = content.optString("retained_failure_root"),
+            backupRetainedRoot = content.optString("backup_retained_root"),
+            backupCleanupError = content.optString("backup_cleanup_error")
+        )
     }
 }

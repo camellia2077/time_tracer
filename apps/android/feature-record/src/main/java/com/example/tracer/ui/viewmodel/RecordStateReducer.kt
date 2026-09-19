@@ -129,12 +129,16 @@ internal object RecordStateReducer {
             .map { it.trim() }
             .filter { it.isNotEmpty() }
             .distinct()
+        val nextManageMode = state.quickAccessManageMode && normalized.isNotEmpty()
         // Allow an empty quick-access list so users can clear default chips that do not match
         // the currently imported canonical config before rebuilding their own list.
-        if (state.quickActivities == normalized) {
+        if (state.quickActivities == normalized && state.quickAccessManageMode == nextManageMode) {
             return state
         }
-        return state.copy(quickActivities = normalized)
+        return state.copy(
+            quickActivities = normalized,
+            quickAccessManageMode = nextManageMode
+        )
     }
 
     fun updateActualTimeExpanded(
@@ -151,21 +155,54 @@ internal object RecordStateReducer {
         state: RecordUiState,
         expanded: Boolean
     ): RecordUiState {
-        if (state.quickAccessCardExpanded == expanded) {
-            return state
-        }
-        return state.copy(quickAccessCardExpanded = expanded)
-    }
-
-    fun updateQuickAccessEditorVisibility(
-        state: RecordUiState,
-        quickAccessEditorVisible: Boolean
-    ): RecordUiState {
-        if (state.quickAccessEditorVisible == quickAccessEditorVisible) {
+        val nextAddSheetVisible = state.quickAccessAddSheetVisible && expanded
+        val nextManageMode = state.quickAccessManageMode && expanded
+        if (
+            state.quickAccessCardExpanded == expanded &&
+            state.quickAccessAddSheetVisible == nextAddSheetVisible &&
+            state.quickAccessManageMode == nextManageMode
+        ) {
             return state
         }
         return state.copy(
-            quickAccessEditorVisible = quickAccessEditorVisible
+            quickAccessCardExpanded = expanded,
+            quickAccessAddSheetVisible = nextAddSheetVisible,
+            quickAccessManageMode = nextManageMode
+        )
+    }
+
+    fun updateQuickAccessAddSheetVisibility(
+        state: RecordUiState,
+        visible: Boolean
+    ): RecordUiState {
+        val nextManageMode = state.quickAccessManageMode && !visible
+        if (
+            state.quickAccessAddSheetVisible == visible &&
+            state.quickAccessManageMode == nextManageMode
+        ) {
+            return state
+        }
+        return state.copy(
+            quickAccessAddSheetVisible = visible,
+            quickAccessManageMode = nextManageMode
+        )
+    }
+
+    fun updateQuickAccessManageMode(
+        state: RecordUiState,
+        enabled: Boolean
+    ): RecordUiState {
+        val nextEnabled = enabled && state.quickActivities.isNotEmpty()
+        val nextAddSheetVisible = state.quickAccessAddSheetVisible && !nextEnabled
+        if (
+            state.quickAccessManageMode == nextEnabled &&
+            state.quickAccessAddSheetVisible == nextAddSheetVisible
+        ) {
+            return state
+        }
+        return state.copy(
+            quickAccessManageMode = nextEnabled,
+            quickAccessAddSheetVisible = nextAddSheetVisible
         )
     }
 

@@ -7,7 +7,8 @@ import androidx.compose.runtime.LaunchedEffect
 @Composable
 internal fun ActivityHierarchyEditorContent(
     state: ActivityHierarchyEditorState,
-    viewModel: ActivityHierarchyEditorViewModel
+    viewModel: ActivityHierarchyEditorViewModel,
+    categoryColors: Map<String, String>
 ) {
     LaunchedEffect(Unit) {
         viewModel.openActivityCategories()
@@ -18,6 +19,7 @@ internal fun ActivityHierarchyEditorContent(
     ActivityHierarchyEditorCard(
         aliasFiles = state.aliasFiles.filter { it.relativePath.startsWith("user/activity_hierarchy/") },
         selectedFileDisplayName = state.selectedFileDisplayName.removePrefix("user/activity_hierarchy/"),
+        categoryColor = categoryColors[state.selectedFilePath].orEmpty(),
         document = state.aliasSearchDocument ?: state.aliasDocumentDraft,
         searchQuery = state.aliasSearchQuery,
         movePlan = state.aliasEntryMovePlan,

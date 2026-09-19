@@ -5,7 +5,7 @@
     <!-- Keep the product name fixed as "Tracer" in every locale. Do not localize or rename. -->
     <string name="app_name">Tracer</string>
 
-    <string name="tracer_tab_insights">分析</string>
+    <string name="tracer_tab_insights">統計</string>
     <string name="tracer_tab_record">記録</string>
     <string name="tracer_tab_files">ファイル</string>
     <string name="tracer_tab_settings">設定</string>
@@ -62,10 +62,10 @@
     <plurals name="tracer_import_confirm_payload_count">
         <item quantity="other">%1$d 個の TXT ファイル</item>
     </plurals>
-    <string name="tracer_crypto_passphrase_encrypt_title">暗号化パスワード</string>
-    <string name="tracer_crypto_passphrase_decrypt_title">復号パスワード</string>
-    <string name="tracer_crypto_passphrase_hint">パスワードを入力</string>
-    <string name="tracer_crypto_passphrase_confirm_hint">パスワードを再入力</string>
+    <string name="tracer_crypto_passphrase_encrypt_title">エクスポート用パスワードを設定</string>
+    <string name="tracer_crypto_passphrase_decrypt_title">エクスポート用パスワードを入力</string>
+    <string name="tracer_crypto_passphrase_hint">エクスポート用パスワードを入力</string>
+    <string name="tracer_crypto_passphrase_confirm_hint">エクスポート用パスワードを再入力</string>
     <string name="tracer_crypto_passphrase_required">パスワードは必須です。</string>
     <string name="tracer_crypto_passphrase_mismatch">パスワードが一致しません。</string>
     <string name="tracer_diagnostics_prepare">診断ペイロードを準備中...</string>
@@ -87,7 +87,7 @@
 
     <string name="config_title_app_preferences">アプリ設定</string>
     <string name="config_title_appearance">外観</string>
-    <string name="config_title_insights_settings">分析の表示</string>
+    <string name="config_title_insights_settings">統計の表示</string>
     <string name="config_title_theme_mode">テーマモード</string>
     <string name="config_title_theme_palette">テーマ配色</string>
     <string name="config_theme_palette_group_light_dark">ライト・ダークモード対応テーマ</string>
@@ -133,7 +133,7 @@
     <string name="config_page_transition_slide">控えめな横スライド</string>
     <string name="config_page_transition_none">アニメーションなし</string>
     <string name="config_cd_hide_unconfigured_activity_prompt">未設定アクティビティの確認説明を非表示</string>
-    <string name="config_title_insights_chart_style">分析チャートのスタイル</string>
+    <string name="config_title_insights_chart_style">統計チャートのスタイル</string>
     <string name="config_label_insights_breakdown_palette">内訳チャート配色</string>
     <string name="config_insights_breakdown_palette_current">内訳チャート配色（現在: %1$s）</string>
     <string name="config_insights_breakdown_palette_tap_expand">内訳チャート配色（タップして展開）</string>
@@ -184,7 +184,7 @@
     <string name="config_category_alias">カテゴリ</string>
     <string name="config_category_charts">Charts</string>
     <string name="config_category_meta">Meta</string>
-    <string name="config_category_insights">分析</string>
+    <string name="config_category_insights">統計</string>
     <string name="config_no_toml_files_in_category">%1$s に項目がありません。</string>
     <string name="config_action_select_toml_file">項目を選択</string>
 
@@ -202,8 +202,7 @@
     <string name="config_alias_parent_label">カテゴリ</string>
     <string name="config_alias_parent_color_label">カテゴリの色</string>
     <string name="config_alias_display_color_title">表示色</string>
-    <string name="config_alias_display_color_description">Insights のカテゴリ表示に使用します。</string>
-    <string name="config_alias_parent_color_hint">最大 6 桁の HEX 文字を入力します。# は自動で追加され、未入力の桁は 0 としてプレビューされます。</string>
+    <string name="config_alias_display_color_description">統計のカテゴリ表示に使用します。</string>
     <string name="config_alias_parent_color_palette_label">%1$s の CSS 色</string>
     <string name="config_alias_parent_color_palette_title">カテゴリの色を選択</string>
     <string name="config_alias_parent_color_family_label">色系</string>
@@ -220,7 +219,6 @@
     <string name="config_alias_action_close_parent_color_picker">カラー選択を閉じる</string>
     <string name="config_alias_action_choose_parent_color">色系から選択</string>
     <string name="config_alias_action_save_parent_color">保存</string>
-    <string name="config_alias_parent_color_saved">保存済み</string>
     <string name="config_alias_action_clear_parent_color">カテゴリの色を消去</string>
     <string name="config_alias_action_category_options">カテゴリのオプション</string>
     <string name="config_alias_activities_title">アクティビティ</string>
@@ -306,7 +304,7 @@
     <string name="config_open_source_licenses_no_results">一致するライブラリが見つかりません。</string>
     <string name="config_action_back">戻る</string>
     <string name="config_action_copy_diagnostics">診断ペイロードをコピー</string>
-    <string name="config_title_insights_average_day_basis">分析の平均値の算出基準</string>
+    <string name="config_title_insights_average_day_basis">統計の平均値の算出基準</string>
     <string name="config_insights_average_day_basis_description">平均値の計算に使用する日数を選択します。</string>
     <string name="config_insights_average_day_basis_active">活動記録がある日</string>
     <string name="config_insights_average_day_basis_calendar">選択範囲内のすべての暦日</string>
@@ -317,7 +315,7 @@
     <string name="insights_status_scope_range">範囲</string>
     <string name="insights_status_scope_recent">最近</string>
     <string name="insights_status_editor_title">%1$sステータス</string>
-    <string name="insights_status_editor_description">%1$s分析のステータス項目を計算する活動の親を選択します。</string>
+    <string name="insights_status_editor_description">%1$s統計のステータス項目を計算する活動の親を選択します。</string>
     <string name="insights_status_editor_loading">%1$sステータス設定を読み込み中…</string>
     <string name="insights_status_editor_empty">%1$sステータスが設定されていません。</string>
     <string name="insights_daily_status_saving">保存中…</string>

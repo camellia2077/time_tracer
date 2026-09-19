@@ -116,7 +116,6 @@ class QueryInsightsResultDisplayRobolectricTest {
                     activityName = "study_math_is_this",
                     durationSeconds = 3_600,
                     remark = "整理错题",
-                    parentColor = "#22C55E"
                     ),
                     ActivityTimelineItem(
                         startTime = "",
@@ -138,6 +137,9 @@ class QueryInsightsResultDisplayRobolectricTest {
                         )
                     )
                 )
+            ),
+            activityCategoryColors = mapOf(
+                "user/activity_hierarchy/study.toml" to "#22C55E"
             ),
             parameterSection = InsightsParameterSection.ACTIVITIES,
             insightsMode = InsightsMode.DAY
@@ -162,7 +164,7 @@ class QueryInsightsResultDisplayRobolectricTest {
         composeRule.onAllNodesWithText("0s").assertCountEquals(0)
         composeRule.onAllNodesWithText("整理错题").assertCountEquals(1)
         composeRule.onAllNodesWithTag("insights-parent-color-indicator")
-            .assertCountEquals(1)
+            .assertCountEquals(2)
     }
 
     @Test
@@ -472,6 +474,7 @@ class QueryInsightsResultDisplayRobolectricTest {
             occurrenceCount = periodActivityDays.sumOf { it.activities.size.toLong() }
         ),
         periodActivityProjectTree: List<StructuredInsightsProjectNode> = emptyList(),
+        activityCategoryColors: Map<String, String> = emptyMap(),
         periodComparison: InsightsPeriodComparisonState = InsightsPeriodComparisonState.Hidden,
         parameterSection: InsightsParameterSection = InsightsParameterSection.DAY,
         insightsMode: InsightsMode,
@@ -511,6 +514,7 @@ class QueryInsightsResultDisplayRobolectricTest {
                     compositionChartRenderModel = null,
                     chartShowAverageLine = false,
                     piePalettePreset = InsightsPiePalettePreset.SOFT,
+                    activityCategoryColors = activityCategoryColors,
                     comparisonColorScheme = InsightsComparisonColorScheme.GREEN_RED,
                     comparisonIndicatorStyle = InsightsComparisonIndicatorStyle.ARROWS,
                     heatmapTomlConfig = defaultInsightsHeatmapTomlConfig(),

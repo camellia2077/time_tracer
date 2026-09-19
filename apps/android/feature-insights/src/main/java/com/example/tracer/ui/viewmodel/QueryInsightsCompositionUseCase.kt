@@ -94,6 +94,17 @@ internal class QueryInsightsCompositionUseCase(
             val errorMessage = queryResult.message.ifBlank {
                 textProvider.compositionPayloadInvalid()
             }
+            if (queryResult.message.isInsightsDatabaseUnavailableMessage()) {
+                return runningState.copy(
+                    compositionChartLoading = false,
+                    compositionChartError = "",
+                    compositionChartRenderModel = null,
+                    compositionChartLastTrace = trace,
+                    statusText = "${textProvider.queryCompositionResult(ok = false)} " +
+                        "[no data, op=${trace.operationId}, hash=${trace.parameterHash}, " +
+                        "ms=${trace.durationMs}]"
+                )
+            }
             return runningState.copy(
                 compositionChartLoading = false,
                 compositionChartError = errorMessage,

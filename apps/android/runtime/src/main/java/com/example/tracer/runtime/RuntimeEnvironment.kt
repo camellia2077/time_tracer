@@ -3,7 +3,6 @@ package com.example.tracer
 import android.content.Context
 import java.io.File
 
-internal const val DATA_FOLDER_SNAPSHOT_MARKER = ".data_folder_snapshot"
 
 internal class RuntimeEnvironment(private val context: Context) {
     private companion object {

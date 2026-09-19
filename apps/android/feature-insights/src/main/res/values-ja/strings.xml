@@ -167,20 +167,20 @@
     <string name="insights_status_query_composition_running">query data insights-composition 実行中...</string>
     <string name="insights_status_query_composition_result">query data insights-composition -&gt; OK=%1$s</string>
 
-    <string name="insights_result_title_insights">分析結果</string>
-    <string name="insights_result_title_insights_error">分析エラー</string>
-    <string name="insights_result_title_insights_missing_target">%1$s 分析対象なし</string>
-    <string name="insights_result_title_insights_no_data">この%1$sには記録がありません</string>
+    <string name="insights_result_title_insights">統計結果</string>
+    <string name="insights_result_title_insights_error">統計エラー</string>
+    <string name="insights_result_title_insights_missing_target">%1$sの統計対象がありません</string>
+    <string name="insights_result_title_insights_no_data">この%1$sには統計データがありません</string>
     <string name="insights_result_title_insights_window_summary">%1$s ウィンドウ概要</string>
     <string name="insights_result_title_chart">グラフ結果</string>
-    <string name="insights_result_title_analysis_error">解析エラー</string>
+    <string name="insights_result_title_analysis_error">統計エラー</string>
     <string name="insights_result_title_tree">%1$s 時間内訳</string>
-    <string name="insights_summary_missing_target_body">選択した %1$s 対象に対応する分析データはありません。</string>
+    <string name="insights_summary_missing_target_body">選択した %1$s 対象に対応する統計データはありません。</string>
     <string name="insights_summary_no_data_body">この%1$sには活動が記録されていません。</string>
     <string name="insights_summary_error_code">コード: %1$s</string>
     <string name="insights_summary_error_category">カテゴリ: %1$s</string>
     <string name="insights_summary_hints">ヒント: %1$s</string>
-    <string name="insights_summary_window_has_records_body">この %1$s 分析には構造化ウィンドウメタデータがあります。</string>
+    <string name="insights_summary_window_has_records_body">この%1$sの統計には構造化ウィンドウメタデータがあります。</string>
     <string name="insights_summary_window_empty_body">要求された %1$s ウィンドウには記録がありません。</string>
     <string name="insights_summary_window_range">ウィンドウ: %1$s から %2$s</string>
     <string name="insights_summary_requested_days">要求日数: %1$d</string>

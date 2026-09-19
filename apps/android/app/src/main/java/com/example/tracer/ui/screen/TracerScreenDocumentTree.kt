@@ -182,6 +182,17 @@ internal fun listTomlDocumentsInSubdirectory(
     extension = ".toml"
 )
 
+internal fun listAllDocumentsInSubdirectory(
+    contentResolver: ContentResolver,
+    treeUri: Uri,
+    directoryName: String
+): List<TreeTextDocument> = listDocumentsInSubdirectory(
+    contentResolver = contentResolver,
+    treeUri = treeUri,
+    directoryName = directoryName,
+    extension = ""
+)
+
 private fun listDocumentsInSubdirectory(
     contentResolver: ContentResolver,
     treeUri: Uri,
@@ -268,7 +279,9 @@ private fun collectTextDocumentsRecursively(
             continue
         }
 
-        if (!child.displayName.endsWith(extension, ignoreCase = true)) {
+        if (extension.isNotBlank() &&
+            !child.displayName.endsWith(extension, ignoreCase = true)
+        ) {
             continue
         }
 

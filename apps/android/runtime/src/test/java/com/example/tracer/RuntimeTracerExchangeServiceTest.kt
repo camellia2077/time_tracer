@@ -41,6 +41,7 @@ class RuntimeTracerExchangeServiceTest {
                 )
             },
             nativeExportTracerExchangeFromPayloadJson = { _, _ -> error("unused") },
+            nativeBuildTracerExchangeContentFromPayloadJson = { error("unused") },
             nativeImportTracerExchange = { _, _, _ -> error("unused") },
             nativeInspectTracerExchange = { _, _ -> error("unused") },
             setProgressListener = { progressListener = it }
@@ -108,6 +109,7 @@ class RuntimeTracerExchangeServiceTest {
                         .toString()
                 )
             },
+            nativeBuildTracerExchangeContentFromPayloadJson = { error("unused") },
             nativeImportTracerExchange = { _, _, _ -> error("unused") },
             nativeInspectTracerExchange = { _, _ -> error("unused") },
             setProgressListener = { progressListener = it }
@@ -145,6 +147,7 @@ class RuntimeTracerExchangeServiceTest {
             responseCodec = NativeResponseCodec(),
             nativeExportTracerExchange = { _, _, _, _, _ -> error("unused") },
             nativeExportTracerExchangeFromPayloadJson = { _, _ -> error("unused") },
+            nativeBuildTracerExchangeContentFromPayloadJson = { error("unused") },
             nativeImportTracerExchange = { inputPath, workRoot, passphrase ->
                 assertEquals("bundle.zip", inputPath)
                 assertEquals("work/root", workRoot)
@@ -194,6 +197,7 @@ class RuntimeTracerExchangeServiceTest {
             responseCodec = NativeResponseCodec(),
             nativeExportTracerExchange = { _, _, _, _, _ -> error("unused") },
             nativeExportTracerExchangeFromPayloadJson = { _, _ -> error("unused") },
+            nativeBuildTracerExchangeContentFromPayloadJson = { error("unused") },
             nativeImportTracerExchange = { _, _, _ -> error("unused") },
             nativeInspectTracerExchange = { inputPath, passphrase ->
                 assertEquals("bundle.zip", inputPath)
@@ -237,6 +241,7 @@ class RuntimeTracerExchangeServiceTest {
             responseCodec = NativeResponseCodec(),
             nativeExportTracerExchange = { _, _, _, _, _ -> error("unused") },
             nativeExportTracerExchangeFromPayloadJson = { _, _ -> error("unused") },
+            nativeBuildTracerExchangeContentFromPayloadJson = { error("unused") },
             nativeImportTracerExchange = { _, _, _ -> error("unused") },
             nativeInspectTracerExchange = { _, _ -> error("unused") },
             setProgressListener = {}

@@ -1,6 +1,14 @@
 package com.example.tracer
 
 internal const val INSIGHTS_TARGET_NOT_FOUND = "insights.target.not_found"
+
+internal fun String.isInsightsDatabaseUnavailableMessage(): Boolean {
+    val normalized = lowercase()
+    return normalized.contains("insights database is not available") ||
+        normalized.contains("database is not available:") ||
+        normalized.contains("failed to open database at:")
+}
+
 internal fun QueryInsightsUiState.copyWithInsightsOutcome(
     period: DataTreePeriod,
     result: InsightsCallResult,
@@ -74,22 +82,14 @@ internal fun buildInsightsSummary(
     result: InsightsCallResult
 ): InsightsSummary? {
     val errorContract = result.errorContract
-    if (!result.operationOk &&
-        errorContract?.errorCode == INSIGHTS_TARGET_NOT_FOUND &&
-        period == DataTreePeriod.DAY
-    ) {
+    if (!result.operationOk && result.outputText.isInsightsDatabaseUnavailableMessage()) {
         return InsightsSummary.NoData(period = period)
     }
     if (!result.operationOk &&
         errorContract?.errorCode == INSIGHTS_TARGET_NOT_FOUND &&
         period.isNamedTargetPeriod()
     ) {
-        return InsightsSummary.MissingTarget(
-            period = period,
-            errorCode = errorContract.errorCode,
-            errorCategory = errorContract.errorCategory,
-            hints = errorContract.hints
-        )
+        return InsightsSummary.NoData(period = period)
     }
     if (result.operationOk &&
         period.isWindowedPeriod()

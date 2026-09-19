@@ -33,6 +33,21 @@ Describe the user-visible behavior of record creation and TXT editing flows.
 
   Android/Core record and query APIs use ISO local time `HH:mm:ss`; compact
   formatting is limited to TXT serialization.
+- `Quick Access`
+  - uses a dedicated `+` action to open the transient add sheet
+  - shows a separate manage action only when quick activities exist
+  - replaces activity-selection chips with removable chips while manage mode is active
+  - exits manage mode automatically after the last quick activity is removed
+  - persists the card expansion preference, but does not persist add-sheet or manage-mode visibility
+- The interval full-screen timer derives elapsed text and both rings from the
+  persisted start timestamp. The outer ring advances in completed minutes and
+  wraps hourly; the inner ring advances continuously and wraps every minute.
+  Both arcs use flush ends for consistent styling and accurate progress boundaries.
+  At each minute boundary, the previous lap fades out over 300 ms while the new
+  lap advances immediately. This transition uses elapsed time, including on wake.
+  Screen wake and foreground return immediately show current elapsed progress,
+  without replaying time spent away. Frame updates stop while the page is paused;
+  restoring or redrawing the page samples current time before showing progress.
 - Raw TXT editing (available from the Files tab)
   - supports month-wide editing (`ALL`) and day-focused editing (`DAY`)
   - uses Android native `EditText`-backed multiline editing instead of the older Compose `OutlinedTextField` path

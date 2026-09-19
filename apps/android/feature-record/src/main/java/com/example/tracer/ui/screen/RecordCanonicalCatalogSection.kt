@@ -314,10 +314,11 @@ fun CanonicalActivityPickerScreen(
     onCollapsedRootPathsChange: (Set<String>) -> Unit,
     onOrderedRootPathsChange: (List<String>) -> Unit,
     onCanonicalEntryClick: (CanonicalCatalogEntry) -> Unit,
-    onCanonicalParentClick: (String) -> Unit = {}
+    onCanonicalParentClick: (String) -> Unit = {},
+    showAboveParentDialog: Boolean = false
 ) {
-    FullscreenPage(onDismissRequest = onDismissRequest, scrollContentHandlesBottomInset = true) {
-            Column(modifier = Modifier.fillMaxSize()) {
+    val pageContent: @Composable () -> Unit = {
+        Column(modifier = Modifier.fillMaxSize()) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -423,7 +424,20 @@ fun CanonicalActivityPickerScreen(
                             .padding(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 24.dp)
                     )
                 }
-            }
+        }
+    }
+    if (showAboveParentDialog) {
+        FullscreenDialogPage(
+            onDismissRequest = onDismissRequest,
+            scrollContentHandlesBottomInset = true,
+            content = pageContent
+        )
+    } else {
+        FullscreenPage(
+            onDismissRequest = onDismissRequest,
+            scrollContentHandlesBottomInset = true,
+            content = pageContent
+        )
     }
 }
 

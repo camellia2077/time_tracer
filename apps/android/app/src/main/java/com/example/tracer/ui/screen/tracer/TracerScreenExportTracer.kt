@@ -3,47 +3,24 @@ package com.example.tracer
 import android.content.Context
 import android.net.Uri
 import android.provider.DocumentsContract
+import android.util.Base64
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import java.io.OutputStreamWriter
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 internal data class TracerBatchCryptoExportResult(
     val message: String,
     val progressStatusText: String
 )
 
-internal data class ConfigTomlExportEntry(
-    val sourcePath: String,
-    val exportPath: String
-)
-
-/** ConfigTomlStorage returns canonical paths under config/user. */
-internal fun buildConfigTomlExportEntries(relativePaths: Iterable<String>): List<ConfigTomlExportEntry> {
-    return relativePaths
-        .map { it.replace('\\', '/').trim('/') }
-        .mapNotNull { sourcePath ->
-            if (isAndroidImportExportUserConfigTomlPath(sourcePath)) {
-                ConfigTomlExportEntry(sourcePath = sourcePath, exportPath = sourcePath)
-            } else {
-                null
-            }
-        }
-        .groupBy { it.exportPath }
-        .values
-        .map { entries -> entries.minBy { it.sourcePath } }
-        .sortedBy { it.exportPath }
-}
-
-internal fun isAndroidImportExportUserConfigTomlPath(relativePath: String): Boolean {
-    val normalized = relativePath.replace('\\', '/').trim('/')
-    return normalized == "user/behavior.toml" ||
-        (normalized.startsWith("user/activity_hierarchy/") &&
-            normalized.endsWith(".toml", ignoreCase = true))
-}
-
 private const val TRACER_EXCHANGE_EXPORT_ROOT_NAME = "data"
-private const val TRACER_EXCHANGE_EXPORT_FILE_NAME = "data.zip"
 private const val TRACER_EXCHANGE_STAGE_COUNT = 2
+private val TRACER_EXCHANGE_EXPORT_NAME_FORMATTER =
+    DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")
+
+internal fun buildTimestampedDataExportName(now: LocalDateTime = LocalDateTime.now()): String =
+    "data_${now.format(TRACER_EXCHANGE_EXPORT_NAME_FORMATTER)}"
 
 // Complete exchange export is an encrypted standard ZIP for easy human-side
 // backup and sharing.
@@ -110,11 +87,12 @@ internal suspend fun exportAllMonthsTracerToTree(
             treeUri,
             treeDocumentId
         )
+        val outputFileName = "${buildTimestampedDataExportName()}.zip"
         val outputUri = resolveOrCreateDocumentForOverwrite(
             contentResolver = context.contentResolver,
             treeUri = treeUri,
             parentDocumentUri = rootDocumentUri,
-            fileName = TRACER_EXCHANGE_EXPORT_FILE_NAME,
+            fileName = outputFileName,
             mimeType = "application/zip"
         )
         if (outputUri == null) {
@@ -127,13 +105,13 @@ internal suspend fun exportAllMonthsTracerToTree(
                 manifestFileCount = 0,
                 errors = exportItems.errors + context.getString(
                     R.string.tracer_export_error_create_target_file,
-                    TRACER_EXCHANGE_EXPORT_FILE_NAME
+                    outputFileName
                 )
             )
         }
 
         val detachedOutputFd = runCatching {
-            // `data.zip` may already exist. `wt` is required here so a
+            // The timestamped ZIP may already exist. `wt` is required here so a
             // shorter replacement cannot leave stale ciphertext bytes at the
             // end of the SAF document.
             context.contentResolver.openFileDescriptor(outputUri, "wt")?.use { descriptor ->
@@ -149,7 +127,7 @@ internal suspend fun exportAllMonthsTracerToTree(
                 manifestFileCount = 0,
                 errors = exportItems.errors + context.getString(
                     R.string.tracer_export_error_write_failed,
-                    TRACER_EXCHANGE_EXPORT_FILE_NAME
+                    outputFileName
                 )
             )
         }
@@ -166,7 +144,7 @@ internal suspend fun exportAllMonthsTracerToTree(
             securityLevel = tracerSecurityLevel,
             dateCheckMode = NativeBridge.DATE_CHECK_NONE,
             logicalSourceRootName = TRACER_EXCHANGE_EXPORT_ROOT_NAME,
-            outputDisplayName = TRACER_EXCHANGE_EXPORT_FILE_NAME,
+            outputDisplayName = outputFileName,
             onProgress = { event ->
                 val overallProgress = event.overallProgressFraction.coerceIn(0f, 1f)
                 runBlocking(Dispatchers.Main) {
@@ -237,12 +215,12 @@ internal suspend fun exportAllMonthsTracerToTree(
     )
 }
 
-internal suspend fun exportCurrentTxtZipToTree(
+internal suspend fun exportCurrentTxtExchangeDirectoryToTree(
     context: Context,
     treeUri: Uri,
     recordUiState: RecordUiState,
     txtStorageGateway: TxtStorageGateway,
-    configGateway: ConfigGateway
+    tracerExchangeGateway: TracerExchangeGateway
 ): String {
     return runCatching {
         val txtListResult = txtStorageGateway.listTxtFiles()
@@ -257,18 +235,7 @@ internal suspend fun exportCurrentTxtZipToTree(
             .distinct()
             .sorted()
 
-        val configListResult = configGateway.listConfigTomlFiles()
-        if (!configListResult.ok) {
-            return@runCatching context.getString(
-                R.string.tracer_export_current_txt_failed,
-                configListResult.message
-            )
-        }
-        val configPaths = buildConfigTomlExportEntries(
-            configListResult.userFiles.map { it.relativePath }
-        )
-
-        if (txtPaths.isEmpty() && configPaths.isEmpty()) {
+        if (txtPaths.isEmpty()) {
             return@runCatching context.getString(R.string.tracer_export_current_txt_failed_no_selection)
         }
         val treeDocumentId = DocumentsContract.getTreeDocumentId(treeUri)
@@ -276,8 +243,14 @@ internal suspend fun exportCurrentTxtZipToTree(
             treeUri,
             treeDocumentId
         )
+        val exportRootDocumentUri = resolveOrCreateDirectoryPath(
+            contentResolver = context.contentResolver,
+            treeUri = treeUri,
+            rootDocumentUri = rootDocumentUri,
+            relativeDirectoryPath = buildTimestampedDataExportName()
+        ) ?: error("Failed to create timestamped data export directory")
 
-        txtPaths.forEach { relativePath ->
+        val payloads = txtPaths.map { relativePath ->
             val content = if (recordUiState.selectedHistoryFile.replace('\\', '/') == relativePath) {
                 recordUiState.editableHistoryContent
             } else {
@@ -293,42 +266,59 @@ internal suspend fun exportCurrentTxtZipToTree(
                 }
                 readResult.content
             }
-            writeTextDocumentToTree(
-                context = context,
-                treeUri = treeUri,
-                rootDocumentUri = rootDocumentUri,
-                relativePath = "txt/$relativePath",
-                content = content
-            )
+            TracerExchangePayloadItem(relativePathHint = relativePath, content = content)
         }
 
-        configPaths.forEach { configEntry ->
-            val readResult = configGateway.readConfigTomlFile(configEntry.sourcePath)
-            if (!readResult.ok) {
-                error(
-                    context.getString(
-                        R.string.tracer_export_error_read_failed,
-                        configEntry.sourcePath,
-                        readResult.message
-                    )
+        val contentResult = tracerExchangeGateway.buildTracerExchangeContentFromPayload(
+            payloads = payloads,
+            logicalSourceRootName = TRACER_EXCHANGE_EXPORT_ROOT_NAME,
+            dateCheckMode = NativeBridge.DATE_CHECK_NONE
+        )
+        if (!contentResult.ok) {
+            return@runCatching context.getString(
+                R.string.tracer_export_current_txt_failed,
+                contentResult.message
+            )
+        }
+        writeTextDocumentToTree(
+            context = context,
+            treeUri = treeUri,
+            rootDocumentUri = exportRootDocumentUri,
+            relativePath = "manifest.toml",
+            content = contentResult.manifestText,
+            mimeType = "application/toml"
+        )
+        contentResult.entries.forEach { entry ->
+            val mimeType = if (entry.relativePath.endsWith(".toml", ignoreCase = true)) {
+                "application/toml"
+            } else {
+                "text/plain"
+            }
+            if (entry.contentBase64.isBlank()) {
+                writeTextDocumentToTree(
+                    context = context,
+                    treeUri = treeUri,
+                    rootDocumentUri = exportRootDocumentUri,
+                    relativePath = entry.relativePath,
+                    content = entry.content,
+                    mimeType = mimeType
+                )
+            } else {
+                writeBytesDocumentToTree(
+                    context = context,
+                    treeUri = treeUri,
+                    rootDocumentUri = exportRootDocumentUri,
+                    relativePath = entry.relativePath,
+                    bytes = Base64.decode(entry.contentBase64, Base64.DEFAULT),
+                    mimeType = "application/octet-stream"
                 )
             }
-            writeTextDocumentToTree(
-                context = context,
-                treeUri = treeUri,
-                rootDocumentUri = rootDocumentUri,
-                relativePath = "config/${configEntry.exportPath}",
-                content = readResult.content,
-                // text/plain makes some SAF providers append .txt to .toml.
-                // Keep the TOML MIME so the exported filename remains .toml.
-                mimeType = "application/toml"
-            )
         }
 
         context.getString(
             R.string.tracer_export_current_txt_completed,
-            txtPaths.size,
-            configPaths.size
+            contentResult.entries.count { it.relativePath.startsWith("payload/") },
+            contentResult.entries.count { it.relativePath.startsWith("config/user/") }
         )
     }.getOrElse { error ->
         context.getString(
@@ -345,6 +335,24 @@ private fun writeTextDocumentToTree(
     relativePath: String,
     content: String,
     mimeType: String = "text/plain"
+) {
+    writeBytesDocumentToTree(
+        context = context,
+        treeUri = treeUri,
+        rootDocumentUri = rootDocumentUri,
+        relativePath = relativePath,
+        bytes = content.toByteArray(Charsets.UTF_8),
+        mimeType = mimeType
+    )
+}
+
+private fun writeBytesDocumentToTree(
+    context: Context,
+    treeUri: Uri,
+    rootDocumentUri: Uri,
+    relativePath: String,
+    bytes: ByteArray,
+    mimeType: String
 ) {
     val normalizedPath = relativePath.replace('\\', '/').trim('/')
     val parentRelativePath = normalizedPath.substringBeforeLast('/', "")
@@ -365,10 +373,8 @@ private fun writeTextDocumentToTree(
         mimeType = mimeType
     ) ?: error(context.getString(R.string.tracer_export_error_create_target_file, fileName))
     context.contentResolver.openOutputStream(outputUri, "wt")?.use { output ->
-        OutputStreamWriter(output, Charsets.UTF_8).use { writer ->
-            writer.write(content)
-            writer.flush()
-        }
+        output.write(bytes)
+        output.flush()
     } ?: error(context.getString(R.string.tracer_export_error_write_failed, fileName))
 }
 

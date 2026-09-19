@@ -27,21 +27,6 @@ class StructuredInsightsResultParserTest {
     }
 
     @Test
-    fun parse_mapsOptionalParentColorToTimelineModel() {
-        val result = parser.parse(
-            InsightsCallResult(
-                initialized = true,
-                operationOk = true,
-                outputText = "",
-                rawResponse = structuredResponse("interval", parentColor = "#22C55E")
-            )
-        )
-
-        assertTrue(result.operationOk)
-        assertEquals("#22C55E", result.insights?.activities?.single()?.parentColor)
-    }
-
-    @Test
     fun parse_rejectsStructuredRecordWithoutRecordKind() {
         val result = parser.parse(
             InsightsCallResult(
@@ -116,7 +101,7 @@ class StructuredInsightsResultParserTest {
         assertEquals("math", result.projectTree.single().children.single().name)
     }
 
-    private fun structuredResponse(recordKind: String?, parentColor: String? = null): String {
+    private fun structuredResponse(recordKind: String?): String {
         val recordFields = buildString {
             append("\"logical_id\":1,")
             recordKind?.let { append("\"record_kind\":\"$it\",") }
@@ -125,7 +110,6 @@ class StructuredInsightsResultParserTest {
             append("\"project_path\":\"study_math\",")
             append("\"duration_seconds\":0,")
             append("\"activity_remark\":\"\"")
-            parentColor?.let { append(",\"parent_color\":\"$it\"") }
         }
         return """
             {"ok":true,"insights":{"date":"2026-03-20","total_duration":0,

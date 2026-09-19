@@ -1,5 +1,6 @@
 package com.example.tracer
 
+import com.example.tracer.data.ActivityCategoryColorPreferenceWriter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -8,6 +9,7 @@ internal class ActivityHierarchyEditor(
     private val activityHierarchyGateway: ActivityHierarchyGateway,
     activityHierarchyMigrationGateway: ActivityHierarchyMigrationGateway,
     quickActivitiesPreferenceGateway: QuickActivitiesPreferenceGateway,
+    private val activityCategoryColorPreferenceWriter: ActivityCategoryColorPreferenceWriter,
     private val configFileEditor: ActivityHierarchyFileEditor,
     private val scope: CoroutineScope,
     private val readState: () -> ActivityHierarchyEditorState,
@@ -139,12 +141,27 @@ internal class ActivityHierarchyEditor(
     }
 
     fun setAliasParentColor(color: String) {
-        if (!isAliasConfigFilePath(uiState.selectedFilePath) ||
-            uiState.aliasDocumentDraft == null) return
-        applyCoreActivityHierarchyOperation(ActivityHierarchyOperation(
-            kind = ActivityHierarchyOperationKind.SET_PARENT_COLOR,
-            color = color.trim()
-        ))
+        val selectedFilePath = uiState.selectedFilePath
+        if (!isAliasConfigFilePath(selectedFilePath) || uiState.aliasDocumentDraft == null) return
+        viewModelScope.launch {
+            uiState = uiState.copy(autoSaveStatus = ActivityHierarchySaveStatus.SAVING)
+            runCatching {
+                activityCategoryColorPreferenceWriter.setInsightsActivityCategoryColor(
+                    relativePath = selectedFilePath,
+                    color = color
+                )
+            }.onSuccess {
+                uiState = uiState.copy(
+                    aliasEditorErrorMessage = "",
+                    autoSaveStatus = ActivityHierarchySaveStatus.SAVED
+                )
+            }.onFailure { error ->
+                uiState = uiState.copy(
+                    aliasEditorErrorMessage = error.message ?: "Failed to save category color.",
+                    autoSaveStatus = ActivityHierarchySaveStatus.FAILED
+                )
+            }
+        }
     }
 
     fun addAliasGroup(parentGroupId: String?, name: String) {

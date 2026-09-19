@@ -5,6 +5,19 @@ data class TracerExchangePayloadItem(
     val content: String
 )
 
+data class TracerExchangeContentEntry(
+    val relativePath: String,
+    val content: String,
+    val contentBase64: String = ""
+)
+
+data class TracerExchangeContentResult(
+    val ok: Boolean,
+    val message: String,
+    val manifestText: String,
+    val entries: List<TracerExchangeContentEntry>
+)
+
 data class TracerExchangeExportResult(
     val ok: Boolean,
     val message: String,

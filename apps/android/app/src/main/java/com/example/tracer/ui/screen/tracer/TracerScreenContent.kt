@@ -34,6 +34,7 @@ internal fun TracerScreenContent(
     themeConfig: com.example.tracer.data.ThemeConfig,
     onThemeEvent: (com.example.tracer.ui.viewmodel.ThemeEvent) -> Unit,
     insightsPiePalettePreset: InsightsPiePalettePreset,
+    insightsActivityCategoryColors: Map<String, String>,
     onInsightsPiePalettePresetChange: (InsightsPiePalettePreset) -> Unit,
     insightsComparisonColorScheme: InsightsComparisonColorScheme,
     onInsightsComparisonColorSchemeChange: (InsightsComparisonColorScheme) -> Unit,
@@ -81,7 +82,6 @@ internal fun TracerScreenContent(
     onPersistRecordQuickActivities: (List<String>) -> Unit,
     onClearQuickAccessCache: () -> Unit,
     onPersistRecordQuickAccessCardExpanded: (Boolean) -> Unit,
-    onPersistRecordQuickAccessEditorVisibility: (Boolean) -> Unit,
     onPersistRecordCanonicalCatalogDisplayMode: (RecordFrequentOutputMode) -> Unit,
     onPersistRecordCanonicalCatalogSource: (CanonicalCatalogSource) -> Unit,
     onPersistRecordCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
@@ -128,6 +128,7 @@ internal fun TracerScreenContent(
                 themeConfig = themeConfig,
                 onThemeEvent = onThemeEvent,
                 insightsPiePalettePreset = insightsPiePalettePreset,
+                insightsActivityCategoryColors = insightsActivityCategoryColors,
                 onInsightsPiePalettePresetChange = onInsightsPiePalettePresetChange,
                 insightsComparisonColorScheme = insightsComparisonColorScheme,
                 onInsightsComparisonColorSchemeChange = onInsightsComparisonColorSchemeChange,
@@ -181,7 +182,6 @@ internal fun TracerScreenContent(
                 onClearQuickAccessCache = onClearQuickAccessCache,
                 onPersistRecordQuickAccessCardExpanded =
                     onPersistRecordQuickAccessCardExpanded,
-                onPersistRecordQuickAccessEditorVisibility = onPersistRecordQuickAccessEditorVisibility,
                 onPersistRecordCanonicalCatalogDisplayMode =
                     onPersistRecordCanonicalCatalogDisplayMode,
                 onPersistRecordCanonicalCatalogSource = onPersistRecordCanonicalCatalogSource,

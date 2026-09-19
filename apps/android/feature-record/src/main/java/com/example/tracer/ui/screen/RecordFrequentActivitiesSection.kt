@@ -183,7 +183,10 @@ internal fun RecordFrequentActivitiesSheet(
     var topNInput by remember(frequentTopN) {
         mutableStateOf(frequentTopN.toString())
     }
-    FullscreenPage(onDismissRequest = onDismissRequest, scrollContentHandlesBottomInset = true) {
+    FullscreenDialogPage(
+        onDismissRequest = onDismissRequest,
+        scrollContentHandlesBottomInset = true
+    ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 Column(
                     modifier = Modifier

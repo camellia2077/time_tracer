@@ -41,6 +41,7 @@ internal fun InsightsActivityTimeline(
     canComparePreviousPeriod: Boolean = false,
     comparisonColorScheme: InsightsComparisonColorScheme,
     comparisonIndicatorStyle: InsightsComparisonIndicatorStyle,
+    activityCategoryColors: Map<String, String>,
     selectedView: InsightsActivityView,
     onSelectedViewChange: (InsightsActivityView) -> Unit,
     onPeriodComparisonToggle: () -> Unit = {},
@@ -134,7 +135,8 @@ internal fun InsightsActivityTimeline(
                         draftRemark = activity.remark.orEmpty()
                         editError = ""
                     },
-                    is12HourTime = is12HourTime
+                    is12HourTime = is12HourTime,
+                    activityCategoryColors = activityCategoryColors
                 )
             }
         }

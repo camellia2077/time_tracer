@@ -87,7 +87,6 @@ class RuntimeDataCleanupTargetsTest {
         val nonTomlHierarchyFile = root.resolve("config/user/activity_hierarchy/notes.txt").apply {
             writeText("keep")
         }
-        val marker = root.resolve(DATA_FOLDER_SNAPSHOT_MARKER).apply { writeText("snapshot") }
         val programFile = root.resolve("config/program/config.toml").apply {
             parentFile?.mkdirs()
             writeText("keep")
@@ -102,7 +101,6 @@ class RuntimeDataCleanupTargetsTest {
         assertFalse(txtFile.exists())
         assertFalse(hierarchyFile.exists())
         assertFalse(quickAccessFile.exists())
-        assertFalse(marker.exists())
         assertTrue(nonTomlHierarchyFile.exists())
         assertTrue(programFile.exists())
         assertTrue(databaseFile.exists())

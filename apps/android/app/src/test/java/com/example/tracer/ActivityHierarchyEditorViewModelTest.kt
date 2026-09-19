@@ -1,5 +1,6 @@
 package com.example.tracer
 
+import com.example.tracer.data.ActivityCategoryColorPreferenceWriter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -33,13 +34,38 @@ class ActivityHierarchyEditorViewModelTest {
     private fun activityHierarchyEditor(
         runtime: FakeConfigRuntime,
         quickActivitiesGateway: FakeQuickActivitiesPreferenceGateway =
-            FakeQuickActivitiesPreferenceGateway()
+            FakeQuickActivitiesPreferenceGateway(),
+        activityCategoryColorPreferenceWriter: ActivityCategoryColorPreferenceWriter =
+            ActivityCategoryColorPreferenceWriter { _, _ -> }
     ): ActivityHierarchyEditorViewModel = ActivityHierarchyEditorViewModel(
         configGateway = runtime,
         quickActivitiesPreferenceGateway = quickActivitiesGateway,
         activityHierarchyGateway = runtime,
-        activityHierarchyMigrationGateway = runtime
+        activityHierarchyMigrationGateway = runtime,
+        activityCategoryColorPreferenceWriter = activityCategoryColorPreferenceWriter
     ).also { it.openActivityCategories() }
+
+    @Test
+    fun selecting_parent_color_persists_android_category_preference() = runTest(dispatcher) {
+        val savedColors = mutableListOf<Pair<String, String>>()
+        val viewModel = activityHierarchyEditor(
+            runtime = FakeConfigRuntime(),
+            activityCategoryColorPreferenceWriter =
+                ActivityCategoryColorPreferenceWriter { relativePath, color ->
+                    savedColors += relativePath to color
+                }
+        )
+        advanceUntilIdle()
+
+        viewModel.setAliasParentColor("#22C55E")
+        advanceUntilIdle()
+
+        assertEquals(
+            listOf("user/activity_hierarchy/meal.toml" to "#22C55E"),
+            savedColors
+        )
+        assertEquals(ActivityHierarchySaveStatus.SAVED, viewModel.uiState.autoSaveStatus)
+    }
 
     @Test
     fun opening_activity_categories_selects_the_first_hierarchy_file() = runTest(dispatcher) {

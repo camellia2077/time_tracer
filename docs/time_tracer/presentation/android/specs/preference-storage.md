@@ -48,6 +48,7 @@ Do not store UI preferences in the runtime SQLite database.
   - show average line
   - preferred chart semantic mode (Breakdown or Trend)
   - preferred Trend top-level activity
+  - activity category presentation colors
   - pie and heatmap palette selections
   - period comparison color scheme
   - period comparison indicator style

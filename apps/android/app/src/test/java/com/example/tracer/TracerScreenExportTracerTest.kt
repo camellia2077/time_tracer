@@ -2,29 +2,14 @@ package com.example.tracer
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import java.time.LocalDateTime
 
 class TracerScreenExportTracerTest {
     @Test
-    fun buildConfigTomlExportEntries_exportsOnlyAndroidSupportedUserConfig() {
-        val result = buildConfigTomlExportEntries(
-            listOf(
-                "user/behavior.toml",
-                "user/activity_hierarchy/study.toml",
-                "user/charts.toml",
-                "user/heatmap.toml",
-                "user/insights.toml",
-                "user/unsupported.toml",
-                "user/unsupported.toml",
-                "program/charts/heatmap.toml"
-            )
-        )
-
+    fun buildTimestampedDataExportName_usesSharedDataNaming() {
         assertEquals(
-            listOf(
-                ConfigTomlExportEntry("user/activity_hierarchy/study.toml", "user/activity_hierarchy/study.toml"),
-                ConfigTomlExportEntry("user/behavior.toml", "user/behavior.toml")
-            ),
-            result
+            "data_2026-09-19_08-12-00",
+            buildTimestampedDataExportName(LocalDateTime.of(2026, 9, 19, 8, 12, 0))
         )
     }
 }

@@ -13,6 +13,9 @@ internal class RuntimeTracerExchangeService(
         requestJson: String,
         outputFd: Int
     ) -> String,
+    private val nativeBuildTracerExchangeContentFromPayloadJson: (
+        requestJson: String
+    ) -> String,
     private val nativeImportTracerExchange: (
         inputPath: String,
         workRoot: String,
@@ -25,6 +28,7 @@ internal class RuntimeTracerExchangeService(
         responseCodec = responseCodec,
         nativeExportTracerExchange = nativeExportTracerExchange,
         nativeExportTracerExchangeFromPayloadJson = nativeExportTracerExchangeFromPayloadJson,
+        nativeBuildTracerExchangeContentFromPayloadJson = nativeBuildTracerExchangeContentFromPayloadJson,
         setProgressListener = setProgressListener
     )
     private val importService = RuntimeTracerExchangeImportService(
@@ -81,6 +85,16 @@ internal class RuntimeTracerExchangeService(
         inputPath = inputPath,
         workRoot = workRoot,
         passphrase = passphrase
+    )
+
+    suspend fun buildTracerExchangeContentFromPayload(
+        payloads: List<TracerExchangePayloadItem>,
+        logicalSourceRootName: String = "data",
+        dateCheckMode: Int = NativeBridge.DATE_CHECK_NONE
+    ): TracerExchangeContentResult = exportService.buildTracerExchangeContentFromPayload(
+        payloads = payloads,
+        logicalSourceRootName = logicalSourceRootName,
+        dateCheckMode = dateCheckMode
     )
 
     suspend fun inspectTracerExchange(

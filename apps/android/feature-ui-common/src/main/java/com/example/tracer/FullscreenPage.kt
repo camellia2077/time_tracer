@@ -25,6 +25,8 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 
 private val LocalFullscreenPageHost = staticCompositionLocalOf<FullscreenPageHostState?> { null }
 
@@ -126,6 +128,34 @@ fun FullscreenPage(
     DisposableEffect(hostState, entry) {
         hostState.register(entry)
         onDispose { hostState.unregister(entry) }
+    }
+}
+
+/**
+ * Shows a full-screen route in a dialog window so it can be layered above another dialog or
+ * bottom-sheet window that opened it.
+ *
+ * Use this only for nested full-screen routes. Regular application pages should continue to use
+ * [FullscreenPage] so they remain in the app shell's shared full-screen host.
+ */
+@Composable
+fun FullscreenDialogPage(
+    onDismissRequest: () -> Unit,
+    scrollContentHandlesBottomInset: Boolean = false,
+    content: @Composable () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismissRequest,
+        properties = DialogProperties(
+            dismissOnClickOutside = false,
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = false
+        )
+    ) {
+        FullscreenPageContainer(
+            scrollContentHandlesBottomInset = scrollContentHandlesBottomInset,
+            content = content
+        )
     }
 }
 

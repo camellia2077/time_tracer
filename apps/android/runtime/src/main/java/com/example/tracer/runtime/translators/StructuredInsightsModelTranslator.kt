@@ -33,7 +33,6 @@ internal class StructuredInsightsModelTranslator {
             activityName = record.activityName,
             durationSeconds = record.durationSeconds.coerceAtLeast(0L),
             remark = record.remark,
-            kind = ActivityTimelineRecordKind.fromWireValue(record.recordKind),
-            parentColor = record.parentColor
+            kind = ActivityTimelineRecordKind.fromWireValue(record.recordKind)
         )
 }

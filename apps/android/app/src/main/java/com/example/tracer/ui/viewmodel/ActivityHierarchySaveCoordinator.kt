@@ -1,5 +1,6 @@
 package com.example.tracer
 
+import com.example.tracer.data.ActivityCategoryColorPreferenceWriter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -8,6 +9,7 @@ internal class ActivityHierarchySaveCoordinator(
     private val activityHierarchyGateway: ActivityHierarchyGateway,
     activityHierarchyMigrationGateway: ActivityHierarchyMigrationGateway,
     quickActivitiesPreferenceGateway: QuickActivitiesPreferenceGateway,
+    private val activityCategoryColorPreferenceWriter: ActivityCategoryColorPreferenceWriter,
     private val configFileEditor: ActivityHierarchyFileEditor,
     private val scope: CoroutineScope,
     private val readState: () -> ActivityHierarchyEditorState,
@@ -48,6 +50,10 @@ internal class ActivityHierarchySaveCoordinator(
                 uiState = uiState.copy(statusText = deleteResult.message)
                 return@launch
             }
+            activityCategoryColorPreferenceWriter.setInsightsActivityCategoryColor(
+                targetFilePath,
+                ""
+            )
             reloadRuntimeAfterAliasConfigChange()?.let { message ->
                 uiState = uiState.copy(statusText = message)
                 return@launch

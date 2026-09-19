@@ -23,7 +23,6 @@ fun RecordTabContent(
     validAuthorableEventTokens: Set<String>,
     onPersistQuickActivities: (List<String>) -> Unit,
     onPersistQuickAccessCardExpanded: (Boolean) -> Unit,
-    onPersistQuickAccessEditorVisibility: (Boolean) -> Unit,
     onPersistCanonicalCatalogDisplayMode: (RecordFrequentOutputMode) -> Unit,
     onPersistCanonicalCatalogSource: (CanonicalCatalogSource) -> Unit,
     onPersistCollapsedCanonicalRootPaths: (Set<String>) -> Unit,
@@ -151,21 +150,24 @@ fun RecordTabContent(
             val nextExpanded = !recordUiState.quickAccessCardExpanded
             recordViewModel.updateQuickAccessCardExpanded(nextExpanded)
             onPersistQuickAccessCardExpanded(nextExpanded)
-            if (!nextExpanded && recordUiState.quickAccessEditorVisible) {
-                recordViewModel.updateQuickAccessEditorVisibility(quickAccessEditorVisible = false)
-                onPersistQuickAccessEditorVisibility(false)
-            }
         },
-        quickAccessEditorVisible = recordUiState.quickAccessEditorVisible,
-        onToggleQuickAccessEditor = {
-            val nextValue = !recordUiState.quickAccessEditorVisible
-            recordViewModel.updateQuickAccessEditorVisibility(
-                quickAccessEditorVisible = nextValue
-            )
+        quickAccessAddSheetVisible = recordUiState.quickAccessAddSheetVisible,
+        onToggleQuickAccessAddSheet = {
+            val nextValue = !recordUiState.quickAccessAddSheetVisible
+            recordViewModel.updateQuickAccessAddSheetVisibility(visible = nextValue)
             if (!recordUiState.quickAccessCardExpanded) {
                 recordViewModel.updateQuickAccessCardExpanded(true)
+                onPersistQuickAccessCardExpanded(true)
             }
-            onPersistQuickAccessEditorVisibility(nextValue)
+        },
+        quickAccessManageMode = recordUiState.quickAccessManageMode,
+        onToggleQuickAccessManageMode = {
+            val nextValue = !recordUiState.quickAccessManageMode
+            recordViewModel.updateQuickAccessManageMode(enabled = nextValue)
+            if (nextValue && !recordUiState.quickAccessCardExpanded) {
+                recordViewModel.updateQuickAccessCardExpanded(true)
+                onPersistQuickAccessCardExpanded(true)
+            }
         },
         frequentLookbackDays = recordUiState.frequentLookbackDays,
         frequentTopN = recordUiState.frequentTopN,

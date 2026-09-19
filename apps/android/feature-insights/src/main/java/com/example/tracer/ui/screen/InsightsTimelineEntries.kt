@@ -57,6 +57,7 @@ internal fun ActivityTimelineItem.toInsightsTimelineEntry(): InsightsTimelineEnt
 @Composable
 internal fun InsightsTimelineEntryRow(
     entry: InsightsTimelineEntry,
+    activityCategoryColors: Map<String, String>,
     onEditRemark: ((ActivityTimelineItem) -> Unit)? = null,
     layout: InsightsTimelineLayout = InsightsTimelineLayout.DURATION_SCALED,
     is12HourTime: Boolean
@@ -74,7 +75,7 @@ internal fun InsightsTimelineEntryRow(
         verticalAlignment = Alignment.Top
     ) {
         TimelineEntryParentColorIndicator(
-            color = activity.parentColor?.toTimelineParentColor(),
+            color = activityCategoryColors[activity.categoryColorKey()]?.toTimelineParentColor(),
             height = height
         )
         TimelineEntryTimes(entry, height, is12HourTime)
@@ -93,6 +94,7 @@ internal fun InsightsTimelineEntryRow(
 @Composable
 internal fun InsightsTimelineRecordList(
     activities: List<ActivityTimelineItem>,
+    activityCategoryColors: Map<String, String>,
     layout: InsightsTimelineLayout,
     onEditRemark: ((ActivityTimelineItem) -> Unit)? = null,
     modifier: Modifier = Modifier,
@@ -105,6 +107,7 @@ internal fun InsightsTimelineRecordList(
         activities.forEach { activity ->
             InsightsTimelineEntryRow(
                 entry = activity.toInsightsTimelineEntry(),
+                activityCategoryColors = activityCategoryColors,
                 onEditRemark = onEditRemark,
                 layout = layout,
                 is12HourTime = is12HourTime
@@ -415,6 +418,9 @@ private fun ActivityTimelineCard(
         }
     }
 }
+
+private fun ActivityTimelineItem.categoryColorKey(): String =
+    "user/activity_hierarchy/${activityName.substringBefore('_')}.toml"
 
 private fun String.toTimelineParentColor(): Color? {
     if (length != 7 || firstOrNull() != '#') return null

@@ -2,13 +2,21 @@ package com.example.tracer
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.AccountTree
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -40,9 +48,10 @@ internal fun RecordQuickAccessCard(
     onQuickActivitiesUpdate: (List<String>) -> Boolean,
     quickAccessCardExpanded: Boolean = true,
     onToggleQuickAccessCard: () -> Unit = {},
-    quickAccessEditorVisible: Boolean,
-    onToggleQuickAccessEditor: () -> Unit,
-    frequentActivitiesVisible: Boolean = false,
+    quickAccessAddSheetVisible: Boolean,
+    onToggleQuickAccessAddSheet: () -> Unit,
+    quickAccessManageMode: Boolean,
+    onToggleQuickAccessManageMode: () -> Unit,
     onToggleFrequentActivities: () -> Unit = {},
     onOpenQuickAccessCanonicalCatalog: () -> Unit,
     quickActivitySearch: String,
@@ -94,17 +103,36 @@ internal fun RecordQuickAccessCard(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                     ) {
-                        IconButton(onClick = onToggleQuickAccessEditor) {
+                        if (quickActivities.isNotEmpty()) {
+                            IconButton(onClick = onToggleQuickAccessManageMode) {
+                                Icon(
+                                    imageVector = if (quickAccessManageMode) {
+                                        Icons.Default.Done
+                                    } else {
+                                        Icons.Default.Edit
+                                    },
+                                    contentDescription = stringResource(
+                                        if (quickAccessManageMode) {
+                                            R.string.record_cd_finish_manage_quick_access
+                                        } else {
+                                            R.string.record_cd_manage_quick_access
+                                        }
+                                    ),
+                                    tint = if (quickAccessManageMode) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                    }
+                                )
+                            }
+                        }
+                        IconButton(onClick = onToggleQuickAccessAddSheet) {
                             Icon(
-                                imageVector = Icons.Default.Edit,
+                                imageVector = Icons.Default.Add,
                                 contentDescription = stringResource(
-                                    R.string.record_cd_edit_quick_access
+                                    R.string.record_cd_add_quick_access
                                 ),
-                                tint = if (quickAccessEditorVisible) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                }
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                         IconButton(onClick = onToggleQuickAccessCard) {
@@ -137,7 +165,7 @@ internal fun RecordQuickAccessCard(
                         modifier = Modifier.fillMaxWidth(),
                         quickActivities = quickActivities,
                         recordContent = recordContent,
-                        isDeleteMode = false,
+                        isDeleteMode = quickAccessManageMode,
                         onRecordContentChange = onRecordContentChange,
                         onQuickActivitiesUpdate = onQuickActivitiesUpdate
                     )
@@ -151,8 +179,8 @@ internal fun RecordQuickAccessCard(
         }
     }
 
-    if (quickAccessEditorVisible) {
-        ModalBottomSheet(onDismissRequest = onToggleQuickAccessEditor) {
+    if (quickAccessAddSheetVisible) {
+        ModalBottomSheet(onDismissRequest = onToggleQuickAccessAddSheet) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -161,7 +189,7 @@ internal fun RecordQuickAccessCard(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = stringResource(R.string.record_cd_edit_quick_access),
+                    text = stringResource(R.string.record_title_add_quick_access),
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -233,36 +261,61 @@ internal fun RecordQuickAccessCard(
                     }
                 }
 
-                TextButton(
-                    onClick = onToggleFrequentActivities,
-                    modifier = Modifier.fillMaxWidth()
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Text(stringResource(R.string.record_action_frequent))
-                    Icon(
-                        imageVector = if (frequentActivitiesVisible) {
-                            Icons.Default.ExpandLess
-                        } else {
-                            Icons.Default.ExpandMore
-                        },
-                        contentDescription = null
-                    )
-                }
+                    TextButton(
+                        onClick = onToggleFrequentActivities,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 56.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.TrendingUp,
+                                contentDescription = null,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = stringResource(R.string.record_action_add_from_frequent),
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                    }
 
-                TextButton(
-                    onClick = onOpenQuickAccessCanonicalCatalog,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.AccountTree,
-                        contentDescription = stringResource(
-                            R.string.record_cd_open_quick_access_catalog
-                        )
-                    )
-                    Text(
-                        text = stringResource(
-                            R.string.record_action_browse_quick_access_catalog
-                        )
-                    )
+                    TextButton(
+                        onClick = onOpenQuickAccessCanonicalCatalog,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 56.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AccountTree,
+                                contentDescription = stringResource(
+                                    R.string.record_cd_open_quick_access_catalog
+                                ),
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = stringResource(
+                                    R.string.record_action_browse_quick_access_catalog
+                                ),
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                    }
                 }
             }
         }

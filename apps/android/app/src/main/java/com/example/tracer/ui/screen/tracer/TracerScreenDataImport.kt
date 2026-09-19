@@ -16,7 +16,7 @@ internal fun rememberTracerDataFolderImportAction(
     context: Context,
     coroutineScope: CoroutineScope,
     dataViewModel: DataViewModel,
-    configGateway: ConfigGateway,
+    tracerExchangeGateway: TracerExchangeGateway,
     activityHierarchyEditorViewModel: ActivityHierarchyEditorViewModel,
     recordViewModel: RecordViewModel,
     onQuickAccessReload: suspend () -> Unit
@@ -48,12 +48,16 @@ internal fun rememberTracerDataFolderImportAction(
             uiCallbacks = transferUiCallbacks,
             prepareInput = {
                 DataFolderImportInput(
+                    manifestDocument = listTomlDocumentsRecursively(
+                        contentResolver = context.contentResolver,
+                        treeUri = treeUri
+                    ).firstOrNull { it.relativePath == "manifest.toml" },
                     txtDocuments = listTextDocumentsInSubdirectory(
                         contentResolver = context.contentResolver,
                         treeUri = treeUri,
-                        directoryName = "txt"
+                        directoryName = "payload"
                     ),
-                    tomlDocuments = listTomlDocumentsInSubdirectory(
+                    configDocuments = listAllDocumentsInSubdirectory(
                         contentResolver = context.contentResolver,
                         treeUri = treeUri,
                         directoryName = "config"
@@ -67,7 +71,7 @@ internal fun rememberTracerDataFolderImportAction(
                 importDataFolder(
                     context = context,
                     input = input,
-                    configGateway = configGateway
+                    tracerExchangeGateway = tracerExchangeGateway
                 )
             },
             formatTransferFailure = { error ->
@@ -95,36 +99,37 @@ internal fun rememberTracerDataFolderImportAction(
 }
 
 private data class DataFolderImportInput(
+    val manifestDocument: TreeTextDocument?,
     val txtDocuments: List<TreeTextDocument>,
-    val tomlDocuments: List<TreeTextDocument>
+    val configDocuments: List<TreeTextDocument>
 )
 
 @Suppress("TooGenericExceptionCaught")
 private suspend fun importDataFolder(
     context: Context,
     input: DataFolderImportInput,
-    configGateway: ConfigGateway
+    tracerExchangeGateway: TracerExchangeGateway
 ): TracerPreparedTransferResult = withContext(Dispatchers.IO) {
-    if (input.txtDocuments.isEmpty() && input.tomlDocuments.isEmpty()) {
+    if (input.txtDocuments.isEmpty() && input.configDocuments.isEmpty()) {
         return@withContext TracerPreparedTransferResult(
-            statusText = "Data folder import skipped: no TXT or TOML files found under txt/ or config/."
+            statusText = "Data folder import skipped: package files are required."
         )
     }
 
-    val snapshotGateway = configGateway as? DataFolderSnapshotGateway
-        ?: return@withContext TracerPreparedTransferResult(
-            statusText = "Data folder import failed: snapshot runtime is unavailable."
-        )
     val stagedRoot = File(
         context.cacheDir,
         "time_tracer/data_folder_import/${UUID.randomUUID()}"
     )
     try {
-        stageDataFolderSnapshot(context, input, stagedRoot)
-        val result = snapshotGateway.replaceDataFolderSnapshot(stagedRoot.absolutePath)
+        stageTracerExchangeDirectory(context, input, stagedRoot)
+        val result = tracerExchangeGateway.importTracerExchange(
+            inputPath = stagedRoot.absolutePath,
+            workRoot = stagedRoot.parentFile?.absolutePath ?: stagedRoot.absolutePath,
+            passphrase = ""
+        )
         TracerPreparedTransferResult(
             statusText = if (result.ok) {
-                "Data folder replaced: TXT ${result.txtFileCount}, TOML ${result.tomlFileCount}."
+                "Data folder imported: TXT ${result.payloadFileCount}."
             } else {
                 "Data folder import failed: ${result.message}"
             },
@@ -139,18 +144,19 @@ private suspend fun importDataFolder(
     }
 }
 
-private fun stageDataFolderSnapshot(
+private fun stageTracerExchangeDirectory(
     context: Context,
-    input: DataFolderImportInput,
+    importInput: DataFolderImportInput,
     stagedRoot: File
 ) {
     val stagedConfig = File(stagedRoot, "config").apply { mkdirs() }
-    val stagedInput = File(stagedRoot, "input").apply { mkdirs() }
-    for (document in input.tomlDocuments) {
+    val stagedPayload = File(stagedRoot, "payload").apply { mkdirs() }
+    importInput.manifestDocument?.let { copyTreeDocument(context, it, stagedRoot) }
+    for (document in importInput.configDocuments) {
         copyTreeDocument(context, document, stagedConfig)
     }
-    for (document in input.txtDocuments) {
-        copyTreeDocument(context, document, stagedInput)
+    for (document in importInput.txtDocuments) {
+        copyTreeDocument(context, document, stagedPayload)
     }
 }
 
@@ -159,18 +165,18 @@ private fun copyTreeDocument(
     document: TreeTextDocument,
     targetRoot: File
 ) {
-    val target = safeSnapshotTarget(targetRoot, document.relativePath)
+    val target = safeExchangeDirectoryTarget(targetRoot, document.relativePath)
     target.parentFile?.mkdirs()
-    context.contentResolver.openInputStream(document.documentUri)?.use { input ->
-        target.outputStream().use { output -> input.copyTo(output) }
+    context.contentResolver.openInputStream(document.documentUri)?.use { sourceStream ->
+        target.outputStream().use { targetStream -> sourceStream.copyTo(targetStream) }
     } ?: error("unable to read selected document: ${document.relativePath}")
 }
 
-private fun safeSnapshotTarget(root: File, relativePath: String): File {
-    val canonicalRoot = root.canonicalFile
-    val target = File(canonicalRoot, relativePath).canonicalFile
-    require(target.toPath().startsWith(canonicalRoot.toPath())) {
+private fun safeExchangeDirectoryTarget(targetRoot: File, relativePath: String): File {
+    val canonicalTargetRoot = targetRoot.canonicalFile
+    val targetFile = File(canonicalTargetRoot, relativePath).canonicalFile
+    require(targetFile.toPath().startsWith(canonicalTargetRoot.toPath())) {
         "invalid imported relative path: $relativePath"
     }
-    return target
+    return targetFile
 }

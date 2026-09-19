@@ -29,6 +29,14 @@ Capture the user-visible behavior and core data flow for Settings > Data Managem
     validation/migration
   - imports mutable TOML under `config/user/`; `config/program/` is not required
     in the selected folder because it is presentation-owned runtime data
+- `Import Data Folder` (from Settings > Data Management)
+  - selects a v6 exchange directory; exported directories are named
+    `data_YYYY-MM-DD_HH-mm-ss`
+  - `manifest.toml` is optional when importing a directory; Core can infer the
+    package file set from `config/user/**` and `payload/**`
+  - reads `config/user/**` and `payload/**` into app cache
+  - delegates manifest/path/file-set validation, converter application, TXT
+    validation, and database rebuild to Core's exchange importer
 - `Import Single TRACER` (from Settings > Data Management)
   - selects one `.zip` file
   - stages it in app cache
@@ -46,15 +54,18 @@ Capture the user-visible behavior and core data flow for Settings > Data Managem
     `config/user/`
   - requests a passphrase
   - exports one complete encrypted standard `.zip` package through a native fd sink
-- `Export Current TXT ZIP` (from Settings > Data Management)
+  - names the ZIP `data_YYYY-MM-DD_HH-mm-ss.zip`
+- `Export Current TXT Data Folder` (from Settings > Data Management)
   - selects a destination tree
-  - writes one unencrypted `.zip`
-  - writes TXT under `txt/`
+  - writes one unencrypted timestamped directory named
+    `data_YYYY-MM-DD_HH-mm-ss`
+  - writes `manifest.toml` inside that directory
+  - writes TXT under `payload/`, matching the logical exchange package layout
   - exports every TOML under the mutable `config/user/` root, including
     `behavior.toml`, `charts.toml`, `heatmap.toml`, and all activity-hierarchy
     TOML files
   - preserves the canonical user-config paths under `config/user/`, for example
-    `txt/2026/2026-01.txt` and `config/user/activity_hierarchy/study.toml`
+    `payload/2026/2026-01.txt` and `config/user/activity_hierarchy/study.toml`
 
 ## Android directory mapping
 
@@ -68,7 +79,10 @@ Capture the user-visible behavior and core data flow for Settings > Data Managem
 ## Core Data Flow
 
 - App route helpers own picker flow, SAF target resolution, status updates, and transfer skeleton behavior.
-- Runtime owns exchange import/export execution, payload validation, package assembly, and native output writing.
+- Runtime/Core owns exchange import/export execution, payload validation,
+  manifest generation, package assembly, and exchange file-set validation;
+  presentation only supplies payload text and reads/writes the selected SAF
+  carrier.
 - Candidate TXT/config validation uses the Core pipeline-only Runtime. It
   requires user converter/hierarchy TOML and TXT input, but does not load or
   copy `config/program/**`; that resource tree is used only after the complete

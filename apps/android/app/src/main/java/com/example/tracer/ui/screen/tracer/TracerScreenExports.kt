@@ -25,7 +25,6 @@ internal fun rememberTracerExportActions(
     recordUiState: RecordUiState,
     dataViewModel: DataViewModel,
     txtStorageGateway: TxtStorageGateway,
-    configGateway: ConfigGateway,
     tracerExchangeGateway: TracerExchangeGateway,
     recordViewModel: RecordViewModel
 ): TracerExportActions {
@@ -138,12 +137,12 @@ internal fun rememberTracerExportActions(
             },
             runTransfer = { selectedTreeUri ->
                 val exportResult = withContext(Dispatchers.IO) {
-                    exportCurrentTxtZipToTree(
+                    exportCurrentTxtExchangeDirectoryToTree(
                         context = context,
                         treeUri = selectedTreeUri,
                         recordUiState = recordUiState,
                         txtStorageGateway = txtStorageGateway,
-                        configGateway = configGateway
+                        tracerExchangeGateway = tracerExchangeGateway
                     )
                 }
                 TracerPreparedTransferResult(statusText = exportResult)

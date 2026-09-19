@@ -9,8 +9,7 @@ internal data class StructuredInsightsWireRecord(
     val endTime: String,
     val activityName: String,
     val durationSeconds: Long,
-    val remark: String?,
-    val parentColor: String?
+    val remark: String?
 )
 
 internal data class StructuredInsightsWirePayload(
@@ -115,9 +114,6 @@ internal class StructuredInsightsJsonDecoder {
                             activityName = record.getString("project_path"),
                             durationSeconds = record.getLong("duration_seconds"),
                             remark = record.optString("activity_remark", "")
-                                .ifBlank { null },
-                            parentColor = record.optString("parent_color", "")
-                                .trim()
                                 .ifBlank { null }
                         )
                     )

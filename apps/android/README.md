@@ -17,6 +17,7 @@ python tools/run.py build --app tracer_android --profile android_edit
 python tools/run.py verify --app tracer_android --profile android_ci --concise
 python tools/run.py verify --app tracer_android --profile android_release_verify --concise
 python tools/run.py verify --app tracer_android --profile android_release_device --concise
+python tools/run.py android-test --module feature-insights
 ```
 
 Notes:
@@ -28,6 +29,9 @@ Notes:
   Android change validation.
 - `android_ci` is signing-free; release QA is `android_release_verify`.
 - `android_release_device` is the connected-device release smoke path: it installs the signed release APK and verifies `MainActivity` can launch without an immediate crash.
+- `android-test` runs `:app:lintDebug` before the selected module's debug unit
+  tests, so newly introduced unused Android XML resources fail during local
+  testing instead of waiting for CI.
 
 ## Local Facts
 

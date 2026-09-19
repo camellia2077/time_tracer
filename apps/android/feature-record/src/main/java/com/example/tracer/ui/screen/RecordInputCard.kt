@@ -46,7 +46,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
@@ -63,17 +62,12 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.flow.drop
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -279,7 +273,6 @@ internal fun RecordInputCard(
                     }
                     if (isElapsedFullScreenVisible) {
                         ElapsedFullScreenDialog(
-                            elapsedSeconds = elapsedSeconds,
                             intervalStartedAtEpochMs = intervalStartedAtEpochMs,
                             activityName = recordContent.trim(),
                             onDismiss = { isElapsedFullScreenVisible = false }
@@ -537,55 +530,12 @@ private fun formatLatestRecordBoundary(value: String, is12HourTime: Boolean): St
 
 @Composable
 private fun ElapsedFullScreenDialog(
-    elapsedSeconds: Long,
     intervalStartedAtEpochMs: Long,
     activityName: String,
     onDismiss: () -> Unit
 ) {
-    val safeElapsedSeconds = elapsedSeconds.coerceAtLeast(0L)
-    // These are repeating clock faces, not progress targets: the outer arc advances in
-    // completed minutes and completes hourly, while the inner arc advances continuously
-    // through the current minute.
-    val hourCycleProgress = hourCycleProgressForElapsedSeconds(safeElapsedSeconds)
-    var continuousElapsedMillis by remember(intervalStartedAtEpochMs) {
-        mutableLongStateOf(elapsedMillisSince(intervalStartedAtEpochMs, System.currentTimeMillis()))
-    }
-    val lifecycleOwner = LocalLifecycleOwner.current
-    var isTimerUiActive by remember(lifecycleOwner) {
-        mutableStateOf(
-            lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
-        )
-    }
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_STOP -> isTimerUiActive = false
-
-                Lifecycle.Event.ON_START -> isTimerUiActive = true
-                else -> Unit
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-    }
-    LaunchedEffect(intervalStartedAtEpochMs, isTimerUiActive) {
-        // Advance from the original start timestamp on every Compose frame.  The parent only
-        // updates elapsedSeconds once a second, which is sufficient for the label but causes a
-        // visibly stepped minute ring.
-        do {
-            continuousElapsedMillis = elapsedMillisSince(
-                intervalStartedAtEpochMs,
-                System.currentTimeMillis()
-            )
-            withFrameNanos { }
-        } while (isTimerUiActive)
-        if (!isTimerUiActive) {
-            continuousElapsedMillis = elapsedMillisSince(
-                intervalStartedAtEpochMs,
-                System.currentTimeMillis()
-            )
-        }
-    }
+    val clock = rememberRecordElapsedClock(intervalStartedAtEpochMs)
+    val elapsedSeconds = clock.frameElapsedMillis / 1_000L
     val ringTrackColor = MaterialTheme.colorScheme.surfaceVariant
     val ringProgressColor = MaterialTheme.colorScheme.primary
     val minuteProgressColor = MaterialTheme.colorScheme.secondary
@@ -635,9 +585,14 @@ private fun ElapsedFullScreenDialog(
                         contentAlignment = Alignment.Center
                     ) {
                         Canvas(modifier = Modifier.fillMaxSize()) {
+                            // Both rings use one current sample, including the first draw after sleep.
+                            val elapsedMillis = clock.elapsedMillisForDraw()
+                            val hourCycleProgress = hourCycleProgressForElapsedSeconds(
+                                elapsedMillis / 1_000L
+                            )
                             val stroke = Stroke(
                                 width = 24.dp.toPx(),
-                                cap = StrokeCap.Round
+                                cap = StrokeCap.Butt
                             )
                             drawArc(
                                 color = ringTrackColor,
@@ -660,7 +615,9 @@ private fun ElapsedFullScreenDialog(
                             )
                             val innerStroke = Stroke(
                                 width = 12.dp.toPx(),
-                                cap = StrokeCap.Round
+                                // Round caps overlap near 60s and make a still-moving arc
+                                // look full for almost a second before the cycle ends.
+                                cap = StrokeCap.Butt
                             )
                             drawArc(
                                 color = ringTrackColor.copy(alpha = 0.55f),
@@ -671,12 +628,27 @@ private fun ElapsedFullScreenDialog(
                                 size = innerSize,
                                 style = innerStroke
                             )
+                            val minuteSweep = 360f * minuteCycleProgressForElapsedMillis(
+                                elapsedMillis
+                            )
+                            val rolloverAlpha = minuteCycleRolloverAlpha(elapsedMillis)
+                            if (rolloverAlpha > 0f) {
+                                // Fade only the previous lap's remaining sector. The new lap
+                                // advances immediately, with no overlap darkening its arc.
+                                drawArc(
+                                    color = minuteProgressColor.copy(alpha = rolloverAlpha),
+                                    startAngle = -90f + minuteSweep,
+                                    sweepAngle = 360f - minuteSweep,
+                                    useCenter = false,
+                                    topLeft = Offset(innerInset, innerInset),
+                                    size = innerSize,
+                                    style = innerStroke
+                                )
+                            }
                             drawArc(
                                 color = minuteProgressColor,
                                 startAngle = -90f,
-                                sweepAngle = 360f * minuteCycleProgressForElapsedMillis(
-                                    continuousElapsedMillis
-                                ),
+                                sweepAngle = minuteSweep,
                                 useCenter = false,
                                 topLeft = Offset(innerInset, innerInset),
                                 size = innerSize,
@@ -685,7 +657,7 @@ private fun ElapsedFullScreenDialog(
                         }
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                text = formatExactDuration(safeElapsedSeconds.toInt()),
+                                text = formatExactDuration(elapsedSeconds.toInt()),
                                 style = MaterialTheme.typography.displaySmall,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
@@ -706,12 +678,13 @@ private fun ElapsedFullScreenDialog(
 internal fun minuteCycleProgressForElapsedMillis(elapsedMillis: Long): Float =
     (elapsedMillis.coerceAtLeast(0L) % 60_000L).toFloat() / 60_000f
 
-private fun elapsedMillisSince(startedAtEpochMs: Long, currentTimeMillis: Long): Long =
-    if (startedAtEpochMs > 0L) {
-        (currentTimeMillis - startedAtEpochMs).coerceAtLeast(0L)
-    } else {
-        0L
-    }
+internal fun minuteCycleRolloverAlpha(elapsedMillis: Long): Float {
+    if (elapsedMillis < 60_000L) return 0f
+    // Absolute phase keeps wake/re-entry correct without running a queued transition.
+    val fraction = ((elapsedMillis % 60_000L).toFloat() / 300f).coerceIn(0f, 1f)
+    val easedFraction = fraction * fraction * (3f - 2f * fraction)
+    return 1f - easedFraction
+}
 
 internal fun hourCycleProgressForElapsedSeconds(elapsedSeconds: Long): Float {
     val safeElapsedSeconds = elapsedSeconds.coerceAtLeast(0L)

@@ -178,22 +178,11 @@ class NativeRuntimeController(
         responseCodec = responseCodec,
         nativeExportTracerExchange = runtimeBridge::nativeExportTracerExchange,
         nativeExportTracerExchangeFromPayloadJson = runtimeBridge::nativeExportTracerExchangeFromPayloadJson,
+        nativeBuildTracerExchangeContentFromPayloadJson = runtimeBridge::nativeBuildTracerExchangeContentFromPayloadJson,
         nativeImportTracerExchange = runtimeBridge::nativeImportTracerExchange,
         nativeInspectTracerExchange = runtimeBridge::nativeInspectTracerExchange,
         setProgressListener = runtimeBridge::setCryptoProgressListener
     )
-    private val dataFolderSnapshotService = RuntimeDataFolderSnapshotService(
-        ensureRuntimePaths = runtimeSession::ensureRuntimePaths,
-        resetRuntimeCaches = runtimeSession::reset,
-        nativeInit = nativeInit,
-        nativeInitPipeline = runtimeBridge::nativeInitPipeline,
-        nativeShutdown = runtimeBridge::nativeShutdown,
-        nativeValidateStructure = runtimeBridge::nativeValidateStructure,
-        nativeValidateLogic = runtimeBridge::nativeValidateLogic,
-        nativeIngest = runtimeBridge::nativeIngest,
-        responseCodec = responseCodec
-    )
-
     // init
     override suspend fun initializeRuntime(): NativeCallResult =
         initService.initializeRuntime()
@@ -407,10 +396,6 @@ class NativeRuntimeController(
     override suspend fun writeQuickAccess(aliases: List<String>): QuickAccessResult =
         quickAccessService.writeQuickAccess(aliases)
 
-    override suspend fun replaceDataFolderSnapshot(
-        stagedRootPath: String
-    ): DataFolderSnapshotResult = dataFolderSnapshotService.replace(stagedRootPath)
-
     override suspend fun exportTracerExchange(
         inputPath: String,
         outputPath: String,
@@ -445,6 +430,16 @@ class NativeRuntimeController(
         logicalSourceRootName = logicalSourceRootName,
         outputDisplayName = outputDisplayName,
         onProgress = onProgress
+    )
+
+    override suspend fun buildTracerExchangeContentFromPayload(
+        payloads: List<TracerExchangePayloadItem>,
+        logicalSourceRootName: String,
+        dateCheckMode: Int
+    ): TracerExchangeContentResult = tracerExchangeService.buildTracerExchangeContentFromPayload(
+        payloads = payloads,
+        logicalSourceRootName = logicalSourceRootName,
+        dateCheckMode = dateCheckMode
     )
 
     override suspend fun importTracerExchange(

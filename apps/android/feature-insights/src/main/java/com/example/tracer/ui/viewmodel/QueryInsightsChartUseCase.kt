@@ -133,6 +133,24 @@ internal class QueryInsightsChartUseCase(
                 cacheHit = false
             )
             val errorMessage = queryResult.message.ifBlank { textProvider.chartPayloadInvalid() }
+            if (queryResult.message.isInsightsDatabaseUnavailableMessage()) {
+                return runningState.copy(
+                    trendChartLoading = false,
+                    trendChartError = "",
+                    trendChartRenderModel = null,
+                    trendChartLastTrace = trace,
+                    trendChartRoots = emptyList(),
+                    trendChartSelectedRoot = "",
+                    trendChartPoints = emptyList(),
+                    trendChartAverageDurationSeconds = null,
+                    trendChartTotalDurationSeconds = null,
+                    trendChartActiveDays = null,
+                    trendChartRangeDays = null,
+                    statusText = "${textProvider.queryChartResult(ok = false)} " +
+                        "[no data, op=${trace.operationId}, hash=${trace.parameterHash}, " +
+                        "ms=${trace.durationMs}]"
+                )
+            }
             return runningState.copy(
                 trendChartLoading = false,
                 trendChartError = errorMessage,

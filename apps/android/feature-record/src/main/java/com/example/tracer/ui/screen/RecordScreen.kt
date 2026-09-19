@@ -39,8 +39,10 @@ fun RecordSection(
     onQuickActivitiesUpdate: (List<String>) -> Boolean,
     quickAccessCardExpanded: Boolean = true,
     onToggleQuickAccessCard: () -> Unit = {},
-    quickAccessEditorVisible: Boolean,
-    onToggleQuickAccessEditor: () -> Unit,
+    quickAccessAddSheetVisible: Boolean,
+    onToggleQuickAccessAddSheet: () -> Unit,
+    quickAccessManageMode: Boolean,
+    onToggleQuickAccessManageMode: () -> Unit,
     frequentLookbackDays: Int,
     frequentTopN: Int,
     onFrequentLookbackDaysChange: (String) -> Unit,
@@ -140,9 +142,10 @@ fun RecordSection(
             onQuickActivitiesUpdate = onQuickActivitiesUpdate,
             quickAccessCardExpanded = quickAccessCardExpanded,
             onToggleQuickAccessCard = onToggleQuickAccessCard,
-            quickAccessEditorVisible = quickAccessEditorVisible,
-            onToggleQuickAccessEditor = onToggleQuickAccessEditor,
-            frequentActivitiesVisible = frequentActivitiesVisible,
+            quickAccessAddSheetVisible = quickAccessAddSheetVisible,
+            onToggleQuickAccessAddSheet = onToggleQuickAccessAddSheet,
+            quickAccessManageMode = quickAccessManageMode,
+            onToggleQuickAccessManageMode = onToggleQuickAccessManageMode,
             onToggleFrequentActivities = onToggleFrequentActivities,
             onOpenQuickAccessCanonicalCatalog = onOpenQuickAccessCanonicalCatalog,
             quickActivitySearch = quickActivitySearch,
@@ -258,7 +261,8 @@ fun RecordSection(
                 onDisplayModeChange = onCanonicalCatalogDisplayModeChange,
                 onCollapsedRootPathsChange = onCollapsedCanonicalRootPathsChange,
                 onOrderedRootPathsChange = onOrderedCanonicalRootPathsChange,
-                onCanonicalEntryClick = onEntrySelected
+                onCanonicalEntryClick = onEntrySelected,
+                showAboveParentDialog = canonicalBrowserTarget == CanonicalBrowserTarget.QUICK_ACCESS
             )
         }
     }

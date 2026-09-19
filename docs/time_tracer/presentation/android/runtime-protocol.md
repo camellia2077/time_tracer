@@ -120,9 +120,6 @@ Current status:
   is the new file stem. The runtime protocol carries no filesystem filename
   mutation; Android owns the later `<old_parent>.toml` ->
   `<new_parent>.toml` transaction.
-- `set_parent_color` writes the optional parent presentation color. Android
-  sends `operation.color` as a `#RRGGBB` string to set it, or JSON `null` to
-  remove it; Core validates the string before rewriting the TOML.
 - `merge_leaf_canonical` merges one leaf into another leaf in the same TOML.
   Android sends the source in `operation.target_path` and the destination in
   `operation.destination_path`. Core removes the source leaf, returns canonical
@@ -202,11 +199,10 @@ Android must use this Core-produced kind instead of inferring semantics from
 empty timestamps: an `end_only` record displays a single localized
 "as-of" time point and has no duration segment.
 
-When the matching `config/user/activity_hierarchy` parent TOML declares an
-optional `color = "#RRGGBB"`, its structured records also include
-`parent_color`. Android renders that value only as a narrow decorative card
-edge in Records; it does not recolor text, duration, or card surfaces. The
-field is absent when the parent has no configured color.
+Category presentation colors are Android-only preferences stored in DataStore.
+They are not part of the activity hierarchy TOML or the Core structured
+insights protocol. Android resolves the category color locally when rendering
+the timeline.
 
 For Week, Month, Year, Range, and Recent, structured insights additionally
 return `activity_days[]` in descending date order. Each item keeps the Core

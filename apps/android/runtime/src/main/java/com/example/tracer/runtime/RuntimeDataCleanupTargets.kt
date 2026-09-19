@@ -29,13 +29,9 @@ internal object RuntimeDataCleanupTargets {
         val quickAccessFiles = existingRoots
             .map { File(it, QuickAccessFile) }
             .filter { it.exists() && it.isFile }
-        val markerFiles = existingRoots
-            .map { File(it, DATA_FOLDER_SNAPSHOT_MARKER) }
-            .filter { it.exists() && it.isFile }
-
         val failedPaths = mutableListOf<String>()
         var removedCount = 0
-        (txtFiles + hierarchyFiles + quickAccessFiles + markerFiles).forEach { file ->
+        (txtFiles + hierarchyFiles + quickAccessFiles).forEach { file ->
             if (file.delete()) {
                 removedCount += 1
             } else {

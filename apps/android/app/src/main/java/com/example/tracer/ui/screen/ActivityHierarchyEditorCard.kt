@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 internal fun ActivityHierarchyEditorCard(
     aliasFiles: List<ConfigTomlFileEntry>,
     selectedFileDisplayName: String,
+    categoryColor: String,
     document: ActivityHierarchyDocument?,
     movePlan: AliasEntryMovePlan?,
     moveDestinations: List<AliasEntryMoveDestinationDocument>,
@@ -72,8 +73,8 @@ internal fun ActivityHierarchyEditorCard(
     var showRenameCategoryDialog by remember { mutableStateOf(false) }
     var showAliasFileMenu by remember { mutableStateOf(false) }
     var showCategoryActionsMenu by remember { mutableStateOf(false) }
-    var parentColorDraft by remember(document?.parent, document?.color) {
-        mutableStateOf(document?.color.orEmpty())
+    var parentColorDraft by remember(document?.parent, categoryColor) {
+        mutableStateOf(categoryColor)
     }
     val categoryName = document?.parent
         ?.takeIf { it.isNotBlank() }
@@ -111,7 +112,7 @@ internal fun ActivityHierarchyEditorCard(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                val parentColor = previewParentColor(document?.color.orEmpty())
+                                val parentColor = previewParentColor(categoryColor)
                                 Surface(
                                     modifier = Modifier.size(12.dp),
                                     shape = MaterialTheme.shapes.extraSmall,
@@ -202,7 +203,7 @@ internal fun ActivityHierarchyEditorCard(
 
             ActivityHierarchyParentColorEditor(
                 draftValue = parentColorDraft,
-                persistedValue = document?.color.orEmpty(),
+                persistedValue = categoryColor,
                 onDraftValueChange = { parentColorDraft = it },
                 onSaveColor = onSetParentColor
             )
