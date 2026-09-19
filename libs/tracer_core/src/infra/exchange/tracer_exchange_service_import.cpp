@@ -47,20 +47,24 @@ auto TracerExchangeService::RunImport(
   if (request.runtime_work_root.empty()) {
     throw std::invalid_argument("runtime_work_root must not be empty.");
   }
-  if (request.passphrase.empty()) {
-    throw std::invalid_argument("Passphrase must not be empty.");
-  }
-
   const fs::path kInputPath = fs::absolute(request.input_tracer_path);
   const fs::path kActiveTextRoot = fs::absolute(request.active_text_root_path);
   const fs::path kRuntimeWorkRoot = fs::absolute(request.runtime_work_root);
-  if (!fs::exists(kInputPath) || !fs::is_regular_file(kInputPath)) {
+  const bool kIsDirectoryPackage =
+      fs::exists(kInputPath) && fs::is_directory(kInputPath);
+  if (!fs::exists(kInputPath) ||
+      (!kIsDirectoryPackage && !fs::is_regular_file(kInputPath))) {
     throw std::invalid_argument(
-        "Decrypt input path must be an existing file: " + kInputPath.string());
+        "Tracer exchange input must be an existing directory or file: " +
+        kInputPath.string());
   }
-  if (!HasExtensionCaseInsensitive(kInputPath, ".zip")) {
+  if (!kIsDirectoryPackage &&
+      !HasExtensionCaseInsensitive(kInputPath, ".zip")) {
     throw std::invalid_argument("Decrypt input file must be .zip: " +
                                 kInputPath.string());
+  }
+  if (!kIsDirectoryPackage && request.passphrase.empty()) {
+    throw std::invalid_argument("Passphrase must not be empty.");
   }
 
   const ImportTransactionPaths kTransactionPaths =
@@ -70,7 +74,6 @@ auto TracerExchangeService::RunImport(
   std::vector<ImportedPayloadFile> imported_payloads;
   std::string rollback_error_message;
   std::string failure_message;
-  fs::path active_config_root;
 
   EnsureTransactionRootCreated(kTransactionPaths.transaction_root);
 
@@ -82,9 +85,11 @@ auto TracerExchangeService::RunImport(
         request.progress_observer, "decrypt_package", 1U, kPhaseCount,
         kInputPath.filename().string(), 0U, 1U, kInputPath, kActiveTextRoot,
         kInputPath, kTransactionPaths.extracted_root);
-    const auto kEncryptedZip = ReadFileBytes(kInputPath);
     const exchange_pkg::DecodedTracerExchangePackage kPackage =
-        exchange_pkg::DecodeZipBytes(kEncryptedZip, request.passphrase);
+        kIsDirectoryPackage
+            ? DecodeDirectoryPackage(kInputPath)
+            : exchange_pkg::DecodeZipBytes(ReadFileBytes(kInputPath),
+                                           request.passphrase);
     EmitImportTransactionProgress(
         request.progress_observer, "decrypt_package", 1U, kPhaseCount,
         kInputPath.filename().string(), 1U, 1U, kInputPath, kActiveTextRoot,
@@ -137,7 +142,6 @@ auto TracerExchangeService::RunImport(
     const ActiveConverterConfigPaths kActivePaths =
         ResolveActiveConverterConfigPaths(
             request.active_converter_main_config_path);
-    active_config_root = kActivePaths.config_root_path;
     BackupActiveConverterConfig(kActivePaths,
                                 kTransactionPaths.backup_config_root);
     BackupManagedTextFiles(kActiveTextRoot, imported_payloads,
@@ -151,9 +155,6 @@ auto TracerExchangeService::RunImport(
         "converter_config", 0U, 1U, kInputPath, kActiveTextRoot,
         kPackageMainConfigPath, request.active_converter_main_config_path);
     config_applied = true;
-    fs::create_directories(kPackageMainConfigPath.parent_path());
-    fs::copy_file(request.active_converter_main_config_path,
-                  kPackageMainConfigPath, fs::copy_options::overwrite_existing);
     workflow_handler_.InstallActiveConverterConfig({
         .source_main_config_path = kPackageMainConfigPath.string(),
         .target_main_config_path =

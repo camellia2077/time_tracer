@@ -229,7 +229,7 @@ class TestAndroidTestCommand(TestCase):
         self.assertEqual(build_mock.call_args.kwargs["app_name"], "tracer_android")
         self.assertEqual(
             build_mock.call_args.kwargs["gradle_tasks_override"],
-            [":feature-insights:testDebugUnitTest"],
+            [":app:lintDebug", ":feature-insights:testDebugUnitTest"],
         )
         self.assertEqual(
             build_mock.call_args.kwargs["extra_args"],

@@ -128,7 +128,7 @@ auto ActivityMapper::MapActivities(DailyLog& day) -> void {
     -> bool {
   return raw_event.kind == RawEventKind::Point &&
          std::ranges::find(wake_keywords_, raw_event.description) !=
-         wake_keywords_.end();
+             wake_keywords_.end();
 }
 
 [[nodiscard]] auto ActivityMapper::MapDescription(

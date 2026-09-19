@@ -68,6 +68,18 @@ auto NativeExportTracerExchangeFromPayloadJson(JNIEnv* env, jobject /*thiz*/,
   });
 }
 
+auto NativeBuildTracerExchangeContentFromPayloadJson(JNIEnv* env,
+                                                     jobject /*thiz*/,
+                                                     jstring request_json)
+    -> jstring {
+  return ExecuteJniMethod(env, [&]() -> std::string {
+    const BuildTracerExchangeContentArgs args =
+        ParseBuildTracerExchangeContentArgs(env, request_json);
+    return BuildTracerExchangeContentResponse(
+        DispatchBuildTracerExchangeContent(env, args));
+  });
+}
+
 auto NativeImportTracerExchange(JNIEnv* env, jobject /*thiz*/,
                                 jstring input_path, jstring work_root,
                                 jstring passphrase) -> jstring {

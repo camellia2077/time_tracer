@@ -60,6 +60,8 @@
    - 命令：`python tools/run.py android-test --module feature-insights --tests com.example.tracer.QueryInsightsResultDisplayRobolectricTest`
    - `--module` 支持 `app`、`contract`、所有 `feature-*` 模块和 `runtime`；
      省略 `--tests` 时运行该模块全部 debug unit tests，重复 `--tests` 可筛选类或方法。
+   - 该入口会先运行 `:app:lintDebug`，因此新增的未使用 Android XML
+     资源会在本地测试阶段直接失败；历史 baseline 中的问题仍按 baseline 处理。
    - 参数与执行：`tools/toolchain/cli/handlers/android_test.py`
 
 8. 调整 Windows CLI Python 构建入口参数（release/runtime sync/icon 覆盖）

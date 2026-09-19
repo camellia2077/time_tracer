@@ -60,19 +60,16 @@ auto RunConfigSmokeSection(int& failures) -> void {
     chart_empty_request.lookback_days = 7;
     const auto chart_empty_result =
         fixture.runtime.runtime_api->query().RunDataQuery(chart_empty_request);
-    if (chart_empty_result.ok) {
+    if (!chart_empty_result.ok) {
       ++failures;
-      std::cerr << "[FAIL] RunDataQuery(insights-chart, empty) should fail "
-                   "when the database does not exist.\n";
-    } else if (chart_empty_result.error_message.empty()) {
-      ++failures;
-      std::cerr << "[FAIL] RunDataQuery(insights-chart, empty) should return "
-                   "a non-empty error message.\n";
+      std::cerr << "[FAIL] RunDataQuery(insights-chart, empty) should succeed "
+                   "against an initialized empty database: "
+                << chart_empty_result.error_message << '\n';
     }
-    if (std::filesystem::exists(fixture.paths.db_path)) {
+    if (!std::filesystem::exists(fixture.paths.db_path)) {
       ++failures;
-      std::cerr << "[FAIL] RunDataQuery(insights-chart, empty) should not "
-                   "create a database file.\n";
+      std::cerr << "[FAIL] RunDataQuery(insights-chart, empty) should keep "
+                   "the initialized database file.\n";
     }
 
     tracer_core::core::dto::DataQueryRequest chart_invalid_request;

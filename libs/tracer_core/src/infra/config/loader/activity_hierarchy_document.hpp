@@ -4,7 +4,6 @@
 #include <toml++/toml.h>
 
 #include <algorithm>
-#include <cctype>
 #include <cstddef>
 #include <functional>
 #include <optional>
@@ -43,9 +42,6 @@ struct ActivityHierarchyNode {
 struct ActivityHierarchyDocument {
   std::string parent;
   ActivityHierarchyDocumentSourceLocation parent_source;
-  // A parent-level visual identifier for presentation consumers. It does not
-  // participate in canonical-path or alias resolution semantics.
-  std::optional<std::string> color;
   std::vector<ActivityHierarchyNode> nodes;
 };
 
@@ -106,18 +102,11 @@ inline auto BuildActivityHierarchyCanonicalPath(
   return canonical;
 }
 
-inline auto IsActivityHierarchyParentColor(std::string_view color) -> bool {
-  return color.size() == 7U && color.front() == '#' &&
-         std::ranges::all_of(color.substr(1), [](unsigned char value) {
-           return std::isxdigit(value) != 0;
-         });
-}
-
 inline auto ParseActivityHierarchyDocument(const toml::table& table)
     -> ActivityHierarchyDocument {
   for (const auto& [key_node, value_node] : table) {
     const std::string key(key_node.str());
-    if (key != "parent" && key != "color" && key != "canonical") {
+    if (key != "parent" && key != "canonical") {
       throw ActivityHierarchyDocumentParseError(
           ActivityHierarchyDocumentSource(key_node.source()), {}, key,
           "Canonical TOML contains unsupported top-level field `" + key + "`.");
@@ -135,17 +124,6 @@ inline auto ParseActivityHierarchyDocument(const toml::table& table)
             : ActivityHierarchyDocumentSource(parent_node->source()),
         {}, "parent",
         "Canonical TOML must contain a non-empty `parent` string.");
-  }
-
-  const toml::node* color_node = table.get("color");
-  std::optional<std::string> color;
-  if (color_node != nullptr) {
-    color = color_node->value<std::string>();
-    if (!color.has_value() || !IsActivityHierarchyParentColor(*color)) {
-      throw ActivityHierarchyDocumentParseError(
-          ActivityHierarchyDocumentSource(color_node->source()), {}, "color",
-          "Optional `color` must be an uppercase or lowercase #RRGGBB string.");
-    }
   }
 
   const toml::node* canonical_node = table.get("canonical");
@@ -244,7 +222,6 @@ inline auto ParseActivityHierarchyDocument(const toml::table& table)
   return {
       .parent = *parent,
       .parent_source = ActivityHierarchyDocumentSource(parent_node->source()),
-      .color = std::move(color),
       .nodes = parse_nodes(*canonical, {}, false),
   };
 }

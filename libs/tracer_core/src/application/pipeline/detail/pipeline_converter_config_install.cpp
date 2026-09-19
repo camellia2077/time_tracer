@@ -5,21 +5,13 @@
 
 namespace tracer::core::application::pipeline::detail {
 
-auto ResolveConverterConfigPathSet(
-    const std::filesystem::path& main_config_path) -> ConverterConfigPathSet {
+auto ResolveConverterMainConfigPath(
+    const std::filesystem::path& main_config_path) -> std::filesystem::path {
   if (main_config_path.empty()) {
     throw std::invalid_argument(
         "Converter main config path must not be empty.");
   }
-
-  const std::filesystem::path kResolvedMainConfigPath =
-      std::filesystem::absolute(main_config_path);
-  const std::filesystem::path kAliasDir =
-      kResolvedMainConfigPath.parent_path() / "activity_hierarchy";
-  return {
-      .main_config_path = kResolvedMainConfigPath,
-      .alias_directory_path = kAliasDir,
-  };
+  return std::filesystem::absolute(main_config_path);
 }
 
 auto EnsureConverterConfigSourceExists(const std::filesystem::path& path,
@@ -31,66 +23,38 @@ auto EnsureConverterConfigSourceExists(const std::filesystem::path& path,
   }
 }
 
-auto CopyConverterConfigFile(const std::filesystem::path& source_path,
-                             const std::filesystem::path& target_path,
-                             std::string_view label) -> void {
-  std::error_code io_error;
-  std::filesystem::create_directories(target_path.parent_path(), io_error);
-  if (io_error) {
-    throw std::runtime_error("Failed to prepare " + std::string(label) +
-                             " target directory: " + target_path.string() +
-                             " | " + io_error.message());
-  }
-
-  std::filesystem::copy_file(source_path, target_path,
-                             std::filesystem::copy_options::overwrite_existing,
-                             io_error);
-  if (io_error) {
-    throw std::runtime_error("Failed to install " + std::string(label) + ": " +
-                             source_path.string() + " -> " +
-                             target_path.string() + " | " + io_error.message());
-  }
-}
-
-auto RemoveConverterAliasDirectory(const std::filesystem::path& target_root)
-    -> void {
-  const std::filesystem::path kAliasDir =
-      target_root / "user" / "activity_hierarchy";
-  if (!std::filesystem::exists(kAliasDir)) {
+auto RemoveConverterUserConfigDirectory(
+    const std::filesystem::path& target_root) -> void {
+  const std::filesystem::path kUserConfigDir = target_root / "user";
+  if (!std::filesystem::exists(kUserConfigDir)) {
     return;
   }
 
   std::error_code io_error;
-  std::filesystem::remove_all(kAliasDir, io_error);
+  std::filesystem::remove_all(kUserConfigDir, io_error);
   if (io_error) {
-    throw std::runtime_error("Failed to remove activity hierarchy directory: " +
-                             kAliasDir.string() + " | " + io_error.message());
+    throw std::runtime_error(
+        "Failed to remove user config directory: " + kUserConfigDir.string() +
+        " | " + io_error.message());
   }
 }
 
-auto CopyConverterAliasDirectory(const std::filesystem::path& source_root,
-                                 const std::filesystem::path& target_root)
+auto CopyConverterUserConfigDirectory(const std::filesystem::path& source_root,
+                                      const std::filesystem::path& target_root)
     -> void {
-  if (!std::filesystem::exists(source_root)) {
-    return;
-  }
-  if (!std::filesystem::is_directory(source_root)) {
-    throw std::runtime_error("Canonical config source must be a directory: " +
+  if (!std::filesystem::exists(source_root) ||
+      !std::filesystem::is_directory(source_root)) {
+    throw std::runtime_error("User config source must be a directory: " +
                              source_root.string());
   }
 
-  // Install/import treats converter config as a small text bundle, not as a
-  // high-volume dataset. Because the files are small and low-frequency, full
-  // replacement is preferred over incremental diff/merge logic.
-  //
-  // Child canonical files are therefore copied as a whole directory bundle so
-  // the active config remains an exact mirror of the source config without
-  // stale leftovers from older canonical files.
+  // Install/import treats converter config as a small text bundle, so full
+  // replacement keeps the active user config an exact mirror of the package.
   std::error_code io_error;
   std::filesystem::create_directories(target_root, io_error);
   if (io_error) {
     throw std::runtime_error(
-        "Failed to prepare canonical config target directory: " +
+        "Failed to prepare user config target directory: " +
         target_root.string() + " | " + io_error.message());
   }
 
@@ -103,22 +67,22 @@ auto CopyConverterAliasDirectory(const std::filesystem::path& source_root,
         std::filesystem::relative(entry.path(), source_root, io_error);
     if (io_error) {
       throw std::runtime_error(
-          "Failed to resolve canonical config child path: " +
-          entry.path().string() + " | " + io_error.message());
+          "Failed to resolve user config child path: " + entry.path().string() +
+          " | " + io_error.message());
     }
     const std::filesystem::path kTargetPath = target_root / kRelativePath;
     std::filesystem::create_directories(kTargetPath.parent_path(), io_error);
     if (io_error) {
-      throw std::runtime_error(
-          "Failed to prepare canonical config child target: " +
-          kTargetPath.string() + " | " + io_error.message());
+      throw std::runtime_error("Failed to prepare user config child target: " +
+                               kTargetPath.string() + " | " +
+                               io_error.message());
     }
     std::filesystem::copy_file(
         entry.path(), kTargetPath,
         std::filesystem::copy_options::overwrite_existing, io_error);
     if (io_error) {
       throw std::runtime_error(
-          "Failed to copy canonical config child: " + entry.path().string() +
+          "Failed to copy user config child: " + entry.path().string() +
           " -> " + kTargetPath.string() + " | " + io_error.message());
     }
   }

@@ -43,6 +43,31 @@ class TestRunCliDispatchCoreBuildVerify(RunCliDispatchTestBase):
         self.assertEqual(FakeBuildCommand.last_kwargs["profile_name"], "fast")
         self.assertEqual(FakeBuildCommand.last_kwargs["cmake_args"], ["-DA=1", "-DB=2"])
 
+    def test_wsl_libs_delegation_uses_a_separate_build_dir(self):
+        completed = type("Completed", (), {"returncode": 0})()
+        with patch.object(self.run_module.sys, "platform", "win32"), patch.dict(
+            self.run_module.os.environ,
+            {"TT_LIBS_UBUNTU_ACTIVE": ""},
+            clear=False,
+        ), patch.object(
+            self.run_module.subprocess, "run", return_value=completed
+        ) as run:
+            result = self.run_module._maybe_delegate_libs_to_wsl(
+                [
+                    "verify",
+                    "--app",
+                    "tracer_core_shell",
+                    "--scope",
+                    "libs",
+                    "--build-dir",
+                    "build_fast",
+                ]
+            )
+
+        self.assertEqual(result, 0)
+        delegated_command = run.call_args.args[0][-1]
+        self.assertIn("--build-dir build_fast_wsl", delegated_command)
+
     def test_build_dispatches_repeated_profiles_for_gradle_app(self):
         class FakeBuildCommand:
             last_kwargs = None

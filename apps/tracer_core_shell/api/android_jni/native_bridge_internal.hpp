@@ -128,6 +128,10 @@ auto NativeExportTracerExchangeFromPayloadJson(JNIEnv* env, jobject thiz,
                                                jstring request_json,
                                                jint output_fd) -> jstring;
 
+auto NativeBuildTracerExchangeContentFromPayloadJson(JNIEnv* env, jobject thiz,
+                                                     jstring request_json)
+    -> jstring;
+
 auto NativeImportTracerExchange(JNIEnv* env, jobject thiz, jstring input_path,
                                 jstring work_root, jstring passphrase)
     -> jstring;
@@ -148,7 +152,7 @@ auto NativeQuery(JNIEnv* env, jobject thiz, jint action, jint year, jint month,
 auto NativeInsightsJson(JNIEnv* env, jobject thiz, jstring request_json)
     -> jstring;
 
-extern const std::array<JNINativeMethod, 19> kNativeMethods;
+extern const std::array<JNINativeMethod, 20> kNativeMethods;
 
 auto TryRegisterNativeMethods(JNIEnv* env, const char* class_name) -> bool;
 

@@ -212,8 +212,12 @@ auto NormalizeBoundaryDate(std::string_view input, bool is_end) -> std::string {
 auto EnsureDbConnectionOrThrow(DBManager& db_manager,
                                const std::filesystem::path& db_path)
     -> sqlite3* {
+  if (!std::filesystem::exists(db_path)) {
+    throw std::runtime_error("Database is not available: " + db_path.string());
+  }
   if (!db_manager.OpenDatabaseIfNeeded()) {
-    throw std::runtime_error("Failed to open database at: " + db_path.string());
+    throw std::runtime_error("Database could not be opened: " +
+                             db_path.string());
   }
 
   sqlite3* db_conn = db_manager.GetDbConnection();

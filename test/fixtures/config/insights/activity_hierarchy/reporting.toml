@@ -1,5 +1,4 @@
 parent = "insights"
-color = "#22C55E"
 
 [canonical]
 work = ["work"]

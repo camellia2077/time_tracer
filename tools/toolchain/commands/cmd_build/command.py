@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from ...core.config import BuildProfileConfig
@@ -76,6 +77,10 @@ class BuildCommand:
     ) -> str:
         return build_common.resolve_build_dir_name(tidy, build_dir_name, profile_build_dir)
 
+    @staticmethod
+    def _use_wsl_build_dir() -> bool:
+        return os.name != "nt" and bool(os.environ.get("WSL_DISTRO_NAME"))
+
     def _resolve_profile(
         self,
         profile_name: str | None,
@@ -98,7 +103,15 @@ class BuildCommand:
         profile_build_dir = ""
         if profile_cfg is not None:
             profile_build_dir = (getattr(profile_cfg, "build_dir", "") or "").strip()
-        return self._resolve_build_dir_name(tidy, build_dir_name, profile_build_dir)
+        resolved = self._resolve_build_dir_name(tidy, build_dir_name, profile_build_dir)
+        if (
+            self._use_wsl_build_dir()
+            and app_name
+            and self._resolve_backend(app_name) == "cmake"
+            and not resolved.endswith("_wsl")
+        ):
+            return f"{resolved}_wsl"
+        return resolved
 
     def _profile_cmake_args(self, profile_name: str | None) -> list[str]:
         return build_common.profile_cmake_args(self.ctx, profile_name)

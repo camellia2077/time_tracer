@@ -6,26 +6,17 @@
 
 namespace tracer::core::application::pipeline::detail {
 
-struct ConverterConfigPathSet {
-  std::filesystem::path main_config_path;
-  std::filesystem::path alias_directory_path;
-};
-
-[[nodiscard]] auto ResolveConverterConfigPathSet(
-    const std::filesystem::path& main_config_path) -> ConverterConfigPathSet;
+[[nodiscard]] auto ResolveConverterMainConfigPath(
+    const std::filesystem::path& main_config_path) -> std::filesystem::path;
 
 auto EnsureConverterConfigSourceExists(const std::filesystem::path& path,
                                        std::string_view label) -> void;
 
-auto CopyConverterConfigFile(const std::filesystem::path& source_path,
-                             const std::filesystem::path& target_path,
-                             std::string_view label) -> void;
+auto RemoveConverterUserConfigDirectory(
+    const std::filesystem::path& target_root) -> void;
 
-auto RemoveConverterAliasDirectory(const std::filesystem::path& target_root)
-    -> void;
-
-auto CopyConverterAliasDirectory(const std::filesystem::path& source_root,
-                                 const std::filesystem::path& target_root)
+auto CopyConverterUserConfigDirectory(const std::filesystem::path& source_root,
+                                      const std::filesystem::path& target_root)
     -> void;
 
 }  // namespace tracer::core::application::pipeline::detail

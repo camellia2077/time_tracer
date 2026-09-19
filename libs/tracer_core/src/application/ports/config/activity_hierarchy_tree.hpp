@@ -1,7 +1,6 @@
 #ifndef TRACER_CORE_APPLICATION_PORTS_CONFIG_ACTIVITY_HIERARCHY_TREE_HPP_
 #define TRACER_CORE_APPLICATION_PORTS_CONFIG_ACTIVITY_HIERARCHY_TREE_HPP_
 
-#include <optional>
 #include <string>
 #include <vector>
 
@@ -30,11 +29,9 @@ struct ActivityHierarchyTreeNode {
 
 // Stable Core-owned representation of one canonical TOML document. `parent` is
 // the document-level canonical prefix and is intentionally not a selectable
-// node; selectable nodes are in `nodes` and their descendants. `color` is an
-// optional presentation hint for this parent.
+// node; selectable nodes are in `nodes` and their descendants.
 struct ActivityHierarchyTree {
   std::string parent;
-  std::optional<std::string> color;
   std::vector<ActivityHierarchyTreeNode> nodes;
 };
 

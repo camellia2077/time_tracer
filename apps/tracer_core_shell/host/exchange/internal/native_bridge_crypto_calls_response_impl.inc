@@ -8,6 +8,60 @@ auto BuildExportContentJson(const app_dto::TracerExchangeExportResult& result)
       .dump();
 }
 
+auto BuildTracerExchangeContentResponse(
+    const app_dto::TracerExchangeContentResult& result) -> std::string {
+  if (!result.ok) {
+    return BuildResponseJson(
+        false,
+        result.error_message.empty() ? "build exchange content failed."
+                                     : result.error_message,
+        std::string{});
+  }
+
+  const auto encode_base64 = [](std::span<const std::uint8_t> bytes) {
+    constexpr std::string_view kAlphabet =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    std::string encoded;
+    encoded.reserve(((bytes.size() + 2U) / 3U) * 4U);
+    for (std::size_t index = 0; index < bytes.size(); index += 3U) {
+      const std::size_t remaining = bytes.size() - index;
+      const std::uint32_t value =
+          (static_cast<std::uint32_t>(bytes[index]) << 16U) |
+          (remaining > 1U
+               ? static_cast<std::uint32_t>(bytes[index + 1U]) << 8U
+               : 0U) |
+          (remaining > 2U ? static_cast<std::uint32_t>(bytes[index + 2U])
+                          : 0U);
+      encoded.push_back(kAlphabet[(value >> 18U) & 0x3FU]);
+      encoded.push_back(kAlphabet[(value >> 12U) & 0x3FU]);
+      encoded.push_back(remaining > 1U ? kAlphabet[(value >> 6U) & 0x3FU]
+                                      : '=');
+      encoded.push_back(remaining > 2U ? kAlphabet[value & 0x3FU] : '=');
+    }
+    return encoded;
+  };
+
+  std::string manifest_text;
+  json entries = json::array();
+  for (const auto& entry : result.content.entries) {
+    const std::string content(entry.data.begin(), entry.data.end());
+    if (entry.kind == app_dto::TracerExchangeContentEntryKind::kManifest) {
+      manifest_text = content;
+      continue;
+    }
+    if (entry.text) {
+      entries.push_back(json{{"relative_path", entry.relative_path},
+                             {"content", content}});
+    } else {
+      entries.push_back(json{{"relative_path", entry.relative_path},
+                             {"content_base64", encode_base64(entry.data)}});
+    }
+  }
+  return BuildResponseJson(
+      true, std::string{},
+      json{{"manifest_text", manifest_text}, {"entries", entries}}.dump());
+}
+
 auto BuildImportContentJson(const app_dto::TracerExchangeImportResult& result)
     -> std::string {
   return json{

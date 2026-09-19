@@ -60,6 +60,16 @@ def _windows_path_to_wsl(path: Path) -> str:
     return f"/mnt/{drive}/{remainder}"
 
 
+def _wsl_build_dir_name(requested_build_dir: str | None) -> str:
+    """Return a build-dir name reserved for the WSL toolchain."""
+    normalized = (requested_build_dir or "").strip()
+    if not normalized:
+        return "build_libs_wsl"
+    if normalized.endswith("_wsl"):
+        return normalized
+    return f"{normalized}_wsl"
+
+
 def _maybe_delegate_libs_to_wsl(argv: list[str]) -> int | None:
     """Run the shared-library verification in Ubuntu when invoked on Windows."""
     test_platform = _requested_test_platform(argv)
@@ -81,13 +91,14 @@ def _maybe_delegate_libs_to_wsl(argv: list[str]) -> int | None:
     distro = os.environ.get("TT_LIBS_WSL_DISTRO", "Ubuntu")
     delegated_args = list(argv)
     if "--build-dir" not in delegated_args:
-        delegated_args.extend(("--build-dir", "build_libs_ubuntu"))
+        delegated_args.extend(("--build-dir", _wsl_build_dir_name(None)))
     else:
         build_dir_index = delegated_args.index("--build-dir")
         if build_dir_index + 1 < len(delegated_args):
             requested_build_dir = delegated_args[build_dir_index + 1]
-            if requested_build_dir in {"build_libs", "build_fast"}:
-                delegated_args[build_dir_index + 1] = "build_libs_ubuntu"
+            delegated_args[build_dir_index + 1] = _wsl_build_dir_name(
+                requested_build_dir
+            )
     repo_path = _windows_path_to_wsl(REPO_ROOT)
     command = " ".join(shlex.quote(value) for value in delegated_args)
     shell_command = (
@@ -98,7 +109,7 @@ def _maybe_delegate_libs_to_wsl(argv: list[str]) -> int | None:
     )
     print(
         f"--- libs scope: delegating Windows invocation to WSL2 {distro} "
-        f"(build dir: {next((delegated_args[i + 1] for i, value in enumerate(delegated_args) if value == '--build-dir'), 'build_libs_ubuntu')})",
+        f"(build dir: {next((delegated_args[i + 1] for i, value in enumerate(delegated_args) if value == '--build-dir'), 'build_libs_wsl')})",
         flush=True,
     )
     completed = subprocess.run(

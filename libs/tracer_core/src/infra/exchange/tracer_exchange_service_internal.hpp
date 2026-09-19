@@ -120,6 +120,8 @@ auto BackupActiveConverterConfig(const ActiveConverterConfigPaths& active_paths,
 auto WriteDecodedPackageToRoot(
     const exchange_pkg::DecodedTracerExchangePackage& package,
     const fs::path& root) -> void;
+auto DecodeDirectoryPackage(const fs::path& root)
+    -> exchange_pkg::DecodedTracerExchangePackage;
 
 }  // namespace tracer_core::infrastructure::crypto::tracer_exchange_internal
 

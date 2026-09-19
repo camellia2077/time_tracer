@@ -80,4 +80,4 @@ installation and keeps program resources out of the exchange/import contract.
 - Core factory: `apps/tracer_core_shell/host/bootstrap/android_runtime_factory.cpp`
 - Pipeline-only C API: `apps/tracer_core_shell/api/c_api/capabilities/pipeline/tracer_core_c_api_pipeline_runtime.cpp`
 - Android JNI bridge: `apps/tracer_core_shell/api/android_jni/native_bridge_calls.cpp`
-- Android candidate import: `apps/android/runtime/src/main/java/com/example/tracer/runtime/services/RuntimeDataFolderSnapshotService.kt`
+- Android exchange import: `apps/android/runtime/src/main/java/com/example/tracer/runtime/services/RuntimeTracerExchangeImportService.kt`

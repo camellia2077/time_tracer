@@ -7,27 +7,13 @@
 #include "application/compat/insights/i_insights_query_service.hpp"
 #include "application/ports/insights/i_platform_clock.hpp"
 #include "infra/config/models/insights_catalog.hpp"
+#include "infra/insights/lazy_sqlite_database.hpp"
 #include "infra/persistence/sqlite/db_manager.hpp"
 
 import tracer.core.infrastructure.insights.querying.insights_service;
 
 namespace tracer::core::infrastructure::insights {
 namespace {
-
-auto EnsureReadableDbConnection(const std::filesystem::path& db_path,
-                                DBManager& db_manager) -> sqlite3* {
-  if (!db_manager.OpenDatabaseIfNeeded()) {
-    throw std::runtime_error("Insights database is not available: " +
-                             db_path.string());
-  }
-
-  sqlite3* db_connection = db_manager.GetDbConnection();
-  if (db_connection == nullptr) {
-    throw std::runtime_error("Insights database connection is null: " +
-                             db_path.string());
-  }
-  return db_connection;
-}
 
 template <typename Callback>
 auto WithInsightsService(
@@ -38,7 +24,7 @@ auto WithInsightsService(
     Callback&& callback) {
   DBManager db_manager(db_path.string());
   InsightsService insights_service(
-      EnsureReadableDbConnection(db_path, db_manager), *insights_catalog,
+      detail::EnsureReadableDbConnection(db_path, db_manager), *insights_catalog,
       platform_clock);
   return std::forward<Callback>(callback)(insights_service);
 }

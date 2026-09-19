@@ -31,7 +31,8 @@ auto BuildTextMappingsFromAlias(toml::table& main_tbl,
   }
   const auto* canonical = main_tbl["canonical"].as_table();
   if (canonical == nullptr) {
-    throw std::runtime_error("Behavior config must contain a `canonical` table.");
+    throw std::runtime_error(
+        "Behavior config must contain a `canonical` table.");
   }
   std::vector<std::string> ignored_wake_keywords;
   modalias::PopulateBehaviorCanonicalMappings(
@@ -147,7 +148,8 @@ auto ConverterConfigLoader::ParseMappings(const toml::table& tbl,
   load_map("text_mappings", config.text_mapping);
   const auto* canonical = tbl["canonical"].as_table();
   if (canonical == nullptr) {
-    throw std::runtime_error("Behavior config must contain a `canonical` table.");
+    throw std::runtime_error(
+        "Behavior config must contain a `canonical` table.");
   }
   config.sleep_inference.wake_keywords.clear();
   toml::table ignored_behavior_mappings;

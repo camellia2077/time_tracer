@@ -150,8 +150,7 @@ extern "C" TT_CORE_API auto tracer_core_runtime_temporal_insights_json(
         tracer_core::core::c_api::internal::g_last_response =
             SerializeTemporalStructuredInsights(
                 runtime.insights().RunTemporalStructuredInsightsQuery(
-                    BuildTemporalStructuredQueryRequest(payload)),
-                handle->converter_config_toml_path)
+                    BuildTemporalStructuredQueryRequest(payload)))
                 .dump();
         return tracer_core::core::c_api::internal::g_last_response.c_str();
       case InsightsOperationKind::kTargets:

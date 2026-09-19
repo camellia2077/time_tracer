@@ -23,6 +23,9 @@ class Repository {
   explicit Repository(std::string db_path);
   ~Repository();
 
+  // Creates the database and current schema without inserting authored data.
+  auto EnsureDatabaseReady() -> void;
+
   [[nodiscard]] auto IsDbOpen() const -> bool;
 
   auto ImportData(const std::vector<DayData>& days,

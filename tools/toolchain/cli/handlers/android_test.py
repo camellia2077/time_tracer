@@ -81,7 +81,11 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
     extra_args = [arg for arg in args.extra_args if arg != "--"]
     for pattern in args.test_patterns:
         extra_args.extend(["--tests", pattern])
-    task = f":{args.module}:testDebugUnitTest"
+    # Run the same debug resource lint gate used by Android style/CI before
+    # the focused unit tests. This makes newly added unused XML resources fail
+    # during the edit loop instead of waiting for CI. The checked-in lint
+    # baseline still applies to findings that predate the current change.
+    tasks = [":app:lintDebug", f":{args.module}:testDebugUnitTest"]
     ret = build_gradle(
         ctx=ctx,
         app_name="tracer_android",
@@ -90,7 +94,7 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         cmake_args=[],
         build_dir_name=None,
         profile_name=None,
-        gradle_tasks_override=[task],
+        gradle_tasks_override=tasks,
         log_file=build_log_path,
         output_mode="quiet" if args.concise else "live",
     )
@@ -116,5 +120,5 @@ COMMAND = CommandSpec(
     run=run,
     app_mode="none",
     add_app_path=False,
-    help="Run selected Android module debug unit tests.",
+    help="Run debug resource lint and selected Android module unit tests.",
 )

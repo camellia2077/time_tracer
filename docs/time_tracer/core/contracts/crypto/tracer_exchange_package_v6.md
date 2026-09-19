@@ -4,8 +4,8 @@
 
 1. 状态：Active。
 2. 适用范围：当前 tracer exchange 的逻辑 package 内容。
-3. 本版本统一由 core 构造交换内容；当前外层载体为标准 ZIP AES-256
-   archive，输出默认使用 `.zip` 扩展名。
+3. 本版本统一由 core 构造交换内容；外层载体可以是标准 ZIP AES-256
+   archive，也可以是保留相同相对路径的普通目录。
 
 ## 1. 内容范围与顺序
 
@@ -60,6 +60,14 @@ AES extra field 为 `0x9901`，strength 为 `3`，实际压缩方法为 `8`。
 entry 路径和明文内容仍严格遵循本文件第 1、2 节；ZIP 只负责可互操作的
 容器、压缩和密码保护，不改变 manifest 或业务校验语义。
 
+## 3.1 普通目录载体
+
+普通目录载体直接 materialize 同一组逻辑 entries：导出目录包含
+`manifest.toml`，配置位于 `config/user/**`，payload 位于 `payload/**`。
+Core 导入目录时优先使用 manifest；如果目录中没有 `manifest.toml`，则根据
+`config/user/**` 与 `payload/**` 下的实际文件生成临时清单，再继续使用与 ZIP
+解码相同的路径集合、entry 顺序和文本规范化校验。目录不提供密码保护。
+
 ## 4. 校验与消费
 
 core 在构造和编码前校验配置根、配置清单、payload 路径、TXT 内容、entry 顺序和重复路径。解码时必须再次校验 manifest 与实际 entries 完全一致，并校验每个 entry 的边界和 SHA-256。
@@ -82,7 +90,9 @@ Core 提供两个独立阶段：
 4. 正确密码的用户可以使用支持 ZIP AES 的普通 ZIP 工具直接查看和解包
    数据；ZIP 文件名和目录结构保持可见，entry 内容受密码保护。
 
-当前实现暂不支持混合组合。Android 的普通 TXT+TOML 导出直接消费逻辑 entries，不进入 exchange package 保护流程；后续 Android exchange package 接入时选择第二种组合。
+Android 的普通 TXT+TOML 导出通过 bridge 消费 Core 构造的逻辑 entries，再由
+presentation materialize 为普通目录；因此它与 ZIP 使用完全相同的 package
+内容和导入路径。
 
 ## 5. 错误语义
 

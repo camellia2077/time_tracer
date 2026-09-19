@@ -6,7 +6,7 @@
 
 namespace tracer_core::api::android::bridge_internal {
 
-const std::array<JNINativeMethod, 19> kNativeMethods = {
+const std::array<JNINativeMethod, 20> kNativeMethods = {
     JNINativeMethod{
         const_cast<char*>("nativeInit"),
         const_cast<char*>(
@@ -94,6 +94,11 @@ const std::array<JNINativeMethod, 19> kNativeMethods = {
         const_cast<char*>("nativeExportTracerExchangeFromPayloadJson"),
         const_cast<char*>("(Ljava/lang/String;I)Ljava/lang/String;"),
         reinterpret_cast<void*>(&NativeExportTracerExchangeFromPayloadJson),
+    },
+    JNINativeMethod{
+        const_cast<char*>("nativeBuildTracerExchangeContentFromPayloadJson"),
+        const_cast<char*>("(Ljava/lang/String;)Ljava/lang/String;"),
+        reinterpret_cast<void*>(&NativeBuildTracerExchangeContentFromPayloadJson),
     },
     JNINativeMethod{
         const_cast<char*>("nativeImportTracerExchange"),

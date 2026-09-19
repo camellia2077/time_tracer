@@ -9,6 +9,7 @@
 #include <ios>
 #include <optional>
 #include <sstream>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <string_view>

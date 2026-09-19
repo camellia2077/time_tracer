@@ -228,3 +228,152 @@ auto WriteDecodedPackageToRoot(
     WriteFileBytes(target, entry.data);
   }
 }
+
+namespace {
+
+struct DirectoryPackageFiles {
+  bool has_manifest = false;
+  std::set<std::string> actual_paths;
+  std::vector<std::string> config_files;
+  std::vector<std::string> payload_files;
+};
+
+auto IsSafeDirectoryPackagePath(std::string_view path,
+                                std::string_view required_prefix) -> bool {
+  if (path.empty() || path.find('\\') != std::string_view::npos ||
+      !path.starts_with(required_prefix) ||
+      path.size() <= required_prefix.size() ||
+      path[required_prefix.size()] != '/') {
+    return false;
+  }
+  const fs::path relative =
+      fs::path(path).lexically_relative(fs::path(std::string(required_prefix)));
+  if (relative.empty() || relative.is_absolute()) {
+    return false;
+  }
+  for (const auto& component : relative) {
+    if (component == ".." || component == ".") {
+      return false;
+    }
+  }
+  return true;
+}
+
+auto CollectDirectoryPackageFiles(const fs::path& root)
+    -> DirectoryPackageFiles {
+  DirectoryPackageFiles files;
+  for (const auto& filesystem_entry : fs::recursive_directory_iterator(root)) {
+    if (!filesystem_entry.is_regular_file()) {
+      continue;
+    }
+
+    const std::string relative_path =
+        filesystem_entry.path().lexically_relative(root).generic_string();
+    files.actual_paths.insert(relative_path);
+    if (relative_path == exchange_pkg::kManifestPath) {
+      files.has_manifest = true;
+    } else if (IsSafeDirectoryPackagePath(relative_path, "config/user")) {
+      files.config_files.push_back(relative_path);
+    } else if (IsSafeDirectoryPackagePath(relative_path,
+                                          exchange_pkg::kPayloadRoot)) {
+      files.payload_files.push_back(relative_path);
+    } else {
+      throw std::runtime_error(
+          "Tracer exchange directory contains a file outside the package "
+          "roots: " +
+          relative_path);
+    }
+  }
+  std::sort(files.config_files.begin(), files.config_files.end());
+  std::sort(files.payload_files.begin(), files.payload_files.end());
+  return files;
+}
+
+auto BuildInferredDirectoryManifest(const fs::path& root,
+                                    const DirectoryPackageFiles& files)
+    -> exchange_pkg::TracerExchangeManifest {
+  exchange_pkg::TracerExchangeManifest manifest{};
+  manifest.config_files = files.config_files;
+  manifest.payload_files = files.payload_files;
+  manifest.producer_platform = "directory";
+  manifest.producer_app = "time_tracer";
+  manifest.created_at_utc = "directory_import";
+  manifest.source_root_name =
+      root.filename().empty() ? std::string("data") : root.filename().string();
+  return manifest;
+}
+
+auto LoadDirectoryManifest(const fs::path& root,
+                           const DirectoryPackageFiles& files,
+                           std::vector<std::uint8_t>& manifest_bytes)
+    -> exchange_pkg::TracerExchangeManifest {
+  if (files.has_manifest) {
+    manifest_bytes =
+        ReadFileBytes(root / fs::path(exchange_pkg::kManifestPath));
+    return exchange_pkg::ParseManifestText(modtext::RequireCanonicalText(
+        manifest_bytes, exchange_pkg::kManifestPath));
+  }
+
+  manifest_bytes = modtext::ToUtf8Bytes(exchange_pkg::BuildManifestText(
+      BuildInferredDirectoryManifest(root, files)));
+  return exchange_pkg::ParseManifestText(
+      std::string_view(reinterpret_cast<const char*>(manifest_bytes.data()),
+                       manifest_bytes.size()));
+}
+
+}  // namespace
+
+auto DecodeDirectoryPackage(const fs::path& root)
+    -> exchange_pkg::DecodedTracerExchangePackage {
+  const DirectoryPackageFiles directory_files =
+      CollectDirectoryPackageFiles(root);
+  std::vector<std::uint8_t> manifest_bytes;
+  const exchange_pkg::TracerExchangeManifest manifest =
+      LoadDirectoryManifest(root, directory_files, manifest_bytes);
+
+  std::vector<exchange_pkg::TracerExchangePackageEntry> entries;
+  entries.reserve(1U + manifest.config_files.size() +
+                  manifest.payload_files.size());
+  entries.push_back({.relative_path = std::string(exchange_pkg::kManifestPath),
+                     .data = manifest_bytes,
+                     .entry_flags = exchange_pkg::kStandardEntryFlags});
+
+  std::set<std::string> expected_paths;
+  if (directory_files.has_manifest) {
+    expected_paths.insert(std::string(exchange_pkg::kManifestPath));
+  }
+  const auto append_manifest_files = [&](const auto& files,
+                                         std::string_view prefix) {
+    for (const std::string& package_path : files) {
+      if (!IsSafeDirectoryPackagePath(package_path, prefix) ||
+          !expected_paths.insert(package_path).second) {
+        throw std::runtime_error(
+            "Tracer exchange directory contains an invalid or duplicate "
+            "manifest path: " +
+            package_path);
+      }
+      const fs::path target = root / fs::path(package_path);
+      EnsureRegularFileExists(target, "Tracer exchange package file");
+      const bool is_text = IsCanonicalTextPackagePath(package_path);
+      entries.push_back({
+          .relative_path = package_path,
+          .data = is_text ? CanonicalizePackageTextBytes(ReadFileBytes(target),
+                                                         package_path)
+                          : ReadFileBytes(target),
+          .entry_flags = static_cast<std::uint16_t>(
+              exchange_pkg::kEntryFlagRequired |
+              (is_text ? exchange_pkg::kEntryFlagText : 0U)),
+      });
+    }
+  };
+  append_manifest_files(manifest.config_files, "config/user");
+  append_manifest_files(manifest.payload_files, exchange_pkg::kPayloadRoot);
+
+  if (directory_files.actual_paths != expected_paths) {
+    throw std::runtime_error(
+        "Tracer exchange directory files do not match manifest.");
+  }
+
+  const auto encoded = exchange_pkg::EncodePackageBytes(entries);
+  return exchange_pkg::DecodePackageBytes(encoded);
+}

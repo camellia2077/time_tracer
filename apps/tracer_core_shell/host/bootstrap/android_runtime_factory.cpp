@@ -73,8 +73,11 @@ auto BuildAndroidPipelineState(const fs::path& output_root,
       std::make_shared<FileConverterConfigProvider>(
           converter_config_path, std::unordered_map<fs::path, fs::path>{});
   // Fail fast during pipeline bootstrap if converter TOML or the user
-  // activity hierarchy is invalid.
+  // activity hierarchy is invalid. Once configuration is valid, create the
+  // empty schema so read-side capabilities can report no-data states instead
+  // of treating a fresh installation as a database failure.
   static_cast<void>(converter_config_provider->LoadConverterConfig());
+  time_sheet_repository->EnsureDatabaseReady();
   auto ingest_input_provider = adapters_runtime::CreateTxtIngestInputProvider();
   auto processed_data_storage = adapters_runtime::CreateProcessedDataStorage();
   auto validation_issue_reporter =
@@ -96,10 +99,9 @@ namespace infrastructure::bootstrap {
 
 auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
     -> AndroidRuntime {
-  // Runtime bootstrap must stay side-effect free with respect to ingest
-  // persistence. Creating the runtime is not permission to create the ingest
-  // database; database creation belongs only to the post-validation write
-  // phase.
+  // Runtime bootstrap creates the empty ingest schema after configuration
+  // validation so read-side capabilities can distinguish no data from a
+  // missing or broken database.
   const fs::path kOutputRoot =
       android_runtime_detail::ResolveOutputRoot(request.output_root);
   const fs::path kDbPath =

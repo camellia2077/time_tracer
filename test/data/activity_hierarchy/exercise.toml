@@ -1,5 +1,4 @@
 parent = "exercise"
-color = "#0000FF"
 
 [canonical]
 "go" = ["围棋"]

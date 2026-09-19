@@ -9,6 +9,10 @@ namespace tracer::core::infrastructure::persistence {
 SqliteTimeSheetRepository::SqliteTimeSheetRepository(const std::string& db_path)
     : repository_(db_path) {}
 
+auto SqliteTimeSheetRepository::EnsureDatabaseReady() -> void {
+  repository_.EnsureDatabaseReady();
+}
+
 auto SqliteTimeSheetRepository::IsDbOpen() const -> bool {
   // Repository construction must not be treated as a write-side side effect.
   // The ingest database may be created only when the write path is entered

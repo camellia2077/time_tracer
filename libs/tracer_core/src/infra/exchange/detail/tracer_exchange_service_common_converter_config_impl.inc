@@ -39,19 +39,29 @@ auto EnsureActiveConverterConfigExists(
     EnsureRegularFileExists(child_path, "Active activity hierarchy TOML");
   }
 }
+
+auto CopyConfigUserDirectory(const fs::path& source_root,
+                             const fs::path& target_root) -> void {
+  if (!fs::exists(source_root) || !fs::is_directory(source_root)) {
+    throw std::runtime_error("Config user directory not found: " +
+                             source_root.string());
+  }
+
+  for (const auto& entry : fs::recursive_directory_iterator(source_root)) {
+    if (!entry.is_regular_file()) {
+      continue;
+    }
+    const fs::path relative_path = entry.path().lexically_relative(source_root);
+    const fs::path target_path = target_root / relative_path;
+    EnsureParentDirectory(target_path);
+    CopyFileWithOverwrite(entry.path(), target_path);
+  }
+}
+
 auto BackupActiveConverterConfig(const ActiveConverterConfigPaths& active_paths,
                                  const fs::path& backup_root) -> void {
   EnsureDirectoryRemoved(backup_root);
   EnsureActiveConverterConfigExists(active_paths);
-  CopyFileWithOverwrite(
-      active_paths.main_config_path,
-      BuildBackupPath(backup_root, "config/user/behavior.toml"));
-  for (const auto& child_path : active_paths.alias_child_paths) {
-    const fs::path relative_path = fs::relative(
-        child_path, active_paths.alias_directory_path.parent_path());
-    CopyFileWithOverwrite(
-        child_path,
-        BuildBackupPath(backup_root,
-                        (fs::path("config") / relative_path).generic_string()));
-  }
+  CopyConfigUserDirectory(active_paths.config_root_path / "user",
+                          backup_root / "config/user");
 }

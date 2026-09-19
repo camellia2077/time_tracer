@@ -28,6 +28,10 @@ Repository::Repository(std::string db_path) : db_path_(std::move(db_path)) {}
 
 Repository::~Repository() = default;
 
+auto Repository::EnsureDatabaseReady() -> void {
+  EnsureWriteRepositoryReady();
+}
+
 auto Repository::IsDbOpen() const -> bool {
   return connection_manager_ && (connection_manager_->GetDb() != nullptr);
 }

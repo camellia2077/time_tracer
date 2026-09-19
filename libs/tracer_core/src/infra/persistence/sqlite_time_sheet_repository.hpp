@@ -13,6 +13,8 @@ class SqliteTimeSheetRepository final
  public:
   explicit SqliteTimeSheetRepository(const std::string& db_path);
 
+  auto EnsureDatabaseReady() -> void;
+
   [[nodiscard]] auto IsDbOpen() const -> bool override;
   auto ImportData(const std::vector<DayData>& days,
                   const std::vector<TimeRecordInternal>& records)

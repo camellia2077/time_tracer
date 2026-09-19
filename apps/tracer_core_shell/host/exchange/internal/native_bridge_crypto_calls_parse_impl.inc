@@ -18,6 +18,12 @@ struct ExportTracerExchangeFromPayloadArgs {
   int output_fd = -1;
 };
 
+struct BuildTracerExchangeContentArgs {
+  std::vector<app_dto::TracerExchangeTextPayloadItem> payload_items;
+  std::string logical_source_root_name = "data";
+  DateCheckMode date_check_mode;
+};
+
 struct ImportTracerExchangeArgs {
   fs::path input_path;
   fs::path work_root;
@@ -160,6 +166,41 @@ auto ParseExportTracerExchangeFromPayloadArgs(JNIEnv* env, jstring request_json,
   };
 }
 
+auto ParseBuildTracerExchangeContentArgs(JNIEnv* env, jstring request_json)
+    -> BuildTracerExchangeContentArgs {
+  const std::string request_json_utf8 =
+      RequireNonEmptyText(ToUtf8(env, request_json), "requestJson");
+  const json request_payload = json::parse(request_json_utf8);
+  std::vector<app_dto::TracerExchangeTextPayloadItem> payload_items;
+  const auto payload_iter = request_payload.find("payload_items");
+  if (payload_iter == request_payload.end() || !payload_iter->is_array()) {
+    throw std::invalid_argument("payload_items must be a non-empty array.");
+  }
+  for (const auto& payload_json : *payload_iter) {
+    if (!payload_json.is_object()) {
+      throw std::invalid_argument("payload_items entries must be objects.");
+    }
+    payload_items.push_back({
+        .relative_path_hint =
+            payload_json.value("relative_path_hint", std::string{}),
+        .content = RequireNonEmptyText(
+            payload_json.value("content", std::string{}), "payload content"),
+    });
+  }
+  if (payload_items.empty()) {
+    throw std::invalid_argument("payload_items must not be empty.");
+  }
+  const std::string source_root_name =
+      request_payload.value("logical_source_root_name", std::string("data"));
+  return {
+      .payload_items = std::move(payload_items),
+      .logical_source_root_name = source_root_name.empty() ? "data"
+                                                            : source_root_name,
+      .date_check_mode = ParseAndroidDateCheckMode(static_cast<jint>(
+          request_payload.value("date_check_mode", 0))),
+  };
+}
+
 auto ParseImportTracerExchangeArgs(JNIEnv* env, jstring input_path,
                                    jstring work_root, jstring passphrase)
     -> ImportTracerExchangeArgs {
@@ -167,8 +208,11 @@ auto ParseImportTracerExchangeArgs(JNIEnv* env, jstring input_path,
       RequireNonEmptyText(ToUtf8(env, input_path), "inputPath");
   const std::string work_root_utf8 =
       RequireNonEmptyText(ToUtf8(env, work_root), "workRoot");
-  const std::string passphrase_utf8 =
-      RequireNonEmptyText(ToUtf8(env, passphrase), "passphrase");
+  const std::string passphrase_utf8 = ToUtf8(env, passphrase);
+  if (passphrase_utf8.empty() &&
+      !fs::is_directory(fs::path(input_path_utf8))) {
+    throw std::invalid_argument("passphrase must not be empty.");
+  }
 
   return {
       .input_path = fs::path(input_path_utf8),

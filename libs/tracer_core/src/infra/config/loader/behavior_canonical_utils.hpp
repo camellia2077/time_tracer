@@ -18,7 +18,7 @@ inline auto PopulateBehaviorCanonicalMappings(
     toml::table& text_mappings, std::vector<std::string>& wake_keywords)
     -> void {
   const auto visit = [&](const auto& self, const toml::table& table,
-                        const std::string& path) -> void {
+                         const std::string& path) -> void {
     for (const auto& [key_node, value_node] : table) {
       const std::string key(key_node.str());
       if (key == "group_aliases") {
@@ -50,8 +50,8 @@ inline auto PopulateBehaviorCanonicalMappings(
               "Behavior canonical aliases must be non-empty strings.");
         }
         if (text_mappings.contains(*alias)) {
-          throw std::runtime_error(
-              "Duplicate alias key in behavior.toml: " + *alias);
+          throw std::runtime_error("Duplicate alias key in behavior.toml: " +
+                                   *alias);
         }
         text_mappings.insert(*alias, canonical_name);
         wake_keywords.push_back(*alias);

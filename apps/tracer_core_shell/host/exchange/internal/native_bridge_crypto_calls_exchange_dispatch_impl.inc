@@ -126,6 +126,23 @@ auto BuildExportTracerExchangeFromPayloadRequest(
   };
 }
 
+auto DispatchBuildTracerExchangeContent(
+    JNIEnv* /*env*/, const BuildTracerExchangeContentArgs& args)
+    -> app_dto::TracerExchangeContentResult {
+  return WithLockedRuntime([&](ITracerCoreRuntime& runtime,
+                               const fs::path& converter_config_toml_path) {
+    return runtime.tracer_exchange().BuildTracerExchangeExportContent({
+        .config_user_root_path = converter_config_toml_path.parent_path(),
+        .active_converter_main_config_path = converter_config_toml_path,
+        .input_text_payloads = args.payload_items,
+        .date_check_mode = args.date_check_mode,
+        .logical_source_root_name = args.logical_source_root_name,
+        .producer_platform = std::string(kProducerPlatform),
+        .producer_app = std::string(kProducerApp),
+    });
+  });
+}
+
 auto BuildImportTracerExchangeRequest(
     JNIEnv* env, const ImportTracerExchangeArgs& args,
     const fs::path& converter_config_toml_path)

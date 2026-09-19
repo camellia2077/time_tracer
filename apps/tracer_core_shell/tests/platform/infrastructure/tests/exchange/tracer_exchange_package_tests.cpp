@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <string>
 
+#include "infra/exchange/tracer_exchange_service_internal.hpp"
 #include "infrastructure/tests/exchange/tracer_exchange_test_support.hpp"
 
 namespace android_runtime_tests {
@@ -10,6 +11,48 @@ namespace {
 
 using namespace exchange_tests_internal;
 using namespace tracer_exchange_tests_internal;
+
+auto TestTracerExchangeDirectoryCanInferMissingManifest(int& failures) -> void {
+  const auto paths = BuildTempTestPaths("tracer_exchange_directory_no_manifest");
+  const auto directory = paths.test_root / "data_2026-09-19_08-12-00";
+  RemoveTree(paths.test_root);
+
+  const bool seeded =
+      WriteFileWithParents(directory / "config/user/behavior.toml",
+                           "main = true\n") &&
+      WriteFileWithParents(directory / "payload/2026/2026-09.txt",
+                           "y2026\nm09\nd0919\n0600w\n");
+  Expect(seeded,
+         "Missing-manifest directory fixture should be written successfully.",
+         failures);
+  if (!seeded) {
+    RemoveTree(paths.test_root);
+    return;
+  }
+
+  try {
+    const auto package =
+        tracer_core::infrastructure::crypto::tracer_exchange_internal::
+            DecodeDirectoryPackage(directory);
+    Expect(package.manifest.source_root_name == directory.filename().string(),
+           "Directory import should infer source_root_name from the directory.",
+           failures);
+    Expect(package.manifest.config_files.size() == 1U &&
+               package.manifest.payload_files.size() == 1U,
+           "Directory import should infer config and payload file lists.",
+           failures);
+    Expect(FindEntry(package, "manifest.toml") != nullptr,
+           "Directory import should synthesize an internal manifest entry.",
+           failures);
+  } catch (const std::exception& error) {
+    Expect(false,
+           "Directory import should not require manifest.toml: " +
+               std::string(error.what()),
+           failures);
+  }
+
+  RemoveTree(paths.test_root);
+}
 
 auto TestTracerExchangePackageRoundTrip(int& failures) -> void {
   const auto payloads = BuildSamplePayloads();
@@ -131,6 +174,7 @@ auto TestTracerExchangeManifestRejectsPathDrift(int& failures) -> void {
 }  // namespace
 
 auto RunTracerExchangePackageTests(int& failures) -> void {
+  TestTracerExchangeDirectoryCanInferMissingManifest(failures);
   TestTracerExchangePackageRoundTrip(failures);
   TestTracerExchangeDecodeRejectsShaMismatch(failures);
   TestTracerExchangeZipAesRoundTrip(failures);

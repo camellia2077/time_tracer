@@ -305,21 +305,20 @@ auto PipelineWorkflow::RunReplaceTxtAliasActivityNames(
 
 auto PipelineWorkflow::InstallActiveConverterConfig(
     const ActiveConverterConfigInstallRequest& request) -> void {
-  const auto kSourcePaths = pipeline_detail::ResolveConverterConfigPathSet(
-      request.source_main_config_path);
-  const auto kTargetPaths = pipeline_detail::ResolveConverterConfigPathSet(
-      request.target_main_config_path);
+  const auto kSourceMainConfigPath =
+      pipeline_detail::ResolveConverterMainConfigPath(
+          request.source_main_config_path);
+  const auto kTargetMainConfigPath =
+      pipeline_detail::ResolveConverterMainConfigPath(
+          request.target_main_config_path);
 
-  pipeline_detail::EnsureConverterConfigSourceExists(
-      kSourcePaths.main_config_path, "Converter main config");
+  pipeline_detail::EnsureConverterConfigSourceExists(kSourceMainConfigPath,
+                                                     "Converter main config");
 
-  pipeline_detail::CopyConverterConfigFile(kSourcePaths.main_config_path,
-                                           kTargetPaths.main_config_path,
-                                           "converter main config");
-  pipeline_detail::RemoveConverterAliasDirectory(
-      kTargetPaths.main_config_path.parent_path().parent_path());
-  pipeline_detail::CopyConverterAliasDirectory(
-      kSourcePaths.alias_directory_path, kTargetPaths.alias_directory_path);
+  pipeline_detail::RemoveConverterUserConfigDirectory(
+      kTargetMainConfigPath.parent_path().parent_path());
+  pipeline_detail::CopyConverterUserConfigDirectory(
+      kSourceMainConfigPath.parent_path(), kTargetMainConfigPath.parent_path());
   converter_config_provider_->InvalidateCache();
 }
 

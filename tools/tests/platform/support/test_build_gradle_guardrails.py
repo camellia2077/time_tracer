@@ -51,12 +51,13 @@ class TestBuildGradleGuardrails(TestCase):
             cmake_args=[],
             build_dir_name=None,
             profile_name=None,
-            gradle_tasks_override=[":feature-insights:testDebugUnitTest"],
+            gradle_tasks_override=[":app:lintDebug", ":feature-insights:testDebugUnitTest"],
             run_command_fn=fake_run_command,
             output_mode="quiet",
         )
 
         self.assertEqual(result, 0)
+        self.assertIn(":app:lintDebug", captured)
         self.assertIn(":feature-insights:testDebugUnitTest", captured)
         self.assertNotIn(":app:assembleDebug", captured)
         self.assertIn("--tests", captured)
